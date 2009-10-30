@@ -353,14 +353,14 @@ class AsyncAuthServ(AsyncUDPServer):
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
     
                 logger.info("Password check: %s", authobject.code)
-                returndata=authobject.ReturnPacket(packetfromcore) 
+                returndata, replypacket=authobject.ReturnPacket(packetfromcore) 
                 
             elif access_type in ['DHCP'] :
                 coreconnect = HandleSDHCP(packetobject=packetobject)
                 coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                 authobject, packetfromcore = coreconnect.handle()
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
-                returndata=authobject.ReturnPacket(packetfromcore)
+                returndata, replypacket=authobject.ReturnPacket(packetfromcore)
             else:
                 #-----
                 coreconnect = HandleSNA(packetobject)
@@ -372,6 +372,7 @@ class AsyncAuthServ(AsyncUDPServer):
             logger.info("AUTH time: %s", (clock()-t))
             if returndata:
                 self.sendto(returndata,addrport)
+
                 del returndata
                      
             del packetfromcore
@@ -516,14 +517,14 @@ class AuthHandler(Thread):
                     if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
 
                     logger.info("%s: Password check: %s", (self.getName(), authobject.code))
-                    returndata=authobject.ReturnPacket(packetfromcore) 
+                    returndata, replypacket=authobject.ReturnPacket(packetfromcore) 
 
                 elif access_type in ['DHCP'] :
                     coreconnect = HandleSDHCP(packetobject=packetobject)
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                     authobject, packetfromcore = coreconnect.handle()
                     if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
-                    returndata=authobject.ReturnPacket(packetfromcore)
+                    returndata, replypacket=authobject.ReturnPacket(packetfromcore)
                 else:
                     #-----
                     coreconnect = HandleSNA(packetobject)
@@ -1049,20 +1050,20 @@ class HandleSDHCP(HandleSBase):
             return self.auth_NA(authobject)
         if 0: assert isinstance(acc, AccountData)
 
-        if vars.IGNORE_NAS_FOR_VPN is False and int(acc.nas_id)!=int(nas.id):
+        if vars.IGNORE_NAS_FOR_DHCP is False and int(acc.nas_id)!=int(nas.id):
             return self.auth_NA(authobject)
         #print dir(acc)
         acstatus = (acc.assign_dhcp_null or acc.ballance>0) and \
-                 (acc.assign_dhcp_block or (not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status))
+                 (acc.assign_dhcp_block or (not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status)) and acc.tarif_active
 
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", acc.username)
             return self.auth_NA(authobject)
 
-        if acc.tarif_active:
+        if acstatus:
             authobject.set_code(2)
             self.replypacket.AddAttribute('Framed-IP-Address', acc.ipn_ip_address)
-            self.replypacket.AddAttribute('Framed-IP-Netmask', acc.netmask)
+            self.replypacket.AddAttribute('Framed-IP-Netmask', "255.255.255.0")
             self.replypacket.AddAttribute('Session-Timeout',   vars.SESSION_TIMEOUT)
             return authobject, self.replypacket
         else:
