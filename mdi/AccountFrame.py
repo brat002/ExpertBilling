@@ -4039,7 +4039,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.addNodeLocalAction()
         self.restoreWindow()
         self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
-        self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         #
         self.treeWidget.setAcceptDrops(True)
@@ -4410,12 +4410,14 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.tableWidget.clearContents()
         
         m_ballance = 0
+        disabled_accounts = 0
         
         i=0
         for a in accounts:            
             self.addrow(a.id, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
             #print "status", a
+            disabled_accounts += 1 if a.status<>1 else 0
             if id==-1000:
                 self.addrow(a.tarif_name, i,2, enabled=a.status)
                 self.addrow("%.02f" % float(a.ballance), i,3, color="red", enabled=a.status)
@@ -4457,7 +4459,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,12), True)
             i+=1
             
-        self.statusBar().showMessage(u'Учётных записей:%s. Средний баланс: %s' % (len(accounts), m_ballance/(1 if len(accounts)==0 else len(accounts))))
+        self.statusBar().showMessage(u'Учётных записей:%s. Средний баланс: %s. Общий баланс: %.2f. Неактивно: %s' % (len(accounts), m_ballance/(1 if len(accounts)==0 else len(accounts)), m_ballance, disabled_accounts))
         self.tableWidget.setColumnHidden(0, False)
         #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()

@@ -273,7 +273,7 @@ class NfrQueues(object):
         
         
 class RadVars(Vars):
-    __slots__ = ('SESSION_TIMEOUT', 'GIGAWORD', 'DICT_LIST', 'DICT', 'COMMON_VPN', 'IGNORE_NAS_FOR_VPN',\
+    __slots__ = ('SESSION_TIMEOUT', 'GIGAWORD', 'DICT_LIST', 'DICT', 'COMMON_VPN', 'IGNORE_NAS_FOR_VPN', 'IGNORE_NAS_FOR_DHCP',\
                  'MAX_DATAGRAM_LEN', 'AUTH_PORT', 'ACCT_PORT', 'AUTH_SOCK_TIMEOUT', 'ACCT_SOCK_TIMEOUT',\
                  'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE', 'POLL_TIMEOUT','EAP_ACCESS_TYPES')
     
@@ -286,6 +286,7 @@ class RadVars(Vars):
         self.DICT = None
         self.COMMON_VPN = False
         self.IGNORE_NAS_FOR_VPN = False
+        self.IGNORE_NAS_FOR_DHCP = False
         self.MAX_DATAGRAM_LEN = 4096
         self.AUTH_PORT = 1812
         self.ACCT_PORT = 1813
@@ -307,6 +308,8 @@ class RadVars(Vars):
             self.COMMON_VPN = False if config.get(name, 'common_vpn').lower() in ('false', '0') else True
         if config.has_option(name, 'ignore_nas_for_vpn'):
             self.IGNORE_NAS_FOR_VPN = False if config.get(name, 'ignore_nas_for_vpn').lower() in ('false', '0') else True
+        if config.has_option(name, 'ignore_nas_for_dhcp'):
+            self.IGNORE_NAS_FOR_DHCP = False if config.get(name, 'ignore_nas_for_dhcp').lower() in ('false', '0') else True
         if config.has_option(name, 'dict_list'):
             self.DICT_LIST = config.get(name, 'dict_list').split(',')
         self.DICT = dictionary.Dictionary(*self.DICT_LIST)
