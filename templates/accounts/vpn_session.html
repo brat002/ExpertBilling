@@ -29,8 +29,8 @@
     			{% endfor%}
 				{% if is_range %}
 					<tr>
-						<td colspan="3" align="right" class="bold {{ rec_count|coll_bg  }} no_border">Всего:</td>
-						<td colspan="2" class="left_border {{ rec_count|coll_bg  }} no_border">{% traffic_format bytes_out %} / {% traffic_format bytes_in %} / {% traffic_format bytes_all %}</td>
+						<td colspan="3" align="right" class="bold {{ rec_count|coll_bg  }} no_border">Всего на странице:<br>Всего:</td>
+						<td colspan="2" class="left_border {{ rec_count|coll_bg  }} no_border">{% traffic_format bytes_out_on_page %} / {% traffic_format bytes_in_on_page %} / {% traffic_format bytes_all_on_page %}<br>{% traffic_format bytes_out %} / {% traffic_format bytes_in %} / {% traffic_format bytes_all %}</td>
 					</tr>
 				{% endif %}
 			</table>
