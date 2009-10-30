@@ -27,8 +27,8 @@
 				{% endfor %}
 				{% if is_range %}
 					<tr>
-						<td align="right" colspan="3" class="bold {{ rec_count|coll_bg  }} no_border">Всего:</td>
-						<td class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ }}</td>
+						<td align="right" colspan="3" class="bold {{ rec_count|coll_bg  }} no_border">Всего на странице:<br>Всего:</td>
+						<td class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ_on_page|floatformat:2 }}<br>{{ summ|floatformat:2 }}</td>
 					</tr>
 				{% endif %}
 			</table>
