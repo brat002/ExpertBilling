@@ -192,14 +192,14 @@ class MonitorEbs(ebsTableWindow):
             sql="""SELECT session.*,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession as session
             
                   JOIN billservice_account ON billservice_account.id=session.account_id
-                  JOIN nas_nas ON nas_nas.ipaddress = session.nas_id 
+                  JOIN nas_nas ON nas_nas.id = session.nas_int_id 
                   WHERE billservice_account.id>0 and date_start>='%s' and date_start<='%s' %%s
                   ORDER BY session.id DESC 
                  """ % (date_start, date_end)
         elif self.allTimeCheckbox.checkState()==0:
             sql="""SELECT session.*,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession as session
                   JOIN billservice_account ON billservice_account.id=session.account_id
-                  JOIN nas_nas ON nas_nas.ipaddress = session.nas_id
+                  JOIN nas_nas ON nas_nas.id = session.nas_int_id
                   WHERE session.session_status='ACTIVE' and date_start>='%s' and date_start<='%s' %%s
                   ORDER BY session.id DESC
                   """ % (date_start, date_end)
