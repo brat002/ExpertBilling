@@ -652,7 +652,7 @@ class HandleSNA(HandleSBase):
             self.packetobject.secret = str(nas.secret)
             return "", self.auth_NA()
 
-
+authenticated_speeds={}
 #auth_class
 class HandleSAuth(HandleSBase):
     __slots__ = () + ('access_type', 'secret', 'speed','nas_id', 'nas_type', 'multilink', 'fMem')

@@ -171,6 +171,8 @@ class check_vpn_access(Thread):
                                     FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", (dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
+                #try:
+                #    sessions = convert(rosClient('10.10.1.100', 'admin', 'Wind0za', r"/queue/simple/getall"))
                 for row in rows:
                     #print row
                     try:
@@ -207,6 +209,8 @@ class check_vpn_access(Thread):
 
 
                             newspeed = ''.join([unicode(spi) for spi in speed[:6]])
+
+                                
                             #print newspeed
                             if rs.speed_string != newspeed:
                                 #print "set speed", newspeed
@@ -215,11 +219,15 @@ class check_vpn_access(Thread):
                                 #                        str(nas.login), str(nas.password), nas_secret=str(nas.secret),
                                 #                        session_id=str(rs.sessionid), access_type=str(rs.access_type),format_string=str(nas.vpn_speed_action),
                                 #                        speed=speed[:6])                           
-        
-                                coa_result = change_speed(vars.DICT, acc, nas,
-                                                    access_type=str(rs.access_type),
-                                                    format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
-                                                    speed=speed[:6])
+                                
+                                if not rs.speed_string:
+                                    
+                                    coa_result = change_speed(vars.DICT, acc, nas,
+                                                        access_type=str(rs.access_type),
+                                                        format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
+                                                        speed=speed[:6])
+                                else:
+                                    coa_result = True
                                 if coa_result==True:
                                     cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
                                                 """ , (newspeed, rs.id,))
