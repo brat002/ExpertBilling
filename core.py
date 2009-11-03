@@ -228,6 +228,7 @@ class check_vpn_access(Thread):
                                                         speed=speed[:6])
                                 else:
                                     coa_result = True
+
                                 if coa_result==True:
                                     cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
                                                 """ , (newspeed, rs.id,))
