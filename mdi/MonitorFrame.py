@@ -136,7 +136,7 @@ class MonitorEbs(ebsTableWindow):
             print "Monitor settings save error: ", ex
             
         event.accept()
-            
+
     def addrow(self, widget, value, x, y, color=False, id=None, sessionid=None):
         
         item_type = QtGui.QTableWidgetItem()
