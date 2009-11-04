@@ -464,7 +464,7 @@ class TransactionsReportEbs(ebsTableWindow):
     def get_selected_ids(self):
         ids = []
         for r in self.tableWidget.selectedItems():
-            print r.column()
+            #print r.column()
             if r.column()==0:
                 ids.append((r.id, r.date))
         return ids
@@ -474,8 +474,11 @@ class TransactionsReportEbs(ebsTableWindow):
         #print ids
         
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_transaction":
+            idss = []
             for id,date in ids:
-                self.connection.transaction_delete(id)      
+                idss.append(id)
+                
+            self.connection.transaction_delete(idss)      
         elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_periodicalservicehistory":
             for id,date in ids:
                 self.connection.command("DELETE FROM billservice_periodicalservicehistory WHERE id=%s and datetime='%s'" % (id, date,))
