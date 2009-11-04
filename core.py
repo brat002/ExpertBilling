@@ -220,7 +220,7 @@ class check_vpn_access(Thread):
                                 #                        session_id=str(rs.sessionid), access_type=str(rs.access_type),format_string=str(nas.vpn_speed_action),
                                 #                        speed=speed[:6])                           
                                 
-                                if not rs.speed_string:
+                                if rs.speed_string:
                                     
                                     coa_result = change_speed(vars.DICT, acc, nas,
                                                         access_type=str(rs.access_type),
@@ -1083,8 +1083,14 @@ class settlement_period_service_dog(Thread):
                         if ex.__class__ in vars.db_errors: raise ex
                 cur.connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
-                cur.execute("""UPDATE billservice_transaction as tr SET promise_expired = True, summ=0, description='Обнуление обещанного платежа на сумму ' || summ*(-1) 
-WHERE ((SELECT sum(summ*(-1)) FROM billservice_transaction WHERE account_id=tr.account_id and promise=False and summ<0 and created>tr.created)>=summ or end_promise<=now())and promise_expired=False and promise=True;""")
+                cur.execute("""UPDATE billservice_transaction as tr
+                              SET tr.promise_expired = True 
+                              WHERE 
+                              tr.promise_expired = False and tr.promise = True and
+                              (SELECT sum(summ*(-1)) FROM billservice_transaction WHERE account_id=tr.account_id and promise=False and summ<0 and created>tr.created)>=summ""")
+                
+                cur.execute("""UPDATE billservice_transaction as tr SET summ=0, description='Обнуление обещанного платежа на сумму ' || summ*(-1) 
+                                WHERE promise=True and promise_expired = True and end_promise<=now();""")
                 cur.connection.commit()
                 logger.info("SPALIVE: %s run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
