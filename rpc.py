@@ -1008,20 +1008,35 @@ def check_login(login, asserted_role):
         try:
             vars.db_connection.execute('''SELECT username, text_password, host FROM billservice_systemuser WHERE username = %s AND (role = %s OR role = '0');''', (login, int(asserted_role.strip())))
             result = vars.db_connection.fetchall()
+            vars.db_connection.commit()
         except Exception, ex:
             result = ex
     if isinstance(result, Exception):
         raise result
     else:
         return result
-            
+    
+def post_login(args):
+    if len(args) == 3:
+        login, ip, login_date = args
+    else:
+        logger.error("Post_login error: no args: %s", (args,))
+        return
+    global vars
+    with vars.db_connection_lock:
+        try:
+            vars.db_connection.execute('''UPDATE billservice_systemuser SET last_ip = %s, last_login = %s::timestamp without time zone WHERE username = %s;''', (str(ip), login_date, login))
+            vars.db_connection.commit()
+        except Exception, ex:
+            logger.error("Exception during post_login: %s \n %s", (repr(ex), traceback.format_exc()))
+
 def get_producer(addr):
     global vars
     authenticator = MD5_Authenticator('server', 'AUTH', check_login, addr)
     protocol = RPCProtocol(authenticator)
     db_conn = PersistentDBConnection(psycopg2, vars.db_dsn, cursor_factory = psycopg2.extras.RealDictCursor)
     rpc_ = RPCServer()
-    producer = DBProcessingThread(protocol, db_conn, rpc_, reactor)
+    producer = DBProcessingThread(protocol, db_conn, rpc_, reactor, post_login = post_login)
     return producer
 
 def main():
