@@ -11,6 +11,9 @@ def install_logger(lgr):
 class TCPException(Exception):
     pass
 
+class TimeoutError(TCPException):
+    pass
+
 class BlockingTcpClient(object):
 
     maxRetry = 600

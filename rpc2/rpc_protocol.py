@@ -230,7 +230,7 @@ class RPCProtocol(object):
         self.index = '0000'
         
     def _check_status(self):
-        return self.authenticator.status == 'OK'
+        return self.authenticator.login if (self.authenticator.status == 'OK') else ''
     
     def _preprocess(self, packet):
         '''
