@@ -2409,3 +2409,58 @@ END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
+  
+  
+  
+--09.11.2009 15:18
+DROP TABLE billservice_news;
+
+CREATE TABLE billservice_news
+(
+  id serial NOT NULL,
+  body text NOT NULL,
+  age integer NOT NULL,
+  public boolean NOT NULL,
+  private boolean NOT NULL,
+  agent boolean NOT NULL,
+  CONSTRAINT billservice_news_pkey PRIMARY KEY (id)
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_news OWNER TO ebs;
+
+
+CREATE TABLE billservice_accountviewednews
+(
+  id serial NOT NULL,
+  news_id integer NOT NULL,
+  account_id integer NOT NULL,
+  viewed boolean NOT NULL,
+  CONSTRAINT billservice_accountviewednews_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_accountviewednews_account_id_fkey FOREIGN KEY (account_id)
+      REFERENCES billservice_account (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_accountviewednews_news_id_fkey FOREIGN KEY (news_id)
+      REFERENCES billservice_news (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_accountviewednews OWNER TO ebs;
+
+-- Index: billservice_accountviewednews_account_id
+
+-- DROP INDEX billservice_accountviewednews_account_id;
+
+CREATE INDEX billservice_accountviewednews_account_id
+  ON billservice_accountviewednews
+  USING btree
+  (account_id);
+
+-- Index: billservice_accountviewednews_news_id
+
+-- DROP INDEX billservice_accountviewednews_news_id;
+
+CREATE INDEX billservice_accountviewednews_news_id
+  ON billservice_accountviewednews
+  USING btree
+  (news_id);
+  
