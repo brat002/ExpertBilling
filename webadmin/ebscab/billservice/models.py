@@ -1060,8 +1060,15 @@ class AccountAttributesData(models.Model):
     value = models.CharField(max_length=1024)
     
 class News(models.Model):
-    title = models.CharField(u'Заголовок новости', max_length=255)
     body = models.TextField(u'Заголовок новости')
-    date_from = models.DateField(u'Начало публикации', blank=True, null=True, default=datetime.datetime.now())
-    date_to = models.DateField(u'Конец публикации', blank=True, null=True, default=datetime.datetime.now())
+    age = models.IntegerField(u'Срок жизни', default=0)
+    public = models.BooleanField(default=False)
+    private = models.BooleanField(default=False)
+    agent = models.BooleanField(default=False)
+    
+class AccountViewedNews(models.Model):
+    news = models.ForeignKey(News)
+    account = models.ForeignKey(Account)
+    viewed = models.BooleanField(default=False)
+    
     

@@ -1084,9 +1084,9 @@ class settlement_period_service_dog(Thread):
                 cur.connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
                 cur.execute("""UPDATE billservice_transaction as tr
-                              SET tr.promise_expired = True 
+                              SET promise_expired = True 
                               WHERE 
-                              tr.promise_expired = False and tr.promise = True and
+                              promise_expired = False and promise = True and
                               (SELECT sum(summ*(-1)) FROM billservice_transaction WHERE account_id=tr.account_id and promise=False and summ<0 and created>tr.created)>=summ""")
                 
                 cur.execute("""UPDATE billservice_transaction as tr SET summ=0, description='Обнуление обещанного платежа на сумму ' || summ*(-1) 
