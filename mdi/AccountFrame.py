@@ -25,7 +25,7 @@ from Reports import TransactionsReportEbs as TransactionsReport
 from helpers import tableFormat, check_speed
 from helpers import transaction, makeHeaders
 from helpers import Worker
-from CustomForms import tableImageWidget, IPAddressSelectForm, TemplateSelect
+from CustomForms import tableImageWidget, IPAddressSelectForm, TemplateSelect, MessageDialog
 from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog, PSCreatedForm, AccountAddonServiceEdit
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
@@ -3998,6 +3998,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("delTarifAction", "Удалить тариф", "images/folder_delete.png", self.delTarif), \
                  ("transactionAction", "Пополнить счёт", "images/pay.png", self.makeTransation), \
                  ("transactionReportAction", "История платежей", "images/moneybook.png", self.transactionReport), \
+                 ("messageDialogAction", "Сообщения", "images/add.png", self.messageDialogForm), \
+                 
                  ("actionEnableSession", "Включить на сервере доступа", "images/add.png", self.accountEnable), \
                  ("actionDisableSession", "Отключить на сервере доступа", "images/del.png", self.accountDisable), \
                  ("actionAddAccount", "Добавить на сервер доступа", "images/add.png", self.accountAdd), \
@@ -4015,8 +4017,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
 
 
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
-                   self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount"], \
-                   self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionRadiusAttrs", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction"],\
+                   self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount", "messageDialogAction"], \
+                   self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionRadiusAttrs", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
                    self.menu       :["connectionAgreementAction", "separator", "actionChangeTarif", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo"],\
                   }
         self.actionCreator(actList, objDict)
@@ -4050,6 +4052,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         super(AccountsMdiEbs, self).retranslateUI(initargs)
         self.tableWidget.setColumnHidden(0, False)
         
+    def messageDialogForm(self):
+        child = MessageDialog([], self.connection)
+        child.exec_()
+    
     def addTarif(self):
         #print connection
         tarifframe = TarifFrame(connection=self.connection)
@@ -4453,7 +4459,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 
             m_ballance += float(a.ballance)
             #self.tableWidget.setRowHeight(i, 17)
-            
+
             if self.selected_account:
                 if self.selected_account.id == a.id:
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,12), True)
