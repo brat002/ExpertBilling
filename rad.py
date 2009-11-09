@@ -590,6 +590,7 @@ class AcctHandler(Thread):
                 if not packetobject:
                     time.sleep(0.15)
                     continue
+                
                 if False: assert isinstance(packetobject, packet.AcctPacket)
 
                 acct_time = clock()
@@ -1193,7 +1194,8 @@ class HandleSAcct(HandleSBase):
                                         bytes_in, bytes_out, self.access_type, False, False,))
 
             if nas_by_int_id:
-                nas_int_id, sess_time = queues.sessions.get(self.packetobject['Acct-Session-Id'][0], (None, None))
+                with queues.sessions_lock:
+                    nas_int_id, sess_time = queues.sessions.get(self.packetobject['Acct-Session-Id'][0], (None, None))
                 if nas_int_id:
                     self.cur.execute("""UPDATE radius_activesession
                                  SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'
@@ -1222,7 +1224,8 @@ class HandleSAcct(HandleSBase):
                                           bytes_in, bytes_out, self.access_type, False, False,))
 
             if nas_by_int_id:
-                nas_int_id, sess_time = queues.sessions.get(self.packetobject['Acct-Session-Id'][0], (None, None))
+                with queues.sessions_lock:
+                    nas_int_id, sess_time = queues.sessions.pop(self.packetobject['Acct-Session-Id'][0], (None, None))
                 if nas_int_id is not None:
                     self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK'
                                  WHERE sessionid=%s and nas_int_id=%s and account_id=%s and framed_protocol=%s;
@@ -1258,7 +1261,8 @@ class CacheRoutine(Thread):
                     #renewCaches(cur)
                     renewCaches(cur, cacheMaster, RadCaches, 41, (fMem,))
                     if first_time:
-                        queues.sessions.get_data((cur, u_utilities_sql['get_sessions'], (cacheMaster.date,)), (([0], [1,2])))
+                        with queues.sessions_lock:
+                            queues.sessions.get_data((cur, u_utilities_sql['get_sessions'], (cacheMaster.date,)), (([0], [1,2])))
                         first_time = False
                     cur.connection.commit()
                     cur.close()
