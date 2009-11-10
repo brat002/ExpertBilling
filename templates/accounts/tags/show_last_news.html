@@ -2,9 +2,9 @@
 	<h2 class="last_news_caption">Новости</h2>
 	<div class="last-news">
 		{% for article in news %}
-			<div class="title">{{ article.title }}</div>
-			<div class="date">{{ article.date_from }}</div>
-			<div class="body">{{ article.body }}</div>
+            <p class="date">{{ article.created|date:"d.m.Y  H:i" }}</p>
+			<p class="body">{{ article.body }}</p>
+            <p style="text-align: center; line-height: 2em;"> &nbsp; </p>
 		{% endfor %}
 	</div>
 {% endif %}

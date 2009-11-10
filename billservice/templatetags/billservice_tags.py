@@ -154,7 +154,8 @@ def service_cost(value):
     
 @register.inclusion_tag('accounts/tags/show_last_news.html')    
 def show_last_news(count=5):
-    news = News.objects.exclude(date_to__lt=datetime.datetime.now()).order_by('-date_from')[:5]
+    from django.db.models import Q 
+    news = News.objects.filter(public=True).filter(Q(age__gte=datetime.datetime.now())|Q(age__isnull=True)).order_by('-id')[:5]
     return {
             'news':news,
             }
