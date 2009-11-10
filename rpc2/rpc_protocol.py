@@ -1,9 +1,11 @@
+#-*-coding=utf-8-*-
 from hashlib import md5
 from Crypto.Cipher import Blowfish
 from functools import partial
 import time
 import marshal, cPickle, zlib, struct, random, traceback
 from twisted.protocols.basic import implements, interfaces
+#from client_networking import TCPException
 BLOCK_SIZE = 8
 CHALLENGE_LEN = 16
 KEY_LEN = 16
@@ -116,8 +118,14 @@ class ProtocolException(Exception):
 class AuthenticationException(Exception):
     pass
 
+
+#простой клиент
+#также реализует интерфейс продюсера твистед
+
 class BasicClientConnection(object):
     implements(interfaces.IProducer)
+    
+    #NEWTORK_EXCEPTION = TCPException
     
     STATUS_ = ('none', False)
     def __init__(self, protocol):
@@ -144,8 +152,8 @@ class BasicClientConnection(object):
         pass
         #self.PAUSED = False
         
-    def authenticate(self, login, password):
-        return self.process_send('AUTH', login, password)
+    def authenticate(self, *args):
+        return self.process_send('AUTH', *args)
     
         
     def process_get(self, *args):
@@ -193,6 +201,8 @@ class BasicClientConnection(object):
     def __getattr__(self, *args, **kwargs):
         return partial(self.process_send,'DATA', args[0])
 
+#главный класс протокола
+
 class RPCProtocol(object):
     structFormat = "!I"
     prefixLength = struct.calcsize(structFormat)
@@ -220,7 +230,7 @@ class RPCProtocol(object):
         self.index = '0000'
         
     def _check_status(self):
-        return self.authenticator.status == 'OK'
+        return self.authenticator.login if (self.authenticator.status == 'OK') else ''
     
     def _preprocess(self, packet):
         '''
@@ -426,6 +436,7 @@ class MD5_Authenticator(Authenticator):
         self.session_key = None
         self.login = None
         self.password = None
+        self.role = None
         self.challenge = None
         self.pass_crypter = None
         self.sess_crypter = None
@@ -438,6 +449,7 @@ class MD5_Authenticator(Authenticator):
         self.session_key = None
         self.login = None
         self.password = None
+        self.role = None
         self.challenge = None
         self.pass_crypter = None
         self.sess_crypter = None
@@ -480,18 +492,15 @@ class MD5_Authenticator(Authenticator):
         if not self.status:
             self.login = args[0]
             self.password = args[1]
+            self.role = args[2]
             self.status = 'init'
-            return ('send', ''.join((self.code, '9000', '0'*8, '-ln-', str(self.login), '-ln-')))
+            return ('send', ''.join((self.code, '9000', '0'*8, '-ln-', str(self.login), '-ln-', str(self.role))))
         elif self.status == 'replied':
             #self.challenge = args[0]
             self.status = 'ch_sent'
             return ('send', ''.join((self.code,'1100', '0'*8, '-cr-',  md5(self.password + self.challenge).digest(), '-cr-')))
         else:
-            raise Exception("Wrong AUTH send status: %s" % self.status)
-        '''
-        elif self.status == 'sk_rcvd':
-            self.'''
-            
+            raise Exception("Wrong AUTH send status: %s" % self.status)            
             
     
     def client_get_process(self, *args, **kwargs):
@@ -502,13 +511,6 @@ class MD5_Authenticator(Authenticator):
             raise Exception('Exception detected: %s!' % self._FAIL_CODES.get(header[2:4], 'Unknown error'))
         #print repr(args)
         if self.status == 'init':
-            '''
-            header = args[0]
-            if header[2] == '1':
-                raise Exception('No such user')
-            elif header[2] != '0':
-                raise Exception('Unknown error')
-            '''
             self.challenge = args[1].split('-ch-')[1]
             if not self.challenge:
                 raise Exception('No challenge')
@@ -551,12 +553,15 @@ class MD5_Authenticator(Authenticator):
             self.reset()
         if not self.status:
             try:
-                self.login = args[1].split('-ln-')[1]
+                packet_split = args[1].split('-ln-')
+                self.login = packet_split[1]
+                asserted_role = packet_split[-1]
                 if not self.login:
                     raise Exception("No login!")
-                login_status = self.check_user(self.login)
+                login_status = self.check_user(self.login, asserted_role)
                 if not login_status:
                     raise Exception("No such user!")
+                self.role = asserted_role
             except Exception, ex:
                 logger.error("AUTH SGP login exception: %s ; %s", (args, repr(ex)))
                 self.fail_code = '01'
