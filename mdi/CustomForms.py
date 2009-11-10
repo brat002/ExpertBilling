@@ -2848,6 +2848,8 @@ class TemplateSelect(QtGui.QDialog):
 class MessageDialog(QtGui.QDialog):
     def __init__(self, accounts, connection):
         super(MessageDialog, self).__init__()
+        self.accounts = accounts
+        self.connection = connection
         self.setObjectName("MessageDialog")
         self.resize(547, 287)
         self.gridLayout = QtGui.QGridLayout(self)
@@ -2867,15 +2869,15 @@ class MessageDialog(QtGui.QDialog):
         self.groupBox.setObjectName("groupBox")
         self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.checkBox = QtGui.QCheckBox(self.groupBox)
-        self.checkBox.setObjectName("checkBox")
-        self.gridLayout_2.addWidget(self.checkBox, 0, 0, 1, 1)
-        self.checkBox_2 = QtGui.QCheckBox(self.groupBox)
-        self.checkBox_2.setObjectName("checkBox_2")
-        self.gridLayout_2.addWidget(self.checkBox_2, 1, 0, 1, 1)
-        self.checkBox_3 = QtGui.QCheckBox(self.groupBox)
-        self.checkBox_3.setObjectName("checkBox_3")
-        self.gridLayout_2.addWidget(self.checkBox_3, 2, 0, 1, 1)
+        self.checkBox_public = QtGui.QCheckBox(self.groupBox)
+        self.checkBox_public.setObjectName("checkBox_public")
+        self.gridLayout_2.addWidget(self.checkBox_public, 0, 0, 1, 1)
+        self.checkBox_private = QtGui.QCheckBox(self.groupBox)
+        self.checkBox_private.setObjectName("checkBox_private")
+        self.gridLayout_2.addWidget(self.checkBox_private, 1, 0, 1, 1)
+        self.checkBox_agent = QtGui.QCheckBox(self.groupBox)
+        self.checkBox_agent.setObjectName("checkBox_agent")
+        self.gridLayout_2.addWidget(self.checkBox_agent, 2, 0, 1, 1)
         self.groupBox_2 = QtGui.QGroupBox(self.groupBox)
         self.groupBox_2.setObjectName("groupBox_2")
         self.gridLayout_3 = QtGui.QGridLayout(self.groupBox_2)
@@ -2898,9 +2900,47 @@ class MessageDialog(QtGui.QDialog):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Сообщение", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры сообщения", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox.setText(QtGui.QApplication.translate("Dialog", "Опубликовать в публичной части веб-кабинета(всем)", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_2.setText(QtGui.QApplication.translate("Dialog", "Опубликовать в приватной части веб-кабинета", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_3.setText(QtGui.QApplication.translate("Dialog", "Отправить через EBS Agent", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_public.setText(QtGui.QApplication.translate("Dialog", "Опубликовать в публичной части веб-кабинета(всем)", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_private.setText(QtGui.QApplication.translate("Dialog", "Опубликовать в приватной части веб-кабинета", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_agent.setText(QtGui.QApplication.translate("Dialog", "Отправить через EBS Agent", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_2.setTitle(QtGui.QApplication.translate("Dialog", "Параметры отображения", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "Срок жизни(минут)", None, QtGui.QApplication.UnicodeUTF8))
         
+        
+    def accept(self):
+        body = self.textEdit.toPlainText()
+        #print body
+        if not body:
+            QtGui.QDialog.accept(self)
+            return
+
+        if self.checkBox_agent.isChecked()==False and self.checkBox_public.isChecked()==False and self.checkBox_private.isChecked()==False:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Выберите хотя бы один способ получения сообщения абонентами."))
+            return
+        
+        news_model = Object()
+        news_model.body = unicode(body)
+        if self.spinBox.value():
+            news_model.age = datetime.datetime.now()+datetime.timedelta(minutes=self.spinBox.value())
+        news_model.created = "now()"
+        if self.checkBox_public.isChecked()==True or (self.accounts and (self.checkBox_public.isChecked() or self.checkBox_private.isChecked())):
+            news_model.id = self.connection.save(news_model, "billservice_news")
+            
+        if self.checkBox_public.isChecked()==True:
+            news_model.public = True
+            
+        if self.accounts:
+            if self.checkBox_private.isChecked()==True: 
+                news_model.private = True
+            if self.checkBox_agent.isChecked()==True:
+                news_model.agent = True
+            self.connection.save(news_model, "billservice_news")
+            account_model = Object()
+            account_model.news_id = news_model.id
+            account_model.viewed = False
+            for account in self.accounts:
+                account_model.account_id = account
+                self.connection.save(account_model, "billservice_accountviewednews")
+                self.connection.commit()
+        
+        QtGui.QDialog.accept(self)

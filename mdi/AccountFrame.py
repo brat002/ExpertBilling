@@ -4053,7 +4053,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.tableWidget.setColumnHidden(0, False)
         
     def messageDialogForm(self):
-        child = MessageDialog([], self.connection)
+        ids = self.get_selected_accounts()
+        child = MessageDialog(ids, self.connection)
         child.exec_()
     
     def addTarif(self):
