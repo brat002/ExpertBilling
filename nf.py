@@ -328,6 +328,15 @@ def nfPacketHandle(data, addrport, flowCache):
 
         acc_data_src = caches.account_cache.vpn_ips.get(flow.src_addr) or caches.account_cache.ipn_ips.get(flow.src_addr)
         acc_data_dst = caches.account_cache.vpn_ips.get(flow.dst_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr)
+        if not acc_data_src and caches.account_cache.ipn_range:
+            for src_ip, src_mask, account_data in caches.account_cache.ipn_range:
+                if (flow.src_addr & src_mask) == src_ip:
+                    acc_data_src = account_data
+        if not acc_data_dst and caches.account_cache.ipn_range:
+            for dst_ip, dst_mask, account_data in caches.account_cache.ipn_range:
+                if (flow.dst_addr & src_mask) == dst_ip:
+                    acc_data_dst = account_data
+                    
         local = bool(acc_data_src and acc_data_dst)
         acc_acct_tf = (acc_data_src, acc_data_dst) if local else (acc_data_src or acc_data_dst,)
         if acc_acct_tf[0]:            

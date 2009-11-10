@@ -34,7 +34,7 @@ class NasCache(CacheItem):
         self.ip_id = self.datatype(self.data)
     
 class AccountCache(CacheItem):
-    __slots__ = ('vpn_ips', 'ipn_ips')
+    __slots__ = ('vpn_ips', 'ipn_ips', 'ipn_range')
     
     datatype = AccountData
     sql = nf_sql['accounts']
@@ -43,6 +43,9 @@ class AccountCache(CacheItem):
         super(AccountCache, self).__init__()
         
         self.vars = (date,)
+        self.vpn_ips = {}
+        self.ipn_ips = {}
+        self.ipn_range = []
         
         
     def transformdata(self):
@@ -51,13 +54,19 @@ class AccountCache(CacheItem):
     def reindex(self):
         self.vpn_ips = {}
         self.ipn_ips = {}
+        self.ipn_range = []
         for acct in self.data:
             vpn_ip, ipn_ip = acct[1:3]
+            account_object = self.datatype._make((acct[0], acct[3], acct[4]))
             if vpn_ip != '0.0.0.0':
-                self.vpn_ips[parseAddress(vpn_ip)[0]] = self.datatype._make((acct[0], acct[3], acct[4]))
+                self.vpn_ips[parseAddress(vpn_ip)[0]] = account_object
             if ipn_ip != '0.0.0.0':
-                self.ipn_ips[parseAddress(ipn_ip)[0]] = self.datatype._make((acct[0], acct[3], acct[4]))
-          
+                if ipn_ip.find('/') != -1:
+                    range_ip = IPint(ipn_ip)
+                    self.ipn_range.append((range_ip.int(), range_ip.netmask(), account_object))
+                else:
+                    self.ipn_ips[parseAddress(ipn_ip)[0]] = account_object
+            
 class ClassCache(CacheItem):
     __slots__ = ('classes',)
     datatype = ClassData
