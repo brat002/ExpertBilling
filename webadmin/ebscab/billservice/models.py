@@ -1061,10 +1061,11 @@ class AccountAttributesData(models.Model):
     
 class News(models.Model):
     body = models.TextField(u'Заголовок новости')
-    age = models.IntegerField(u'Срок жизни', default=0)
+    age = models.DateTimeField()
     public = models.BooleanField(default=False)
     private = models.BooleanField(default=False)
     agent = models.BooleanField(default=False)
+    created = models.DateTimeField()
     
 class AccountViewedNews(models.Model):
     news = models.ForeignKey(News)

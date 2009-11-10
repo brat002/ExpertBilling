@@ -2419,10 +2419,11 @@ CREATE TABLE billservice_news
 (
   id serial NOT NULL,
   body text NOT NULL,
-  age integer NOT NULL,
-  public boolean NOT NULL,
-  private boolean NOT NULL,
-  agent boolean NOT NULL,
+  public boolean DEFAULT false,
+  private boolean DEFAULT false,
+  agent boolean DEFAULT false,
+  created timestamp without time zone DEFAULT now(),
+  age timestamp without time zone,
   CONSTRAINT billservice_news_pkey PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);
@@ -2464,3 +2465,5 @@ CREATE INDEX billservice_accountviewednews_news_id
   USING btree
   (news_id);
   
+
+
