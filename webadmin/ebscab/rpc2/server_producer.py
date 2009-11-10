@@ -4,7 +4,7 @@ from threading import Thread, Lock, Event
 from twisted.protocols.basic import implements, interfaces, defer, Int32StringReceiver
 from twisted.internet.protocol import Factory
 from collections import deque
-import time, traceback
+import time, traceback, datetime
 logger = None
 
 def install_logger(lgr):
@@ -95,6 +95,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
         self.send_queue = self.producer.send_queue
         self.send_lock = self.producer.send_lock
         self.SINGLE_USER = self.producer.SINGLE_THREADED
+        self.post_login = self.producer.post_login
         
     def connectionLost(self, reason):
         logger.warning("SERVER: connection was lost: %s, reason: %s", (self.peer__, reason))
@@ -113,7 +114,9 @@ class TCP_IntStringReciever(Int32StringReceiver):
                 s_packet = self.protocol_.send_qprocess(idx, header, body, packet)
                 if s_packet[0] == 'send':
                     self.write(s_packet[1])
-            if self.protocol_._check_status():
+            status_result = self.protocol_._check_status()
+            if status_result:
+                self.post_login((self.protocol_._check_status(), self.transport.getPeer(), datetime.datetime.now()))
                 if not self.SINGLE_USER:
                     self.producer.start()
                 self.producer_started = True
@@ -177,7 +180,7 @@ class DBProcessingThread(Thread):
     '''when too long self.transport.unregisterProducer()
         self.transport.loseConnection()'''
     
-    def __init__(self, protocol, db_conn, RPC, reactor_ = None, single_threaded = False):
+    def __init__(self, protocol, db_conn, RPC, reactor_ = None, single_threaded = False, post_login = lambda x: 0):
         self.tname = self.__class__.__name__
         Thread.__init__(self)
         
@@ -195,6 +198,7 @@ class DBProcessingThread(Thread):
         self.EVENT = Event()
         self.reactor_ = reactor_
         self.SINGLE_THREADED = single_threaded
+        self.post_login = post_login
         
     def registerConsumer_(self, consumer):
         self.consumer = consumer
@@ -234,8 +238,6 @@ class DBProcessingThread(Thread):
             if not isinstance(result, tuple):
                 result = (result,)'''
         except Exception, ex:
-            #print repr(ex)
-            #print traceback.format_exc()
             logger.error('Execution exception: %s, %s', (repr(ex), traceback.format_exc()))
             self.protocol._FAIL_CODE = self.protocol._FAIL_CODES['PROTOCOL_ERROR']
             return (fn_name, Exception('Execution exception: %s' % str(ex)))
@@ -283,33 +285,22 @@ class DBProcessingThread(Thread):
                 
             logger.debug('RPC: packet processing time: %s', time.clock() - ta1)
             ta1 = time.clock()
-            '''
-            input_packet = False
-            packet_status = 0
-            if len(self.send_queue) > 0:
-                with self.send_lock:
-                    if len(self.send_queue) > 0:
-                        input_packet = self.send_queue.popleft()
-            if not input_packet: 
-                time.sleep(0.06)
-                continue'''
-            #print 'inpyt: ', repr(input_packet)
             total_time = time.clock()
             try:
-                processed_time = time.clock()
+                #processed_time = time.clock()
                 get_processed = self.protocol.get_process(*input_packet)
-                logger.debug('RPC processing thread: get processing: time: %s processed: %s', (time.clock() - processed_time, get_processed,))
+                #logger.debug('RPC processing thread: get processing: time: %s processed: %s', (time.clock() - processed_time, get_processed,))
             except Exception, ex:
                 logger.error('PROTOCOL ERROR: %s', repr(ex))
                 self.protocol._FAIL_CODE = self.protocol._FAIL_CODES['PROTOCOL_ERROR']
                 rpc_processed = (input_packet[0], 'error', (Exception('Protocol error'),))
             else:
-                processed_time = time.clock()
+                #processed_time = time.clock()
                 rpc_processed = (input_packet[0],) + self.process(*get_processed)
-                logger.debug('RPC processing thread: prc processed time: %s', time.clock() - processed_time)
-            processed_time = time.clock()
+                #logger.debug('RPC processing thread: prc processed time: %s', time.clock() - processed_time)
+            #processed_time = time.clock()
             snd_processed = self.protocol.send_process(*rpc_processed)
-            logger.debug('RPC processing thread: snd processed time: %s', time.clock() - processed_time)
+            #logger.debug('RPC processing thread: snd processed time: %s', time.clock() - processed_time)
             if self.reactor_:
                 self.reactor_.callFromThread(self.consumer.write,snd_processed[1])                
             else:
