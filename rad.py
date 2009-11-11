@@ -1100,6 +1100,7 @@ class HandleSAcct(HandleSBase):
     def handle(self):
         nas_by_int_id = False
         nas_name = ''
+        
         if self.packetobject.has_key('NAS-Identifier'):
             nas_name = self.packetobject['NAS-Identifier'][0]
             nas = self.caches.nas_cache.by_ip_n_identify.get((self.nasip,nas_name))
@@ -1119,11 +1120,14 @@ class HandleSAcct(HandleSBase):
         acc = self.caches.account_cache.by_username.get(self.userName)
         if acc is None:
             self.cur.connection.commit()
-            self.cur.close()
+            #self.cur.close()
             logger.warning("Unknown User or user tarif %s", self.userName)
             return self.acct_NA()
         if 0: assert isinstance(acc, AccountData)
 
+        if not vars.IGNORE_NAS_FOR_VPN:
+            nas = self.caches.nas_cache.by_id.get(acc.nas_id)
+            nas_by_int_id = False
         self.replypacket.code = packet.AccountingResponse
         now = datetime.datetime.now()
         

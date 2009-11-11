@@ -334,7 +334,7 @@ def nfPacketHandle(data, addrport, flowCache):
                     acc_data_src = account_data
         if not acc_data_dst and caches.account_cache.ipn_range:
             for dst_ip, dst_mask, account_data in caches.account_cache.ipn_range:
-                if (flow.dst_addr & src_mask) == dst_ip:
+                if (flow.dst_addr & dst_mask) == dst_ip:
                     acc_data_dst = account_data
                     
         local = bool(acc_data_src and acc_data_dst)
