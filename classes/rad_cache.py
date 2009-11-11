@@ -75,17 +75,23 @@ class SpeedlimitCache(SimpleDictCache):
             self.by_account_id[speed_l[1]] = speed_l[2:]
             
 class NasCache(CacheItem):
-    __slots__ = ('by_ip','by_ip_n_identify')
+    __slots__ = ('by_id', 'by_ip','by_ip_n_identify')
     datatype = NasData
     sql = rad_sql['nas']
     
+    def __init__(self):
+        super(NasCache, self).__init__()
+        self.by_ip = {}
+        self.by_ip_n_identify = {}
+        self.by_id = {}
+        
     def reindex(self):
         self.by_ip = {}
         self.by_ip_n_identify = {}
         for nas in self.data:
             self.by_ip_n_identify[(str(nas.ipaddress), str(nas.identify))] = nas
-        for nas in self.data:
             self.by_ip[str(nas.ipaddress)] = nas
+            self.by_id[nas.id] = nas
             
 class RadiusAttrsCache(SimpleDefDictCache):
     '''by tarif_id'''
