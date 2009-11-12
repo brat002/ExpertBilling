@@ -1029,7 +1029,7 @@ def post_login(args):
     global vars
     with vars.db_connection_lock:
         try:
-            vars.db_connection.execute('''UPDATE billservice_systemuser SET last_ip = %s, last_login = %s::timestamp without time zone WHERE username = %s;''', (str(ip), login_date, login))
+            vars.db_connection.execute('''UPDATE billservice_systemuser SET last_ip = %s, last_login = %s::timestamp without time zone WHERE username = %s;''', (str(ip[0]), login_date, login))
             vars.db_connection.commit()
         except Exception, ex:
             logger.error("Exception during post_login: %s \n %s", (repr(ex), traceback.format_exc()))
