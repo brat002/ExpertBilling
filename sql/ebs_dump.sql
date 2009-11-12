@@ -393,7 +393,7 @@ ALTER TABLE public.billservice_addonservicetarif OWNER TO ebs;
 --
 -- TOC entry 2087 (class 1259 OID 4632791)
 -- Dependencies: 6
--- Name: billservice_addonservicetransaction; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_addonservicetransaction; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE TABLE billservice_addonservicetransaction (
@@ -409,7 +409,7 @@ CREATE TABLE billservice_addonservicetransaction (
 );
 
 
-ALTER TABLE public.billservice_addonservicetransaction OWNER TO mikrobill;
+ALTER TABLE public.billservice_addonservicetransaction OWNER TO ebs;
 
 --
 -- TOC entry 1970 (class 1259 OID 4630867)
@@ -822,7 +822,7 @@ ALTER TABLE public.billservice_prepaidtraffic OWNER TO ebs;
 --
 -- TOC entry 2077 (class 1259 OID 4632564)
 -- Dependencies: 2576 6
--- Name: billservice_radiusattrs; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_radiusattrs; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE TABLE billservice_radiusattrs (
@@ -834,7 +834,7 @@ CREATE TABLE billservice_radiusattrs (
 );
 
 
-ALTER TABLE public.billservice_radiusattrs OWNER TO mikrobill;
+ALTER TABLE public.billservice_radiusattrs OWNER TO ebs;
 
 --
 -- TOC entry 2009 (class 1259 OID 4631005)
@@ -1136,7 +1136,7 @@ ALTER TABLE public.billservice_timetransaction OWNER TO ebs;
 --
 -- TOC entry 2075 (class 1259 OID 4632150)
 -- Dependencies: 2574 6
--- Name: billservice_tpchangerule; Type: TABLE; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_tpchangerule; Type: TABLE; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE TABLE billservice_tpchangerule (
@@ -1150,7 +1150,7 @@ CREATE TABLE billservice_tpchangerule (
 );
 
 
-ALTER TABLE public.billservice_tpchangerule OWNER TO mikrobill;
+ALTER TABLE public.billservice_tpchangerule OWNER TO ebs;
 
 --
 -- TOC entry 2038 (class 1259 OID 4631106)
@@ -5681,13 +5681,13 @@ ALTER OPERATOR public.~~ (query_int, integer[]) OWNER TO ebs;
 --
 -- TOC entry 1684 (class 2753 OID 283246)
 -- Dependencies: 6
--- Name: gin__int_ops; Type: OPERATOR FAMILY; Schema: public; Owner: mikrobill
+-- Name: gin__int_ops; Type: OPERATOR FAMILY; Schema: public; Owner: ebs
 --
 
 CREATE OPERATOR FAMILY gin__int_ops USING gin;
 
 
-ALTER OPERATOR FAMILY public.gin__int_ops USING gin OWNER TO mikrobill;
+ALTER OPERATOR FAMILY public.gin__int_ops USING gin OWNER TO ebs;
 
 --
 -- TOC entry 1570 (class 2616 OID 283247)
@@ -5735,13 +5735,13 @@ ALTER OPERATOR CLASS public.gin_hstore_ops USING gin OWNER TO valera;
 --
 -- TOC entry 1682 (class 2753 OID 283201)
 -- Dependencies: 6
--- Name: gist__int_ops; Type: OPERATOR FAMILY; Schema: public; Owner: mikrobill
+-- Name: gist__int_ops; Type: OPERATOR FAMILY; Schema: public; Owner: ebs
 --
 
 CREATE OPERATOR FAMILY gist__int_ops USING gist;
 
 
-ALTER OPERATOR FAMILY public.gist__int_ops USING gist OWNER TO mikrobill;
+ALTER OPERATOR FAMILY public.gist__int_ops USING gist OWNER TO ebs;
 
 --
 -- TOC entry 1571 (class 2616 OID 283202)
@@ -5772,13 +5772,13 @@ ALTER OPERATOR CLASS public.gist__int_ops USING gist OWNER TO ebs;
 --
 -- TOC entry 1683 (class 2753 OID 283228)
 -- Dependencies: 6
--- Name: gist__intbig_ops; Type: OPERATOR FAMILY; Schema: public; Owner: mikrobill
+-- Name: gist__intbig_ops; Type: OPERATOR FAMILY; Schema: public; Owner: ebs
 --
 
 CREATE OPERATOR FAMILY gist__intbig_ops USING gist;
 
 
-ALTER OPERATOR FAMILY public.gist__intbig_ops USING gist OWNER TO mikrobill;
+ALTER OPERATOR FAMILY public.gist__intbig_ops USING gist OWNER TO ebs;
 
 --
 -- TOC entry 1572 (class 2616 OID 283229)
@@ -6407,7 +6407,7 @@ SELECT pg_catalog.setval('billservice_addonservicetarif_id_seq', 1, false);
 --
 -- TOC entry 2086 (class 1259 OID 4632789)
 -- Dependencies: 6 2087
--- Name: billservice_addonservicetransaction_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
+-- Name: billservice_addonservicetransaction_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
 --
 
 CREATE SEQUENCE billservice_addonservicetransaction_id_seq
@@ -6418,12 +6418,12 @@ CREATE SEQUENCE billservice_addonservicetransaction_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.billservice_addonservicetransaction_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_addonservicetransaction_id_seq OWNER TO ebs;
 
 --
 -- TOC entry 3167 (class 0 OID 0)
 -- Dependencies: 2086
--- Name: billservice_addonservicetransaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
+-- Name: billservice_addonservicetransaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
 --
 
 ALTER SEQUENCE billservice_addonservicetransaction_id_seq OWNED BY billservice_addonservicetransaction.id;
@@ -6432,7 +6432,7 @@ ALTER SEQUENCE billservice_addonservicetransaction_id_seq OWNED BY billservice_a
 --
 -- TOC entry 3168 (class 0 OID 0)
 -- Dependencies: 2086
--- Name: billservice_addonservicetransaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
+-- Name: billservice_addonservicetransaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
 --
 
 SELECT pg_catalog.setval('billservice_addonservicetransaction_id_seq', 1, false);
@@ -7151,7 +7151,7 @@ SELECT pg_catalog.setval('billservice_prepaidtraffic_id_seq', 1, false);
 --
 -- TOC entry 2076 (class 1259 OID 4632562)
 -- Dependencies: 2077 6
--- Name: billservice_radiusattrs_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
+-- Name: billservice_radiusattrs_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
 --
 
 CREATE SEQUENCE billservice_radiusattrs_id_seq
@@ -7162,12 +7162,12 @@ CREATE SEQUENCE billservice_radiusattrs_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.billservice_radiusattrs_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_radiusattrs_id_seq OWNER TO ebs;
 
 --
 -- TOC entry 3211 (class 0 OID 0)
 -- Dependencies: 2076
--- Name: billservice_radiusattrs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
+-- Name: billservice_radiusattrs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
 --
 
 ALTER SEQUENCE billservice_radiusattrs_id_seq OWNED BY billservice_radiusattrs.id;
@@ -7176,7 +7176,7 @@ ALTER SEQUENCE billservice_radiusattrs_id_seq OWNED BY billservice_radiusattrs.i
 --
 -- TOC entry 3212 (class 0 OID 0)
 -- Dependencies: 2076
--- Name: billservice_radiusattrs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
+-- Name: billservice_radiusattrs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
 --
 
 SELECT pg_catalog.setval('billservice_radiusattrs_id_seq', 1, false);
@@ -7722,7 +7722,7 @@ SELECT pg_catalog.setval('billservice_timetransaction_id_seq', 1, false);
 --
 -- TOC entry 2074 (class 1259 OID 4632148)
 -- Dependencies: 2075 6
--- Name: billservice_tpchangerule_id_seq; Type: SEQUENCE; Schema: public; Owner: mikrobill
+-- Name: billservice_tpchangerule_id_seq; Type: SEQUENCE; Schema: public; Owner: ebs
 --
 
 CREATE SEQUENCE billservice_tpchangerule_id_seq
@@ -7733,12 +7733,12 @@ CREATE SEQUENCE billservice_tpchangerule_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.billservice_tpchangerule_id_seq OWNER TO mikrobill;
+ALTER TABLE public.billservice_tpchangerule_id_seq OWNER TO ebs;
 
 --
 -- TOC entry 3245 (class 0 OID 0)
 -- Dependencies: 2074
--- Name: billservice_tpchangerule_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: mikrobill
+-- Name: billservice_tpchangerule_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: ebs
 --
 
 ALTER SEQUENCE billservice_tpchangerule_id_seq OWNED BY billservice_tpchangerule.id;
@@ -7747,7 +7747,7 @@ ALTER SEQUENCE billservice_tpchangerule_id_seq OWNED BY billservice_tpchangerule
 --
 -- TOC entry 3246 (class 0 OID 0)
 -- Dependencies: 2074
--- Name: billservice_tpchangerule_id_seq; Type: SEQUENCE SET; Schema: public; Owner: mikrobill
+-- Name: billservice_tpchangerule_id_seq; Type: SEQUENCE SET; Schema: public; Owner: ebs
 --
 
 SELECT pg_catalog.setval('billservice_tpchangerule_id_seq', 1, false);
@@ -8516,7 +8516,7 @@ ALTER TABLE billservice_addonservicetarif ALTER COLUMN id SET DEFAULT nextval('b
 --
 -- TOC entry 2607 (class 2604 OID 4632794)
 -- Dependencies: 2087 2086 2087
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE billservice_addonservicetransaction ALTER COLUMN id SET DEFAULT nextval('billservice_addonservicetransaction_id_seq'::regclass);
@@ -8714,7 +8714,7 @@ ALTER TABLE billservice_prepaidtraffic ALTER COLUMN id SET DEFAULT nextval('bill
 --
 -- TOC entry 2575 (class 2604 OID 4632567)
 -- Dependencies: 2077 2076 2077
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE billservice_radiusattrs ALTER COLUMN id SET DEFAULT nextval('billservice_radiusattrs_id_seq'::regclass);
@@ -8867,7 +8867,7 @@ ALTER TABLE billservice_timetransaction ALTER COLUMN id SET DEFAULT nextval('bil
 --
 -- TOC entry 2573 (class 2604 OID 4632153)
 -- Dependencies: 2074 2075 2075
--- Name: id; Type: DEFAULT; Schema: public; Owner: mikrobill
+-- Name: id; Type: DEFAULT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE billservice_tpchangerule ALTER COLUMN id SET DEFAULT nextval('billservice_tpchangerule_id_seq'::regclass);
@@ -9345,7 +9345,7 @@ COPY billservice_addonservicetarif (id, tarif_id, service_id, activation_count, 
 --
 -- TOC entry 3120 (class 0 OID 4632791)
 -- Dependencies: 2087
--- Data for Name: billservice_addonservicetransaction; Type: TABLE DATA; Schema: public; Owner: mikrobill
+-- Data for Name: billservice_addonservicetransaction; Type: TABLE DATA; Schema: public; Owner: ebs
 --
 
 COPY billservice_addonservicetransaction (id, service_id, service_type, account_id, accountaddonservice_id, accounttarif_id, summ, created, type_id) FROM stdin;
@@ -15944,7 +15944,7 @@ COPY billservice_prepaidtraffic (id, traffic_transmit_service_id, size, group_id
 --
 -- TOC entry 3115 (class 0 OID 4632564)
 -- Dependencies: 2077
--- Data for Name: billservice_radiusattrs; Type: TABLE DATA; Schema: public; Owner: mikrobill
+-- Data for Name: billservice_radiusattrs; Type: TABLE DATA; Schema: public; Owner: ebs
 --
 
 COPY billservice_radiusattrs (id, tarif_id, vendor, attrid, value) FROM stdin;
@@ -16147,7 +16147,7 @@ COPY billservice_timetransaction (id, timeaccessservice_id, account_id, accountt
 --
 -- TOC entry 3114 (class 0 OID 4632150)
 -- Dependencies: 2075
--- Data for Name: billservice_tpchangerule; Type: TABLE DATA; Schema: public; Owner: mikrobill
+-- Data for Name: billservice_tpchangerule; Type: TABLE DATA; Schema: public; Owner: ebs
 --
 
 COPY billservice_tpchangerule (id, from_tariff_id, to_tariff_id, disabled, cost, ballance_min, settlement_period_id) FROM stdin;
@@ -16671,7 +16671,7 @@ ALTER TABLE ONLY billservice_addonservicetarif
 --
 -- TOC entry 2908 (class 2606 OID 4632799)
 -- Dependencies: 2087 2087
--- Name: billservice_addonservicetransaction_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_addonservicetransaction_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
 --
 
 ALTER TABLE ONLY billservice_addonservicetransaction
@@ -16921,7 +16921,7 @@ ALTER TABLE ONLY billservice_prepaidtraffic
 --
 -- TOC entry 2883 (class 2606 OID 4632569)
 -- Dependencies: 2077 2077
--- Name: billservice_radiusattrs_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_radiusattrs_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
 --
 
 ALTER TABLE ONLY billservice_radiusattrs
@@ -17171,7 +17171,7 @@ ALTER TABLE ONLY billservice_timetransaction
 --
 -- TOC entry 2878 (class 2606 OID 4632159)
 -- Dependencies: 2075 2075
--- Name: billservice_tpchangerule_pkey; Type: CONSTRAINT; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_tpchangerule_pkey; Type: CONSTRAINT; Schema: public; Owner: ebs; Tablespace: 
 --
 
 ALTER TABLE ONLY billservice_tpchangerule
@@ -17677,7 +17677,7 @@ CREATE INDEX billservice_addonservicetarif_tarif_id ON billservice_addonservicet
 --
 -- TOC entry 2904 (class 1259 OID 4632825)
 -- Dependencies: 2087
--- Name: billservice_addonservicetransaction_account_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_addonservicetransaction_account_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE INDEX billservice_addonservicetransaction_account_id ON billservice_addonservicetransaction USING btree (account_id);
@@ -17686,7 +17686,7 @@ CREATE INDEX billservice_addonservicetransaction_account_id ON billservice_addon
 --
 -- TOC entry 2905 (class 1259 OID 4632826)
 -- Dependencies: 2087
--- Name: billservice_addonservicetransaction_accountaddonservice_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_addonservicetransaction_accountaddonservice_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE INDEX billservice_addonservicetransaction_accountaddonservice_id ON billservice_addonservicetransaction USING btree (accountaddonservice_id);
@@ -17695,7 +17695,7 @@ CREATE INDEX billservice_addonservicetransaction_accountaddonservice_id ON bills
 --
 -- TOC entry 2906 (class 1259 OID 4632827)
 -- Dependencies: 2087
--- Name: billservice_addonservicetransaction_accounttarif_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_addonservicetransaction_accounttarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE INDEX billservice_addonservicetransaction_accounttarif_id ON billservice_addonservicetransaction USING btree (accounttarif_id);
@@ -17704,7 +17704,7 @@ CREATE INDEX billservice_addonservicetransaction_accounttarif_id ON billservice_
 --
 -- TOC entry 2909 (class 1259 OID 4632828)
 -- Dependencies: 2087
--- Name: billservice_addonservicetransaction_service_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_addonservicetransaction_service_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE INDEX billservice_addonservicetransaction_service_id ON billservice_addonservicetransaction USING btree (service_id);
@@ -17920,7 +17920,7 @@ CREATE INDEX billservice_prepaidtraffic_traffic_transmit_service_id ON billservi
 --
 -- TOC entry 2884 (class 1259 OID 4632575)
 -- Dependencies: 2077
--- Name: billservice_radiusattrs_tarif_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_radiusattrs_tarif_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE INDEX billservice_radiusattrs_tarif_id ON billservice_radiusattrs USING btree (tarif_id);
@@ -18055,7 +18055,7 @@ CREATE INDEX billservice_timetransaction_traffictransmitservice_id_account_i ON 
 --
 -- TOC entry 2876 (class 1259 OID 4632175)
 -- Dependencies: 2075
--- Name: billservice_tpchangerule_from_tariff_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_tpchangerule_from_tariff_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE INDEX billservice_tpchangerule_from_tariff_id ON billservice_tpchangerule USING btree (from_tariff_id);
@@ -18064,7 +18064,7 @@ CREATE INDEX billservice_tpchangerule_from_tariff_id ON billservice_tpchangerule
 --
 -- TOC entry 2879 (class 1259 OID 4632176)
 -- Dependencies: 2075
--- Name: billservice_tpchangerule_settlement_period_id_index; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_tpchangerule_settlement_period_id_index; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE INDEX billservice_tpchangerule_settlement_period_id_index ON billservice_tpchangerule USING btree (settlement_period_id);
@@ -18073,7 +18073,7 @@ CREATE INDEX billservice_tpchangerule_settlement_period_id_index ON billservice_
 --
 -- TOC entry 2880 (class 1259 OID 4632177)
 -- Dependencies: 2075 2075
--- Name: billservice_tpchangerule_tariff_tariff; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_tpchangerule_tariff_tariff; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE UNIQUE INDEX billservice_tpchangerule_tariff_tariff ON billservice_tpchangerule USING btree (from_tariff_id, to_tariff_id);
@@ -18082,7 +18082,7 @@ CREATE UNIQUE INDEX billservice_tpchangerule_tariff_tariff ON billservice_tpchan
 --
 -- TOC entry 2881 (class 1259 OID 4632178)
 -- Dependencies: 2075
--- Name: billservice_tpchangerule_to_tariff_id; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: billservice_tpchangerule_to_tariff_id; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE INDEX billservice_tpchangerule_to_tariff_id ON billservice_tpchangerule USING btree (to_tariff_id);
@@ -18217,7 +18217,7 @@ CREATE INDEX fki_billservice_account_vpnipinuse_fkey ON billservice_account USIN
 --
 -- TOC entry 2910 (class 1259 OID 4633009)
 -- Dependencies: 2087
--- Name: fki_billservice_addonservicetransaction_type_id_fkey; Type: INDEX; Schema: public; Owner: mikrobill; Tablespace: 
+-- Name: fki_billservice_addonservicetransaction_type_id_fkey; Type: INDEX; Schema: public; Owner: ebs; Tablespace: 
 --
 
 CREATE INDEX fki_billservice_addonservicetransaction_type_id_fkey ON billservice_addonservicetransaction USING btree (type_id);
@@ -18388,7 +18388,7 @@ CREATE TRIGGER acc_trans_trg
 --
 -- TOC entry 3044 (class 2620 OID 4632830)
 -- Dependencies: 96 2087
--- Name: adds_trans_trg; Type: TRIGGER; Schema: public; Owner: mikrobill
+-- Name: adds_trans_trg; Type: TRIGGER; Schema: public; Owner: ebs
 --
 
 CREATE TRIGGER adds_trans_trg
@@ -18890,7 +18890,7 @@ ALTER TABLE ONLY billservice_addonservicetarif
 --
 -- TOC entry 3018 (class 2606 OID 4632800)
 -- Dependencies: 2668 2087 1958
--- Name: billservice_addonservicetransaction_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+-- Name: billservice_addonservicetransaction_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE ONLY billservice_addonservicetransaction
@@ -18900,7 +18900,7 @@ ALTER TABLE ONLY billservice_addonservicetransaction
 --
 -- TOC entry 3019 (class 2606 OID 4632805)
 -- Dependencies: 2901 2087 2085
--- Name: billservice_addonservicetransaction_accountaddonservice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+-- Name: billservice_addonservicetransaction_accountaddonservice_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE ONLY billservice_addonservicetransaction
@@ -18910,7 +18910,7 @@ ALTER TABLE ONLY billservice_addonservicetransaction
 --
 -- TOC entry 3020 (class 2606 OID 4632810)
 -- Dependencies: 2693 1968 2087
--- Name: billservice_addonservicetransaction_accounttarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+-- Name: billservice_addonservicetransaction_accounttarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE ONLY billservice_addonservicetransaction
@@ -18920,7 +18920,7 @@ ALTER TABLE ONLY billservice_addonservicetransaction
 --
 -- TOC entry 3021 (class 2606 OID 4632815)
 -- Dependencies: 2890 2087 2081
--- Name: billservice_addonservicetransaction_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+-- Name: billservice_addonservicetransaction_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE ONLY billservice_addonservicetransaction
@@ -18930,7 +18930,7 @@ ALTER TABLE ONLY billservice_addonservicetransaction
 --
 -- TOC entry 3022 (class 2606 OID 4633004)
 -- Dependencies: 2087 2836 2052
--- Name: billservice_addonservicetransaction_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+-- Name: billservice_addonservicetransaction_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE ONLY billservice_addonservicetransaction
@@ -19250,7 +19250,7 @@ ALTER TABLE ONLY billservice_prepaidtraffic
 --
 -- TOC entry 3006 (class 2606 OID 4632570)
 -- Dependencies: 2622 2077 1939
--- Name: billservice_radiusattrs_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+-- Name: billservice_radiusattrs_tarif_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE ONLY billservice_radiusattrs
@@ -19460,7 +19460,7 @@ ALTER TABLE ONLY billservice_timetransaction
 --
 -- TOC entry 3003 (class 2606 OID 4632160)
 -- Dependencies: 2622 2075 1939
--- Name: billservice_tpchangerule_from_tariff_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+-- Name: billservice_tpchangerule_from_tariff_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE ONLY billservice_tpchangerule
@@ -19470,7 +19470,7 @@ ALTER TABLE ONLY billservice_tpchangerule
 --
 -- TOC entry 3004 (class 2606 OID 4632165)
 -- Dependencies: 2013 2075 2768
--- Name: billservice_tpchangerule_settlement_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+-- Name: billservice_tpchangerule_settlement_period_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE ONLY billservice_tpchangerule
@@ -19480,7 +19480,7 @@ ALTER TABLE ONLY billservice_tpchangerule
 --
 -- TOC entry 3005 (class 2606 OID 4632170)
 -- Dependencies: 2622 2075 1939
--- Name: billservice_tpchangerule_to_tariff_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: mikrobill
+-- Name: billservice_tpchangerule_to_tariff_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: ebs
 --
 
 ALTER TABLE ONLY billservice_tpchangerule

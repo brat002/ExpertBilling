@@ -1288,7 +1288,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         icount = 0
         
         sql = """ SELECT account_id, src_addr, src_port, dst_addr, dst_port, octets, date_start FROM billservice_netflowstream
-        WHERE datetime BETWEEN '%s' AND '%s' """ % (self.child.start_date, self.child.end_date)
+        WHERE date_start BETWEEN '%s' AND '%s' """ % (self.child.start_date, self.child.end_date)
         
 
         if len(self.child.users)>0:
@@ -1296,9 +1296,9 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         #else:
 
         if self.child.order_by_desc.checkState()==0:
-            sql+=" ORDER BY bgs.datetime ASC "
+            sql+=" ORDER BY date_start ASC "
         elif self.child.order_by_desc.checkState()==2:
-            sql+=" ORDER BY bgs.datetime DESC "
+            sql+=" ORDER BY date_start DESC "
 
         if self.current_page==0:
             sql+=" LIMIT 2000"

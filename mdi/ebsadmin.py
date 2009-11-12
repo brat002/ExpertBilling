@@ -57,6 +57,7 @@ from DealerFrame import DealerMdiEbs as DealerMdiChild
 from CustomForms import TemplatesWindow, SqlDialog
 from TPChangeRules import TPRulesEbs
 from AddonServiceFrame import AddonServiceEbs
+from MessagesFrame import MessagesEbs
 
 
 _reportsdict = [['Статистика по группам',[['report3_users.xml', ['groups'], 'Общий трафик']]],\
@@ -129,6 +130,21 @@ class MainWindow(QtGui.QMainWindow):
         
         child.show()
  
+    @connlogin
+    def messages(self):
+        self.workspace.windowList()  
+
+        child =  MessagesEbs(connection=connection)
+        #child.setIcon( QPixmap("images/icon.ico") )        
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        #self.wsp.addSubWindow(child)
+        
+        child.show()
+
 
     @connlogin
     def pool(self):
@@ -356,6 +372,8 @@ class MainWindow(QtGui.QMainWindow):
         #self.openAct.setShortcut(self.tr("Ctrl+N"))
         self.openAct.setStatusTip(u'Серверы доступа')
         self.connect(self.openAct, QtCore.SIGNAL("triggered()"), self.open)
+        
+       
 
         self.saveAct = QtGui.QAction(QtGui.QIcon("images/sp.png"), u'Расчётные периоды', self)
         #self.saveAct.setShortcut(self.tr("Ctrl+S"))
@@ -382,6 +400,12 @@ class MainWindow(QtGui.QMainWindow):
 
         self.cutAct.setStatusTip(u"Периоды тарификации")
         self.connect(self.cutAct, QtCore.SIGNAL("triggered()"), self.cut)
+
+        self.messagesAct = QtGui.QAction(QtGui.QIcon("images/tp.png"),
+                                    u'Сообщения', self)
+
+        self.messagesAct.setStatusTip(u"Сообщенияи")
+        self.connect(self.messagesAct, QtCore.SIGNAL("triggered()"), self.messages)
 
 
         self.sqlDialogAct = QtGui.QAction(QtGui.QIcon("images/sql.png"),u'SQL Консоль', self)
@@ -536,7 +560,8 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.addonserviceAct)
         self.fileMenu.addSeparator()
-
+        self.fileMenu.addAction(self.messagesAct)
+        self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.logViewAct)
         self.fileMenu.addSeparator()
         
