@@ -501,7 +501,9 @@ class AuthHandler(Thread):
                     coreconnect.fMem = fMem; coreconnect.caches = self.caches
                     authobject, packetfromcore=coreconnect.handle()
 
-                    if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
+                    if packetfromcore is None: 
+                        logger.info("Unknown NAS %s", str(nas_ip))
+                        continue
 
                     logger.info("Password check: %s", authobject.code)
                     #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
@@ -514,7 +516,9 @@ class AuthHandler(Thread):
                     coreconnect.fMem = fMem; coreconnect.caches = self.caches
                     authobject, packetfromcore=coreconnect.handle()
 
-                    if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
+                    if packetfromcore is None: 
+                        logger.info("Unknown NAS %s", str(nas_ip))
+                        continue
 
                     logger.info("%s: Password check: %s", (self.getName(), authobject.code))
                     returndata, replypacket=authobject.ReturnPacket(packetfromcore) 
@@ -523,14 +527,17 @@ class AuthHandler(Thread):
                     coreconnect = HandleSDHCP(packetobject=packetobject)
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                     authobject, packetfromcore = coreconnect.handle()
-                    if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
+                    if packetfromcore is None: 
+                        logger.info("Unknown NAS %s", str(nas_ip))
+                        continue
                     returndata, replypacket=authobject.ReturnPacket(packetfromcore)
                 else:
                     #-----
                     coreconnect = HandleSNA(packetobject)
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                     right, packetfromcore = coreconnect.handle()
-                    if packetfromcore is None: return
+                    if packetfromcore is None:
+                        continue
                     returndata=authNA(packetfromcore)                  
 
                 if returndata:
