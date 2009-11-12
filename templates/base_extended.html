@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% if user %}
+
+{% block account_control %}
+	{% include 'menu/account_menu.html' %}
+{% endblock %}
+
+{% block main_menu %}
+<div style="clear:both"></div>
+<div class="main_menu_bg">
+	<div class="content_align">
+		{% include 'menu/main_menu.html' %}
+	</div>
+</div>
+{% endblock %}
+
+{% block name %}
+	<div class="user">
+		<div class="f-right status">{% if status %}<div class="user_is_blocked bold s-11">Вы заблокированы</div>{% endif %}</div>
+		
+            <div class="f-left user_name bold">
+                Пользователь: {% if user.fullname %}{{user.fullname}}{% else %}{{user.username}}{% endif %}
+            </div> 
+
+        {% if not user.account_status %}
+        <div style="float:right; margin-top: -5px">
+        <img align="right" style="float:right" src="/media/img/design/account_blocked.png">
+        </div>
+        {% endif %}
+
+        {% if user.balance_blocked or user.ballance_isnt_good %}
+        <div style="float:right; margin-top: -5px">
+        <img align="right" style="float:right" src="/media/img/design/no_money.png">
+        </div>
+        {% endif %}
+        
+        {% if user.disabled_by_limit %}
+        <div style="float:right; margin-top: -5px">
+        <img align="right" style="float:right" src="/media/img/design/limit_blocked.png">
+        
+        </div>        
+        {%endif%}
+	</div>
+	<div style="clear:both"></div>
+{% endblock %}
+{% endif %}
+
+
+{% block footer %}
+{% if operator %}
+<div style="clear:both"></div>
+<div class="footer_bg">
+	<div class="content_align s-11">
+		<div class="footer_ebs_site f-right bold"><a href="http://www.expertbilling.ru/">www.expertbilling.ru</a></div>
+		<div class="footer operator s-11 bold f-left">
+			{% for oper in operator %}
+				<div><span class="bold">Информация о провайдере:</span> {{ oper.organization }}, {{ oper.postaddress }}, тел. {{ oper.phone }}, факс {{ oper.fax }}</div>
+				<div><span class="bold">E-mail:</span> {{ oper.email }}</div>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+{% endif %}
+{% endblock %}

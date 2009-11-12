@@ -1,0 +1,48 @@
+{% extends 'base_extended.html' %}
+{% load billservice_tags %}
+{% load custom_filters %}
+
+{% block content %}
+{% if services %}
+<table class="wide statistic_table" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="white bold s-11 blue_caption a-left">ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ</th>
+	</tr>
+	<tr>
+		<td>
+			<table class="wide extra_table" cellpadding="0" cellspacing="0">
+				<tr>
+					<th>Название услуги</th>
+					<th>Дата подключения услуги</th>
+					<th>Дата отключения услуги</th>
+					<th>Списано средств за услугу</th>
+				</tr>
+				{% for service in services %}
+					<tr>
+						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.service.name }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.activated|date:"d.m.Y H:i" }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.deactivated|date:"d.m.Y H:i" }}&nbsp;&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service|service_cost|floatformat:2 }}&nbsp;</td>
+					</tr>
+				{% endfor %}
+				{% if is_range %}
+					<tr>
+						<td align="right" colspan="3" class="bold {{ rec_count|coll_bg  }} no_border">Всего на странице:<br>Всего:</td>
+						<td class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ_on_page|floatformat:2 }}<br>{{ summ|floatformat:2 }}</td>
+					</tr>
+				{% endif %}
+			</table>
+			{% include 'paginator.html' %}
+		</td>
+	</tr>
+</table>
+
+{% else %}
+ <h2 align="center">Данных нет!</h2>
+{% endif %}
+{% endblock %}
+
+
+{% block title %}
+    ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ
+{% endblock %}
