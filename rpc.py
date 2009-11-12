@@ -545,11 +545,15 @@ class RPCServer(object):
     def get_models(self, table='', fields = [], where={}, cur=None, connection=None):
         cur.execute("SELECT %s FROM %s WHERE %s ORDER BY id ASC;" % (",".join(fields) or "*", table, " AND ".join("%s=%s" % (wh, where[wh]) for wh in where) or 'id>0'))
         
-        a=time.clock()
         result = map(Object, cur.fetchall())
         return result
 
 
+    def get_messages(self, cur=None, connection=None):
+        cur.execute("SELECT * FROM billservice_news ORDER BY created DESC;")
+
+        result = map(Object, cur.fetchall())
+        return result
     
     def get_model(self, id, table='', fields = [], cur=None, connection=None):
         #print "SELECT %s from %s WHERE id=%s ORDER BY id ASC;" % (",".join(fields) or "*", table, id)
