@@ -157,21 +157,24 @@ ALTER TABLE billservice_periodicalservicehistory ADD COLUMN type_id character va
 ALTER TABLE billservice_periodicalservicehistory ADD CONSTRAINT billservice_periodicalservicehistory_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
 CREATE TRIGGER acc_psh_trg BEFORE INSERT OR DELETE OR UPDATE ON billservice_periodicalservicehistory FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn(); 
 
-CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ double precision, created_ timestamp without time zone, ps_condition_type_ integer) RETURNS void
-    AS $$
+CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ numeric, created_ timestamp without time zone, ps_condition_type_ integer)
+  RETURNS void AS
+$BODY$
 DECLARE
-    new_summ_ double precision;
+    new_summ_ decimal;
 BEGIN
-    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id_ AND (created_ BETWEEN start_date AND end_date)))::int;
+    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id AND (created_ BETWEEN start_date AND end_date)))::int;
     IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
-        SELECT new_summ_*(ballance >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+        SELECT new_summ_*(ballance+credit >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
     ELSIF (ps_condition_type_ = 2) AND (new_summ_ > 0) THEN
-        SELECT new_summ_*(ballance < 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+        SELECT new_summ_*(ballance+credit < 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
     END IF; 
     INSERT INTO billservice_periodicalservicehistory (service_id, accounttarif_id,account_id, type_id, summ, datetime) VALUES (ps_id_, acctf_id_, account_id_, type_id_, new_summ_, created_);
 END;
-$$
-    LANGUAGE plpgsql;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+ALTER FUNCTION periodicaltr_fn(integer, integer, integer, character varying, numeric, timestamp without time zone, integer) OWNER TO postgres;
 
 CREATE OR REPLACE FUNCTION psh_crt_cur_ins(datetx date) RETURNS void
     AS $$
@@ -1123,7 +1126,7 @@ $BODY$
   
 DROP FUNCTION periodicaltr_fn(integer, integer, integer, character varying, double precision, timestamp without time zone, integer);
 
-CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ decimal, created_ timestamp without time zone, ps_condition_type_ integer)
+CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ numeric, created_ timestamp without time zone, ps_condition_type_ integer)
   RETURNS void AS
 $BODY$
 DECLARE
@@ -1131,15 +1134,16 @@ DECLARE
 BEGIN
     SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id AND (created_ BETWEEN start_date AND end_date)))::int;
     IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
-        SELECT new_summ_*(ballance >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+        SELECT new_summ_*(ballance+credit >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
     ELSIF (ps_condition_type_ = 2) AND (new_summ_ > 0) THEN
-        SELECT new_summ_*(ballance < 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+        SELECT new_summ_*(ballance+credit < 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
     END IF; 
     INSERT INTO billservice_periodicalservicehistory (service_id, accounttarif_id,account_id, type_id, summ, datetime) VALUES (ps_id_, acctf_id_, account_id_, type_id_, new_summ_, created_);
 END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
+ALTER FUNCTION periodicaltr_fn(integer, integer, integer, character varying, numeric, timestamp without time zone, integer) OWNER TO postgres;
   
 DROP FUNCTION shedulelog_blocked_fn(integer, integer, timestamp without time zone, double precision);
 
@@ -2392,24 +2396,24 @@ ALTER TABLE billservice_organization
 
 -- 03.11.2009 23:50
 
-CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ decimal, created_ timestamp without time zone, ps_condition_type_ integer)
+CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ numeric, created_ timestamp without time zone, ps_condition_type_ integer)
   RETURNS void AS
 $BODY$
 DECLARE
     new_summ_ decimal;
 BEGIN
-    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id_ AND (created_ BETWEEN start_date AND end_date)))::int;
+    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id AND (created_ BETWEEN start_date AND end_date)))::int;
     IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
-        SELECT new_summ_*(ballance >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+        SELECT new_summ_*(ballance+credit >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
     ELSIF (ps_condition_type_ = 2) AND (new_summ_ > 0) THEN
-        SELECT new_summ_*(ballance < 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+        SELECT new_summ_*(ballance+credit < 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
     END IF; 
     INSERT INTO billservice_periodicalservicehistory (service_id, accounttarif_id,account_id, type_id, summ, datetime) VALUES (ps_id_, acctf_id_, account_id_, type_id_, new_summ_, created_);
 END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
-  
+ALTER FUNCTION periodicaltr_fn(integer, integer, integer, character varying, numeric, timestamp without time zone, integer) OWNER TO postgres;
   
   
 --09.11.2009 15:18
@@ -2466,4 +2470,24 @@ CREATE INDEX billservice_accountviewednews_news_id
   (news_id);
   
 
+--13.11.2009
+
+CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ numeric, created_ timestamp without time zone, ps_condition_type_ integer)
+  RETURNS void AS
+$BODY$
+DECLARE
+    new_summ_ decimal;
+BEGIN
+    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id AND (created_ BETWEEN start_date AND end_date)))::int;
+    IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
+        SELECT new_summ_*(ballance+credit >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+    ELSIF (ps_condition_type_ = 2) AND (new_summ_ > 0) THEN
+        SELECT new_summ_*(ballance+credit < 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
+    END IF; 
+    INSERT INTO billservice_periodicalservicehistory (service_id, accounttarif_id,account_id, type_id, summ, datetime) VALUES (ps_id_, acctf_id_, account_id_, type_id_, new_summ_, created_);
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+ALTER FUNCTION periodicaltr_fn(integer, integer, integer, character varying, numeric, timestamp without time zone, integer) OWNER TO postgres;
 
