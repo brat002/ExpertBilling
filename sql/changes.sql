@@ -2491,3 +2491,4 @@ $BODY$
   COST 100;
 ALTER FUNCTION periodicaltr_fn(integer, integer, integer, character varying, numeric, timestamp without time zone, integer) OWNER TO postgres;
 
+ALTER TABLE billservice_traffictransmitnodes ADD COLUMN edge_value double precision DEFAULT 0;
