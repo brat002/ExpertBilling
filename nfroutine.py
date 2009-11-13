@@ -61,6 +61,9 @@ DB_NAME = 'db'
 NET_NAME = 'nfroutine_nf'
 
 INT_ME_FN = lambda xt, y: (xt[0] + (ord(y) - 48) * xt[1], xt[1] * 10)
+'''
+exception_fun
+'''
 
 class Picker(object):
     __slots__= ('data',)
