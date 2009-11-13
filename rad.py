@@ -716,11 +716,22 @@ class HandleSAuth(HandleSBase):
             #Проводим корректировку скорости в соответствии с лимитом
 
             result = get_corrected_speed(result, correction)
-            #print "corrected", result
+            accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])                                                 
+            addonservicespeed=[]                            
+            for accservice in accservices:                                 
+                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                if not accservice.deactivated  and service.change_speed:                                                                        
+                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                    break 
+                
+            #Корректируем скорость подключаемой услугой
+            result = get_corrected_speed(result, addonservicespeed)
             if result==[]: 
                 result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
             else:
                 result = get_decimals_speeds(result)
+                
+            
             #print result
             #result_params=create_speed_string(result)
             #print result
@@ -759,6 +770,7 @@ class HandleSAuth(HandleSBase):
                 self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
 
     def handle(self):
+
         nas = self.caches.nas_cache.by_ip.get(self.nasip) 
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
@@ -912,11 +924,22 @@ class HandleHotSpotAuth(HandleSBase):
             #Проводим корректировку скорости в соответствии с лимитом
 
             result = get_corrected_speed(result, correction)
-            #print "corrected", result
+            accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])                                                 
+            addonservicespeed=[]                            
+            for accservice in accservices:                                 
+                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                if not accservice.deactivated  and service.change_speed:                                                                        
+                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                    break 
+                
+            #Корректируем скорость подключаемой услугой
+            result = get_corrected_speed(result, addonservicespeed)
             if result==[]: 
                 result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
             else:
                 result = get_decimals_speeds(result)
+                
+            
             #print result
             #result_params=create_speed_string(result)
             #print result
@@ -953,6 +976,7 @@ class HandleHotSpotAuth(HandleSBase):
                 self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
             elif result_params and not nas.speed_vendor_2:
                 self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
+
 
         
     def handle(self):
@@ -1411,7 +1435,8 @@ def main():
         time.sleep(10)
         if not cacheMaster.read: 
             print 'caches still not read, maybe you should check the log'
-
+    
+    #print dir(cacheMaster.cache)
     print 'caches ready'
     if not w32Import:
         logger.warning("Using normal poll multithreaded server!", ())

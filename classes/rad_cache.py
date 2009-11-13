@@ -1,6 +1,6 @@
 from operator import itemgetter, setitem
 from cacheutils import CacheCollection, CacheItem, SimpleDefDictCache, SimpleDictCache
-from cache_sql import rad_sql
+from cache_sql import rad_sql, core_sql
 from collections import defaultdict
 from rad_class.AccountData import AccountData
 from rad_class.NasData import NasData
@@ -9,14 +9,14 @@ from rad_class.SpeedData import SpeedData
 from rad_class.SpeedlimitData import SpeedlimitData
 from rad_class.RadiusAttrsData import RadiusAttrsData
 from core_cache import TimePeriodAccessCache as PeriodCache
-#from common.AddonServiceData import AddonServiceData
+from common.AddonServiceData import AddonServiceData
 #from common.AddonServiceTarifData import AddonServiceTarifData
-#from common.AccountAddonServiceData import AccountAddonServiceData
+from common.AccountAddonServiceData import AccountAddonServiceData
 
 from core_cache import AddonServiceCache, AddonServiceTarifCache, AccessParametersCache
 
 class RadCaches(CacheCollection):
-    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache')
+    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache')
     
     def __init__(self, date, fMem):
         super(RadCaches, self).__init__(date)
@@ -27,7 +27,9 @@ class RadCaches(CacheCollection):
         self.speed_cache = SpeedCache()
         self.speedlimit_cache = SpeedlimitCache()
         self.radattrs_cache = RadiusAttrsCache()
-        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache]
+        self.addonservice_cache = AddonServiceCache()
+        self.accountaddonservice_cache = AccountAddonServiceCache()
+        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache]
 
 
 class AccountCache(CacheItem):
@@ -100,5 +102,35 @@ class RadiusAttrsCache(SimpleDefDictCache):
     sql = rad_sql['attrs']
     num = 3
 
+
+class AddonServiceCache(SimpleDictCache):
+    '''By id'''
+    __slots__ = ()
+    datatype = AddonServiceData
+    sql = core_sql['addon_service']
     
+class AccountAddonServiceCache(CacheItem):
+    __slots__ = ('by_id', 'by_account', 'by_service')
+    
+    datatype = AccountAddonServiceData
+    sql = core_sql['addon_account']
+    
+    def __init__(self):
+        super(AccountAddonServiceCache, self).__init__()
+        self.by_id = {}
+        self.by_service = defaultdict(list)
+        #index on tariff_id
+        self.by_account = defaultdict(list)
+        
+    def reindex(self):
+        self.by_id.clear()
+        #index on accounttarif.id
+        self.by_service.clear()
+        #index on tariff_id
+        self.by_account.clear()
+        for addon in self.data:
+            self.by_id[addon.id]  = addon
+            self.by_account[addon.account_id].append(addon)
+            self.by_service[addon.service_id].append(addon)
+            
     
