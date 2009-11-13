@@ -3107,9 +3107,10 @@ class AccountWindow(QtGui.QMainWindow):
         self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
         
         self.ipnRx = QtCore.QRegExp(r"\b(?:0\.0\.0\.0(/0)?)|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.0\.0\.0(?:/[1-8])?)|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){2}0\.0(?:/(?:9|1[0-6]))?)|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){3}0(?:/(?:1[7-9]|2[0-4]))?)|(?:(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/(?:2[5-9]|3[0-2]))?)\b")
+        self.ipnValidator = QtGui.QRegExpValidator(self.ipnRx, self)
         self.macValidator = QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9a-fA-F]{2}[:]){5}[0-9a-fA-F]{2}$"), self)
         
-        self.lineEdit_ipn_ip_address.setValidator(self.ipValidator)
+        self.lineEdit_ipn_ip_address.setValidator(self.ipnValidator)
         self.lineEdit_vpn_ip_address.setValidator(self.ipValidator)
         #self.lineEdit_ipn_ip_mask.setValidator(self.ipValidator)
         self.lineEdit_ipn_mac_address.setValidator(self.macValidator)
@@ -3489,7 +3490,7 @@ class AccountWindow(QtGui.QMainWindow):
                 model.ipn_speed = ""
 
             if self.lineEdit_ipn_ip_address.text():
-                if self.ipValidator.validate(self.lineEdit_ipn_ip_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+                if self.ipnValidator.validate(self.lineEdit_ipn_ip_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка в IPN IP."))
                     return
                 try:
