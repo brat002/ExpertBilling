@@ -1341,6 +1341,7 @@ class TemplatesWindow(QtGui.QMainWindow):
                 return
             
             card = Object()
+            card.id = '999'
             card.pin = '12345678901234'
             card.login = 'user'
             card.nominal = 10000
