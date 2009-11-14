@@ -11,6 +11,56 @@ from ebsWindow import ebsTable_n_TreeWindow
 from IPy import *
 
 
+
+class NetworksImportDialog(QtGui.QDialog):
+    def __init__(self, connection):
+        super(NetworksImportDialog, self).__init__()
+        self.setObjectName("NetworksImportDialog")
+        self.resize(467, 423)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.label = QtGui.QLabel(self)
+        self.label.setObjectName("label")
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.lineEdit = QtGui.QLineEdit(self)
+        self.lineEdit.setObjectName("lineEdit")
+        self.gridLayout.addWidget(self.lineEdit, 0, 1, 1, 1)
+        self.toolButton = QtGui.QToolButton(self)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("images/folder1.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.toolButton.setIcon(icon)
+        self.toolButton.setObjectName("toolButton")
+        self.gridLayout.addWidget(self.toolButton, 0, 2, 1, 1)
+        self.tableWidget = QtGui.QTableWidget(self)
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget = tableFormat(self.tableWidget)
+        self.gridLayout.addWidget(self.tableWidget, 1, 0, 1, 3)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 3)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QObject.connect(self.toolButton, QtCore.SIGNAL("clicked()"), self.importNetworks)
+        #QtCore.QMetaObject.connectSlotsByName()
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Импорт списка сетей", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("Dialog", "Путь к файлу", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        
+        columns = [u'Импортировать', u"Имя сети", u"Сеть"]
+        makeHeaders(columns, self.tableWidget)
+        
+    def importNetworks(self):
+        fileName = QtGui.QFileDialog.getOpenFileName(self,
+                                          u"Выберите файл со списком сетей", "", "TXT Files (*.txt)")
+        if fileName=="":
+            return
+        
 class ClassEdit(QtGui.QDialog):
     def __init__(self, connection, model=None):
         super(ClassEdit, self).__init__()
@@ -433,6 +483,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
                  ("addClassNodeAction", "Добавить подкласс", "images/add.png", self.addNode), \
                  ("delClassNodeAction", "Удалить подкласс", "images/del.png", self.delNode), \
                  ("editClassNodeAction", "Редактировать", "images/open.png", self.editNode), \
+                 ("importClassNodesAction", "Импорт сетей", "images/open.png", self.importNodes), \
                  ("upClassAction", "Повысить", "images/up.png", self.upClass), \
                  ("downClassAction", "Понизить", "images/down.png", self.downClass)
                 ]
@@ -440,7 +491,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
 
         objDict = {self.treeWidget :["editClassAction", "addClassAction", "delClassAction"], \
                    self.tableWidget:["editClassNodeAction", "addClassNodeAction", "delClassNodeAction"], \
-                   self.toolBar    :["addClassAction", "delClassAction", "separator","upClassAction", "downClassAction", "separator", "addClassNodeAction", "delClassNodeAction"]
+                   self.toolBar    :["addClassAction", "delClassAction", "separator","upClassAction", "downClassAction", "separator", "addClassNodeAction", "delClassNodeAction", "separator", "importClassNodesAction"]
                   }
         self.actionCreator(actList, objDict)
         
@@ -582,6 +633,9 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
             self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(curItem))
         
 
+    def importNodes(self):
+        child = NetworksImportDialog(connection=self.connection)
+        child.exec_()
 
     def addNode(self):
 

@@ -214,6 +214,7 @@ class ebsTableWindow(QtGui.QMainWindow):
     def closeEvent(self, event):
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
+        self.saveHeader()
         event.accept()
 
     def keyPressEvent(self, event):
