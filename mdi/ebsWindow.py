@@ -115,7 +115,7 @@ class ebsTableWindow(QtGui.QMainWindow):
 
         
 
-        fileName = QtGui.QFileDialog.getSaveFileName(self, u"Экспорт CSV", val, "CSV Files (*.csv)").decode('mbcs')
+        fileName = str(QtGui.QFileDialog.getSaveFileName(self, u"Экспорт CSV", val, "CSV Files (*.csv)")).decode('mbcs')
         if fileName=="":
             return
         settings.setValue("exportcsv-%s" % unicode(self.objectName()), QtCore.QVariant(fileName))
@@ -534,7 +534,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
 
         
 
-        fileName = QtGui.QFileDialog.getSaveFileName(self, u"Экспорт CSV", val, "CSV Files (*.csv)")
+        fileName = str(QtGui.QFileDialog.getSaveFileName(self, u"Экспорт CSV", val, "CSV Files (*.csv)")).decode('mbcs')
         if fileName=="":
             return
         settings.setValue("exportcsv-%s" % unicode(self.objectName()), QtCore.QVariant(fileName))
