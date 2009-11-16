@@ -382,7 +382,7 @@ class CoreVars(Vars):
 
         
 class RpcVars(Vars):
-    __slots__ = ('pids', 'piddate', 'pidLock', 'db_connection', 'db_connection_lock', 'graph_connection', 'graph_connection_lock', 'LISTEN_PORT')
+    __slots__ = ('pids', 'piddate', 'pidLock', 'db_connection', 'db_connection_lock', 'graph_connection', 'graph_connection_lock', 'LISTEN_PORT', 'USER_ID')
     
     def __init__(self):
         super(RpcVars, self).__init__()
@@ -395,6 +395,7 @@ class RpcVars(Vars):
         self.graph_connection_lock = Lock()
         self.graph_connection = None
         self.LISTEN_PORT = 7771
+        self.USER_ID = [None, None]
        
     def get_dynamic(self, **kwargs):
         super(RpcVars, self).get_dynamic(**kwargs)
