@@ -13,10 +13,13 @@ from IPy import *
 
 
 class NetworksImportDialog(QtGui.QDialog):
-    def __init__(self, connection):
+    def __init__(self, class_id, connection):
         super(NetworksImportDialog, self).__init__()
         self.setObjectName("NetworksImportDialog")
         self.resize(467, 423)
+        self.connection = connection
+        self.connection.commit()
+        self.class_id = class_id
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
         self.label = QtGui.QLabel(self)
@@ -24,6 +27,7 @@ class NetworksImportDialog(QtGui.QDialog):
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
         self.lineEdit = QtGui.QLineEdit(self)
         self.lineEdit.setObjectName("lineEdit")
+        self.lineEdit.setReadOnly(True)
         self.gridLayout.addWidget(self.lineEdit, 0, 1, 1, 1)
         self.toolButton = QtGui.QToolButton(self)
         icon = QtGui.QIcon()
@@ -52,15 +56,48 @@ class NetworksImportDialog(QtGui.QDialog):
         self.label.setText(QtGui.QApplication.translate("Dialog", "Путь к файлу", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         
-        columns = [u'Импортировать', u"Имя сети", u"Сеть"]
+        columns = [u'Импортировать', u"Название сети", u"Сеть"]
         makeHeaders(columns, self.tableWidget)
         
     def importNetworks(self):
-        fileName = QtGui.QFileDialog.getOpenFileName(self,
-                                          u"Выберите файл со списком сетей", "", "TXT Files (*.txt)")
+        
+        fileName = str(QtGui.QFileDialog.getOpenFileName(self,
+                                          u"Выберите файл со списком сетей", unicode(self.lineEdit.text()), "TXT Files (*.txt)")).decode('mbcs')
         if fileName=="":
             return
         
+        self.lineEdit.setText(fileName)
+        f = open(fileName, "r")
+        
+        filedata = f.readlines()
+        f.close()
+        i=0
+        for info in filedata:
+            self.tableWidget.insertRow(i)
+            try:
+                name, net = info.split("|")[0:2]
+            except Exception, e:
+                print e
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Указанный файл имеет неправильный формат(Имя сети|Адрес сети)."))
+                return 
+            print name, net
+            item = QtGui.QTableWidgetItem()
+            item.setCheckState(QtCore.Qt.Checked)
+            self.tableWidget.setItem(i, 0,item)
+            item = QtGui.QTableWidgetItem()
+            item.setText(unicode(name))
+            self.tableWidget.setItem(i, 1,item)
+            
+            item = QtGui.QTableWidgetItem()
+            item.setText(unicode(net))
+            self.tableWidget.setItem(i, 2,item)
+
+            i+=1
+        self.tableWidget.resizeColumnsToContents()
+        
+    def accept(self):
+        
+        QtGui.QDialog.accept(self)
 class ClassEdit(QtGui.QDialog):
     def __init__(self, connection, model=None):
         super(ClassEdit, self).__init__()
@@ -634,7 +671,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         
 
     def importNodes(self):
-        child = NetworksImportDialog(connection=self.connection)
+        child = NetworksImportDialog(self.getClassId, connection=self.connection)
         child.exec_()
 
     def addNode(self):
