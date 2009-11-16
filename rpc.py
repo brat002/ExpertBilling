@@ -1027,10 +1027,14 @@ def post_login(args):
         logger.error("Post_login error: no args: %s", (args,))
         return
     global vars
+    vars.USER_ID[0] = login
     with vars.db_connection_lock:
         try:
             #print dir(ip)
-            vars.db_connection.execute('''UPDATE billservice_systemuser SET last_ip = %s, last_login = %s::timestamp without time zone WHERE username = %s;''', (str(ip.host), login_date, login))
+            vars.db_connection.execute('''UPDATE billservice_systemuser SET last_ip = %s, last_login = %s::timestamp without time zone WHERE username = %s RETURNING id;''', (str(ip.host), login_date, login))
+            systemuser_id = vars.db_connection.fetchone()[0]
+            vars.USER_ID[1] = systemuser_id
+            logger.info('Logged in user info: %s', (vars.USER_ID,))
             vars.db_connection.commit()
         except Exception, ex:
             logger.error("Exception during post_login: %s \n %s", (repr(ex), traceback.format_exc()))
