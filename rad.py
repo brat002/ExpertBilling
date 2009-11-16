@@ -741,7 +741,10 @@ class HandleSAuth(HandleSBase):
             #flatted = flatten(map(split_speed, a))
             result = list(chain(*map(split_speed,parse_custom_speed_lst_rad(speed)) ))
             #print flatted
-
+        
+        speed_sess = "%s%s%s%s%s%s%s%s%s%s%s" % tuple(result)
+        sessions_speed[account_id] = speed_sess 
+        #print speed_sess
         command_dict={'max_limit_rx': result[0],
         'max_limit_tx': result[1],
         'burst_limit_rx': result[2],
@@ -950,6 +953,8 @@ class HandleHotSpotAuth(HandleSBase):
             result = list(chain(*map(split_speed,parse_custom_speed_lst_rad(speed)) ))
             #print flatted
 
+        speed_sess = "%s%s%s%s%s%s%s%s%s%s%s" % tuple(result)
+        sessions_speed[account_id] = speed_sess 
         command_dict={'max_limit_rx': result[0],
         'max_limit_tx': result[1],
         'burst_limit_rx': result[2],
@@ -1188,13 +1193,14 @@ class HandleSAcct(HandleSBase):
             if allow_write:
                 self.cur.execute("""INSERT INTO radius_activesession(account_id, sessionid, date_start,
                                  caller_id, called_id, framed_ip_address, nas_id, 
-                                 framed_protocol, session_status, nas_int_id)
-                                 VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s);
+                                 framed_protocol, session_status, nas_int_id, speed_string)
+                                 VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s);
                                  """, (acc.account_id, self.packetobject['Acct-Session-Id'][0], now,
                                         self.packetobject['Calling-Station-Id'][0], 
                                         self.packetobject['Called-Station-Id'][0], 
                                         self.packetobject['Framed-IP-Address'][0],
-                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id))
+                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id, sessions_speed.get(acc.account_id, "")))
+                del sessions_speed[acc.account_id]
                 if nas_by_int_id:
                     with queues.sessions_lock:
                         queues.sessions[str(self.packetobject['Acct-Session-Id'][0])] = (nas.id, now)
@@ -1497,6 +1503,7 @@ if __name__ == "__main__":
         flags = RadFlags()
         vars  = RadVars()
         queues= RadQueues()
+        sessions_speed={}#account:(speed,datetime)
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
 
         cacheMaster = CacheMaster()
