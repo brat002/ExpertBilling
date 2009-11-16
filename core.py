@@ -31,7 +31,7 @@ from collections import defaultdict
 
 from constants import rules
 from saver import allowedUsersChecker, setAllowedUsers
-from utilites import parse_custom_speed, parse_custom_speed_lst, cred
+from utilites import parse_custom_speed, parse_custom_speed_lst, cred, get_decimals_speeds
 from utilites import rosClient, settlement_period_info, in_period, in_period_info
 
 from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
@@ -155,7 +155,7 @@ class check_vpn_access(Thread):
                 now = dateAT
                 cur.execute("""UPDATE radius_activesession 
                                SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
-                               WHERE ((now()-interrim_update>=interval '00:16:00') or (now()-date_start>=interval '00:10:00' and interrim_update IS Null)) AND date_end IS Null;
+                               WHERE ((now()-interrim_update>=interval '00:10:00') or (now()-date_start>=interval '00:10:00' and interrim_update IS Null)) AND date_end IS Null;
                                """)
 #===============================================================================
 #                cur.execute("""UPDATE radius_activesession 
@@ -207,8 +207,8 @@ class check_vpn_access(Thread):
                                     break                            
                             speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.vpn_speed, dateAT)                            
 
-
-                            newspeed = ''.join([unicode(spi) for spi in speed[:6]])
+                            speed = get_decimals_speeds(speed)
+                            newspeed = ''.join([unicode(spi) for spi in speed])
 
                                 
                             #print newspeed
@@ -220,14 +220,12 @@ class check_vpn_access(Thread):
                                 #                        session_id=str(rs.sessionid), access_type=str(rs.access_type),format_string=str(nas.vpn_speed_action),
                                 #                        speed=speed[:6])                           
                                 
-                                if rs.speed_string:
                                     
-                                    coa_result = change_speed(vars.DICT, acc, nas,
-                                                        access_type=str(rs.access_type),
-                                                        format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
-                                                        speed=speed[:6])
-                                else:
-                                    coa_result = True
+                                coa_result = change_speed(vars.DICT, acc, nas,
+                                                    access_type=str(rs.access_type),
+                                                    format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
+                                                    speed=speed)
+
 
                                 if coa_result==True:
                                     cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
