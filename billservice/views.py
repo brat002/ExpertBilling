@@ -366,7 +366,7 @@ def services_info(request):
     
 @render_to('accounts/change_password.html')
 @login_required
-def card_form(request):
+def password_form(request):
     return {
             'form':PasswordForm()
             }
@@ -472,6 +472,14 @@ def change_tariff(request):
         return {
                 'error_message':u'Проверьте Ваш тариф',
                 }
+
+
+@render_to('accounts/card_form.html')
+@login_required
+def card_form(request):
+    return {
+            'form':CardForm()
+            }
 
 
 @ajax_request
@@ -871,6 +879,24 @@ def one_time_history(request):
             'rec_count':rec_count,
             }    
 
-
+@ajax_request
+@login_required
+def news_delete(request):
+    message = u'Невозможно удалить новость, попробуйте позже'
+    if request.method == 'POST':
+        from billservice.models import AccountViewedNews
+        news_id = request.POST.get('news_id', '')
+        try:
+            news = AccountViewedNews.objects.get(id = news_id, account = request.user)
+        except:
+            return {
+                    'message':message,
+                    }
+        news.viewed = True
+        news.save()
+        return {
+                'message':u'Новость успешно удалена',
+                }
+            
 
 

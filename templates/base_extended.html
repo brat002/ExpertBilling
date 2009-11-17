@@ -1,51 +1,45 @@
 {% extends 'base.html' %}
 
-{% if user %}
+{% block logo %}{% endblock %}
 
-{% block account_control %}
-	{% include 'menu/account_menu.html' %}
+{% block base %}
+	<table width="100%" class="main-table">
+		<tr>
+			<td valign="top" width="150px"><img src="{{ MEDIA_URL }}ebs_img/logo.gif"></td>
+			<td class="horizontal-menu">
+				<div>
+					<a href="/" class="text user-img">Моя учетная запись</a>
+				</div>
+				<div>
+					<a href="/password/form/?height=200&width=350&modal=true" class="thickbox text password-img">Смена пароля</a>
+				</div>
+				<div>
+					<a href="/tariff/form/?height=300&width=350&modal=true" class="thickbox text tariff-img">Смена тарифного плана</a>
+				</div>
+				<div>
+					<a href="/card/form/?height=350&width=350&modal=true" class="thickbox text card-img">Активация карточки</a>
+				</div>
+				<div>
+					<a href="/accounts/logout/" class="text exit-img">Выход из системы</a>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="vertical-menu for-content" valign="top">
+				<div>
+					<a href="/promise/" class="text promise-img">Обещанные платежи</a>
+				</div>
+				<div>
+					<a href="/services/" class="text services-img">Подключаемые услуги</a>
+				</div>
+				<div>
+					<a href="/statistics/" class="text statistic-img">Статистика</a>
+				</div>
+			</td>
+			<td valign="top" class="for-content">{% block content%}{% endblock %}</td>
+		</tr>
+	</table>
 {% endblock %}
-
-{% block main_menu %}
-<div style="clear:both"></div>
-<div class="main_menu_bg">
-	<div class="content_align">
-		{% include 'menu/main_menu.html' %}
-	</div>
-</div>
-{% endblock %}
-
-{% block name %}
-	<div class="user">
-		<div class="f-right status">{% if status %}<div class="user_is_blocked bold s-11">Вы заблокированы</div>{% endif %}</div>
-		
-            <div class="f-left user_name bold">
-                Пользователь: {% if user.fullname %}{{user.fullname}}{% else %}{{user.username}}{% endif %}
-            </div> 
-
-        {% if not user.account_status %}
-        <div style="float:right; margin-top: -5px">
-        <img align="right" style="float:right" src="/media/img/design/account_blocked.png">
-        </div>
-        {% endif %}
-
-        {% if user.balance_blocked or user.ballance_isnt_good %}
-        <div style="float:right; margin-top: -5px">
-        <img align="right" style="float:right" src="/media/img/design/no_money.png">
-        </div>
-        {% endif %}
-        
-        {% if user.disabled_by_limit %}
-        <div style="float:right; margin-top: -5px">
-        <img align="right" style="float:right" src="/media/img/design/limit_blocked.png">
-        
-        </div>        
-        {%endif%}
-	</div>
-	<div style="clear:both"></div>
-{% endblock %}
-{% endif %}
-
 
 {% block footer %}
 {% if operator %}

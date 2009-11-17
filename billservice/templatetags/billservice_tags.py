@@ -2,7 +2,7 @@
 from django import template
 import datetime
 from django.db import connection
-from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic, AccountAddonService, AddonServiceTransaction, News
+from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic, AccountAddonService, AddonServiceTransaction, News, AccountViewedNews
 register = template.Library()
 
 @register.inclusion_tag('accounts/tags/writen_of_time.html')
@@ -164,3 +164,12 @@ def show_last_news(count=5):
 def multiply(value, multiply_value):
     value = value*int(multiply_value)
     return value
+
+
+@register.inclusion_tag('accounts/tags/show_last_news_private.html')
+def show_last_news_private(user):
+    from django.db.models import Q 
+    news = AccountViewedNews.objects.filter(news__private=True, account=user, viewed=False).filter(Q(news__age__gte=datetime.datetime.now())|Q(news__age__isnull=True)).order_by('-id')[:5]
+    return {
+            'news':news,
+            }

@@ -22,7 +22,7 @@
        				<tr>
 	       				<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ session.date_start|date:"d.m.Y  H:i" }}&nbsp;</td>
 		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ session.date_end|date:"d.m.Y  H:i"}}&nbsp;</td>
-		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ session.nas_id }}&nbsp;</td>
+		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ session.framed_ip_address }}&nbsp;</td>
 		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{% if session.bytes_out or session.bytes_in%}  {% traffic_format session.bytes_out %}&nbsp; / {% traffic_format session.bytes_in %} / {% traffic_format session.bytes_in session.bytes_out %}{% endif %}&nbsp;</td>
 		   				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{% time_format session.session_time %}&nbsp;</td>
 	   				</tr>
