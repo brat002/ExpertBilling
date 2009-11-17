@@ -138,6 +138,7 @@ h2 {
 .blue_caption, .green_caption {
 	padding-left:19px;
 	height:23px;
+	*height:24px;
 	text-align:left;
 } 
 
@@ -180,6 +181,10 @@ h2 {
 	font-weight:bold;
 	text-align:left;
 	padding-right:10px;
+}
+
+.card_activation th, .card_activation td {
+	width:50%;
 }
 
 .card_activation {
@@ -252,6 +257,7 @@ h2 {
 
 .enter_table th, .enter_table td {
 	padding-bottom:10px;
+	width:50%;
 }
 
 .enter_table td input {
@@ -303,15 +309,18 @@ table.statistic_table {
 
 .statistics_link a {
 	background:url('../ebs_img/for_filter.gif') no-repeat right center;
+	*background:url('../ebs_img/for_filter.gif') no-repeat right bottom; 
 	text-decoration:none;
 	color:#fff;
 	float:left;
 	margin-top:3px;
 	padding:0 15px 0 5px;
+	*padding-top:3px;
 }
 
 .statistics_title {
 	padding-top:1px;
+	*padding-top:4px;
 }
 
 #pagination {
@@ -463,6 +472,7 @@ table.statistic_table {
 	float:left;
 	padding-right:10px;
 	padding-top:1px;
+	*padding-top:0;
 }
 
 .range li input {
@@ -496,6 +506,7 @@ a {
 .horizontal-menu div {
 	float:left;
 	width:20%;
+	*width:19%;
 	text-align:center;
 }
 
@@ -634,6 +645,15 @@ a.statistic-img:Hover {
 	padding:0;
 }
 
+.open, .close {
+	*margin-top:-12px;
+}
+
+.statistics_link a.open, .statistics_link a.close{
+	*margin-top:6px;
+	*background-position:bottom;
+} 
+
 .statistics_link a.close, .close  {
 	background:url('../ebs_img/more.gif') no-repeat;
 	width:13px;
@@ -641,6 +661,7 @@ a.statistic-img:Hover {
 	margin-right:14px;
 	float:right;
 	padding:0;
+	
 }
 
 .for-content {
@@ -698,4 +719,8 @@ a.statistic-img:Hover {
 
 .promise_table td input.promise_button {
 	margin:5px 10px;
+}
+
+.range {
+	*margin-top:-3px;
 }
