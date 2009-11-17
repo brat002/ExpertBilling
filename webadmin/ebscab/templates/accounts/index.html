@@ -2,84 +2,205 @@
 {% load custom_filters %}
 {% load billservice_tags %}
 
-{% block content %}
-<script>
-	function activate_car() {
-		var pin=document.getElementById("id_pin");
-		var series=document.getElementById("id_series");
-		var message=document.getElementById("message");
-        var card_id=document.getElementById("id_card_id");
-	 	jQuery.ajax({
-        	type: "POST",
-        	cache: false,
-        	url: '/card/activation/',
-        	data: { 'series': series.value, 'pin': pin.value, 'card_id': card_id.value},
-        	timeout: 15000,
-			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-        	//beforeSend: function(XMLHttpRequest){},
-        	success: function(data, status){
-				var ret = eval('('+data+')');
-				if (typeof ret['redirect'] != 'undefined') {
-					window.location.href = ret['redirect'];
-				} 
-				message.innerHTML = ret['error_message'];
-				pin.value='';
-				series.value='';
-                card_id.value='';
-				if (ret['error_message'] == 'True') {
-					window.location.reload();
+
+{% block extra_head %}
+	<script type="text/javascript">	
+			function runEffect(object_id){
+				$("#"+object_id).toggle();
+				var date = new Date();
+                date.setTime(date.getTime() + (3 * 24 * 60 * 60 * 1000));
+				if ($("#"+object_id+"_a").attr('class') == 'close') {
+					$("#"+object_id+"_a").attr('class','open');
+					$.cookie(object_id, 'hide', { path: '/', expires: date });
+				} else {
+					$("#"+object_id+"_a").attr('class','close');
+					$.cookie(object_id, 'show', { path: '/', expires: date });
 				}
-			},
-        	error: function(data, status){
-				var ret = eval('('+data+')'); 
-				message.innerHTML = ret['error_message'];
-				pin.value='';
-				series.value=''; 
-			 },
-        	complete: function(data, status){  }
-    	});
-	}
-</script>
- {% if user %}
- <div class="f-left" style="width:100%">
+			};
+	</script>
+	<script type="text/javascript">
+		function delete_news(news_id) {
+			var message=document.getElementById("message");
+			var content=document.getElementById("news-content");
+		 	jQuery.ajax({
+	        	type: "POST",
+	        	cache: false,
+	        	url: '/news/delete/',
+	        	data: { 'news_id': news_id},
+	        	timeout: 15000,
+				contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+	        	//beforeSend: function(XMLHttpRequest){},
+	        	success: function(data, status){
+					var ret = eval('('+data+')');
+					message.innerHTML = ret['message'];
+					$("#news"+news_id).remove();
+					if (ret['error_message'] == 'True') {
+						window.location.reload();
+					}
+				},
+	        	error: function(data, status){
+					var ret = eval('('+data+')'); 
+					message.innerHTML = ret['message'];
+				 },
+	        	complete: function(data, status){  }
+	    	});
+		}
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			checkCookie('index_id');
+		});
+	</script>
+{% endblock %}
+
+
+
+{% block content %}
+ 
 <table class="wide main_table" cellpadding="0" cellspacing="0" >
-	<!--- Мои данный/Загрузка канала - загаловки --->
+	<!--- Мои баланс --->
 	<tr>
-		<td style="width:50%" class="blue_caption white s-11 bold main_table_left_border">МОИ ДАННЫЕ</td>
-		<td style="width:50%" class="green_caption white s-11 bold right_border main_table_left_border">ЗАГРУЗКА КАНАЛА</td>
+		<td class="blue_caption white s-11 bold">БАЛАНС <a id="user-info_a" class="close" href="javascript:return 0;" onclick="runEffect('user-info')">&nbsp;</a></td>
+	</tr>
+	<tr>
+		<td class="" id="user-info">
+			<div class="user-info f-right">
+				<div class="user-name">
+					{{user.username}}
+				</div>
+				{% if not user.account_status %}
+					<div class="user_is_blocked f-right">Вы заблокированы</div>
+					<div class="clear"></div>
+				{% endif %}
+		
+		        {% if user.balance_blocked or user.ballance_isnt_good %}
+			        <div class="no-money f-right">
+						Недостаточно средств на балансе
+			        </div>
+					<div class="clear"></div>
+		        {% endif %}
+		        
+		        {% if user.disabled_by_limit %}
+			        <div class="no-limit f-right">
+						Вы превысили лимит
+			        </div>        
+					<div class="clear"></div>
+		        {%endif%}
+
+
+			</div>
+			<div class="user_ballsnce f-left">
+				<div><span>Баланс :</span> {{ ballance }}</div>
+				<div><span>Размер кредита :</span> {{ user.credit }}</div>
+			</div>
+		</td>
+	</tr>
+	<!--- Новости провайдера --->
+	<tr>
+		<td class="blue_caption white s-11 bold">НОВОСТИ ПРОВАЙДЕРА<a id="news-cell_a" class="close" href="javascript:return 0;" onclick="runEffect('news-cell')">&nbsp;</a></td>
+	</tr>
+	<tr>
+		<td class="news-cell" id="news-cell">
+			<h2 id="message"></h2>
+			<div id="news-content">
+				{% show_last_news_private user %}
+			</div>
+		</td>
+	</tr>
+	
+	
+	<tr>
+		<td style="width:50%" class="blue_caption white s-11 bold main_table_left_border">МОИ ДАННЫЕ<a id="account_information_a" class="close" href="javascript:return 0;" onclick="runEffect('account_information')">&nbsp;</a></td>
 	</tr>
 	<!--- Мои данные/Загрузка канала - данные --->
 	<tr>
-		<td class="account_information main_table_left_border user_info">
+		<td class="account_information main_table_left_border user_info" id="account_information">
 			<div class="user_block">
-				{% if user.city or user.postcode or user.region or user.street or user.house or user.house_bulk or user.entrance or user.room %}
-					<div><span class="bold">Ваш Адрес :</span> {{ user.postcode }} {%if user.city %}г. {{ user.city }}{% endif %} {% if user.region %}обл. {{ user.region }}{% endif %} {% if user.street %}ул. {{ user.street }}{% endif %} {% if user.house %}д. {{ user.house }}{% endif %} {% if user.house_bulk %}корп. {{ user.house_bulk }}{% endif %} {% if user.room  %}кв. {{ user.room }}{% endif %}</div>
-				{% endif %}
-				{% if user.email %}
-					<div><span class="bold">E-mail : {{ user.email }}</div>
-				{% endif %}
-				<div><span class="bold">Cетевой IP адрес :</span> {{ user.ipn_ip_address }}</div>
-				<div><span class="bold">VPN IP адрес :</span> {{ user.vpn_ip_address }}</div>
-				<div><span class="bold">Тарифный план :</span> {{ tariff }}</div>
-				<div><span class="bold">Баланс :</span> {{ ballance }}</div>
-				<div><span class="bold">Размер кредита :</span> {{ user.credit }}</div>
-				<div><span class="bold">Дата подключения :</span> {{ user.created|date:"d.m.Y  H:i" }}</div>
+				<div class="f-right">
+					<div><span class="bold">VPN IP адрес :</span> {{ user.vpn_ip_address }}</div>
+					<div><span class="bold">Тарифный план :</span> {{ tariff }}</div>
+				</div>
+				
+				<div class="f-left">
+					<div><span class="bold">ФИО :</span> {{user.fullname}}</div>
+					{% if user.city or user.postcode or user.region or user.street or user.house or user.house_bulk or user.entrance or user.room %}
+						<div><span class="bold">Ваш Адрес :</span> {{ user.postcode }} {%if user.city %}г. {{ user.city }}{% endif %} {% if user.region %}обл. {{ user.region }}{% endif %} {% if user.street %}ул. {{ user.street }}{% endif %} {% if user.house %}д. {{ user.house }}{% endif %} {% if user.house_bulk %}корп. {{ user.house_bulk }}{% endif %} {% if user.room  %}кв. {{ user.room }}{% endif %}</div>
+					{% endif %}
+					{% if user.email %}
+						<div><span class="bold">E-mail : {{ user.email }}</div>
+					{% endif %}
+					<div><span class="bold">Cетевой IP адрес :</span> {{ user.ipn_ip_address }}</div>
+					<div><span class="bold">Дата подключения :</span> {{ user.created|date:"d.m.Y  H:i" }}</div>
+				</div>
+				<div class="clear"></div>
 			</div>
 		</td>
-		<td class="right_border main_table_left_border diagram_bg" align="center" valign="center">
-			<div>
-  				<img src="/client/" id="client">
-  			</div>
+	</tr>
+	
+	
+	<!--- остаток трафика по лимитам - загаловки --->
+	<tr>
+		<td class="blue_caption white s-11 bold">ОСТАТОК ТРАФИКА ПО ЛИМИТАМ<a id="traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic')">&nbsp;</a></td>
+	</tr>
+	<!--- остаток трафика по лимитам - данные --->
+	<tr>
+		{% spaceless %}
+		<td class="right_border bottom_border main_table_left_border" valign="top" id="traffic">
+				{% if trafficlimit %}
+					<table class="wide extra_table trafficlimit_margin" cellpadding="0" cellspacing="0">
+    					<tr>
+	   						<th class="first_row">Название</th>
+	   						<th>Начало</th>
+	   						<th>Окончание</th>
+	   						<th>Потреблено</th>
+	   						<th>Лимит</th>
+						</tr>
+						{% for traffic_limit in trafficlimit %}
+							{% traffic_limit_row traffic_limit user forloop.counter forloop.last %}
+						{% endfor %}
+					</table>
+				{% else %}
+					<h2 align="center">Нет Данных!</h2>
+				{% endif %}
+		</td>
+		{% endspaceless %}
+	</tr>
+	
+	
+	<!--- Остаток предоплаченного трафика/остаток трафика по лимитам - загаловки --->
+	<tr>
+		<td class="blue_caption white s-11 bold">ОСТАТОК ПРЕДОПЛАЧЕННОГО ТРАФИКА<a id="prepaid_traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('prepaid_traffic')">&nbsp;</a></td>
+	</tr>
+	<!--- Остаток предоплаченного трафика --->
+	<tr>
+		<td class="" valign="top" id="prepaid_traffic">
+			{% if prepaidtraffic %}
+			<table class="wide extra_table" cellpadding="0" cellspacing="0">
+				<tr>
+					<th>Тип трафика</th>
+					<th>Количество</th>
+				</tr>
+				{% for traffic in prepaidtraffic %}
+					{% for class in traffic.group.trafficclass.all %}
+						<tr>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ class.name }}{% if forloop.last %}<div class="prepaid_table_bottom_left"></div>{% endif %}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_size traffic account_tariff %}{% if forloop.last %}<div class="prepaid_table_bottom_right"></div>{% endif %}</td>
+						</tr>
+					{% endfor %}
+				{% endfor %}
+			</table>
+			{% else %}
+				<h2 align="center">Нет Данных!</h2>
+			{% endif %}
 		</td>
 	</tr>
 	<!--- Предыдущие тарифные планы/активация карточек - загаловки --->
 	<tr>
-		<td class="blue_caption white s-11 bold main_table_left_border">ПРЕДЫДУЩИЕ ТАРИФНЫЕ ПЛАНЫ</td>
-		<td class="green_caption white s-11 bold right_border main_table_left_border">АКТИВАЦИЯ КАРТОЧЕК</td>
+		<td class="blue_caption white s-11 bold main_table_left_border">ПРЕДЫДУЩИЕ ТАРИФНЫЕ ПЛАНЫ<a id="tariffs_a" class="close" href="javascript:return 0;" onclick="runEffect('tariffs')">&nbsp;</a></td>
 	</tr>
 	<!--- Предыдущие тарифные планы/активация карточек - данные --->
 	<tr>
-		<td class="main_table_left_border" valign="top">
+		<td class="main_table_left_border" valign="top" id="tariffs">
 			{% if tariffs %}
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
@@ -103,84 +224,8 @@
 				<h2 align="center">Нет Данных!</h2>
 			{% endif %}
 		</td>
-		<td class="right_border main_table_left_border">
-			<form method="post" onsubmit="return false;">
-				<table class="card_activation f-left">
-					{{ form }}
-				</table>
-				<div id="message" class="s-11"></div>
-				<div class="wide f-left">
-					<input type="submit" value="Активировать" class="button" onclick="activate_car()">
-				</div>
-			</form>
-			<div class="card_text f-left">
-				<span>Для активации карточек необходимо выполнить следующие действия:</span>
-				<ol type="1">
-					<li>Ввести в поля «пин», «серия», «номер карты» пин, серию и номер, которые указаны на Вашей карточке;</li>
-					<li>Если карточка еще не была активирована, то Ваш баланс пополняется автоматически на указанную сумму;</li>
-					<li>Если Администратор заблокировал данную услугу, вам будет выведено сообщение об ошибке.</li>
-				</ol>
-			</div>
-		</td>
-	</tr>
-	<!--- Остаток предоплаченного трафика/остаток трафика по лимитам - загаловки --->
-	<tr>
-		<td class="blue_caption white s-11 bold main_table_left_border">ОСТАТОК ПРЕДОПЛАЧЕННОГО ТРАФИКА</td>
-		<td class="blue_caption white s-11 bold right_border main_table_left_border">ОСТАТОК ТРАФИКА ПО ЛИМИТАМ</td>
-	</tr>
-	<!--- Остаток предоплаченного трафика/остаток трафика по лимитам - данные --->
-	<tr>
-		<td class="bottom_border main_table_left_border" valign="top">
-			{% if prepaidtraffic %}
-			<table class="wide extra_table" cellpadding="0" cellspacing="0">
-				<tr>
-					<th>Тип трафика</th>
-					<th>Количество</th>
-				</tr>
-				{% for traffic in prepaidtraffic %}
-					{% for class in traffic.group.trafficclass.all %}
-						<tr>
-							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ class.name }}{% if forloop.last %}<div class="prepaid_table_bottom_left"></div>{% endif %}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_size traffic account_tariff %}{% if forloop.last %}<div class="prepaid_table_bottom_right"></div>{% endif %}</td>
-						</tr>
-					{% endfor %}
-				{% endfor %}
-			</table>
-			{% else %}
-				<h2 align="center">Нет Данных!</h2>
-			{% endif %}
-		</td>
-		{% spaceless %}
-		<td class="right_border bottom_border main_table_left_border" valign="top">
-				{% if trafficlimit %}
-					<table class="wide extra_table trafficlimit_margin" cellpadding="0" cellspacing="0">
-    					<tr>
-	   						<th class="first_row">Название</th>
-	   						<th>Начало</th>
-	   						<th>Окончание</th>
-	   						<th>Потреблено</th>
-	   						<th>Лимит</th>
-						</tr>
-						{% for traffic_limit in trafficlimit %}
-							{% traffic_limit_row traffic_limit user forloop.counter forloop.last %}
-						{% endfor %}
-					</table>
-				{% else %}
-					<h2 align="center">Нет Данных!</h2>
-				{% endif %}
-		</td>
-		{% endspaceless %}
 	</tr>
 </table>
-</div>
-{% else %}
-    <h2 align="center">Вход не удался</h2>
-{% endif %}
-
-
-<script type="text/javascript">
-	jQuery('#client').attr('src', jQuery('#client').attr('src') + '?'+ Math.random());
-</script>
 
 {% endblock %}
 

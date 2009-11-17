@@ -14,8 +14,8 @@ def footer(request):
             }
 
 def notices(request):
-    if request.session.has_key('user'):
-        user = request.session['user']
+    if request.user:
+        user = request.user
         cache_user = cache.get(user.id)
         if type(cache_user) == u'NoneType':
             if int(cache_user['count']) > settings.ACTIVATION_COUNT and not bool(cache_user['blocked']):
