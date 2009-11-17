@@ -2478,7 +2478,7 @@ $BODY$
 DECLARE
     new_summ_ decimal;
 BEGIN
-    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id AND (created_ BETWEEN start_date AND end_date)))::int;
+    SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id_ AND (created_ BETWEEN start_date AND end_date)))::int;
     IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
         SELECT new_summ_*(ballance+credit >= 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
     ELSIF (ps_condition_type_ = 2) AND (new_summ_ > 0) THEN
