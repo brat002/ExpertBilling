@@ -72,10 +72,6 @@
 
 {% if form %}
 <div class="pass_table_margin_top">
-<div>
-Внимание! При смене тарифного плана все подключаемые услуги будут отключены!<br />
-Обратите внимание на условия досрочного отключения подключенных услуг.
-</div>
 	<form method="post" onsubmit="return false;">
 		<table class="pass_table wide" cellpadding="0" cellspacing="0">
 			<tr>
@@ -91,7 +87,7 @@
 								<th>
 									Стоимость перехода на данный тарифный план составит:	
 								</th>
-								<td align="center">
+								<td align="center" valign="top">
 									<div id="need_cost"><h2>0</h2></div>
 								</td>
 							</tr>
@@ -99,8 +95,13 @@
 								<th>
 									Необходимый минимум на балансе: 
 								</th>
-								<td align="center">
+								<td align="center" valign="top">
 									<div id="need_ballance"><h2>0</h2></div>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2">
+									<input id="send_button" type="button" class="pass_button button_margin f-right" onclick="change_tariff()" value="OK"/>
 								</td>
 							</tr>
 					</table>
@@ -109,8 +110,12 @@
 		</table>
 		<div id="error_message" class="a-center"></div>
 		<!--<div id="ok_message" class="a-center"></div>-->
-		<input id="send_button" type="image" src="{{ MEDIA_URL }}img/design/pass_button.gif" class="pass_button button_margin" onclick="change_tariff()"/>
+		<div class="clear"></div>
 	</form>
+<div class="tariff-info">
+<span>Внимание!</span> При смене тарифного плана все подключаемые услуги будут отключены!<br />
+Обратите внимание на условия досрочного отключения подключенных услуг.
+</div>
 </div>
 {% endif %}
 </div>

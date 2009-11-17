@@ -1,5 +1,12 @@
+* {
+	border:none;
+}
+
+.clear {
+	clear:both;
+}
+
 body {
-	background:url('../img/design/header_bg.gif') repeat-x;
 	font-family: Tahoma, serif;
 	padding:0;
 	margin:0;
@@ -16,7 +23,7 @@ h2 {
 }
 
 .content_align {
-	width:1000px;
+	width:1024px;
 	margin:0 auto;
 }
 
@@ -117,13 +124,10 @@ h2 {
 }
 
 .account_information {
-	color:#2f4d6d;
-	font-size:14px;
-	padding:29px 25px;
 }
 
 .blue_caption {
-	background:url('../img/design/cell_blue_caption.gif') repeat-x;
+	background:url('../ebs_img/table_title_bg.gif') repeat-x;
 }
 
 
@@ -134,6 +138,7 @@ h2 {
 .blue_caption, .green_caption {
 	padding-left:19px;
 	height:23px;
+	text-align:left;
 } 
 
 .with_table {
@@ -173,7 +178,7 @@ h2 {
 .card_activation th {
 	font-size:11px;
 	font-weight:bold;
-	text-align:right;
+	text-align:left;
 	padding-right:10px;
 }
 
@@ -181,7 +186,8 @@ h2 {
 	margin:10px 0 0 10px;
 }
 .card_activation td input {
-	border:#314f73 1px solid; 
+	border:#000 1px solid;
+	width:100%; 
 }
 
 .button {
@@ -189,13 +195,17 @@ h2 {
 }
 
 #message {
-	color:#fe0000;
-	padding-top:32px;
+	color:#FE0000;
 	margin-left:10px;
+	text-align:center;
 }
 
-.main_table_left_border {
-	border-left: 1px solid #cacaca;
+.main_table {
+	border: 1px solid #000;
+} 
+
+.main_table_border {
+	border: 1px solid #000;
 }
 
 .main_table td.right_border {
@@ -207,36 +217,52 @@ h2 {
 }
 
 .user_is_blocked {
-	background:url('../img/design/blocked.gif') no-repeat;
-	padding-left:30px;
-	padding-top:2px;
+	background:url('../ebs_img/lock.gif') no-repeat;
+	padding:9px 0 0 20px;
+}
+
+.no-money {
+	background:url('../ebs_img/money.gif') no-repeat;
+	padding:9px 0 0 25px;
+}
+
+.no-limit {
+	background:url('../ebs_img/limit.gif') no-repeat;
+	padding:9px 0 0 25px;
+}
+
+.no-limit, .no-money, .user_is_blocked {
+	margin-left:5px;
+	font-size:11px;
+	font-weight:bold;
 	height:30px;
-	color:#fe0000;
+	color:#fe660d;
 }
 
 .pass_table {
-	background:url('../img/design/pass_bg.gif') repeat-x;
 	width:318px;
 	margin:0 auto;
-	border: 1px solid #cacaca;
+	border: 1px solid #000;
 }
 
 .pass_table table {
-	margin-left:15px;
+	margin:15px 7px 0 7px;
+	width:301px;
 }
 
-.enter_table {
+.enter_table th, .enter_table td {
+	padding-bottom:10px;
 }
 
 .enter_table td input {
-	width:150px;
+	width:100%;
+	border:1px solid #000;
 }
 
 .enter_table th {
-	color:#1c4364;
+	color:#000;
 	font-size:11px;
-	font-weight:bold;
-	text-align:right;
+	text-align:left;
 }
 
 
@@ -247,11 +273,13 @@ h2 {
 .pass_button {
 	display:block;
 	margin:0 auto;
+	background:#000;
+	color:#fff;
+	font-weight:bold;
 }
 
 .button_margin {
-	margin-top:15px;
-	margin-bottom:15px;
+	margin:0 8px 7px 15px;
 }
 
 .registration {
@@ -264,7 +292,7 @@ h2 {
 }
 
 table.statistic_table {
-	border: 1px solid #cacaca;
+	border: 1px solid #000;
 	margin-bottom:30px;
 }
 
@@ -274,15 +302,16 @@ table.statistic_table {
 }
 
 .statistics_link a {
+	background:url('../ebs_img/for_filter.gif') no-repeat right center;
 	text-decoration:none;
 	color:#fff;
-	float:right;
-	padding-top:3px;
-	padding-right:15px;
+	float:left;
+	margin-top:3px;
+	padding:0 15px 0 5px;
 }
 
 .statistics_title {
-	padding-top:3px;
+	padding-top:1px;
 }
 
 #pagination {
@@ -314,7 +343,6 @@ table.statistic_table {
 }
 
 .user_info {
-	background:url(../img/design/user_info_bg.gif) repeat-x;
 }
 
 .diagram_bg {
@@ -322,13 +350,8 @@ table.statistic_table {
 }
 
 .user_block {
-	background:url(../img/design/MAN.png) no-repeat;
-	padding-left:170px;
-	padding-top:25px;
 	font-size:12px;
-	min-height:155px;
-    height:auto !important;
-    height:155px;
+	margin:21px 18px;
 }
 
 .trafficlimit_margin {
@@ -382,7 +405,7 @@ table.statistic_table {
 }
 
 .tariff_activate a {
-	color:#0B4060;
+	color:#000;
 	text-decoration:none;
 	font-weight:bold;
 	font-size:11px;
@@ -400,8 +423,24 @@ table.statistic_table {
 	*padding-top:-10px;
 }
 
+.last-news {
+	background:url('../ebs_img/find.gif') no-repeat top left;
+	padding-left:29px;
+	margin:8px 0;
+}
+
 .last_news_caption, .last-news .title {
 	color:#9faec0;
+}
+
+.last-news .margin-right {
+	margin-right:29px;
+}
+
+.last-news .news-delete {
+	background:url('../ebs_img/bucket.gif') no-repeat top left;
+	width:20px;
+	height:23px;
 }
 
 .last-news .title {
@@ -409,13 +448,14 @@ table.statistic_table {
 }
 
 .last-news .date {
-	color:#a4a4a4;
-	font-size:8px;
+	color:#000;
+	font-size:11px;
+	font-weight:bold;
 }
 
 .last-news .body {
-	font-size:10px;
-	color:#6a6a6a;
+	font-size:11px;
+	color:#474747;
 }
 
 .range li{
@@ -427,6 +467,7 @@ table.statistic_table {
 
 .range li input {
 	width:70px;
+	color:#ff4f11;
 }
 
 .total {
@@ -440,9 +481,221 @@ body:nth-of-type(1) .statistics_link {
 }
 
 body:nth-of-type(1) .statistics_link a {
-	margin-top:2px;
 }
 
 body:nth-of-type(1) .chrome_header {
 	margin:0px;
+}
+
+
+a {
+	text-decoration:none;
+	border:none;
+}
+
+.horizontal-menu div {
+	float:left;
+	width:20%;
+	text-align:center;
+}
+
+.horizontal-menu a.text, .vertical-menu a.text {
+	display:block;
+	font-size:12px;
+	color:black;
+	font-weight:bold;
+	padding-top:73px;
+}
+
+.vertical-menu a.text {
+	padding-bottom:10px;
+}
+
+a.user-img {
+	background:url('../ebs_img/user.gif') no-repeat center top;
+	width:100%;
+}
+
+a.password-img {
+	background:url('../ebs_img/password.gif') no-repeat center top;
+	width:100%;
+
+}
+a.tariff-img {
+	background:url('../ebs_img/change_tariff.gif') no-repeat center top;
+	width:100%;
+
+}
+a.card-img {
+	background:url('../ebs_img/card_activation.gif') no-repeat center top;
+	width:100%;
+
+	
+}
+a.exit-img {
+	background:url('../ebs_img/exit.gif') no-repeat center top;
+	width:100%;
+
+}
+a.promise-img {
+	background:url('../ebs_img/promise.gif') no-repeat -6px 0;
+	width:100%;
+}
+a.services-img {
+	background:url('../ebs_img/addon_services.gif') no-repeat -6px 0;
+	width:100%;
+}
+a.statistic-img {
+	background:url('../ebs_img/statistic.gif') no-repeat -6px 0;
+	width:100%;
+}
+
+
+
+a.user-img:Hover {
+	background:url('../ebs_img/user_on.gif') no-repeat center top;
+	width:100%;
+}
+
+a.password-img:Hover {
+	background:url('../ebs_img/password_on.gif') no-repeat center top;
+	width:100%;
+
+}
+a.tariff-img:Hover {
+	background:url('../ebs_img/change_tariff_on.gif') no-repeat center top;
+	width:100%;
+
+}
+a.card-img:Hover {
+	background:url('../ebs_img/card_activation_on.gif') no-repeat center top;
+	width:100%;
+
+	
+}
+a.exit-img:Hover {
+	background:url('../ebs_img/exit_on.gif') no-repeat center top;
+	width:100%;
+
+}
+a.promise-img:Hover {
+	background:url('../ebs_img/promise_on.gif') no-repeat -6px 0;
+	width:100%;
+}
+a.services-img:Hover {
+	background:url('../ebs_img/addon_services_on.gif') no-repeat -6px 0;
+	width:100%;
+}
+a.statistic-img:Hover {
+	background:url('../ebs_img/statistic_on.gif') no-repeat -6px 0;
+	width:100%;
+}
+
+
+
+.user_ballsnce {
+	margin:23px 0 24px 20px;
+	color:#fe660d;
+	font-size:18px;
+	font-weight:bold;
+}
+
+.user_ballsnce span {
+	font-size:12px;
+	color:#777777;
+}
+
+.user-info {
+	margin:12px 30px 0 0;
+}
+
+.user-name {
+	font-size:12px;
+	color:#777777;
+	font-weight:bold;
+	text-align:right;
+}
+
+.news-cell {
+	padding:8px 0;
+}
+
+.news-cell .last-news {
+	margin-left:14px;
+	margin-right:14px;
+} 
+
+.statistics_link a.open, .open {
+	background:url('../ebs_img/open.gif') no-repeat;
+	width:12px;
+	height:13px;
+	margin-right:16px;
+	float:right;
+	padding:0;
+}
+
+.statistics_link a.close, .close  {
+	background:url('../ebs_img/more.gif') no-repeat;
+	width:13px;
+	height:12px;
+	margin-right:14px;
+	float:right;
+	padding:0;
+}
+
+.for-content {
+	padding-top:10px;
+}
+
+.main-table {
+	margin-top:27px;
+}
+
+.enter_table td input#send_button {
+	width:30px;
+}
+
+.enter_table td select {
+	border:1px solid #000;
+}
+
+.enter_table td h2 {
+	color:#000;
+	font-size:12px;
+	font-weight:bold;
+}
+
+.tariff-info {
+	width:318px;
+	margin:5px auto;
+	color:#5e5e5e;
+	font-size:11px;
+}
+
+.tariff-info span {
+	color:#ff4f11;
+}
+
+.promise-date{
+	color:#FF4F11;
+	font-weight:bold;
+}
+
+.promise_table {
+	border:1px solid #000;
+}
+
+.promise_table td.caption {
+	color:#2c2c2c;
+	font-weight:bold;
+	padding:10px;
+}
+
+.promise_table td input {
+	border:1px solid #000;
+	margin:0 10px;
+}
+
+.promise_table td input.promise_button {
+	margin:5px 10px;
 }

@@ -21,7 +21,7 @@
 <table class="pass_table wide" cellpadding="0" cellspacing="0">
 	<tr>
 		<th class="blue_caption white s-11 bold main_table_left_border right_border cursor" id="pass_click">
-			ВХОД В СИСТЕМУ
+			ВХОД В СИСТЕМУ <a id="enter" class="f-right close" href="#">&nbsp;</a>
 		</th>
 	</tr>
 	<tr>
@@ -39,7 +39,7 @@
 						{% endifnotequal %}
 					{% endfor  %}
 				</table>
-				<input type="submit" class="pass_button button_margin" value="Вход"/>
+				<input type="submit" class="pass_button button_margin f-right" value="OK"/>
 			</div>
 		</td>
 	</tr>
@@ -47,7 +47,7 @@
 <table class="pass_table wide" cellpadding="0" cellspacing="0">
 	<tr>
 		<th class="blue_caption white s-11 bold main_table_left_border right_border cursor" id="pin_click">
-			АКТИВАЦИЯ КАРТЫ ДОСТУПА
+			АКТИВАЦИЯ КАРТЫ ДОСТУПА <a id="card_activation" class="f-right open" href="#">&nbsp;</a>
 		</th>
 	</tr>
 	<tr>
@@ -65,7 +65,7 @@
 						{% endifnotequal %}
 					{% endfor  %}
 				</table>
-				<input type="submit" class="pass_button button_margin" value="Активировать"/>
+				<input type="submit" class="pass_button button_margin f-right" value="OK"/>
 			</div>
 		</td>
 	</tr>
@@ -88,6 +88,13 @@
 		$(function() {
 			function runPassEffect(){
 				$("#pass_body").toggle();
+				if ($("#enter").attr('class') == 'f-right close') {
+					$("#enter").attr('class','f-right open');
+					$("#card_activation").attr('class','f-right close');
+				} else {
+					$("#enter").attr('class','f-right close');
+					$("#card_activation").attr('class','f-right open');
+				}
 			};
 			
 			function runPinEffect(){

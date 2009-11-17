@@ -69,6 +69,33 @@
 	    }).attr('value', '{{ date_id_dict.active_session_date_to }}');
 	})
 </script>
+
+<script>	
+//hide		
+		
+		function runEffect(object_id){
+				$("#"+object_id).toggle();
+				var date = new Date();
+                date.setTime(date.getTime() + (3 * 24 * 60 * 60 * 1000));
+				if ($("#"+object_id+"_a").attr('class') == 'close') {
+					$("#"+object_id+"_a").attr('class','open');
+					$.cookie(object_id, 'hide', { path: '/', expires: date });
+				} else {
+					$("#"+object_id+"_a").attr('class','close');
+					$.cookie(object_id, 'show', { path: '/', expires: date });
+				}
+			};
+		
+//endhide
+	
+</script>
+
+<script type="text/javascript">
+		$(document).ready(function() {
+			checkCookie('statistics');
+		});
+</script>
+
 {% endblock %}
 
 {% block content %}
@@ -91,14 +118,15 @@
 							</ul>
 						</div>
 					</form>
-					<a href="/transaction/">Показать всю историю</a>
+					<a id="transactions_data_a" class="close" href="javascript:return 0;" onclick="runEffect('transactions_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('transactions').submit(); return false;">Фильтровать</a>
+					<a href="/transaction/">Архив</a>
 				</div>
 				<div class="f-left statistics_title">ИНФОРМАЦИЯ О РУЧНЫХ ОПЕРАЦИЯХ С БАЛАНСОМ</div>
 			</th>
 		</tr>
 		<tr>
-			<td class="">
+			<td id="transactions_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
 						<th>Дата</th>
@@ -126,7 +154,6 @@
 		{% endif %}
         
 		{% if active_session %}
-        <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white">
@@ -142,14 +169,15 @@
 							</ul>
 						</div>
 					</form>
-					<a href="/session/info/">Показать всю историю</a>
+					<a id="active_session_data_a" class="close" href="javascript:return 0;" onclick="runEffect('active_session_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('active_session').submit(); return false;">Фильтровать</a>
+					<a href="/session/info/">Архив</a>
 				</div>
 				<div class="f-left statistics_title">ИНФОРМАЦИЯ О СЕССИЯХ</div>
 			</th>
 		</tr>
 		<tr>
-			<td class="">
+			<td id="active_session_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
 						<th>Начало</th>
@@ -162,7 +190,7 @@
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_start|date:"d.m.Y H:i" }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.date_end|date:"d.m.Y H:i" }}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.nas_id }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ session.framed_ip_address }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if session.bytes_out or session.bytes_in %}{% traffic_format session.bytes_out %} / {% traffic_format session.bytes_in %} / {% traffic_format session.bytes_in session.bytes_out %}{% endif %}&nbsp;&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% time_format session.session_time %}&nbsp;</td>
 						</tr>
@@ -177,7 +205,6 @@
 
 		
 		{% if periodical_service_history %}
-        <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white">
@@ -193,14 +220,15 @@
 							</ul>
 						</div>
 					</form>
-					<a href="/service/history/info/">Показать всю историю</a>
+					<a id="periodical_service_history_data_a" class="close" href="javascript:return 0;" onclick="runEffect('periodical_service_history_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('periodical_service_history').submit(); return false;">Фильтровать</a>
+					<a href="/service/history/info/">Архив</a>
 				</div>
 				<div class="f-left statistics_title">СПИСАНИЕ ПЕРИОДИЧЕСКИХ УСЛУГ</div>
 			</th>
 		</tr>
 		<tr>
-			<td class="">
+			<td id="periodical_service_history_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
 						<th>Услуга</th>
@@ -223,7 +251,6 @@
 		
 
 		{% if one_time_history %}
-        <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white">
@@ -239,14 +266,15 @@
 							</ul>
 						</div>
 					</form>
-					<a href="/one/time/history/info/">Показать всю историю</a>
+					<a id="one_time_history_data_a" class="close" href="javascript:return 0;" onclick="runEffect('one_time_history_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('one_time_history').submit(); return false;">Фильтровать</a>
+					<a href="/one/time/history/info/">Архив</a>
 				</div>
 				<div class="f-left statistics_title">СПИСАНИЯ РАЗОВАХ УСЛУГ</div>
 			</th>
 		</tr>
 		<tr>
-			<td class="">
+			<td id="one_time_history_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
 						<th>Услуга</th>
@@ -266,7 +294,6 @@
 		{% endif %}
 		
 		{% if addon_service_transaction %}
-        <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white">
@@ -282,14 +309,15 @@
 							</ul>
 						</div>
 					</form>
-					<a href="/addon/services/transaction/info/">Показать всю историю</a>
+					<a id="addon_service_transaction_data_a" class="close" href="javascript:return 0;" onclick="runEffect('addon_service_transaction_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('addon_service_transaction').submit(); return false;">Фильтровать</a>
+					<a href="/addon/services/transaction/info/">Архив</a>
 				</div>
 				<div class="f-left statistics_title">СПИСАНИЯ ЗА ПОДКЛЮЧАЕМЫЕ УСЛУГИ</div>
 			</th>
 		</tr>
 		<tr>
-			<td class="">
+			<td id="addon_service_transaction_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
 						<th>Услуга</th>
@@ -313,7 +341,6 @@
 		{% endif %}
 		
 		{% if traffic_transaction %}
-        <tr><td>&nbsp;</td></tr>
 		<tr>
 			<th class="white bold s-11 blue_caption">
 				<div class="f-right statistics_link white">
@@ -329,14 +356,15 @@
 							</ul>
 						</div>
 					</form>
-					<a href="/traffic/transaction/info/">Показать всю историю</a>
+					<a id="traffic_transaction_data_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic_transaction_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('traffic_transaction').submit(); return false;">Фильтровать</a>
+					<a href="/traffic/transaction/info/">Архив</a>
 				</div>
 				<div class="f-left statistics_title">СПИСАНИЯ ЗА ТРАФИК</div>
 			</th>
 		</tr>
 		<tr>
-			<td class="">
+			<td id="traffic_transaction_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
 						<th>Дата</th>
