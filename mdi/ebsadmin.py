@@ -58,7 +58,7 @@ from CustomForms import TemplatesWindow, SqlDialog
 from TPChangeRules import TPRulesEbs
 from AddonServiceFrame import AddonServiceEbs
 from MessagesFrame import MessagesEbs
-
+from LogFrame import LogViewEbs
 
 _reportsdict = [['Статистика по группам',[['report3_users.xml', ['groups'], 'Общий трафик']]],\
                 ['Глобальная статистика',[['report3_users.xml', ['gstat_globals'], 'Общий трафик'],['report3_users.xml', ['gstat_multi'], 'Трафик с выбором классов'], ['report3_pie.xml', ['pie_gmulti'], 'Пирог']]],\
@@ -260,6 +260,18 @@ class MainWindow(QtGui.QMainWindow):
         self.workspace.addWindow(child)
         child.show()
 
+
+    @connlogin
+    def adminsLogViewWindow(self):
+        child = LogViewEbs(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        child.show()
+            
+    
     @connlogin
     def logview(self):
         child = LogViewWindow(connection=connection)
@@ -376,10 +388,16 @@ class MainWindow(QtGui.QMainWindow):
        
 
         self.saveAct = QtGui.QAction(QtGui.QIcon("images/sp.png"), u'Расчётные периоды', self)
-        #self.saveAct.setShortcut(self.tr("Ctrl+S"))
         self.saveAct.setStatusTip(u"Расчётные периоды")
         self.connect(self.saveAct, QtCore.SIGNAL("triggered()"), self.save)
 
+
+
+        self.adminLogViewAct = QtGui.QAction(QtGui.QIcon("images/add.png"), u'Лог действий', self)
+        self.adminLogViewAct.setStatusTip(u"Лог действий")
+        self.connect(self.adminLogViewAct, QtCore.SIGNAL("triggered()"), self.adminsLogViewWindow)
+        
+        
         self.saveAsAct = QtGui.QAction(QtGui.QIcon("images/system_administrators.png"),u'Администраторы', self)
         self.saveAsAct.setStatusTip(u"Системные администраторы")
         self.connect(self.saveAsAct, QtCore.SIGNAL("triggered()"), self.saveAs)
@@ -563,9 +581,12 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addAction(self.messagesAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.logViewAct)
+        
         self.fileMenu.addSeparator()
         
-
+        self.fileMenu.addAction(self.adminLogViewAct)
+        
+        self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAct)
 
         self.windowMenu = self.menuBar().addMenu(u"&Окна")

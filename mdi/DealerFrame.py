@@ -343,7 +343,7 @@ class AddDealerFrame(QtGui.QMainWindow):
         
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_not_activated), QtGui.QApplication.translate("MainWindow", "Карточки в наличии", None, QtGui.QApplication.UnicodeUTF8))
 
-        columns = ["#", u"Серия", u"Тип", u"Тариф", u"NAS", u"PIN", u"Номинальная стоимость", u"Дата начала", u"Дата конца", u"Дата активации"]
+        columns = ["#", u"Серия", u"Тип", u"Тариф", u"NAS", u"PIN", u"Аккаунт", u"Номинальная стоимость", u"Дата начала", u"Дата конца", u"Дата активации"]
         makeHeaders(columns, self.tableWidget_activated)
 
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_activated), QtGui.QApplication.translate("MainWindow", "Активированные карточки", None, QtGui.QApplication.UnicodeUTF8))
@@ -569,7 +569,7 @@ class AddDealerFrame(QtGui.QMainWindow):
                 self.addrow(self.tableWidget_not_activated, d.end_date.strftime(strftimeFormat), i,8)
                 i+=1
 
-            activated = self.connection.sql("SELECT id, series, pin, nominal, start_date, end_date, activated, nas_id, tarif_id FROM billservice_card WHERE activated is not Null and sold is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=%s)) ORDER BY id ASC" % self.model.id)
+            activated = self.connection.sql("SELECT id, series, pin, nominal, start_date, end_date, activated, nas_id, tarif_id, (SELECT username FROM billservice_account WHERE id=card.activated_by_id) as username FROM billservice_card as card WHERE activated is not Null and sold is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=%s)) ORDER BY id ASC" % self.model.id)
  
            
             
@@ -590,12 +590,13 @@ class AddDealerFrame(QtGui.QMainWindow):
                     self.addrow(self.tableWidget_activated, u"Карта предоплаты", i,2)
                 
 
-
+                
                 self.addrow(self.tableWidget_activated, d.pin, i,4)
-                self.addrow(self.tableWidget_activated, d.nominal, i,5)
-                self.addrow(self.tableWidget_activated, d.start_date.strftime(strftimeFormat), i,6)
-                self.addrow(self.tableWidget_activated, d.end_date.strftime(strftimeFormat), i,7)
-                self.addrow(self.tableWidget_activated, d.activated.strftime(strftimeFormat), i,8)
+                self.addrow(self.tableWidget_activated, d.username, i,5)
+                self.addrow(self.tableWidget_activated, d.nominal, i,6)
+                self.addrow(self.tableWidget_activated, d.start_date.strftime(strftimeFormat), i,7)
+                self.addrow(self.tableWidget_activated, d.end_date.strftime(strftimeFormat), i,8)
+                self.addrow(self.tableWidget_activated, d.activated.strftime(strftimeFormat), i,9)
                 i+=1
 
             #self.pptp_checkBox.setCheckState(self.model.allow_pptp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )

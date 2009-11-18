@@ -99,6 +99,9 @@ class Object(object):
 
     def __call__(self):
         return self.id
+    
+    def __repr__(self):
+        return unicode(self.__dict__)
 
     def hasattr(self, attr):
         if attr in self.__dict__:

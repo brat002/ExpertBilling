@@ -1073,3 +1073,8 @@ class AccountViewedNews(models.Model):
     viewed = models.BooleanField(default=False)
     
     
+class Log(models.Model):
+    systemuser = models.ForeignKey(SystemUser)
+    text = models.TextField()
+    created = models.DateTimeField()
+    
