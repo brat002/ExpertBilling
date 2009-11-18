@@ -29,8 +29,8 @@
 			<div id="pass_body">
 				<table cellpadding="5px;" class="enter_table">
 					{% for field in form %}
-						{% ifnotequal field.label 'пин' %}
-							{% ifnotequal field.label 'user' %}
+						{% ifnotequal field.label 'Пин' %}
+							{% ifnotequal field.label 'User' %}
 								<tr>
 									<th><label>{{ field.label }}:</label></th>
 									<td>{{ field }}</td>
@@ -55,10 +55,10 @@
 			<div id="pin_body">
 				<table cellpadding="5px;" class="enter_table">
 					{% for field in form %}
-						{% ifnotequal field.label 'пароль' %}
-							{% ifnotequal field.label 'имя пользователя' %}
+						{% ifnotequal field.label 'Пароль' %}
+							{% ifnotequal field.label 'Имя пользователя' %}
 								<tr>
-									<th><label>{% ifequal field.label 'user' %}имя пользователя{% else %}{{ field.label }}{% endifequal %}:</label></th>
+									<th><label>{% ifequal field.label 'User' %}Имя пользователя{% else %}{{ field.label }}{% endifequal %}:</label></th>
 									<td>{{ field }}</td>
 								</tr>
 							{% endifnotequal %}
