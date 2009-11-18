@@ -87,7 +87,7 @@
 								<th>
 									Стоимость перехода на данный тарифный план составит:	
 								</th>
-								<td align="center" valign="top">
+								<td align="center" valign="top" width="170px">
 									<div id="need_cost"><h2>0</h2></div>
 								</td>
 							</tr>
@@ -104,6 +104,14 @@
 									<input id="send_button" type="button" class="pass_button button_margin f-right" onclick="change_tariff()" value="OK"/>
 								</td>
 							</tr>
+							<tr>
+								<td colspan="2">
+									<div class="tariff-info">
+										<span>Внимание!</span> При смене тарифного плана все подключаемые услуги будут отключены!<br />
+										Обратите внимание на условия досрочного отключения подключенных услуг.
+									</div>
+								</td>
+							</tr>
 					</table>
 				</td>
 			</tr>
@@ -112,10 +120,6 @@
 		<!--<div id="ok_message" class="a-center"></div>-->
 		<div class="clear"></div>
 	</form>
-<div class="tariff-info">
-<span>Внимание!</span> При смене тарифного плана все подключаемые услуги будут отключены!<br />
-Обратите внимание на условия досрочного отключения подключенных услуг.
-</div>
 </div>
 {% endif %}
 </div>

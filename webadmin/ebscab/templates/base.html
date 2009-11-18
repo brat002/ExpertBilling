@@ -17,6 +17,13 @@
 {% block extra_head %}
 {% endblock %}
 
+{% if active_class %}
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('.{{ active_class }}').addClass('{{ active_class }}-active')	
+	});
+</script>
+{% endif %}
 </head>
 
 <body>
@@ -31,9 +38,5 @@
 	{% endblock%}
 	 <div id="content-clear"></div>
 </div>
-
-{% block footer %}
-
-{% endblock %}
 </body>
 </html>

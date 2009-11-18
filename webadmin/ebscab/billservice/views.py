@@ -204,7 +204,7 @@ def index(request):
             'tariff_flag':tariff_flag,
             'trafficlimit':traffic,
             'prepaidtraffic':prepaidtraffic,
-            'form':  CardForm(),
+            'active_class':'user-img',
             }
     
 @render_to('accounts/netflowstream_info.html')
@@ -228,22 +228,22 @@ def get_promise(request):
     if Transaction.objects.filter(account=user, promise=True, promise_expired=False).count() >= 1:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         error_message = u"У вас есть незакрытые обещанные платежи"
-        return {'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, }        
+        return {'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'active_class':'promise-img',}        
     if request.method == 'POST':
         rf = PromiseForm(request.POST)
         if not rf.is_valid():
             last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Проверьте введённые в поля данные"
-            return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
+            return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, 'active_class':'promise-img',}
         sum=rf.cleaned_data.get("sum", 0)
         if sum>settings.MAX_PROMISE_SUM:
             last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Вы превысили максимальный размер обещанного платежа"
-            return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
+            return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, 'active_class':'promise-img',}
         if sum<=0:
             last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
             error_message = u"Сумма обещанного платежа должна быть положительной"
-            return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, }
+            return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, 'active_class':'promise-img',}
         cursor = connection.cursor()
         cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise, end_promise, promise_expired) 
                           VALUES(%s, 'Обещанный платёж', 'MANUAL_TRANSACTION', True, get_tarif(%s), %s, now(), True, '%s', False)""" % (user.id, user.id, sum*(-1), LEFT_PROMISE_DATE))
@@ -252,10 +252,10 @@ def get_promise(request):
         
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         
-        return {'error_message': u'Обещанный платёж выполнен успешно. Обращаем ваше внимание на то, что повторно воспользоваться услугой обещанного платежа вы сможете после погашения суммы платежа или истечения даты созданного платежа.', 'disable_promise': True, 'last_promises': last_promises,}
+        return {'error_message': u'Обещанный платёж выполнен успешно. Обращаем ваше внимание на то, что повторно воспользоваться услугой обещанного платежа вы сможете после погашения суммы платежа или истечения даты созданного платежа.', 'disable_promise': True, 'last_promises': last_promises, 'active_class':'promise-img',}
     else:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
-        return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE}        
+        return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}        
 
     
 @render_to('accounts/transaction.html')
@@ -283,6 +283,7 @@ def transaction(request):
             'summ':summ,
             'summ_on_page':summ_on_page,
             'rec_count':rec_count,
+            'active_class':'statistic-img',
             }
     
 @render_to('accounts/vpn_session.html')
@@ -326,6 +327,7 @@ def vpn_session(request):
             'bytes_out_on_page':bytes_out_on_page,
             'bytes_all_on_page':bytes_in_on_page,
             'is_range':is_range,
+            'active_class':'statistic-img',
             }
     
 
@@ -361,6 +363,7 @@ def services_info(request):
             'summ':summ,
             'summ_on_page':summ_on_page,
             'rec_count':rec_count,
+            'active_class':'statistic-img',
             }
     
     
@@ -652,6 +655,7 @@ def statistics(request):
             'traffic_transaction':traffic_transaction,
             'form':StatististicForm(),
             'date_id_dict':date_id_dict,
+            'active_class':'statistic-img',
             }
 
 
@@ -684,6 +688,7 @@ def addon_service(request):
                    'services':services,
                    'user_services':user_services,
                    'user':user,
+                   'active_class':'services-img',
                    }
     if request.session.has_key('service_message'):
         return_dict['service_message'] = request.session['service_message']
@@ -801,6 +806,7 @@ def periodical_service_history(request):
             'summ':summ,
             'summ_on_page':summ_on_page,
             'rec_count':rec_count,
+            'active_class':'statistic-img',
             }
 
 @render_to('accounts/addon_service_transaction.html')
@@ -827,6 +833,7 @@ def addon_service_transaction(request):
             'summ':summ,
             'summ_on_page':summ_on_page,
             'rec_count':rec_count,
+            'active_class':'statistic-img',
             }
     
 @render_to('accounts/traffic_transaction.html')
@@ -852,6 +859,7 @@ def traffic_transaction(request):
             'summ':summ,
             'summ_on_page':summ_on_page,
             'rec_count':rec_count,
+            'active_class':'statistic-img',
             }
     
 @render_to('accounts/one_time_history.html')
@@ -877,6 +885,7 @@ def one_time_history(request):
             'summ':summ,
             'summ_on_page':summ_on_page,
             'rec_count':rec_count,
+            'active_class':'statistic-img',
             }    
 
 @ajax_request
