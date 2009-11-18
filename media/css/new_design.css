@@ -213,6 +213,10 @@ h2 {
 	border-bottom:1px solid #fff;
 }
 
+.main_table div.padding_bottom {
+	height:50px;
+}
+
 .main_table_border {
 	border: 1px solid #000;
 }
