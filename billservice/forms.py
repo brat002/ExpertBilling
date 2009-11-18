@@ -5,10 +5,10 @@ from datetime import datetime, date
 from billservice.models import Tariff, TPChangeRule
 
 class LoginForm(forms.Form):
-    username = forms.CharField(label=u"имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
-    user = forms.CharField(label=u"user", required = False)
-    password = forms.CharField(label=u"пароль", widget=forms.PasswordInput, required = False)
-    pin = forms.CharField(label=u"пин", widget=forms.PasswordInput(attrs={'class': 'unset'}), required = False)
+    username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
+    user = forms.CharField(label=u"User", required = False)
+    password = forms.CharField(label=u"Пароль", widget=forms.PasswordInput, required = False)
+    pin = forms.CharField(label=u"Пин", widget=forms.PasswordInput(attrs={'class': 'unset'}), required = False)
     
 class PromiseForm(forms.Form):
     sum = forms.FloatField(label=u"Сумма", required = True, error_messages={'required':u'Вы не указали размер платежа!'})

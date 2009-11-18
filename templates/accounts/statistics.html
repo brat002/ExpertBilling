@@ -148,6 +148,9 @@
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.comment }}&nbsp;</td>
 						</tr>
 					{% endfor %}
+					<tr>
+						<td colspan="7" class="no_border">&nbsp;</td>
+					</tr>
 				</table>
 			</td>
 		</tr>
@@ -195,6 +198,9 @@
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% time_format session.session_time %}&nbsp;</td>
 						</tr>
 					{% endfor %}
+					<tr>
+						<td colspan="5" class="no_border">&nbsp;</td>
+					</tr>
 				</table>
 			</td>
 		</tr>
@@ -244,6 +250,9 @@
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.type_id }}&nbsp;</td>
 						</tr>
 					{% endfor %}
+					<tr>
+						<td colspan="4" class="no_border">&nbsp;</td>
+					</tr>
 				</table>
 			</td>
 		</tr>
@@ -288,6 +297,9 @@
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
 						</tr>
 					{% endfor %}
+					<tr>
+						<td colspan="3" class="no_border">&nbsp;</td>
+					</tr>
 				</table>
 			</td>
 		</tr>
@@ -335,6 +347,9 @@
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y H:i" }}&nbsp;</td>
 						</tr>
 					{% endfor %}
+					<tr>
+						<td colspan="5" class="no_border">&nbsp;</td>
+					</tr>
 				</table>
 			</td>
 		</tr>
@@ -376,6 +391,9 @@
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ }}&nbsp;</td>
 						</tr>
 					{% endfor %}
+					<tr>
+						<td colspan="2" class="no_border">&nbsp;</td>
+					</tr>
 				</table>
 			</td>
 		</tr>

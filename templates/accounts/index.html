@@ -158,9 +158,10 @@
 						{% for traffic_limit in trafficlimit %}
 							{% traffic_limit_row traffic_limit user forloop.counter forloop.last %}
 						{% endfor %}
+						<tr>
+							<td colspan="5" class="no_border">&nbsp;</td>
+						</tr>
 					</table>
-				{% else %}
-					<h2 align="center">Нет Данных!</h2>
 				{% endif %}
 		</td>
 		{% endspaceless %}
@@ -188,9 +189,10 @@
 						</tr>
 					{% endfor %}
 				{% endfor %}
+				<tr>
+					<td colspan="2" class="no_border">&nbsp;</td>
+				</tr>
 			</table>
-			{% else %}
-				<h2 align="center">Нет Данных!</h2>
 			{% endif %}
 		</td>
 	</tr>
@@ -219,9 +221,10 @@
 								</tr>
 			  				{% endifnotequal %}
 		   				{% endfor %}
+					<tr>
+						<td colspan="2" class="no_border">&nbsp;</td>
+					</tr>
 				</table>
-			{% else %}
-				<h2 align="center">Нет Данных!</h2>
 			{% endif %}
 		</td>
 	</tr>

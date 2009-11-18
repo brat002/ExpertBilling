@@ -52,22 +52,30 @@
 	<tr>
 		<td>
 			<form method="post" onsubmit="return false;">
-				<table class="card_activation f-left">
-					{{ form }}
-				</table>
 				<div id="message" class="s-11"></div>
-				<div class="wide f-left">
-					<input type="submit" value="Активировать" class="pass_button button_margin f-right" onclick="activate_car()">
-				</div>
+				<table class="card_activation enter_table">
+					{{ form }}
+					<tr>
+						<td colspan="2">
+							<div class="f-right">
+								<input type="submit" value="Активировать" class="pass_button f-right" onclick="activate_car()">
+							</div>	
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2">
+							<div class="card_text f-left">
+								<span>Для активации карточек необходимо выполнить следующие действия:</span>
+								<ol type="1">
+									<li>Ввести в поля «пин», «серия», «номер карты» пин, серию и номер, которые указаны на Вашей карточке;</li>
+									<li>Если карточка еще не была активирована, то Ваш баланс пополняется автоматически на указанную сумму;</li>
+								</ol>
+							</div>
+						</td>
+					</tr>
+				</table>
 			</form>
-			<div class="card_text f-left">
-				<span>Для активации карточек необходимо выполнить следующие действия:</span>
-				<ol type="1">
-					<li>Ввести в поля «пин», «серия», «номер карты» пин, серию и номер, которые указаны на Вашей карточке;</li>
-					<li>Если карточка еще не была активирована, то Ваш баланс пополняется автоматически на указанную сумму;</li>
-					<li>Если Администратор заблокировал данную услугу, вам будет выведено сообщение об ошибке.</li>
-				</ol>
-			</div>	
+				
 		</td>
 	</tr>
 </table>
