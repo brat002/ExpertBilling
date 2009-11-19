@@ -3979,6 +3979,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         initargs = {"setname":"account_frame", "objname":"AccountEbsMDI", "winsize":(0,0,1100,600), "wintitle":"Пользователи", "tablecolumns":columns, "spltsize":(0,0,391,411), "treeheader":"Тарифы", "tbiconsize":(18,18)}
         self.parent = parent
         self.selected_account = selected_account
+        self.last_click = QtCore.QTime(0, 0, 0, 0)
         super(AccountsMdiEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
@@ -4373,6 +4374,18 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
     #    event.accept()
         
     def refresh(self, item=None, k=''):
+        if item and not self.last_click:
+            self.last_click = QtCore.QTime.currentTime()
+            return
+        now = QtCore.QTime.currentTime()
+        if item and ((now.second() + now.msec()) - (1000*self.last_click.second()+self.last_click.msec())  )<500:
+            print "doubleclick"
+            print ((1000*now.second() + now.msec()) - (1000*self.last_click.second()+self.last_click.msec()) )
+            self.last_click = None
+            return
+        else:
+            print "singleclick"        
+
         self.tableWidget.setSortingEnabled(False)
         self.statusBar().showMessage(u"Ожидание ответа")
         self.treeWidget.dropEvent=self.treeWidgetDropEvent
