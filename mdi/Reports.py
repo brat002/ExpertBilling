@@ -256,7 +256,10 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.promise, i, 9, promise = item.promise)
                 sum+=item.summ*(-1)
                 if item.promise:
-                    self.addrow(item.end_promise.strftime(self.strftimeFormat), i, 10, promise = item.promise)
+                    try:
+                        self.addrow(item.end_promise.strftime(self.strftimeFormat), i, 10, promise = item.promise)
+                    except Exception, e:
+                        print e
                 i+=1
             self.addrow(u"Итого", i, 6)
             self.addrow(sum, i, 7)
