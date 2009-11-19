@@ -211,9 +211,9 @@ class RPCServer(object):
         
         connection.commit()
 
-        log_string = """Пользователь %s выполнил nas_action %s для аккаунта %s""" % (vars.USER_ID[0], action, row['username'],)
+        log_string = u"""Пользователь %s выполнил nas_action %s для аккаунта %s""" % (vars.USER_ID[0], action, row['username'],)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         
         del account_id
         del row
@@ -226,9 +226,9 @@ class RPCServer(object):
             #print "delete %s transaction" % i
             delete_transaction(cur, int(i))
         connection.commit()
-        log_string = """Пользователь %s выполнил отмену проводок %s""" % (vars.USER_ID[0], str(ids),)
+        log_string = u"""Пользователь %s выполнил отмену проводок %s""" % (vars.USER_ID[0], str(ids),)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return
     
     def flush(self, cur=None, connection=None):
@@ -247,9 +247,9 @@ class RPCServer(object):
             raise Exception('Query returned more than 1 result!')
         if r==[]:
             return None
-        log_string = """Пользователь %s выполнил SQL запрос %s""" % (vars.USER_ID[0], sql,)
+        log_string = u"""Пользователь %s выполнил SQL запрос %s""" % (vars.USER_ID[0], sql,)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return Object(r[0])
 
     
@@ -265,9 +265,9 @@ class RPCServer(object):
         cur.execute(sql)
         result = map(Object, cur.fetchall())
         
-        log_string = """Пользователь %s получил список логируемых действий""" % (vars.USER_ID[0], )
+        log_string = u"""Пользователь %s получил список логируемых действий""" % (vars.USER_ID[0], )
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result
     
     def get_list(self, sql, cur=None, connection=None):
@@ -299,9 +299,9 @@ class RPCServer(object):
         if end_promise:
             transaction.end_promise = end_promise
         
-        log_string = """Пользователь %s выполнил платёж %s для аккаунта %s""" % (vars.USER_ID[0], str(transaction.__dict__).decode('unicode-escape').encode('utf-8'), account,)
+        log_string = u"""Пользователь %s выполнил платёж %s для аккаунта %s""" % (vars.USER_ID[0], str(transaction.__dict__).decode('unicode-escape').encode('utf-8'), account,)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         
         try:
             sql = transaction.save("billservice_transaction")
@@ -322,9 +322,9 @@ class RPCServer(object):
         o.tarif_id=tarif
         o.datetime = datetime
         
-        log_string = """Пользователь %s перевёл аккаунт %s на тарифный план %s""" % (vars.USER_ID[0], account, tarif)
+        log_string = u"""Пользователь %s перевёл аккаунт %s на тарифный план %s""" % (vars.USER_ID[0], account, tarif)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         try:
             #sql = "UPDATE billservice_account SET ballance = ballance - %f WHERE id = %d;" % (sum*(-1), account)
             sql = o.save("billservice_accounttarif")
@@ -412,9 +412,9 @@ class RPCServer(object):
         connection.commit()
         for account in accounts:
             try:
-                log_string = """Пользователь %s перевёл аккаунты %s на тарифный план %s""" % (vars.USER_ID[0], str(accounts), tarif)
+                log_string = u"""Пользователь %s перевёл аккаунты %s на тарифный план %s""" % (vars.USER_ID[0], str(accounts), tarif)
                 
-                cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+                cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
                 cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s,%s,%s)", (account, tarif, date))
             except Exception, e:
                 connection.rollback()
@@ -463,9 +463,9 @@ class RPCServer(object):
         sql = u"DELETE FROM %s where id=%d" % (table, id)
         #print sql
         cur.execute(sql)
-        log_string = """Пользователь %s удалил id %s из таблицы %s""" % (vars.USER_ID[0], id, table)
+        log_string = u"""Пользователь %s удалил id %s из таблицы %s""" % (vars.USER_ID[0], id, table)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         del table
         del id
         #connection.commit()
@@ -512,9 +512,9 @@ class RPCServer(object):
         a=time.clock()
         if return_response:
             result = map(Object, cur.fetchall())
-        log_string = """Пользователь %s выполнил SQL запрос %s""" % (vars.USER_ID[0], str(sql).decode('unicode-escape').encode('utf-8'),)
+        log_string = u"""Пользователь %s выполнил SQL запрос %s""" % (vars.USER_ID[0], str(sql).decode('unicode-escape').encode('utf-8'),)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         #print "Query length=", time.clock()-a
         return result
 
@@ -580,9 +580,9 @@ class RPCServer(object):
     
     
     def get_models(self, table='', fields = [], where={}, cur=None, connection=None):
-        log_string = """Пользователь %s получил список записей из таблицы  %s""" % (vars.USER_ID[0], table,)
+        log_string = u"""Пользователь %s получил список записей из таблицы  %s""" % (vars.USER_ID[0], table,)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         
         cur.execute("SELECT %s FROM %s WHERE %s ORDER BY id ASC;" % (",".join(fields) or "*", table, " AND ".join("%s=%s" % (wh, where[wh]) for wh in where) or 'id>0'))
         
@@ -609,9 +609,9 @@ class RPCServer(object):
         #a = open("c:/1.txt", "wb")
         #a.write("Пользователь %s получил параметры объекта %s из таблицы %s" % (vars.USER_ID[0], repr(result[0]), table))
         #a.close()
-        s = """Пользователь %s получил параметры объекта %s из таблицы %s""" % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape').encode('utf-8'), table)
+        log_string = """Пользователь %s получил параметры объекта %s из таблицы %s""" % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape').encode('utf-8'), table)
         #print s
-        cur.execute("""INSERT INTO auth_message(user_id, message) VALUES(1, %s)""", (s,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result[0]
     
         
@@ -623,9 +623,9 @@ class RPCServer(object):
         
         cur.execute("SELECT * FROM billservice_card WHERE id IN %s AND sold is Null;" % crd)
         result = map(Object, cur.fetchall())
-        log_string = """Пользователь %s получил список не проданных карт""" % (vars.USER_ID[0], )
+        log_string = u"""Пользователь %s получил список не проданных карт""" % (vars.USER_ID[0], )
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result
     
     
@@ -647,14 +647,14 @@ class RPCServer(object):
         log_string = """Пользователь %s получил параметры оператора %s""" % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape').encode('utf-8'))
         
         cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
-        return result
+        return result[0]
 
     
     def get_dealer_info(self, id, cur=None, connection=None):
         cur.execute("SELECT dealer.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_dealer as dealer JOIN billservice_bankdata as bankdata ON bankdata.id=dealer.bank_id WHERE dealer.id=%s", (id, ))
         result = Object(cur.fetchone())
 
-        log_string = """Пользователь %s получил параметры дилера %s """ % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape').encode('utf-8'))
+        log_string = """Пользователь %s получил параметры дилера %s """ % (vars.USER_ID[0], str(result.__dict__).decode('unicode-escape').encode('utf-8'))
         
         cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result
@@ -664,9 +664,9 @@ class RPCServer(object):
     def get_bank_for_operator(self, operator, cur=None, connection=None):
         cur.execute("SELECT * FROM billservice_bankdata WHERE id=(SELECT bank_id FROM billservice_operator WHERE id=%s)", (operator,))
         result = map(Object, cur.fetchall())
-        log_string = """Пользователь %s получил параметры банка оператора %s """ % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape').encode('utf-8'))
+        log_string = u"""Пользователь %s получил параметры банка оператора %s """ % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape').encode('utf-8'))
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result[0]
     
           
@@ -687,9 +687,9 @@ class RPCServer(object):
             FROM billservice_account AS acc 
             ORDER BY acc.username ASC;""")            
         result = map(Object, cur.fetchall())
-        log_string = """Пользователь %s получил список аккаунтов для тарифного плана""" % (vars.USER_ID[0],)
+        log_string = u"""Пользователь %s получил список аккаунтов для тарифного плана""" % (vars.USER_ID[0],)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result
 
      
@@ -697,9 +697,9 @@ class RPCServer(object):
         cur.execute("""SELECT id, name, active, (SELECT bsap.access_type
                    FROM billservice_accessparameters AS bsap WHERE (bsap.id=tariff.access_parameters_id) ORDER BY bsap.id LIMIT 1) AS ttype FROM billservice_tariff as tariff  WHERE tariff.deleted = False ORDER BY ttype, name;""")
         result = map(Object, cur.fetchall())
-        log_string = """Пользователь %s получил список тарифных планов""" % (vars.USER_ID[0],)
+        log_string = u"""Пользователь %s получил список тарифных планов""" % (vars.USER_ID[0],)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result
     
   
@@ -707,18 +707,18 @@ class RPCServer(object):
         cur.execute("""SELECT * FROM nas_trafficnode WHERE traffic_class_id=%s;""" % class_id)
         result = map(Object, cur.fetchall())
         
-        log_string = """Пользователь %s получил список составляющих класса %s""" % (vars.USER_ID[0], class_id, )
+        log_string = u"""Пользователь %s получил список составляющих класса %s""" % (vars.USER_ID[0], class_id, )
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result  
     
       
     def delete_card(self, id, cur=None, connection=None):
         cur.execute("DELETE FROM billservice_card WHERE id=%s", (id,))
         
-        log_string = """Пользователь %s удалил карту %s""" % (vars.USER_ID[0], class_id, )
+        log_string = u"""Пользователь %s удалил карту %s""" % (vars.USER_ID[0], class_id, )
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return
     
       
@@ -738,9 +738,9 @@ class RPCServer(object):
                     VALUES(%s,%s,%s,%s,%s,%s,%s,%s, %s)""", (class_id, name, direction, protocol, src_net, src_port, dst_net, dst_port, next_hop,)
                     )
         
-        log_string = """Пользователь %s создал составляющую класса %s с параметрами""" % (vars.USER_ID[0], class_id, str(name, direction, protocol, src_net, src_port, dst_net, dst_port, next_hop))
+        log_string = u"""Пользователь %s создал составляющую класса %s с параметрами""" % (vars.USER_ID[0], class_id, str(name, direction, protocol, src_net, src_port, dst_net, dst_port, next_hop))
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
 
 
     def get_class_nodes(self, class_id, cur=None, connection=None):
@@ -748,9 +748,9 @@ class RPCServer(object):
         cur.execute("""SELECT * FROM nas_trafficnode WHERE traffic_class_id=%s ORDER BY name, DIRECTION""", (class_id,))
         
         result = map(Object, cur.fetchall())
-        log_string = """Пользователь %s получил составляющие класса %s""" % (vars.USER_ID[0], class_id,)
+        log_string = u"""Пользователь %s получил составляющие класса %s""" % (vars.USER_ID[0], class_id,)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result
         
     def sql_as_dict(self, sql, return_response=True, cur=None, connection=None):
@@ -782,12 +782,12 @@ class RPCServer(object):
         cur.execute(sql)
         id = cur.fetchone()['id']
         if model.__dict__.get("id", None):
-            log_string = """Пользователь %s обновил запись %s в таблице таблице %s""" % (vars.USER_ID[0], str(model.__dict__).decode('unicode-escape').encode('utf-8'), table)
+            log_string = u"""Пользователь %s обновил запись %s в таблице таблице %s""" % (vars.USER_ID[0], str(model.__dict__).decode('unicode-escape').encode('utf-8'), table)
         else:
-            log_string = """Пользователь %s создал запись %s в таблице таблице %s""" % (vars.USER_ID[0], str(model.__dict__).decode('unicode-escape').encode('utf-8'), table)
+            log_string = u"""Пользователь %s создал запись %s в таблице таблице %s""" % (vars.USER_ID[0], str(model.__dict__).decode('unicode-escape').encode('utf-8'), table)
         #log_string = "Пользователь %s получил составляющие класса %s" % (vars.USER_ID[0], class_id,)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return id
 
     
@@ -923,9 +923,9 @@ class RPCServer(object):
             if activations_count.cnt>=tarif_service.activation_count: return "TOO_MUCH_ACTIVATIONS"
             
         #   log_string = u"Пользователь %s создал запись %s в таблице таблице %s" % (vars.USER_ID[0], str(model.__dict__).decode('unicode-escape').encode('utf-8'), table)
-        log_string = """Пользователь %s добавил пользователю %s подключаемую услугу %s""" % (vars.USER_ID[0], account_id, service.name)
+        log_string = u"""Пользователь %s добавил пользователю %s подключаемую услугу %s""" % (vars.USER_ID[0], account_id, service.name)
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         
         if activation_date:
             sql = "INSERT INTO billservice_accountaddonservice(service_id, account_id, activated) VALUES(%s,%s,'%s')" % (service.id, account.id, activation_date)
@@ -1029,9 +1029,9 @@ class RPCServer(object):
             sql = "UPDATE billservice_accountaddonservice SET deactivated=now() WHERE id=%s" % accountservice.id
             cur.execute(sql)
             connection.commit()
-            log_string = """Пользователь %s удалил пользователю %s подключаемую услугу %s""" % (vars.USER_ID[0], account_id, service.name)
+            log_string = u"""Пользователь %s удалил пользователю %s подключаемую услугу %s""" % (vars.USER_ID[0], account_id, service.name)
             
-            cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+            cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
             return True
         else:
             return 'NO_CANCEL_SUBSCRIPTION'
@@ -1073,9 +1073,9 @@ class RPCServer(object):
             session_id=str(session), 
             format_string=str(row['reset_action'])
         )
-        log_string = """Пользователь %s послал пакет на разрыв сессии %s пользователя %s""" % (vars.USER_ID[0], session, str(row['account_name']))
+        log_string = u"""Пользователь %s послал пакет на разрыв сессии %s пользователя %s""" % (vars.USER_ID[0], session, str(row['account_name']))
         
-        cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return res
 
 

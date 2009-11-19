@@ -671,7 +671,7 @@ class OperatorDialog(QtGui.QDialog):
     def __init__(self, connection):
         super(OperatorDialog, self).__init__()
         self.connection = connection
-        self.connection.commit()
+        #self.connection.commit()
         self.op_model = None
         self.bank_model = None
         self.setObjectName("Operator")

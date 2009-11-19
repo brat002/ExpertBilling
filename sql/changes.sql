@@ -2492,3 +2492,18 @@ $BODY$
 ALTER FUNCTION periodicaltr_fn(integer, integer, integer, character varying, numeric, timestamp without time zone, integer) OWNER TO postgres;
 
 ALTER TABLE billservice_traffictransmitnodes ADD COLUMN edge_value double precision DEFAULT 0;
+
+CREATE TABLE billservice_log
+(
+  id serial NOT NULL,
+  systemuser_id integer NOT NULL,
+  "text" text NOT NULL,
+  created timestamp with time zone NOT NULL,
+  CONSTRAINT billservice_log_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_log_systemuser_id_fkey FOREIGN KEY (systemuser_id)
+      REFERENCES billservice_systemuser (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED
+)
+WITH (OIDS=FALSE);
+ALTER TABLE billservice_log OWNER TO ebs;
+
