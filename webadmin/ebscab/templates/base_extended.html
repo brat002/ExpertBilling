@@ -5,7 +5,7 @@
 {% block base %}
 	<table width="100%" class="main-table">
 		<tr>
-			<td valign="top" width="100px"><img src="{{ MEDIA_URL }}ebs_img/logo.gif"></td>
+			<td valign="top" width="100px"><img src="{{ MEDIA_URL }}img/logo.gif"></td>
 			<td class="horizontal-menu">
 				<div>
 					<a href="/" class="text user-img">Моя учетная запись</a>
@@ -42,7 +42,6 @@
 					{% if operator %}
 						<div class="footer_bg">
 							<div class="s-11">
-								
 								<div class="footer operator s-11 bold">
 									{% for oper in operator %}
 										<div><span class="bold">Информация о провайдере:</span> {{ oper.organization }}, {{ oper.postaddress }}, тел. {{ oper.phone }}, факс {{ oper.fax }}</div>
