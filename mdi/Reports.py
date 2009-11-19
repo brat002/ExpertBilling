@@ -142,8 +142,8 @@ class TransactionsReportEbs(ebsTableWindow):
         QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.refresh_table)
         QtCore.QObject.connect(self.comboBox_transactions_type,QtCore.SIGNAL("currentIndexChanged(int)"),self.setTableColumns)
         
-        actList=[("actionDeleteTransaction", "Отменить проводку", "images/del.png", self.delete_transaction)]
-        objDict = {self.tableWidget:["actionDeleteTransaction"]}
+        actList=[("actionDeleteTransaction", "Отменить проводку", "images/del.png", self.delete_transaction),]
+        objDict = {self.tableWidget:["actionDeleteTransaction", ]}
         self.actionCreator(actList, objDict)
         self.setTableColumns()
         
@@ -472,6 +472,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 ids.append((r.id, r.date))
         return ids
     
+   
     def delete_transaction(self):
         ids = self.get_selected_ids()
         #print ids
