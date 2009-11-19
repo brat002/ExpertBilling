@@ -23,7 +23,7 @@ h2 {
 }
 
 .content_align {
-	width:1024px;
+	width:960px;
 	margin:0 auto;
 }
 
@@ -317,7 +317,7 @@ table.statistic_table th {
 
 .statistics_link {
 	margin-right:5px;
-	width:520px;
+	width:460px;
 }
 
 .statistics_link a {
@@ -752,4 +752,8 @@ a.statistic-img:Hover, a.statistic-img-active {
 
 #pass_body .pass_button, #pin_body .pass_button{
 	width:40px;
+}
+
+.p-right {
+	padding-right:3px;
 }
