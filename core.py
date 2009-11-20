@@ -464,7 +464,7 @@ class periodical_service_bill(Thread):
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     chk_date = period_end_ast + SECOND
-                    time_start_ps = time_start_ps + s_delta_ast
+                    time_start_ps = period_start_ast + s_delta_ast
                 while True:
                     cash_summ = ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
