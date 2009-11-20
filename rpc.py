@@ -299,7 +299,7 @@ class RPCServer(object):
         if end_promise:
             transaction.end_promise = end_promise
         
-        log_string = u"""Пользователь %s выполнил платёж %s для аккаунта %s""" % (vars.USER_ID[0], str(transaction.__dict__).decode('unicode-escape')), account,)
+        log_string = u"""Пользователь %s выполнил платёж %s для аккаунта %s""" % (vars.USER_ID[0], str(transaction.__dict__).decode('unicode-escape'), account)
         
         cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         
@@ -654,7 +654,7 @@ class RPCServer(object):
         cur.execute("SELECT dealer.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_dealer as dealer JOIN billservice_bankdata as bankdata ON bankdata.id=dealer.bank_id WHERE dealer.id=%s", (id, ))
         result = Object(cur.fetchone())
 
-        log_string = """Пользователь %s получил параметры дилера %s """ % (vars.USER_ID[0], str(result.__dict__).decode('unicode-escape')))
+        log_string = """Пользователь %s получил параметры дилера %s """ % (vars.USER_ID[0], str(result.__dict__).decode('unicode-escape'))
         
         cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result
