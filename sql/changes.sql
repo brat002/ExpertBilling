@@ -2507,3 +2507,25 @@ CREATE TABLE billservice_log
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_log OWNER TO ebs;
 
+--20.11.2009
+
+ALTER TABLE billservice_addonservicetransaction
+   ALTER COLUMN account_id DROP NOT NULL;
+
+ALTER TABLE billservice_addonservicetransaction
+   ALTER COLUMN accountaddonservice_id DROP NOT NULL;
+
+ALTER TABLE billservice_addonservicetransaction
+   ALTER COLUMN accounttarif_id DROP NOT NULL;
+
+ALTER TABLE billservice_addonservicetransaction
+   ALTER COLUMN service_id DROP NOT NULL;
+
+ALTER TABLE billservice_addonservicetransaction
+  DROP CONSTRAINT billservice_addonservicetransaction_account_id_fkey;
+
+ALTER TABLE billservice_addonservicetransaction
+  ADD CONSTRAINT billservice_addonservicetransaction_account_id_fkey FOREIGN KEY (account_id)
+      REFERENCES billservice_account (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+      
