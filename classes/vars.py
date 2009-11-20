@@ -282,7 +282,7 @@ class RadVars(Vars):
         self.name = 'rad'        
         self.GIGAWORD = 4294967296
         self.SESSION_TIMEOUT = 86400
-        self.DICT_LIST = ("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik')
+        self.DICT_LIST = ("dicts/dictionary","dicts/dictionary.microsoft", 'dicts/dictionary.mikrotik', 'dicts/dictionary.cisco')
         self.DICT = None
         self.COMMON_VPN = False
         self.IGNORE_NAS_FOR_VPN = False

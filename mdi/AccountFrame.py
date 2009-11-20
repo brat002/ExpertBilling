@@ -4445,7 +4445,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             disabled_accounts += 1 if a.status<>1 else 0
             if id==-1000:
                 self.addrow(a.tarif_name, i,2, enabled=a.status)
-                self.addrow("%.02f" % float(a.ballance), i,3, color="red", enabled=a.status)
+                self.addrow(float("%.02f" % float(a.ballance)), i,3, color="red", enabled=a.status)
                 self.addrow(float(a.credit), i,4, enabled=a.status)
                 self.addrow(a.fullname, i,5, enabled=a.status)
                 self.addrow(a.nas_name,i,6, enabled=a.status)
@@ -4489,7 +4489,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
         #self.tablewidget.setShowGrid(False)
-        #self.tableWidget.setSortingEnabled(True)
+        self.tableWidget.setSortingEnabled(True)
         
 
     def accountEnable(self):
