@@ -609,7 +609,7 @@ class RPCServer(object):
         #a = open("c:/1.txt", "wb")
         #a.write("Пользователь %s получил параметры объекта %s из таблицы %s" % (vars.USER_ID[0], repr(result[0]), table))
         #a.close()
-        log_string = """Пользователь %s получил параметры объекта %s из таблицы %s""" % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape'), table)
+        log_string = u"""Пользователь %s получил параметры объекта %s из таблицы %s""" % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape'), table)
         #print s
         cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result[0]
@@ -632,7 +632,7 @@ class RPCServer(object):
     def get_operator(self, cur=None, connection=None):
         cur.execute("SELECT * FROM billservice_operator LIMIT 1;")
         result = map(Object,cur.fetchall())
-        log_string = """Пользователь %s получил параметры оператора %s""" % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape'))
+        log_string = u"""Пользователь %s получил параметры оператора %s""" % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape'))
         
         cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
 
@@ -644,7 +644,7 @@ class RPCServer(object):
         result = Object(cur.fetchone())
         cur.execute("SELECT * FROM billservice_operator LIMIT 1;")
         result = map(Object,cur.fetchall())
-        log_string = """Пользователь %s получил параметры оператора %s""" % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape'))
+        log_string = u"""Пользователь %s получил параметры оператора %s""" % (vars.USER_ID[0], str(result[0].__dict__).decode('unicode-escape'))
         
         cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result[0]
@@ -654,7 +654,7 @@ class RPCServer(object):
         cur.execute("SELECT dealer.*, bankdata.bank as bank, bankdata.bankcode as bankcode, bankdata.rs as rs FROM billservice_dealer as dealer JOIN billservice_bankdata as bankdata ON bankdata.id=dealer.bank_id WHERE dealer.id=%s", (id, ))
         result = Object(cur.fetchone())
 
-        log_string = """Пользователь %s получил параметры дилера %s """ % (vars.USER_ID[0], str(result.__dict__).decode('unicode-escape'))
+        log_string = u"""Пользователь %s получил параметры дилера %s """ % (vars.USER_ID[0], str(result.__dict__).decode('unicode-escape'))
         
         cur.execute("""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result
