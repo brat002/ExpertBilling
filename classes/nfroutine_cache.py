@@ -8,7 +8,8 @@ from nfroutine_class.SettlementData import SettlementData
 from nfroutine_class.NodesData import NodesData
 
 class NfroutineCaches(CacheCollection):
-    __slots__ = ('account_cache', 'period_cache', 'nodes_cache', 'settlement_cache', 'traffictransmit_cache', 'prepays_cache', 'storeclass_cache')
+    __slots__ = ('account_cache', 'period_cache', 'nodes_cache', 'settlement_cache', \
+                 'traffictransmit_cache', 'prepays_cache', 'storeclass_cache')
     
     def __init__(self, date, fMem):
         super(NfroutineCaches, self).__init__(date)
@@ -19,7 +20,9 @@ class NfroutineCaches(CacheCollection):
         self.settlement_cache = SettlementCache()
         self.traffictransmit_cache = TrafficTransmitServiceCache()
         self.storeclass_cache = StoreClassCache()
-        self.caches = [self.account_cache, self.period_cache, self.prepays_cache, self.nodes_cache, self.settlement_cache, self.traffictransmit_cache, self.storeclass_cache]
+        self.caches = [self.account_cache, self.period_cache, self.prepays_cache, \
+                       self.nodes_cache, self.settlement_cache, self.traffictransmit_cache, \
+                       self.storeclass_cache]
 
 class AccountCache(CacheItem):
     __slots__ = ('by_account',)
@@ -51,7 +54,8 @@ class PeriodCache(CacheItem):
     def reindex(self):
         self.in_period = defaultdict(lambda: False)
         for tpnap in self.data:
-            self.in_period[tpnap[3]] = self.in_period[tpnap[3]] or self.fMem.in_period_(tpnap[0], tpnap[1], tpnap[2], self.date)[3]
+            self.in_period[tpnap[3]] = self.in_period[tpnap[3]] or \
+                                       self.fMem.in_period_(tpnap[0], tpnap[1], tpnap[2], self.date)[3]
             
 class PrepaysCache(CacheItem):
     '''(id, size) by (traffic_transmit_service_id, account_tarif_id, group_id) key'''
@@ -107,4 +111,6 @@ class StoreClassCache(CacheItem):
             self.classes = set(self.data[0][0])
         except:
             self.classes = set()
+            
+'''class AccountGroupBytesCache(CacheItem):'''
         
