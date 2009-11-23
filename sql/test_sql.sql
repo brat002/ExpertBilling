@@ -1,8 +1,4 @@
-SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.status   
-                                FROM billservice_account as ba
-                                LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<now() ORDER BY datetime DESC LIMIT 1)
-                                LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;
-                                
+                               
 SELECT ba.id, bt.id, act.id, act.datetime, ARRAY(SELECT bgps.group_id, SUM(bgps.bytes) FROM billservice_groupstat AS bgps WHERE (bgps.group_id IN (SELECT bttn2.traffic_transmit_service_id FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id)) AND (bgps.datetime BETWEEN act.datetime AND %s) GROUP BY bgps.group_id ORDER BY bgps.group_id) AS gr_bytes 
            FROM billservice_tariff AS bt 
            JOIN billservice_accounttarif AS act ON 
@@ -14,9 +10,7 @@ SELECT ba.id, bt.id, act.id, act.datetime, ARRAY(SELECT bgps.group_id, SUM(bgps.
                
            ORDER BY bt.id, ba.id;
        
-       
-
-ARRAY(SELECT bgps.group_id, SUM(bgps.bytes) FROM billservice_groupstat AS bgps WHERE (bgps.group_id IN SELECT bttn2.traffic_transmit_service_id FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id) AND (bgps.datetime BETWEEN act.datetime AND %s) ORDER BY bgps.group_id)
+  
 
 
 CREATE TYPE group_bytes AS (
@@ -26,15 +20,14 @@ CREATE TYPE group_bytes AS (
 
 
 
-SELECT ba.id, bt.id, act.id, act.datetime, ARRAY(SELECT ROW(bgps.group_id, SUM(bgps.bytes))::group_bytes FROM billservice_groupstat AS bgps WHERE (bgps.group_id IN (SELECT bttn2.traffic_transmit_service_id FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id)) AND (bgps.datetime BETWEEN act.datetime AND now()) GROUP BY bgps.group_id ORDER BY bgps.group_id) AS gr_bytes 
+SELECT ba.id AS account_id, bt.id AS tarif_id, act.id AS acct_id, act.datetime, ARRAY(SELECT ROW(bgps.group_id, SUM(bgps.bytes))::group_bytes FROM billservice_groupstat AS bgps WHERE (bgps.group_id IN (SELECT bttn2.traffic_transmit_service_id FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id)) AND (bgps.datetime BETWEEN act.datetime AND now()) GROUP BY bgps.group_id ORDER BY bgps.group_id) AS gr_bytes 
            FROM billservice_tariff AS bt 
            JOIN billservice_accounttarif AS act ON 
                EXISTS (SELECT 1 FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id) 
                AND act.tarif_id=bt.id
                AND act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=act.account_id and att.datetime<now() ORDER BY datetime DESC LIMIT 1)               
            JOIN billservice_account as ba ON  
-               ba.id = act.account_id
-               
+               ba.id = act.account_id               
            ORDER BY bt.id, ba.id;
            
   
@@ -43,7 +36,7 @@ CREATE TYPE group_nodes AS (
     node_egde_t   int[]
 );         
            
-SELECT bt.id,  ARRAY(SELECT ROW(bttn1.group_id, int_array_aggregate(bttn1.edge_value))::group_nodes FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id GROUP BY bttn1.group_id, bttn1.edge_value ORDER BY bttn1.group_id, bttn1.edge_value) AS gr_nodes 
+SELECT bt.id AS tarif_id,  ARRAY(SELECT ROW(bttn1.group_id, int_array_aggregate(bttn1.edge_value))::group_nodes FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id GROUP BY bttn1.group_id, bttn1.edge_value ORDER BY bttn1.group_id, bttn1.edge_value) AS gr_nodes 
            FROM billservice_tariff AS bt 
            WHERE EXISTS (SELECT 1 FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id)
            ORDER BY bt.id;

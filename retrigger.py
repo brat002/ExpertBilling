@@ -13,7 +13,7 @@ if __name__ == '__main__':
                                                                 config.get("db", "host"), config.get("db", "password"))
     conn = get_connection(db_dsn)
     cur = conn.cursor()
-    start_date = datetime.datetime(2008,9,1)
+    start_date = datetime.datetime(2008,1,1)
     end_date   = datetime.datetime.now()
     month = relativedelta(months=1)
     
