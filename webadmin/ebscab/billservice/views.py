@@ -195,6 +195,7 @@ def index(request):
     account_tariff = user.get_account_tariff()
     account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff)
     prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
+    next_tariff = AccountTarif.objects.filter(account=user, datetime__gte=datetime.datetime.now()).order_by('datetime')[1]
     return {
             'account_tariff':account_tariff,
             'ballance':ballance,
@@ -205,6 +206,7 @@ def index(request):
             'trafficlimit':traffic,
             'prepaidtraffic':prepaidtraffic,
             'active_class':'user-img',
+            'next_tariff':next_tariff[0],
             }
     
 @render_to('accounts/netflowstream_info.html')
@@ -416,7 +418,7 @@ def change_tariff_form(request):
     user = request.user
     account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('id')[:1]
     account_tariff = account_tariff_id[0]
-    tariffs = TPChangeRule.objects.filter(ballance_min__lte=user.ballance)
+    tariffs = TPChangeRule.objects.filter(ballance_min__lte=user.ballance, from_tariff = account_tariff.tarif)
     form = ChangeTariffForm(user, account_tariff)
     return {
             'form': form,

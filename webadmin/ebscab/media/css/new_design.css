@@ -125,8 +125,11 @@ h2 {
 	text-align:center;
 }
 
-.main_table {
+table.main_table {
 	border: 1px solid #000;
+	min-height:400px;
+    height:auto !important;
+    height:400px;
 } 
 
 .main_table td {
@@ -297,7 +300,6 @@ table.statistic_table th {
 .footer_bg {
 	border-top:1px solid #000;
 	margin-top:30px;
-	height:38px;
 	padding-top:11px;
 }
 

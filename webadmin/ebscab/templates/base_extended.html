@@ -25,7 +25,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td class="vertical-menu for-content" valign="top">
+			<td class="vertical-menu for-content" valign="top" rowspan="2">
 				<div>
 					<a href="/promise/" class="text promise-img">Обещанные платежи</a>
 				</div>
@@ -38,6 +38,10 @@
 			</td>
 			<td valign="top" class="for-content">
 				{% block content%}{% endblock %}
+			</td>
+		</tr>
+		<tr>
+			<td valign="bottom">
 				{% block footer %}
 					{% if operator %}
 						<div class="footer_bg">
