@@ -106,7 +106,7 @@ def login(request):
                     message = u'Карточка успешно активирована. <br>  Ваш логин %s <br> ваш пароль %s' % (user, pin)
                     ok_message = True
                 if message_type == 2:
-                    message = u'Неверно введен логин или пароль'
+                    message = u'Неверно введен логин или пин'
                 if message_type == 3:
                     message = u'Карточка уже была активирована'
             form = LoginForm()
