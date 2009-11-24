@@ -195,7 +195,7 @@ def index(request):
     account_tariff = user.get_account_tariff()
     account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff)
     prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
-    next_tariff = AccountTarif.objects.filter(account=user, datetime__gte=datetime.datetime.now()).order_by('datetime')[1]
+    next_tariff = AccountTarif.objects.filter(account=user, datetime__gte=datetime.datetime.now()).order_by('datetime')[0]
     return {
             'account_tariff':account_tariff,
             'ballance':ballance,
@@ -206,7 +206,7 @@ def index(request):
             'trafficlimit':traffic,
             'prepaidtraffic':prepaidtraffic,
             'active_class':'user-img',
-            'next_tariff':next_tariff[0],
+            'next_tariff':next_tariff,
             }
     
 @render_to('accounts/netflowstream_info.html')
