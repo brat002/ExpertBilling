@@ -2,10 +2,13 @@ from operator import itemgetter, setitem
 from cacheutils import CacheCollection, CacheItem, SimpleDefDictCache, SimpleDictCache
 from cache_sql import nfroutine_sql
 from collections import defaultdict
+from threading import Lock
 from nfroutine_class.AccountData import AccountData
 from nfroutine_class.TrafficTransmitServiceData import TrafficTransmitServiceData
 from nfroutine_class.SettlementData import SettlementData
 from nfroutine_class.NodesData import NodesData
+from nfroutine_class.AccountGroupBytesData import AccountGroupBytesData
+from nfroutine_class.TarifGroupEdgeData import TarifGroupEdgeData
 
 class NfroutineCaches(CacheCollection):
     __slots__ = ('account_cache', 'period_cache', 'nodes_cache', 'settlement_cache', \
@@ -112,5 +115,32 @@ class StoreClassCache(CacheItem):
         except:
             self.classes = set()
             
-'''class AccountGroupBytesCache(CacheItem):'''
+class AccountGroupBytesCache(CacheItem):
+    __slots__ = ('by_account',)
+    datatype = AccountGroupBytesData
+    sql = nfroutine_sql['group_bytes']
+    
+    def __init__(self, date):
+        super(AccountGroupBytesCache, self).__init__()
+        self.vars = (date,date)
+        self.by_account = {}
+        
+    def reindex(self):
+        self.by_account = {}
+        for acct in self.data:
+            acct.group_bytes = dict(acct.group_bytes)
+            acct.lock = Lock()
+            self.by_account[acct.account_id] = acct
+            
+class TarifGroupEdgeCache(CacheItem):
+    __slots__ = ('by_tarif')
+    datatype = TarifGroupEdgeData
+    sql = nfroutine_sql['tarif_groups']
+    
+    def reindex(self):
+        self.by_tarif = {}
+        for tf in self.data:
+            tf.group_edges = dict(tf.group_edges)
+            self.by_tarif[tf.tarif_id] = tf
+        
         
