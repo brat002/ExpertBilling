@@ -20,6 +20,8 @@ class CacheCollection(object):
         self.date = date
         #self.cursor = cursor
         self.post_caches = []
+        self.caches = []
+
         
     def getdata(self, cursor):
         for cache in self.caches:
@@ -99,12 +101,13 @@ class SimpleDefDictCache(CacheItem):
         return self.__class__.__name__ + '\n'+ 'self.data:' + repr(self.data)  +  '\n\n' + repr(self.by_id)
     
 class CacheMaster(object):
-    __slots__ = ('date', 'lock', 'cache', 'read')
+    __slots__ = ('date', 'lock', 'cache', 'read', 'first_time')
     
     def __init__(self):
         self.date = datetime(1970,1,1)
         self.lock = Lock()
         self.cache = None
         self.read = False
+        self.first_time = True
         
     
