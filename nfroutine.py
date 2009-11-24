@@ -675,7 +675,7 @@ class AccountServiceThread(Thread):
                 if flags.cacheFlag or time_run:
                     run_time = time.clock()                    
                     cur = self.connection.cursor()
-                    renewCaches(cur, cacheMaster, NfroutineCaches, 21, (fMem,))
+                    renewCaches(cur, cacheMaster, NfroutineCaches, 21, (fMem, cacheMaster.first_time))
                     cur.close()
                     if counter == 0 or time_run:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
@@ -689,7 +689,11 @@ class AccountServiceThread(Thread):
                             logger.info("groupDequeLen: %s", (len(queues.groupDeque)))
                             logger.info("statDictLen: %s", '('+ ', '.join((str(len(dct)) for dct in queues.statAggrDicts)) + ')')
                             logger.info("statDequeLen: %s", len(queues.statDeque))
-                            
+                          
+                    if cacheMaster.first_time:
+                        cacheMaster.first_time = False
+                        queues.accountbytes_cache = cacheMaster.cache.accountbytes_cache
+                        
                     if counter == 5:
                         counter, fMem.periodCache = 0, {}
                         '''
