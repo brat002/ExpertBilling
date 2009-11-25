@@ -105,5 +105,5 @@ class %(typename)s(list):
 
 if __name__ == '__main__':
     # verify that instances can be pickled
-    namedlist(_sys.argv[1], _sys.argv[2], True)
+    namedlist(_sys.argv[1], reduce(str.__add__, _sys.argv[2:], ''), True)
     
