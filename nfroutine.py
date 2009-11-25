@@ -594,23 +594,41 @@ class NetFlowRoutine(Thread):
                         for group_id, group_classes, group_dir, group_type in flow.groups:
                             #get a record from prepays cache
                             prepInf = caches.prepays_cache.by_tts_acctf_group.get((acc.traffic_transmit_service_id, acc.acctf_id, group_id))                            
-                            octets = self.get_prepaid_octets(flow.octets, prepInf, queues)
-                            if group_id in group_edge:
-                                account_bytes = None
-                                try:
-                                    sys.setcheckinterval(sys.maxint)    
-                                    account_bytes = queues.accountbytes_cache.by_account.get(acc.account_id)
+                            octets, prepaid_left = self.get_prepaid_octets(flow.octets, prepInf, queues)
+                            traffic_cost = 0
+                            if octets > 0:
+                                if group_id in group_edge:
+                                    account_bytes = None
+                                    try:
+                                        sys.setcheckinterval(sys.maxint)    
+                                        account_bytes = queues.accountbytes_cache.by_acctf.get(acc.acctf_id)
+                                        if not account_bytes:
+                                            account_bytes = AccountGroupBytesData._make(acc.account_id, acc.tarif_id, acc.acctf_id, acc.datetime, {}, Lock(), datetime.datetime.now())
+                                            queues.accountbytes_cache.by_acctf[acc.acctf_id] = account_bytes
+                                    finally:
+                                        sys.setcheckinterval(100)
                                     if not account_bytes:
-                                        account_bytes = AccountGroupBytesData._make(acc.account_id, acc.tarif_id, acc.acctf_id, acc.datetime, {}, Lock(), datetime.datetime.now())
-                                        queues.accountbytes_cache.by_account[acc.account_id] = account_bytes
-                                finally:
-                                    sys.setcheckinterval(100)
-                                if not account_bytes:
-                                    logger.warning("Account_bytes not resolved for acc %s", acc)
-                                    break
-                                
-                            nodes = caches.nodes_cache.by_tts_group.get((acc.traffic_transmit_service_id, group_id))
-                            trafic_cost = self.get_actual_cost(octets_summ, stream_date, nodes) if nodes else 0
+                                        logger.warning("Account_bytes not resolved for acc %s", acc)
+                                        break
+                                    pay_bytes = 0
+                                    tg_datetime, tg_current, tg_next = None, None
+                                    with account_bytes.lock:
+                                        gbytes = account_bytes.group_bytes.get(group_id)
+                                        if not gbytes:
+                                            gbytes = GroupBytesDictData._make((0,))
+                                            account_bytes.group_bytes[group_id] = gbytes
+                                        if prepaid_left and gbytes.bytes != 0:
+                                            gbytes.bytes = 0
+                                        gbytes.bytes += octets
+                                        pay_bytes = gbytes.bytes
+                                        tg_datetime, tg_current, tg_next = gbytes.tg_current, gbytes.tg_next
+                                        gbytes.last_accessed = datetime.datetime.now()
+                                        
+                                    #get tarif info
+                                        
+                                        
+                                nodes = caches.nodes_cache.by_tts_group.get((acc.traffic_transmit_service_id, group_id))
+                                trafic_cost = self.get_actual_cost(octets_summ, stream_date, nodes) if nodes else 0
 
                                         
                             summ = (trafic_cost * octets)/(1048576)

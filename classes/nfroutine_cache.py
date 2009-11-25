@@ -127,7 +127,7 @@ class StoreClassCache(CacheItem):
             self.classes = set()
             
 class AccountGroupBytesCache(CacheItem):
-    __slots__ = ('by_account',)
+    __slots__ = ('by_acctf',)
     datatype = AccountGroupBytesData
     sql = nfroutine_sql['group_bytes']
     
@@ -137,7 +137,7 @@ class AccountGroupBytesCache(CacheItem):
         self.by_account = {}
         
     def reindex(self):
-        self.by_account = {}
+        self.by_acctf = {}
         for acct in self.data:
             gb_dict = {}
             for gb_group, gb_bytes in acct.group_bytes:
@@ -145,7 +145,7 @@ class AccountGroupBytesCache(CacheItem):
             acct.group_bytes = gb_dict
             acct.lock = Lock()
             acct.last_accessed = datetime.datetime.now()
-            self.by_account[acct.account_id] = acct
+            self.by_acctf[acct.acctf_id] = acct
             
 class TarifGroupEdgeCache(CacheItem):
     __slots__ = ('by_tarif')
