@@ -119,5 +119,5 @@ class %(typename)s(tuple):
 
 if __name__ == '__main__':
     # verify that instances can be pickled
-    namedtuple(_sys.argv[1], _sys.argv[2], True)
+    namedtuple(_sys.argv[1], reduce(str.__add__, _sys.argv[2:], ''), True)
     

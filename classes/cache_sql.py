@@ -18,7 +18,7 @@ nfroutine_sql = \
                                 JOIN billservice_traffictransmitnodes_time_nodes AS ttntp ON ttntp.timeperiod_id=timeperiod_timenodes.timeperiod_id
                                 JOIN billservice_traffictransmitnodes AS ttns ON ttns.id=ttntp.traffictransmitnodes_id;""",
                'nodes'   :"""SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after,
-                                        ttsn.group_id, ttsn.traffic_transmit_service_id 
+                                        ttsn.group_id, ttsn.traffic_transmit_service_id, ttsn.edge_value 
                                         FROM billservice_traffictransmitnodes as ttsn
                                         JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
                                         (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 

@@ -88,15 +88,17 @@ class PrepaysCache(CacheItem):
         
 class NodesCache(CacheItem):
     '''Traffictransmit- and timeperiod- nodes data by (traffic_transmit_service_id, group_id)'''
-    __slots__ = ('by_tts_group',)
+    __slots__ = ('by_tts_group', 'by_tts_group_edge')
     datatype = NodesData
     sql = nfroutine_sql['nodes']
     
     def reindex(self):
         self.by_tts_group = defaultdict(list)
+        self.by_tts_group_edge = defaultdict(list)
         for trnode in self.data:
             if trnode.group_id:
                 self.by_tts_group[(trnode.traffic_transmit_service_id,trnode.group_id)].append(trnode)
+                self.by_tts_group[(trnode.traffic_transmit_service_id,trnode.group_id, trnode.edge_limit)].append(trnode)
                 
 class TrafficTransmitServiceCache(SimpleDictCache):
     __slots__ = ()
@@ -142,6 +144,7 @@ class AccountGroupBytesCache(CacheItem):
                 gb_dict[gb_group] = GroupBytesDictData._make((gb_bytes,))                
             acct.group_bytes = gb_dict
             acct.lock = Lock()
+            acct.last_accessed = datetime.datetime.now()
             self.by_account[acct.account_id] = acct
             
 class TarifGroupEdgeCache(CacheItem):
