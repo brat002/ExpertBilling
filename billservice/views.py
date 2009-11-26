@@ -195,7 +195,10 @@ def index(request):
     account_tariff = user.get_account_tariff()
     account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff)
     prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
-    next_tariff = AccountTarif.objects.filter(account=user, datetime__gte=datetime.datetime.now()).order_by('datetime')[0]
+    try:
+        next_tariff = AccountTarif.objects.filter(account=user, datetime__gte=datetime.datetime.now()).order_by('-datetime')[0]
+    except:
+        next_tariff = None
     return {
             'account_tariff':account_tariff,
             'ballance':ballance,
@@ -416,7 +419,7 @@ def change_password(request):
 def change_tariff_form(request):
     from datetime import datetime, date 
     user = request.user
-    account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('id')[:1]
+    account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('-datetime')[:1]
     account_tariff = account_tariff_id[0]
     tariffs = TPChangeRule.objects.filter(ballance_min__lte=user.ballance, from_tariff = account_tariff.tarif)
     form = ChangeTariffForm(user, account_tariff)
@@ -466,6 +469,13 @@ def change_tariff(request):
             for service in AccountAddonService.objects.filter(account=user, deactivated__isnull=True):
                 service.deactivated = datetime.now()
                 service.save()  
+                
+            if rule.cost:
+                cursor = connection.cursor()
+
+                cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise) 
+                                  VALUES(%s, 'Списание средств за переход на тарифный план %s', 'TP_CHANGE', True, get_tarif(%s), %s, now(), False)""" % (user.id, tariff.tarif.name, user.id, rule.cost))
+                cursor.connection.commit()
             return {
                     'ok_message':u'Вы успешно сменили тариф',
                     }

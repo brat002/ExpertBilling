@@ -975,6 +975,7 @@ class TPChangeRule(models.Model):
     cost = models.FloatField()
     ballance_min = models.FloatField()
     settlement_period = models.ForeignKey(SettlementPeriod, null=True)
+    on_next_sp = models.BooleanField(default=False)
     
 class RadiusAttrs(models.Model):
     tarif = models.ForeignKey(Tariff)
