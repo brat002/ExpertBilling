@@ -450,6 +450,8 @@ def change_tariff(request):
             from datetime import datetime
             rules_id =[x.id for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance)]
             rule = TPChangeRule.objects.get(id=rule_id)
+            data_start_period = datetime.now()
+            data_start_active = False
             if rule.settlement_period_id:
                 td = settlement_period_info(account_tariff.datetime, rule.settlement_period.length_in, rule.settlement_period.length)
                 delta = (datetime.now() - account_tariff.datetime).seconds+(datetime.now() - account_tariff.datetime).days*86400 - td[2]
@@ -457,6 +459,9 @@ def change_tariff(request):
                     return {
                             'error_message':u'Вы не можете перейти на выбранный тариф. Для перехода вам необходимо отработать на старом тарифе ещё не менее %s дней' % (delta/86400*(-1), ),
                             }
+                if rule.on_next_sp:
+                    data_start_period = td[1]
+                    data_start_active = True
             if not rule.id in rules_id:
                 return {
                         'error_message':u'Вы не можете перейти на выбранный тариф',
@@ -464,21 +469,26 @@ def change_tariff(request):
             tariff = AccountTarif.objects.create(
                                                     account = user,
                                                     tarif = rule.to_tariff,
-                                                    datetime = datetime.now(), 
-                                                 )
+                                                    datetime = data_start_period,  
+                                                )
             for service in AccountAddonService.objects.filter(account=user, deactivated__isnull=True):
                 service.deactivated = datetime.now()
-                service.save()  
-                
+                service.save() 
             if rule.cost:
                 cursor = connection.cursor()
 
                 cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise) 
                                   VALUES(%s, 'Списание средств за переход на тарифный план %s', 'TP_CHANGE', True, get_tarif(%s), %s, now(), False)""" % (user.id, tariff.tarif.name, user.id, rule.cost))
                 cursor.connection.commit()
-            return {
-                    'ok_message':u'Вы успешно сменили тариф',
-                    }
+            if data_start_active:
+                ok_str = u'Вы успешно сменили тариф, арифный план будет изменён в следующем расчётном периоде c %s.<br> За переход на данный тарифный план с пользователя будет взыскано %s средств.' %(td[1], rule.cost)
+                return {
+                         'ok_message':ok_str,   
+                        }
+            else:
+                return {
+                        'ok_message':u'Вы успешно сменили тариф. <br> За переход на данный тарифный план с пользователя будет взыскано %s средств.' %rule.cost,
+                        }
         else:
             return {
                     'error_message':u'Проверьте Ваш тариф',
