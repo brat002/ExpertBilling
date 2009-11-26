@@ -22,7 +22,7 @@
 					<tr>
 						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.service.name }}&nbsp;</td>
 						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.service_type }}&nbsp;</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.summ }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.summ }}&nbsp;{{ CURRENCY }}</td>
 						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.type_id }}&nbsp;</td>
 						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y H:i" }}&nbsp;</td>
 					</tr>
@@ -30,7 +30,7 @@
 				{% if is_range %}
 					<tr>
 						<td colspan="2" align="right" class="bold {{ rec_count|coll_bg  }} no_border">Всего на странице:<br>Всего:</td>
-						<td colspan="3" class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ_on_page|floatformat:2}}<br>{{ summ|floatformat:2 }}</td>
+						<td colspan="3" class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ_on_page|floatformat:2}}&nbsp;{{ CURRENCY }}<br>{{ summ|floatformat:2 }}&nbsp;{{ CURRENCY }}</td>
 					</tr>
 				{% endif %}
 			</table>

@@ -19,14 +19,14 @@
 				{% for one_time in one_time_history %}
 					<tr>
 						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.onetimeservice.name }}&nbsp;</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.summ }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.summ }}&nbsp;{{ CURRENCY }}</td>
 						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
 					</tr>
 				{% endfor %}
 				{% if is_range %}
 					<tr>
 						<td align="right" class="bold {{ rec_count|coll_bg  }} no_border">Всего на странице:<br>Всего:</td>
-						<td colspan="2" class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ_on_page|floatformat:2 }}<br>{{ summ|floatformat:2 }}</td>
+						<td colspan="2" class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ_on_page|floatformat:2 }}&nbsp;{{ CURRENCY }}<br>{{ summ|floatformat:2 }}&nbsp;{{ CURRENCY }}</td>
 					</tr>
 				{% endif %}
 			</table>

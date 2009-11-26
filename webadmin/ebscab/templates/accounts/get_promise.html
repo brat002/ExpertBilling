@@ -15,7 +15,7 @@
         	Сумма
         </td>
         <td class="left_border ">
-        	<input type = "input" name = "sum">(макс {{MAX_PROMISE_SUM}})
+        	<input type = "input" name = "sum">(макс {{MAX_PROMISE_SUM}}{{ CURRENCY }})
         </td>
     </tr>
     <tr>
@@ -55,7 +55,7 @@
                 
 					<tr>
 						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.created|date:"d.m.Y H:i" }}&nbsp;</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.human_sum|floatformat:2 }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.human_sum|floatformat:2 }}&nbsp;{{ CURRENCY }}</td>
                         <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.end_promise|date:"d.m.Y H:i" }}&nbsp;</td>
                         <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ promise.description }}&nbsp;</td>
 						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} bold">{% if promise.promise_expired %}Да{% else %} Нет{% endif %}&nbsp;</td>

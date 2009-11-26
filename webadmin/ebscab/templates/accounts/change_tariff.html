@@ -46,12 +46,12 @@
 			var price = {{ user.ballance }}-ballance;
 			send_button.style.visibility = 'visible';
 			if (price >= 0) {
-				need_ballance.innerHTML = '<h2>'+ballance+'</h2>';
+				need_ballance.innerHTML = '<h2>'+ballance+'{{ CURRENCY }}</h2>';
 			} else {
-				need_ballance.innerHTML = '<h2 class="red">'+ballance+'</h2>';
+				need_ballance.innerHTML = '<h2 class="red">'+ballance+'{{ CURRENCY }}</h2>';
 				send_button.style.visibility = 'hidden';
 			}
-			need_cost.innerHTML = '<h2>'+eval('obj_arr[{{ tariff.tarif.id }}]['+new_tariff.value+'][1]')+'</h2>';
+			need_cost.innerHTML = '<h2>'+eval('obj_arr[{{ tariff.tarif.id }}]['+new_tariff.value+'][1]')+'{{ CURRENCY }}</h2>';
 			error_message.innerHTML = '';
 			return true;
 		} catch(err) {
