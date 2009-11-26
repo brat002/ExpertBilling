@@ -2529,3 +2529,20 @@ ALTER TABLE billservice_addonservicetransaction
       REFERENCES billservice_account (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
       
+
+--24.11.2009 16:07
+
+ALTER TABLE billservice_tpchangerule
+   ADD COLUMN on_next_sp boolean;
+UPDATE billservice_tpchangerule SET on_next_sp=False;
+
+ALTER TABLE billservice_tpchangerule
+   ALTER COLUMN on_next_sp SET NOT NULL;
+ALTER TABLE billservice_tpchangerule
+   ALTER COLUMN on_next_sp SET DEFAULT False;
+
+
+INSERT INTO billservice_transactiontype(
+             "name", internal_name)
+    VALUES ('Списание за смену тарифного плана', 'TP_CHANGE');
+

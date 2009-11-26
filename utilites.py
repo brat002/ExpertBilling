@@ -82,7 +82,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
     #log_debug_('PoD args: %s' % str([account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string]))
     
     access_type = access_type.lower()
-    if (format_string=='' and access_type in ['pptp', 'pppoe'] ) or access_type=='hotspot':
+    if (format_string=='' and access_type in ['pptp', 'pppoe'] ) or access_type=='hotspot' or nas_type=='cisco':
         log_debug_("Send PoD")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
@@ -148,7 +148,7 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
     format_string=nas.ipn_speed_action,
     """
     
-    if (format_string=='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot':
+    if (format_string=='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot' or nas_type=='cisco':
         #Send CoA
         #print 1
         #speed_string= create_speed_string(speed, coa=True)

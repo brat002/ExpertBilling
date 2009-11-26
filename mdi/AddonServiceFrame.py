@@ -548,7 +548,8 @@ class AddServiceFrame(QtGui.QDialog):
         model.cost = Decimal(unicode(self.lineEdit_cost.text() or 0))
         model.allow_activation = self.checkBox_allow_activation.isChecked()==True
         model.service_type = unicode(self.comboBox_service_type.itemData(self.comboBox_service_type.currentIndex()).toString())
-        model.sp_type = unicode(self.comboBox_sp_type.itemData(self.comboBox_service_type.currentIndex()).toString())
+        
+        model.sp_type = unicode(self.comboBox_sp_type.itemData(self.comboBox_sp_type.currentIndex()).toString())
         model.sp_period_id = self.comboBox_sp_period.itemData(self.comboBox_sp_period.currentIndex()).toInt()[0]
         model.timeperiod_id = self.comboBox_timeperiod.itemData(self.comboBox_timeperiod.currentIndex()).toInt()[0]
         model.cancel_subscription = self.groupBox_cancel_subscription.isChecked()==True

@@ -374,7 +374,7 @@ class MainWindow(QtGui.QMainWindow):
         self.newAct.setStatusTip(u"Пользователи и тарифы")
         self.connect(self.newAct, QtCore.SIGNAL("triggered()"), self.newFile)
 
-        self.dealerAct = QtGui.QAction(QtGui.QIcon("images/add.png"),
+        self.dealerAct = QtGui.QAction(QtGui.QIcon("images/handshake.png"),
                                     u"&Дилеры", self)
         #self.dealerAct.setShortcut(self.tr("Ctrl+D"))
         self.dealerAct.setStatusTip(u"Дилеры")
@@ -419,7 +419,7 @@ class MainWindow(QtGui.QMainWindow):
         self.cutAct.setStatusTip(u"Периоды тарификации")
         self.connect(self.cutAct, QtCore.SIGNAL("triggered()"), self.cut)
 
-        self.messagesAct = QtGui.QAction(QtGui.QIcon("images/tp.png"),
+        self.messagesAct = QtGui.QAction(QtGui.QIcon("images/mesages.png"),
                                     u'Сообщения', self)
 
         self.messagesAct.setStatusTip(u"Сообщенияи")
