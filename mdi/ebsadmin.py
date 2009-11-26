@@ -4,7 +4,6 @@
 import sys, traceback, os
 sys.path.append(os.path.abspath('../'))
 from PyQt4 import QtCore, QtGui
-
 #sys.stdout=sys.stderr=None
 #import socket
 #socket.setdefaulttimeout(None)
@@ -751,6 +750,9 @@ def login():
 if __name__ == "__main__":
     global app
     app = QtGui.QApplication(sys.argv)
+    translator = QtCore.QTranslator(app)
+    translator.load('ebsadmin_en')
+    app.installTranslator(translator)
     global connection, username, server_ip
     connection = login() 
        

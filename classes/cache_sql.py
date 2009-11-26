@@ -32,7 +32,7 @@ nfroutine_sql = \
                           """SELECT ba.id AS account_id, bt.id AS tarif_id, act.id AS acctf_id, act.datetime, ARRAY(SELECT ROW(bgps.group_id, SUM(bgps.bytes))::group_bytes FROM billservice_groupstat AS bgps WHERE (bgps.group_id IN (SELECT bttn2.traffic_transmit_service_id FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id)) AND (bgps.datetime BETWEEN act.datetime AND %s) GROUP BY bgps.group_id ORDER BY bgps.group_id) AS gr_bytes 
                                 FROM billservice_tariff AS bt 
                                 JOIN billservice_accounttarif AS act ON 
-                                    EXISTS (SELECT 1 FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id) 
+                                    EXISTS (SELECT 1 FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id AND bttn1.edge_value > 0) 
                                     AND act.tarif_id=bt.id
                                     AND act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=act.account_id and att.datetime<%s ORDER BY datetime DESC LIMIT 1)               
                                 JOIN billservice_account as ba ON  

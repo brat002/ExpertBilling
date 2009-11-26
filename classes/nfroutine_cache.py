@@ -14,7 +14,7 @@ from nfroutine_class.GroupBytesDictData import GroupBytesDictData
 
 class NfroutineCaches(CacheCollection):
     __slots__ = ('account_cache', 'period_cache', 'nodes_cache', 'settlement_cache', \
-                 'traffictransmit_cache', 'prepays_cache', 'storeclass_cache')
+                 'traffictransmit_cache', 'prepays_cache', 'storeclass_cache', 'tarifedge_cache', 'accountbytes_cache')
     
     def __init__(self, date, fMem, first_time):
         super(NfroutineCaches, self).__init__(date)
@@ -98,7 +98,7 @@ class NodesCache(CacheItem):
         for trnode in self.data:
             if trnode.group_id:
                 self.by_tts_group[(trnode.traffic_transmit_service_id,trnode.group_id)].append(trnode)
-                self.by_tts_group[(trnode.traffic_transmit_service_id,trnode.group_id, trnode.edge_limit)].append(trnode)
+                self.by_tts_group[(trnode.traffic_transmit_service_id,trnode.group_id, trnode.edge_value)].append(trnode)
                 
 class TrafficTransmitServiceCache(SimpleDictCache):
     __slots__ = ()
@@ -134,12 +134,13 @@ class AccountGroupBytesCache(CacheItem):
     def __init__(self, date):
         super(AccountGroupBytesCache, self).__init__()
         self.vars = (date,date)
-        self.by_account = {}
+        self.by_acctf = {}
         
     def reindex(self):
         self.by_acctf = {}
         for acct in self.data:
             gb_dict = {}
+            print str(acct)
             for gb_group, gb_bytes in acct.group_bytes:
                 gb_dict[gb_group] = GroupBytesDictData._make((gb_bytes,))                
             acct.group_bytes = gb_dict
@@ -154,9 +155,12 @@ class TarifGroupEdgeCache(CacheItem):
     
     def reindex(self):
         self.by_tarif = {}
+        for i in self.data:
+            print str(i)
         for tf in self.data:
+            #print repr(tf)
             tf.datetime = datetime.datetime.now()
-            tf.group_edges = dict(tf.group_edges)
+            tf.group_edges = dict(eval(tf.group_edges.replace('{', '[').replace('}', ']').replace('"', '')))
             self.by_tarif[tf.tarif_id] = tf
         
         

@@ -59,7 +59,7 @@ TCP_PACKET_SIZE_HEADER = 5
 NAME = 'nfroutine'
 DB_NAME = 'db'
 NET_NAME = 'nfroutine_nf'
-
+MEGABYTE =1048576 
 INT_ME_FN = lambda xt, y: (xt[0] + (ord(y) - 48) * xt[1], xt[1] * 10)
 '''
 exception_fun
@@ -431,6 +431,28 @@ class NetFlowRoutine(Thread):
                     prepInf[1] -= prep_octets
         return octets, prepaid_left
     
+    def edge_bin_search(self, s_array, value):
+        if value >= s_array[-1]:
+            return s_array[-1]
+        elif len(s_array) == 1:
+            return s_array[-1]
+        else:
+            #lookup_array = s_array
+            start_pos = 0
+            end_pos = len(s_array) - 1
+            while True:
+                bin_pos = (end_pos - start_pos) / 2
+                if s_array[bin_pos] > value:
+                    if (bin_pos - start_pos == 0) or ((bin_pos - 1 >= 0) and s_array[bin_pos - 1] <= value):
+                        break
+                    else:
+                        end_pos = bin_pos
+                else:
+                    start_pos = bin_pos
+        return bin_pos
+            
+                        
+            
     def run(self):
         #connection = persist.connection()
         #connection._con.set_client_encoding('UTF8')
@@ -596,6 +618,7 @@ class NetFlowRoutine(Thread):
                             prepInf = caches.prepays_cache.by_tts_acctf_group.get((acc.traffic_transmit_service_id, acc.acctf_id, group_id))                            
                             octets, prepaid_left = self.get_prepaid_octets(flow.octets, prepInf, queues)
                             traffic_cost = 0
+                            summ = 0
                             if octets > 0:
                                 if group_id in group_edge:
                                     account_bytes = None
@@ -610,7 +633,7 @@ class NetFlowRoutine(Thread):
                                     if not account_bytes:
                                         logger.warning("Account_bytes not resolved for acc %s", acc)
                                         break
-                                    pay_bytes = 0
+                                    tg_bytes = 0
                                     tg_datetime, tg_current, tg_next = None, None
                                     with account_bytes.lock:
                                         gbytes = account_bytes.group_bytes.get(group_id)
@@ -619,19 +642,35 @@ class NetFlowRoutine(Thread):
                                             account_bytes.group_bytes[group_id] = gbytes
                                         if prepaid_left and gbytes.bytes != 0:
                                             gbytes.bytes = 0
-                                        gbytes.bytes += octets
-                                        pay_bytes = gbytes.bytes
-                                        tg_datetime, tg_current, tg_next = gbytes.tg_current, gbytes.tg_next
+                                        tg_bytes = gbytes.bytes
+                                        gbytes.bytes += octets                                        
+                                        #tg_datetime, tg_current, tg_next = gbytes.tg_current, gbytes.tg_next
                                         gbytes.last_accessed = datetime.datetime.now()
                                         
                                     #get tarif info
+                                    group_edges = group_edge[group_id]
+                                    edge_octets = []
+                                    pay_bytes = octets
+                                    cur_edge_pos = self.edge_bin_search(group_edges, tg_bytes)
+                                    while True:
+                                        edge_val = group_edges[cur_edge_pos] * MEGABYTE
+                                        if (pay_bytes + tg_bytes <= edge_val) or (cur_edge_pos + 1 >= len(group_edges)):
+                                            edge_octets.append((group_edges[cur_edge_pos], pay_bytes))
+                                            break
+                                        else:
+                                            pre_edge_bytes = edge_val - (pay_bytes + tg_bytes)
+                                            tg_bytes += pre_edge_bytes
+                                            pay_bytes -= pre_edge_bytes
+                                            cur_edge_pos += 1
+                                    for edge_fval, pay_fbytes in edge_octets:
+                                        nodes = caches.nodes_cache.by_tts_group_edge.get((acc.traffic_transmit_service_id, group_id, edge_fval))
+                                        trafic_cost = self.get_actual_cost(pay_fbytes, stream_date, nodes) if nodes else 0
+                                        summ += (trafic_cost * pay_fbytes) / MEGABYTE    
                                         
-                                        
-                                nodes = caches.nodes_cache.by_tts_group.get((acc.traffic_transmit_service_id, group_id))
-                                trafic_cost = self.get_actual_cost(octets_summ, stream_date, nodes) if nodes else 0
-
-                                        
-                            summ = (trafic_cost * octets)/(1048576)
+                                else:        
+                                    nodes = caches.nodes_cache.by_tts_group.get((acc.traffic_transmit_service_id, group_id))
+                                    trafic_cost = self.get_actual_cost(octets_summ, stream_date, nodes) if nodes else 0
+                                    summ = (trafic_cost * octets) / MEGABYTE
         
                             if summ > 0:
                                 with queues.pickerLock:
