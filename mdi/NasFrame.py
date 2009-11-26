@@ -14,6 +14,7 @@ NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
                 (u'mikrotik2.9',u'MikroTik 2.9'),
                 (u'mikrotik3',u'Mikrotik 3'),
+                (u'cisco',u'cisco'),
                 (u'common_radius',u'Общий RADIUS интерфейс'),
                 (u'common_ssh',u'common_ssh'),
                 )
@@ -62,6 +63,16 @@ actions = {
                'vpn_speed_action': '',
                'ipn_speed_action': '',
                'reset_action': ''
+               },
+               
+'cisco':{'user_add_action':'',
+               'user_delete_action':'',
+               'user_enable_action':'',
+               'user_disable_action':'',
+               'vpn_speed_action': '',
+               'ipn_speed_action': '',
+               'reset_action': '',
+               'radius_speed': {'vendor1':9, 'attrid1':1, 'value1':'lcp:interface-config#1=rate-limit input $max_limit_tx 8000 8000 conform-action transmit exceed-action drop', 'vendor2':9, 'attrid2':1, 'value2':'lcp:interface-config#1=rate-limit output $max_limit_tx 8000 8000 conform-action transmit exceed-action drop'},
                },
 '---':{'user_add_action':'',
                'user_delete_action':'',
@@ -436,7 +447,11 @@ class AddNasFrame(QtGui.QDialog):
             self.lineEdit_vendor1.setText(unicode(actions[nas_type].get('radius_speed').get('vendor1')))
             self.lineEdit_attr_id1.setText(unicode(actions[nas_type].get('radius_speed').get('attrid1')))
             self.lineEdit_value1.setText(unicode(actions[nas_type].get('radius_speed').get('value1')))
-            
+
+            self.lineEdit_vendor2.setText(unicode(actions[nas_type].get('radius_speed').get('vendor2')))
+            self.lineEdit_attr_id2.setText(unicode(actions[nas_type].get('radius_speed').get('attrid2')))
+            self.lineEdit_value2.setText(unicode(actions[nas_type].get('radius_speed').get('value2')))
+                        
             #radius_speed
     
     def accept(self):

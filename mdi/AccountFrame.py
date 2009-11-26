@@ -4003,7 +4003,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("delTarifAction", "Удалить тариф", "images/folder_delete.png", self.delTarif), \
                  ("transactionAction", "Пополнить счёт", "images/pay.png", self.makeTransation), \
                  ("transactionReportAction", "История платежей", "images/moneybook.png", self.transactionReport), \
-                 ("messageDialogAction", "Сообщения", "images/add.png", self.messageDialogForm), \
+                 ("messageDialogAction", "Сообщения", "images/mesages.png", self.messageDialogForm), \
                  
                  ("actionEnableSession", "Включить на сервере доступа", "images/add.png", self.accountEnable), \
                  ("actionDisableSession", "Отключить на сервере доступа", "images/del.png", self.accountDisable), \

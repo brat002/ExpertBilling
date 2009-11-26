@@ -943,8 +943,8 @@ class CardPreviewDialog(QtGui.QDialog):
         #self.filelist=[]
         self.url = url
         self.printer = printer
-        self.setObjectName("Dialog")
-        self.resize(472, 636)
+        #self.setObjectName("Dialog")
+        self.resize(672, 636)
         self.verticalLayout = QtGui.QVBoxLayout(self)
         self.verticalLayout.setObjectName("verticalLayout")
         self.webView = QtWebKit.QWebView(self)
@@ -2556,6 +2556,7 @@ class IPAddressSelectForm(QtGui.QDialog):
         self.retranslateUi()
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.accept)
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):

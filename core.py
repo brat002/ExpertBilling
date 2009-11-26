@@ -1088,7 +1088,7 @@ class settlement_period_service_dog(Thread):
                               (SELECT sum(summ*(-1)) FROM billservice_transaction WHERE account_id=tr.account_id and promise=False and summ<0 and created>tr.created)>=summ""")
                 
                 cur.execute("""UPDATE billservice_transaction as tr SET summ=0, description='Обнуление обещанного платежа на сумму ' || summ*(-1) 
-                                WHERE promise=True and promise_expired = True and end_promise<=now();""")
+                                WHERE promise=True and summ < 0 and end_promise<=now();""")
                 cur.connection.commit()
                 logger.info("SPALIVE: %s run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:

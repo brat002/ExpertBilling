@@ -103,7 +103,7 @@ class ebsTableWindow(QtGui.QMainWindow):
         for y in xrange(self.tableWidget.rowCount()):
             for x in xrange(self.tableWidget.columnCount()):
                 #print "check"
-                if unicode((self.tableWidget.item(y,x) and self.tableWidget.item(y,x).text()) or '').rfind(unicode(self.lineEdit_search_text.text()))>-1 and self.lineEdit_search_text.text():
+                if unicode((self.tableWidget.item(y,x) and self.tableWidget.item(y,x).text()).lower() or '').rfind(unicode(self.lineEdit_search_text.text()).lower())>-1 and unicode(self.lineEdit_search_text.text()).lower():
                     self.tableWidget.scrollToItem(self.tableWidget.item(y,x))
                     self.tableWidget.setItemSelected(self.tableWidget.item(y,x), True)
                     #print "finded!"
@@ -520,7 +520,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
             for x in xrange(self.tableWidget.columnCount()):
                 #print "check"
                 try:
-                    if unicode(self.tableWidget.item(y,x).text()).rfind(unicode(self.lineEdit_search_text.text()))>-1:
+                    if unicode(self.tableWidget.item(y,x).text()).lower().rfind(unicode(self.lineEdit_search_text.text()).lower())>-1:
                         self.tableWidget.scrollToItem(self.tableWidget.item(y,x))
                         self.tableWidget.setItemSelected(self.tableWidget.item(y,x), True)
                 except:

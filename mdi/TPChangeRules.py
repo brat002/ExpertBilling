@@ -17,7 +17,7 @@ class TPRulesAdd(QtGui.QDialog):
         self.connection=connection
         self.connection.commit()
 
-        self.resize(552, 453)
+        self.resize(512, 453)
         self.gridLayout_2 = QtGui.QGridLayout(self)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.groupBox = QtGui.QGroupBox(self)
@@ -27,42 +27,54 @@ class TPRulesAdd(QtGui.QDialog):
         self.label_from = QtGui.QLabel(self.groupBox)
         self.label_from.setObjectName("label_from")
         self.gridLayout.addWidget(self.label_from, 0, 0, 1, 1)
+        self.label_cost = QtGui.QLabel(self.groupBox)
+        self.label_cost.setObjectName("label_cost")
+        self.gridLayout.addWidget(self.label_cost, 4, 0, 1, 1)
+        self.label_oldtptime = QtGui.QLabel(self.groupBox)
+        self.label_oldtptime.setObjectName("label_oldtptime")
+        self.gridLayout.addWidget(self.label_oldtptime, 5, 0, 1, 1)
+        self.comboBox_oldtptime = QtGui.QComboBox(self.groupBox)
+        self.comboBox_oldtptime.setObjectName("comboBox_oldtptime")
+        self.gridLayout.addWidget(self.comboBox_oldtptime, 5, 1, 1, 1)
         self.comboBox_from = QtGui.QComboBox(self.groupBox)
         self.comboBox_from.setObjectName("comboBox_from")
         self.gridLayout.addWidget(self.comboBox_from, 0, 1, 1, 1)
-        self.label_cost = QtGui.QLabel(self.groupBox)
-        self.label_cost.setObjectName("label_cost")
-        self.gridLayout.addWidget(self.label_cost, 1, 0, 1, 1)
-        self.lineEdit_cost = QtGui.QLineEdit(self.groupBox)
-        self.lineEdit_cost.setObjectName("lineEdit_cost")
-        self.gridLayout.addWidget(self.lineEdit_cost, 1, 1, 1, 1)
-        self.label_oldtptime = QtGui.QLabel(self.groupBox)
-        self.label_oldtptime.setObjectName("label_oldtptime")
-        self.gridLayout.addWidget(self.label_oldtptime, 2, 0, 1, 1)
-        self.comboBox_oldtptime = QtGui.QComboBox(self.groupBox)
-        self.comboBox_oldtptime.setObjectName("comboBox_oldtptime")
-        self.gridLayout.addWidget(self.comboBox_oldtptime, 2, 1, 1, 1)
         self.label_balance_min = QtGui.QLabel(self.groupBox)
         self.label_balance_min.setObjectName("label_balance_min")
-        self.gridLayout.addWidget(self.label_balance_min, 3, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_balance_min, 6, 0, 1, 1)
+        self.lineEdit_cost = QtGui.QLineEdit(self.groupBox)
+        self.lineEdit_cost.setObjectName("lineEdit_cost")
+        self.gridLayout.addWidget(self.lineEdit_cost, 4, 1, 1, 1)
         self.lineEdit_balance_min = QtGui.QLineEdit(self.groupBox)
         self.lineEdit_balance_min.setObjectName("lineEdit_balance_min")
-        self.gridLayout.addWidget(self.lineEdit_balance_min, 3, 1, 1, 1)
-        self.label_to = QtGui.QLabel(self.groupBox)
-        self.label_to.setObjectName("label_to")
-        self.gridLayout.addWidget(self.label_to, 4, 0, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_balance_min, 6, 1, 1, 1)
+        self.groupBox_activation_type = QtGui.QGroupBox(self.groupBox)
+        self.groupBox_activation_type.setObjectName("groupBox_activation_type")
+        self.gridLayout_3 = QtGui.QGridLayout(self.groupBox_activation_type)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.radioButton_activation_on_change = QtGui.QRadioButton(self.groupBox_activation_type)
+        self.radioButton_activation_on_change.setChecked(True)
+        self.radioButton_activation_on_change.setObjectName("radioButton_activation_on_change")
+        self.gridLayout_3.addWidget(self.radioButton_activation_on_change, 0, 0, 1, 1)
+        self.radioButton_activation_on_next_sp = QtGui.QRadioButton(self.groupBox_activation_type)
+        self.radioButton_activation_on_next_sp.setObjectName("radioButton_activation_on_next_sp")
+        self.gridLayout_3.addWidget(self.radioButton_activation_on_next_sp, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.groupBox_activation_type, 8, 1, 1, 1)
+        self.checkBox_bidirectional = QtGui.QCheckBox(self.groupBox)
+        self.checkBox_bidirectional.setObjectName("checkBox_bidirectional")
+        self.gridLayout.addWidget(self.checkBox_bidirectional, 9, 1, 1, 1)
+        self.checkBox_disable = QtGui.QCheckBox(self.groupBox)
+        self.checkBox_disable.setObjectName("checkBox_disable")
+        self.gridLayout.addWidget(self.checkBox_disable, 10, 1, 1, 1)
         self.listWidget_to = QtGui.QListWidget(self.groupBox)
         self.listWidget_to.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.listWidget_to.setObjectName("listWidget_to")
-        self.gridLayout.addWidget(self.listWidget_to, 4, 1, 2, 1)
+        self.gridLayout.addWidget(self.listWidget_to, 2, 1, 2, 1)
+        self.label_to = QtGui.QLabel(self.groupBox)
+        self.label_to.setObjectName("label_to")
+        self.gridLayout.addWidget(self.label_to, 2, 0, 1, 1)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout.addItem(spacerItem, 5, 0, 1, 1)
-        self.checkBox_bidirectional = QtGui.QCheckBox(self.groupBox)
-        self.checkBox_bidirectional.setObjectName("checkBox_bidirectional")
-        self.gridLayout.addWidget(self.checkBox_bidirectional, 6, 0, 1, 1)
-        self.checkBox_disable = QtGui.QCheckBox(self.groupBox)
-        self.checkBox_disable.setObjectName("checkBox_disable")
-        self.gridLayout.addWidget(self.checkBox_disable, 7, 0, 1, 1)
+        self.gridLayout.addItem(spacerItem, 3, 0, 1, 1)
         self.gridLayout_2.addWidget(self.groupBox, 0, 0, 1, 2)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -84,14 +96,16 @@ class TPRulesAdd(QtGui.QDialog):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Правило смены тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Настройки смены тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_from.setText(QtGui.QApplication.translate("Dialog", "С", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_from.setText(QtGui.QApplication.translate("Dialog", "С тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.label_cost.setText(QtGui.QApplication.translate("Dialog", "Стоимость перехода", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_oldtptime.setText(QtGui.QApplication.translate("Dialog", "Миниальное время на старом тарифном план", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_oldtptime.setText(QtGui.QApplication.translate("Dialog", "Не менее ч. на старом тарифе", None, QtGui.QApplication.UnicodeUTF8))
         self.label_balance_min.setText(QtGui.QApplication.translate("Dialog", "Минимум на балансе", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_to.setText(QtGui.QApplication.translate("Dialog", "На", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_activation_type.setTitle(QtGui.QApplication.translate("Dialog", "Активация нового тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_activation_on_change.setText(QtGui.QApplication.translate("Dialog", "В момент смены", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_activation_on_next_sp.setText(QtGui.QApplication.translate("Dialog", "Следующий расчётный период", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_bidirectional.setText(QtGui.QApplication.translate("Dialog", "Двунаправленная связь", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_disable.setText(QtGui.QApplication.translate("Dialog", "Временно запретить переход", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.label_to.setText(QtGui.QApplication.translate("Dialog", "На тарифные планы", None, QtGui.QApplication.UnicodeUTF8))
 
     def checkbox_behavior(self):
         if self.autostart_checkbox.checkState()==2:
@@ -137,7 +151,10 @@ class TPRulesAdd(QtGui.QDialog):
         else:
             model.ballance_min=float(unicode(self.lineEdit_balance_min.text()))
             
-
+        if self.radioButton_activation_on_next_sp.isChecked()==True:
+            model.on_next_sp = True
+        else:
+            model.on_next_sp = False
         model.disabled = self.checkBox_disable.checkState()==2
         sp_id = self.comboBox_oldtptime.itemData(self.comboBox_oldtptime.currentIndex()).toInt()[0]
         model.settlement_period_id = None if sp_id==0 else sp_id 
@@ -205,6 +222,7 @@ class TPRulesAdd(QtGui.QDialog):
 
             
         if self.model:
+            self.radioButton_activation_on_next_sp.setChecked(self.model.on_next_sp)
             self.lineEdit_balance_min.setText(unicode(self.model.ballance_min))
             self.lineEdit_cost.setText(unicode(self.model.cost))
             
