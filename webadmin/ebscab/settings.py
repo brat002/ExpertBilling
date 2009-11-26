@@ -75,6 +75,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'notification.context_processors.footer',
     'notification.context_processors.notices',
+    'notification.context_processors.setCurrency',
 )
 
 
@@ -136,6 +137,8 @@ MAX_PROMISE_SUM = 100000
 LEFT_PROMISE_DAYS = 7
 
 WEBCAB_LOG = '/opt/ebs/web/ebscab/log/webcab_log'
+
+CURRENCY = '$'
 
 try:
     from settings_local import *

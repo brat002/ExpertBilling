@@ -23,7 +23,7 @@
     			{% for transaction in transactions %}
        				<tr>
            				<td width="100px" class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y  H:i"}}&nbsp;</td>
-           				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}" align="right">{{ transaction.summ|multiply:"-1" }}&nbsp;</td>
+           				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}" align="right">{{ transaction.summ|multiply:"-1" }}&nbsp;{{ CURRENCY }}</td>
 						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}" align="center">{% if transaction.promise %}да{% else %}нет{% endif %}&nbsp;</td>
 						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.end_promise|date:"d.m.Y"  }}&nbsp;</td>
            				<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{% ifequal transaction.description None %}&nbsp;{% else %} {{ transaction.description }} &nbsp;{% endifequal %}&nbsp;</td>
@@ -34,7 +34,7 @@
 				{% if is_range %}
 					<tr>
 						<td align="right" class="bold {{ rec_count|coll_bg  }} no_border">Всего на странице:<br>Всего:</td>
-						<td colspan="6" class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ_on_page|floatformat:2 }}<br>{{ summ|floatformat:2 }}</td>
+						<td colspan="6" class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ_on_page|floatformat:2 }}&nbsp;{{ CURRENCY }}<br>{{ summ|floatformat:2 }}&nbsp;{{ CURRENCY }}</td>
 					</tr>
 				{% endif %}
 			</table>

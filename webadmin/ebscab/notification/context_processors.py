@@ -40,6 +40,11 @@ def notices(request):
         #        'status': True,
         #        }
         
+def setCurrency(request):
+    return {
+            'CURRENCY':settings.CURRENCY,
+            }
+        
 def auth(request):
     """
     Returns context variables required by apps that use Django's authentication
