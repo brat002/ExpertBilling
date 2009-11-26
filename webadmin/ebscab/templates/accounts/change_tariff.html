@@ -10,6 +10,7 @@
 	
 	
 	function change_tariff() {
+		alert(1);
 		var new_tariff = document.getElementById("id_tariff_id");
 		var message=document.getElementById("error_message");
 	 	jQuery.ajax({
@@ -20,6 +21,7 @@
         	timeout: 15000,
 			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
         	success: function(data, status){
+				alert(2);
 				var ret = eval('('+data+')');
 				if (typeof ret['ok_message'] != 'undefined') {
 					tb_remove();
@@ -28,8 +30,8 @@
 				}
 			},
         	error: function(data, status){
-				var ret = eval('('+data+')');
-				message.innerHTML = ret['error_message'];
+				alert(3);
+				message.innerHTML = 'Возникла ошибка, попробуйте позже.';
 			 },
         	complete: function(data, status){  }
     	});
