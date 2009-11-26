@@ -38,5 +38,8 @@ CREATE TYPE group_nodes AS (
            
 SELECT bt.id AS tarif_id,  ARRAY(SELECT ROW(bttn1.group_id, int_array_aggregate(bttn1.edge_value))::group_nodes FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id GROUP BY bttn1.group_id, bttn1.edge_value ORDER BY bttn1.group_id, bttn1.edge_value) AS gr_nodes 
            FROM billservice_tariff AS bt 
-           WHERE EXISTS (SELECT 1 FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id)
+           WHERE EXISTS (SELECT 1 FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id AND bttn2.edge_value > 0)
            ORDER BY bt.id;
+           
+           
+ALTER TABLE billservice_traffictransmitnodes ALTER edge_value TYPE int; 
