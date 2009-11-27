@@ -29,7 +29,7 @@ nfroutine_sql = \
                                         WHERE prepais.size>0 AND (ARRAY[prepais.account_tarif_id] && get_cur_acct(%s));""",
                'sclasses':"""SELECT int_array_aggregate(id) FROM nas_trafficclass WHERE store=TRUE;""",
                'group_bytes': 
-                          """SELECT ba.id AS account_id, bt.id AS tarif_id, act.id AS acctf_id, act.datetime, ARRAY(SELECT ROW(bgps.group_id, SUM(bgps.bytes))::group_bytes FROM billservice_groupstat AS bgps WHERE (bgps.group_id IN (SELECT bttn2.traffic_transmit_service_id FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id)) AND (bgps.datetime BETWEEN act.datetime AND %s) GROUP BY bgps.group_id ORDER BY bgps.group_id) AS gr_bytes 
+                          """SELECT ba.id AS account_id, bt.id AS tarif_id, act.id AS acctf_id, act.datetime, ARRAY(SELECT ROW(bgps.group_id, SUM(bgps.bytes))::group_bytes FROM billservice_groupstat AS bgps WHERE (bgps.account_id = act.account_id) AND (bgps.group_id IN (SELECT bttn2.group_id FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id)) AND (bgps.datetime BETWEEN act.datetime AND %s) GROUP BY bgps.group_id ORDER BY bgps.group_id) AS gr_bytes 
                                 FROM billservice_tariff AS bt 
                                 JOIN billservice_accounttarif AS act ON 
                                     EXISTS (SELECT 1 FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id AND bttn1.edge_value > 0) 
@@ -39,7 +39,7 @@ nfroutine_sql = \
                                     ba.id = act.account_id               
                                 ORDER BY bt.id, ba.id;""",
               'tarif_groups':
-                          """SELECT bt.id AS tarif_id,  ARRAY(SELECT ROW(bttn1.group_id, int_array_aggregate(bttn1.edge_value))::group_nodes FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id GROUP BY bttn1.group_id, bttn1.edge_value HAVING (bttn1.edge_value > 0) ORDER BY bttn1.group_id, bttn1.edge_value) AS gr_nodes 
+                          """SELECT bt.id AS tarif_id,  ARRAY(SELECT ROW(bttn1.group_id, sort_asc(int_array_aggregate(bttn1.edge_value)))::group_nodes FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id AND (bttn1.edge_value > 0) GROUP BY bttn1.group_id ORDER BY bttn1.group_id) AS gr_nodes 
                                 FROM billservice_tariff AS bt 
                                 WHERE EXISTS (SELECT 1 FROM billservice_traffictransmitnodes AS bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id AND bttn2.edge_value > 0)
                                 ORDER BY bt.id;"""}

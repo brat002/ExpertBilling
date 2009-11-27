@@ -634,12 +634,12 @@ class NetFlowRoutine(Thread):
                                         logger.warning("Account_bytes not resolved for acc %s", acc)
                                         break
                                     tg_bytes = 0
-                                    tg_datetime, tg_current, tg_next = None, None
+                                    tg_datetime, tg_current, tg_next = None, None, None
                                     with account_bytes.lock:
-                                        gbytes = account_bytes.group_bytes.get(group_id)
+                                        gbytes = account_bytes.group_data.get(group_id)
                                         if not gbytes:
                                             gbytes = GroupBytesDictData._make((0,))
-                                            account_bytes.group_bytes[group_id] = gbytes
+                                            account_bytes.group_data[group_id] = gbytes
                                         if prepaid_left and gbytes.bytes != 0:
                                             gbytes.bytes = 0
                                         tg_bytes = gbytes.bytes
