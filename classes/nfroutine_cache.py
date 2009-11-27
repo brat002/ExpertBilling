@@ -11,6 +11,7 @@ from nfroutine_class.NodesData import NodesData
 from nfroutine_class.AccountGroupBytesData import AccountGroupBytesData
 from nfroutine_class.TarifGroupEdgeData import TarifGroupEdgeData
 from nfroutine_class.GroupBytesDictData import GroupBytesDictData
+from decimal import Decimal
 
 class NfroutineCaches(CacheCollection):
     __slots__ = ('account_cache', 'period_cache', 'nodes_cache', 'settlement_cache', \
@@ -140,10 +141,12 @@ class AccountGroupBytesCache(CacheItem):
         self.by_acctf = {}
         for acct in self.data:
             gb_dict = {}
-            print str(acct)
-            for gb_group, gb_bytes in acct.group_bytes:
-                gb_dict[gb_group] = GroupBytesDictData._make((gb_bytes,))                
-            acct.group_bytes = gb_dict
+            if acct.group_data != '{}':                
+                #.replace(',"', '|').replace(')"', '))').replace(',', ',Decimal(').replace('|', ',')
+                acct.group_data = eval(acct.group_data.replace('{', '[').replace('}', ']').replace('"', '').replace('\\', ''))
+                for gb_group, gb_bytes in acct.group_data:
+                    gb_dict[gb_group] = GroupBytesDictData._make((gb_bytes,))                
+            acct.group_data = gb_dict
             acct.lock = Lock()
             acct.last_accessed = datetime.datetime.now()
             self.by_acctf[acct.acctf_id] = acct
@@ -155,12 +158,11 @@ class TarifGroupEdgeCache(CacheItem):
     
     def reindex(self):
         self.by_tarif = {}
-        for i in self.data:
-            print str(i)
         for tf in self.data:
             #print repr(tf)
             tf.datetime = datetime.datetime.now()
-            tf.group_edges = dict(eval(tf.group_edges.replace('{', '[').replace('}', ']').replace('"', '')))
+            tf.group_edges = dict(eval(tf.group_edges.replace('{', '[').replace('}', ']').replace('"', '').replace('\\', '')))
             self.by_tarif[tf.tarif_id] = tf
+            #print tf
         
         
