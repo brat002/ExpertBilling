@@ -133,8 +133,15 @@ class DepickerThread(Thread):
                     #except: pass
                     try: 
                         time.sleep(3)
-                        self.cur.connection.commit()
-                        self.cur = self.connection.cursor()
+                        if self.connection.closed():
+                            try:
+                                self.connection = get_connection(vars.db_dsn)
+                                self.cur = self.connection.cursor()
+                            except:
+                                time.sleep(20)
+                        else:
+                            self.cur.connection.commit()
+                            self.cur = self.connection.cursor()
                     except: 
                         time.sleep(10)
                         try:
@@ -259,8 +266,15 @@ class groupDequeThread(Thread):
                         
                     try: 
                         time.sleep(3)
-                        self.cur.connection.commit()
-                        self.cur = self.connection.cursor()
+                        if self.connection.closed():
+                            try:
+                                self.connection = get_connection(vars.db_dsn)
+                                self.cur = self.connection.cursor()
+                            except:
+                                time.sleep(20)
+                        else:
+                            self.cur.connection.commit()
+                            self.cur = self.connection.cursor()
                     except: 
                         time.sleep(10)
                         try:
@@ -364,8 +378,15 @@ class statDequeThread(Thread):
                         
                     try: 
                         time.sleep(3)
-                        self.cur.connection.commit()
-                        self.cur = self.connection.cursor()
+                        if self.connection.closed():
+                            try:
+                                self.connection = get_connection(vars.db_dsn)
+                                self.cur = self.connection.cursor()
+                            except:
+                                time.sleep(20)
+                        else:
+                            self.cur.connection.commit()
+                            self.cur = self.connection.cursor()
                     except: 
                         time.sleep(10)
                         try:
@@ -433,9 +454,9 @@ class NetFlowRoutine(Thread):
     
     def edge_bin_search(self, s_array, value):
         if value >= s_array[-1]:
-            return s_array[-1]
+            return len(s_array) - 1
         elif len(s_array) == 1:
-            return s_array[-1]
+            return len(s_array) - 1
         else:
             #lookup_array = s_array
             start_pos = 0
@@ -645,7 +666,7 @@ class NetFlowRoutine(Thread):
                                         tg_bytes = gbytes.bytes
                                         gbytes.bytes += octets                                        
                                         #tg_datetime, tg_current, tg_next = gbytes.tg_current, gbytes.tg_next
-                                        gbytes.last_accessed = datetime.datetime.now()
+                                        account_bytes.last_accessed = datetime.datetime.now()
                                         
                                     #get tarif info
                                     group_edges = group_edge[group_id]
@@ -695,8 +716,12 @@ class NetFlowRoutine(Thread):
                         totaltime = time.clock()
                         
             except IndexError, ierr:
-                logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
-                if not fpacket: time.sleep(random.randint(10,20))                
+                logger.debug("%s : indexerror : %s, %s", (self.getName(), repr(ierr), traceback.format_exc())) 
+                if not fpacket: 
+                    time.sleep(random.randint(10,20))
+                    logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
+                else:
+                    logger.debug("%s : indexerror : %s, %s", (self.getName(), repr(ierr), traceback.format_exc())) 
                 continue               
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
