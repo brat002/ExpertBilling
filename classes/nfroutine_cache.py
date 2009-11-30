@@ -99,7 +99,7 @@ class NodesCache(CacheItem):
         for trnode in self.data:
             if trnode.group_id:
                 self.by_tts_group[(trnode.traffic_transmit_service_id,trnode.group_id)].append(trnode)
-                self.by_tts_group[(trnode.traffic_transmit_service_id,trnode.group_id, trnode.edge_value)].append(trnode)
+                self.by_tts_group_edge[(trnode.traffic_transmit_service_id,trnode.group_id, trnode.edge_value)].append(trnode)
                 
 class TrafficTransmitServiceCache(SimpleDictCache):
     __slots__ = ()
