@@ -148,7 +148,7 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
     format_string=nas.ipn_speed_action,
     """
     
-    if (format_string=='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot' or nas_type=='cisco':
+    if (format_string=='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot' or nas.type=='cisco':
         #Send CoA
         #print 1
         #speed_string= create_speed_string(speed, coa=True)

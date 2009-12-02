@@ -504,7 +504,7 @@ class RPCServer(object):
     def sql(self, sql, return_response=True, pickler=False, cur=None, connection=None):
         #print self.ticket
         #print sql
-        cur.execute(sql)
+        cur.execute(unicode(sql))
         #connection.commit()
         
         #print dir(connection)
@@ -512,7 +512,7 @@ class RPCServer(object):
         a=time.clock()
         if return_response:
             result = map(Object, cur.fetchall())
-        log_string = u"""Пользователь %s выполнил SQL запрос %s""" % (vars.USER_ID[0], str(sql).decode('unicode-escape'),)
+        log_string = u"""Пользователь %s выполнил SQL запрос %s""" % (vars.USER_ID[0], unicode(sql),)
         
         cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         #print "Query length=", time.clock()-a

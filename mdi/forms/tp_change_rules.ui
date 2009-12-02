@@ -41,9 +41,6 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
-       <widget class="QSpinBox" name="spinBox_oldtptime"/>
-      </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="comboBox_from"/>
       </item>
@@ -129,6 +126,9 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="5" column="1">
+       <widget class="QComboBox" name="comboBox_oldtptime"/>
       </item>
      </layout>
     </widget>
