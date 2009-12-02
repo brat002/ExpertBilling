@@ -308,13 +308,13 @@ class CassaEbs(ebsTableWindow):
         
         
     def refreshTable(self):
-        fullname = u"%s" % self.lineEdit_fullname.text()
-        username = u"%s" % self.lineEdit_username.text()
-        city = u"%s" % self.lineEdit_city.text()
-        street = u"%s" % self.lineEdit_street.text()
-        house = u"%s" % self.lineEdit_house.text()
-        bulk = u"%s" % self.lineEdit_bulk.text()
-        room = u"%s" % self.lineEdit_room.text()
+        fullname = unicode(self.lineEdit_fullname.text())
+        username = u"%s" % unicode(self.lineEdit_username.text())
+        city = u"%s" % unicode(self.lineEdit_city.text())
+        street = u"%s" % unicode(self.lineEdit_street.text())
+        house = u"%s" % unicode(self.lineEdit_house.text())
+        bulk = u"%s" % unicode(self.lineEdit_bulk.text())
+        room = u"%s" % unicode(self.lineEdit_room.text())
 
         
         res={'fullname':fullname, 'city':city, 'street':street, 'house':house, 'house_bulk':bulk, 'room':room, 'username': username}
