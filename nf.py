@@ -326,19 +326,20 @@ def nfPacketHandle(data, addrport, flowCache):
         if 0: assert isinstance(flow, Flow5Data)
         #look for account for ip address
 
-        acc_data_src = caches.account_cache.vpn_ips.get(flow.src_addr) or caches.account_cache.ipn_ips.get(flow.src_addr)
-        acc_data_dst = caches.account_cache.vpn_ips.get(flow.dst_addr) or caches.account_cache.ipn_ips.get(flow.dst_addr)
+        acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, nas_id)) or caches.account_cache.ipn_ips.get((flow.src_addr, nas_id))
+        acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nas_id)) or caches.account_cache.ipn_ips.get((flow.dst_addr, nas_id))
         if not acc_data_src and caches.account_cache.ipn_range:
             for src_ip, src_mask, account_data in caches.account_cache.ipn_range:
-                if (flow.src_addr & src_mask) == src_ip:
+                if (account_data.nas_id == nas_id) and (flow.src_addr & src_mask) == src_ip:
                     acc_data_src = account_data
         if not acc_data_dst and caches.account_cache.ipn_range:
             for dst_ip, dst_mask, account_data in caches.account_cache.ipn_range:
-                if (flow.dst_addr & dst_mask) == dst_ip:
+                if (account_data.nas_id == nas_id) and (flow.dst_addr & dst_mask) == dst_ip:
                     acc_data_dst = account_data
                     
         local = bool(acc_data_src and acc_data_dst)
         acc_acct_tf = (acc_data_src, acc_data_dst) if local else (acc_data_src or acc_data_dst,)
+        #print repr(acc_acct_tf)
         if acc_acct_tf[0]:            
             flow.nas_id = nas_id
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
@@ -774,7 +775,8 @@ class ServiceThread(Thread):
                             
                         if not cacheMaster.cache.class_cache.data:
                             logger.warning("NO CLASSES/CLASSNODES FOUND! THE DAEMON IS IDLE!", ())
-                            
+                           
+                        #print repr(cacheMaster.cache)
                         queues.databaseQueue.sui_check()
                     counter += 1
                     if flags.cacheFlag:
