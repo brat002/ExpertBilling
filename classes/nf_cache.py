@@ -57,15 +57,15 @@ class AccountCache(CacheItem):
         self.ipn_range = []
         for acct in self.data:
             vpn_ip, ipn_ip = acct[1:3]
-            account_object = self.datatype._make((acct[0], acct[3], acct[4]))
+            account_object = self.datatype._make((acct[0], acct[3], acct[4], acct[5]))
             if vpn_ip != '0.0.0.0':
-                self.vpn_ips[parseAddress(vpn_ip)[0]] = account_object
+                self.vpn_ips[(parseAddress(vpn_ip)[0], account_object.nas_id)] = account_object
             if ipn_ip != '0.0.0.0':
                 if ipn_ip.find('/') != -1:
                     range_ip = IPint(ipn_ip)
                     self.ipn_range.append((range_ip.int(), range_ip.netmask(), account_object))
                 else:
-                    self.ipn_ips[parseAddress(ipn_ip)[0]] = account_object
+                    self.ipn_ips[(parseAddress(ipn_ip)[0], account_object.nas_id)] = account_object
             
 class ClassCache(CacheItem):
     __slots__ = ('classes',)
