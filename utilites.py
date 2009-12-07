@@ -157,10 +157,10 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
         log_debug_('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
-        doc = packet.AcctPacket(code=43, secret=nas.secret, dict=dict)
-        doc.AddAttribute('NAS-IP-Address', nas.ipaddress)
-        doc.AddAttribute('NAS-Identifier', nas.identify)
-        doc.AddAttribute('User-Name', account.username)
+        doc = packet.AcctPacket(code=43, secret=str(nas.secret), dict=dict)
+        doc.AddAttribute('NAS-IP-Address', str(nas.ipaddress))
+        doc.AddAttribute('NAS-Identifier', str(nas.identify))
+        doc.AddAttribute('User-Name', str(account.username))
         doc.AddAttribute('Acct-Session-Id', str(session_id))
         if access_type=='hotspot':
             doc.AddAttribute('Framed-IP-Address', str(account.ipn_ip_address))
@@ -168,13 +168,13 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
             doc.AddAttribute('Framed-IP-Address', str(account.vpn_ip_address))
         #doc.AddAttribute((14988,8), speed_string)
         command_dict={
-                             'access_type':access_type,
-                             'username': account.username,
-                             'user_id':account.account_id,
-                             'account_ipn_ip': account.ipn_ip_address,
-                             'account_vpn_ip': account.vpn_ip_address,
-                             'account_mac_address':account.ipn_mac_address,
-                             'session': session_id,
+                             'access_type':str(access_type),
+                             'username': str(account.username),
+                             'user_id': str(account.account_id),
+                             'account_ipn_ip': str(account.ipn_ip_address),
+                             'account_vpn_ip': str(account.vpn_ip_address),
+                             'account_mac_address':str(account.ipn_mac_address),
+                             'session': str(session_id),
                              }
         speed = get_decimals_speeds(speed)
         #print speed
@@ -182,18 +182,18 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
         command_dict.update(speed)
         
         if nas.speed_value1:
-            result_params = command_string_parser(command_string=nas.speed_value1, command_dict=speed)
+            result_params = str(command_string_parser(command_string=nas.speed_value1, command_dict=speed))
             if result_params and nas.speed_vendor_1:
-                self.replypacket.AddAttribute((nas.speed_vendor_1,speed_attr_id1),result_params)
+                doc.AddAttribute((nas.speed_vendor_1, nas.speed_attr_id1),result_params)
             elif result_params and not nas.speed_vendor_1:
-                self.replypacket.AddAttribute(speed_attr_id1,result_params)
+                doc.AddAttribute(nas.speed_attr_id1,str(result_params))
 
         if nas.speed_value2:
             result_params = command_string_parser(command_string=nas.speed_value2, command_dict=speed)
             if result_params and nas.speed_vendor_2:
-                self.replypacket.AddAttribute((nas.speed_vendor_2,speed_attr_id1),result_params)
+                doc.AddAttribute((nas.speed_vendor_2,nas.speed_attr_id2),result_params)
             elif result_params and not nas.speed_vendor_2:
-                self.replypacket.AddAttribute(speed_attr_id2,result_params)
+                doc.AddAttribute(nas.speed_attr_id2,result_params)
                     
         doc_data=doc.RequestPacket()
         sock.sendto(doc_data,(nas.ipaddress, 1700))
@@ -204,6 +204,7 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
         #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
 
         sock.close()
+        
         #try:
         #    print doc['Error-Cause'][0]
         #except:
