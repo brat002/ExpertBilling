@@ -128,18 +128,20 @@ class ebsTableWindow(QtGui.QMainWindow):
             for x in xrange(column_count):
                 try:
                     f.write(self.tableWidget.horizontalHeaderItem(x).text().toLocal8Bit())
-                    f.write(";")
                 except Exception, e:
                     print e
+                    f.write("")
+                finally:
+                    f.write(";")
             f.write("\n")   
             for x in xrange(self.tableWidget.rowCount()):
                 for i in xrange(column_count):
                     try:
                         f.write(self.tableWidget.item(x, i).text().toLocal8Bit())
-                        f.write(";")
                     except Exception, e:
                         print e
                         f.write("")
+                    finally:
                         f.write(";")
                 f.write("\n")
             f.close()
@@ -546,19 +548,22 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
             for x in xrange(column_count):
                 try:
                     f.write(self.tableWidget.horizontalHeaderItem(x).text().toLocal8Bit())
-                    f.write(";")
+                    
                 except Exception, e:
                     print e
+                    f.write("")
+                finally:
+                    f.write(";")
             f.write("\n")
             for x in xrange(self.tableWidget.rowCount()):
                 for i in xrange(column_count):
                     try:
                         f.write(self.tableWidget.item(x, i).text().toLocal8Bit())
-                        f.write(";")
+
                     except Exception, e:
                         print e
-                        f.write("\n")
                         f.write("")
+                    finally:
                         f.write(";")
                 f.write("\n")
             f.close()

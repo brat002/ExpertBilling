@@ -45,6 +45,7 @@ la_list = [u"Заблокировать пользователя", u"Измен�
 
 ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном и нулевом балансе"), CashType(2,u"При отрицательном балансе")]
 ps_list = [u"При любом балансе", u"При положительном и нулевом балансе", u"При отрицательном балансе"]
+
 class AddAccountTarif(QtGui.QDialog):
     def __init__(self, connection, account=None, get_info=False, model=None):
         super(AddAccountTarif, self).__init__()
@@ -184,10 +185,10 @@ class TarifFrame(QtGui.QDialog):
 
         self.tab_1 = QtGui.QWidget()
         self.tab_1.setObjectName("tab_1")
-        
+
         self.checkBoxAllowExpressPay = QtGui.QCheckBox(self.tab_1)
         self.checkBoxAllowExpressPay.setGeometry(QtCore.QRect(150,320,597,16))
-        
+
         self.tarif_description_edit = QtGui.QTextEdit(self.tab_1)
         self.tarif_description_edit.setGeometry(QtCore.QRect(11,365,597,132))
         self.tarif_description_edit.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByKeyboard|QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.NoTextInteraction|QtCore.Qt.TextBrowserInteraction|QtCore.Qt.TextEditable|QtCore.Qt.TextEditorInteraction|QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
@@ -233,7 +234,7 @@ class TarifFrame(QtGui.QDialog):
         self.require_tarif_cost_edit = QtGui.QCheckBox(self.sp_groupbox)
         self.require_tarif_cost_edit.setGeometry(QtCore.QRect(9,138,453,19))
         self.require_tarif_cost_edit.setObjectName("require_tarif_cost_edit")
-        
+
         self.tarif_cost_edit = QtGui.QLineEdit(self.sp_groupbox)
         self.tarif_cost_edit.setGeometry(QtCore.QRect(139,80,241,21))
         self.tarif_cost_edit.setObjectName("tarif_cost_edit")
@@ -264,7 +265,7 @@ class TarifFrame(QtGui.QDialog):
         self.tarif_name_edit = QtGui.QLineEdit(self.tab_1)
         self.tarif_name_edit.setGeometry(QtCore.QRect(110,20,381,20))
         self.tarif_name_edit.setObjectName("tarif_name_edit")
-        
+
         self.ipn_for_vpn = QtGui.QCheckBox(self.tab_1)
         self.ipn_for_vpn.setGeometry(QtCore.QRect(400,260,200,20))
         self.ipn_for_vpn.setObjectName("ipn_for_vpn")

@@ -160,6 +160,8 @@ class MainWindow(QtGui.QMainWindow):
         
         child.show()
                
+
+
     @connlogin
     def dealers(self):
         self.workspace.windowList()
@@ -759,6 +761,8 @@ if __name__ == "__main__":
     if connection is None:
         sys.exit()
     #connection.commit()
+    
+
     try:
         global mainwindow
         mainwindow = MainWindow()

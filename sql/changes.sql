@@ -2546,3 +2546,15 @@ INSERT INTO billservice_transactiontype(
              "name", internal_name)
     VALUES ('Списание за смену тарифного плана', 'TP_CHANGE');
 
+
+INSERT INTO billservice_documenttype (id, name) VALUES (8, 'Информационное письмо');
+
+INSERT INTO billservice_template (name, type_id, body) VALUES ('Информационное письмо', 8, '---------------------------------------------------
+ Это сообщение сгенерировано биллинговой системой!
+---------------------------------------------------
+
+Здравствуйте, ${account.username}.
+Уведомляем, что актуальный баланс Вашего лицевого счета составляет ${"%.2f" % account.ballance} руб. Размер кредита ${account.credit}.
+Пожалуйста, пополните баланс во избежание блокировки.
+---
+${operator.organization}');

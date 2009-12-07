@@ -56,7 +56,7 @@ core_sql = \
                             LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id WHERE act.datetime >= (SELECT datetime FROM billservice_accounttarif AS att WHERE att.id=act.id AND att.periodical_billed IS FALSE ORDER BY datetime ASC LIMIT 1) AND act.datetime<%s AND bt.active ORDER by ba.id, act.datetime DESC;""",
           'traftrss':"""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""",
           'settlper':"""SELECT id, date_trunc('second', time_start), length, length_in, autostart FROM billservice_settlementperiod;""",
-          'nas'     :"""SELECT id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2 FROM nas_nas;""",
+          'nas'     :"""SELECT id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2, identify FROM nas_nas;""",
           'defsp'   :"""SELECT accessparameters.max_limit,accessparameters.burst_limit,
                         accessparameters.burst_treshold, accessparameters.burst_time,
                         accessparameters.priority, accessparameters.min_limit,
