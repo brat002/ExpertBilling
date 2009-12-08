@@ -5,7 +5,7 @@ from functools import partial
 import time
 import marshal, cPickle, zlib, struct, random, traceback
 from twisted.protocols.basic import implements, interfaces
-#from client_networking import TCPException
+from client_networking import TCPException, TimeoutError
 BLOCK_SIZE = 8
 CHALLENGE_LEN = 16
 KEY_LEN = 16

@@ -325,7 +325,8 @@ def nfPacketHandle(data, addrport, flowCache):
         flow = flow_class(flow_data)
         if 0: assert isinstance(flow, Flow5Data)
         #look for account for ip address
-
+        if flow.out_index == 0 or flow.in_index == flow.out_index:
+            continue
         acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, nas_id)) or caches.account_cache.ipn_ips.get((flow.src_addr, nas_id))
         acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nas_id)) or caches.account_cache.ipn_ips.get((flow.dst_addr, nas_id))
         if not acc_data_src and caches.account_cache.ipn_range:

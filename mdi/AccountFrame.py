@@ -805,7 +805,7 @@ class TarifFrame(QtGui.QDialog):
         self.reset_traffic_edit.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце периода предоплаченый трафик", None, QtGui.QApplication.UnicodeUTF8))
         
         self.trafficcost_tableWidget.clear()
-        columns=[u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ']
+        columns=[u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ', u'Граница МБ']
         
         makeHeaders(columns, self.trafficcost_tableWidget)
         self.trafficcost_tableWidget.setColumnHidden(1, True)     
@@ -929,6 +929,7 @@ class TarifFrame(QtGui.QDialog):
         self.trafficcost_tableWidget.insertRow(current_row)
         self.addrow(self.trafficcost_tableWidget, '0', current_row, 1)
         self.addrow(self.trafficcost_tableWidget, '0', current_row, 2)
+        self.addrow(self.trafficcost_tableWidget, '0', current_row, 6)
         #self.addrow(self.trafficcost_tableWidget, True, current_row, 4, item_type='checkbox')
         #self.addrow(self.trafficcost_tableWidget, True, current_row, 5, item_type='checkbox')
         #self.addrow(self.trafficcost_tableWidget, True, current_row, 6, item_type='checkbox')
@@ -1381,7 +1382,7 @@ class TarifFrame(QtGui.QDialog):
     def trafficCostCellEdit(self,y,x):
         
         #Стоимость за трафик
-        [u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ']
+        [u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ', u'Edge limit']
         if x==3:
             item = self.trafficcost_tableWidget.item(y,x)
             try:
@@ -1439,6 +1440,17 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             text = QtGui.QInputDialog.getDouble(self, u"До (МБ):", u"Укажите верхнюю границу в МБ, до которой настройки цены будут актуальны", default_text)        
+            self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
+            
+        if x==6:
+            item = self.trafficcost_tableWidget.item(y,x)
+            try:
+                default_text=int(item.text())
+            except:
+                default_text=0
+            
+            text = QtGui.QInputDialog.getInteger(self, u"Граница (МБ):", u"Укажите границу в МБ, после которой настройки цены будут актуальны", default_text)        
+           
             self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
 
     def periodicalServicesEdit(self,y,x):
@@ -1902,6 +1914,7 @@ class TarifFrame(QtGui.QDialog):
                         self.addrow(self.trafficcost_tableWidget, group.name, i, 3, id=node.group_id)
                         self.trafficcost_tableWidget.setItem(i,4, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
                         self.addrow(self.trafficcost_tableWidget, node.cost, i, 5)
+                        self.addrow(self.trafficcost_tableWidget, node.edge_value, i, 6)
                         i+=1
                         
                     self.trafficcost_tableWidget.resizeRowsToContents()
@@ -2293,6 +2306,7 @@ class TarifFrame(QtGui.QDialog):
                     #transmit_node.out_direction = self.trafficcost_tableWidget.cellWidget(i,5).checkState()==2
                     #transmit_node.transit_direction = self.trafficcost_tableWidget.cellWidget(i,6).checkState()==2
                     transmit_node.cost = unicode(self.trafficcost_tableWidget.item(i,5).text())
+                    transmit_node.edge_value = unicode(self.trafficcost_tableWidget.item(i,6).text())
                     
                     
                     transmit_node.id = self.connection.save(transmit_node, "billservice_traffictransmitnodes")
