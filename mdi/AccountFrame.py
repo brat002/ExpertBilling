@@ -1871,7 +1871,7 @@ class TarifFrame(QtGui.QDialog):
                 
                 traffic_transmit_nodes = self.connection.sql("""
                 SELECT traffictransmitnodes.* FROM billservice_traffictransmitnodes as traffictransmitnodes
-                WHERE traffictransmitnodes.traffic_transmit_service_id=%d ORDER BY edge_start ASC
+                WHERE traffictransmitnodes.traffic_transmit_service_id=%d ORDER BY edge_value ASC
                 """ % self.model.traffic_transmit_service_id)
                 #print "traffic_transmit_nodes=", traffic_transmit_nodes
                 #print "traffic_transmit_service_id=", self.model.traffic_transmit_service_id
@@ -1897,7 +1897,7 @@ class TarifFrame(QtGui.QDialog):
                         
                         #print node.id
                         self.addrow(self.trafficcost_tableWidget, node.id, i, 0)
-                        self.addrow(self.trafficcost_tableWidget, node.edge_start, i, 1)
+                        self.addrow(self.trafficcost_tableWidget, node.edge_value, i, 1)
                         self.addrow(self.trafficcost_tableWidget, node.edge_end, i, 2)
                         self.addrow(self.trafficcost_tableWidget, group.name, i, 3, id=node.group_id)
                         self.trafficcost_tableWidget.setItem(i,4, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
@@ -2286,7 +2286,7 @@ class TarifFrame(QtGui.QDialog):
                     
                     
                     transmit_node.traffic_transmit_service_id = traffic_transmit_service.id
-                    transmit_node.edge_start = unicode(self.trafficcost_tableWidget.item(i,1).text() or 0)
+                    transmit_node.edge_value = unicode(self.trafficcost_tableWidget.item(i,1).text() or 0)
                     transmit_node.edge_end = unicode(self.trafficcost_tableWidget.item(i,2).text() or 0)
                     transmit_node.group_id = self.trafficcost_tableWidget.item(i,3).id
                     #transmit_node.in_direction = self.trafficcost_tableWidget.cellWidget(i,4).checkState()==2
@@ -4340,11 +4340,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         tariffs = self.connection.get_tariffs()
         self.connection.commit()
         self.tableWidget.setColumnHidden(0, True)
-        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
-        item.id = -1000
-        item.tarif_type = 'all'
-        item.setText(0, u"Все аккаунты")
-        item.setIcon(0,QtGui.QIcon("images/folder.png"))
+
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.id = tarif.id
@@ -4355,7 +4351,11 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #item.setText(1, tarif.ttype)
             if not tarif.active:
                 item.setIcon(0, QtGui.QIcon("images/folder_disabled.png"))
-           
+        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
+        item.id = -1000
+        item.tarif_type = 'all'
+        item.setText(0, u"Все аккаунты")
+        item.setIcon(0,QtGui.QIcon("images/folder.png"))
         self.connectTree()
         if curItem != -1:
             self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))

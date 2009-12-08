@@ -1200,7 +1200,10 @@ class HandleSAcct(HandleSBase):
                                         self.packetobject['Called-Station-Id'][0], 
                                         self.packetobject['Framed-IP-Address'][0],
                                         self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id, sessions_speed.get(acc.account_id, "")))
-                del sessions_speed[acc.account_id]
+                try:
+                    del sessions_speed[acc.account_id]
+                except:
+                    pass
                 if nas_by_int_id:
                     with queues.sessions_lock:
                         queues.sessions[str(self.packetobject['Acct-Session-Id'][0])] = (nas.id, now)
