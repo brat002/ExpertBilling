@@ -805,7 +805,7 @@ class TarifFrame(QtGui.QDialog):
         self.reset_traffic_edit.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце периода предоплаченый трафик", None, QtGui.QApplication.UnicodeUTF8))
         
         self.trafficcost_tableWidget.clear()
-        columns=[u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ', u'Граница МБ']
+        columns=[u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ']
         
         makeHeaders(columns, self.trafficcost_tableWidget)
         self.trafficcost_tableWidget.setColumnHidden(1, True)     
@@ -929,7 +929,6 @@ class TarifFrame(QtGui.QDialog):
         self.trafficcost_tableWidget.insertRow(current_row)
         self.addrow(self.trafficcost_tableWidget, '0', current_row, 1)
         self.addrow(self.trafficcost_tableWidget, '0', current_row, 2)
-        self.addrow(self.trafficcost_tableWidget, '0', current_row, 6)
         #self.addrow(self.trafficcost_tableWidget, True, current_row, 4, item_type='checkbox')
         #self.addrow(self.trafficcost_tableWidget, True, current_row, 5, item_type='checkbox')
         #self.addrow(self.trafficcost_tableWidget, True, current_row, 6, item_type='checkbox')
@@ -1382,7 +1381,7 @@ class TarifFrame(QtGui.QDialog):
     def trafficCostCellEdit(self,y,x):
         
         #Стоимость за трафик
-        [u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ', u'Edge limit']
+        [u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ']
         if x==3:
             item = self.trafficcost_tableWidget.item(y,x)
             try:
@@ -1440,17 +1439,6 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0
             text = QtGui.QInputDialog.getDouble(self, u"До (МБ):", u"Укажите верхнюю границу в МБ, до которой настройки цены будут актуальны", default_text)        
-            self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
-            
-        if x==6:
-            item = self.trafficcost_tableWidget.item(y,x)
-            try:
-                default_text=int(item.text())
-            except:
-                default_text=0
-            
-            text = QtGui.QInputDialog.getInteger(self, u"Граница (МБ):", u"Укажите границу в МБ, после которой настройки цены будут актуальны", default_text)        
-           
             self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
 
     def periodicalServicesEdit(self,y,x):
@@ -1883,7 +1871,7 @@ class TarifFrame(QtGui.QDialog):
                 
                 traffic_transmit_nodes = self.connection.sql("""
                 SELECT traffictransmitnodes.* FROM billservice_traffictransmitnodes as traffictransmitnodes
-                WHERE traffictransmitnodes.traffic_transmit_service_id=%d ORDER BY edge_value ASC
+                WHERE traffictransmitnodes.traffic_transmit_service_id=%d ORDER BY edge_start ASC
                 """ % self.model.traffic_transmit_service_id)
                 #print "traffic_transmit_nodes=", traffic_transmit_nodes
                 #print "traffic_transmit_service_id=", self.model.traffic_transmit_service_id
@@ -1909,12 +1897,11 @@ class TarifFrame(QtGui.QDialog):
                         
                         #print node.id
                         self.addrow(self.trafficcost_tableWidget, node.id, i, 0)
-                        self.addrow(self.trafficcost_tableWidget, node.edge_value, i, 1)
+                        self.addrow(self.trafficcost_tableWidget, node.edge_start, i, 1)
                         self.addrow(self.trafficcost_tableWidget, node.edge_end, i, 2)
                         self.addrow(self.trafficcost_tableWidget, group.name, i, 3, id=node.group_id)
                         self.trafficcost_tableWidget.setItem(i,4, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
                         self.addrow(self.trafficcost_tableWidget, node.cost, i, 5)
-                        self.addrow(self.trafficcost_tableWidget, node.edge_value, i, 6)
                         i+=1
                         
                     self.trafficcost_tableWidget.resizeRowsToContents()
@@ -2299,14 +2286,13 @@ class TarifFrame(QtGui.QDialog):
                     
                     
                     transmit_node.traffic_transmit_service_id = traffic_transmit_service.id
-                    transmit_node.edge_value = unicode(self.trafficcost_tableWidget.item(i,1).text() or 0)
+                    transmit_node.edge_start = unicode(self.trafficcost_tableWidget.item(i,1).text() or 0)
                     transmit_node.edge_end = unicode(self.trafficcost_tableWidget.item(i,2).text() or 0)
                     transmit_node.group_id = self.trafficcost_tableWidget.item(i,3).id
                     #transmit_node.in_direction = self.trafficcost_tableWidget.cellWidget(i,4).checkState()==2
                     #transmit_node.out_direction = self.trafficcost_tableWidget.cellWidget(i,5).checkState()==2
                     #transmit_node.transit_direction = self.trafficcost_tableWidget.cellWidget(i,6).checkState()==2
                     transmit_node.cost = unicode(self.trafficcost_tableWidget.item(i,5).text())
-                    transmit_node.edge_value = unicode(self.trafficcost_tableWidget.item(i,6).text())
                     
                     
                     transmit_node.id = self.connection.save(transmit_node, "billservice_traffictransmitnodes")
@@ -4354,7 +4340,11 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         tariffs = self.connection.get_tariffs()
         self.connection.commit()
         self.tableWidget.setColumnHidden(0, True)
-
+        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
+        item.id = -1000
+        item.tarif_type = 'all'
+        item.setText(0, u"Все аккаунты")
+        item.setIcon(0,QtGui.QIcon("images/folder.png"))
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.id = tarif.id
@@ -4365,11 +4355,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #item.setText(1, tarif.ttype)
             if not tarif.active:
                 item.setIcon(0, QtGui.QIcon("images/folder_disabled.png"))
-        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
-        item.id = -1000
-        item.tarif_type = 'all'
-        item.setText(0, u"Все аккаунты")
-        item.setIcon(0,QtGui.QIcon("images/folder.png"))
+           
         self.connectTree()
         if curItem != -1:
             self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))
