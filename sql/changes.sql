@@ -2558,3 +2558,18 @@ INSERT INTO billservice_template (name, type_id, body) VALUES ('Информац
 Пожалуйста, пополните баланс во избежание блокировки.
 ---
 ${operator.organization}');
+
+-- 08.12.2009 18:01
+
+ALTER TABLE billservice_traffictransmitnodes ALTER edge_value TYPE int; 
+
+CREATE TYPE group_bytes AS (
+    group_id_t int,
+    bytes_t    numeric
+); 
+
+CREATE TYPE group_nodes AS (
+    group_id_t int,
+    node_egde_t   int[]
+);  
+
