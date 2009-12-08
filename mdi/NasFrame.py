@@ -44,7 +44,7 @@ actions = {
                'user_enable_action':'/ip firewall address-list set [find comment=$user_id] address=$account_ipn_ip disabled=no',
                'user_disable_action': '/ip firewall address-list set [find comment=$user_id] disabled=yes',
                'vpn_speed_action': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx',
-               'ipn_speed_action': '/queue simple remove [find comment=$username-$user_id]; /queue simple add name=$username-$user_id max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx target-addresses=$account_ipn_ip/32',
+               'ipn_speed_action': '/queue simple remove [find name=$username-$user_id]; /queue simple add name=$username-$user_id max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx target-addresses=$account_ipn_ip/32',
                'reset_action': '/interface $access_type-server remove [find user=$username]',
                'radius_speed': {'vendor1':14988, 'attrid1':8, 'value1':'$max_limit_tx/$max_limit_rx $burst_limit_tx/$burst_limit_rx $burst_treshold_tx/$burst_treshold_rx $burst_time_tx/$burst_time_rx $priority $min_limit_tx/$min_limit_rx'},
                },
@@ -569,6 +569,13 @@ class AddNasFrame(QtGui.QDialog):
             self.lineEdit_attr_id2.setText(unicode(self.model.speed_attr_id2 or ''))
             self.lineEdit_value1.setText(unicode(self.model.speed_value1))
             self.lineEdit_value2.setText(unicode(self.model.speed_value2))
+        else:
+            self.lineEdit_vendor1.setText('')
+            self.lineEdit_vendor2.setText('')
+            self.lineEdit_attr_id1.setText('')
+            self.lineEdit_attr_id2.setText('')
+            self.lineEdit_value1.setText('')
+            self.lineEdit_value2.setText('')            
             
         #else:
         #    self.buttonBox.setDisabled(True)

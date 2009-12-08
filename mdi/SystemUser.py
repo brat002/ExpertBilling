@@ -11,6 +11,50 @@ from helpers import HeaderUtil
 from helpers import dateDelim
 from ebsWindow import ebsTableWindow
 
+
+
+class GroupSelectDialog(QtGui.QDialog):
+    def __init__(self, selected_ids, connection):
+        super(GroupSelectDialog, self).__init__()
+        self.selected_ids = selected_ids
+        self.connection = connection
+        self.setObjectName("GroupSelectDialog")
+        self.resize(424, 335)
+        self.gridLayout_2 = QtGui.QGridLayout(self)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.groupBox = QtGui.QGroupBox(self)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout.setObjectName("gridLayout")
+        self.listWidget = QtGui.QListWidget(self.groupBox)
+        self.listWidget.setObjectName("listWidget")
+        self.gridLayout.addWidget(self.listWidget, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.groupBox, 0, 0, 1, 2)
+        self.commandLinkButton = QtGui.QCommandLinkButton(self)
+        self.commandLinkButton.setObjectName("commandLinkButton")
+        self.gridLayout_2.addWidget(self.commandLinkButton, 1, 0, 1, 1)
+        self.commandLinkButton_2 = QtGui.QCommandLinkButton(self)
+        self.commandLinkButton_2.setObjectName("commandLinkButton_2")
+        self.gridLayout_2.addWidget(self.commandLinkButton_2, 1, 1, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout_2.addWidget(self.buttonBox, 2, 0, 1, 2)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Список пользователей в группе", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Группы", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton.setText(QtGui.QApplication.translate("Dialog", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton.setDescription(QtGui.QApplication.translate("Dialog", "Добавить новую группу", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_2.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_2.setDescription(QtGui.QApplication.translate("Dialog", "Удалить группу", None, QtGui.QApplication.UnicodeUTF8))
+        
 roles = [u"Администратор", u"Кассир", u"Веб-кабинет"]
 class PasswordEditFrame(QtGui.QDialog):
     def __init__(self):
