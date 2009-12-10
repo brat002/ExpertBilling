@@ -97,7 +97,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
             sock = self.transport.getHandle()
             sock.setsockopt ( socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1 )
             sock.setsockopt ( socket.SOL_TCP, socket.TCP_KEEPIDLE, 600 )
-            sock.setsockopt ( socket.SOL_TCP, socket.TCP_KEEPCOUNT, 20 )
+            sock.setsockopt ( socket.SOL_TCP, socket.TCP_KEEPCNT, 20 )
             sock.setsockopt ( socket.SOL_TCP, socket.TCP_KEEPINTVL, 60 )
         except Exception, ex:
             logger.warning("SERVER: socket options were not set due to exception: %s | %s", (repr(ex), traceback.format_exc()))
