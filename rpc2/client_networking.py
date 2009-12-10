@@ -32,10 +32,12 @@ class BlockingTcpClient(object):
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.settimeout(120)
+        '''
         try:
             self.socket.setsockopt ( socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1 )
         except:
             pass
+        '''
         self.connected = False
         self.retries = 0
         self.retryTime = 2
