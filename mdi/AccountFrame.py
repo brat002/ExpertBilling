@@ -245,6 +245,14 @@ class TarifFrame(QtGui.QDialog):
         self.ps_null_ballance_checkout_edit.setObjectName("ps_null_ballance_checkout_edit")
         self.ps_null_ballance_checkout_edit.setHidden(True)
 
+        self.label_systemgroup = QtGui.QLabel(self.tab_1)
+        self.label_systemgroup.setGeometry(QtCore.QRect(10,231,121,21))
+        self.label_systemgroup.setObjectName("label_systemgroup")
+
+        self.comboBox_system_group = QtGui.QComboBox(self.tab_1)
+        self.comboBox_system_group.setGeometry(QtCore.QRect(150,230,241,21))
+        self.comboBox_system_group.setObjectName("comboBox_system_group")
+
         self.access_type_edit = QtGui.QComboBox(self.tab_1)
         self.access_type_edit.setGeometry(QtCore.QRect(150,260,241,21))
         self.access_type_edit.setObjectName("access_type_edit")
@@ -763,6 +771,8 @@ class TarifFrame(QtGui.QDialog):
         self.ps_null_ballance_checkout_edit.setText(QtGui.QApplication.translate("Dialog", "Производить снятие денег при нулевом балансе пользователя", None, QtGui.QApplication.UnicodeUTF8))
         self.access_type_label.setText(QtGui.QApplication.translate("Dialog", "Способ доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.access_time_label.setText(QtGui.QApplication.translate("Dialog", "Время доступа", None, QtGui.QApplication.UnicodeUTF8))
+        
+        self.label_systemgroup.setText(QtGui.QApplication.translate("Dialog", "Группа доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.components_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Набор компонентов", None, QtGui.QApplication.UnicodeUTF8))
         self.transmit_service_checkbox.setText(QtGui.QApplication.translate("Dialog", "Оплата за трафик", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_for_vpn.setText(QtGui.QApplication.translate("Dialog", "Производить IPN действия", None, QtGui.QApplication.UnicodeUTF8))
@@ -795,7 +805,7 @@ class TarifFrame(QtGui.QDialog):
         self.reset_time_checkbox.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце расчётного периода предоплаченное время", None, QtGui.QApplication.UnicodeUTF8))
         self.timeaccess_table.clear()
 
-        columns=[u'#', u'Время', u'Цена']
+        columns=[u'#', u'Время', u'Цена за минуту']
         
         makeHeaders(columns, self.timeaccess_table)     
         
@@ -1621,11 +1631,27 @@ class TarifFrame(QtGui.QDialog):
         for at in access_time:
             self.access_time_edit.addItem(unicode(at.name))
 
+        systemgroups = self.connection.get_models("billservice_systemgroup")
+        
 
+        self.comboBox_system_group.addItem(unicode(u"--Доступно всем--"))
+        self.comboBox_system_group.setItemData(0, QtCore.QVariant(0))
+        i=1
+        for systemgroup in systemgroups:
+            self.comboBox_system_group.addItem(unicode(systemgroup.name))
+            self.comboBox_system_group.setItemData(i, QtCore.QVariant(systemgroup.id))
+            i+=1
         
         if self.model:
             if not self.model.isnull('settlement_period_id'):
                 self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(settlement_period.name, QtCore.Qt.MatchCaseSensitive))
+                
+            try:
+                if self.model.systemgroup_id:
+                    self.comboBox_system_group.setCurrentIndex(self.comboBox_system_group.findData(QtCore.QVariant(self.model.systemgroup_id)))
+            except Exception, e:
+                print e
+
                 
             self.require_tarif_cost_edit.setCheckState(self.model.require_tarif_cost == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.tarif_status_edit.setCheckState(self.model.active == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
@@ -1871,7 +1897,7 @@ class TarifFrame(QtGui.QDialog):
                 
                 traffic_transmit_nodes = self.connection.sql("""
                 SELECT traffictransmitnodes.* FROM billservice_traffictransmitnodes as traffictransmitnodes
-                WHERE traffictransmitnodes.traffic_transmit_service_id=%d ORDER BY edge_start ASC
+                WHERE traffictransmitnodes.traffic_transmit_service_id=%d ORDER BY edge_value ASC
                 """ % self.model.traffic_transmit_service_id)
                 #print "traffic_transmit_nodes=", traffic_transmit_nodes
                 #print "traffic_transmit_service_id=", self.model.traffic_transmit_service_id
@@ -1897,7 +1923,7 @@ class TarifFrame(QtGui.QDialog):
                         
                         #print node.id
                         self.addrow(self.trafficcost_tableWidget, node.id, i, 0)
-                        self.addrow(self.trafficcost_tableWidget, node.edge_start, i, 1)
+                        self.addrow(self.trafficcost_tableWidget, node.edge_value, i, 1)
                         self.addrow(self.trafficcost_tableWidget, node.edge_end, i, 2)
                         self.addrow(self.trafficcost_tableWidget, group.name, i, 3, id=node.group_id)
                         self.trafficcost_tableWidget.setItem(i,4, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
@@ -1984,6 +2010,9 @@ class TarifFrame(QtGui.QDialog):
                 return              
 
             model.access_parameters_id=self.connection.save(access_parameters, "billservice_accessparameters")
+            
+            gr_id = self.comboBox_system_group.itemData(self.comboBox_system_group.currentIndex()).toInt()[0]
+            model.systemgroup_id = None if gr_id == 0 else gr_id
             self.connection.commit()
             #Таблица скоростей
             
@@ -2286,7 +2315,7 @@ class TarifFrame(QtGui.QDialog):
                     
                     
                     transmit_node.traffic_transmit_service_id = traffic_transmit_service.id
-                    transmit_node.edge_start = unicode(self.trafficcost_tableWidget.item(i,1).text() or 0)
+                    transmit_node.edge_value = unicode(self.trafficcost_tableWidget.item(i,1).text() or 0)
                     transmit_node.edge_end = unicode(self.trafficcost_tableWidget.item(i,2).text() or 0)
                     transmit_node.group_id = self.trafficcost_tableWidget.item(i,3).id
                     #transmit_node.in_direction = self.trafficcost_tableWidget.cellWidget(i,4).checkState()==2

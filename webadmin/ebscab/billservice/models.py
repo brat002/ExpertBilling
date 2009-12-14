@@ -801,6 +801,10 @@ class OneTimeServiceHistory(models.Model):
     class Admin:
         pass
     
+class SystemGroup(models.Model):
+    name = models.CharField(max_length=255)
+    
+    
 class SystemUser(models.Model):
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255, default='')
@@ -810,6 +814,9 @@ class SystemUser(models.Model):
     created = models.DateTimeField(blank=True, null=True, default='')
     status = models.BooleanField(default=False)
     host = models.CharField(max_length=255, blank=True, null=True, default="0.0.0.0/0")
+    group = models.ManyToManyField(SystemGroup)
+    role = models.IntegerField()
+    text_password = models.CharField(max_length=255)
     
 class Ports(models.Model):
     port = models.IntegerField()
