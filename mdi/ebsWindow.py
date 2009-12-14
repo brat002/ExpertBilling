@@ -317,6 +317,7 @@ class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
             
     def refresh_(self):
         pass
+    
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
     

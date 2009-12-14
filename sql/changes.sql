@@ -2573,3 +2573,14 @@ CREATE TYPE group_nodes AS (
     node_egde_t   int[]
 );  
 
+
+--11.12.2009 17:50
+
+ALTER TABLE billservice_tariff ADD COLUMN systemgroup_id integer;
+ALTER TABLE billservice_tariff ALTER COLUMN systemgroup_id SET STORAGE PLAIN;
+
+ALTER TABLE billservice_tariff
+  ADD CONSTRAINT billservice_tariff_systemgroup_id_fkey FOREIGN KEY (systemgroup_id)
+      REFERENCES billservice_systemgroup (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
+

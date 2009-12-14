@@ -1076,7 +1076,8 @@ class CustomWidget(QtGui.QTableWidgetItem):
                     label += "%s \n" % model.name
             else:
                 label += "%s \n" % model.name
-        
+        if label:
+            label = label[0:-2]
         self.setText(label)
         
 class TemplatesWindow(QtGui.QMainWindow):
