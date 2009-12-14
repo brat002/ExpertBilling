@@ -26,12 +26,15 @@ class BlockingTcpClient(object):
     MAX_LENGTH = 5000000
     recvd = ""
     needed_length = 0
+    sockTimeout = 120
+    recdTimeout = 60
+    maxRecvCount = 10
 
     def __init__(self, host, port):
         self.host = host
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(120)
+        self.socket.settimeout(self.sockTimeout)
         '''
         try:
             self.socket.setsockopt ( socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1 )
@@ -84,6 +87,8 @@ class BlockingTcpClient(object):
     def read(self):
 
         read_buffer = ''
+        count = 0
+        timer = time.clock()
         while True:
             tr1 = time.clock()
             recd = ''
@@ -98,7 +103,14 @@ class BlockingTcpClient(object):
                 logger.error('TCP Client recovery error : %s', repr(ex))
                 #self.connectionLost()
                 raise TCPException('READ FAILED!')
-
+            if not recd:
+                count += 1
+            else:
+                count = 0
+                timer = time.clock()
+            if count > self.maxRecvCount or (time.clock() - timer) > self.recdTimeout:
+                logger.error('Zero recv max reached: count %s | timer %s', (count, time.clock() - timer))
+                raise TimeoutError("Zero recv timeout")
             self.recvd = self.recvd + recd
             if len(self.recvd) >= self.prefixLength:
                 if not self.needed_length:
