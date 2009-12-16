@@ -1205,7 +1205,17 @@ DECLARE
     result_ decimal;
 BEGIN
     start_date_5m_ := date_trunc('minute', start_date_) - interval '1 min' * (date_part('min', start_date_)::int % 5); 
-    SELECT INTO result_ sum(ssum) FROM (SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND (summ > 0) AND (created BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) UNION ALL SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)  UNION ALL SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)) AS ts_union ;
+    SELECT INTO result_ sum(ssum) FROM (
+        SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND (summ > 0) AND (created BETWEEN start_date_ AND end_date_) 
+        UNION ALL 
+        SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) 
+        UNION ALL 
+        SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) 
+        UNION ALL 
+        SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)  
+        UNION ALL 
+        SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)) 
+    AS ts_union ;
     RETURN result_;
 END;
 $BODY$
@@ -2574,7 +2584,7 @@ CREATE TYPE group_nodes AS (
 );  
 
 
---11.12.2009 17:50
+-- 11.12.2009 17:50
 
 ALTER TABLE billservice_tariff ADD COLUMN systemgroup_id integer;
 ALTER TABLE billservice_tariff ALTER COLUMN systemgroup_id SET STORAGE PLAIN;
@@ -2584,3 +2594,28 @@ ALTER TABLE billservice_tariff
       REFERENCES billservice_systemgroup (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
 
+-- 16.12.2009 15:00
+CREATE OR REPLACE FUNCTION transaction_block_sum(account_id_ integer, start_date_ timestamp without time zone, end_date_ timestamp without time zone)
+  RETURNS decimal AS
+$BODY$ 
+DECLARE
+    start_date_5m_ timestamp without time zone;
+    result_ decimal;
+BEGIN
+    start_date_5m_ := date_trunc('minute', start_date_) - interval '1 min' * (date_part('min', start_date_)::int % 5); 
+    SELECT INTO result_ sum(ssum) FROM (
+        SELECT sum(summ) AS ssum FROM billservice_transaction WHERE account_id=account_id_ AND (((summ > 0) AND (created BETWEEN start_date_ AND end_date_)) OR ((summ < 0) AND created <= end_date_))
+        UNION ALL 
+        SELECT sum(summ) AS ssum FROM billservice_traffictransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) 
+        UNION ALL 
+        SELECT sum(summ) AS ssum FROM billservice_timetransaction WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_) 
+        UNION ALL 
+        SELECT sum(summ) AS ssum FROM billservice_periodicalservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)  
+        UNION ALL 
+        SELECT sum(summ) AS ssum FROM billservice_onetimeservicehistory WHERE account_id=account_id_ AND (summ > 0) AND (datetime BETWEEN start_date_ AND end_date_)) 
+    AS ts_union ;
+    RETURN result_*(-1::decimal);
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;

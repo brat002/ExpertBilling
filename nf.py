@@ -29,6 +29,8 @@ from DBUtils.PooledDB import PooledDB
 from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
 from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
+import logging
+from logging.handlers import TimedRotatingFileHandler
 
 import twisted.internet
 #import twisted.protocols.ftp
@@ -817,6 +819,29 @@ class RecoveryThread(Thread):
         Thread.__init__(self)
     def run(self):
         get_file_names()
+    
+class FlowLoggerThread(Thread):
+    def __init__(self, dirL, filePrefix, whenL = 'M', intervalL = '5'):
+        Thread.__init__(self)
+        #create notifier
+        try:
+            self.fileLogger = logging.getLogger('filelogger')
+            self.fileLogger.setLevel(logging.INFO)
+            flHdlr = TimedRotatingFileHandler('/'.join((dirL, filePrefix)), when = whenL, interval = intervalL)
+            flHdlr.setFormatter("%(message)s")
+            self.fileLogger.addHandler(flHdlr)
+        except Exception, ex:
+            logger.error("Flowlogger creation exception: %s %s | %s", (self.getName(), repr(ex), traceback.format_exc()))
+            print "Flowlogger creation exception: flow logging didn't start. See log."
+            self.notifyError("Flowlogger creation exception: %s %s | %s" % (self.getName(), repr(ex), traceback.format_exc()))
+    
+    def notifyError(self, error):
+        #maybe e-mail?
+        pass
+    
+    def run(self):
+        #base on events
+        pass
     
 def get_file_names():
     global vars,queues
