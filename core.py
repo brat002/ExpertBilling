@@ -1041,7 +1041,7 @@ class settlement_period_service_dog(Thread):
                                           (acc.account_id, period_start, now))
                             #pstart_balance = (cur.fetchone()[0] or 0) + account_balance
                             pstart_balance = (cur.fetchone()[0] or 0)
-                            if acc.cost <= summ:
+                            if acc.cost <= pstart_balance:
                                 cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (acc.account_id,))                            
                             cur.connection.commit()
 
