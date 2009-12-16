@@ -34,6 +34,7 @@ class isdlogger(object):
             if not ident: self.ident = 'isdlogger'
             syslog.openlog(self.ident)
         elif ltype == 'logging':
+	    self.loggingL = logging.getLogger('isdlogger')
             self.log_ = self.loggingLog
             self.levels = loggingLevels
             #self.fflush = fflush
@@ -44,10 +45,12 @@ class isdlogger(object):
             if not filename : raise Exception('Please specify the filename!')
             #else: self.filename = filename
             #logging.config
-            logging.root.setLevel(self.levels[loglevel])
+            #logging.root.setLevel(self.levels[loglevel])
+	    self.loggingL.setLevel(self.levels[loglevel])
             rtHdlr = handlers.RotatingFileHandler(filename, mode=filemode, maxBytes=maxBytes, backupCount=backupCount)
             rtHdlr.setFormatter(logging.Formatter(format))
-            logging.root.addHandler(rtHdlr)
+            #logging.root.addHandler(rtHdlr)
+	    self.loggingL.addHandler(rtHdlr)
             #logging.basicConfig(level=self.levels[loglevel], format=self.loggingFormat, filename=self.filename, filemode=self.filemode)
         else:
             raise Exception('Unknown logger type!')
@@ -78,7 +81,8 @@ class isdlogger(object):
         
     '''logging log method'''
     def loggingLog(self, level, message):
-        logging.log(level, message)
+        #logging.log(level, message)
+	self.loggingL.log(level, message)
             
     '''set logging level'''
     def setLevel(self, level):
