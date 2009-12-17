@@ -317,15 +317,17 @@ class CassaEbs(ebsTableWindow):
         room = u"%s" % unicode(self.lineEdit_room.text())
 
         
-        res={'fullname':fullname, 'city':city, 'street':street, 'house':house, 'house_bulk':bulk, 'room':room, 'username': username}
+        
         #print res
 
-        if fullname or city or street or house or bulk or room or username:
-            sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name FROM billservice_account as account WHERE %s ORDER BY username ASC;" % ' AND '.join([u"%s LIKE '%s%s%s'" % (key, "%",res[key],"%") for key in res])
-        else:
-            sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name  FROM billservice_account as account ORDER BY username ASC;"
+#===============================================================================
+#        if fullname or city or street or house or bulk or room or username:
+#            sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name FROM billservice_account as account WHERE %s ORDER BY username ASC;" % ' AND '.join([u"%s LIKE '%s%s%s'" % (key, "%",res[key],"%") for key in res])
+#        else:
+#            sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name  FROM billservice_account as account ORDER BY username ASC;"
+#===============================================================================
         
-        accounts = self.connection.sql(sql)
+        accounts = self.connection.get_accounts_for_cachier(fullname, city, street, house, bulk, room, username)
         self.connection.commit()
         i=0
         self.tableWidget.setRowCount(len(accounts))

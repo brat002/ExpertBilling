@@ -2146,7 +2146,7 @@ class InfoDialog(QtGui.QDialog):
     def refresh(self):
         
         if self.type == "limit":
-            columns=["#", u"Название", u"Количество", u"Остаток", u"Начало", u"Окончание"]
+            columns=["#", u"Название", u"Всего", u"Израсходовано", u"Начало", u"Окончание"]
             makeHeaders(columns, self.tableWidget)
             items = self.connection.get_limites(self.account_id)
 
@@ -2167,7 +2167,7 @@ class InfoDialog(QtGui.QDialog):
             self.tableWidget.resizeRowsToContents()
             
         else:
-            columns=["#", u"Группа", u"Количество", u"Израсходовано", ]
+            columns=["#", u"Группа", u"Всего", u"Израсходовано", ]
             makeHeaders(columns, self.tableWidget)
             items = self.connection.sql("""
             SELECT   ppt.size as size, ppt.datetime, pp.size as pp_size, (SELECT name FROM billservice_group WHERE id=pp.group_id) as group_name FROM billservice_accountprepaystrafic as ppt
