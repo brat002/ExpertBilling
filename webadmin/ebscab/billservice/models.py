@@ -817,6 +817,14 @@ class SystemUser(models.Model):
     group = models.ManyToManyField(SystemGroup)
     role = models.IntegerField()
     text_password = models.CharField(max_length=255)
+
+    def __str__(self):
+        return '%s' % self.username
+            
+    def is_authenticated(self):
+        """Always return True. This is a way to tell if the user has been authenticated in templates.
+        """
+        return True
     
 class Ports(models.Model):
     port = models.IntegerField()
