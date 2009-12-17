@@ -95,7 +95,9 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     '/opt/ebs/web/ebscab/templates',
+    '/opt/ebs/web/ebscab/helpdesk/templates',
     os.path.abspath('./templates'),
+    os.path.abspath('./helpdesk/templates'),
 )
 
 INSTALLED_APPS = (
@@ -105,6 +107,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'helpdesk',
     'radius',
     'nas',
     'billservice',
@@ -112,6 +115,7 @@ INSTALLED_APPS = (
 )
 
 AUTHENTICATION_BACKENDS = (
+    'helpdesk.backend.LoginSystemUserBackend',
     'billservice.backend.LoginUserBackend',
 )
 
