@@ -50,7 +50,7 @@ TICKET_ADDITIONAL_TYPE=(
 
 
 class Ticket(models.Model):
-    account = models.ForeignKey(Account, blanlk=True, null = True) # Пользователь, владелец тикета
+    account = models.ForeignKey(Account, blank=True, null = True) # Пользователь, владелец тикета
     email = models.EmailField(blank=True, default="")
     source = models.CharField(max_length=32, choices=SOURCE_TYPES) # Способ получения тикета
     subject = models.CharField(max_length=1024) # Тема тикета
