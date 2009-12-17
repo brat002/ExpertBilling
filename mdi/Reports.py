@@ -44,7 +44,7 @@ _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"),
 class TransactionsReportEbs(ebsTableWindow):
     def __init__(self, connection ,account=None):
         self.account = account
-        columns=[u'#', u'Аккаунт', u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
+        columns=[u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
         initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
         self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги"]
         self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction"]
@@ -128,12 +128,12 @@ class TransactionsReportEbs(ebsTableWindow):
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
         self.columns = {}
 
-        self.columns["billservice_periodicalservicehistory"]=['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
-        self.columns["billservice_onetimeservicehistory"]=['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
-        self.columns["billservice_traffictransaction"] = ["#", u'Аккаунт', u'Тарифный план', u'Сумма', u'Дата']
-        self.columns["billservice_timetransaction"] = ["#", u'Аккаунт', u'Тарифный план', u'Сумма', u'Дата']
-        self.columns["billservice_addonservicetransaction"] = ["#", u'Аккаунт', u'Услуга', u'Тип услуги', u'Сумма', u'Дата']
-        self.columns["billservice_transaction"] = [u'#', u'Аккаунт', u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
+        self.columns["billservice_periodicalservicehistory"]=['#', u'Аккаунт', u"ФИО", u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
+        self.columns["billservice_onetimeservicehistory"]=['#', u'Аккаунт', u"ФИО", u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
+        self.columns["billservice_traffictransaction"] = ["#", u'Аккаунт', u"ФИО", u'Тарифный план', u'Сумма', u'Дата']
+        self.columns["billservice_timetransaction"] = ["#", u'Аккаунт', u"ФИО", u'Тарифный план', u'Сумма', u'Дата']
+        self.columns["billservice_addonservicetransaction"] = ["#", u'Аккаунт', u"ФИО", u'Услуга', u'Тип услуги', u'Сумма', u'Дата']
+        self.columns["billservice_transaction"] = [u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
 
        
     def ebsPostInit(self, initargs):
@@ -220,7 +220,7 @@ class TransactionsReportEbs(ebsTableWindow):
         account_id = self.user_edit.itemData(self.user_edit.currentIndex()).toInt()[0]
 
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_transaction":
-            sql = """SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
+            sql = """SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=transaction.account_id) as fullname, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
                                             FROM billservice_transaction as transaction
                                             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
                                             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
@@ -246,14 +246,15 @@ class TransactionsReportEbs(ebsTableWindow):
             for item in items:
                 self.addrow(i, i, 0, id=item.id, promise = item.promise, date = item.created)
                 self.addrow(item.username, i, 1, promise = item.promise)
-                self.addrow(item.created.strftime(self.strftimeFormat), i, 2, promise = item.promise)
-                self.addrow(item.bill, i, 3, promise = item.promise)
-                self.addrow(item.transaction_type_name, i, 4, promise = item.promise)
-                self.addrow(item.systemuser, i, 5, promise = item.promise)
-                self.addrow(item.tariff_name, i, 6, promise = item.promise)
-                self.addrow(item.summ*(-1), i, 7, promise = item.promise)
-                self.addrow(item.description, i, 8, promise = item.promise)
-                self.addrow(item.promise, i, 9, promise = item.promise)
+                self.addrow(item.fullname, i, 2, promise = item.promise)
+                self.addrow(item.created.strftime(self.strftimeFormat), i, 3, promise = item.promise)
+                self.addrow(item.bill, i, 4, promise = item.promise)
+                self.addrow(item.transaction_type_name, i, 5, promise = item.promise)
+                self.addrow(item.systemuser, i, 6, promise = item.promise)
+                self.addrow(item.tariff_name, i, 7, promise = item.promise)
+                self.addrow(item.summ*(-1), i, 8, promise = item.promise)
+                self.addrow(item.description, i, 9, promise = item.promise)
+                self.addrow(item.promise, i, 10, promise = item.promise)
                 sum+=item.summ*(-1)
                 if item.promise:
                     try:
@@ -261,8 +262,8 @@ class TransactionsReportEbs(ebsTableWindow):
                     except Exception, e:
                         print e
                 i+=1
-            self.addrow(u"Итого", i, 6)
-            self.addrow(sum, i, 7)
+            self.addrow(u"Итого", i, 7)
+            self.addrow(sum, i, 8)
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_periodicalservicehistory":
             services = self.connection.get_models("billservice_periodicalservice")
             s = {}
@@ -275,7 +276,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 t[x.id] = x.name
                                
             sql = """
-            SELECT psh.id, psh.service_id, psh.datetime, psh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=psh.accounttarif_id) as tarif_id, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username, psh.type_id 
+            SELECT psh.id, psh.service_id, psh.datetime, psh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=psh.accounttarif_id) as tarif_id, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=psh.account_id) as fullname, psh.type_id 
             FROM billservice_periodicalservicehistory as psh 
             WHERE psh.datetime between '%s' and '%s' %%s ORDER BY psh.datetime DESC
             """ % (start_date, end_date,)
@@ -295,15 +296,16 @@ class TransactionsReportEbs(ebsTableWindow):
             for item in items:
                 self.addrow(i, i, 0, id = item.id, date = item.datetime)
                 self.addrow(item.username, i, 1)
-                self.addrow(t.get(item.tarif_id), i, 2)
-                self.addrow(s.get(item.service_id), i, 3)
-                self.addrow(item.type_id, i, 4)
-                self.addrow(item.summ, i, 5)
-                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 6)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(t.get(item.tarif_id), i, 3)
+                self.addrow(s.get(item.service_id), i, 4)
+                self.addrow(item.type_id, i, 5)
+                self.addrow(item.summ, i, 6)
+                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 7)
                 i+=1
                 sum+=item.summ
-            self.addrow(u"Итого", i, 4)
-            self.addrow(sum, i, 5)
+            self.addrow(u"Итого", i, 5)
+            self.addrow(sum, i, 6)
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_onetimeservicehistory":
             services = self.connection.get_models("billservice_onetimeservice")
             s = {}
@@ -316,7 +318,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 t[x.id] = x.name
                                
             sql = """
-            SELECT osh.id, osh.onetimeservice_id, osh.datetime, osh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=osh.accounttarif_id) as tarif_id, osh.summ, (SELECT username FROM billservice_account WHERE id=osh.account_id) as username 
+            SELECT osh.id, osh.onetimeservice_id, osh.datetime, osh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=osh.accounttarif_id) as tarif_id, osh.summ, (SELECT username FROM billservice_account WHERE id=osh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=osh.account_id) as fullname 
             FROM billservice_onetimeservicehistory as osh 
             WHERE osh.datetime between '%s' and '%s' %%s ORDER BY osh.datetime DESC
             """ % (start_date, end_date,)
@@ -336,14 +338,15 @@ class TransactionsReportEbs(ebsTableWindow):
             for item in items:
                 self.addrow(i, i, 0, id = item.id, date = item.datetime)
                 self.addrow(item.username, i, 1)
-                self.addrow(t.get(item.tarif_id), i, 2)
-                self.addrow(s.get(item.onetimeservice_id), i, 3)
-                self.addrow(item.summ, i, 4)
-                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 5)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(t.get(item.tarif_id), i, 3)
+                self.addrow(s.get(item.onetimeservice_id), i, 4)
+                self.addrow(item.summ, i, 5)
+                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 6)
                 i+=1
                 sum += item.summ
-            self.addrow(u"Итого", i, 3)
-            self.addrow(sum, i, 4)                
+            self.addrow(u"Итого", i, 4)
+            self.addrow(sum, i, 5)                
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_traffictransaction":
             tariffs = self.connection.get_models("billservice_tariff")
             t = {}
@@ -351,7 +354,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 t[x.id] = x.name
                                
             sql = """
-            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username 
+            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username , (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname
             FROM billservice_traffictransaction as tr 
             WHERE tr.datetime between '%s' and '%s' %%s ORDER BY tr.datetime DESC
             """ % (start_date, end_date,)
@@ -371,14 +374,15 @@ class TransactionsReportEbs(ebsTableWindow):
             for item in items:
                 self.addrow(i, i, 0, id = item.id, date = item.datetime)
                 self.addrow(item.username, i, 1)
-                self.addrow(t.get(item.tarif_id), i, 2)
-                self.addrow(item.summ, i, 3)
-                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 4)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(t.get(item.tarif_id), i, 3)
+                self.addrow(item.summ, i, 4)
+                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 5)
                 i+=1
                 sum+=item.summ
                 
-            self.addrow(u"Итого", i, 3)
-            self.addrow(sum, i, 4)   
+            self.addrow(u"Итого", i, 4)
+            self.addrow(sum, i, 5)   
             
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_timetransaction":
             #print 111
@@ -388,7 +392,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 t[x.id] = x.name
                                
             sql = """
-            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username
+            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname
             FROM billservice_timetransaction as tr 
             WHERE tr.datetime between '%s' and '%s' %%s ORDER BY tr.datetime DESC
             """ % (start_date, end_date,)
@@ -406,13 +410,14 @@ class TransactionsReportEbs(ebsTableWindow):
             for item in items:
                 self.addrow(i, i, 0, id = item.id, date = item.datetime)
                 self.addrow(item.username, i, 1)
-                self.addrow(t.get(item.tarif_id), i, 2)
-                self.addrow(item.summ, i, 3)
-                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 4)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(t.get(item.tarif_id), i, 3)
+                self.addrow(item.summ, i, 4)
+                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 5)
                 i+=1
                 sum +=item.summ
-            self.addrow(u"Итого", i, 2)
-            self.addrow(sum, i, 3)                                 
+            self.addrow(u"Итого", i, 3)
+            self.addrow(sum, i, 4)                                 
         self.tableWidget.setColumnHidden(0, False)
         
         if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_addonservicetransaction":
@@ -424,7 +429,7 @@ class TransactionsReportEbs(ebsTableWindow):
                                
             #print (start_date, end_date,)
             sql = """
-            select addst.id, (SELECT name FROM billservice_addonservice WHERE id=addst.service_id) as service_name, addst.summ, addst.created, addst.type_id, (SELECT username FROM billservice_account WHERE id=addst.account_id) as username
+            select addst.id, (SELECT name FROM billservice_addonservice WHERE id=addst.service_id) as service_name, addst.summ, addst.created, addst.type_id, (SELECT username FROM billservice_account WHERE id=addst.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=addst.account_id) as fullname
             FROM billservice_addonservicetransaction as addst
             WHERE addst.created>='%s' and addst.created<='%s' %%s ORDER BY created ASC
             """ % (start_date, end_date,)
@@ -443,14 +448,15 @@ class TransactionsReportEbs(ebsTableWindow):
             for item in items:
                 self.addrow(i, i, 0, id = item.id, date = item.created)
                 self.addrow(item.username, i, 1)
-                self.addrow(item.service_name, i, 2)
-                self.addrow(t[item.type_id], i, 3)
-                self.addrow(item.summ, i, 4)
-                self.addrow(item.created.strftime(self.strftimeFormat), i, 5)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(item.service_name, i, 3)
+                self.addrow(t[item.type_id], i, 4)
+                self.addrow(item.summ, i, 5)
+                self.addrow(item.created.strftime(self.strftimeFormat), i, 6)
                 i+=1
                 sum +=item.summ
-            self.addrow(u"Итого", i, 3)
-            self.addrow(sum, i, 4)                                 
+            self.addrow(u"Итого", i, 4)
+            self.addrow(sum, i, 5)                                 
         self.tableWidget.setColumnHidden(0, False)
         
                 

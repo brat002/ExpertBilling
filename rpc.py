@@ -681,21 +681,41 @@ class RPCServer(object):
         if tarif_id!=-1000:
             cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
             FROM billservice_account AS acc 
-            WHERE %s=get_tarif(acc.id) ORDER BY acc.username ASC;""", (tarif_id,))
+            WHERE %s=get_tarif(acc.id) and %s IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) ORDER BY acc.username ASC;""", (tarif_id, tarif_id, vars.USER_ID[1],) )
         else:
             cur.execute("""SELECT acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tarif_name
             FROM billservice_account AS acc 
-            ORDER BY acc.username ASC;""")            
+            WHERE get_tarif(acc.id) IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) ORDER BY acc.username ASC;""", (vars.USER_ID[1],) )
+   
         result = map(Object, cur.fetchall())
         log_string = u"""Пользователь %s получил список аккаунтов для тарифного плана""" % (vars.USER_ID[0],)
         
         cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
         return result
 
-     
+    def get_accounts_for_cachier(self, fullname, city, street, house, bulk, room, username, cur=None, connection=None):
+        
+        res={'fullname':fullname, 'city':city, 'street':street, 'house':house, 'house_bulk':bulk, 'room':room, 'username': username}
+        if fullname or city or street or house or bulk or room or username:
+            sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name FROM billservice_account as account WHERE %s and get_tarif(id)IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s))  ORDER BY username ASC;" % (' AND '.join([u"%s LIKE '%s%s%s'" % (key, "%",res[key],"%") for key in res]), vars.USER_ID[1],)
+        else:
+            sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name  FROM billservice_account as account WHERE get_tarif(id)IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s))ORDER BY username ASC;" % (vars.USER_ID[1],)
+
+        cur.execute(sql)
+        result = map(Object, cur.fetchall())
+        log_string = u"""Кассир %s получил список аккаунтов""" % (vars.USER_ID[0],)
+        
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        return result
+        
     def get_tariffs(self, cur=None, connection=None):
+        
+        
         cur.execute("""SELECT id, name, active, (SELECT bsap.access_type
-                   FROM billservice_accessparameters AS bsap WHERE (bsap.id=tariff.access_parameters_id) ORDER BY bsap.id LIMIT 1) AS ttype FROM billservice_tariff as tariff  WHERE tariff.deleted = False ORDER BY ttype, name;""")
+                   FROM billservice_accessparameters AS bsap WHERE (bsap.id=tariff.access_parameters_id) ORDER BY bsap.id LIMIT 1) AS ttype 
+                   FROM billservice_tariff as tariff  
+                   WHERE tariff.deleted = False and (tariff.systemgroup_id is Null or tariff.systemgroup_id in (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s) )
+                   ORDER BY ttype, name;""" % (vars.USER_ID[1]))
         result = map(Object, cur.fetchall())
         log_string = u"""Пользователь %s получил список тарифных планов""" % (vars.USER_ID[0],)
         
