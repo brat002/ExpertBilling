@@ -13,47 +13,49 @@
 <script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/ajax_load_block.js"></script>
 <script>
 
+	
+function show_tickets(sender, table_id)
+{
+	var val = jQuery(sender).find('option:selected').val()
+	var table = jQuery(table_id)
+
+	table.find('tr').hide().slice(0,parseInt(val)+1).show()
+	console.info(parseInt(val))
+}
+
 function load_data(sender)
 {
-			
 			var obj_list = jQuery(sender).attr('name').split("_")
 			var object = obj_list[0]
 			var object_id = obj_list[1]
-			var li = jQuery(sender).find('li')
-			ajax_load_block(li,"/helpdesk/ajax/load/table/tickets/",
+			var content = jQuery(sender).find('li').children("div.content_tickets")
+			ajax_load_block(content,"/helpdesk/ajax/load/table/tickets/",
 								  {"object":object, 'object_id':object_id},
 								  {"is_loader":true}, 
 								  {"success":function(data){
-								  	li.html(data)
+								  	content.html(data)
+									update_table(jQuery(sender))
+									show_tickets( jQuery(sender).find("select[name=count_in_page]"),  jQuery(sender).find(".content_tickets table"))
 								  }})
-/*
-			jQuery.ajax({
-				url:"/helpdesk/ajax/load/table/tickets/",
-				data:{"object":object, 'object_id':object_id},
-				success:function(data){
-							li.html(data)
-							
-				}
-			})
-*/
 }
 function show_table(sender, is_hide)
 {
 	if (!is_hide){
 		load_data(sender)
-		update_table(sender)
 	}
 	else{
-		jQuery(sender).stopTime(jQuery(sender).attr('name'))
+		sender.stopTime(jQuery(sender).attr('name'))
 	}
 }
 function update_table(sender){
 	var sender = jQuery(sender)
 	var name = sender.attr('name')
-	var seconds =sender.children('li').children('div').children('select[name="count_in_page"]').val()
-	jQuery(sender).everyTime("10s",name,function(){
+	var minuts =parseInt(sender.children('li').children('div').children('select[name="time"]').val())*60
+	
+	sender.stopTime(jQuery(sender).attr('name'))
+	sender.oneTime(minuts+"s",name,function(){
 				load_data(sender)
-				
+
 			})
 }
 jQuery(document).ready(function(){
@@ -66,7 +68,6 @@ jQuery(document).ready(function(){
 		
 		jQuery("ul[id^=ul_]:visible").each(function(){
 				load_data(this)
-				update_table(this)
 			})
 			
 	})
@@ -87,7 +88,7 @@ jQuery(document).ready(function(){
 <a style="display: inline;" class="aurorahide" href="#"></a>
 <ul id="ul_departament_{{departament.id}}" name="departament_{{departament.id}}" class="tickets">
 	<li>
-
+	{% pannel_ticket_table 'SystemGroup' departament.id %}
 	</li>
 </ul>
 
@@ -100,7 +101,7 @@ jQuery(document).ready(function(){
 <a style="display: inline;" class="aurorahide" href="#"></a>
 <ul id="ul_user_{{user.id}}" name="user_{{user.id}}"  class="tickets">
 	<li>
-		
+		{% pannel_ticket_table 'SystemUser' departament.id %}
 	</li>
 </ul>
 </li>
