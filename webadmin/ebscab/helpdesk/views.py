@@ -21,25 +21,41 @@ def index_tickets(reuqest):
     system_group = SystemGroup.objects.all()
     return {"departaments":system_group}
 
-def update_owner_ticket(request):
+def ajax_update_owner_ticket(request):
     id_ticket = request.GET.get('id',None)
     object = request.GET.get('object',None)
     object_id = request.GET.get('object_id',None)
-    print id_ticket
     try:
         ticket = Ticket.objects.get(id = int(id_ticket))
     except:
         raise Http404
     
-    if object=='departament':
+    if object == 'departament':
          ctype = ContentType.objects.get_for_model(SystemGroup)
-    elif object=='user':
+    elif object == 'user':
          ctype = ContentType.objects.get_for_model(SystemUser)
     ticket.content_type = ctype
     ticket.object_id = object_id
     ticket.save()
     return HttpResponse(True, mimetype="text/plain")
 
+@render_to('helpdesk/ajax_load_table_tickets.html')
+def ajax_load_table_tickets(request):
+    object = request.GET.get('object',None)
+    object_id = request.GET.get('object_id',None)
+    if object ==  'departament':
+        try:
+            object = SystemGroup.objects.get(id=int(object_id))
+        except SystemGroup.DoesNotExist:
+            raise Http404
+    if object ==  'user':
+        try:
+            object = SystemUser.objects.get(id=int(object_id))
+        except SystemUser.DoesNotExist:
+            raise Http404
+            
+       
+    return {"object":object}
 
 
 @render_to('helpdesk/login.html')

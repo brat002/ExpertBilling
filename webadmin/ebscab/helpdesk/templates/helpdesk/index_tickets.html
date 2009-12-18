@@ -10,24 +10,67 @@
 <script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/auroramenu.js"></script>
 <script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/json2.js"></script>
 <script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/jquery.timers.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/ajax_load_block.js"></script>
 <script>
-	
+
+function load_data(sender)
+{
+			
+			var obj_list = jQuery(sender).attr('name').split("_")
+			var object = obj_list[0]
+			var object_id = obj_list[1]
+			var li = jQuery(sender).find('li')
+			ajax_load_block(li,"/helpdesk/ajax/load/table/tickets/",
+								  {"object":object, 'object_id':object_id},
+								  {"is_loader":true}, 
+								  {"success":function(data){
+								  	li.html(data)
+								  }})
+/*
+			jQuery.ajax({
+				url:"/helpdesk/ajax/load/table/tickets/",
+				data:{"object":object, 'object_id':object_id},
+				success:function(data){
+							li.html(data)
+							
+				}
+			})
+*/
+}
+function show_table(sender, is_hide)
+{
+	if (!is_hide){
+		load_data(sender)
+		update_table(sender)
+	}
+	else{
+		jQuery(sender).stopTime(jQuery(sender).attr('name'))
+	}
+}
+function update_table(sender){
+	var sender = jQuery(sender)
+	var name = sender.attr('name')
+	var seconds =sender.children('li').children('div').children('select[name="count_in_page"]').val()
+	jQuery(sender).everyTime("10s",name,function(){
+				load_data(sender)
+				
+			})
+}
 jQuery(document).ready(function(){
 		
-		jQuery("ul[id^=ul_]:visible").each(function(){
-			jQuery.ajax({
-				url:"/laod/table/",
-				data:{}
-			})
-			jQuery(this).everyTime("10s",this.id,function(){
-				jQuery.ajax({
-					url:"/update/"
-				})
-			})
-	})
-	
+		jQuery(".auroramenu a").live('click',function(){
+			var sender = jQuery(this)
+			is_hide = sender.next().is(":visible")
+			show_table(sender.parent().children('ul'), is_hide)
+		})
 		
+		jQuery("ul[id^=ul_]:visible").each(function(){
+				load_data(this)
+				update_table(this)
+			})
+			
 	})
+
 
 </script>
 {% endblock %}
@@ -39,25 +82,25 @@ jQuery(document).ready(function(){
 {% for departament in departaments %}
 
 <li>
-<a href="#">{{departament.name}}</a>
+<a href="#" onclick="show_table(this);">{{departament.name}}</a>
 <a style="display: none;" class="aurorashow" href="#"></a> 
 <a style="display: inline;" class="aurorahide" href="#"></a>
 <ul id="ul_departament_{{departament.id}}" name="departament_{{departament.id}}" class="tickets">
 	<li>
-		{% table_ticket departament	%}
+
 	</li>
 </ul>
 
 </li>
 <ul id="menu2" class="auroramenu">
-{% for user in departament.user.all %}
+{% for user in departament.get_users %}
 <li>
-<a href="#">{{user.username}}</a>
+<a href="#" onclick="show_table(this);">{{user.username}}</a>
 <a style="display: none;" class="aurorashow" href="#"></a> 
 <a style="display: inline;" class="aurorahide" href="#"></a>
 <ul id="ul_user_{{user.id}}" name="user_{{user.id}}"  class="tickets">
 	<li>
-		{% table_ticket user %}
+		
 	</li>
 </ul>
 </li>

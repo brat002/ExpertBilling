@@ -8,5 +8,6 @@ urlpatterns = patterns('helpdesk.views',
                        (r'^login/$', '_login'),
                        (r'^manage/tickets/$', 'manage_tickets'),
                        (r'^tickets/$', 'index_tickets'),
-                       (r'^ajax/update/owner/tickets/$', 'update_owner_ticket')    
+                       (r'^ajax/update/owner/tickets/$', 'ajax_update_owner_ticket'),
+                       (r'^ajax/load/table/tickets/$', 'ajax_load_table_tickets'),
                       )
