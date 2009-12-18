@@ -1,7 +1,7 @@
 import struct
 import psycopg2
 from collections import deque, defaultdict
-from threading import Lock
+from threading import Lock, Event
 import dictionary
 from operator import itemgetter
 from system.PersistentQueues import FileSaveDeque
@@ -13,7 +13,9 @@ def install_logger(lgr):
     
 class Vars(object):
     __slots__ = ('RECOVER', 'CACHE_TIME', 'name', 'piddir', 'db_errors', 'db_dsn', 'db_session', 'log_type', 'log_ident', 'log_level', 'log_file', 'log_format', 'log_filemode', 'log_maxsize', 'log_rotate', 'types')
+    _parse_funs = {'s': lambda x: x, 'i' : int, 'b': lambda x: False if x.lower() in ('false', '0') else True}
     def __init__(self):
+        pass
         self.RECOVER = True
         self.CACHE_TIME = 60
         self.name = ''
@@ -73,7 +75,17 @@ class Vars(object):
     def get_changed(self, aVars):
         return self.changed(aVars)
                 
-        
+    def get_opt(self, config, subtree, opt):
+        _parse_key = s
+        if opt[0] == '%':
+            _parse_key, opt = opt[1], opt[2:]
+        if config.has_option(subtree, opt.lower()):       
+            setattr(self, opt, self._parse_funs(config.get(subtree, opt.lower())))
+            
+    def get_opts(self, config, subtree, opts): 
+        for opt in opts:
+            self.get_opt(self, config, subtree, opt)
+            
     def __repr__(self):
         return ' ;'.join((field + ': ' + repr(getattr(self,field)) for field in self.__slots__))
         
@@ -86,7 +98,11 @@ class NfVars(Vars):
                  'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir')"""
     __slots__ = ('HOST', 'PORT', 'NFR_HOST', 'NFR_PORT', 'NFR_ADDR', 'SOCK_TIMEOUT', 'SAVE_DIR', 'READ_DIR', 'PREFIX', 'AGGR_TIME', 'AGGR_NUM',\
                  'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'DUMP_DIR', 'CACHE_DICTS', 'SOCK_TYPE', 'FILE_PACK', 'PACKET_PACK', 'CHECK_CLASSES', 'MAX_DATAGRAM_LEN', 'RECOVER_DUMP', 'NF_TIME_MOD',\
-                 'MAX_SENDBUF_LEN', 'NFR_DELIMITER')
+                 'MAX_SENDBUF_LEN', 'NFR_DELIMITER', 'WRITE_FLOW', 'FLOW_DIR', 'FLOW_TIME', 'FLOW_COUNT', \
+                 'FLOW_MAIL_WARNING', 'FLOW_MAIL_SUBJECT', 'FLOW_MAIL_USE_TLS', \
+                 'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', 'FLOW_MAIL_HOST_PASSWORD', \
+                 'FLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM',\
+                 'FLOW_MAIL_WARNING_TEMPLATE')
     def __init__(self):
         super(NfVars, self).__init__()
         self.name = 'nf'
@@ -114,6 +130,20 @@ class NfVars(Vars):
         self.NF_TIME_MOD = 20
         self.MAX_SENDBUF_LEN = 20000 #10000!
         self.NFR_DELIMITER = '--NFRP--'
+        self.WRITE_FLOW = False
+        self.FLOW_DIR = '/var/flow'
+        self.FLOW_TIME = 20
+        self.FLOW_COUNT = 50
+        self.FLOW_MAIL_WARNING = False
+        self.FLOW_MAIL_SUBJECT = 'EBS billing flow warning'
+        self.FLOW_MAIL_USE_TLS = False
+        self.FLOW_MAIL_HOST = smtp.gmail.com
+        self.FLOW_MAIL_HOST_USER = ''
+        self.FLOW_MAIL_HOST_PASSWORD = ''
+        self.FLOW_MAIL_PORT = 25
+        self.FLOW_MAIL_EMAIL_TO   = 'admin@ebsadmin.com'
+        self.FLOW_MAIL_EMAIL_FROM = 'info@provider.com'
+        self.FLOW_MAIL_WARNING_TEMPLATE = ""
         self.types.update({'addr': ('HOST', 'PORT'), 'nfraddr': ('NFR_HOST', 'NFR_PORT', 'SOCK_TIMEOUT'),\
                            'cachedicts': ('CACHE_DICTS',), 'filepack': ('FILE_PACK',), 'checkclasses': ('CHECK_CLASSES',), 'prefix': ('PREFIX',), 'aggr':('AGGR_TIME', 'AGGR_NUM'),\
                            'savedir': ('SAVE_DIR',), 'readdir': ('READ_DIR',), 'dumpdir': ('DUMP_DIR',)})
@@ -123,6 +153,7 @@ class NfVars(Vars):
         config = kwargs['config']
         name = kwargs['name']
         net_name = kwargs['net_name']
+        flow_name = kwargs['flow_name']
         if config.has_option(name, 'cachedicts'): self.CACHE_DICTS = config.getint(name, 'cachedicts')
         if config.has_option(name, 'port'): self.PORT = config.getint(name, 'port')
         if config.has_option(name, 'host'): self.HOST = config.get(name, 'host')
@@ -149,7 +180,9 @@ class NfVars(Vars):
         if config.has_option(name, 'save_dir'):         self.SAVE_DIR = config.get(name, 'save_dir')
         if config.has_option(name, 'max_datagram_len'): self.MAX_DATAGRAM_LEN = config.getint(name, 'max_datagram_len')
         if config.has_option(name, 'nf_time_mod'): self.NF_TIME_MOD = config.getint(name, 'nf_time_mod')
-            
+        flow_opts = ['%bWRITE_FLOW', 'FLOW_DIR', '%iFLOW_TIME', '%iFLOW_COUNT', 'FLOW_MAIL_WARNING', 'FLOW_MAIL_SUBJECT', '%bFLOW_MAIL_USE_TLS', 'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', 'FLOW_MAIL_HOST_PASSWORD', '%iFLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM', 'FLOW_MAIL_WARNING_TEMPLATE'] 
+        self.get_opts(config, flow_name, flow_opts)
+        
     def get_static(self, **kwargs):
         super(NfVars, self).get_static(**kwargs)
         
@@ -165,7 +198,8 @@ class NfQueues(object):
     """('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock')"""
     __slots__ = ('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
-                 'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock', 'packetIndex', 'packetIndexLock')
+                 'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', \
+                 'nfqLock', 'packetIndex', 'packetIndexLock', 'getFlowPLZ', 'gotFlowKTX', 'flowFileList')
     def __init__(self, dcacheNum = 10):
         self.nfFlowCache = None
         self.dcaches = [{} for i in xrange(dcacheNum)]; self.dcacheLocks = [Lock() for i in xrange(dcacheNum)]
@@ -177,6 +211,9 @@ class NfQueues(object):
         self.fnameQueue = deque(); self.fnameLock = Lock()
         self.nfQueue = deque(); self.nfqLock = Lock()
         self.packetIndex = 0; self.packetIndexLock = Lock()
+        self.getFlowPLZ = Event()
+        self.gotFlowKTX = Event()
+        self.flowFileList = []
         
     
 

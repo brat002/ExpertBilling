@@ -64,6 +64,7 @@ FLOWCACHE_RESET_TIME = 60
 NAME = 'nf'
 DB_NAME = 'db'
 NET_NAME = 'nfroutine_nf'
+FLOW_NAME = 'flow'
 MAX_PACKET_INDEX = 2147483647L
 
 NOT_TRASMITTED = 0
@@ -1028,7 +1029,7 @@ if __name__=='__main__':
         psyco.profile(0.05, memory=100)
         psyco.profile(0.2)
 
-        vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME)
+        vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME, flow_name=FLOW_NAME)
         
         
         
