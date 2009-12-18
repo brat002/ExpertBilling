@@ -1,0 +1,69 @@
+{% extends "helpdesk_base.html" %}
+{% load helpdesk_tags %}
+
+{% block extra_head %}
+<link type="text/css" rel="stylesheet" href="{{MEDIA_URL}}css/jquery-ui-1.7.2.custom.css" />
+<link type="text/css" rel="stylesheet" href="{{MEDIA_URL}}css/auroramenu.css" />
+
+<script type="text/javascript" src = "{{MEDIA_URL}}js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/jquery-cookie.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/auroramenu.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/json2.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/jquery.timers.js"></script>
+<script>
+	
+jQuery(document).ready(function(){
+		
+		jQuery("ul[id^=ul_]:visible").each(function(){
+			jQuery.ajax({
+				url:"/laod/table/",
+				data:{}
+			})
+			jQuery(this).everyTime("10s",this.id,function(){
+				jQuery.ajax({
+					url:"/update/"
+				})
+			})
+	})
+	
+		
+	})
+
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div id="content_tickets">
+	<ul id="menu" class="auroramenu">
+{% for departament in departaments %}
+
+<li>
+<a href="#">{{departament.name}}</a>
+<a style="display: none;" class="aurorashow" href="#"></a> 
+<a style="display: inline;" class="aurorahide" href="#"></a>
+<ul id="ul_departament_{{departament.id}}" name="departament_{{departament.id}}" class="tickets">
+	<li>
+		{% table_ticket departament	%}
+	</li>
+</ul>
+
+</li>
+<ul id="menu2" class="auroramenu">
+{% for user in departament.user.all %}
+<li>
+<a href="#">{{user.username}}</a>
+<a style="display: none;" class="aurorashow" href="#"></a> 
+<a style="display: inline;" class="aurorahide" href="#"></a>
+<ul id="ul_user_{{user.id}}" name="user_{{user.id}}"  class="tickets">
+	<li>
+		{% table_ticket user %}
+	</li>
+</ul>
+</li>
+{% endfor %}
+</ul>
+{% endfor %}
+</ul>
+</div>
+{% endblock %}
