@@ -1,0 +1,22 @@
+<div>
+			объектов на странице 
+			<select id="{{object_name}}_{{object_id}}" class="{{object_name}}"  onchange=show_tickets(this,'#table_{{object_name}}_{{object_id}}') name="count_in_page">
+			<option value=1>
+				1
+			</option>
+			<option value=2>
+				2
+			</option>	
+			</select>
+			обновление
+			<select id="update_{{object_name}}_{{object_id}}"  name="time" onchange="update_table(jQuery(this).parent().parent().parent())" name="time" >
+			<option value=1>
+				1мин
+			</option>
+			<option value=5>
+				5мин
+			</option>	
+			</select>
+</div>
+<div class="content_tickets">
+</div>
