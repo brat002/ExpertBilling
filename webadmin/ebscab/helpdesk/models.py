@@ -1,12 +1,12 @@
 #-*-coding=utf-8-*-
 
 from django.db import models
-from ebscab.billservice.models import Account
+
 
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-
+from billservice.models import Account
 '''
     Источник тикета
 '''
