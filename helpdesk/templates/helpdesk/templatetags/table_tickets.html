@@ -1,0 +1,60 @@
+<div>
+			объектов на странице 
+			<select id="{{objects}}_{{objects.id}}" class="{{objects}}" onchange=show_tickets(this,'#table_{{objects}}_{{objects.id}}') name="count_in_page">
+			<option value=10>
+				10
+			</option>
+			<option value=20>
+				20
+			</option>	
+			</select>
+			обновление
+			<select id="update_{{objects}}_{{objects.id}}" >
+			<option>
+				1
+			</option>
+			<option>
+				5
+			</option>	
+			</select>
+</div>
+	<table id="table_{{objects}}_{{objects.id}}" cols=10 cellpadding=0 cellspacing=0 width=100%>
+		<tr>
+			<th>№</th>
+			<th>Статус</th>
+			<th>Пользователь</th>
+			<th>Тема</th>
+			<th>Скрытый комментарий</th>
+			<th>Кто назначил</th>
+			<th>Назначен</th>
+			<th>Создан</th>
+			<th>В архив</th>
+			<th>Удалить</th>
+		</tr>
+		{% for ticket in objects.get_tickets %}
+		<tr>
+		<td>{{ticket.id}}</td>
+		<td>{{ticket.status}}</td>
+		<td>{{ticket.created_by}}</td>
+		<td>{{ticket.tittle}}</td>
+		<td>--</td>
+		<td>--</td>
+		<td>--</td>
+		<td>--</td>
+		<td><input type='checkbox'/ name="is_archive"></td>
+		<td><input type='checkbox'/  name="is_deleted"></td>
+		</tr>
+		{% endfor %}
+	</table>
+<script>
+	
+	function show_tickets(sender, table_id)
+	{
+		var val = jQuery(sender).find('option:selected').val()
+		var table = jQuery(table_id)
+		table.find('tr').hide().slice(0,parseInt(val)+1).show()
+	}
+	show_tickets( "#{{objects}}_{{objects.id}}", "#table_{{objects}}_{{objects.id}}")
+	
+		
+</script>

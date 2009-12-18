@@ -7,7 +7,7 @@
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 {% endblock %}
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
-<link rel="stylesheet" href="{{ MEDIA_URL }}css/opera.css" type="opera/css" media="screen" />
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/opera.css" type="opera.css" media="screen" />
 
 {% block extra_head %}
 {% endblock %}
@@ -21,5 +21,7 @@
 	{% endblock %}
 	 <div id="content-clear"></div>
 </div>
+{% block content %}
+{% endblock %}
 </body>
 </html>
