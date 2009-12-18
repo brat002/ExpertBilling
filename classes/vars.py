@@ -76,15 +76,15 @@ class Vars(object):
         return self.changed(aVars)
                 
     def get_opt(self, config, subtree, opt):
-        _parse_key = s
+        _parse_key = 's'
         if opt[0] == '%':
             _parse_key, opt = opt[1], opt[2:]
         if config.has_option(subtree, opt.lower()):       
-            setattr(self, opt, self._parse_funs(config.get(subtree, opt.lower())))
+            setattr(self, opt, self._parse_funs[_parse_key](config.get(subtree, opt.lower())))
             
     def get_opts(self, config, subtree, opts): 
         for opt in opts:
-            self.get_opt(self, config, subtree, opt)
+            self.get_opt(config, subtree, opt)
             
     def __repr__(self):
         return ' ;'.join((field + ': ' + repr(getattr(self,field)) for field in self.__slots__))
@@ -137,7 +137,7 @@ class NfVars(Vars):
         self.FLOW_MAIL_WARNING = False
         self.FLOW_MAIL_SUBJECT = 'EBS billing flow warning'
         self.FLOW_MAIL_USE_TLS = False
-        self.FLOW_MAIL_HOST = smtp.gmail.com
+        self.FLOW_MAIL_HOST = 'smtp.gmail.com'
         self.FLOW_MAIL_HOST_USER = ''
         self.FLOW_MAIL_HOST_PASSWORD = ''
         self.FLOW_MAIL_PORT = 25
@@ -170,7 +170,7 @@ class NfVars(Vars):
             self.RECOVER_DUMP = False if config.get(name, 'recover_dump').lower() in ('false', '0') else True
         if config.has_option(name, 'sock_timeout'): self.SOCK_TIMEOUT = config.getint(name, 'sock_timeout')
         if config.has_option(name, 'aggrtime'):     self.AGGR_TIME = config.getint(name, 'aggrtime')
-        if config.has_option(name, 'aggrnum'):      self.AGGR_NUM = config.getint(name, 'aggrnum') % 500
+        if config.has_option(name, 'aggrnum'):      self.AGGR_NUM = config.getint(name, 'aggrnum')
         if config.has_option(name, 'checkclasses'): self.CHECK_CLASSES = config.getint(name, 'checkclasses')
         if config.has_option(name, 'file_pack'):    self.FILE_PACK = config.getint(name, 'file_pack')
         if config.has_option(name, 'packet_pack'):  self.PACKET_PACK = config.getint(name, 'packet_pack')
@@ -180,7 +180,10 @@ class NfVars(Vars):
         if config.has_option(name, 'save_dir'):         self.SAVE_DIR = config.get(name, 'save_dir')
         if config.has_option(name, 'max_datagram_len'): self.MAX_DATAGRAM_LEN = config.getint(name, 'max_datagram_len')
         if config.has_option(name, 'nf_time_mod'): self.NF_TIME_MOD = config.getint(name, 'nf_time_mod')
-        flow_opts = ['%bWRITE_FLOW', 'FLOW_DIR', '%iFLOW_TIME', '%iFLOW_COUNT', 'FLOW_MAIL_WARNING', 'FLOW_MAIL_SUBJECT', '%bFLOW_MAIL_USE_TLS', 'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', 'FLOW_MAIL_HOST_PASSWORD', '%iFLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM', 'FLOW_MAIL_WARNING_TEMPLATE'] 
+        flow_opts = ['%bWRITE_FLOW', 'FLOW_DIR', '%iFLOW_TIME', '%iFLOW_COUNT', 'FLOW_MAIL_WARNING', \
+                     'FLOW_MAIL_SUBJECT', '%bFLOW_MAIL_USE_TLS', 'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', \
+                     'FLOW_MAIL_HOST_PASSWORD', '%iFLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM', \
+                     'FLOW_MAIL_WARNING_TEMPLATE'] 
         self.get_opts(config, flow_name, flow_opts)
         
     def get_static(self, **kwargs):
