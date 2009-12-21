@@ -821,7 +821,7 @@ class RecoveryThread(Thread):
     def run(self):
         get_file_names()
     
-'''
+
 class SynchroPacket(object):
     __slots__ = ()
     
@@ -859,19 +859,24 @@ class SynchroPacket(object):
         if self.SYNCHRO:
             self.getDataPLZ.set()
             self.gotDataKTX.wait()
-'''
+
 class FlowLoggerThread(Thread):
-    def __init__(self, dirL, filePrefix, whenL = 'M', intervalL = '5'):
+    def __init__(self, errorLogger, synchroBox, dieCondition, dataTransformer, dirL, filePrefix, whenL = 'M', intervalL = '5'):
         Thread.__init__(self)
         #create notifier
+        self.synchroBox = synchroBox
+        self.dieCondition = dieCondition
+        self.errorLogger = errorLogger
+        self.dataTranformer = dataTransformer
         try:
             self.fileLogger = logging.getLogger('filelogger')
             self.fileLogger.setLevel(logging.INFO)
             flHdlr = TimedRotatingFileHandler('/'.join((dirL, filePrefix)), when = whenL, interval = intervalL)
             flHdlr.setFormatter("%(message)s")
+            flHdlr.f
             self.fileLogger.addHandler(flHdlr)
         except Exception, ex:
-            logger.error("Flowlogger creation exception: %s %s | %s", (self.getName(), repr(ex), traceback.format_exc()))
+            self.errorLogger.error("Flowlogger creation exception: %s %s | %s", (self.getName(), repr(ex), traceback.format_exc()))
             print "Flowlogger creation exception: flow logging didn't start. See log."
             self.notifyError("Flowlogger creation exception: %s %s | %s" % (self.getName(), repr(ex), traceback.format_exc()))
     
@@ -879,9 +884,31 @@ class FlowLoggerThread(Thread):
         #maybe e-mail?
         pass
     
+    def heuristics(self):
+        pass
+    
     def run(self):
         #base on events
-        pass
+        while True:
+            if self.dieCondition[self.__class__.__name__]:
+                try:
+                    for handler in self.fileLogger.handlers:
+                        handler.flush()
+                        handler.close()
+                except Exception, ex:
+                    self.errorLogger.error("Flowlogger close exception: %s %s | %s", (self.getName(), repr(ex), traceback.format_exc()))
+                break
+            
+            data = self.synchroBox.waitForData()
+            try:
+                for dataPiece in data:
+                        dataString = self.dataTranformer(dataPiece)
+                        self.fileLogger.log(2, dataString)
+                        
+            except:
+                #write exception            
+                pass
+            
     
 def get_file_names():
     global vars,queues
@@ -1069,7 +1096,7 @@ if __name__=='__main__':
         psyco.profile(0.2)
 
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME, flow_name=FLOW_NAME)
-        
+        #print repr(vars)
         
         
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
