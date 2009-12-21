@@ -9,12 +9,41 @@
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
 <link rel="stylesheet" href="{{ MEDIA_URL }}css/opera.css" type="opera.css" media="screen" />
 
+<style type="text/css">
+	* {
+		margin:10px 0;
+		padding:0;
+		list-style-type:none;
+	}
+	td, th {
+		border: 2px solid #000;
+		text-align:center;
+		padding:10px;
+	}
+	body {
+		padding:0 20px;
+	}
+	.main_menu {
+		margin:30px 0;
+	}
+	.main_menu li{
+		float:left;
+		padding-left:20px;
+	}
+	.clear {
+		clear:both;
+	}
+</style>
+
 {% block extra_head %}
 {% endblock %}
 
 </head>
 
 <body>
+
+{% block main_menu %}
+{% endblock %}
 
 <div class="content_align wrapper">
 	{% block login %}

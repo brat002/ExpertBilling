@@ -3,7 +3,7 @@
 from django.db import models
 
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import SystemUser, SystemGroup
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from billservice.models import Account
@@ -55,7 +55,7 @@ NETWORK_PROBLEM = 5
 OTHER = 6
 
 TICKET_TYPE = (
-                (PASSWORD_REQUEST, u"Запрос на смену парля",),
+                (PASSWORD_REQUEST, u"Запрос на смену пароля",),
                 (ACCOUNT_INFO_REQUEST, u"Запрос на смену информации о абоненте",),
                 (NEW_CLIENT, u"Подключение нового абонента",),
                 (BILLING_PROBLEM, u"Ошибка в расчётах",),
@@ -82,7 +82,25 @@ TICKET_ADDITIONAL_TYPE=(
                 (OTHER, u"Другое",),
                 )
 
+'''
+    Приоритет
+    от 0 до 4. 0 - критический, 1 - немедленно, 2-высокий, 3 - средний, 4-низкий
+'''
 
+Critical = 0
+Immediately = 1
+High = 2
+Average = 3
+Low = 4
+
+
+PRIORITY_TYPES = (
+                  (Critical,u'критический'),
+                  (Immediately,u'немедленно'),
+                  (High,u'высокий'),
+                  (Average,u'средний'),
+                  (Low,u'низкий'),
+                  )
 
 class Ticket(models.Model):
     account = models.ForeignKey(Account, blank=True, null = True) # Пользователь, владелец тикета
@@ -95,25 +113,32 @@ class Ticket(models.Model):
     object_id = models.PositiveIntegerField(editable=False, null=True, blank=True)
     assigned_to = generic.GenericForeignKey('content_type', 'object_id')    
 
-    assign_date = models.DateTimeField() # Дата открытия(назначения) тикета
+    assign_date = models.DateTimeField(blank=True, default=False) # Дата открытия(назначения) тикета
     status = models.CharField(max_length=32, choices = TICKET_STATUS)
     type = models.CharField(max_length=32, choices = TICKET_TYPE)
     additional_status = models.CharField(max_length=32, choices = TICKET_ADDITIONAL_TYPE)
-    priority = models.PositiveIntegerField()# от 0 до 4. 0 - критический, 1 - немедленно, 2-высокий, 3 - средний, 4-низкий
-    created = models.DateTimeField() # Дата создания тикета
-    last_update = models.DateTimeField()# - Дата последнего изменения
+    priority = models.PositiveIntegerField(choices = PRIORITY_TYPES)# от 0 до 4. 0 - критический, 1 - немедленно, 2-высокий, 3 - средний, 4-низкий
+    created = models.DateTimeField(blank=True, default=False) # Дата создания тикета
+    last_update = models.DateTimeField(blank=True, default=False)# - Дата последнего изменения
     archived = models.BooleanField(blank=True, default=False)
     
-        
+    def get_absolute_url(self):
+        return '/ticket/%s/' %self.id
+    
+    def get_edit_url(self):
+        return '/ticket/edit/%s/' %self.id
     
 class Comment(models.Model):
     ticket = models.ForeignKey(Ticket)
-    account = models.ForeignKey(Account, blank=True, default = True)# Поле исключает поле systemuser
-    systemuser = models.ForeignKey(User, blank=True, default = True)# Поле исключает поле account
+    content_type = models.ForeignKey(ContentType, editable=False, null=True, blank=True)
+    object_id = models.PositiveIntegerField(editable=False, null=True, blank=True)
+    assigned_to = generic.GenericForeignKey('content_type', 'object_id')
     body = models.TextField()
     time = models.IntegerField()#потраченное время. Поле видно только пользователю хелпдеска
-
     created = models.DateTimeField()
+    
+    def save(self):
+        pass
     
 
 class Attachment(models.Model):
@@ -131,7 +156,7 @@ class Note(models.Model):
     Скрытый комментарий, который видят только пользователя HelpDesk-а
     """
     ticket = models.ForeignKey(Ticket)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(SystemUser)
     body = models.TextField()
     date = models.DateTimeField()
     
@@ -149,7 +174,7 @@ class TicketHistrory(models.Model):
     История действий над тикетом.
     """
     ticket = models.ForeignKey(Ticket)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(SystemUser)
     action = models.TextField()
     created = models.DateTimeField()
     

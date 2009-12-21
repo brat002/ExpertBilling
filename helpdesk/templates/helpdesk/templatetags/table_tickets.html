@@ -5,24 +5,22 @@
 			<th>Пользователь</th>
 			<th>Тема</th>
 			<th>Скрытый комментарий</th>
-			<th>Кто назначил</th>
-			<th>Назначен</th>
+			<th>Дата(Открытия) назначения</th>
 			<th>Создан</th>
 			<th>В архив</th>
 			<th>Удалить</th>
 		</tr>
 		{% for ticket in object.get_tickets %}
 		<tr>
-		<td>{{ticket.id}}</td>
-		<td>{{ticket.status}}</td>
-		<td>{{ticket.created_by}}</td>
-		<td>{{ticket.tittle}}</td>
-		<td>--</td>
-		<td>--</td>
-		<td>--</td>
-		<td>--</td>
-		<td><input type='checkbox'/ name="is_archive"></td>
-		<td><input type='checkbox'/  name="is_deleted"></td>
+			<td><a href="{{ ticket.get_edit_url }}">{{ticket.id}}</a></td>
+			<td>{{ticket.status}}</td>
+			<td>{{ticket.account}}</td>
+			<td>{{ticket.subject}}</td>
+			<td>--</td>
+			<td>{{ ticket.assign_date }}</td>
+			<td>{{ ticket.created }}</td>
+			<td><input type='checkbox' name="is_archive"/></td>
+			<td><input type='checkbox'  name="is_deleted"/></td>
 		</tr>
 		{% endfor %}
 	</table>

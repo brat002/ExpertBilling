@@ -13,6 +13,5 @@ def pannel_ticket_table(objects, objects_id):
 @register.inclusion_tag("helpdesk/templatetags/table_tickets.html")
 def table_ticket(object_var):
     context = {}
-    context['object'] = object_var
-    context['object_name'] = object_var._meta.object_name
+    context['objects'] = object_var
     return context
