@@ -23,7 +23,7 @@ import isdlogger
 import saver
 
 
-from threading import Thread, Lock
+from threading import Thread, Lock, Event
 from daemonize import daemonize
 from DBUtils.PooledDB import PooledDB
 from IPy import IP, IPint, parseAddress
@@ -821,6 +821,45 @@ class RecoveryThread(Thread):
     def run(self):
         get_file_names()
     
+'''
+class SynchroPacket(object):
+    __slots__ = ()
+    
+    def __init__(self, count = 1, timeout = 5):
+        self.getDataPLZ = Event()
+        self.gotDataKTX = Event()
+        self.dataList = []
+        self.maxCount = count
+        self.maxTimeout = timeout
+        self.dataCount = 0
+        self.dataTime = 0
+        self.SYNCHRO = True if self.dataCount == 1 else False
+            
+    def checkData(self):
+        if (self.dataCount >= self.maxCount or (time.clock() - self.dataTime) > self.maxTimeout)\
+           and self.gotDataKTX.isSet() == False:
+            self.getDataPLZ.set()
+    
+    def waitForData(self):
+        self.gotDataKTX.clear()
+        #maybe timeout here?
+        self.getDataPLZ.wait()
+        #sys.setcheckinterval(0)
+        data = self.dataList if not self.SYNCHRO else self.dataList[0]
+        self.dataList = []
+        self.dataTime = time.clock()
+        self.getDataPLZ.clear()
+        self.gotDataKTX.set()
+        #sys.setcheckinterval(1000)
+        
+        
+    def appendData(self, data):
+        self.dataList.append(data)
+        self.dataCount += 1
+        if self.SYNCHRO:
+            self.getDataPLZ.set()
+            self.gotDataKTX.wait()
+'''
 class FlowLoggerThread(Thread):
     def __init__(self, dirL, filePrefix, whenL = 'M', intervalL = '5'):
         Thread.__init__(self)
