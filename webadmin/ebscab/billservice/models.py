@@ -839,6 +839,7 @@ class SystemUser(models.Model):
         ctype = ContentType.objects.get_for_model(self)
         return Ticket.objects.filter(content_type=ctype, object_id=self.id)
     
+
 class Ports(models.Model):
     port = models.IntegerField()
     protocol = models.IntegerField()

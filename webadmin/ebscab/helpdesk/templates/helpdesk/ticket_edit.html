@@ -1,0 +1,16 @@
+{% extends 'helpdesk_base_extended.html' %}
+
+{% block content %}
+
+{% if addon_text %}
+	<h1>{{ addon_text }}</h1>
+{% endif %}
+
+<form method="post">
+	<table>
+		{{ form }}
+	</table>
+	<input type="submit" value="Save Ticket">
+</form>
+
+{% endblock %}

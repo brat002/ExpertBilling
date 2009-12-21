@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls.defaults import *
 from django.contrib import admin
 
-#admin.autodiscover()
+admin.autodiscover()
 
 urlpatterns = patterns('',
     # Example:
@@ -11,7 +11,7 @@ urlpatterns = patterns('',
     #(r'^$','ebscab.billing.views.index'),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     # Uncomment this for admin:
-    #('^admin/(.*)', admin.site.root),
+    ('^admin/(.*)', admin.site.root),
      #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
      #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
      (r'^helpdesk/', include('helpdesk.urls')),

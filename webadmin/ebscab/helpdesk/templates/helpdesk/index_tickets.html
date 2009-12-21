@@ -1,4 +1,4 @@
-{% extends "helpdesk_base.html" %}
+{% extends "helpdesk_base_extended.html" %}
 {% load helpdesk_tags %}
 
 {% block extra_head %}
@@ -19,7 +19,6 @@ function show_tickets(sender, table_id)
 	var val = jQuery(sender).find('option:selected').val()
 	var table = jQuery(table_id)
 	table.find('tr').hide().slice(0,parseInt(val)+1).show()
-	
 }
 
 function load_data(sender)
@@ -60,8 +59,7 @@ jQuery(document).ready(function(){
 			
 			var sender = jQuery(this)
 			var is_hide = sender.next().is(":visible")
-			console.info(is_hide)
-			show_table(sender.next(), is_hide)
+			show_table(sender.parent().children('ul'), is_hide)
 		})
 		
 		jQuery(".auroramenu div.tickets:visible").each(function(){
@@ -84,6 +82,26 @@ jQuery(document).ready(function(){
 </div>
 </div>
 
+<<<<<<< .mine
+</li>
+	<ul id="menu2" class="auroramenu">
+		{% for user in departament.get_users %}
+			<li>
+				<a href="#" onclick="show_table(this);">{{user.username}}</a>
+				<a style="display: none;" class="aurorashow" href="#"></a> 
+				<a style="display: inline;" class="aurorahide" href="#"></a>
+				<ul id="ul_user_{{user.id}}" name="user_{{user.id}}"  class="tickets">
+					<li>
+						{% pannel_ticket_table 'SystemUser' departament.id %}
+					</li>
+				</ul>
+			</li>
+		{% endfor %}
+	</ul>
+	{% endfor %}
+</ul>
+</div>
+=======
 {% for user in departament.get_users %}
 <div id="menu2" class="auroramenu">
 <a href="#" onclick="show_table(this);">{{user.username}}</a>
@@ -95,4 +113,12 @@ jQuery(document).ready(function(){
 
 {% endfor %}
 
+
+
+
+
+
+
+
+>>>>>>> .theirs
 {% endblock %}
