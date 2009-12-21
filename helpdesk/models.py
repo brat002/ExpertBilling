@@ -104,6 +104,7 @@ class Ticket(models.Model):
     last_update = models.DateTimeField()# - Дата последнего изменения
     archived = models.BooleanField(blank=True, default=False)
     
+        
     
 class Comment(models.Model):
     ticket = models.ForeignKey(Ticket)

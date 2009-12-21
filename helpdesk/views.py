@@ -29,7 +29,6 @@ def ajax_update_owner_ticket(request):
         ticket = Ticket.objects.get(id = int(id_ticket))
     except:
         raise Http404
-    
     if object == 'departament':
          ctype = ContentType.objects.get_for_model(SystemGroup)
     elif object == 'user':
