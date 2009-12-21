@@ -3,7 +3,7 @@
 from django.db import models
 
 
-from django.contrib.auth.models import SystemUser, SystemGroup
+from billservice.models import SystemUser, SystemGroup
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from billservice.models import Account
