@@ -21,6 +21,21 @@ def index_tickets(reuqest):
     system_group = SystemGroup.objects.all()
     return {"departaments":system_group}
 
+def ajax_archived_tickets(request):
+    id_ticket = request.GET['id_ticket']
+    try:
+        ticket = Ticket.objects.get(id=id_ticket)
+    except Ticket.DoesNotExist:
+        raise Http404
+    is_archived = request.GET['is_archived']
+    if is_archived=="true":
+        ticket.archived = True
+    elif is_archived=="false":
+        ticket.archived = False
+    ticket.save()
+    print  ticket.archived
+    return HttpResponse(True, mimetype="text/plain")
+    
 def ajax_update_owner_ticket(request):
     id_ticket = request.GET.get('id',None)
     object = request.GET.get('object',None)
