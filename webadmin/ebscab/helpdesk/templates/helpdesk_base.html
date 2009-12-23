@@ -8,31 +8,43 @@
 {% endblock %}
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
 <link rel="stylesheet" href="{{ MEDIA_URL }}css/opera.css" type="opera.css" media="screen" />
-
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/typography.css"  />
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/style.css" />
 <style type="text/css">
 	* {
-		margin:10px 0;
+		margin:0 0;
 		padding:0;
 		list-style-type:none;
 	}
 	td, th {
-		border: 2px solid #000;
+		border: 1px solid #a0a0a0;
 		text-align:center;
-		padding:10px;
+		
 	}
 	body {
 		padding:0 20px;
+		min-width:1024px;
 	}
 	.main_menu {
-		margin:30px 0;
+		background-image:url(/media/img/bg_main_menu.gif);
+		height:63px;
+		background-repeat:repeat-x;
 	}
 	.main_menu li{
 		float:left;
-		padding-left:20px;
+		padding-left:35px;
+		padding-top:5px;
+		text-align:center;
 	}
+	.main_menu a{
+		text-decoration:none;
+		color:#000000;
+	}
+	
 	.clear {
 		clear:both;
 	}
+
 </style>
 
 {% block extra_head %}
@@ -42,7 +54,46 @@
 
 <body>
 
+
 {% block main_menu %}
+<ul class="main_menu"> 
+<li>
+	<a href="">
+		<img src="{{MEDIA_URL}}img/all_tickets.gif" /><br/>
+	  	Все тикеты
+	 </a>
+</li> 
+<li>
+	<a href="">
+		<img src="{{MEDIA_URL}}img/users_and_groups.gif" /><br/>
+	  	Пользователи и группы
+	 </a>
+</li>
+<li>
+	<a href="">
+		<img src="{{MEDIA_URL}}img/reports.gif" /><br/>
+	  	Отчеты
+	 </a>
+</li>
+<li>
+	<a href="">
+		<img src="{{MEDIA_URL}}img/settings.gif" /><br/>
+	  	Настройки
+	 </a>
+</li>
+<li>
+	<a href="">
+		<img src="{{MEDIA_URL}}img/warning.gif" /><br/>
+	  	Обратить внимание
+	 </a>
+</li>
+<li>
+	<a href="">
+		<img src="{{MEDIA_URL}}img/exit2.gif" /><br/>
+	  	Обратить внимание
+	 </a>
+</li>
+</ul>
 {% endblock %}
 
 <div class="content_align wrapper">

@@ -1,15 +1,15 @@
-<div>
+<div class="settings_table">
 			объектов на странице 
 			<select id="{{object_name}}_{{object_id}}" class="{{object_name}}"  onchange=show_tickets(this,'#table_{{object_name}}_{{object_id}}') name="count_in_page">
-			<option value=1>
-				1
-			</option>
 			<option value=2>
 				2
+			</option>
+			<option value=3>
+				3
 			</option>	
 			</select>
 			обновление
-			<select id="update_{{object_name}}_{{object_id}}"  name="time" onchange="update_table(jQuery(this).parent().parent())" name="time" >
+			<select id="update_{{object_name}}_{{object_id}}"  name="time" class="time_update" onchange="update_table(jQuery(this).parent().parent())">
 			<option value=1>
 				1мин
 			</option>
@@ -17,6 +17,8 @@
 				5мин
 			</option>	
 			</select>
+			<img src="{{media_url}}img/archive.gif" style="margin-right:37px;">
+			<img src="{{media_url}}img/recycler.gif" style="margin-right:25px;">
 </div>
 <div class="content_tickets">
 </div>
