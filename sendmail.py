@@ -2,6 +2,8 @@
 
 import os, sys
 
+sys.path.insert(0, "modules")
+
 import  datetime, time
 
 import psycopg2, psycopg2.extras
