@@ -17,9 +17,9 @@
 			<td class="account">{{ticket.account}}</td>
 			<td class="subject" style="color:{{ticket.get_status_color}}">{{ticket.subject}}</td>
 			<td>--</td>
-			<td class="assign_date">{{ ticket.assign_date }}</td>
-			<td class="created">{{ ticket.created }}</td>
-			<td width="73px"><input type='checkbox' name="is_archive"/></td>
+			<td class="assign_date">{{ ticket.assign_date|date:"d-m-Y" }}</td>
+			<td class="created">{{ ticket.created|date:"d-m-Y" }}</td>
+			<td width="73px"><input type='checkbox' onclick="archived_ticket(this)" {% if ticket.archived %}checked{% endif %} name="is_archive"/></td>
 			<td width="73px"><input type='checkbox'  name="is_deleted"/></td>
 		</tr>
 		{% endfor %}

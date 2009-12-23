@@ -13,7 +13,7 @@
 		jQuery("ul[name='departament'], ul[name='user'], ul[name='no_assigned']").sortable({
 			connectWith: '.board',
 			items: 'li:not(.ui-state-disabled)',
-			receive:function(e, ui){
+			update:function(e, ui){
 				change_ticket = {id:jQuery(ui.item).attr('id'),
 									   					  object:jQuery(this).attr('name'),
 									   					  object_id:jQuery(this).attr('id')}	
