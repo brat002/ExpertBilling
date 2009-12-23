@@ -122,7 +122,7 @@ jQuery(document).ready(function(){
 			show_table(content, content.next().is(":visible"))
 		})
 		
-		jQuery(".auroramenu div.tickets:visible").each(function(){
+		jQuery(".auroramenu div.tickets").each(function(){
 				var panel_link =  jQuery(this).parent().children('.name_object')
 				panel_link.css('background-image','url(/media/img/bg3.gif)')
 				panel_link.children('a.link').children('img').attr('src','/media/img/open2.gif')

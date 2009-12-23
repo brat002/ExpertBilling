@@ -1,12 +1,15 @@
 <div class="settings_table">
 			объектов на странице 
 			<select id="{{object_name}}_{{object_id}}" class="{{object_name}}"  onchange=show_tickets(this,'#table_{{object_name}}_{{object_id}}') name="count_in_page">
-			<option value=2>
-				2
+			<option value=10>
+				10
 			</option>
-			<option value=3>
-				3
-			</option>	
+			<option value=20>
+				20
+			</option>
+			<option value=30>
+				30
+			</option>
 			</select>
 			обновление
 			<select id="update_{{object_name}}_{{object_id}}"  name="time" class="time_update" onchange="update_table(jQuery(this).parent().parent())">
