@@ -61,7 +61,7 @@ cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/sql
 cp sql/ebs_dump.sql builds/$1/sql/
 cp sql/changes.sql builds/$1/sql/
-cp mail builds/$1/modules/
+cp -r mail/ builds/$1/modules/
 cp sendmail.py builds/$1/
 
 for bldd in $total_build; do
