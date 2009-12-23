@@ -1,0 +1,31 @@
+.title_table td{
+	cursor:pointer;
+}
+.name_object{
+	background-image: url(/media/img/bg2.gif);
+	background-repeat:repeat-x;
+	height:18px;
+}
+.name_object a.link{
+	text-decoration:none;
+	}
+
+.settings_table {
+	background-image: url(/media/img/bg4.gif);
+	background-repeat:repeat-x;
+	height:39px;
+	text-align:right;
+}
+.time_update{
+	margin-right:50px;
+}
+tr.title_table{
+	background-image: url(/media/img/bg_5.gif);
+	background-repeat:repeat-x;
+	height:17px;
+	font-size:12px;
+	font-weight:bold;
+}
+tr.title_table td{
+	height:17px;
+}

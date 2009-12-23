@@ -43,6 +43,18 @@ TICKET_STATUS = (
                 (INVALID, u"Отклонён",),# - Тикет отклонён - может быть архивирован
                 )
 
+"""
+Цвет статуса у тикета
+"""
+COLOR_TICKETS = (
+                 (NEW,u"",),       # - Тикет ни на кого не назначен
+                 (OPENED, u"#a2b247",), # - Тикет назначен, идёт работа
+                 (HOLD, u"Удержание",),# - Тикет назначен, идёт работа, тикет невозможно переназначить без смены статуса
+                 (CLOSED, u"Закрыт",), # - Тикет закрыт - может быть архивирован
+                 (RESOLVED, u"#9E7FB0",), # - Тикет закрыт - может быть архивирован                
+                 (REOPENED, u"Переоткрыт",), # - Тикет закрыт - может быть архивирован                
+                 (INVALID, u"#e0584f",),# - Тикет отклонён - может быть архивирован
+                 )
 '''
    Тип тикета 
 '''
@@ -127,6 +139,12 @@ class Ticket(models.Model):
     
     def get_edit_url(self):
         return '/ticket/edit/%s/' %self.id
+    
+    def get_status(self):
+        return dict(TICKET_STATUS)[int(self.status)]
+    
+    def get_status_color(self):
+        return dict(COLOR_TICKETS)[int(self.status)]
     
 class Comment(models.Model):
     ticket = models.ForeignKey(Ticket)
