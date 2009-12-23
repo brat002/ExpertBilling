@@ -2,7 +2,7 @@
 
 import os, sys
 
-sys.path.insert(0, "modules")
+sys.path.append("modules")
 
 import  datetime, time
 
@@ -54,7 +54,7 @@ def send_balance_notice():
     templ = Template(body, input_encoding='utf-8')
     for account in accounts:
         print "Sending mail for %s" % account.username
-        if float(account.ballance)>SEND_IF_LESS: continue
+        if float(account.ballance)>SEND_IF_LESS or not account.email : continue
         data=templ.render_unicode(account=account, operator = operator)
         send_mail(subject=EMAIL_SUBJECT, message=data, from_email=EMAIL_FROM, recipient_list=[account.email,], fail_silently=EMAIL_FAIL_SILENTLY, auth_user=EMAIL_HOST_USER,\
                   auth_password=EMAIL_HOST_PASSWORD, host=EMAIL_HOST, port=EMAIL_PORT, use_tls=EMAIL_USE_TLS)
