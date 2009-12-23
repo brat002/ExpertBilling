@@ -11,7 +11,7 @@
 			<td  width="73px">Удалить </td>
 		</tr>
 		{% for ticket in tickets %}
-		<tr>
+		<tr >
 			<td class="id"><a href="{{ ticket.get_edit_url }}">{{ticket.id}}</a></td>
 			<td class="status"><img src="{{media_url}}img/status_{{ticket.status}}.gif"></td>
 			<td class="account">{{ticket.account}}</td>
