@@ -12,60 +12,114 @@
 <script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/jquery.timers.js"></script>
 <script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/ajax_load_block.js"></script>
 <script>
-
-	
+var sorted_option={'object':'',
+							'reverse':''}
 function show_tickets(sender, table_id)
 {
+	sender = jQuery(sender)
+	var table_tickets = sender.parent().parent()
+	var data = jQuery(table_tickets).data(table_tickets.attr('name'))
+	
 	var val = jQuery(sender).find('option:selected').val()
-	var table = jQuery(table_id)
-	table.find('tr').hide().slice(0,parseInt(val)+1).show()
+	data['count_in_page']=val
+	data['order_by_reverse']=false
+	load_data(table_tickets,data['order_by'],data['order_by_reverse'], val)
+}
+
+function sorted(sender, table_tickets){
+	sender = jQuery(sender)
+	
+	var data  = table_tickets.data(table_tickets.attr('name'))
+	
+	if (sorted_option['object']!=table_tickets.attr('name') || data['order_by']!=sender.attr('class') )
+		{
+			data['order_by'] = sender.attr('class')
+			sorted_option['object']=table_tickets.attr('name')
+			
+			data['order_by_reverse'] = false
+		}
+	if (data['order_by_reverse']){
+		data['order_by_reverse'] = false
+	}
+	else{ 
+		data['order_by_reverse'] = true
+	}
+	
+	load_data(table_tickets,data['order_by'],data['order_by_reverse'], data['count_in_page'] )
 	
 }
 
-function load_data(sender)
+function load_data(sender, order_by,order_by_reverse, count)
 {
 			var obj_list = jQuery(sender).attr('name').split("_")
 			var object = obj_list[0]
 			var object_id = obj_list[1]
+			var data= {"object":object, 'object_id':object_id}
+			if (count)
+				data["count"]=count
+			if(order_by)
+				data["order_by"]=order_by
+			if (order_by_reverse)
+				data['order_by_reverse']=order_by_reverse
 			var content = jQuery(sender).children("div.content_tickets")
 			ajax_load_block(content,"/helpdesk/ajax/load/table/tickets/",
-								  {"object":object, 'object_id':object_id},
+								  data,
 								  {"is_loader":true}, 
 								  {"success":function(data){
 								  	content.html(data)
 									update_table(sender)
-									show_tickets( jQuery(sender).find("select[name=count_in_page]"),  jQuery(sender).find(".content_tickets table"))
+									
 								  }})
 }
-function show_table(sender, is_hide)
+function show_table(sender, is_show)
 {
-	if (is_hide){
-		load_data(sender)
+	if (is_show){
+		var data = sender.next().data(sender.next().attr('name'))
+		load_data(sender.next(), data['order_by'], data['order_by_reverse'], data['count_in_page'])
+		sender.css('background-image','url({{MEDIA_URL}}img/bg3.gif)'	)
+		sender.children('a.link').children('img').attr('src','/media/img/open2.gif')
 	}
 	else{		
-		sender.stopTime(jQuery(sender).attr('name'))
+		jQuery(sender.next()).stopTime(jQuery(sender).attr('name'))
+		sender.css('background-image','url(/media/img/bg2.gif)'	)
+		sender.children('a.link').children('img').attr('src','/media/img/close.gif')
+		
 	}
 }
 function update_table(sender){
 	var sender = jQuery(sender)
 	var name = sender.attr('name')
-	var minuts =parseInt(sender.children('div').children('select[name="time"]').val())*60
-	sender.oneTime(minuts+"s",name,function(){
-				load_data(sender)
-
-			})
+	var seconds =parseInt(sender.children('div').children('select[name="time"]').val())*60
+	var data = sender.data(sender.attr('name'))
+	if (data['order_by_reverse']){
+		sender.find('.title_table').children('.'+data['order_by']).children('img').attr('src','{{MEDIA_URL}}img/down.gif')
+	}
+	else{
+		sender.find('.title_table').children('.'+data['order_by']).children('img').attr('src','{{MEDIA_URL}}img/up.gif')
+	}
+	jQuery(sender).stopTime(jQuery(sender).attr('name'))
+	
+	sender.everyTime(seconds+"s",name,function(){
+				load_data(sender, data['order_by'], data['order_by_reverse'], data['count_in_page'])
+			},1)
 }
 jQuery(document).ready(function(){
-		jQuery(".auroramenu a").bind('click',function(){
-			
+		jQuery(".auroramenu").find(' a.link').bind('click',function(){
 			var sender = jQuery(this)
-			var is_hide = sender.next().is(":visible")
-			console.info(is_hide)
-			show_table(sender.next(), is_hide)
+			var content = sender.parent()
+			show_table(content, content.next().is(":visible"))
 		})
 		
 		jQuery(".auroramenu div.tickets:visible").each(function(){
-				load_data(this)
+				var panel_link =  jQuery(this).parent().children('.name_object')
+				panel_link.css('background-image','url({{MEDIA_URL}}img/bg3.gif)')
+				panel_link.children('a.link').children('img').attr('src','/media/img/open2.gif')
+				var count_in_page=jQuery('select[name="count_in_page"]').val()
+				
+				jQuery(this).data(jQuery(this).attr('name'), {'order_by':'id',
+																	   'order_by_reverse':false, 
+																	   'count_in_page':count_in_page})
+				load_data(this,'id',false, count_in_page)
 			})
 			
 	})
@@ -78,17 +132,25 @@ jQuery(document).ready(function(){
 	
 {% for departament in departaments %}
 <div id="menu" class="auroramenu">
-<a href="#" onclick="show_table(this);">{{departament.name}}</a>
-<div id="ul_departament_{{departament.id}}" name="departament_{{departament.id}}" class="tickets">
-	{% pannel_ticket_table 'SystemGroup' departament.id %}
+	<div class="name_object">
+	<a href="#" class="link"  onclick="show_table(this);">
+		<img src="{{MEDIA_URL}}img/close.gif"><b>{{departament.name}}</b></a>
+	</div>
+<div id="ul_departament_{{departament.id}}" name="departament_{{departament.id}}" class="tickets content">
+	{% pannel_ticket_table 'departament' departament.id %}
 </div>
 </div>
 
 {% for user in departament.get_users %}
 <div id="menu2" class="auroramenu">
-<a href="#" onclick="show_table(this);">{{user.username}}</a>
-<div id="ul_user_{{user.id}}" name="user_{{user.id}}"  class="tickets">
-		{% pannel_ticket_table 'SystemUser' departament.id %}
+	<div class="name_object">
+		<a href="#" class="link" onclick="show_table(this);">
+			<img src="{{MEDIA_URL}}img/close.gif">
+			{{user.username}}
+		</a>
+	</div>
+<div id="ul_user_{{user.id}}" name="user_{{user.id}}"  class="tickets content">
+		{% pannel_ticket_table 'user' user.id %}
 </div>
 </div>
 {% endfor %}

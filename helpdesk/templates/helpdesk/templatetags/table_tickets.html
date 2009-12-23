@@ -1,26 +1,26 @@
-	<table id="table_{{object_name}}_{{object.id}}" cols=10 cellpadding=0 cellspacing=0 width=100%>
-		<tr>
-			<th>№</th>
-			<th>Статус</th>
-			<th>Пользователь</th>
-			<th>Тема</th>
-			<th>Скрытый комментарий</th>
-			<th>Дата(Открытия) назначения</th>
-			<th>Создан</th>
-			<th>В архив</th>
-			<th>Удалить</th>
+	<table id="table_{{object_name}}_{{object.id}}" cols=10 cellpadding=0 cellspacing=0 width=100% class="tickets">
+		<tr class="title_table">
+			<td class="id" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))" >№ <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="status" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Статус <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="account" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Пользователь <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="subject" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Тема <img src="{{media_url}}img/up_down.gif"></td>
+			<td width="190px" >Скрытый комментарий </td>
+			<td class="assign_date" width="230px" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Дата(Открытия) назначения <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="created" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Создан <img src="{{media_url}}img/up_down.gif"></td>
+			<td width="73px">В архив </td>
+			<td  width="73px">Удалить </td>
 		</tr>
-		{% for ticket in object.get_tickets %}
+		{% for ticket in tickets %}
 		<tr>
-			<td><a href="{{ ticket.get_edit_url }}">{{ticket.id}}</a></td>
-			<td>{{ticket.status}}</td>
-			<td>{{ticket.account}}</td>
-			<td>{{ticket.subject}}</td>
+			<td class="id"><a href="{{ ticket.get_edit_url }}">{{ticket.id}}</a></td>
+			<td class="status"><img src="{{media_url}}img/status_{{ticket.status}}.gif"></td>
+			<td class="account">{{ticket.account}}</td>
+			<td class="subject" style="color:{{ticket.get_status_color}}">{{ticket.subject}}</td>
 			<td>--</td>
-			<td>{{ ticket.assign_date }}</td>
-			<td>{{ ticket.created }}</td>
-			<td><input type='checkbox' name="is_archive"/></td>
-			<td><input type='checkbox'  name="is_deleted"/></td>
+			<td class="assign_date">{{ ticket.assign_date }}</td>
+			<td class="created">{{ ticket.created }}</td>
+			<td width="73px"><input type='checkbox' name="is_archive"/></td>
+			<td width="73px"><input type='checkbox'  name="is_deleted"/></td>
 		</tr>
 		{% endfor %}
 	</table>

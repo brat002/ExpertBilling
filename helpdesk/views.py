@@ -40,21 +40,22 @@ def ajax_update_owner_ticket(request):
 
 @render_to('helpdesk/ajax_load_table_tickets.html')
 def ajax_load_table_tickets(request):
-    object = request.GET.get('object',None)
+    object_name = request.GET.get('object',None)
     object_id = request.GET.get('object_id',None)
-    if object ==  'departament':
+    count = request.GET.get('count',10)
+    order_by = request.GET.get('order_by','id')
+    order_by_reverse = request.GET.get('order_by_reverse',False)
+    if object_name ==  'departament':
         try:
             object = SystemGroup.objects.get(id=int(object_id))
         except SystemGroup.DoesNotExist:
             raise Http404
-    if object ==  'user':
+    if object_name ==  'user':
         try:
             object = SystemUser.objects.get(id=int(object_id))
         except SystemUser.DoesNotExist:
             raise Http404
-            
-       
-    return {"object":object}
+    return { "order_by":order_by,"order_by_reverse":order_by_reverse, "count":count, "object":object, 'object_name':object_name}
 
 
 @render_to('helpdesk/login.html')

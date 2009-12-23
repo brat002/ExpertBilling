@@ -8,8 +8,9 @@ $(document).ready(function(){
 	
 	$.cookie('testcookie' , 'expanded')
 	$('.auroramenu').each(function(){
-			var tag_a = $(this).children('a');
-			var next_tag = tag_a.next();
+			var tag_a = $(this).find('a.link');
+			
+			var next_tag = $(this).children('div.content');
 			if ($.cookie('arMenu_' + next_tag.attr('id')) == 1) {
 				next_tag.css("display", "none");
 				tag_a.attr('onClick', 'auroraMenuItem(\'' + this.id + '\'); return false;');
@@ -20,8 +21,8 @@ $(document).ready(function(){
 	});
 });
 function auroraMenuItem(sender){
-	var next_tag = jQuery('#'+sender).children('a').next()
-	
+	var next_tag = jQuery('#'+sender).children('div.content')
+
 	if (next_tag.is(":visible")){
 		next_tag.slideUp(auroraMenuSpeed);
 		next_tag.css('display','none');
