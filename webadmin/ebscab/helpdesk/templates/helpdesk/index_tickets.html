@@ -13,7 +13,31 @@
 <script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/jquery.timers.js"></script>
 <script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/ajax_load_block.js"></script>
 <script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/tickets.js"></script>
-
+<script>
+	jQuery(document).ready(function(){
+		
+	
+		jQuery(".auroramenu").find(' a.link').bind('click',function(){
+			var sender = jQuery(this)
+			var content = sender.parent()			
+			show_table(content, content.next().is(":visible"))
+		})
+		
+		jQuery(".auroramenu div.tickets").each(function(){
+				var panel_link =  jQuery(this).parent().children('.name_object')
+				if (jQuery(this).is(":visible")) {
+					panel_link.css('background-image', 'url(/media/img/bg3.gif)')
+					panel_link.children('a.link').children('img').attr('src', '/media/img/open2.gif')
+				}
+				var count_in_page=jQuery('select[name="count_in_page"]').val()
+				
+				jQuery(this).data(jQuery(this).attr('name'), {'order_by':'id',
+																	   'order_by_reverse':false, 
+																	   'count_in_page':count_in_page})
+				load_data(this,'id',false, count_in_page)
+			})
+		})
+</script>
 {% endblock %}
 
 {% block content %}
@@ -21,8 +45,8 @@
 {% for departament in departaments %}
 <div id="menu" class="auroramenu">
 	<div class="name_object">
-	<a href="#" class="link"  onclick="show_table(this);">
-		<img src="{{MEDIA_URL}}img/close.gif"><b>{{departament.name}}</b></a>
+	<a href="javascript:" class="link" >
+		<img src="{{MEDIA_URL}}img/close.gif"  style="vertical-align: middle;" ><b  style="margin-left:9px;">{{departament.name}}</b></a>
 	</div>
 <div id="ul_departament_{{departament.id}}" name="departament_{{departament.id}}" class="tickets content">
 	{% pannel_ticket_table 'departament' departament.id %}
@@ -32,9 +56,11 @@
 {% for user in departament.get_users %}
 <div id="menu2" class="auroramenu">
 	<div class="name_object">
-		<a href="#" class="link" onclick="show_table(this);">
-			<img src="{{MEDIA_URL}}img/close.gif">
+		<a href="javascript:" class="link" >
+			<img style="vertical-align: middle;" src="{{MEDIA_URL}}img/close.gif">
+			<span style="margin-left:9px;">
 			{{user.username}}
+			</span>
 		</a>
 	</div>
 <div id="ul_user_{{user.id}}" name="user_{{user.id}}"  class="tickets content">
