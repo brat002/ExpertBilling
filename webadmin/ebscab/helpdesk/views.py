@@ -10,6 +10,7 @@ from helpdesk.forms import LoginForm, TicketForm
 from lib.decorators import render_to
 from billservice.models import SystemGroup, SystemUser
 from django.contrib.contenttypes.models import ContentType
+from django.utils import simplejson
 
 @render_to('helpdesk/manage_ticket.html')
 def manage_tickets(request):
@@ -21,20 +22,21 @@ def index_tickets(reuqest):
     system_group = SystemGroup.objects.all()
     return {"departaments":system_group}
 
+   
 def ajax_archived_tickets(request):
-    id_ticket = request.GET['id_ticket']
-    try:
-        ticket = Ticket.objects.get(id=id_ticket)
-    except Ticket.DoesNotExist:
-        raise Http404
-    is_archived = request.GET['is_archived']
-    if is_archived=="true":
-        ticket.archived = True
-    elif is_archived=="false":
-        ticket.archived = False
-    ticket.save()
-    print  ticket.archived
-    return HttpResponse(True, mimetype="text/plain")
+    if request.method=="POST":
+        objects = request.POST['objects']
+        objects = simplejson.loads(objects)
+        for object in objects:
+            print objects
+            try:
+                ticket = Ticket.objects.get(id=object['id'])
+            except Ticket.DoesNotExist:
+                raise Http404
+            is_archived = object['is_archived']
+            ticket.archived = is_archived
+            ticket.save()
+        return HttpResponse(True, mimetype="text/plain")
     
 def ajax_update_owner_ticket(request):
     id_ticket = request.GET.get('id',None)
@@ -72,7 +74,19 @@ def ajax_load_table_tickets(request):
             raise Http404
     return { "order_by":order_by,"order_by_reverse":order_by_reverse, "count":count, "object":object, 'object_name':object_name}
 
-
+def ajax_deleted_tickets(request):
+    """
+    Только для админа {ДОДЕЛАТЬ}
+    """
+    if request.method == "POST":
+        ids_tickets = request.POST['ids_tickets']
+        ids_tickets = simplejson.loads(ids_tickets)
+        tickets = Ticket.objects.filter(id__in=ids_tickets)
+    
+        for ticket in tickets:
+            ticket.delete()
+        return HttpResponse(True, mimetype="text/plain")
+    
 @render_to('helpdesk/login.html')
 def _login(request):
     form = LoginForm(request.POST)

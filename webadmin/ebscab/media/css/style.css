@@ -5,16 +5,33 @@
 	background-image: url(/media/img/bg2.gif);
 	background-repeat:repeat-x;
 	height:18px;
+	border-color:#a0a0a0;
+	border-width:1px;
+	border-style:solid;
+	border-bottom-style:none;
+	font-size:10px;
+	line-height:18px;
 }
 .name_object a.link{
 	text-decoration:none;
+	color:#000000;
+	vertical-align: middle;
+	
 	}
 
 .settings_table {
 	background-image: url(/media/img/bg4.gif);
 	background-repeat:repeat-x;
 	height:39px;
+	line-height:39px;
 	text-align:right;
+	border-left-color:#a0a0a0;
+	border-left-style:solid;
+	border-left-width:1px;
+	border-right-color:#a0a0a0;
+	border-right-style:solid;
+	border-right-width:1px;
+	width:99.5%;
 }
 .time_update{
 	margin-right:50px;
@@ -23,9 +40,36 @@ tr.title_table{
 	background-image: url(/media/img/bg_5.gif);
 	background-repeat:repeat-x;
 	height:17px;
-	font-size:12px;
+	font-size:10px;
 	font-weight:bold;
 }
 tr.title_table td{
 	height:17px;
+	border-style:none;
+	border-bottom:1px solid #a0a0a0;
+	border-top:1px solid #a0a0a0;
+	
+}
+tr.ticket_content {
+	height:110px;
+	border:solid;
+}
+
+tr.ticket_content td{
+	border-style:none;
+}
+
+tr.border_bottom td{
+	border-bottom-style:solid ;
+}
+
+.border_left {
+	border-left:1px solid
+}
+.border_right {
+	border-right:1px solid
+}
+.ticket_id{
+	text-decoration:none;
+	color:#000000;
 }
