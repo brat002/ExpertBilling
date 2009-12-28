@@ -1,26 +1,28 @@
 	<table id="table_{{object_name}}_{{object.id}}" cols=10 cellpadding=0 cellspacing=0 width=100% class="tickets">
+		<tbody>
 		<tr class="title_table">
-			<td class="id" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))" >№ <img src="{{media_url}}img/up_down.gif"></td>
-			<td class="status" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Статус <img src="{{media_url}}img/up_down.gif"></td>
-			<td class="account" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Пользователь <img src="{{media_url}}img/up_down.gif"></td>
-			<td class="subject" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Тема <img src="{{media_url}}img/up_down.gif"></td>
-			<td width="190px" >Скрытый комментарий </td>
-			<td class="assign_date" width="230px" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Дата(Открытия) назначения <img src="{{media_url}}img/up_down.gif"></td>
-			<td class="created" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Создан <img src="{{media_url}}img/up_down.gif"></td>
-			<td width="73px">В архив </td>
-			<td  width="73px">Удалить </td>
+			<td class="id" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))" >№ <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="status" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Статус <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="account" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Пользователь <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="subject" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Тема <img src="{{media_url}}img/up_down.gif"></td>
+			<td width="190px" style="border-left:1px solid #a0a0a0" >Скрытый комментарий </td>
+			<td class="assign_date" style="border-left:1px solid #a0a0a0" width="230px" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Дата(Открытия) назначения <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="created" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Создан <img src="{{media_url}}img/up_down.gif"></td>
+			<td width="73px" style="border-left:1px solid #a0a0a0">В архив </td>
+			<td  width="73px" style="border-left:1px solid #a0a0a0;border-right:1px solid #a0a0a0">Удалить </td>
 		</tr>
 		{% for ticket in tickets %}
-		<tr >
-			<td class="id"><a href="{{ ticket.get_edit_url }}">{{ticket.id}}</a></td>
-			<td class="status"><img src="{{media_url}}img/status_{{ticket.status}}.gif"></td>
-			<td class="account">{{ticket.account}}</td>
-			<td class="subject" style="color:{{ticket.get_status_color}}">{{ticket.subject}}</td>
-			<td>--</td>
-			<td class="assign_date">{{ ticket.assign_date|date:"d-m-Y" }}</td>
-			<td class="created">{{ ticket.created|date:"d-m-Y" }}</td>
-			<td width="73px"><input type='checkbox' onclick="archived_ticket(this)" {% if ticket.archived %}checked{% endif %} name="is_archive"/></td>
-			<td width="73px"><input type='checkbox'  name="is_deleted"/></td>
+		<tr style="background-color:{% cycle '#ffffff' '#ecf2fe'%}" class="ticket_content{% if forloop.last %} border_bottom{% endif %}">
+			<td class="id" style="border-left:1px solid #a0a0a0"><a href="{{ ticket.get_edit_url }}" class="ticket_id">{{ticket.id}}</a></td>
+			<td class="status" style="border-left:1px solid #a0a0a0"><img src="{{media_url}}img/status_{{ticket.status}}.png"></td>
+			<td class="account"  style="border-left:1px solid #a0a0a0">{{ticket.account}}</td>
+			<td class="subject" style="color:{{ticket.get_status_color}};  border-left:1px solid #a0a0a0">{{ticket.subject}}</td>
+			<td  style="border-left:1px solid #a0a0a0">--</td>
+			<td class="assign_date"  style="border-left:1px solid #a0a0a0">{{ ticket.assign_date|date:"d-m-Y" }}</td>
+			<td class="created" style="border-left:1px solid #a0a0a0">{{ ticket.created|date:"d-m-Y" }}</td>
+			<td class="archived " style="border-left:1px solid #a0a0a0" width="73px"><input type='checkbox' {% if ticket.archived %}checked{% endif %} name="is_archive"/></td>
+			<td class="deleted" style="border-left:1px solid #a0a0a0;border-right:1px solid #a0a0a0" width="73px"><input type='checkbox'  name="is_deleted"/></td>
 		</tr>
 		{% endfor %}
+		</tbody>
 	</table>
