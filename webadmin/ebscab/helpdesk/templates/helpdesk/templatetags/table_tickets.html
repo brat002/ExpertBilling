@@ -1,10 +1,10 @@
 	<table id="table_{{object_name}}_{{object.id}}" cols=10 cellpadding=0 cellspacing=0 width=100% class="tickets">
 		<tbody>
 		<tr class="title_table">
-			<td class="id" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))" >№ <img src="{{media_url}}img/up_down.gif"></td>
-			<td class="status" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Статус <img src="{{media_url}}img/up_down.gif"></td>
-			<td class="account" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Пользователь <img src="{{media_url}}img/up_down.gif"></td>
-			<td class="subject" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Тема <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="id" width="4%" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))" >№ <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="status" width="7%" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Статус <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="account" width="15%" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Пользователь <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="subject" width="15%" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Тема <img src="{{media_url}}img/up_down.gif"></td>
 			<td width="190px" style="border-left:1px solid #a0a0a0" >Скрытый комментарий </td>
 			<td class="assign_date" style="border-left:1px solid #a0a0a0" width="230px" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Дата(Открытия) назначения <img src="{{media_url}}img/up_down.gif"></td>
 			<td class="created" style="border-left:1px solid #a0a0a0" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Создан <img src="{{media_url}}img/up_down.gif"></td>
@@ -15,7 +15,7 @@
 		<tr style="background-color:{% cycle '#ffffff' '#ecf2fe'%}" class="ticket_content{% if forloop.last %} border_bottom{% endif %}">
 			<td class="id" style="border-left:1px solid #a0a0a0"><a href="{{ ticket.get_edit_url }}" class="ticket_id">{{ticket.id}}</a></td>
 			<td class="status" style="border-left:1px solid #a0a0a0"><img src="{{media_url}}img/status_{{ticket.status}}.png"></td>
-			<td class="account"  style="border-left:1px solid #a0a0a0">{{ticket.account}}</td>
+			<td class="account"  style="border-left:1px solid #a0a0a0; text-align:left; padding-left:10px;">{{ticket.account}}</td>
 			<td class="subject" style="color:{{ticket.get_status_color}};  border-left:1px solid #a0a0a0">{{ticket.subject}}</td>
 			<td  style="border-left:1px solid #a0a0a0">--</td>
 			<td class="assign_date"  style="border-left:1px solid #a0a0a0">{{ ticket.assign_date|date:"d-m-Y" }}</td>
