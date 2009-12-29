@@ -8,10 +8,21 @@ from copy import copy, deepcopy
 from datetime import datetime
 #("!LLLHHIIIIHHBBBBHHBBH")
 
+class PseudoFile(object):
+    
+    def __init__(self):
+        pass
+    def write(self, *args):
+        pass
+    def close(self):
+        pass
+    def flush(self):
+        pass
+        
 def runTests(tests, sock, addrport, output):
     global globalopts
     testCount = 0
-  
+    print addrport
     now  = datetime.now
     for test in tests:
         flowCount = 0
@@ -181,7 +192,10 @@ if __name__=='__main__':
     sock_.settimeout(10)
     host, port = sys.argv[2].split(':')
     addrport_ = (host, int(port))
-    output_ = open(sys.argv[3], 'wb')
+    if len(sys.argv) > 3:
+        output_ = open(sys.argv[3], 'wb')
+    else:
+        output_ = PseudoFile()
     runTests(tests_, sock_, addrport_, output_)
     sock_.close()
     output_.close()
