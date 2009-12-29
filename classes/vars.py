@@ -102,7 +102,7 @@ class NfVars(Vars):
                  'FLOW_MAIL_WARNING', 'FLOW_MAIL_SUBJECT', 'FLOW_MAIL_USE_TLS', \
                  'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', 'FLOW_MAIL_HOST_PASSWORD', \
                  'FLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM',\
-                 'FLOW_MAIL_WARNING_TEMPLATE')
+                 'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', 'FLOW_INTERVAL', 'FLOW_WHEN')
     def __init__(self):
         super(NfVars, self).__init__()
         self.name = 'nf'
@@ -144,6 +144,9 @@ class NfVars(Vars):
         self.FLOW_MAIL_EMAIL_TO   = 'admin@ebsadmin.com'
         self.FLOW_MAIL_EMAIL_FROM = 'info@provider.com'
         self.FLOW_MAIL_WARNING_TEMPLATE = ""
+        self.FLOW_PREFIX = 'netflow'
+        self.FLOW_WHEN = 'M'
+        self.FLOW_INTERVAL = 5
         self.types.update({'addr': ('HOST', 'PORT'), 'nfraddr': ('NFR_HOST', 'NFR_PORT', 'SOCK_TIMEOUT'),\
                            'cachedicts': ('CACHE_DICTS',), 'filepack': ('FILE_PACK',), 'checkclasses': ('CHECK_CLASSES',), 'prefix': ('PREFIX',), 'aggr':('AGGR_TIME', 'AGGR_NUM'),\
                            'savedir': ('SAVE_DIR',), 'readdir': ('READ_DIR',), 'dumpdir': ('DUMP_DIR',)})
@@ -183,7 +186,7 @@ class NfVars(Vars):
         flow_opts = ['%bWRITE_FLOW', 'FLOW_DIR', '%iFLOW_TIME', '%iFLOW_COUNT', 'FLOW_MAIL_WARNING', \
                      'FLOW_MAIL_SUBJECT', '%bFLOW_MAIL_USE_TLS', 'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', \
                      'FLOW_MAIL_HOST_PASSWORD', '%iFLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM', \
-                     'FLOW_MAIL_WARNING_TEMPLATE'] 
+                     'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', '%iFLOW_INTERVAL', 'FLOW_WHEN'] 
         self.get_opts(config, flow_name, flow_opts)
         
     def get_static(self, **kwargs):
@@ -202,7 +205,9 @@ class NfQueues(object):
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', 'nfqLock')"""
     __slots__ = ('nfFlowCache', 'dcaches','dcacheLocks', 'flowQueue','fqueueLock',\
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', \
-                 'nfqLock', 'packetIndex', 'packetIndexLock', 'getFlowPLZ', 'gotFlowKTX', 'flowFileList')
+                 'nfqLock', 'packetIndex', 'packetIndexLock', \
+                 'getFlowPLZ', 'gotFlowKTX', 'flowFileList',\
+                  'flowSynchroBox')
     def __init__(self, dcacheNum = 10):
         self.nfFlowCache = None
         self.dcaches = [{} for i in xrange(dcacheNum)]; self.dcacheLocks = [Lock() for i in xrange(dcacheNum)]
@@ -217,6 +222,7 @@ class NfQueues(object):
         self.getFlowPLZ = Event()
         self.gotFlowKTX = Event()
         self.flowFileList = []
+        self.flowSynchroBox = None
         
     
 

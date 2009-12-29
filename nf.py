@@ -21,7 +21,7 @@ import socket, select, struct, datetime, time
 
 import isdlogger
 import saver
-
+import IPy
 
 from threading import Thread, Lock, Event
 from daemonize import daemonize
@@ -344,10 +344,17 @@ def nfPacketHandle(data, addrport, flowCache):
         local = bool(acc_data_src and acc_data_dst)
         acc_acct_tf = (acc_data_src, acc_data_dst) if local else (acc_data_src or acc_data_dst,)
         #print repr(acc_acct_tf)
+            
         if acc_acct_tf[0]:            
             flow.nas_id = nas_id
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
             flow.padding = local
+            if vars.WRITE_FLOW:
+                flow.datetime = time.time()
+                ips = map(IPy.intToIp, flow.getAddrSlice)
+                for acc_flow in acc_acct_tf:
+                    flow.account_id = acc_flow[0]
+                    queues.flowSynchroBox.append_data(ips + flow.getBaseSlice())
             flow.account_id = acc_acct_tf
             flow.node_direction = None
             if vars.CHECK_CLASSES:
@@ -823,7 +830,8 @@ class RecoveryThread(Thread):
     
 
 class SynchroPacket(object):
-    __slots__ = ()
+    __slots__ = ('getDataPLZ', 'gotDataKTX', 'dataList', 'maxCount', 'maxTimeout',\
+                  'dataCount', 'dataTime', 'SYNCHRO')
     
     def __init__(self, count = 1, timeout = 5):
         self.getDataPLZ = Event()
@@ -860,20 +868,23 @@ class SynchroPacket(object):
             self.getDataPLZ.set()
             self.gotDataKTX.wait()
 
+def simpleCSV(csvList):
+    return ' ,'.join([repr(csvV) for csvV in csvList])
+
 class FlowLoggerThread(Thread):
-    def __init__(self, errorLogger, synchroBox, dieCondition, dataTransformer, dirL, filePrefix, whenL = 'M', intervalL = '5'):
+    def __init__(self, errorLogger, synchroBox, dieCondition, dataTransformer, fVars):
         Thread.__init__(self)
         #create notifier
         self.synchroBox = synchroBox
         self.dieCondition = dieCondition
         self.errorLogger = errorLogger
         self.dataTranformer = dataTransformer
+        self.fVars = fVars
         try:
             self.fileLogger = logging.getLogger('filelogger')
             self.fileLogger.setLevel(logging.INFO)
-            flHdlr = TimedRotatingFileHandler('/'.join((dirL, filePrefix)), when = whenL, interval = intervalL)
+            flHdlr = TimedRotatingFileHandler('/'.join((fVars.FLOW_DIR, fVars.FLOW_PREFIX)), when = fVars.FLOW_WHEN, interval = fVars.FLOW_INTERVAL)
             flHdlr.setFormatter("%(message)s")
-            flHdlr.f
             self.fileLogger.addHandler(flHdlr)
         except Exception, ex:
             self.errorLogger.error("Flowlogger creation exception: %s %s | %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -887,6 +898,9 @@ class FlowLoggerThread(Thread):
     def heuristics(self):
         pass
     
+    def statistics(self):
+        pass
+    
     def run(self):
         #base on events
         while True:
@@ -895,6 +909,7 @@ class FlowLoggerThread(Thread):
                     for handler in self.fileLogger.handlers:
                         handler.flush()
                         handler.close()
+                    self.errorLogger.info('Flowlogger terminated without errors.', ())
                 except Exception, ex:
                     self.errorLogger.error("Flowlogger close exception: %s %s | %s", (self.getName(), repr(ex), traceback.format_exc()))
                 break
@@ -904,10 +919,15 @@ class FlowLoggerThread(Thread):
                 for dataPiece in data:
                         dataString = self.dataTranformer(dataPiece)
                         self.fileLogger.log(2, dataString)
-                        
-            except:
-                #write exception            
-                pass
+                #heuristics
+                #statistics
+            except Exception, ex:
+                #write exception
+                self.errorLogger.error("Flowlogger write exception: %s %s | %s", (self.getName(), repr(ex), traceback.format_exc()))
+                #heuristics
+                if self.fVars.FLOW_MAIL_WARNING:
+                    self.notifyError(ex)
+                    
             
     
 def get_file_names():
@@ -994,7 +1014,18 @@ def graceful_recover():
     graceful_loader(['nfFlowCache',['flowQueue', 'dcaches'],'databaseQueue' ,'nfQueue'],
                     queues, vars.PREFIX, vars.SAVE_DIR)
     queues.databaseQueue.post_init('NF_SEND_FSD', vars.DUMP_DIR, vars.PREFIX, vars.FILE_PACK, vars.MAX_SENDBUF_LEN, queues.dbLock, logger)
-                
+ 
+def file_test(ddir, prefix=''):
+    try:
+        tfname = ''.join((ddir,'/',prefix, str(time.time()), '.dmp'))
+        dfile = open(tfname, 'wb')
+        dfile.write("testtesttesttesttest")
+        dfile.close()
+        os.remove(tfname)
+    except Exception, ex:
+        raise Exception("Dump directory '"+ddir+ 
+                        "' is not accesible/writable: errors were encountered upon"+\
+                        "executing test operations with filenames like '" +tfname+ "'!")
 def main ():        
     global flags, queues, cacheMaster, threads, cacheThr, caches
     if vars.RECOVER:
@@ -1020,6 +1051,11 @@ def main ():
     senderThread = SendPacketStream(queues.databaseQueue, queues.dbLock, vars.NFR_DELIMITER)
     senderThread.setName('SenderStream')
     threads.append(senderThread)
+    
+    if vars.WRITE_FLOW:
+        flowWriterThr = FlowLoggerThread(logger, queues.flowSynchroBox, suicideCondition, simpleCSV, vars)
+        flowWriterThr.setName('FlowWriter')
+        threads.append(flowWriterThr)
     #-----
     cacheThr = ServiceThread()
     suicideCondition[cacheThr.__class__.__name__] = False
@@ -1106,22 +1142,20 @@ if __name__=='__main__':
         queues = NfQueues(dcacheNum=vars.CACHE_DICTS)
         queues.databaseQueue.post_init('NF_SEND_FSD', vars.DUMP_DIR, vars.PREFIX, vars.FILE_PACK, vars.MAX_SENDBUF_LEN, queues.dbLock, logger)
         queues.nfFlowCache = FlowCache()
+        queues.flowSynchroBox = SynchroPacket(vars.FLOW_COUNT, vars.FLOW_TIME)
         logger.info("Config variables: %s", repr(vars))
         logger.lprint('Nf start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
         #write profiling info predicate
         flags.writeProf = logger.writeInfoP()
-
-        try:
-            tfname = ''.join((vars.DUMP_DIR,'/',vars.PREFIX, str(time.time()), '.dmp'))
-            dfile = open(tfname, 'wb')
-            dfile.write("testtesttesttesttest")
-            dfile.close()
-            os.remove(tfname)
-        except Exception, ex:
-            raise Exception("Dump directory '"+ vars.DUMP_DIR+ "' is not accesible/writable: errors were encountered upun executing test operations with filenames like '" +tfname+ "'!")
-    
+        file_test(vars.DUMP_DIR, vars.PREFIX)
+        if vars.WRITE_FLOW:
+            try:
+                os.mkdir(vars.FILE_DIR)
+            except: pass
+            file_test(vars.FLOW_DIR)
+            
         suicideCondition = {}    
         vars.FLOW_TYPES = {5 : (header5, flow5)}        
 

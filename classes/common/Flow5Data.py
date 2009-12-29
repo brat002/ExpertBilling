@@ -71,8 +71,13 @@ class Flow5Data(list):
         return result 
 
     def __getnewargs__(self):
-        return tuple(self) 
-
+        return tuple(self)
+    
+    def getBaseSlice(self):
+        return self.__getslice__(3,22)
+    
+    def getAddrSlice(self):
+        return self.__getslice__(0,3)
     src_addr = property(itemgetter(0), lambda self_, value_: setitem(self_, 0, value_))
     dst_addr = property(itemgetter(1), lambda self_, value_: setitem(self_, 1, value_))
     next_hop = property(itemgetter(2), lambda self_, value_: setitem(self_, 2, value_))
