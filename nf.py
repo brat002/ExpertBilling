@@ -889,6 +889,8 @@ class FlowLoggerThread(Thread):
             self.fileLogger = logging.getLogger('filelogger')
             self.fileLogger.setLevel(logging.DEBUG)
             flHdlr = TimedRotatingFileHandler('/'.join((fVars.FLOW_DIR, fVars.FLOW_PREFIX)), when = fVars.FLOW_WHEN, interval = fVars.FLOW_INTERVAL)
+            currentTime = int(time.time())
+            flHdlr.rolloverAt = currentTime - (currentTime % flHdlr.interval) + flHdlr.interval
             flHdlr.setFormatter(logging.Formatter("%(message)s"))
             self.fileLogger.addHandler(flHdlr)
         except Exception, ex:
