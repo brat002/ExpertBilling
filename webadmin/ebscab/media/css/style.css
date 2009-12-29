@@ -1,6 +1,7 @@
 .title_table td{
 	cursor:pointer;
 }
+
 .name_object{
 	background-image: url(/media/img/bg2.gif);
 	background-repeat:repeat-x;
@@ -12,11 +13,11 @@
 	font-size:10px;
 	line-height:18px;
 }
+
 .name_object a.link{
 	text-decoration:none;
 	color:#000000;
 	vertical-align: middle;
-	
 	}
 
 .settings_table {
@@ -57,18 +58,22 @@ tr.ticket_content {
 
 tr.ticket_content td{
 	border-style:none;
+	vertical-align:top;
+	padding-top:10px;
 }
 
 tr.border_bottom td{
-	border-bottom-style:solid ;
+	border-bottom-style:solid;
 }
 
 .border_left {
 	border-left:1px solid
 }
+
 .border_right {
 	border-right:1px solid
 }
+
 .ticket_id{
 	text-decoration:none;
 	color:#000000;
