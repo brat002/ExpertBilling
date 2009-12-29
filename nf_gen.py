@@ -31,7 +31,7 @@ def runTests(tests, sock, addrport, output):
         testByPair = tdct['by_pair']
         sleepTime  = tdct['sleep'] 
         totalOctets = tdct['octets']        
-        flowPrePack = [777L, 777L, tdct['next_hop'],0,0,0, 777, 0,0, 0, 0,0,0, tdct['protocol'],0,0,0,0,0,0]
+        flowPrePack = [777L, 777L, tdct['next_hop'],2,3,0, 777, 0,0, 0, 0,0,0, tdct['protocol'],0,0,0,0,0,0]
         headPrePack = [5, 777, 0,0,0,0,0,0,0]
         output.write('%s Running test #%s opts %s \n' % (now(), testCount, tdct))
         if testByPair:            

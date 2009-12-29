@@ -850,7 +850,7 @@ class SynchroPacket(object):
             self.getDataPLZ.set()
             
     def isDataEmpty(self):
-        return bool(self.dataList)
+        return not bool(self.dataList)
     
     def waitForData(self):
         self.gotDataKTX.clear()
@@ -874,7 +874,7 @@ class SynchroPacket(object):
             self.gotDataKTX.wait()
 
 def simpleCSV(csvList):
-    return ' ,'.join([repr(csvV) for csvV in csvList])
+    return ','.join([str(csvV) for csvV in csvList])
 
 class FlowLoggerThread(Thread):
     def __init__(self, errorLogger, synchroBox, dieCondition, dataTransformer, fVars):
@@ -887,9 +887,9 @@ class FlowLoggerThread(Thread):
         self.fVars = fVars
         try:
             self.fileLogger = logging.getLogger('filelogger')
-            self.fileLogger.setLevel(logging.INFO)
+            self.fileLogger.setLevel(logging.DEBUG)
             flHdlr = TimedRotatingFileHandler('/'.join((fVars.FLOW_DIR, fVars.FLOW_PREFIX)), when = fVars.FLOW_WHEN, interval = fVars.FLOW_INTERVAL)
-            flHdlr.setFormatter("%(message)s")
+            flHdlr.setFormatter(logging.Formatter("%(message)s"))
             self.fileLogger.addHandler(flHdlr)
         except Exception, ex:
             self.errorLogger.error("Flowlogger creation exception: %s %s | %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -922,10 +922,12 @@ class FlowLoggerThread(Thread):
             data = self.synchroBox.waitForData()
             try:
                 for dataPiece in data:
-                        dataString = self.dataTranformer(dataPiece)
-                        self.fileLogger.log(2, dataString)
+                    dataString = self.dataTranformer(dataPiece)
+                    self.fileLogger.log(logging.INFO, dataString)
                 #heuristics
                 #statistics
+                for handler in self.fileLogger.handlers:
+                    handler.flush()
             except Exception, ex:
                 #write exception
                 self.errorLogger.error("Flowlogger write exception: %s %s | %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -1130,6 +1132,7 @@ if __name__=='__main__':
     config.read("ebs_config.ini")
     
     try:
+        
         import psyco
         psyco.log()
         psyco.full(memory=100)
