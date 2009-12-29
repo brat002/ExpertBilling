@@ -351,10 +351,11 @@ def nfPacketHandle(data, addrport, flowCache):
             flow.padding = local
             if vars.WRITE_FLOW:
                 flow.datetime = time.time()
-                ips = map(IPy.intToIp, flow.getAddrSlice)
+                ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
                 for acc_flow in acc_acct_tf:
                     flow.account_id = acc_flow[0]
-                    queues.flowSynchroBox.append_data(ips + flow.getBaseSlice())
+                    queues.flowSynchroBox.appendData(ips + flow.getBaseSlice())
+                queues.flowSynchroBox.checkData()
             flow.account_id = acc_acct_tf
             flow.node_direction = None
             if vars.CHECK_CLASSES:
@@ -845,8 +846,11 @@ class SynchroPacket(object):
             
     def checkData(self):
         if (self.dataCount >= self.maxCount or (time.clock() - self.dataTime) > self.maxTimeout)\
-           and self.gotDataKTX.isSet() == False:
+          and not self.isDataEmpty() and self.gotDataKTX.isSet() == False:
             self.getDataPLZ.set()
+            
+    def isDataEmpty(self):
+        return bool(self.dataList)
     
     def waitForData(self):
         self.gotDataKTX.clear()
@@ -859,6 +863,7 @@ class SynchroPacket(object):
         self.getDataPLZ.clear()
         self.gotDataKTX.set()
         #sys.setcheckinterval(1000)
+        return data
         
         
     def appendData(self, data):
