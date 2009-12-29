@@ -28,11 +28,10 @@ def ajax_archived_tickets(request):
         objects = request.POST['objects']
         objects = simplejson.loads(objects)
         for object in objects:
-            print objects
             try:
                 ticket = Ticket.objects.get(id=object['id'])
             except Ticket.DoesNotExist:
-                raise Http404
+                continue
             is_archived = object['is_archived']
             ticket.archived = is_archived
             ticket.save()
@@ -81,10 +80,7 @@ def ajax_deleted_tickets(request):
     if request.method == "POST":
         ids_tickets = request.POST['ids_tickets']
         ids_tickets = simplejson.loads(ids_tickets)
-        tickets = Ticket.objects.filter(id__in=ids_tickets)
-    
-        for ticket in tickets:
-            ticket.delete()
+        tickets = Ticket.objects.filter(id__in=ids_tickets).delete()
         return HttpResponse(True, mimetype="text/plain")
     
 @render_to('helpdesk/login.html')

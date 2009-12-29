@@ -32,7 +32,7 @@ function show_tickets(sender, div_content)
 	data['count_in_page']=val;
 	data['order_by_reverse']=false;
 	load_data(div_content,data['order_by'],data['order_by_reverse'], val);
-}
+};
 
 function sorted(sender, table_tickets){
 	sender = jQuery(sender);
@@ -52,7 +52,7 @@ function sorted(sender, table_tickets){
 		data['order_by_reverse'] = true;
 	};
 	load_data(table_tickets,data['order_by'],data['order_by_reverse'], data['count_in_page'] );
-}
+};
 
 function load_data(sender, order_by,order_by_reverse, count)
 {			
@@ -89,7 +89,7 @@ function load_data(sender, order_by,order_by_reverse, count)
 											}
 									})
 								  }});
-}
+};
 function show_table(sender, is_show)
 {
 	if (is_show){
@@ -120,8 +120,7 @@ function update_table(sender){
 	sender.everyTime(seconds+"s",name,function(){
 				load_data(sender, data['order_by'], data['order_by_reverse'], data['count_in_page']);
 			},1)
-}
-
+};
 
 function deleted_tickets(table_id){
 	table_id = jQuery(table_id);
