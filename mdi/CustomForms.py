@@ -1376,9 +1376,9 @@ class TemplatesWindow(QtGui.QMainWindow):
             self.close()
             
 class SuspendedPeriodForm(QtGui.QDialog):
-    def __init__(self):
+    def __init__(self, model = None):
         super(SuspendedPeriodForm, self).__init__()
-        
+        self.model = model
         self.setObjectName("SuspendedPeriodForm")
         self.resize(480, 108)
         self.start_date = None
@@ -1422,12 +1422,18 @@ class SuspendedPeriodForm(QtGui.QDialog):
         self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
         QtCore.QMetaObject.connectSlotsByName(self)
+        self.fixtures()
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Выберите период", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Выберите период, в течении которого не должны списываться периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
         self.label_start_date.setText(QtGui.QApplication.translate("Dialog", "Начало", None, QtGui.QApplication.UnicodeUTF8))
         self.label_end_date.setText(QtGui.QApplication.translate("Dialog", "Окончание", None, QtGui.QApplication.UnicodeUTF8))
+
+    def fixtures(self):
+        if self.model:
+            self.dateTimeEdit_start_date.setDateTime(self.model.start_date)
+            self.dateTimeEdit_end_date.setDateTime(self.model.end_date)
         
     def accept(self):
         self.start_date = self.dateTimeEdit_start_date.dateTime().toPyDateTime()

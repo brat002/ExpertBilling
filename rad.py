@@ -285,6 +285,8 @@ def get_accesstype(packetobject):
             return 'HotSpot'
         elif nas_port_type == 'Ethernet' and not packetobject.has_key('Service-Type'):
             return 'DHCP'
+        elif nas_port_type == 'Async' and packetobject.get('Service-Type', [''])[0]=='Framed-User':
+            return 'lISG'
         else:
             logger.warning('Nas access type warning: unknown type: %s', nas_port_type)
     except Exception, ex:
@@ -361,6 +363,13 @@ class AsyncAuthServ(AsyncUDPServer):
                 authobject, packetfromcore = coreconnect.handle()
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
                 returndata, replypacket=authobject.ReturnPacket(packetfromcore)
+            elif access_type in ['lISG'] :
+                coreconnect = HandlelISGAuth(packetobject=packetobject, access_type = access_type)
+                coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
+                authobject, packetfromcore = coreconnect.handle()
+                if packetfromcore is None: logger.info("Unknown NAS or Account %s", str(nas_ip)); return
+                returndata, replypacket=authobject.ReturnPacket(packetfromcore)                
+                
             else:
                 #-----
                 coreconnect = HandleSNA(packetobject)
@@ -531,6 +540,16 @@ class AuthHandler(Thread):
                         logger.info("Unknown NAS %s", str(nas_ip))
                         continue
                     returndata, replypacket=authobject.ReturnPacket(packetfromcore)
+                    
+                elif access_type in ['lISG'] :
+                    coreconnect = HandlelISGAuth(packetobject=packetobject, access_type=access_type)
+                    coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
+                    authobject, packetfromcore = coreconnect.handle()
+                    if packetfromcore is None: 
+                        logger.info("Unknown NAS or Account %s", str(nas_ip))
+                        continue
+                    returndata, replypacket=authobject.ReturnPacket(packetfromcore)                    
+                    
                 else:
                     #-----
                     coreconnect = HandleSNA(packetobject)
@@ -869,6 +888,94 @@ class HandleSAuth(HandleSBase):
             return self.auth_NA(authobject)
 
 
+class HandlelISGAuth(HandleSAuth):
+    
+    def handle(self):
+
+        nas = self.caches.nas_cache.by_ip.get(self.nasip) 
+        if not nas: return '',None
+        if 0: assert isinstance(nas, NasData)
+        self.nas_type = nas.type
+        self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.DICT)
+
+        #station_id = self.packetobject.get('Calling-Station-Id', [''])[0]
+        station_id = str(self.packetobject['User-Name'][0])
+        #print station_id
+        #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
+        #print self.caches.account_cache.by_ipn_ip_nas
+        acc = self.caches.account_cache.by_ipn_ip_nas.get((station_id, nas.id))
+        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges)
+
+        if acc is None:
+            logger.warning("Unknown IPN IP %s", station_id)
+            return self.auth_NA(authobject)  
+
+        if 0: assert isinstance(acc, AccountData)
+
+        logger.debug("Account data : %s", repr(acc))
+
+        process, ok, left = authobject._HandlePacket()
+        if not process:
+            logger.warning(left, ())
+            logger.debug("Auth object : %s" , authobject)
+            #self.cur.close()
+            if ok:
+                return authobject, self.replypacket
+            else:
+                return self.auth_NA(authobject)
+
+
+        process, ok, left = authobject._ProcessPacket()
+        if not process:
+            logger.warning(left, ())
+            logger.debug("Auth object : %s" , authobject)
+            if ok:
+                return authobject, self.replypacket
+            else:
+                return self.auth_NA(authobject)
+
+        check_auth, left = authobject.check_auth()
+        logger.debug("Auth object : %s" , authobject)
+        if not check_auth:
+            logger.warning(left, ())
+            return self.auth_NA(authobject) 
+
+        #print common_vpn,access_type,self.access_type
+        if (acc.access_type is None) or (acc.access_type != self.access_type):
+            logger.warning("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
+            return self.auth_NA(authobject)
+
+        acstatus = (((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
+                    and \
+                    (acc.allow_vpn_block or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status == 1)))
+        #acstatus = True
+        if not acstatus:
+            logger.warning("Unallowed account status for user %s: account_status is false", user_name)
+            return self.auth_NA(authobject)      
+
+     
+
+        #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
+        if vars.IGNORE_NAS_FOR_VPN is False and int(acc.nas_id)!=int(nas.id):
+            logger.warning("Unallowed NAS for user %s", user_name)
+            return self.auth_NA(authobject) 
+
+        allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
+
+        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tarif_active))
+        if allow_dial and acc.tarif_active:
+            authobject.set_code(2)
+            self.replypacket.username = '' #Нельзя юникод
+            self.replypacket.password = '' #Нельзя юникод
+
+            #account_speed_limit_cache
+            self.create_speed(nas, acc.tarif_id, acc.account_id, speed=acc.vpn_speed)
+            self.add_values(acc.tarif_id)
+            #print "Setting Speed For User" , self.speed
+            return authobject, self.replypacket
+        else:
+            return self.auth_NA(authobject)
+             
 #HotSpot_class
 #auth_class
 class HandleHotSpotAuth(HandleSBase):
@@ -1152,8 +1259,11 @@ class HandleSAcct(HandleSBase):
         self.replypacket.secret=str(nas.secret)        
         #if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
         self.userName = str(self.packetobject['User-Name'][0])
-
-        acc = self.caches.account_cache.by_username.get(self.userName)
+        
+        if self.access_type=='lISG':
+            acc = self.caches.account_cache.by_ipn_ip_nas.get((self.userName, nas.id))
+        else:
+            acc = self.caches.account_cache.by_username.get(self.userName)
         if acc is None:
             self.cur.connection.commit()
             #self.cur.close()

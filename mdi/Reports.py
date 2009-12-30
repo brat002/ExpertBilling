@@ -258,7 +258,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 sum+=item.summ*(-1)
                 if item.promise:
                     try:
-                        self.addrow(item.end_promise.strftime(self.strftimeFormat), i, 10, promise = item.promise)
+                        self.addrow(item.end_promise.strftime(self.strftimeFormat), i, 11, promise = item.promise)
                     except Exception, e:
                         print e
                 i+=1
@@ -269,7 +269,7 @@ class TransactionsReportEbs(ebsTableWindow):
             s = {}
             for x in services:
                 s[x.id] = x.name
- 
+
             tariffs = self.connection.get_models("billservice_tariff")
             t = {}
             for x in tariffs:

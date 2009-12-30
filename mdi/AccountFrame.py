@@ -1622,7 +1622,7 @@ class TarifFrame(QtGui.QDialog):
 
 
 
-        access_types = ["PPTP", "PPPOE", "IPN", "HotSpot"]
+        access_types = ["PPTP", "PPPOE", "IPN", "HotSpot", 'lISG']
         for access_type in access_types:
             self.access_type_edit.addItem(access_type)
         
@@ -1940,6 +1940,9 @@ class TarifFrame(QtGui.QDialog):
                 self.access_type_edit.setDisabled(True)
                 self.ipn_for_vpn.setDisabled(True)
                 self.ipn_for_vpn.setChecked(False)
+            elif access_parameters.access_type == 'lISG':
+                self.access_type_edit.setDisabled(True)
+                self.ipn_for_vpn.setDisabled(False)
             else:
                 self.access_type_edit.removeItem(3)
                 self.access_type_edit.removeItem(2)
@@ -2911,6 +2914,9 @@ class AccountWindow(QtGui.QMainWindow):
         self.connect(self.checkBox_assign_ipn_ip_from_dhcp, QtCore.SIGNAL("stateChanged(int)"), self.dhcpActions)
         self.connect(self.tableWidget_accounttarif, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_accounttarif)
         self.connect(self.tableWidget_addonservice, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editAddonService)
+        self.connect(self.tableWidget_suspended, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_suspendedperiod)
+        
+        
         self.connect(self.tableWidget, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.editAccountInfo)
         
         self.connect(self.actionAdd, QtCore.SIGNAL("triggered()"), self.add_action)
@@ -3647,7 +3653,7 @@ class AccountWindow(QtGui.QMainWindow):
 
             if self.groupBox_urdata.isChecked():
                 if unicode(self.lineEdit_organization.text())=="" or unicode(self.lineEdit_bank.text())=="":
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указаны реквизиты юридического лица."))
+                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указаны реквизиты юридического лица(название организации, банк)."))
                     return
                 if self.organization:
                     org = self.organization
@@ -3658,7 +3664,7 @@ class AccountWindow(QtGui.QMainWindow):
                 
                 bank.bank = unicode(self.lineEdit_bank.text())
                 bank.bankcode = unicode(self.lineEdit_bank_code.text())
-                bank.rs = self.lineEdit_rs.text()
+                bank.rs = unicode(self.lineEdit_rs.text())
                 bank.currency = ''
                 bank.id = self.connection.save(bank, "billservice_bankdata")
                 self.bank = bank
@@ -3975,6 +3981,20 @@ class AccountWindow(QtGui.QMainWindow):
             self.connection.commit()
             self.suspendedPeriodRefresh()
 
+    def edit_suspendedperiod(self):
+        
+        i=self.getSelectedId(self.tableWidget_suspended)
+        model = self.connection.get_model(i, "billservice_suspendedperiod")
+        self.connection.commit()
+        child=SuspendedPeriodForm(model)
+
+        if child.exec_()==1:
+            model.start_date = child.start_date
+            model.end_date = child.end_date
+            self.connection.save(model, "billservice_suspendedperiod")
+            self.connection.commit()
+            self.suspendedPeriodRefresh()
+            
     def del_suspendedperiod(self):
         i=self.getSelectedId(self.tableWidget_suspended)
         ###
@@ -4001,7 +4021,19 @@ class AccountWindow(QtGui.QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:
             self.close()
+        if event.key() in (QtCore.Qt.Key_Return,QtCore.Qt.Key_Enter) and self.tableWidget.hasFocus():
+            i=self.tableWidget.currentRow()
+            #print i
+            self.tableWidget.setCurrentCell(i+1,1)
+            self.tableWidget.editItem(self.tableWidget.currentItem())
 
+#===============================================================================
+#    def keyPressEvent(self, event):
+#        if event.key() == QtCore.Qt.Key_Escape:
+#            self.close()
+#        if event.key() == QtCore.Qt.Key_Return and self.lineEdit_search_text.hasFocus()==True:
+#            self.tableFind()
+#===============================================================================
 
 class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def __init__(self, connection, parent, selected_account=None):
