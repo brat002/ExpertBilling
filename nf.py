@@ -18,6 +18,12 @@ import threading
 import traceback
 import ConfigParser
 import socket, select, struct, datetime, time
+import string, glob, types
+
+try:
+    import codecs
+except ImportError:
+    codecs = None
 
 import isdlogger
 import saver
@@ -30,7 +36,7 @@ from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
 from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
 import logging
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler, BaseRotatingHandler, _MIDNIGHT
 
 import twisted.internet
 #import twisted.protocols.ftp
@@ -830,6 +836,123 @@ class RecoveryThread(Thread):
         get_file_names()
     
 
+class MyTimedRotatingFileHandler(BaseRotatingHandler):
+    """
+    Handler for logging to a file, rotating the log file at certain timed
+    intervals.
+
+    If backupCount is > 0, when rollover is done, no more than backupCount
+    files are kept - the oldest ones are deleted.
+    """
+    def __init__(self, filename, when='h', interval=1, backupCount=0, encoding=None):
+        self.when = string.upper(when)
+        self.backupCount = backupCount
+        
+        currentTime = int(time.time())
+        if self.when == 'S':
+            self.interval = 1 # one second
+            self.suffix = "%Y-%m-%d_%H-%M-%S"
+        elif self.when == 'M':
+            self.interval = 60 # one minute
+            self.suffix = "%Y-%m-%d_%H-%M"
+        elif self.when == 'H':
+            self.interval = 60 * 60 # one hour
+            self.suffix = "%Y-%m-%d_%H"
+        elif self.when == 'D' or self.when == 'MIDNIGHT':
+            self.interval = 60 * 60 * 24 # one day
+            self.suffix = "%Y-%m-%d"
+        elif self.when.startswith('W'):
+            self.interval = 60 * 60 * 24 * 7 # one week
+            if len(self.when) != 2:
+                raise ValueError("You must specify a day for weekly rollover from 0 to 6 (0 is Monday): %s" % self.when)
+            if self.when[1] < '0' or self.when[1] > '6':
+                raise ValueError("Invalid day specified for weekly rollover: %s" % self.when)
+            self.dayOfWeek = int(self.when[1])
+            self.suffix = "%Y-%m-%d"
+        else:
+            raise ValueError("Invalid rollover interval specified: %s" % self.when)
+
+        self.interval = self.interval * interval # multiply by units requested
+        self.rolloverAt = currentTime - (currentTime % self.interval) + self.interval
+        if self.when == 'MIDNIGHT' or self.when.startswith('W'):
+            # This could be done with less code, but I wanted it to be clear
+            t = time.localtime(currentTime)
+            currentHour = t[3]
+            currentMinute = t[4]
+            currentSecond = t[5]
+            # r is the number of seconds left between now and midnight
+            r = _MIDNIGHT - ((currentHour * 60 + currentMinute) * 60 +
+                    currentSecond)
+            self.rolloverAt = currentTime + r
+            if when.startswith('W'):
+                day = t[6] # 0 is Monday
+                if day != self.dayOfWeek:
+                    if day < self.dayOfWeek:
+                        daysToWait = self.dayOfWeek - day
+                    else:
+                        daysToWait = 6 - day + self.dayOfWeek + 1
+                    self.rolloverAt = self.rolloverAt + (daysToWait * (60 * 60 * 24))
+        t = self.rolloverAt - self.interval
+        timeTuple = time.localtime(t)
+        open_fname = filename + "." + time.strftime(self.suffix, timeTuple)         
+        BaseRotatingHandler.__init__(self, open_fname, 'a', encoding)
+        self.baseFilename = os.path.abspath(filename)
+        
+
+
+
+        #print "Will rollover at %d, %d seconds from now" % (self.rolloverAt, self.rolloverAt - currentTime)
+
+    def shouldRollover(self, record):
+        """
+        Determine if rollover should occur
+
+        record is not used, as we are just comparing times, but it is needed so
+        the method siguratures are the same
+        """
+        t = int(time.time())
+        if t >= self.rolloverAt:
+            return 1
+        #print "No need to rollover: %d, %d" % (t, self.rolloverAt)
+        return 0
+
+    def doRollover(self):
+        """
+        do a rollover; in this case, a date/time stamp is appended to the filename
+        when the rollover happens.  However, you want the file to be named for the
+        start of the interval, not the current time.  If there is a backup count,
+        then we have to get a list of matching filenames, sort them and remove
+        the one with the oldest suffix.
+        """
+        self.stream.close()
+        # get the time that this sequence started at and make it a TimeTuple
+        '''
+        t = self.rolloverAt - self.interval
+        timeTuple = time.localtime(t)
+        dfn = self.baseFilename + "." + time.strftime(self.suffix, timeTuple)
+        
+        if os.path.exists(dfn):
+            os.remove(dfn)
+        os.rename(self.baseFilename, dfn)
+        '''
+        t = self.rolloverAt
+        timeTuple = time.localtime(t)
+        dfn = self.baseFilename + "." + time.strftime(self.suffix, timeTuple)
+        if self.backupCount > 0:
+            # find the oldest log file and delete it
+            s = glob.glob(self.baseFilename + ".20*")
+            if len(s) > self.backupCount:
+                s.sort()
+                os.remove(s[0])
+        #print "%s -> %s" % (self.baseFilename, dfn)
+        if self.encoding:
+            self.stream = codecs.open(dfn, 'a', self.encoding)
+        else:
+            self.stream = open(dfn, 'a')
+        self.rolloverAt = self.rolloverAt + self.interval
+
+
+
 class SynchroPacket(object):
     __slots__ = ('getDataPLZ', 'gotDataKTX', 'dataList', 'maxCount', 'maxTimeout',\
                   'dataCount', 'dataTime', 'SYNCHRO')
@@ -877,7 +1000,7 @@ def simpleCSV(csvList):
     return ','.join([str(csvV) for csvV in csvList])
 
 class FlowLoggerThread(Thread):
-    def __init__(self, errorLogger, synchroBox, dieCondition, dataTransformer, fVars):
+    def __init__(self, errorLogger, synchroBox, dieCondition, dataTransformer, fHandler, fVars):
         Thread.__init__(self)
         #create notifier
         self.synchroBox = synchroBox
@@ -888,9 +1011,10 @@ class FlowLoggerThread(Thread):
         try:
             self.fileLogger = logging.getLogger('filelogger')
             self.fileLogger.setLevel(logging.DEBUG)
-            flHdlr = TimedRotatingFileHandler('/'.join((fVars.FLOW_DIR, fVars.FLOW_PREFIX)), when = fVars.FLOW_WHEN, interval = fVars.FLOW_INTERVAL)
-            currentTime = int(time.time())
-            flHdlr.rolloverAt = currentTime - (currentTime % flHdlr.interval) + flHdlr.interval
+            #flHdlr = TimedRotatingFileHandler('/'.join((fVars.FLOW_DIR, fVars.FLOW_PREFIX)), when = fVars.FLOW_WHEN, interval = fVars.FLOW_INTERVAL)
+            #currentTime = int(time.time())
+            #flHdlr.rolloverAt = currentTime - (currentTime % flHdlr.interval) + flHdlr.interval
+            flHdlr = fHandler('/'.join((fVars.FLOW_DIR, fVars.FLOW_PREFIX)), when = fVars.FLOW_WHEN, interval = fVars.FLOW_INTERVAL)
             flHdlr.setFormatter(logging.Formatter("%(message)s"))
             self.fileLogger.addHandler(flHdlr)
         except Exception, ex:
@@ -1062,7 +1186,7 @@ def main ():
     threads.append(senderThread)
     
     if vars.WRITE_FLOW:
-        flowWriterThr = FlowLoggerThread(logger, queues.flowSynchroBox, suicideCondition, simpleCSV, vars)
+        flowWriterThr = FlowLoggerThread(logger, queues.flowSynchroBox, suicideCondition, simpleCSV, MyTimedRotatingFileHandler, vars)
         flowWriterThr.setName('FlowWriter')
         threads.append(flowWriterThr)
     #-----
