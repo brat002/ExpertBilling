@@ -117,6 +117,8 @@ class Auth:
     def _DetectTypeAuth(self):
         if self.packet.has_key('User-Password') and self.access_type!='DHCP':
             return 'PAP'
+        elif self.packet.has_key('User-Password') and self.access_type=='lISG':
+            return 'lISG'
         elif self.packet.has_key('CHAP-Password') and self.access_type!='DHCP':
             return 'CHAP'
         elif self.packet.has_key('MS-CHAP-Challenge') and self.access_type!='DHCP':
@@ -230,7 +232,7 @@ class Auth:
         логина и пароля.
         To Do: Если ядро ответило: доступ запретить-пропускаем.
         """
-        if self.access_type=='DHCP':
+        if self.access_type=='DHCP' or self.access_type=='lISG':
             return True, ''
         if code not in (packet.AccessReject, packet.AccessChallenge):
             if self.typeauth=='PAP':
