@@ -2501,7 +2501,7 @@ $BODY$
   COST 100;
 ALTER FUNCTION periodicaltr_fn(integer, integer, integer, character varying, numeric, timestamp without time zone, integer) OWNER TO postgres;
 
-ALTER TABLE billservice_traffictransmitnodes ADD COLUMN edge_value double precision DEFAULT 0;
+ALTER TABLE billservice_traffictransmitnodes ADD COLUMN edge_value integer DEFAULT 0;
 
 CREATE TABLE billservice_log
 (
@@ -2585,6 +2585,40 @@ CREATE TYPE group_nodes AS (
 
 
 -- 11.12.2009 17:50
+
+
+CREATE TABLE billservice_systemgroup
+(
+  id serial NOT NULL,
+  "name" character varying(255) NOT NULL,
+  CONSTRAINT billservice_systemgroup_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+
+CREATE TABLE billservice_systemuser_group
+(
+  id serial NOT NULL,
+  systemuser_id integer NOT NULL,
+  systemgroup_id integer NOT NULL,
+  CONSTRAINT billservice_systemuser_group_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_systemuser_group_systemgroup_id_fkey FOREIGN KEY (systemgroup_id)
+      REFERENCES billservice_systemgroup (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_systemuser_group_systemuser_id_fkey FOREIGN KEY (systemuser_id)
+      REFERENCES billservice_systemuser (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_systemuser_group_systemuser_id_key UNIQUE (systemuser_id, systemgroup_id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE billservice_systemuser_group OWNER TO ebs;
+
+
+ALTER TABLE billservice_systemgroup OWNER TO ebs;
+
 
 ALTER TABLE billservice_tariff ADD COLUMN systemgroup_id integer;
 ALTER TABLE billservice_tariff ALTER COLUMN systemgroup_id SET STORAGE PLAIN;
