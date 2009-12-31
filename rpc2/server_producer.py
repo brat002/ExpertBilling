@@ -5,6 +5,8 @@ from twisted.protocols.basic import implements, interfaces, defer, Int32StringRe
 from twisted.internet.protocol import Factory
 from collections import deque
 import time, traceback, datetime
+import socket
+
 logger = None
 
 def install_logger(lgr):
@@ -83,6 +85,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
     send_lock  = None
     producer_started = False
     SINGLE_USER = False
+    
     def __init__(self, build_producer):
         #super(TCPSender, self).__init__()
         self.build_producer = build_producer
@@ -90,6 +93,14 @@ class TCP_IntStringReciever(Int32StringReceiver):
     def connectionMade(self):
         logger.info("SERVER: connectionMade: host: %s | peer: %s", (self.transport.getHost(), self.transport.getPeer()))
         self.peer__ = self.transport.getPeer()
+        try:
+            sock = self.transport.getHandle()
+            sock.setsockopt ( socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1 )
+            sock.setsockopt ( socket.SOL_TCP, socket.TCP_KEEPIDLE, 600 )
+            sock.setsockopt ( socket.SOL_TCP, socket.TCP_KEEPCNT, 20 )
+            sock.setsockopt ( socket.SOL_TCP, socket.TCP_KEEPINTVL, 60 )
+        except Exception, ex:
+            logger.warning("SERVER: socket options were not set due to exception: %s | %s", (repr(ex), traceback.format_exc()))
         self.producer = self.build_producer(self.peer__)
         self.protocol_ = self.producer.protocol
         self.send_queue = self.producer.send_queue
