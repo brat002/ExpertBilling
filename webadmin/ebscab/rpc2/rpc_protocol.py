@@ -5,7 +5,7 @@ from functools import partial
 import time
 import marshal, cPickle, zlib, struct, random, traceback
 from twisted.protocols.basic import implements, interfaces
-#from client_networking import TCPException
+from client_networking import TCPException, TimeoutError
 BLOCK_SIZE = 8
 CHALLENGE_LEN = 16
 KEY_LEN = 16
@@ -99,6 +99,9 @@ class Object(object):
 
     def __call__(self):
         return self.id
+    
+    def __repr__(self):
+        return unicode(self.__dict__)
 
     def hasattr(self, attr):
         if attr in self.__dict__:
