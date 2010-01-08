@@ -2200,7 +2200,12 @@ class TarifFrame(QtGui.QDialog):
                     self.connection.save(periodical_service, "billservice_periodicalservice")    
                       
             elif self.periodical_services_checkbox.checkState()==0:
-                    self.connection.iddelete(model.id, "billservice_periodicalservice") 
+                #!!!DAMN ERROR
+                #self.connection.iddelete(model.id, "billservice_periodicalservice")
+                for i in xrange(0, self.periodical_tableWidget.rowCount()):
+                    #print 2
+                    id = self.getIdFromtable(self.periodical_tableWidget, i)
+                    self.connection.iddelete(id, "billservice_periodicalservice")
                 
 
             #Лимиты
@@ -2256,7 +2261,6 @@ class TarifFrame(QtGui.QDialog):
             #Подключаемые услуги
             if self.tableWidget_addonservices.rowCount()>0 and self.checkBox_addon_services.checkState()==2:
                 for i in xrange(0, self.tableWidget_addonservices.rowCount()):
-                    #print 2
                     id = self.getIdFromtable(self.tableWidget_addonservices, i)
                     
                     if self.tableWidget_addonservices.item(i, 1)==None and (self.tableWidget_addonservices.item(i, 3)!=None and self.tableWidget_addonservices.item(i, 2) in [None, 0]):
@@ -2284,7 +2288,11 @@ class TarifFrame(QtGui.QDialog):
                     self.connection.save(addon_service, "billservice_addonservicetarif")    
                       
             elif self.periodical_services_checkbox.checkState()==0:
-                    self.connection.iddelete(model.id, "billservice_addonservicetarif") 
+                #!!!DAMN ERROR!
+                #self.connection.iddelete(model.id, "billservice_addonservicetarif")
+                for i in xrange(0, self.tableWidget_addonservices.rowCount()):
+                    id = self.getIdFromtable(self.tableWidget_addonservices, i)
+                    self.connection.iddelete(id, "billservice_addonservicetarif")
                     
                                 
             #Доступ по трафику 
