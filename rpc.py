@@ -460,12 +460,12 @@ class RPCServer(object):
     
     
     def iddelete(self, id, table, cur=None, connection=None):
-        sql = u"DELETE FROM %s where id=%d" % (table, id)
+        sql = u"DELETE FROM %s where id=%d;" % (table, id)
         #print sql
         cur.execute(sql)
-        log_string = u"""Пользователь %s удалил id %s из таблицы %s""" % (vars.USER_ID[0], id, table)
+        log_string = u"""Пользователь %s удалил id %s из таблицы %s;""" % (vars.USER_ID[0], id, table)
         
-        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (vars.USER_ID[1],log_string,))
+        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now());""", (vars.USER_ID[1],log_string,))
         del table
         del id
         #connection.commit()

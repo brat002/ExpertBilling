@@ -95,5 +95,5 @@ class Object(object):
         return self.id
     
     def __repr__(self):
-        return self.__dict__
+        return repr(self.__dict__)
     
