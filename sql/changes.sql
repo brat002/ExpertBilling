@@ -2653,3 +2653,8 @@ END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
+  
+  
+--06.01.2010 18:08
+ALTER TABLE billservice_account
+   ADD COLUMN contract text DEFAULT '';
