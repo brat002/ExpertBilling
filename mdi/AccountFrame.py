@@ -2506,7 +2506,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.label_agreement_num.setObjectName("label_agreement_num")
         self.gridLayout_4.addWidget(self.label_agreement_num, 1, 0, 1, 1)
         self.lineEdit_agreement_num = QtGui.QLineEdit(self.groupBox_agreement)
-        self.lineEdit_agreement_num.setEnabled(False)
+        self.lineEdit_agreement_num.setEnabled(True)
         self.lineEdit_agreement_num.setMinimumSize(QtCore.QSize(0, 20))
         self.lineEdit_agreement_num.setObjectName("lineEdit_agreement_num")
         self.gridLayout_4.addWidget(self.lineEdit_agreement_num, 1, 2, 1, 1)
@@ -2901,11 +2901,6 @@ class AccountWindow(QtGui.QMainWindow):
         self.toolBar.addAction(self.actionSave)
         self.toolBar.addAction(self.actionAdd)
         self.toolBar.addAction(self.actionDel)
-        #self.label_name.setBuddy(self.lineEdit_name)
-        #self.label_balance.setBuddy(self.lineEdit_balance)
-        ##self.label_credit.setBuddy(self.lineEdit_credit)
-        #self.label_ipn_ip_address.setBuddy(self.lineEdit_ipn_ip_address)
-        #self.label_ipn_mac_address.setBuddy(self.lineEdit_ipn_mac_address)
 
         self.retranslateUi()
         HeaderUtil.nullifySaved(self.tableWidget.objectName())
@@ -2954,15 +2949,6 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_agreement.setTitle(QtGui.QApplication.translate("MainWindow", "Договор", None, QtGui.QApplication.UnicodeUTF8))
         self.label_agreement_date.setText(QtGui.QApplication.translate("MainWindow", "Дата подключения", None, QtGui.QApplication.UnicodeUTF8))
         self.label_agreement_num.setText(QtGui.QApplication.translate("MainWindow", "Номер договора", None, QtGui.QApplication.UnicodeUTF8))
-#===============================================================================
-#        self.groupBox_account_info.setTitle(QtGui.QApplication.translate("MainWindow", "Информация о пользователе", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_name.setText(QtGui.QApplication.translate("MainWindow", "ФИО", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_address.setText(QtGui.QApplication.translate("MainWindow", "Email", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_phone_h.setText(QtGui.QApplication.translate("MainWindow", "Телефон дом.", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_passport_n.setText(QtGui.QApplication.translate("MainWindow", "Паспорт №", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_passport_give.setText(QtGui.QApplication.translate("MainWindow", "Кем выдан", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_passport_date.setText(QtGui.QApplication.translate("MainWindow", "Когда выдан", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_phone_m.setText(QtGui.QApplication.translate("MainWindow", "Телефон моб.", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_urdata.setTitle(QtGui.QApplication.translate("MainWindow", "Юридическое лицо", None, QtGui.QApplication.UnicodeUTF8))
         self.label_organization.setText(QtGui.QApplication.translate("MainWindow", "Организация", None, QtGui.QApplication.UnicodeUTF8))
         self.label_rs.setText(QtGui.QApplication.translate("MainWindow", "Расчётный счёт", None, QtGui.QApplication.UnicodeUTF8))
@@ -2974,18 +2960,6 @@ class AccountWindow(QtGui.QMainWindow):
         self.label_uraddress.setText(QtGui.QApplication.translate("MainWindow", "Юридический адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.label_urphone.setText(QtGui.QApplication.translate("MainWindow", "Телефон", None, QtGui.QApplication.UnicodeUTF8))
         self.label_fax.setText(QtGui.QApplication.translate("MainWindow", "Факс", None, QtGui.QApplication.UnicodeUTF8))
-#        self.groupBox_address.setTitle(QtGui.QApplication.translate("MainWindow", "Адрес", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_city.setText(QtGui.QApplication.translate("MainWindow", "Город", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_region.setText(QtGui.QApplication.translate("MainWindow", "Район", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_street.setText(QtGui.QApplication.translate("MainWindow", "Улица", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_house.setText(QtGui.QApplication.translate("MainWindow", "Дом", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_house_bulk.setText(QtGui.QApplication.translate("MainWindow", "Корпус", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_room.setText(QtGui.QApplication.translate("MainWindow", "Квартира", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_20.setText(QtGui.QApplication.translate("MainWindow", "Индекс", None, QtGui.QApplication.UnicodeUTF8))
-#        self.label_entrance.setText(QtGui.QApplication.translate("MainWindow", "Подъезд", None, QtGui.QApplication.UnicodeUTF8))
-#===============================================================================
-        #self.groupBox_manager.setTitle(QtGui.QApplication.translate("MainWindow", "Работа с клиентом", None, QtGui.QApplication.UnicodeUTF8))
-        #self.label_manager.setText(QtGui.QApplication.translate("MainWindow", "Менеджер", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_balance_info.setTitle(QtGui.QApplication.translate("MainWindow", "Информация о балансе", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("MainWindow", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
         self.label_balance.setText(QtGui.QApplication.translate("MainWindow", "Текущий баланс", None, QtGui.QApplication.UnicodeUTF8))
@@ -2997,37 +2971,6 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_ipn.setTitle(QtGui.QApplication.translate("MainWindow", "IPN IP Адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.label_ipn_ip_address.setText(QtGui.QApplication.translate("MainWindow", "Текущий IP адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.label_bank_code.setText(QtGui.QApplication.translate("MainWindow", "Код", None, QtGui.QApplication.UnicodeUTF8))
-        
-        
-        #---------
-        
-#===============================================================================
-#        self.tableWidget.item(0, 0).setText(QtGui.QApplication.translate("MainWindow", "Контактное лицо", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(1, 0).setText(QtGui.QApplication.translate("MainWindow", "Тел. Контактного лица", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(2, 0).setText(QtGui.QApplication.translate("MainWindow", "ФИО абонента", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(3, 0).setText(QtGui.QApplication.translate("MainWindow", "e-mail", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(4, 0).setText(QtGui.QApplication.translate("MainWindow", "Телефон дом.", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(5, 0).setText(QtGui.QApplication.translate("MainWindow", "Телефон моб.", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(6, 0).setText(QtGui.QApplication.translate("MainWindow", "Паспорт №", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(7, 0).setText(QtGui.QApplication.translate("MainWindow", "Кем выдан", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(8, 0).setText(QtGui.QApplication.translate("MainWindow", "Когда выдан", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(9, 0).setText(QtGui.QApplication.translate("MainWindow", "Город", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(10, 0).setText(QtGui.QApplication.translate("MainWindow", "Индекс", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(11, 0).setText(QtGui.QApplication.translate("MainWindow", "Район", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(12, 0).setText(QtGui.QApplication.translate("MainWindow", "Улица", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(13, 0).setText(QtGui.QApplication.translate("MainWindow", "Дом", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(14, 0).setText(QtGui.QApplication.translate("MainWindow", "Корпус", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(15, 0).setText(QtGui.QApplication.translate("MainWindow", "Подъезд", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(16, 0).setText(QtGui.QApplication.translate("MainWindow", "Этаж", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(17, 0).setText(QtGui.QApplication.translate("MainWindow", "Направление от лифта", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(18, 0).setText(QtGui.QApplication.translate("MainWindow", "Квартира", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(19, 0).setText(QtGui.QApplication.translate("MainWindow", "Организация", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(20, 0).setText(QtGui.QApplication.translate("MainWindow", "УНП", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(21, 0).setText(QtGui.QApplication.translate("MainWindow", "ОКПО", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(22, 0).setText(QtGui.QApplication.translate("MainWindow", "Юридический адрес", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(23, 0).setText(QtGui.QApplication.translate("MainWindow", "Телефон", None, QtGui.QApplication.UnicodeUTF8))
-#        self.tableWidget.item(24, 0).setText(QtGui.QApplication.translate("MainWindow", "Факс", None, QtGui.QApplication.UnicodeUTF8))
-#===============================================================================
         
         self.tableWidget.setColumnHidden(0, False)
         columns = [u"Название", u"Значение"]
@@ -3318,7 +3261,7 @@ class AccountWindow(QtGui.QMainWindow):
 
         self.dateTimeEdit_agreement_date.setDateTime(datetime.datetime.now())
         if self.model:
-            self.lineEdit_agreement_num.setText("%s" % self.model.id)
+            self.lineEdit_agreement_num.setText(unicode(self.model.contract))
             #self.lineEdit_agreement_date.setText(unicode(self.model.created.strftime(strftimeFormat)))
             self.dateTimeEdit_agreement_date.setDateTime(self.model.created)
             self.dateTimeEdit_agreement_date.setDisabled(True)
@@ -3485,11 +3428,13 @@ class AccountWindow(QtGui.QMainWindow):
                 
                 
             model.username = unicode(self.lineEdit_username.text())
+            
             if model.username=='':
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы не указали имя пользователя."))
                 return 
             #print 1
             model.password = unicode(self.lineEdit_password.text())
+            model.contract = unicode(self.lineEdit_agreement_num.text())
 #===============================================================================
 #            model.fullname = unicode(self.lineEdit_name.text())
 #            model.email = unicode(self.lineEdit_email.text())

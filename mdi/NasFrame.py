@@ -28,7 +28,7 @@ actions = {
                'vpn_speed_action': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx',
                'ipn_speed_action': '/queue simple remove [find name=$account_ipn_ip]; /queue simple add name=$account_ipn_ip max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx target-addresses=$account_ipn_ip/32',
                'reset_action': '/interface $access_type-server remove [find user=$username]',
-               'radius_speed': {'vendor1':14988, 'attrid1':8, 'value1':'$max_limit_tx/$max_limit_rx $burst_limit_tx/$burst_limit_rx $burst_treshold_tx/$burst_treshold_rx $burst_time_tx/$burst_time_rx $priority $min_limit_tx/$min_limit_rx'},
+               'radius_speed': {'vendor1':14988, 'attrid1':8, 'value1':'$max_limit_tx/$max_limit_rx $burst_limit_tx/$burst_limit_rx $burst_treshold_tx/$burst_treshold_rx $burst_time_tx/$burst_time_rx $priority $min_limit_tx/$min_limit_rx', 'vendor2':'', 'attrid2':'', 'value2':''},
                },
 'mikrotik2.9':{'user_add_action':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
                'user_delete_action':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find name=$account_ipn_ip]',
@@ -37,7 +37,7 @@ actions = {
                'vpn_speed_action': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx',
                'ipn_speed_action': '/queue simple remove [find name=$account_ipn_ip]; /queue simple add name=$account_ipn_ip max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx target-addresses=$account_ipn_ip/32',
                'reset_action': '/interface $access_type-server remove [find user=$username]',
-               'radius_speed': {'vendor1':14988, 'attrid1':8, 'value1':'$max_limit_tx/$max_limit_rx $burst_limit_tx/$burst_limit_rx $burst_treshold_tx/$burst_treshold_rx $burst_time_tx/$burst_time_rx $priority $min_limit_tx/$min_limit_rx'},
+               'radius_speed': {'vendor1':14988, 'attrid1':8, 'value1':'$max_limit_tx/$max_limit_rx $burst_limit_tx/$burst_limit_rx $burst_treshold_tx/$burst_treshold_rx $burst_time_tx/$burst_time_rx $priority $min_limit_tx/$min_limit_rx', 'vendor2':'', 'attrid2':'', 'value2':''},
                },
 'mikrotik3':{'user_add_action':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
                'user_delete_action':'/ip firewall address-list remove [find comment=$user_id];/queue simple remove [find comment=$username-$user_id]',
@@ -46,7 +46,7 @@ actions = {
                'vpn_speed_action': '/queue simple set [find interface=<$access_type-$username>] max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx',
                'ipn_speed_action': '/queue simple remove [find name=$username-$user_id]; /queue simple add name=$username-$user_id max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx target-addresses=$account_ipn_ip/32',
                'reset_action': '/interface $access_type-server remove [find user=$username]',
-               'radius_speed': {'vendor1':14988, 'attrid1':8, 'value1':'$max_limit_tx/$max_limit_rx $burst_limit_tx/$burst_limit_rx $burst_treshold_tx/$burst_treshold_rx $burst_time_tx/$burst_time_rx $priority $min_limit_tx/$min_limit_rx'},
+               'radius_speed': {'vendor1':14988, 'attrid1':8, 'value1':'$max_limit_tx/$max_limit_rx $burst_limit_tx/$burst_limit_rx $burst_treshold_tx/$burst_treshold_rx $burst_time_tx/$burst_time_rx $priority $min_limit_tx/$min_limit_rx', 'vendor2':'', 'attrid2':'', 'value2':''},
                },
 'common_ssh':{'user_add_action':'',
                'user_delete_action':'',
@@ -391,7 +391,6 @@ class AddNasFrame(QtGui.QDialog):
         columns = [u"Действие",u"Значение"]
         makeHeaders(columns, self.tableWidget)
         self.tableInfo=[
-            #['ur', u'Юридическое лицо','checkbox'],
             ['user_add_action', u'Добавить абонента',''],
             ['user_delete_action', u'Удалить абонента',''],
             ['user_enable_action', u'Включить абонента',''],
@@ -544,18 +543,6 @@ class AddNasFrame(QtGui.QDialog):
             self.nas_secret.setText(unicode(self.model.secret))
             self.ssh_name_lineEdit.setText(unicode(self.model.login))
             self.ssh_password_lineEdit.setText(unicode(self.model.password))
-
-            #self.create_user_textEdit.setText(unicode(self.model.user_add_action))
-            #self.remove_user_textEdit.setText(unicode(self.model.user_delete_action))
-            #self.enable_user_textEdit.setText(unicode(self.model.user_enable_action))
-            #self.disable_user_textEdit.setText(unicode(self.model.user_disable_action))
-            
-            
-            #self.set_vpn_speed_textEdit.setText(unicode(self.model.vpn_speed_action))
-            #self.set_ipn_speed_lineEdit.setText(unicode(self.model.ipn_speed_action))
-            
-            
-            #self.pod_textEdit.setText(unicode(self.model.reset_action))
             
             for i in xrange(self.tableWidget.rowCount()):
                 self.addrow(self.tableWidget, unicode(self.model.__dict__.get(self.tableInfo[i][0],'')), i,1)
@@ -709,14 +696,10 @@ class NasEbs(ebsTableWindow):
             self.addrow(nas.identify, i,2)
             self.addrow(nas.type, i,3)
             self.addrow(nas.ipaddress, i,4)
-            #self.tableWidget.setRowHeight(i, 14)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
 
         HeaderUtil.getHeader(self.setname, self.tableWidget)
-        #self.delNodeLocalAction()
-        #self.tableWidget.resizeColumnsToContents()
-        #self.tableWidget.setSortingEnabled(True)
     
 
     def delNodeLocalAction(self):

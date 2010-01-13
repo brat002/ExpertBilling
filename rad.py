@@ -275,7 +275,7 @@ def get_accesstype(packetobject):
 
     try:
         nas_port_type = packetobject.get('NAS-Port-Type', (None,))[0]
-        if nas_port_type == 'Virtual' and packetobject.get('Service-Type', [''])[0]=='Framed-User':
+        if nas_port_type == 'Virtual' and packetobject.get('Service-Type', [''])[0]=='Framed-User' and packetobject.get('Called-Station-Id', [''])[0]!=packetobject.get('NAS-Identifier', [''])[0]:
             return 'PPTP'
         elif nas_port_type == 'Ethernet' and packetobject.get('Service-Type', [''])[0]=='Framed-User': 
             return 'PPPOE'
@@ -285,7 +285,8 @@ def get_accesstype(packetobject):
             return 'HotSpot'
         elif nas_port_type == 'Ethernet' and not packetobject.has_key('Service-Type'):
             return 'DHCP'
-        elif nas_port_type == 'Async' and packetobject.get('Service-Type', [''])[0]=='Framed-User':
+        elif nas_port_type == 'Virtual' and packetobject.get('Service-Type', [''])[0]=='Framed-User' and packetobject.get('Called-Station-Id', [''])[0]==packetobject.get('NAS-Identifier', [''])[0]:
+            #print 'lISG'
             return 'lISG'
         else:
             logger.warning('Nas access type warning: unknown type: %s', nas_port_type)

@@ -397,10 +397,7 @@ class periodical_service_bill(Thread):
             #if (first_time or (ps.created or last_checkout) <= period_start) or (not first_time and last_checkout < period_start):
             if first_time or last_checkout < period_start:
                 cash_summ = ps.cost
-                """
-                Если не стоит галочка "Снимать деньги при нулевом балансе", значит не списываем деньги на тот период, 
-                пока денег на счету не было
-                """
+
                 chk_date = last_checkout
                 period_end_ast= None
                 #Смотрим на какую сумму должны были снять денег и снимаем её 
@@ -1122,8 +1119,14 @@ class ipn_service(Thread):
         self.connection = get_connection(vars.db_dsn)
         
     def create_speed(self, default, speeds,  correction, addonservicespeed, speed, date_):        
+        """
+        Функция форматирования строки для изменения скорости
+        """
         result_params=speeds        
-        if speed=='':            
+        if speed=='':   
+            """
+            Если в профиле пользователя не указаны конкретные настройки скорости, получаем их
+            """         
             defaults = default            
             speeds   =  result_params            
             defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]            
@@ -1195,7 +1198,7 @@ class ipn_service(Thread):
                 for acc in caches.account_cache.data:
                     try:
                         if 0: assert isinstance(acc, AccountData)
-                        """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Прпускаем."""                    
+                        """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Пропускаем."""                    
                         if not acc.tarif_active or acc.ipn_ip_address == '0.0.0.0': continue
                         accps = caches.accessparameters_cache.by_id.get(acc.access_parameters_id)
                         if (not accps) or (not accps.ipn_for_vpn): continue
@@ -1218,6 +1221,9 @@ class ipn_service(Thread):
                             if sended is True: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
                                 
                         if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active:
+                            """
+                            acc.ipn_status - отображает активна или неактивна ACL запись на сервере доступа для абонента
+                            """
                             #шлём команду, на включение пользователя, account_ipn_status=True
                             #ipn_added = acc.ipn_added
                             """Делаем пользователя enabled"""
@@ -1239,18 +1245,23 @@ class ipn_service(Thread):
         
                         self.connection.commit()
     
-
+                        #Приступаем к генерации настроек скорости
+                        #Получаем настройки скорости по лимитам, если пользователь превысил какой-нибудь лимит.
                         account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
-                        #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно??                            
+                        
+                        #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно?? 
+                        #Получаем подключаемые услуги абонента
                         accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                            
                         if acc.username=='user':                                
                             pass                            
                         addonservicespeed=[]                            
                         for accservice in accservices:                                 
-                            service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                            service = caches.addonservice_cache.by_id.get(accservice.service_id)    
+                            #При нахождении подключаемой услуги, изменяющей скорость - выходим из цикла                            
                             if not accservice.deactivated  and service.change_speed:                                                                        
                                 addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                                break                            
+                                break   
+                        #Получаем параметры скорости                         
                         speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.ipn_speed, dateAT)                            
                 
 
