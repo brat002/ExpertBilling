@@ -1,8 +1,11 @@
 # -*- coding=utf-8 -*-
 import os, sys
-from web.template import render as _render
+import web
+import config
 # input_encoding and output_encoding is important for unicode
 # template file.
 # Reference:
 # http://www.makotemplates.org/docs/documentation.html#unicode
-render = _render(os.path.join(os.path.dirname(__file__), 'templates').replace('\\','/'),cache=False)
+template_path = os.path.join(os.path.dirname(__file__), config.TEMPLATE_DIR).replace('\\','/')
+base = web.template.render(template_path + '/base/')
+render = web.template.render(template_path,cache=config.CACHE)
