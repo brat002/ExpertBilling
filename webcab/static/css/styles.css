@@ -3,15 +3,93 @@ body {
 	margin: 0; 
 }
 
+#base_wrapper {
+	width: 999px;
+	margin: 0px auto;
+}
+
 #header {
-	background: #fff url(../img/user_foto.gif) no-repeat top left;
-	height: 100px;
-	width: 100%;
+	background: #fff url(../img/header_background.jpg) no-repeat top left;
+	height: 77px;
+	width: 999px;
 	display: block;
-	margin: 10px 10px 10px 10px;
 }
 
 #header h1 {
-	padding-left: 100px;
+	padding-right: 100px;
 	padding-top: 15px;
+	color: white;
+	float: right;
+	font-family: sans;
+	font-size: 18px;
+	
 }
+
+#wrapper {
+}
+
+#menu{
+    float:left;
+    width: 250px;
+    padding: 10px 10px 10px 20px;
+}
+
+#menu ul {
+	padding: 0;
+	margin: 0;
+}
+
+#menu ul li {
+	list-style: square;
+	color: #246C9C;
+}
+
+#menu ul li a { 
+	text-decoration: none;
+	color: #246C9C;
+}
+
+#menu ul li a:hover { 
+	text-decoration: underline;
+	color: #246C9C;
+}
+
+/* Colors */
+
+h1, h2, h3 {
+	color: #343434;
+}
+
+
+/* Classes */
+
+.box {
+	padding: 10px 10px 10px 10px; 
+	background: highlight;
+}
+
+.w350 {
+	width: 350px;
+}
+
+/* Tables */
+table.user-info {
+	width: 60%;
+}
+
+table.user-info tr {
+	border-top: 1px solid grey;
+	}
+
+table.user-info tr th {
+	color: #246C9C;
+	font-weight: 600;
+	text-align: left;
+}
+
+table.user-info tr td {
+	color: grey;
+}
+
+/* Forms */
+
