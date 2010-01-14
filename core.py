@@ -3,7 +3,6 @@
 from __future__ import with_statement
 
 import IPy
-import hmac
 import zlib
 import signal
 import random
@@ -23,9 +22,7 @@ from decimal import Decimal
 from copy import copy, deepcopy
 from db import Object as Object
 from daemonize import daemonize
-from encodings import idna, ascii
 from threading import Thread, Lock
-from DBUtils.PooledDB import PooledDB
 from collections import defaultdict
 
 
@@ -39,8 +36,6 @@ from db import delete_transaction, get_default_speed_parameters, get_speed_param
 from db import transaction, transaction_noret, ps_history, get_last_checkout, time_periods_by_tarif_id 
 from db import timetransaction, transaction, set_account_deleted, get_limit_speed, get_last_addon_checkout, addon_history
 
-try:    import mx.DateTime
-except: print 'cannot import mx'
 
 from classes.cacheutils import CacheMaster
 from classes.core_cache import *
