@@ -6,7 +6,6 @@ import cPickle
 import random
 import signal
 import struct
-import asyncore
 import threading
 import ConfigParser
 import psycopg2, psycopg2.extras
@@ -22,8 +21,6 @@ from marshal import dumps, loads
 from daemonize import daemonize
 from threading import Thread, Lock
 from copy import copy, deepcopy
-from DBUtils.PooledDB import PooledDB
-from DBUtils.PersistentDB import PersistentDB
 from collections import deque, defaultdict
 from period_utilities import in_period_info
 from db import delete_transaction, dbRoutine
@@ -49,9 +46,6 @@ from classes.vars import NfrVars, NfrQueues, install_logger
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
                      STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
 
-try:    import mx.DateTime
-except: print 'cannot import mx'
-
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 NFR_PACKET_HEADER_LEN  = 16
@@ -61,9 +55,7 @@ DB_NAME = 'db'
 NET_NAME = 'nfroutine_nf'
 MEGABYTE =1048576 
 INT_ME_FN = lambda xt, y: (xt[0] + (ord(y) - 48) * xt[1], xt[1] * 10)
-'''
-exception_fun
-'''
+
 
 class Picker(object):
     __slots__= ('data',)
@@ -471,8 +463,7 @@ class NetFlowRoutine(Thread):
                 else:
                     start_pos = bin_pos
         return bin_pos
-            
-                        
+                                    
             
     def run(self):
         #connection = persist.connection()

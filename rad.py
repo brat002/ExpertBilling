@@ -5,7 +5,6 @@ from __future__ import with_statement
 import gc
 import os
 import sys
-import hmac
 import time
 import select
 import signal
@@ -43,21 +42,16 @@ from classes.rad_class.CardActivateData import CardActivateData
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, split_speed, get_decimals_speeds, flatten, command_string_parser, parse_custom_speed_lst_rad, split_speed, flatten
 from pkgutil import simplegeneric
 from itertools import chain
-#from utilities import Session, data_utilities, utilities_sql
+
 from utilities.Session import DictSession as util_DictSession
 from utilities.data_utilities import get_db_data as u_get_db_data, simple_list_index as u_simple_list_index
 from utilities.utilities_sql import utilities_sql as u_utilities_sql
-try:    import mx.DateTime
-except: print 'cannot import mx'
+
 
 w32Import = False
 try:    import win32api,win32process,win32con
 except: pass
 else:   w32Import = True
-
-#gigaword = 4294967296
-#account_timeaccess_cache={}
-#account_timeaccess_cache_count=0
 
 NAME = 'radius'
 DB_NAME = 'db'

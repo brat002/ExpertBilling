@@ -3,13 +3,10 @@
 from __future__ import with_statement
 
 import IPy
-import hmac, time
+import time
 import zlib
 import signal
 import hashlib
-#import asyncore
-#import socket
-#socket.setdefaulttimeout(3600)
 import datetime
 import operator
 import itertools
@@ -28,11 +25,8 @@ except:
     print 'No poll(). Using select() instead.'
 from twisted.internet import reactor
 
-#Pyro.config.PYRO_TRACELEVEL = 3
-#print dir(Pyro.config) 
-#Pyro.config.PYRO_BROKEN_MSGWAITALL = 0
 import isdlogger
-import saver, utilites
+import saver, utilites, commands
 
 from IPy import intToIp
 from hashlib import md5
@@ -40,21 +34,12 @@ from utilites import PoD, cred, ssh_client
 from decimal import Decimal
 #from db import Object as Object
 from daemonize import daemonize
-from encodings import idna, ascii
 from threading import Thread, Lock
-from DBUtils.PooledDB import PooledDB
-#import chartprovider.bpcdplot
 from chartprovider.bpcdplot import cdDrawer, bpbl
-#from chartprovider.bpplotadapter import bpplotAdapter
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running, in_period
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
-import commands
-try:    
-    import mx.DateTime
-except: 
-    print 'cannot import mx'
     
 from classes.vars import RpcVars
 from constants import rules
@@ -68,7 +53,6 @@ DB_NAME = 'db'
 DEFAULT_PORT = 7771
 
 class RPCServer(object):
-
     
     def testCredentials(self, host, login, password, cur=None, connection=None):
         try:
@@ -1256,21 +1240,11 @@ if __name__ == "__main__":
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
         maxUsers = int(config.get("rpc", "max_users"))
-        '''
-        pool = PooledDB(mincached=1, maxcached=10,
-                        blocking=True, maxusage=20,
-                        setsession=["SET statement_timeout = 180000000;"],
-                        creator=psycopg2, dsn=vars.db_dsn)'''
 
         if not globals().has_key('_1i'):
             _1i = lambda: ''
         allowedUsers = setAllowedUsers(_1i(), vars.db_connection)               
         allowedUsers()
-        '''
-        Pyro.util.Log = logger
-        Pyro.core.Log = logger
-        Pyro.protocol.Log = logger
-        '''
         #-------------------
         print "ebs: rpc: configs read, about to start"
         main()

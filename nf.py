@@ -2,8 +2,6 @@
 
 from __future__ import with_statement
 
-#REWRITE SENDER
-
 import gc
 import copy
 import glob
@@ -12,7 +10,7 @@ import signal
 import os, sys
 import marshal
 import utilites
-#import asyncore
+
 import psycopg2
 import threading
 import traceback
@@ -39,7 +37,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler, BaseRotatingHandler, _MIDNIGHT
 
 import twisted.internet
-#import twisted.protocols.ftp
+
 from twisted.protocols.basic import implements, interfaces, defer
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.protocol import Protocol, ReconnectingClientFactory
@@ -75,9 +73,6 @@ MAX_PACKET_INDEX = 2147483647L
 
 NOT_TRASMITTED = 0
 WRITE_OK = 1
-
-try:    import mx.DateTime
-except: pass
 
 class Reception_UDP(DatagramProtocol):
     '''
