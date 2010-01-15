@@ -1,0 +1,8 @@
+:mod:`cache_sql` -- Cache sql
+======================================
+
+.. module:: cache_sql
+   :platform: Unix, Windows
+   :synopsis: Consists sql cache functions
+
+.. currentmodule:: cache_sql
