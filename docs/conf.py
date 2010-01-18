@@ -34,7 +34,7 @@ source_suffix = '.txt'
 #source_encoding = 'utf-8'
 
 # The master toctree document.
-master_doc = '__index__'
+master_doc = 'index'
 
 # General information about the project.
 project = u'EBS'
@@ -192,3 +192,4 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+

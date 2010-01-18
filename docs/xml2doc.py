@@ -21,11 +21,14 @@ def render(out):
     return "\n".join(out)
 
 def index_c(name, sub_list):
+
     header_tmpl = ":mod:`%s` -- Untitled"
     if name == '.': # I'm too stupid to solve this another way'
+        is_docroot = True
         name = DOCROOT_TITLE
         header_tmpl = '%s'
-
+    else:
+        is_docroot = False
     """Form content and toc for an index file"""
 
     out = []
@@ -33,7 +36,7 @@ def index_c(name, sub_list):
     out.append('='*len(out[0]))
     out.append("")
     out.append(".. toctree::")
-    out.append("   :maxdepth: 1")
+    out.append("   :maxdepth: %d" % is_docroot and 2 or 1)
     out.append("")
     out.append(sub_list)
     return render(out)

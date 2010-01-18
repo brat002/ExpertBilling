@@ -1,9 +1,0 @@
-:mod:`rpc` -- Rpc server documentation
-======================================
-
-.. module:: rpc
-   :platform: Unix, Windows
-   :synopsis: Remotelly call basic functions.
-
-.. currentmodule:: rpc
-
