@@ -82,18 +82,21 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
     #log_debug_('PoD args: %s' % str([account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string]))
     
     access_type = access_type.lower()
-    if (format_string=='' and access_type in ['pptp', 'pppoe'] ) or access_type=='hotspot' or nas_type=='cisco':
+    if (format_string=='' and access_type in ['pptp', 'pppoe', 'lisg'] ) or access_type=='hotspot' or nas_type=='cisco':
         log_debug_("Send PoD")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=40, secret=str(nas_secret), dict=dict)
         doc.AddAttribute('NAS-IP-Address', str(nas_ip))
         doc.AddAttribute('NAS-Identifier', str(nas_name))
-        doc.AddAttribute('User-Name', str(account_name))
+        if access_type=='lISG':
+            doc.AddAttribute('User-Name', str(account_ipn_ip))
+        else:
+            doc.AddAttribute('User-Name', str(account_name))
         doc.AddAttribute('Acct-Session-Id', str(session_id))
         if access_type=='hotspot':
             doc.AddAttribute('Framed-IP-Address', str(account_ipn_ip))
-        else:
+        elif access_type not in ('hotspot', 'lisg'):
             doc.AddAttribute('Framed-IP-Address', str(account_vpn_ip))
         doc_data=doc.RequestPacket()
         sock.sendto(doc_data,(str(nas_ip), 1700))
@@ -148,7 +151,7 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
     format_string=nas.ipn_speed_action,
     """
     
-    if (format_string=='' and access_type in ['pptp', 'pppoe']) or access_type=='hotspot' or nas.type=='cisco':
+    if (format_string=='' and access_type in ['pptp', 'pppoe', 'lisg']) or access_type=='hotspot' or nas.type=='cisco':
         #Send CoA
         #print 1
         #speed_string= create_speed_string(speed, coa=True)
@@ -160,11 +163,14 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
         doc = packet.AcctPacket(code=43, secret=str(nas.secret), dict=dict)
         doc.AddAttribute('NAS-IP-Address', str(nas.ipaddress))
         doc.AddAttribute('NAS-Identifier', str(nas.identify))
-        doc.AddAttribute('User-Name', str(account.username))
+        if access_type=='lisg':
+            doc.AddAttribute('User-Name', str(account.ipn_ip_address))
+        else:
+            doc.AddAttribute('User-Name', str(account.username))
         doc.AddAttribute('Acct-Session-Id', str(session_id))
         if access_type=='hotspot':
             doc.AddAttribute('Framed-IP-Address', str(account.ipn_ip_address))
-        else:
+        elif access_type not in ('hotspot', 'lisg'):
             doc.AddAttribute('Framed-IP-Address', str(account.vpn_ip_address))
         #doc.AddAttribute((14988,8), speed_string)
         command_dict={

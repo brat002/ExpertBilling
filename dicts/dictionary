@@ -232,6 +232,7 @@ VALUE		Service-Type		Authenticate-Only	8
 VALUE		Service-Type		Callback-NAS-Prompt	9
 VALUE		Service-Type		Call-Check		10
 VALUE		Service-Type		Callback-Administrative	11
+VALUE       Service-Type        lISG 101
 
 #	Framed Protocols
 
