@@ -1962,9 +1962,6 @@ class TarifFrame(QtGui.QDialog):
         #self.trafficcost_tableWidget.resizeRowsToContents()
 
     def accept(self):
-        #import datetime
-        #print datetime.datetime.now()
-        #self.connection.command("BEGIN;")
         if self.model:
             model=copy.deepcopy(self.model)
             access_parameters = Object()
@@ -2096,12 +2093,8 @@ class TarifFrame(QtGui.QDialog):
 
 
             #Доступ по времени
-
-
-
-                
+            
             if self.time_access_service_checkbox.checkState()==2 and self.timeaccess_table.rowCount()>0:
-
                     
                 if not model.isnull('time_access_service_id'):
                     time_access_service = self.connection.get_model(self.model.time_access_service_id, "billservice_timeaccessservice" )
@@ -2218,10 +2211,8 @@ class TarifFrame(QtGui.QDialog):
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки лимитов")
                         self.connection.rollback()
                         return
-
                    
-                    if id!=-1:
-                        
+                    if id!=-1:                        
                         limit = self.connection.get_model(id, "billservice_trafficlimit")
                     else:
                         limit = Object()
@@ -2249,9 +2240,6 @@ class TarifFrame(QtGui.QDialog):
                             self.connection.iddelete(speedlimit_model, "billservice_speedlimit")
                     except Exception, e:
                         pass
-                        #print e
-
-
 
             elif self.limites_checkbox.checkState()==0:
                 d = Object()
@@ -2267,7 +2255,6 @@ class TarifFrame(QtGui.QDialog):
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки подключаемых услуг")
                         self.connection.rollback()
                         return
-                    
                     if id!=-1:
                         addon_service = self.connection.get_model(id, "billservice_addonservicetarif")
                     else:
@@ -2293,15 +2280,12 @@ class TarifFrame(QtGui.QDialog):
                 for i in xrange(0, self.tableWidget_addonservices.rowCount()):
                     id = self.getIdFromtable(self.tableWidget_addonservices, i)
                     self.connection.iddelete(id, "billservice_addonservicetarif")
-                    
                                 
             #Доступ по трафику 
             if self.trafficcost_tableWidget.rowCount()>0 and self.transmit_service_checkbox.checkState()==2:
                 if not model.isnull('traffic_transmit_service_id'):
-                    #print "'traffic_transmit_service'1"
                     traffic_transmit_service = self.connection.get_model(self.model.traffic_transmit_service_id, "billservice_traffictransmitservice")
                 else:
-                    #print 'traffic_transmit_service2'
                     traffic_transmit_service = Object()
                 
                 #traffic_transmit_service.period_check='SP_START'

@@ -29,7 +29,6 @@ import IPy
 
 from threading import Thread, Lock, Event
 from daemonize import daemonize
-from DBUtils.PooledDB import PooledDB
 from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
 from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers

@@ -202,7 +202,7 @@ class BasicClientConnection(object):
         return self.mailbox
     
     def __getattr__(self, *args, **kwargs):
-        return partial(self.process_send,'DATA', args[0])
+        return partial(self.process_send, 'DATA', args[0])
 
 #главный класс протокола
 
