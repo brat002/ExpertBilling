@@ -1,0 +1,8 @@
+:mod:`cassa` -- Untitled
+========================
+
+.. module:: cassa
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: cassa

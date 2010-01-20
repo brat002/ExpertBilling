@@ -6,12 +6,11 @@
 Welcome to EBS's documentation!
 ===============================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
-   testdev/__index__
+   dev/index
+   user/index
 
 
 

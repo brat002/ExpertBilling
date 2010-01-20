@@ -1,0 +1,8 @@
+:mod:`freezer_rec` -- Untitled
+==============================
+
+.. module:: freezer_rec
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: freezer_rec

@@ -1,0 +1,4 @@
+pychartdir25.pyd -- Untitled
+============================
+
+   :synopsis: None

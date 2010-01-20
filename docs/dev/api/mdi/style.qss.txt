@@ -1,0 +1,4 @@
+style.qss -- Untitled
+=====================
+
+   :synopsis: None

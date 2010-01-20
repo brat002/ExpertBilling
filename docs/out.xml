@@ -335,6 +335,7 @@
 	<file ext=".py" name="packet" path="."/>
 	<file ext=".py" name="nf_counter" path="."/>
 	<file ext=".py" name="retrigger" path="."/>
+	<directory name="ebsclient" path="./ebsclient"/>
 	<directory name="scripts" path="./scripts">
 		<file ext=".py" name="enable_disable" path="./scripts"/>
 	</directory>

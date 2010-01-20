@@ -1,0 +1,8 @@
+:mod:`ClassData` -- Untitled
+============================
+
+.. module:: ClassData
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: ClassData

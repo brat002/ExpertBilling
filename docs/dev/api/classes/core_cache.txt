@@ -1,0 +1,8 @@
+:mod:`core_cache` -- Untitled
+=============================
+
+.. module:: core_cache
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: core_cache

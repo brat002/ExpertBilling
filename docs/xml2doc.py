@@ -13,6 +13,7 @@ from lxml import etree
 from conf import master_doc, source_suffix
 
 DOCROOT_TITLE = 'Developer documentation'
+MODULE_EXT = ('.py',)
 
 def usage():
     print "Usage: python xml2doc -s source.xml -d path/to/destination/directory"
@@ -30,13 +31,13 @@ def index_c(name, sub_list):
     else:
         is_docroot = False
     """Form content and toc for an index file"""
-
+    get_depth = lambda is_docroot: '2' if is_docroot else '1'
     out = []
     out.append(header_tmpl % name)
     out.append('='*len(out[0]))
     out.append("")
     out.append(".. toctree::")
-    out.append("   :maxdepth: %d" % is_docroot and 2 or 1)
+    out.append("   :maxdepth: %s" % get_depth(is_docroot))
     out.append("")
     out.append(sub_list)
     return render(out)
@@ -53,6 +54,17 @@ def module_c(name):
     out.append("")
     out.append(".. currentmodule:: %s" % name)
     return render(out)
+
+def plain_c(name):
+    """ Form description for a text or bin file (not a module)"""
+    out = []
+    out.append("%s -- Untitled" % name)
+    out.append('='*len(out[0]))
+    out.append("")
+    out.append("   :synopsis: None")
+    out.append("")
+    return render(out)
+
 
 class DocEntry(object):
 
@@ -124,10 +136,26 @@ class Module(DocEntry):
     def isdir(self):
         return False
 
+class Plain(Module):
+    def save(self):
+        if not os.path.exists(self.get_path()):
+            module_file = open(self.get_path(),'a+')
+            module_file.write(plain_c(name=self.name))
+            module_file.close()
+
+
+
 def entry_fabric(xml_element):
+    def get_directory(xml_element):
+        return Directory(xml_element)
+    def get_file(xml_element):
+        if xml_element.get('ext') in MODULE_EXT:
+            return Module(xml_element)
+        else:
+            return Plain(xml_element)
     return xml_element.tag == 'directory'\
-                           and Directory(xml_element)\
-                            or Module(xml_element)
+                           and get_directory(xml_element)\
+                            or get_file(xml_element)
 
 def parse(xml_element):
     entry = entry_fabric(xml_element)

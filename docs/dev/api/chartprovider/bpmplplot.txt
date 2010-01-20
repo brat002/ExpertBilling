@@ -1,0 +1,8 @@
+:mod:`bpmplplot` -- Untitled
+============================
+
+.. module:: bpmplplot
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: bpmplplot

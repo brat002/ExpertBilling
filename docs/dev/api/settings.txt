@@ -1,0 +1,8 @@
+:mod:`settings` -- Untitled
+===========================
+
+.. module:: settings
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: settings
