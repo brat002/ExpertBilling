@@ -1,0 +1,8 @@
+:mod:`flags` -- Untitled
+========================
+
+.. module:: flags
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: flags

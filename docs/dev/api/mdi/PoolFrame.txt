@@ -1,0 +1,8 @@
+:mod:`PoolFrame` -- Untitled
+============================
+
+.. module:: PoolFrame
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: PoolFrame

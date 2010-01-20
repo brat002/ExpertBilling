@@ -1,0 +1,8 @@
+:mod:`cacheutils` -- Untitled
+=============================
+
+.. module:: cacheutils
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: cacheutils

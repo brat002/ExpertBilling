@@ -1,0 +1,8 @@
+:mod:`sendmail` -- Untitled
+===========================
+
+.. module:: sendmail
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: sendmail

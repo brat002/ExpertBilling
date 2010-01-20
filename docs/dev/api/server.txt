@@ -1,0 +1,8 @@
+:mod:`server` -- Untitled
+=========================
+
+.. module:: server
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: server

@@ -1,0 +1,8 @@
+:mod:`retrigger` -- Untitled
+============================
+
+.. module:: retrigger
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: retrigger

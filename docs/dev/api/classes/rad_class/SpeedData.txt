@@ -1,0 +1,8 @@
+:mod:`SpeedData` -- Untitled
+============================
+
+.. module:: SpeedData
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: SpeedData

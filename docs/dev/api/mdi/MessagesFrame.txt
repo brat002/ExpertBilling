@@ -1,0 +1,8 @@
+:mod:`MessagesFrame` -- Untitled
+================================
+
+.. module:: MessagesFrame
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: MessagesFrame

@@ -1,0 +1,8 @@
+:mod:`logger` -- Untitled
+=========================
+
+.. module:: logger
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: logger

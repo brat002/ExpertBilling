@@ -1,0 +1,8 @@
+:mod:`genhtml` -- Untitled
+==========================
+
+.. toctree::
+   :maxdepth: 1
+
+   imgcache/index
+   charts/index

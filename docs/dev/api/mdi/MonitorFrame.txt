@@ -1,0 +1,8 @@
+:mod:`MonitorFrame` -- Untitled
+===============================
+
+.. module:: MonitorFrame
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: MonitorFrame

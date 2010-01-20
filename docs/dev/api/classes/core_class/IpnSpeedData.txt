@@ -1,0 +1,8 @@
+:mod:`IpnSpeedData` -- Untitled
+===============================
+
+.. module:: IpnSpeedData
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: IpnSpeedData

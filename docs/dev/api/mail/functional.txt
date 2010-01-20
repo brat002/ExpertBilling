@@ -1,0 +1,8 @@
+:mod:`functional` -- Untitled
+=============================
+
+.. module:: functional
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: functional

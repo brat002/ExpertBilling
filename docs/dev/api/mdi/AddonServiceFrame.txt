@@ -1,0 +1,8 @@
+:mod:`AddonServiceFrame` -- Untitled
+====================================
+
+.. module:: AddonServiceFrame
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: AddonServiceFrame

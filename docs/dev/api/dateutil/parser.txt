@@ -1,0 +1,8 @@
+:mod:`parser` -- Untitled
+=========================
+
+.. module:: parser
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: parser

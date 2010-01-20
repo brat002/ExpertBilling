@@ -1,0 +1,8 @@
+:mod:`rpc` -- Untitled
+======================
+
+.. module:: rpc
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: rpc
