@@ -18,7 +18,6 @@ function ajax_load_block(id, url, data,kwargs, callbacks){
 			},
 			
 			success: function(data, status){
-				
 				if (jQuery(callbacks).attr('success')) {
 					if (jQuery(kwargs).attr('object_success')) {
 						callbacks['success']( data,status, kwargs['object_success'])
@@ -29,7 +28,7 @@ function ajax_load_block(id, url, data,kwargs, callbacks){
 					}
 				}
 				else {
-					jQuery(id).html(data)
+					jQuery(id).html(data);
 				}
 			}
 		})

@@ -48,10 +48,7 @@ def addon_queryset(request, id_begin, field='datetime', field_to=None):
         field_to = field
     addon_query = {}
     form = StatististicForm(request.GET)
-    if request.session.has_key('date_id_dict'):
-        date_id_dict = request.session['date_id_dict']
-    else:
-        date_id_dict = {} 
+    date_id_dict = request.session.get('date_id_dict',{})
     if form.is_valid():
         if form.cleaned_data['date_from']:
             addon_query[field+'__gte'] = form.cleaned_data['date_from']
@@ -79,11 +76,11 @@ def addon_queryset(request, id_begin, field='datetime', field_to=None):
 def login(request):
     error_message = True
     if request.method == 'POST':
-        pin=request.POST.get('pin','')
-        user = request.POST.get('user','')
-        if pin!='':
-            if user!='':
-                message=None
+        pin = request.POST.get('pin')
+        user = request.POST.get('user')
+        if pin:
+            if user:
+                message = None
                 try:               
                     authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
                     protocol = rpc_protocol.RPCProtocol(authenticator)

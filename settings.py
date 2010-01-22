@@ -2,6 +2,7 @@
 # Django settings for ebscab project.
 import os, sys
 DEBUG = True
+DEBUG_SQL=True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -85,6 +86,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
+    'lib.threadlocals.ThreadLocalsMiddleware',
 
 )
 

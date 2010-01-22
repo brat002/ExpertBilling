@@ -90,6 +90,22 @@ function load_data(sender, order_by,order_by_reverse, count)
 									})
 								  }});
 };
+
+function load_users(sender)
+{
+			var data= {}
+			var content = jQuery("div.content_users")
+			$('input.data').each(function(n,element){
+									if($(element).attr('type')!="button") {
+										 data[$(element).attr('name')]=$(element).val();
+									}
+								});
+			ajax_load_block(content,"/helpdesk/users/",
+								  data,
+								  {"is_loader":true} 
+								  )
+}
+
 function show_table(sender, is_show)
 {
 	if (is_show){

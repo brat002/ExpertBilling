@@ -1,20 +1,104 @@
 {% extends 'helpdesk_base_extended.html' %}
 
+{% load form_tags %}
+
+{% block extra_head %}
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/ajax_load_block.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/tickets.js"></script>
+<style type="text/css">
+	.content_users table tr.user:Hover {
+		background:#aaa;
+		cursor:crosshair;
+	}
+</style>
+<script type="text/javascript">
+	function set_user(user_id) {
+		$('select[@name=user] option:selected').removeAttr('selected');
+		$('select[@name=user] option[value='+user_id+']').attr('selected',true);
+	}
+</script>
+{% endblock %}
+
 {% block content %}
 
-{% if ok_message %}
-	<h1>{{ ok_message }}</h1>
-{% endif %}
+<table>
+	<thead>
+		<tr>
+			<td colspan="4">
+				Данные о пользователе
+			</td>
+		</tr>
+	</thead>
+	<tr>
+		<th>{{ filter_form.id__contains.label }}</th>
+		<td>{{ filter_form.id__contains }}</td>
+		<th>{{ filter_form.house_bulk__contains.label }}</th>
+		<td>{{ filter_form.house_bulk__contains }}</td>
+	</tr>
+	<tr>
+		<th>{{ filter_form.username__contains.label }}</th>
+		<td>{{ filter_form.username__contains }}</td>
+		<th>{{ filter_form.room__contains.label }}</th>
+		<td>{{ filter_form.room__contains }}</td>
+	</tr>
+	<tr>
+		<th>{{ filter_form.fullname__contains.label }}</th>
+		<td>{{ filter_form.fullname__contains }}</td>
+		<th>&nbsp;</th>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<th>{{ filter_form.city__contains.label }}</th>
+		<td>{{ filter_form.city__contains }}</td>
+		<th>&nbsp;</th>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<th>{{ filter_form.street__contains.label }}</th>
+		<td>{{ filter_form.street__contains }}</td>
+		<th>&nbsp;</th>
+		<td>&nbsp;</td>
+	</tr>
+	<tr>
+		<th>{{ filter_form.house__contains.label }}</th>
+		<td>{{ filter_form.house__contains }}</td>
+		<th>&nbsp;</th>
+		<td>&nbsp;</td>
+	</tr>
+	{% comment %}
+		DOTO - создать тег для вывода полей формы
+		{% for field in filter_form %}
+			{% form_field field tr %}
+		{% endfor %}
+	{% endcomment %}
+</table>
+<input type="submit" value="Поиск" onclick="load_users()">
 
-{% if error_message %}
-	<h1>{{ error_message }}</h1>
-{% endif %}
+<div class="content_users">
+	
+</div>
 
 <form method="post">
 	<table>
-		{{ form }}
+		{% for field in form %}
+				{% form_field field tr %}
+		{% endfor %}
 	</table>
-	<input type="submit" value="Save Ticket">
+	<input type="submit" value="Сохранить и перейти к тикету" name="save_ticket">
+	<input type="submit" value="Сохранить и перейти к тикетам" name="save_tickets">
 </form>
+
+<script type="text/javascript">	 
+	var select_user=document.getElementById("id_assigned_to");
+	
+	
+	for (var i=0; i<select_user.options.length; i++) {
+		if (select_user.options[i].value.substr(0,12)=='systemgroup_') {
+			select_user.options[i].setAttribute('class','select_group');
+		} else {
+			select_user.options[i].setAttribute('class','select_user');
+		}
+	}
+</script>
 
 {% endblock %}
