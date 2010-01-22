@@ -78,3 +78,31 @@ tr.border_bottom td{
 	text-decoration:none;
 	color:#000000;
 }
+
+.main_menu {
+	background-image:url(/media/img/bg_main_menu.gif);
+	height:63px;
+	background-repeat:repeat-x;
+}
+.main_menu li{
+	float:left;
+	padding-left:35px;
+	padding-top:5px;
+	text-align:center;
+}
+.main_menu a{
+	text-decoration:none;
+	color:#000000;
+}
+
+.clear {
+	clear:both;
+}
+
+.select_group {
+	font-weight:bold;
+}
+
+.select_user {
+	padding-left:20px;
+}

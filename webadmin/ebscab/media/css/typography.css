@@ -1,3 +1,181 @@
+/* --------------------------------------------------------------
+
+ typography.css
+ * Sets up some sensible default typography.
+
+ -------------------------------------------------------------- */
+/* Default font settings.
+ The font-size percentage is of 16px. (0.75 * 16px = 12px) */
+
+* {
+	margin:0;
+	padding:0;
+	text-decoration:none;
+	text-align:left;
+	font-family:Verdana, Geneva, Arial, Helvetica, sans-serif;
+	list-style-type:none;
+}
+
+body {
+    font-size: 75%;
+    color: #000000;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+	min-width:1024px;
+}
+/* Headings
+ -------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: normal;
+}
+
+h1 {
+    font-size: 2em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    line-height: 1.1em;
+}
+
+h2 {
+}
+
+h3 {
+    font-size: 1.2em;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+h4 {
+    font-size: 1em;
+    line-height: 1.25;
+    margin-bottom: 1.25em;
+    height: 1.25em;
+}
+
+h5 {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+h6 {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+h1 img, h2 img, h3 img, h4 img, h5 img, h6 img {
+    margin: 0;
+}
+/* Text elements
+ -------------------------------------------------------------- */
+
+a {
+    color: #006699;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #2f6ca3;
+    text-decoration: underline;
+}
+
+a.no-hover:hover {
+    color: #006699;
+    text-decoration: underline;
+}
+
+p {
+    margin: 0 0 0.5em;
+}
+
+p img.left {
+    float: left;
+    margin: 1.5em 1.5em 1.5em 0;
+    padding: 0;
+    clear: left;
+}
+
+p img.right {
+    float: right;
+    margin: 1.5em 0 1.5em 1.5em;
+    clear: right;
+}
+
+blockquote {
+    margin: 1.5em;
+    font-style: italic;
+}
+
+strong {
+    font-weight: bold;
+}
+
+em {
+    font-style: italic;
+}
+
+sup, sub {
+    line-height: 0;
+}
+
+abbr, acronym {
+    border-bottom: 1px dotted;
+}
+
+address {
+    margin: 0 0 1.5em;
+    font-style: italic;
+}
+
+pre, code {
+    margin: 1.5em 0;
+    white-space: pre;
+}
+
+pre, code, tt {
+    font: 1em 'andale mono', 'lucida console', monospace;
+    line-height: 1.5;
+}
+/* Block elements
+ ---------------------------------------------------------------*/
+div {
+    padding: 0;
+}
+/* Lists
+ -------------------------------------------------------------- */
+li ul, li ol {
+    margin: 0 1.5em;
+}
+
+ul, ol {
+}
+
+ul, ol {
+    list-style-type: none;;
+}
+
+dl {
+    margin: 0 0 1.5em 0;
+}
+
+dl dt {
+    font-weight: bold;
+}
+
+dd {
+    margin-left: 1.5em;
+}
+/* Tables
+ -------------------------------------------------------------- */
+th, td {
+    vertical-align: top;
+	border: 1px solid #a0a0a0;
+	text-align:center;
+}
+
+/* Image
+ -------------------------------------------------------------- */
 img{
 	border:none;
 }
+

@@ -1,0 +1,186 @@
+{% extends 'helpdesk_base_extended.html' %}
+
+{% block extra_head %}
+	<script type="text/javascript" src="{{ MEDIA_URL }}js/datetimepicker/datetimepicker_css.js"></script>
+	<link rel="stylesheet" href="{{ MEDIA_URL }}js/datetimepicker/dtp_styles.css" />
+
+
+	<script type="text/javascript">
+		
+		var obj_arr = new Array();
+		var tariff = {{ tariff.id }};
+		{% for tariff_object in tariff_objects  %}
+			obj_arr[{{ tariff_object.from_tariff.id }}] = new Array();
+			obj_arr[{{ tariff_object.from_tariff.id }}][{{ tariff_object.id }}] = new Array({{ tariff_object.ballance_min }}, {{ tariff_object.cost }});
+		{% endfor %}
+		
+		function change_ctatus() {
+			var new_status=document.getElementById("id_status");
+			var message=document.getElementById("status_message");
+		 	jQuery.ajax({
+	        	type: "POST",
+	        	cache: false,
+	        	url: '/helpdesk/status/change/{{ account.id }}/',
+	        	data: {'new_status':new_status.value},
+	        	timeout: 15000,
+				contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+	        	//beforeSend: function(XMLHttpRequest){},
+	        	success: function(data, status){
+					var ret = eval('('+data+')');
+					message.innerHTML = ret['message'];
+				},
+	        	error: function(data, status){
+				 },
+	        	complete: function(data, status){  }
+	    	});
+		}
+		
+		function change_password() {
+			var new_password=document.getElementById("id_password");
+			var message=document.getElementById("password_message");
+		 	jQuery.ajax({
+	        	type: "POST",
+	        	cache: false,
+	        	url: '/helpdesk/password/change/{{ account.id }}/',
+	        	data: {'new_password':new_password.value},
+	        	timeout: 15000,
+				contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+	        	//beforeSend: function(XMLHttpRequest){},
+	        	success: function(data, status){
+					var ret = eval('('+data+')');
+					message.innerHTML = ret['message'];
+					 
+				},
+	        	error: function(data, status){
+				 },
+	        	complete: function(data, status){  }
+	    	});
+		}
+	
+	function change_tariff() {
+		var new_tariff = document.getElementById("id_tariff_id");
+		var message=document.getElementById("error_message");
+		var start_date = document.getElementById("id_from_date");
+	 	jQuery.ajax({
+        	type: "POST",
+        	cache: false,
+        	url: '/helpdesk/tariff/change/{{ account.id }}/',
+        	data: {'tariff_id':new_tariff.value, 'from_date':start_date.value},
+        	timeout: 15000,
+			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        	success: function(data, status){
+				var ret = eval('('+data+')');
+				if (typeof ret['ok_message'] != 'undefined') {
+					message.innerHTML = ret['ok_message'];
+				} else {
+					message.innerHTML = ret['error_message'];
+				}
+			},
+        	error: function(data, status){
+				message.innerHTML = 'Возникла ошибка, попробуйте позже.';
+			 },
+        	complete: function(data, status){  }
+    	});
+	}
+	
+	function set_cost() {
+		var new_tariff = document.getElementById("id_tariff_id");
+		var need_ballance = document.getElementById("need_ballance");
+		var need_cost = document.getElementById("need_cost");
+		var error_message = document.getElementById("error_message");
+		var send_button = document.getElementById("send_button");
+		try {
+			need_cost.innerHTML = eval('obj_arr[{{ tariff.tarif.id }}]['+new_tariff.value+'][1]')+'{{ CURRENCY }}';
+			error_message.innerHTML = '';
+			return true;
+		} catch(err) {
+			error_message.innerHTML = '<div class="red">Вы не можите перейти на данный тарифный план</div>';
+			need_cost.innerHTML = '0';
+			need_ballance.innerHTML = '0';
+			send_button.style.visibility = 'hidden';		
+		}
+	}
+	
+	function gen_password() {
+			var new_password=document.getElementById("id_password");
+			var message=document.getElementById("password_message");
+		 	jQuery.ajax({
+	        	type: "GET",
+	        	cache: false,
+	        	url: '/helpdesk/password/gen/',
+	        	data: {},
+	        	timeout: 15000,
+				contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+	        	//beforeSend: function(XMLHttpRequest){},
+	        	success: function(data, status){
+					var ret = eval('('+data+')');
+					message.innerHTML = ret['message'];
+					new_password.value = ret['password'];
+					 
+				},
+	        	error: function(data, status){
+				 },
+	        	complete: function(data, status){  }
+	    	});	
+		}
+</script>
+{% endblock %}
+
+{% block content %}
+
+<table>
+	<tr>
+		<td>Пользователь</td>
+		<td>{{ account.username }}</td>
+	</tr>
+	<tr>
+		<td>{{ status_form.status.label }}<div id="status_message"></div></td>
+		<td>{{ status_form.status }} <input type="submit" value="Изменить" onclick="change_ctatus();"> </td>
+	</tr>
+	<tr>
+		<td>{{ password_form.password.label }}<div id="password_message"></div></td>
+		<td>{{ password_form.password }} <input type="submit" value="*" onclick="gen_password();"> <input type="submit" value="Изменить" onclick="change_password();"> </td>
+	</tr>
+	<tr>
+		<td>Дата создания</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Тарифный план</td>
+		<td>{{ account.get_account_tariff }}</td>
+	</tr>
+	<tr>
+		<td>Изменить тарифный план</td>
+		<td>{{ tariff_form.tariff_id }} <input type="submit" value="Изменить" id="send_button" onclick="change_tariff()"> {{ tariff_form.from_date.label }} {{ tariff_form.from_date }}</td> 
+	</tr>
+	<tr>
+		<td>Стоимость тарифного плана</td>
+		<td><div id="need_cost"></div><div id="error_message"></div></td>
+	</tr>
+	<tr>
+		<td>Требовать наличие суммы на наначало расчетного периода</td>
+		<td><div id="need_ballance"></div></td>
+	</tr>
+	<tr>
+		<td>Расчетный период</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Баланс пользователя</td>
+		<td>{{ ballance }}</td>
+	</tr>
+	<tr>
+		<td>Кредит пользователя</td>
+		<td>{{ account.credit }}</td>
+	</tr>
+	<tr>
+		<td>Блокировка по нехватке баланса</td>
+		<td>{% if account.balance_blocked or account.ballance_isnt_good %}да{% else %}нет{% endif %}</td>
+	</tr>
+	<tr>
+		<td>Блокировка по превышению лемита</td>
+		<td>{% if account.disabled_by_limit %}да{% else %}нет{% endif %}</td>
+	</tr>
+</table>
+
+{% endblock %}

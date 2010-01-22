@@ -1,22 +1,29 @@
 
 #-*-coding:utf-8-*-
 from datetime import datetime
-from django.http import Http404, HttpResponseRedirect, HttpResponse 
-from billservice.models import SystemUser, SystemGroup, Account
-from billservice import authenticate, log_in, log_out
 
-from helpdesk.models import Ticket
-from helpdesk.forms import LoginForm, TicketForm 
-from lib.decorators import render_to
-from billservice.models import SystemGroup, SystemUser
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.contrib.contenttypes.models import ContentType
-from django.utils import simplejson
+ 
+from billservice.models import SystemUser, SystemGroup, Account, AccountTarif, TPChangeRule, AccountAddonService
+from billservice import authenticate, log_in, log_out
+from billservice.models import SystemGroup, SystemUser
+from billservice.forms import ChangeTariffForm
 
+from helpdesk.models import Ticket, Comment, TicketHistrory, NEW, TicketHistrory, Note
+from helpdesk.decorators import login_required
+from helpdesk.forms import LoginForm, TicketForm, TicketEditForm, CommentForm, UserFilter, ChangeAccountStatusForm, ChangeAccountPasswordForm, ChangeUserInformation 
+from lib.decorators import render_to, ajax_request
+from django.utils import simplejson
+from billservice.utility import settlement_period_info
+
+@login_required
 @render_to('helpdesk/manage_ticket.html')
 def manage_tickets(request):
     system_group = SystemGroup.objects.all()
     return {"departaments":system_group}
 
+@login_required
 @render_to('helpdesk/index_tickets.html')
 def index_tickets(reuqest):
     system_group = SystemGroup.objects.all()
@@ -43,7 +50,7 @@ def ajax_update_owner_ticket(request):
     object_id = request.GET.get('object_id',None)
     try:
         ticket = Ticket.objects.get(id = int(id_ticket))
-    except:
+    except Ticket.DoesNotExist:
         raise Http404
     if object == 'departament':
          ctype = ContentType.objects.get_for_model(SystemGroup)
@@ -93,13 +100,13 @@ def _login(request):
                 if user.password == form.cleaned_data['password']:
                     user = authenticate(username=user.username, password=form.cleaned_data['password'])
                     log_in(request, user)
-                    return HttpResponseRedirect('/helpdesk/')
+                    return HttpResponseRedirect('/helpdesk/tickets/')
                 else:
                     form = LoginForm(initial={'username': form.cleaned_data['username']})
                     return {
                             'form':form,
                             }
-            except :
+            except:
                 form = LoginForm(initial={'username': form.cleaned_data['username']})
                 return {
                         'form':form,
@@ -107,18 +114,92 @@ def _login(request):
     else:
         form = LoginForm(initial={'username': request.POST.get('username', None)})
         return {
-
                 'form':form,
                 }
         
+def login_out(request):
+    log_out(request)
+    return HttpResponseRedirect('/helpdesk/')
+
+@login_required        
 @render_to('helpdesk/index.html')
 def index(request):
     return {
             'index':'index',
             }
 
+@login_required
+@render_to('helpdesk/system_user_settings.html')
+def system_user_settings(request, system_user_id):
+    try:
+        system_user = SystemUser.objects.get(id = system_user_id)
+    except:
+        raise Http404
+    if request.method == 'POST':
+        form = ChangeUserInformation(request.POST)
+        if form.is_valid():
+            system_user.password = form.cleaned_data['password']
+            system_user.email = form.cleaned_data['email']
+            system_user.save()
+    else:
+        data = {
+                'email':system_user.email,
+                'password':system_user.password,
+                }
+        form = ChangeUserInformation(initial=data)
+    return {
+            'form':form,
+            }
+
+@login_required
+@render_to('helpdesk/user_info.html')
+def user_info(request, user_id):
+    try:
+        account = Account.objects.get(id = user_id)
+    except Account.DoesNotExist:
+        raise Http404
+    status_form = ChangeAccountStatusForm(initial={'status': account.status,}) 
+    password_form = ChangeAccountPasswordForm(initial={'password': account.password,})
+    try:
+        ballance = account.ballance - account.credit
+        ballance = u'%.2f' % ballance
+    except:
+        ballance = 0
+    account_tariff_id =  AccountTarif.objects.filter(account = account, datetime__lt=datetime.now()).order_by('-datetime')[:1]
+    account_tariff = account_tariff_id[0]
+    tariffs = TPChangeRule.objects.filter(ballance_min__lte=account.ballance, from_tariff = account_tariff.tarif)
+    kwargs = {'with_date':True,}
+    tariff_form = ChangeTariffForm(account, account_tariff, **kwargs)  
+    return {
+            'account':account,
+            'status_form':status_form,
+            'password_form':password_form,
+            'ballance':ballance,
+            'tariff_form':tariff_form,
+            'tariff':account_tariff,
+            'tariff_objects':tariffs,
+            }     
+
+@render_to('helpdesk/get_users.html')
+def get_users(request):
+    if request.method == 'GET':
+        form = UserFilter(request.GET)
+        qs = {}
+        if form.is_valid():
+            data = form.__dict__['data']
+            keys = data.keys() 
+            for key in keys:
+                if data[key] != '':
+                    qs[str(key)] = data[key]
+        users = Account.objects.filter(**qs)     
+    return {
+            'users':users,
+            }
+
+@login_required
 @render_to('helpdesk/ticket_add.html')
 def ticket_add(request):
+    filter_form = UserFilter()
     if request.method == 'POST':
         form = TicketForm(request.POST)
         if form.is_valid():
@@ -129,7 +210,7 @@ def ticket_add(request):
                             source = form.cleaned_data['source'],
                             subject = form.cleaned_data['subject'],
                             body = form.cleaned_data['text'],    
-                            status = form.cleaned_data['status'],
+                            status = NEW,
                             type = form.cleaned_data['type'],
                             additional_status = form.cleaned_data['additional_status'], 
                             priority = form.cleaned_data['priority'],
@@ -143,63 +224,210 @@ def ticket_add(request):
                 ticket.content_type = assigned_to_content_type
                 ticket.object_id = assigned_to[1]   
             ticket.save() 
-            return {
-                    'form':form,
-                    'ok_message':u'Все Работает',
-                    }
+            if request.POST.has_key('save_ticket'):
+                return HttpResponseRedirect('/helpdesk%s' % ticket.get_absolute_url()) 
+            elif request.POST.has_key('save_tickets'):
+                return HttpResponseRedirect('/helpdesk/tickets/')
+            else:
+                raise Http404
         else:
             return {
+                    'filter_form':filter_form,
                     'form':form,
                     'error_message':u'Проверьте поля формы',
                     }
     else:
         return {
+                'filter_form':filter_form,
                 'form':TicketForm(),
                 }
 
+@login_required
 @render_to('helpdesk/ticket_edit.html')
 def ticket_edit(request, ticket_id):
     addon_text = ''
     try:
         ticket = Ticket.objects.get(id = ticket_id)
-    except:
+    except Ticket.DoesNotExist:
         raise Http404
-    if request.method == 'POST':
-        ticket.account = ticket.account,
-        ticket.email = form.cleaned_data['email'],
-        ticket.source = form.cleaned_data['source'],
-        ticket.subject = form.cleaned_data['subject'],
-        ticket.body = form.cleaned_data['text'],    
-        ticket.status = form.cleaned_data['status'],
-        ticket.type = form.cleaned_data['type'],
-        ticket.additional_status = form.cleaned_data['additional_status'], 
-        ticket.priority = form.cleaned_data['priority'],
-        ticket.created = ticket.created
-        ticket.last_update = datetime.now(),
-        if form.cleaned_data['assigned_to']:
-            assigned_to = form.cleaned_data['assigned_to'].split('_')
-            assigned_to_content_type = ContentType.objects.get(model=assigned_to[0])
-            ticket.content_type = assigned_to_content_type
-            ticket.object_id = assigned_to[1]
-        if ticket.save():
-            addon_text = u'Тикет сохранен'
-        else:
-            addon_text = u'Ошибка при сожранении'
-    user = u'%s_%s' % (ticket.content_type,ticket.object_id)
-    data = {
-            'user':user,
-            'account':ticket.account,
-            'email':ticket.email,
-            'source':ticket.source,
-            'subject':ticket.subject,
-            'body':ticket.text,    
-            'status':ticket.status,
-            'type':ticket.type,
-            'additional_status':ticket.additional_status, 
-            'priority':ticket.priority,
-           } 
-    form = TicketForm(data)
+    if request.user ==  ticket.assigned_to:
+        if request.method == 'POST':
+            form = TicketEditForm(request.POST)
+            if form.is_valid():  
+                ticket.status = form.cleaned_data['status']
+                ticket.additional_status = form.cleaned_data['additional_status'] 
+                ticket.created = ticket.created
+                ticket.last_update = datetime.now()
+                if form.cleaned_data['assigned_to']:
+                    model_name, ticket_id = form.cleaned_data['assigned_to'].split('_')
+                    ticket.content_type = ContentType.objects.get(model=model_name) 
+                    ticket.object_id = ticket_id
+                    ticket.assign_date = datetime.now()
+                else:
+                    ticket.assign_date = ticket.assign_date
+                ticket.save()
+        disabled = False
+    else:
+        disabled = True
+    data = {}
+    if ticket.content_type: 
+        user = u'%s_%s' % (ticket.content_type.model,ticket.object_id)
+        data['assigned_to'] = user
+    data['status'] = ticket.status[0]
+    data['additional_status'] = ticket.additional_status[0] 
+    comments = Comment.objects.filter(ticket = ticket)
+    history_items = TicketHistrory.objects.filter(ticket = ticket) 
+    form = TicketEditForm(data)
     return {
+            'disabled':disabled,
             'form':form,
             'addon_text':addon_text,
+            'comment_form':CommentForm(),
+            'ticket':ticket,
+            'comments':comments,
+            'history_items':history_items,
+            'ticket':ticket,
             }
+
+@login_required
+def comment_add(request, ticket_id):
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            ticket = Ticket.objects.get(id=ticket_id)
+            content_type = ContentType.objects.get(model='systemuser')
+            comment = Comment(
+                              ticket = ticket,
+                              content_type = content_type,
+                              object_id = request.user.id,
+                              body = form.cleaned_data['text'],
+                              time = form.cleaned_data['time'],
+                              created = datetime.now(),
+                              )
+            comment.save()
+            history_item = TicketHistrory(
+                                          ticket = ticket,
+                                          user = request.user,
+                                          action = u'Добавлен комментарий',
+                                          created = datetime.now(), 
+                                          )
+            history_item.save()
+    return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+@login_required
+@render_to('helpdesk/ticket_new.html')
+def tickets_new(request):
+    tickets = Ticket.objects.filter(status=NEW, content_type__isnul = True).order_by('-created')
+    return {
+            'tickets':tickets,
+            }
+
+@login_required    
+@ajax_request
+def change_password(request, user_id):
+    if request.method == 'POST':
+        password = request.POST.get('new_password', '')
+        try:
+            account = Account.objects.get(id = int(user_id))
+            change = True
+        except Account.DoesNotExist:
+            change = False
+            message = u'Пользователя нет в базе!'
+        if change:
+            account.password = password
+            account.save()
+            message = u'Пароль изменен'
+    return {
+            'message':message,
+            }
+
+import random
+import string
+def _gen_password(length=8, chars=string.letters + string.digits):
+    return ''.join([random.choice(chars) for i in range(length)])
+
+
+@login_required    
+@ajax_request
+def gen_password(request):
+    return {
+            'password':_gen_password(),
+            'message':u'Новый пароль сгенирирован',
+            } 
+
+@login_required    
+@ajax_request
+def change_status(request, user_id):
+    if request.method == 'POST':
+        status = request.POST.get('new_status', '')
+        try:
+            account = Account.objects.get(id = user_id)
+            change = True
+        except Account.DoesNotExist:
+            change = False
+            message = u'Пользователя нет в базе!!!!'
+        if change:
+            account.status = status
+            account.save()
+            message = u'Статус изменент'
+    return {
+            'message':message,
+            }
+
+@login_required    
+@ajax_request
+def change_tariff(request, user_id):
+    """
+        settlement_period_info
+        1 - дата начала действия тарифа
+    """
+    from datetime import datetime
+    if request.method == 'POST':
+        try:
+            account = Account.objects.get(id = user_id)
+        except Account.DoesNotExist:
+            return {
+                    'error_message':u'Пользователь не найден в базе',
+                    }
+        account_tariff_id =  AccountTarif.objects.filter(account = account, datetime__lt=datetime.now()).order_by('-datetime')[:1]
+        account_tariff = account_tariff_id[0]  
+        kwargs = {'with_date':True,}
+        form = ChangeTariffForm(account, account_tariff, request.POST, **kwargs) 
+        if form.is_valid():      
+            rule = TPChangeRule.objects.get(id=form.cleaned_data['tariff_id'])
+            tariff = AccountTarif.objects.create(
+                                                    account = account,
+                                                    tarif = rule.to_tariff,
+                                                    datetime = form.cleaned_data['from_date'],  
+                                                )
+            return {
+                     'ok_message':u'Тариф изменен',   
+                    }
+        else:
+            return {
+                    'error_message':u'Проверьте тариф',
+                    }
+    else:
+        return {
+                'error_message':u'Проверьте тариф',
+                }
+
+    
+@render_to('helpdesk/report.html')
+def report(request):
+    return {
+            
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+

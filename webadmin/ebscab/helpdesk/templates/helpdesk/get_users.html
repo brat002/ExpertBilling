@@ -1,0 +1,26 @@
+<table>
+	<tr>
+		<th>Номер Договора</th>
+		<th>UserName</th>
+		<th>ФИО</th>
+		<th>Город</th>
+		<th>Улица</th>
+		<th>Дом</th>
+		<th>Квартира</th>
+		<th>Телефон</th>
+	</tr>
+	{% if users %}
+		{% for user in users %}
+			<tr class="user" onclick="set_user({{ user.id }})">
+				<td>{{ user.id }}</td>
+				<td>{{ user.username }}</td>
+				<td>{{ user.fullname }}</td>
+				<td>{{ user.city }}</td>
+				<td>{{ user.street }}</td>
+				<td>{{ user.house }} {% if user.house_bulk %}({{ user.house_bulk }}){% endif %}</td>
+				<td>{{ user.room }}</td>
+				<td>phone</td>
+			</tr>
+		{% endfor %}
+	{%endif %}
+</table>
