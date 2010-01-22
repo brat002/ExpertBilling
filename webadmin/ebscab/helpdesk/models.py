@@ -1,4 +1,5 @@
 #-*-coding=utf-8-*-
+from datetime import datetime
 
 from django.db import models
 
@@ -135,10 +136,14 @@ class Ticket(models.Model):
     archived = models.BooleanField(blank=True, default=False)
     
     def get_absolute_url(self):
-        return '/ticket/%s/' %self.id
+        return '/ticket/edit/%s/' %self.id
     
     def get_edit_url(self):
-        return '/ticket/edit/%s/' %self.id
+        return '/helpdesk/ticket/edit/%s/' %self.id
+    
+    def get_conten_type_label(self):
+        return self.content_type.model
+    
     
     def get_status(self):
         return dict(TICKET_STATUS)[int(self.status)]
@@ -150,13 +155,20 @@ class Comment(models.Model):
     ticket = models.ForeignKey(Ticket)
     content_type = models.ForeignKey(ContentType, editable=False, null=True, blank=True)
     object_id = models.PositiveIntegerField(editable=False, null=True, blank=True)
-    assigned_to = generic.GenericForeignKey('content_type', 'object_id')
+    user = generic.GenericForeignKey('content_type', 'object_id')
     body = models.TextField()
-    time = models.IntegerField()#потраченное время. Поле видно только пользователю хелпдеска
+    time = models.IntegerField(null=True, blank=True)#потраченное время. Поле видно только пользователю хелпдеска
     created = models.DateTimeField()
     
-    def save(self):
-        pass
+    def get_user_link(self):
+       model = self.content_type.model_class()
+       user = model.objects.get(id = self.object_id)
+       return user.get_absolute_url()
+   
+    def get_user(self):
+       model = self.content_type.model_class()
+       user = model.objects.get(id = self.object_id)
+       return user.username  
     
 
 class Attachment(models.Model):
@@ -174,6 +186,7 @@ class Note(models.Model):
     Скрытый комментарий, который видят только пользователя HelpDesk-а
     """
     ticket = models.ForeignKey(Ticket)
+    history = models.ForeignKey('TicketHistrory')
     user = models.ForeignKey(SystemUser)
     body = models.TextField()
     date = models.DateTimeField()
@@ -195,5 +208,127 @@ class TicketHistrory(models.Model):
     user = models.ForeignKey(SystemUser)
     action = models.TextField()
     created = models.DateTimeField()
-    
+
+
+class UserAttention(models.Model):
+    user = models.ForeignKey(SystemUser)
+    ticket = models.ForeignKey(Ticket)
+    created = models.DateTimeField()
+
+
+def get_ticket_status(status_nom):
+    for status in TICKET_STATUS:
+        if status[0] == status_nom:
+            return status[1]
+    return False
+
+def get_ticket_additional_status(additional_status_nom):
+    for additional_status in TICKET_ADDITIONAL_TYPE:
+        if additional_status[0] == additional_status_nom:
+            return additional_status[1]
+    return False   
+
+def add_history_item(instance, **kwargs):
+    from lib.threadlocals import get_request
+    request = get_request() # достаем request
+    if request.method == 'POST': 
+        data = instance.__dict__
+        user = request.user
+        history_item = TicketHistrory() 
+        try: 
+            old_ticket = Ticket.objects.get(id=data['id']) # проверка на существование тикета, если он есть, то заполняем action 
+            create_history = True     
+        except:
+            create_history = False    
+        if create_history:
+            new_status = data['status']
+            if int(old_ticket.status) != int(new_status[0]): # проверка основного статуса тикета
+                new_status = get_ticket_status(int(new_status[0]))  
+                history_item.action += u'Изменен статус с %s на %s <br>' %(get_ticket_status(int(old_ticket.status)), new_status) # добавление истории
+            new_additional_status = data['additional_status']
+            if int(old_ticket.additional_status) != int(new_additional_status[0]): # проверка дополнительного статуса
+                new_additional_status = get_ticket_additional_status(int(new_additional_status[0])) 
+                history_item.action += u'Изменен дополнительный статус с %s на %s <br>' %(get_ticket_additional_status(int(old_ticket.additional_status)), new_additional_status) # добавление истории
+            if request.POST.get('reasign_option') == u'1': # если переназначен пользователь    
+                if old_ticket.content_type.id != data['content_type_id'] or old_ticket.object_id != data['object_id']: # проверка на необходимость изменения пользователя
+                    model_class = ContentType.objects.get(id = data['content_type_id']).model_class()
+                    obj = model_class.objects.get(id=data['object_id'])
+                    history_item.action += u'Переведен на %s <br>' %obj
+            send_users = request.POST.getlist('send')
+            if send_users: # нужно ли уведомить пользователей
+                send_users = request.POST.getlist('send') # достаем список пользователей для уведомления
+                history_item.action += u'Уведомлены: <br>'
+                for send_user in send_users:
+                    try:
+                        user = SystemUser.objects.get(id = send_user)
+                        history_item.action += u'%s <br>' %user
+                        attention = UserAttention(
+                                                   user = user,
+                                                   ticket = old_ticket,
+                                                   created = datetime.now(),
+                                                  )
+                        attention.save()
+                    except:
+                        pass
+            if request.POST.get('hide_comment'): # Проверка на добавление заметки
+                history_item.action += u'Добавлена заметка<br>'
+                node_add = True
+            else:
+                node_add = False
+            if history_item.action != '': # если были проведены изменения стикетом, то сохраняем их
+                history_item.ticket = old_ticket 
+                history_item.user = request.user
+                history_item.created = datetime.now()
+                history_item.save()
+                if node_add: # добавление скрытого комментария
+                    node = Note(
+                                ticket = old_ticket,
+                                history = history_item,
+                                user = request.user,
+                                body = request.POST.get('hide_comment',''),
+                                date = datetime.now(),  
+                                )
+                    node.save()     
+
+def is_new_ticket(instance, created, **kwargs):
+    if created:
+        from lib.threadlocals import get_request
+        data = instance.__dict__
+        request = get_request()
+        body = u'Открыт<br>'
+        if request.POST.get('hide_comment'):
+            node_add = True
+            body += u'Добавлена заметка<br>'
+        else:
+            node_add = False
+        if data['content_type_id'] and data['object_id']: 
+            model_class = ContentType.objects.get(id = data['content_type_id']).model_class()
+            obj = model_class.objects.get(id=data['object_id'])
+            body += u'Назначен на %s <br>' %obj         
+        history_item = TicketHistrory(
+                                      ticket = instance,
+                                      user = request.user,
+                                      action = body,
+                                      created = datetime.now(),
+                                      )
+        history_item.save()
+        if node_add:
+            node = Note(
+                        ticket = instance,
+                        history = history_item,
+                        user = request.user,
+                        body = request.POST.get('hide_comment',''),
+                        date = datetime.now(),  
+                        )
+            node.save()
+
+
+models.signals.pre_save.connect(add_history_item, sender=Ticket)
+models.signals.post_save.connect(is_new_ticket, sender=Ticket)
+ 
+ 
+ 
+ 
+ 
+ 
     

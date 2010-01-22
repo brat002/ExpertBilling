@@ -1,16 +1,94 @@
 {% extends 'helpdesk_base_extended.html' %}
 
+{% load helpdesk_tags %}
+{% load form_tags %}
+
+{% block extra_head %}
+	<script type="text/javascript">
+		function reasign(check_bool) {
+			$('#id_assigned_to').attr('disabled', check_bool ? false:true); 
+		}
+		
+		function sending(check_bool) {
+			$('#id_send').attr('disabled', check_bool ? false:true); 
+		}
+	</script>
+{% endblock %}
+
 {% block content %}
 
 {% if addon_text %}
 	<h1>{{ addon_text }}</h1>
 {% endif %}
 
-<form method="post">
+
+<h2>Пользователь: <a href="/helpdesk/user/{{ ticket.account.id }}/">{{ ticket.account }}</a></h2>
+
+<form method="post" id="ticket_edit_form">
 	<table>
-		{{ form }}
+		{% for field in form %}
+			{% form_field field tr %}
+		{% endfor %}
 	</table>
-	<input type="submit" value="Save Ticket">
+	<input type="submit" value="Соранить Изменения" id="save_comment_button">
 </form>
+
+
+<table>
+	<tr>
+		<th>Дата</th>
+		<th>Имя</th>
+		<th>Текст</th>
+	</tr>
+	{% for comment in comments%}
+		<tr>
+			<td>{{ comment.created }}</td>
+			<td><a href="{{ comment.get_user_link }}">{{ comment.get_user }}</a></td>
+			<td>{{ comment.body  }}</td>
+		</tr>
+	{% endfor %}
+	<tr>
+		<td></td>
+		<td></td>
+		<td>
+			<form method="post" action="/helpdesk/comment/add/{{ ticket.id }}/">
+				<table>
+					{% for field in comment_form %}
+						{% form_field field tr %}
+					{% endfor %}
+				</table>
+				<input type="submit" value="Сохранить">
+			</form>	
+		</td>
+	</tr>
+</table>
+
+<table>
+	<tr>
+		<th>Имя</th>
+		<th>Дата</th>
+		<th>Действие</th>
+	</tr>
+	{% for history_item in history_items %}
+		<tr>
+			<td>{{ history_item.user }}</td>
+			<td>{{ history_item.created }}</td>
+			<td>{{ history_item.action|safe }} {% get_note history_item %}</td>
+		</tr>
+	{% endfor %}
+</table>
+
+<script type="text/javascript">
+	
+	{% if disabled %}
+		$('#ticket_edit_form input').each(function () {
+			$(this).attr('disabled', true);	
+		})
+		$('#ticket_edit_form select').each(function () {
+			$(this).attr('disabled', true);	
+		})
+		$('#save_comment_button').attr('disabled', false); 
+	{% endif %}
+</script>
 
 {% endblock %}

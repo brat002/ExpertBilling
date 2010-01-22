@@ -87,6 +87,8 @@ AUTH_TYPES=(
               ('BY_LOGIN', 'BY_LOGIN'),
               ('BY_MAC', 'BY_MAC'),
               )
+
+
 class TimePeriodNode(models.Model):
     """
     Диапазон времени ( с 15 00 до 18 00 каждую вторник-пятницу,утро, ночь, сутки, месяц, год и т.д.)
@@ -801,9 +803,22 @@ class OneTimeServiceHistory(models.Model):
     class Admin:
         pass
     
+    
+"""
+    Для SystemGroup есть 3 предопределенные группы
+    ADMINISTRATORS - высший приоритет, видит тикеты суппорта и техников
+    SUPPORT - средний преоритет, видит тикеты техников
+    TECHNICS - минимальный приоритет, видит только свои тикеты
+"""
+
 class SystemGroup(models.Model):
     
     name = models.CharField(max_length=255)
+    system = models.BooleanField(blank=True, null=True)
+    system_name = models.CharField(max_length=255, blank=True, null=True)
+    
+    def __unicode__(self):
+        return u'%s' %self.name
     
     def get_users(self):
         return SystemUser.objects.filter(group=self)
@@ -816,6 +831,7 @@ class SystemGroup(models.Model):
 class SystemUser(models.Model):
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255, default='')
+    email = models.CharField(verbose_name=u'Фамилия', blank=True, default='',max_length=200)
     last_ip  = models.CharField(max_length=64, blank=True, null=True)
     last_login = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, default='')
@@ -825,9 +841,13 @@ class SystemUser(models.Model):
     group = models.ManyToManyField(SystemGroup)
     role = models.IntegerField()
     text_password = models.CharField(max_length=255)
+    email = models.EmailField()
 
     def __str__(self):
         return '%s' % self.username
+    
+    def __unicode__(self):
+        return u'%s' %self.username
             
     def is_authenticated(self):
         """Always return True. This is a way to tell if the user has been authenticated in templates.

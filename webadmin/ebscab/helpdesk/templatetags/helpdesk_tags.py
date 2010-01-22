@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 from django import template
 from django.conf import settings
+
+from helpdesk.models import Note
+
 register = template.Library()
 
 @register.inclusion_tag("helpdesk/templatetags/pannel_ticket_table.html")
@@ -24,3 +27,10 @@ def table_ticket(object_var, object_name, order_by, order_by_reverse, count):
     context['order_by_reverse'] = order_by_reverse
     context['count'] = count
     return context
+
+@register.inclusion_tag("helpdesk/templatetags/get_note.html")
+def get_note(history_item):
+    notes = Note.objects.filter(history = history_item)
+    return {
+            'notes':notes,
+            }

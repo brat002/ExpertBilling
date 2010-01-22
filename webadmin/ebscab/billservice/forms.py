@@ -30,6 +30,9 @@ class ChangeTariffForm(forms.Form):
         time = (datetime.now() - account_tariff.datetime).seconds
         tariffs = [x.id for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance, from_tariff = account_tariff.tarif)]
         self.base_fields.insert(5, 'tariff_id', forms.ChoiceField(choices=[('','----')]+[(x.id, x.to_tariff.name) for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance, from_tariff = account_tariff.tarif)], label=u"Выберите тарифный план", widget=forms.Select(attrs={'size': 1, 'onchange':'set_cost()'})))
+        if kwargs.has_key('with_date') and kwargs['with_date'] == True:
+            self.base_fields.insert(5, 'from_date', forms.DateTimeField(label = u'С даты', input_formats = ['%d-%m-%Y %H:%M:%S',], widget=forms.TextInput(attrs={'onclick':"NewCssCal('id_from_date','ddmmyyyy','dropdown',true,24,false);"})))
+            kwargs.clear()
         super(ChangeTariffForm, self).__init__(*args, **kwargs)
         
 class StatististicForm(forms.Form):
