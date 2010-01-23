@@ -1,0 +1,20 @@
+{% extends 'helpdesk_base_extended.html' %}
+
+{% block content %}
+	<table cols=10 cellpadding=0 cellspacing=0 width=100% class="tickets" >
+		<tr class="title_table"> 
+			<th>№</th>
+			<th>Пользователь</th>
+			<th>Тема</th>
+			<th>Создан</th>
+		</tr>
+		{% for ticket in tickets %}
+			<tr style="background-color:{% cycle '#ffffff' '#ecf2fe'%}" class="ticket_content{% if forloop.last %} border_bottom{% endif %}">
+				<td class="id" style="border-left:1px solid #a0a0a0"><a href="{{ ticket.get_edit_url }}" class="ticket_id">{{ticket.id}}</a></td>
+				<td class="account"  style="border-left:1px solid #a0a0a0; text-align:left; padding-left:10px;">{{ticket.account}}</td>
+				<td class="subject" style="color:{{ticket.get_status_color}};  border-left:1px solid #a0a0a0">{{ticket.subject}}</td>
+				<td class="created" style="border-left:1px solid #a0a0a0">{{ ticket.created|date:"d-m-Y" }}</td>
+			</tr>
+		{% endfor %}
+	</table>
+{% endblock %}
