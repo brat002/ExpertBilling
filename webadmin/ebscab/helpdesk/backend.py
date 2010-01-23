@@ -7,7 +7,7 @@ from billservice.models import SystemUser
 class LoginSystemUserBackend(object):
     def authenticate(self, username=None, password=None):
         try:
-            user = SystemUser.objects.get(username=username, password=password)
+            user = SystemUser.objects.get(username=username, text_password=password)
             return user
         except:
             pass
