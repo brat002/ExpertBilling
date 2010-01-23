@@ -97,7 +97,7 @@ def _login(request):
         if form.is_valid():
             try:
                 user = SystemUser.objects.get(username=form.cleaned_data['username'])
-                if user.password == form.cleaned_data['password']:
+                if user.text_password == form.cleaned_data['password']:
                     user = authenticate(username=user.username, password=form.cleaned_data['password'])
                     log_in(request, user)
                     return HttpResponseRedirect('/helpdesk/tickets/')
