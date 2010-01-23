@@ -10,7 +10,7 @@ from billservice import authenticate, log_in, log_out
 from billservice.models import SystemGroup, SystemUser
 from billservice.forms import ChangeTariffForm
 
-from helpdesk.models import Ticket, Comment, TicketHistrory, NEW, TicketHistrory, Note
+from helpdesk.models import Ticket, Comment, TicketHistrory, NEW, TicketHistrory, Note, UserAttention
 from helpdesk.decorators import login_required
 from helpdesk.forms import LoginForm, TicketForm, TicketEditForm, CommentForm, UserFilter, ChangeAccountStatusForm, ChangeAccountPasswordForm, ChangeUserInformation 
 from lib.decorators import render_to, ajax_request
@@ -317,7 +317,16 @@ def comment_add(request, ticket_id):
 @login_required
 @render_to('helpdesk/ticket_new.html')
 def tickets_new(request):
-    tickets = Ticket.objects.filter(status=NEW, content_type__isnul = True).order_by('-created')
+    new_status = u'%s' %NEW
+    tickets = Ticket.objects.filter(status=new_status, content_type__isnull = True).order_by('-created')
+    return {
+            'tickets':tickets,
+            }
+    
+@login_required
+@render_to('helpdesk/tickets_attention.html')
+def tickets_attention(request):
+    tickets = UserAttention.objects.filter(user = request.user).order_by('-created')
     return {
             'tickets':tickets,
             }
