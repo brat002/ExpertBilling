@@ -2,6 +2,10 @@
 
 from __future__ import with_statement
 
+"""DON'T REMOVE, NEEDED FOR PROPER FREEZING!!!"""
+try:    import mx.DateTime
+except: pass
+
 import IPy
 import zlib
 import signal
@@ -55,6 +59,8 @@ ZERO_SUM = 0
 SECOND = datetime.timedelta(seconds=1)
 PERIOD = 1
 ADDON  = 2
+
+
 def comparator(d, s):
     for key in s:
         if s[key]!='' and s[key]!='Null' and s[key]!='None':
