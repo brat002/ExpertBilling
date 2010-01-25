@@ -1,5 +1,5 @@
 #!/bin/sh -e
-#$1 - project name $2 users $3 key $4 license string
+#$1 - project name $2 users $3 key $4 license string $5 additional flags
 
 python lic_generator.py $1 $2 $4
 if [ ! -d builds ]; then
@@ -24,7 +24,7 @@ rm -rf builds/$1
 
 mkdir builds/$1
 
-
+echo "Additional keys: " $5
 
 
 
@@ -35,10 +35,10 @@ cp license.lic license.lic.old
 cp license_$1.lic license.lic
 
 for bld in $simple_build; do
-	python freezer/freezer_rec.py  -i $karg $reskey $bld.py > builds/$1.$bld.buildlog;
+	python freezer/freezer_rec.py  -i $5 $karg $reskey $bld.py > builds/$1.$bld.buildlog;
 done
 
-python freezer/freezer_rec.py --nloc=chartprovider.pychartdir25 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $karg $reskey rpc.py > builds/$1.rpc.buildlog;
+python freezer/freezer_rec.py --nloc=chartprovider.pychartdir25 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $5 $karg $reskey rpc.py > builds/$1.rpc.buildlog;
 
 cp license.lic builds/$1/license.lic
 cp license.lic.old license.lic

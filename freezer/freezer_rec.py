@@ -9,6 +9,15 @@ a Python library, so it can be successfully ran later.\
 ####################################################################################################
 _DEFAULT_PROT_KEY = '\0'
 
+_LOGGER_CHUNK = r"""
+import os
+__PRINT_INFO = lambda x: os.sys.stdout.write(x)
+"""
+
+_NOLOGGER_CHUNK = r"""
+__PRINT_INFO = lambda x: 0
+"""
+
 _PROTECTION_CHUNK_0 = r"""
 import sys
 sys.path = [ sys.path[ 0 ] + '/modules' ]
@@ -16,6 +25,7 @@ from base64 import b64decode as _x_
 from zlib import decompress as _z_
 from collections import deque
 from hashlib import md5 as __hash
+from traceback import format_exc as __traceback
 
 _1i = lambda: ''
 def _1fi_():
@@ -225,11 +235,15 @@ def rec_exec(loaddq, lcount):
 		
 	loadm = loaddq.popleft()
 	localcount = lcount
+	__PRINT_INFO('LOADING MODULE: %s' % loadm.__name__)
         try:	        
 	        exec getattr( loadm, '__code__') in loadm.__dict__
 	except ImportError, ierr:
 	        loaddq.append(loadm)
 		localcount += 1
+		__PRINT_INFO(' ERROR LOADING MODULE: %s | %s' % (loadm.__name__, repr(ierr))
+	else:
+	        localcount = 0
 		
 	rec_exec(loaddq, localcount) 
 	
@@ -331,6 +345,7 @@ def _reset_flags():
 		'LOCATION': os.getcwd() + os.sep, # current working directory
 		'SCRIPT_DIR': os.path.dirname( sys.modules[ __name__ ].__file__ ), # location of this script
 		'FREEZEFILE_VARS': {},     # variables in Freezefile
+		'ENABLE_LOGGING': False
 	}
 
 _USAGE = r"""
@@ -350,6 +365,7 @@ Options:
   --order=NAMES          separated by commas ordered list of names of
                          modules that must be initialized in that order
   -i                     ignore missing modules
+  -l                     include debug logging facilities
  Without any arguments freezer attempts to locate and
  execute a file 'Freezefile' in the current directory.
 Freezefile variables:
@@ -426,7 +442,7 @@ def _compile_proj():
 	if not extraopts: extraopts = ''
 	args = {
 		'CC': 'gcc',
-		'CFLAGS': '-std=gnu99 -O3 -mtune=i386 -I"%s"' % incdir,
+		'CFLAGS': '-std=gnu99 -O3 -mtune=generic -I"%s"' % incdir,
 		'SRC': _flags[ 'C_FILE' ],
 		'LFLAGS': '-lpython%s -lz -Wl,-rpath=./ %s' % (
 			_PY_VER,
@@ -558,6 +574,11 @@ def _create_proj():
 			raise SystemError('Unknown system id: %s' % sys_letter)
 	else:
 		_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_2
+		
+	if _flags['ENABLE_LOGGING']:
+		_PROTECTION_CHUNK_0 = _LOGGER_CHUNK + _PROTECTION_CHUNK_0
+	else:
+		_PROTECTION_CHUNK_0 - _NOLOGGER_CHUNK + _PROTECTION_CHUNK_0
 	#_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1 if _flags[ 'PROTECTION_KEY' ] != _DEFAULT_PROT_KEY else _PROTECTION_CHUNK_2
 	compile_str = '_0_ = ' + `mods` + '\n' + '_0om_ = ' + `ordered_mods` + '\n' + _PROTECTION_CHUNK_0 + _KEY_PROTECTION_CHUNK + _PROTECTION_CHUNK_3
 	print compile_str
@@ -712,6 +733,8 @@ def _parse_cmd():
 			_flags[ 'PROTECTION_KEY' ] = o[ 1 ]
 		elif o[ 0 ] == '-i':
 			_flags[ 'IGNORE_MISSING' ] = True
+		elif o[ 0 ] == '-l':
+			_flags[ 'ENABLE_LOGGING' ] = True	
 		elif o[ 0 ] == '--amods':
 			for pair in o[ 1 ].split( ',' ):
 				modname, filename = pair.split( ':' )
