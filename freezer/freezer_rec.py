@@ -575,6 +575,7 @@ def _create_proj():
 	else:
 		_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_2
 		
+	global _PROTECTION_CHUNK_0
 	if _flags['ENABLE_LOGGING']:
 		_PROTECTION_CHUNK_0 = _LOGGER_CHUNK + _PROTECTION_CHUNK_0
 	else:
