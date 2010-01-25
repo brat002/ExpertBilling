@@ -723,7 +723,7 @@ def _parse_cmd():
 	import getopt
 	opts, args = getopt.getopt(
 		sys.argv[ 1 : ],
-		'hk:i',
+		'hk:il',
 		[ 'help', 'key=', 'nloc=', 'amods=' , 'order=']
 	)
 	for o in opts:
