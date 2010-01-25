@@ -11,7 +11,7 @@ _DEFAULT_PROT_KEY = '\0'
 
 _LOGGER_CHUNK = r"""
 import os
-__PRINT_INFO = lambda x: os.sys.stdout.write(x)
+__PRINT_INFO = lambda x: os.sys.stdout.write(x + '\n')
 """
 
 _NOLOGGER_CHUNK = r"""
