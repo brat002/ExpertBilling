@@ -238,12 +238,11 @@ def rec_exec(loaddq, lcount):
 	__PRINT_INFO('LOADING MODULE: %s' % loadm.__name__)
         try:	        
 	        exec getattr( loadm, '__code__') in loadm.__dict__
+		localcount = 0
 	except ImportError, ierr:
 	        loaddq.append(loadm)
 		localcount += 1
 		__PRINT_INFO(' ERROR LOADING MODULE: %s | %s' % (loadm.__name__, repr(ierr))
-	else:
-	        localcount = 0
 		
 	rec_exec(loaddq, localcount) 
 	
