@@ -242,7 +242,7 @@ def rec_exec(loaddq, lcount):
 	except ImportError, ierr:
 	        loaddq.append(loadm)
 		localcount += 1
-		__PRINT_INFO(' ERROR LOADING MODULE: %s | %s' % (loadm.__name__, repr(ierr))
+		__PRINT_INFO(' ERROR LOADING MODULE: %s | %s' % (loadm.__name__, repr(ierr)))
 		
 	rec_exec(loaddq, localcount) 
 	
