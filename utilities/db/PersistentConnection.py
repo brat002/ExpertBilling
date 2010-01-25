@@ -10,13 +10,9 @@ import socket
 
 sys.path.append(os.path.abspath('../../'))
 
-from utilities.misc_utilities import PseudoLogger
+from utilities.misc_utilities import PseudoLogger, install_logger
 
 logger = PseudoLogger()
-
-def install_logger(lgr):
-    global logger
-    logger = lgr
 
 class DBDisconnectException(Exception):
     pass
