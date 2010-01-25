@@ -6,3 +6,7 @@ class PseudoLogger(object):
     
     def __getattr__(self, *args, **kwargs):
         return self._pass
+    
+def install_logger(lgr):
+    global logger
+    logger = lgr
