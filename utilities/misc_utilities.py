@@ -41,5 +41,9 @@ class ExecuteAtomicallySimple(object):
     def __exit__(cls, type, value, tb):
         sys.setcheckinterval(100)
 
-
     
+def redirect_stderr(file_handle):
+    sys.stderr = file_handle
+    
+def redirect_stdout(file_handle):
+    sys.stdout = file_handle
