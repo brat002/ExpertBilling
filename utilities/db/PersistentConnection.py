@@ -11,8 +11,7 @@ import socket
 sys.path.append(os.path.abspath('../../'))
 
 from utilities.misc_utilities import PseudoLogger, install_logger
-
-logger = PseudoLogger()
+from utilities import logger 
 
 class DBDisconnectException(Exception):
     pass
