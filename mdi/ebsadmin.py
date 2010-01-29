@@ -752,9 +752,9 @@ def login():
 if __name__ == "__main__":
     global app
     app = QtGui.QApplication(sys.argv)
-    translator = QtCore.QTranslator(app)
-    translator.load('ebsadmin_en')
-    app.installTranslator(translator)
+    #translator = QtCore.QTranslator(app)
+    #translator.load('ebsadmin_en')
+    #app.installTranslator(translator)
     global connection, username, server_ip
     connection = login() 
        
