@@ -996,6 +996,7 @@ def simpleCSV(csvList):
 class FlowLoggerThread(Thread):
     def __init__(self, errorLogger, synchroBox, dieCondition, dataTransformer, fHandler, fVars):
         Thread.__init__(self)
+        self.tname = self.__class__.__name__
         #create notifier
         self.synchroBox = synchroBox
         self.dieCondition = dieCondition
