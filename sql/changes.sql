@@ -2673,3 +2673,29 @@ END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
+  
+CREATE OR REPLACE FUNCTION return_ipinuse_to_pool_trg_fn() 
+  RETURNS trigger AS
+$BODY$
+DECLARE
+    vpn_pool_id int;
+BEGIN
+    IF (OLD.session_status ISNULL) AND (NEW.session_status NOTNULL) THEN
+        SELECT bacc.vpn_ipinuse_id FROM billservice_account AS bacc WHERE bacc.id = NEW.account_id AND bacc.vpn_ip_address = '0.0.0.0'::inet INTO vpn_pool_id;
+        IF vpn_pool_id NOTNULL THEN
+             DELETE FROM billservice_ipinuse AS ipnuse WHERE ipnuse.pool_id=vpn_pool_id AND ipnuse.ip=NEW.framed_ip_address::inet;    
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+  
+  
+  
+CREATE TRIGGER return_ipinuse_to_pool_trg
+ AFTER UPDATE
+   ON radius_activesession
+   FOR EACH ROW
+   EXECUTE PROCEDURE return_ipinuse_to_pool_trg_fn();

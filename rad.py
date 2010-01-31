@@ -867,7 +867,24 @@ class HandleSAuth(HandleSBase):
         allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tarif_active))
-        if self.packetobject['User-Name'][0]==user_name and allow_dial and acc.tarif_active:
+        if self.packetobject['User-Name'][0] == user_name and allow_dial and acc.tarif_active:
+            '''
+            framed_ip_address = None
+            if acc.vpn_ip_address == '0.0.0.0' and acc.vpn_ipinuse_id:
+                
+                vars.cursor_lock.acquire()
+                try:
+                    vars.cursor.execute('SELECT get_free_ip_from_pool(%s);', (acc.vpn_ipinuse_id,))
+                    framed_ip_address = vars.cursor.fetchone()
+                except Exception, ex:
+                    vars.cursor_lock.release()
+                    logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), acc.account_id, acc.vpn_ipinuse_id, repr(ex)))
+                    return self.auth_NA(authobject) 
+                else:
+                    vars.cursor_lock.release()
+            else:
+                framed_ip_address = acc.vpn_ip_address
+            '''
             authobject.set_code(2)
             self.replypacket.username = str(user_name) #Нельзя юникод
             self.replypacket.password = str(acc.password) #Нельзя юникод
@@ -1043,11 +1060,6 @@ class HandleHotSpotAuth(HandleSBase):
                 result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
             else:
                 result = get_decimals_speeds(result)
-                
-            
-            #print result
-            #result_params=create_speed_string(result)
-            #print result
         else:
             #a = 
             #print a, type(a)
@@ -1306,6 +1318,7 @@ class HandleSAcct(HandleSBase):
                                         self.packetobject['Framed-IP-Address'][0],
                                         self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id, sessions_speed.get(acc.account_id, "")))
                 try:
+                    #???? Locks, anyone??
                     del sessions_speed[acc.account_id]
                 except:
                     pass
