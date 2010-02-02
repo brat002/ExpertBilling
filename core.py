@@ -47,7 +47,7 @@ from classes.flags import CoreFlags
 from classes.vars import CoreVars
 from utilites import renewCaches, savepid, get_connection, check_running, getpid, rempid
 
-from utilities.misc_utilities import redirect_stderr, redirect_stdout
+#from utilities.misc_utilities import redirect_stderr, redirect_stdout
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
@@ -1475,7 +1475,8 @@ def main():
     print "ebs: core: started"
     savepid(vars.piddir, vars.name)
     stderr_log = open(vars.log_file + '.err', 'ab')
-    redirect_stderr(stderr_log)
+    #redirect_stderr(stderr_log)
+    sys.stderr = stderr_log
     #main thread should not exit!
     while True:
         time.sleep(30)
