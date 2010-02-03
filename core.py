@@ -52,6 +52,8 @@ from utilites import renewCaches, savepid, get_connection, check_running, getpid
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
 
+import ssh_paramiko
+
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 NAME = 'core'
@@ -223,7 +225,7 @@ class check_vpn_access(Thread):
                                 #                        session_id=str(rs.sessionid), access_type=str(rs.access_type),format_string=str(nas.vpn_speed_action),
                                 #                        speed=speed[:6])                           
                                 
-                                    
+                                logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
                                 coa_result = change_speed(vars.DICT, acc, nas,
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
@@ -234,13 +236,16 @@ class check_vpn_access(Thread):
                                     cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
                                                 """ , (newspeed, rs.id,))
                                     cur.connection.commit()
+                                logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         else:
                             #print "send POD"
+                            logger.debug("%s: about to send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                             result = PoD(vars.DICT, rs.account_id, str(acc.username),str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
                                          str(acc.ipn_mac_address),str(rs.access_type),str(nas.ipaddress), nas_type=nas.type, 
                                          nas_name=str(nas.name),nas_secret=str(nas.secret),nas_login=str(nas.login), 
                                          nas_password=str(nas.password),session_id=str(rs.sessionid), format_string=str(nas.reset_action))
-        
+                            logger.debug("%s: POD over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
+
                         if result is True:
                             disconnect_result='ACK'
                         elif result is False:
@@ -1509,7 +1514,7 @@ if __name__ == "__main__":
         saver.log_adapt    = logger.log_adapt
         
         logger.lprint('core start')
-        
+        ssh_paramiko.install_logger(logger)
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
         
         cacheMaster = CacheMaster()
