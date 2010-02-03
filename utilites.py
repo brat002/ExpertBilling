@@ -202,8 +202,10 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
                 doc.AddAttribute(nas.speed_attr_id2,result_params)
                     
         doc_data=doc.RequestPacket()
+        log_debug_('CoA socket send: %s' % str(nas.ipaddress))
         sock.sendto(doc_data,(nas.ipaddress, 1700))
         (data, addrport) = sock.recvfrom(8192)
+        log_debug_('CoA socket get: %s' % str(addrport))
         doc=packet.AcctPacket(secret=nas.secret, dict=dict, packet=data)
 
         #for key,value in doc.items():
@@ -216,6 +218,7 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
         #except:
         #    pass
         return doc.has_key("Error-Cause")==False
+    
     elif format_string!='' and access_type in ['pptp', 'pppoe', 'ipn']:
         #ssh
         log_debug_('SetSpeed Via SSH')
