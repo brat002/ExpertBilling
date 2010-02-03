@@ -159,6 +159,7 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
 
         log_debug_('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.settimeout(20)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=43, secret=str(nas.secret), dict=dict)
         doc.AddAttribute('NAS-IP-Address', str(nas.ipaddress))
