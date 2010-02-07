@@ -1235,7 +1235,13 @@ if __name__ == "__main__":
         vars.graph_connection = PersistentDBConnection(psycopg2, vars.db_dsn)
         vars.graph_connection.connect()
         vars.graph_connection.connection.set_isolation_level(0)
-        
+        #=======================================
+        #!!! debug options, comment out when not needed
+        from ssh_paramiko import install_logger as ssh_install_logger
+        import socket
+        socket.setdefaulttimeout(30)
+        ssh_install_logger(logger)
+        #=======================================
         logger.lprint('Ebs RPC start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
 
