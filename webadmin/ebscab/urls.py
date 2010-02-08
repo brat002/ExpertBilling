@@ -46,3 +46,8 @@ urlpatterns += patterns('billservice.views',
      (r'^one/time/history/info/$', 'one_time_history'),
      (r'^news/delete/$', 'news_delete'),
 )
+
+urlpatterns += patterns('service_monitor.views',
+                        #(?P<id>\d+)
+    (r'^service_data/$', 'service_data'),
+)
