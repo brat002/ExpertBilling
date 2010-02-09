@@ -2699,3 +2699,19 @@ CREATE TRIGGER return_ipinuse_to_pool_trg
    ON radius_activesession
    FOR EACH ROW
    EXECUTE PROCEDURE return_ipinuse_to_pool_trg_fn();
+   
+   
+-- Column: email
+
+-- ALTER TABLE billservice_systemuser DROP COLUMN email;
+
+ALTER TABLE billservice_systemuser ADD COLUMN email text;
+ALTER TABLE billservice_systemuser ALTER COLUMN email SET STORAGE EXTENDED;
+ALTER TABLE billservice_systemuser ALTER COLUMN email SET DEFAULT ''::text;
+
+ALTER TABLE billservice_systemgroup ADD COLUMN "system" boolean;
+ALTER TABLE billservice_systemgroup ALTER COLUMN "system" SET STORAGE PLAIN;
+ALTER TABLE billservice_systemgroup ALTER COLUMN "system" SET DEFAULT false;
+
+ALTER TABLE billservice_systemgroup ADD COLUMN system_name text;
+ALTER TABLE billservice_systemgroup ALTER COLUMN system_name SET STORAGE EXTENDED;

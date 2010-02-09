@@ -9,6 +9,7 @@ from helpers import makeHeaders
 from helpers import HeaderUtil
 from helpers import dateDelim
 from helpers import get_type
+import decimal
 import datetime
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 
@@ -508,7 +509,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             self.lineEdit_rs.setText(unicode(self.bank_model.rs))
             
             ####Info
-            data = self.connection.get("""SELECT (SELECT max(created) FROM billservice_salecard WHERE dealer_id=dealer.id) as last_sale,
+            data = self.connection.get("""SELECT discount,(SELECT max(created) FROM billservice_salecard WHERE dealer_id=dealer.id) as last_sale,
             (SELECT count(*)
             FROM billservice_salecard_cards 
             WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id = dealer.id)) as cardcount,
@@ -529,7 +530,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             self.lineEdit_pay_sum.setText(u"%s" % data.pay)
             self.lineEdit_buy_cards_sum.setText(u"%s" % s)
             try:
-                self.lineEdit_debet_sum.setText(unicode((-1)*(data.pay-s)))
+                self.lineEdit_debet_sum.setText(unicode((-1)*(data.pay - s*(100-data.discount)/decimal.Decimal("100"))))
             except:
                 self.lineEdit_debet_sum.setText(unicode(0))
             self.lineEdit_dealer_return.setText(u"%s" % discount)
@@ -790,7 +791,8 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
             self.addrow(self.tableWidget, d.activated, i,4)
             self.addrow(self.tableWidget, s, i,5)
             try:
-                self.addrow(self.tableWidget, (-1)*(d.pay - s), i,6)
+                print "discount=",d.discount, type(d.pay), type(d.discount)
+                self.addrow(self.tableWidget, (-1)*(d.pay - s*(100-d.discount)/decimal.Decimal("100")), i,6)
             except:
                 self.addrow(self.tableWidget, 0, i,6)
             self.addrow(self.tableWidget, d.discount, i,7)

@@ -768,7 +768,7 @@ if __name__ == "__main__":
         mainwindow = MainWindow()
         splash.finish(mainwindow) 
         mainwindow.show()
-        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.2.1 #%s - %s" % (username, server_ip))  
+        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.3 #%s - %s" % (username, server_ip))  
         #app.setStyle("cleanlooks")
         mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
         app.setStyleSheet(open("./style.qss","r").read())

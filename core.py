@@ -5,6 +5,7 @@ from __future__ import with_statement
 """DON'T REMOVE, NEEDED FOR PROPER FREEZING!!!"""
 try:    import mx.DateTime
 except: pass
+from encodings import idna, ascii #DONT REMOVE, BLATS!
 
 import IPy
 import zlib
