@@ -22,9 +22,7 @@
 				pin.value='';
 				series.value='';
                 card_id.value='';
-				if (ret['error_message'] == 'True') {
-					window.location.reload();
-				}
+				window.location.reload();
 			},
         	error: function(data, status){
 				var ret = eval('('+data+')'); 

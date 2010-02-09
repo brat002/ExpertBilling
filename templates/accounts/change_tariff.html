@@ -23,6 +23,7 @@
 				var ret = eval('('+data+')');
 				if (typeof ret['ok_message'] != 'undefined') {
 					tb_remove();
+					location.reload();
 				} else {
 					message.innerHTML = ret['error_message'];
 				}
