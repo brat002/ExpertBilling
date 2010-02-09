@@ -17,6 +17,7 @@ NAS_LIST=(
                 (u'cisco',u'cisco'),
                 (u'common_radius',u'Общий RADIUS интерфейс'),
                 (u'common_ssh',u'common_ssh'),
+                (u'common_ssh',u'common_ssh'),
                 )
 
             
@@ -700,6 +701,7 @@ class NasEbs(ebsTableWindow):
         self.tableWidget.setColumnHidden(0, True)
 
         HeaderUtil.getHeader(self.setname, self.tableWidget)
+
     
 
     def delNodeLocalAction(self):
