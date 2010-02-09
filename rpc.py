@@ -47,7 +47,7 @@ from constants import rules
 from rpc2.server_producer import install_logger as serv_install_logger, DBProcessingThread, PersistentDBConnection, TCP_IntStringReciever, RPCFactory
 from rpc2.rpc_protocol import install_logger as proto_install_logger, RPCProtocol, ProtocolException, MD5_Authenticator, Object as Object
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-
+from encodings import idna, ascii
 NAME = 'rpc'
 DB_NAME = 'db'
 DEFAULT_PORT = 7771
