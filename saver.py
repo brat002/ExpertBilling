@@ -1,6 +1,6 @@
-import os, sys, cPickle, glob
+import os, sys, cPickle, glob, logging
     
-def log_error_(lstr, level=3):
+def log_error_(lstr, level=logging.ERROR):
     log_adapt(lstr, level)
     
 def log_adapt(lstr, level):

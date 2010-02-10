@@ -85,6 +85,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
     send_lock  = None
     producer_started = False
     SINGLE_USER = False
+    peer__ = None
     
     def __init__(self, build_producer):
         #super(TCPSender, self).__init__()

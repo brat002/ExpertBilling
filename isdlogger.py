@@ -19,14 +19,22 @@ LG_WARNING  = 2
 LG_ERROR    = 3
 LG_CRITICAL = 4
 
-loggingLevels = {0: logging.DEBUG, 1: logging.INFO, 2: logging.WARNING, 3: logging.ERROR, 4: logging.CRITICAL}
-syslogLevels  = {0: syslog.LOG_DEBUG, 1: syslog.LOG_INFO, 2: syslog.LOG_WARNING, 3: syslog.LOG_ERR, 4 : syslog.LOG_CRIT} 
+CRITICAL = 50
+FATAL = CRITICAL
+ERROR = 40
+WARNING = 30
+WARN = WARNING
+INFO = 20
+DEBUG = 10
+
+loggingLevels = {10: logging.DEBUG, 20: logging.INFO, 30: logging.WARNING, 40: logging.ERROR, 50: logging.CRITICAL}
+syslogLevels  = {10: syslog.LOG_DEBUG, 20: syslog.LOG_INFO, 30: syslog.LOG_WARNING, 40: syslog.LOG_ERR, 50 : syslog.LOG_CRIT} 
 
 loggingFormat = '%(asctime)s %(levelname)-8s %(message)s'
 
 class isdlogger(object):
     def __init__ (self, ltype, loglevel=0, ident=None, filename=None, format=loggingFormat, filemode='a+', maxBytes=10485760, backupCount=3):
-        self.loggingLevel = loglevel
+        self.loggingLevel = self.setLevel(loglevel)
         self.ident  = ident
         if ltype == 'syslog':
             self.log_ = self.syslogLog
@@ -46,7 +54,7 @@ class isdlogger(object):
             #else: self.filename = filename
             #logging.config
             #logging.root.setLevel(self.levels[loglevel])
-	    self.loggingL.setLevel(self.levels[loglevel])
+	    self.loggingL.setLevel(self.levels[self.transformLevel(loglevel)])
             rtHdlr = handlers.RotatingFileHandler(filename, mode=filemode, maxBytes=maxBytes, backupCount=backupCount)
             rtHdlr.setFormatter(logging.Formatter(format))
             #logging.root.addHandler(rtHdlr)
@@ -56,9 +64,18 @@ class isdlogger(object):
             raise Exception('Unknown logger type!')
         
     '''generic logging method'''
-    def log(self, level, message, vars):
+    '''def log(self, level, message, vars):
         if level >= self.loggingLevel:
-            self.log_(self.levels[level], message % vars)
+            self.log_(self.levels[level], message % vars)'''
+	    
+    def log(self, level, message, *vars):
+        if level >= self.loggingLevel:
+	    if not vars or vars == ((),):
+		self.log_(self.levels[level], message)
+	    elif len(vars) == 1 and isinstance(vars[0], tuple):
+		self.log_(self.levels[level], message % vars[0])
+	    else:
+		self.log_(self.levels[level], message % vars)
             
     """quick method with 'repr'"""
     def reprl(self, level, obj, message='%s'):
@@ -68,7 +85,7 @@ class isdlogger(object):
     '''print a message with 'INFO' level'''
     def lprint(self, message):
         if 1 >= self.loggingLevel:
-            self.log_(self.levels[1], message)
+            self.log_(self.levels[logging.INFO], message)
             
     '''for log adapter'''
     def log_adapt(self, message, level):
@@ -86,35 +103,38 @@ class isdlogger(object):
             
     '''set logging level'''
     def setLevel(self, level):
-        self.loggingLevel = level
+        self.loggingLevel = self.transformLevel(level)
         
+    def transformLevel(self, level):
+	return level*10 + 10
+    
     def setNewLevel(self, level):
-        if self.loggingLevel != level:
-            self.loggingLevel = level
+        if self.loggingLevel != self.transformLevel(level):
+            self.loggingLevel = self.transformLevel(level)
             '''if self.ltype == 'logging':
                 logging.root.setLevel(self.levels[level])'''
         
     def debug(self, message, vars):
-        self.log(0, message, vars)
+        self.log(logging.DEBUG, message, vars)
         
     def debugfun(self, message, fun, vars):
-        self.log(0, message, fun(*vars))
+        self.log(logging.DEBUG, message, fun(*vars))
         
     def info(self, message, vars):
-        self.log(1, message, vars)
+        self.log(logging.INFO, message, vars)
         
     def warning(self, message, vars):
-        self.log(2, message, vars)
+        self.log(logging.WARNING, message, vars)
         
     def error(self, message, vars):
-        self.log(3, message, vars)
+        self.log(logging.ERROR, message, vars)
         
     def critical(self, message, vars):
-        self.log(4, message, vars)
+        self.log(logging.CRITICAL, message, vars)
         
     '''predicate - whether level <= INFO level'''
     def writeInfoP(self):
-        return self.loggingLevel <= 1
+        return self.loggingLevel <= logging.INFO
     
 #logger compatible with PYRO
 class pyrologger(isdlogger):
