@@ -1238,10 +1238,10 @@ if __name__ == "__main__":
         logger.lprint('Ebs RPC start')
         #=======================================
         #!!! debug options, comment out when not needed
-        from ssh_paramiko import install_logger as ssh_install_logger
-        import socket
-        socket.setdefaulttimeout(30)
-        ssh_install_logger(logger)
+        #from ssh_paramiko import install_logger as ssh_install_logger
+        #import socket
+        #socket.setdefaulttimeout(30)
+        #ssh_install_logger(logger)
         import sys
         stderr_log = open(vars.log_file + '.err', 'ab')
         #redirect_stderr(stderr_log)
