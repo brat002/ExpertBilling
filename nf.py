@@ -251,7 +251,7 @@ class TCPSender_ClientFactory(ReconnectingClientFactory):
         ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
     def clientConnectionFailed(self, connector, reason):
-        logger.info('SENDER: Connection failed. Reason:', reason)
+        logger.info('SENDER: Connection failed. Reason: %s', reason)
         ReconnectingClientFactory.clientConnectionFailed(self, connector,
                                                          reason)
 

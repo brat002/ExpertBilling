@@ -104,7 +104,6 @@ class check_vpn_access(Thread):
             result = get_corrected_speed(result, correction)            
             if addonservicespeed:                
                 result = get_corrected_speed(result, addonservicespeed)                        
-                #print "corrected", result            
             if result==[]:                 
                 result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                            
             
@@ -180,15 +179,11 @@ class check_vpn_access(Thread):
                 #try:
                 #    sessions = convert(rosClient('10.10.1.100', 'admin', 'Wind0za', r"/queue/simple/getall"))
                 for row in rows:
-                    #print row
                     try:
                         rs = RadiusSession(*row)
-                        #print rs
                         result=None
                         nas = caches.nas_cache.by_ip.get(str(rs.nas_id))
                         acc = caches.account_cache.by_account.get(rs.account_id)
-                        #print not nas or not acc or not acc.account_status
-                        #print nas, acc, acc.account_status
                         if not nas or not acc or not acc.account_status == 1: continue
                         
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
@@ -198,8 +193,6 @@ class check_vpn_access(Thread):
                                     and \
                                     (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status == 1 and acc.tarif_active==True
                         
-                        #print "hotspot acstatus", acstatus
-                        #print dir(caches.timeperiodaccess_cache)
                         if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id):
                             #chech whether speed has changed
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
@@ -216,10 +209,7 @@ class check_vpn_access(Thread):
                             speed = get_decimals_speeds(speed)
                             newspeed = ''.join([unicode(spi) for spi in speed])
 
-                                
-                            #print newspeed
                             if rs.speed_string != newspeed:
-                                #print "set speed", newspeed
                                 #coa_result=change_speed(vars.DICT, rs.account_id, str(acc.username), str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
                                 #                        str(acc.ipn_mac_address), str(nas.ipaddress),nas.type, str(nas.name),
                                 #                        str(nas.login), str(nas.password), nas_secret=str(nas.secret),
@@ -239,7 +229,6 @@ class check_vpn_access(Thread):
                                     cur.connection.commit()
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         else:
-                            #print "send POD"
                             logger.debug("%s: about to send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                             result = PoD(vars.DICT, rs.account_id, str(acc.username),str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
                                          str(acc.ipn_mac_address),str(rs.access_type),str(nas.ipaddress), nas_type=nas.type, 
@@ -574,7 +563,6 @@ class periodical_service_bill(Thread):
                         
                 
                 if caches.underbilled_accounts_cache.underbilled_acctfs:
-                    #print caches.underbilled_accounts_cache.underbilled_acctfs
                     cur.execute("""UPDATE billservice_accounttarif SET periodical_billed=TRUE WHERE id IN (%s);""" % \
                                 ' ,'.join((str(i) for i in caches.underbilled_accounts_cache.underbilled_acctfs)))
                     cur.connection.commit()
@@ -864,8 +852,7 @@ class addon_service(Thread):
                     if 0: assert isinstance(acc, AccountData)
                     if not acc.account_status == 1: continue
 
-                    #limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])                    #print acc                    
-                    accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                    #print services                    #time.sleep(1)                    #continue                                     
+                    accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                          
                     for accservice in accservices:                        
                         if 0: assert isinstance(service, AccountAddonServiceData)                        
 
@@ -885,7 +872,6 @@ class addon_service(Thread):
                                             %s, '%s', %s, '%s')
 
                                 """ % (service.id, acc.account_id, accservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,)
-                                #print sql
                                 cur.execute(sql)
                                 cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = %s WHERE id=%s", (dateAT, accservice.id))
 
@@ -1151,7 +1137,6 @@ class ipn_service(Thread):
             for speed in speeds:                
                 #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
                 tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)                
-                #print "res=",res                
                 if res==True and (delta<min_delta or min_delta==-1):                    
                     minimal_period=speed                    
                 min_delta=delta            
@@ -1164,11 +1149,9 @@ class ipn_service(Thread):
                 else:                    
                     res=s                
                 result.append(res)   #Проводим корректировку скорости в соответствии с лимитом            
-            #print self.caches.speedlimit_cache            
             result = get_corrected_speed(result, correction)            
             if addonservicespeed:                
                 result = get_corrected_speed(result, addonservicespeed)                        
-                #print "corrected", result            
             if result==[]:                 
                 result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                            
             
@@ -1369,7 +1352,6 @@ class AccountServiceThread(Thread):
                     #renewCaches(cur)
                     renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem,), False)
                     cur.close()
-                    #print cacheMaster.cache
                     if counter == 0:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
                         if not flags.allowedUsersCheck: continue
@@ -1424,8 +1406,6 @@ def graceful_save():
         suicideCondition[key] = True
     logger.lprint("Core - about to exit gracefully.")
     time.sleep(20)
-    #pool.close()
-    #time.sleep(2)
     rempid(vars.piddir, vars.name)
     logger.lprint("Core - exiting gracefully.")
     sys.exit()

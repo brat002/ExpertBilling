@@ -36,16 +36,16 @@ ssh_exec = False
 #    print >> sys.stderr, "Problems with importing ssh wrapper from ssh_utilities, reverting to paramiko"
 from ssh_paramiko import ssh_client
 
-def log_info_(lstr, level=1):
+def log_info_(lstr, level=logging.INFO):
     log_adapt(lstr, level)
     
-def log_debug_(lstr, level=0):
+def log_debug_(lstr, level=logging.DEBUG):
     log_adapt(lstr, level)
     
-def log_warning_(lstr, level=2):
+def log_warning_(lstr, level=logging.WARNING):
     log_adapt(lstr, level)
     
-def log_error_(lstr, level=3):
+def log_error_(lstr, level=logging.ERROR):
     log_adapt(lstr, level)
     
 def log_adapt(lstr, level):
