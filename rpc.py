@@ -777,14 +777,15 @@ class RPCServer(object):
 
     
     def save(self, model, table, cur=None, connection=None):
-        #print model
-        sql = model.save(table)
-        #print sql
 
-        #print sql
-        #print sql
+        sql = model.save(table)
+
         cur.execute(sql)
-        id = cur.fetchone()['id']
+        
+        id_fetch = cur.fetchone()
+        id = id_fetch if not id_fetch else id_fetch['id']
+        #a1 = cur.fetchone()
+        #id = cur.fetchone()['id']
         if model.__dict__.get("id", None):
             log_string = u"""Пользователь %s обновил запись %s в таблице таблице %s""" % (vars.USER_ID[0], str(model.__dict__).decode('unicode-escape'), table)
         else:

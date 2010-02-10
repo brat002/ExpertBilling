@@ -1075,7 +1075,8 @@ class settlement_period_service_dog(Thread):
                         if account_balance > 0:
                             for ots in caches.onetimeservice_cache.by_id.get(acc.tarif_id, []):
                                 if 0: assert isinstance(ots, OneTimeServiceData)
-                                if not caches.onetimehistory_cache.by_acctf_ots_id.has_key((acc.acctf_id, ots.id)):
+                                if not caches.onetimehistory_cache.by_acctf_ots_id.has_key((acc.acctf_id, ots.id)) \
+                                   and not ots.created > acc.datetime:
                                     cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id, onetimeservice_id, account_id, summ, datetime) VALUES(%s, %s, %s, %s, %s);", (acc.acctf_id, ots.id, acc.account_id, ots.cost, now,))
                                     cur.connection.commit()
                                     caches.onetimehistory_cache.by_acctf_ots_id[(acc.acctf_id, ots.id)] = (1,)
