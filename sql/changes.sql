@@ -2715,3 +2715,8 @@ ALTER TABLE billservice_systemgroup ALTER COLUMN "system" SET DEFAULT false;
 
 ALTER TABLE billservice_systemgroup ADD COLUMN system_name text;
 ALTER TABLE billservice_systemgroup ALTER COLUMN system_name SET STORAGE EXTENDED;
+
+--10.02.2010
+
+ALTER TABLE billservice_onetimeservice
+   ADD COLUMN created timestamp without time zone DEFAULT now();

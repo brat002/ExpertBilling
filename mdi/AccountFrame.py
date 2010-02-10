@@ -2158,7 +2158,7 @@ class TarifFrame(QtGui.QDialog):
                     onetime_service.tarif_id = model.id
                     onetime_service.name=unicode(self.onetime_tableWidget.item(i, 1).text())
                     onetime_service.cost=unicode(self.onetime_tableWidget.item(i, 2).text())
-                    
+                    onetime_service.created = datetime.datetime.now() 
                     self.connection.save(onetime_service, "billservice_onetimeservice")
                     
 

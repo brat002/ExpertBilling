@@ -95,7 +95,7 @@ core_sql = \
                         date_trunc('second', prepaid_time_reset), date_trunc('second', prepaid_time_accrued), date_trunc('second', balance_blocked), accounttarif_id 
                         FROM billservice_shedulelog;""",
           'timeaccs' :"""SELECT id, prepaid_time, reset_time FROM billservice_timeaccessservice;""",
-          'onetimes' :"""SELECT id, tarif_id, cost FROM billservice_onetimeservice;""",
+          'onetimes' :"""SELECT id, tarif_id, cost, created FROM billservice_onetimeservice;""",
           'accpars'  :"""SELECT id, access_type, access_time_id, max_limit, min_limit, 
                         burst_limit,burst_treshold,burst_time, priority, ipn_for_vpn FROM billservice_accessparameters;""",
           'ipnspeed' :"""SELECT id, account_id, speed, state, static, datetime FROM billservice_accountipnspeed;""",
