@@ -26,7 +26,7 @@ from time import clock
 from copy import copy, deepcopy
 from daemonize import daemonize
 from threading import Thread, Lock
-from DBUtils.PooledDB import PooledDB
+#from DBUtils.PooledDB import PooledDB
 from collections import deque, defaultdict
 
 from saver import allowedUsersChecker, setAllowedUsers
