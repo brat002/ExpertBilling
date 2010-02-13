@@ -85,6 +85,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
     if (format_string=='' and access_type in ['pptp', 'pppoe', 'lisg'] ) or access_type=='hotspot' or nas_type=='cisco':
         log_debug_("Send PoD")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.settimeout(20)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=40, secret=str(nas_secret), dict=dict)
         doc.AddAttribute('NAS-IP-Address', str(nas_ip))
