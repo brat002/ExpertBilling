@@ -550,25 +550,19 @@ class ConnectDialog(QtGui.QDialog):
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             #print settings.value("ip", QtCore.QVariant(""))
-            if settings.value("save", QtCore.QVariant("")).toBool:
-                self.save_checkBox.setCheckState(QtCore.Qt.Checked)
-            else: self.save_checkBox.setCheckState(QtCore.Qt.Unchecked)
-                
+            if settings.value("save", QtCore.QVariant("")).toBool():
+                self.save_checkBox.setCheckState(QtCore.Qt.Checked)      
 
-            self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
-            self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
-            #self._password = settings.value("password", QtCore.QVariant("")).toByteArray()
-            self.password_edit.setText(settings.value("password", QtCore.QVariant("")).toString())
+                self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
+                self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
+                self.password_edit.setText(settings.value("password", QtCore.QVariant("")).toString())
+            else: self.save_checkBox.setCheckState(QtCore.Qt.Unchecked)
             #self.address_edit.setText(self._address)
             #self.name_edit.setText(self._name)
             #self.password_edit.setText("*******")
         except Exception, ex:
             print ex
-        '''dbi = self.db.select("select * from exbill_users;")
-        p1 = QtCore.QCryptographicHash.hash(QtCore.QString("arrgh").toUtf8(), QtCore.QCryptographicHash.Md5)
-        p2 = dbi[4].value(3).toByteArray()
-        print p1, p2
-        print p1 == p2'''
+
         
     def getModel(self, table):
         

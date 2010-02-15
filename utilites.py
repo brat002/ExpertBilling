@@ -153,11 +153,11 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
     """
     
     if (format_string=='' and access_type in ['pptp', 'pppoe', 'lisg']) or access_type=='hotspot' or nas.type=='cisco':
-        #Send CoA
-        #print 1
-        #speed_string= create_speed_string(speed, coa=True)
-        #speed_string = create_speed_string(speed)
 
+        if not nas.speed_value1 and not nas.speed_value1:
+            log_debug_('CoA noop change')
+            return True
+        
         log_debug_('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(20)
