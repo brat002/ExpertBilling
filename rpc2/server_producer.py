@@ -86,6 +86,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
     producer_started = False
     SINGLE_USER = False
     peer__ = None
+    add_data = {}
     
     def __init__(self, build_producer):
         #super(TCPSender, self).__init__()
@@ -108,6 +109,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
         self.send_lock = self.producer.send_lock
         self.SINGLE_USER = self.producer.SINGLE_THREADED
         self.post_login = self.producer.post_login
+        self.add_data = self.producer.add_data
         
     def connectionLost(self, reason):
         logger.warning("SERVER: connection was lost: %s, reason: %s", (self.peer__, reason))
@@ -128,7 +130,7 @@ class TCP_IntStringReciever(Int32StringReceiver):
                     self.write(s_packet[1])
             status_result = self.protocol_._check_status()
             if status_result:
-                self.post_login((self.protocol_._check_status(), self.transport.getPeer(), datetime.datetime.now()))
+                self.post_login((self.protocol_._check_status(), self.transport.getPeer(), datetime.datetime.now(), self.add_data))
                 if not self.SINGLE_USER:
                     self.producer.start()
                 self.producer_started = True
@@ -204,6 +206,7 @@ class DBProcessingThread(Thread):
         #self.connection = self.protocol.get_connection()
         self.connection = db_conn
         self.RPC = RPC
+        self.processing_server = RPC
         self.RUNNING = True
         self.MAILBOX = None
         self.MAILBOX_LOCK = Lock()
@@ -211,6 +214,8 @@ class DBProcessingThread(Thread):
         self.reactor_ = reactor_
         self.SINGLE_THREADED = single_threaded
         self.post_login = post_login
+        self.add_data = {}
+        self.add_data['USER_ID'] = [None, None]
         
     def registerConsumer_(self, consumer):
         self.consumer = consumer
@@ -243,6 +248,7 @@ class DBProcessingThread(Thread):
             kwargs = {}
         kwargs['connection'] = self.connection
         kwargs['cur'] = self.connection
+        kwargs['add_data'] = self.add_data
         #print repr(args), repr(kwargs)
         try:
             result = method(*args, **kwargs)
