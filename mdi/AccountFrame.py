@@ -30,6 +30,7 @@ from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, Gr
 from MessagesFrame import MessageDialog
 from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
+qtTimeFormat = "YYYY-MM-DD HH:MM:SS"
 import IPy
 
 class CashType(object):
@@ -108,6 +109,9 @@ class AddAccountTarif(QtGui.QDialog):
     def accept(self):
         if self.get_info==False:
             date=self.date_edit.dateTime().toPyDateTime()
+            #print repr(date)
+            #print str(self.date_edit.dateTime().toString())
+            date = datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
             if self.model:
                 model=self.model
                 model.datetime = date

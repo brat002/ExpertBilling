@@ -2720,3 +2720,10 @@ ALTER TABLE billservice_systemgroup ALTER COLUMN system_name SET STORAGE EXTENDE
 
 ALTER TABLE billservice_onetimeservice
    ADD COLUMN created timestamp without time zone DEFAULT now();
+   
+--16.02.2010
+
+--SELECT baf1.id, baf1.datetime from billservice_accounttarif baf1 JOIN billservice_accounttarif baf2 ON baf1.account_id=baf2.account_id AND baf1.id != baf2.id AND (date_trunc('minute', baf1.datetime + interval '2 min') - interval '1 min' * (date_part('min', baf1.datetime + interval '2 min')::int % 5))=(date_trunc('minute', baf2.datetime + interval '2 min') - interval '1 min' * (date_part('min', baf2.datetime + interval '2 min')::int % 5)) GROUP BY baf1.id, baf1.datetime order by baf1.id;
+
+UPDATE billservice_accounttarif SET datetime = datetime + interval '2 minutes';
+UPDATE billservice_accounttarif SET datetime=date_trunc('minute', datetime) - interval '1 min' * (date_part('min', datetime)::int % 5);
