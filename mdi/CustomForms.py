@@ -2499,7 +2499,9 @@ class AccountAddonServiceEdit(QtGui.QDialog):
             
         model.account_id = self.account_model.id
         model.service_id = self.comboBox_service.itemData(self.comboBox_service.currentIndex()).toInt()[0]
-        model.activated = self.dateTimeEdit_activation.dateTime().toPyDateTime()
+        date = self.dateTimeEdit_activation.dateTime().toPyDateTime()
+        date = datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
+        model.activated = date
         if self.model:
             if not self.model.temporary_blocked:
                 model.temporary_blocked = "now()" if   self.checkBox_temporary_blocked.isChecked()==True else None
@@ -2512,8 +2514,10 @@ class AccountAddonServiceEdit(QtGui.QDialog):
         if self.groupBox_2.isChecked()==True:
             if self.dateTimeEdit_deactivation.dateTime().toPyDateTime()<model.activated:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Дата окончания действия услуги не должна быть меньше даты начала действия"))
-                return                
-            model.deactivated = self.dateTimeEdit_deactivation.dateTime().toPyDateTime()
+                return
+            date = self.dateTimeEdit_deactivation.dateTime().toPyDateTime()
+            date = datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
+            model.deactivated = date
             
         try:
             self.connection.save(model, "billservice_accountaddonservice")
