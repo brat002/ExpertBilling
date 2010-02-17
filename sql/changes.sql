@@ -2729,3 +2729,6 @@ ALTER TABLE billservice_onetimeservice
 --UPDATE billservice_accounttarif SET datetime=date_trunc('minute', datetime) - interval '1 min' * (date_part('min', datetime)::int % 5);
 
 UPDATE billservice_accounttarif SET datetime=date_trunc('second', datetime);
+
+UPDATE billservice_accountaddonservice SET activated=date_trunc('second', activated);
+UPDATE billservice_accountaddonservice SET deactivated=date_trunc('second', deactivated);
