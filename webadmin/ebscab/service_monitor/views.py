@@ -1,26 +1,21 @@
 #-*- coding=UTF-8 -*-
 
 import os, sys
+import jsonpickle
 from django.conf import settings
-
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db import connection
 from django import template
 from django.contrib.auth.decorators import login_required
+from django.utils.encoding import iri_to_uri
 
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, News, AccountViewedNews
-
 from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out  
 from billservice.utility import is_login_user, settlement_period_info
 from nas.models import TrafficClass
 
-
 from lib.decorators import render_to
-
-from django.utils.encoding import iri_to_uri
-
-import jsonpickle
 
 @render_to('service_monitor/service_data.html')
 def service_data(request):
@@ -28,14 +23,14 @@ def service_data(request):
     user = request.user
     data = ''
     data_pack = ''
-    
+  
     if user.is_authenticated():
-    
+        
         code = request.GET.get('id', None)
         
-        if code != None:
+        if code != None:            
             #request of user balance
-            if code == u'1009':                
+            if code == u'1009':                                
                 value = '%.2f' % (user.ballance - user.credit)                
                 data_pack = {'status_code' : '1010'}
                 data_pack['value'] = value             
