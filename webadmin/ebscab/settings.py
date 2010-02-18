@@ -114,6 +114,8 @@ INSTALLED_APPS = (
     'nas',
     'billservice',
     'lib',
+    'service_monitor',
+    'testcases',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -145,6 +147,8 @@ LEFT_PROMISE_DAYS = 7
 WEBCAB_LOG = '/opt/ebs/web/ebscab/log/webcab_log'
 
 CURRENCY = '$'
+
+TEST_RUNNER = 'testcases.test_runner.run_tests'
 
 try:
     from settings_local import *
