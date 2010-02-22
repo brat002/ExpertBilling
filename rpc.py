@@ -468,6 +468,39 @@ class RPCServer(object):
         connection.commit()
 
     
+    def text_report(self, options, cur=None, connection=None, add_data = {}):
+        F_NAME = 'TEXT_REP'
+        state_got = options[0]
+        def check_state():
+            if (state_got in ('next', 'prev', 'home') and
+                    (not F_NAME in add_data or not add_data[F_NAME])):
+                raise Exception('Wrong state detected. Please load(reload) the report.')
+        def get_next_filename(flow_dir, last_date):
+            pass
+        def get_first_filename(flow_dir):
+            return commands.getstatusoutput('ls -1 %s | head -n 1' % flow_dir)
+        check_state()
+        if state_got == 'start':
+            add_data['text_report'] = None
+            #get files
+            #save files
+            #get data
+            #send data
+        elif state_got == 'next':
+            prev_data = add_data[F_NAME]
+            #calc next
+            #send data
+        elif state_got == 'prev':
+            prev_data = add_data[F_NAME]
+            #calc prev
+            #send data
+        elif state_got == 'home':
+            prev_data = add_data[F_NAME]
+            #calc home
+            #send data
+        else:
+            raise Exception('TEXT REPORT: Unknown state: %s' % state_got)
+        
     def makeChart(self, *args, **kwargs):
         kwargs['cur']=None
         kwargs['connection']=None
