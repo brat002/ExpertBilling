@@ -1,8 +1,8 @@
 import paramiko
-import logging
+#import logging
 #import socket
 #socket.setdefaulttimeout(20)
-paramiko.common.logging.root.setLevel(logging.DEBUG)
+#paramiko.common.logging.root.setLevel(logging.DEBUG)
 
 class PseudoLogger(object):
     def _pass(self, *args, **kwargs):
