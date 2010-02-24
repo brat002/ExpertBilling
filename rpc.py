@@ -351,40 +351,46 @@ class RPCServer(object):
         status_bad_userpassword = 2
         status_card_was_activated =3
         now = datetime.datetime.now()
+        connection.commit()
         if login and pin:
-            cur.execute("SELECT * FROM billservice_card WHERE login=%s and pin=%s and sold is not Null and disabled=False;",  (login, pin, ))
-            card = cur.fetchone()
-            if not card: return status_bad_userpassword
+            try:
+                return_status = 0
+                cur.execute("SELECT * FROM billservice_card WHERE login=%s and pin=%s and sold is not Null and disabled=False FOR UPDATE;",  (login, pin, ))
+                card = cur.fetchone()
+                if not card: 
+                    return_status =  status_bad_userpassword                
+                elif card['activated'] or card['start_date']>now or card['end_date']<now: 
+                    return_status =  status_card_was_activated
+                if not return_status:                
+                    cur.execute("SELECT * FROM billservice_ippool WHERE id=(SELECT pool_id FROM billservice_ipinuse WHERE id=%s);", (card['ipinuse_id'],))
+                    pool = cur.fetchone()
+                    
+                    # 0 -VPN, 1 - IPN
+                    if pool['type']==1:
+                        cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
+                        VALUES(%s, %s, %s, %s, False, 1, now(), False, True, True, False, False, False, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
+                    else:
+                        cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, vpn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
+                        VALUES(%s, %s, %s, %s, False, 1, now(), False, True, True, False, False, False, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
+                        
+                    account_id = cur.fetchone()['id']
             
-            if card['activated'] or card['start_date']>now or card['end_date']<now: return status_card_was_activated
+                    cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s, %s, %s);", (account_id, card['tarif_id'], now))
+                    
+                    cur.execute(u"""
+                    INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created, promise, end_promise)
+                    VALUES('Активация карты доступа', %s, 'ACCESS_CARD', True, %s, %s*(-1),'', %s, False, Null);
+                    """, (account_id, card["tarif_id"], card['nominal'], now))
             
-            #if card['activated'] or card['start_date']>datetime.datetime.now() or card['end_date']<datetime.datetime.now(): return status_card_was_activated
-            
-            cur.execute("SELECT * FROM billservice_ippool WHERE id=(SELECT pool_id FROM billservice_ipinuse WHERE id=%s);", (card['ipinuse_id'],))
-            pool = cur.fetchone()
-            
-            # 0 -VPN, 1 - IPN
-            if pool['type']==1:
-                cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
-                VALUES(%s, %s, %s, %s, False, 1, now(), False, True, True, False, False, False, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
-            else:
-                cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, vpn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
-                VALUES(%s, %s, %s, %s, False, 1, now(), False, True, True, False, False, False, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
-                
-            account_id = cur.fetchone()['id']
-    
-            cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s, %s, %s);", (account_id, card['tarif_id'], now))
-            
-            cur.execute(u"""
-            INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created, promise, end_promise)
-            VALUES('Активация карты доступа', %s, 'ACCESS_CARD', True, %s, %s*(-1),'', %s, False, Null);
-            """, (account_id, card["tarif_id"], card['nominal'], now))
-    
-            cur.execute("UPDATE billservice_card SET activated = %s, activated_by_id = %s WHERE id = %s;", (now, account_id, card['id']))
-            connection.commit()
-
-            return  status_ok
-    
+                    cur.execute("UPDATE billservice_card SET activated = %s, activated_by_id = %s WHERE id = %s;", (now, account_id, card['id']))
+                    return_status = status_ok
+                    
+                connection.commit()    
+                return return_status
+            except Exception, e:
+                logger.error("Error activate card %s, %s", (login, repr(e)))
+                connection.rollback()
+                return
                             
         #cur.execute(sql)
         #connection.commit()
@@ -415,27 +421,31 @@ class RPCServer(object):
         status_bad_userpassword = 2
         status_card_was_activated =3
         now = datetime.datetime.now()
+        connection.commit()
         try:
             if serial and pin and card_id and account_id:
-                cur.execute("SELECT * FROM billservice_card WHERE id=%s and series=%s and pin=%s and disabled=False;",  (card_id, serial, pin ))
+                return_value = ''
+                cur.execute("SELECT * FROM billservice_card WHERE id=%s and series=%s and pin=%s and disabled=False FOR UPDATE;",  (card_id, serial, pin ))
                 card = cur.fetchone()
-                if not card: return "CARD_NOT_FOUND"
-                
-                if card["sold"] is None: return "CARD_NOT_SOLD"
-                
-                if card['activated']: return "CARD_ALREADY_ACTIVATED"
-                
-                if card['start_date']>now or card['end_date']<now: return "CARD_EXPIRED"
-                                
-                cur.execute(u"""
-                INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created, promise, end_promise)
-                VALUES('Активация карты оплаты', %s, 'PAY_CARD', True, %s, %s*(-1),'', %s, False, Null);
-                """, (account_id, card["tarif_id"], card['nominal'], now))
-        
-                cur.execute("UPDATE billservice_card SET activated = %s, activated_by_id = %s WHERE id = %s;", (now, account_id, card['id']))
-                connection.commit()
-                logger.info("Card #%s series #%s pin #%s was activated", (card_id, serial, pin))
-                return  "CARD_ACTIVATED"
+                if not card:
+                    return_value =  "CARD_NOT_FOUND"                
+                elif card["sold"] is None: 
+                    return_value = "CARD_NOT_SOLD"                
+                elif card['activated']: 
+                    return_value = "CARD_ALREADY_ACTIVATED"                
+                elif card['start_date']>now or card['end_date']<now: 
+                    return_value =  "CARD_EXPIRED"
+                if not return_value:           
+                    cur.execute(u"""
+                    INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created, promise, end_promise)
+                    VALUES('Активация карты оплаты', %s, 'PAY_CARD', True, %s, %s*(-1),'', %s, False, Null);
+                    """, (account_id, card["tarif_id"], card['nominal'], now))            
+                    cur.execute("UPDATE billservice_card SET activated = %s, activated_by_id = %s WHERE id = %s;", (now, account_id, card['id']))
+                    logger.info("Card #%s series #%s pin #%s was activated", (card_id, serial, pin))
+                    return_value = "CARD_ACTIVATED"
+                    
+                connection.commit()                
+                return return_value
         except Exception, e:
             logger.error("Error activate card %s, %s", (card_id, e))
             connection.rollback()
