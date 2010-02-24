@@ -480,18 +480,45 @@ class RPCServer(object):
     
     def text_report(self, options, cur=None, connection=None, add_data = {}):
         F_NAME = 'TEXT_REP'
+        NAME_PREF = 'netflow.'
+        STRFTEMPLATE = '%Y-%m-%d_%H-%M'
         state_got = options[0]
+        lambda file_date: ''.join((NAME_PREF, file_date.strftime(STRFTEMPLATE)))
         def check_state():
             if (state_got in ('next', 'prev', 'home') and
                     (not F_NAME in add_data or not add_data[F_NAME])):
                 raise Exception('Wrong state detected. Please load(reload) the report.')
-        def get_next_filename(flow_dir, last_date):
-            pass
+        
         def get_first_filename(flow_dir):
             return commands.getstatusoutput('ls -1 %s | head -n 1' % flow_dir)
+        def get_last_filename(flow_dir):
+            return commands.getstatusoutput('ls -1 %s | head -n 1' % flow_dir)
+        def check_filename(filename, name_pref):
+            return filename.startswith(name_pref)
+        def check_filename_exists(filename):
+            return os.path.exists(filename)
+        def check_filename_date(filename, date_filename):
+            if filename == date_filename:
+                return 0
+            elif date_filename > filename:
+                return 1
+            else:
+                return -1
+        def get_next_filename(flow_dir, last_date, period, get_filename_fn):
+            last_filename = get_last_filename(flow_dir)
+            date_filename = get_filename_fn(last_date + period)
+            if check_filename_date(last_filename, date_filename) == -1:
+                pass
+            else:
+                raise Exception('End reached.')
         check_state()
         if state_got == 'start':
             add_data['text_report'] = None
+            first_filename = get_first_filename(vars.FLOW_DIR)
+            last_filename = get_last_filename(vars.FLOW_DIR)
+            #check start_date
+            #check end_date
+            
             #get files
             #save files
             #get data
