@@ -483,6 +483,7 @@ class RPCServer(object):
         NAME_PREF = 'netflow.'
         STRFTEMPLATE = '%Y-%m-%d_%H-%M'
         state_got = options[0]
+        """ls -1 | mawk ' BEGIN {lines = 0} $0 > "netflow.2009-12-30" && $0 <= "netflow.2010-01-24_14-50" { print $0; i +=1; if (i >=2) exit }'"""
         lambda file_date: ''.join((NAME_PREF, file_date.strftime(STRFTEMPLATE)))
         def check_state():
             if (state_got in ('next', 'prev', 'home') and
