@@ -20,7 +20,7 @@
 
 <body>
 
-
+<div class="header-line">{% block user_block %}{% endblock %}</div>
 {% block main_menu %}
 {% endblock %}
 
@@ -31,5 +31,9 @@
 </div>
 {% block content %}
 {% endblock %}
+<script type="text/javascript">
+	var path = location.pathname + location.search + location.hash;
+	$('li a[href$="' + path + '"]').parent('li').attr("class", "selected");
+</script>
 </body>
 </html>

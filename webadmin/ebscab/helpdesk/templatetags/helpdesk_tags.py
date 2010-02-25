@@ -26,6 +26,7 @@ def table_ticket(object_var, object_name, order_by, order_by_reverse, count):
     context['order_by'] = order_by
     context['order_by_reverse'] = order_by_reverse
     context['count'] = count
+    context['MEDIA_URL'] = settings.MEDIA_URL
     return context
 
 @register.inclusion_tag("helpdesk/templatetags/get_note.html")
@@ -34,3 +35,19 @@ def get_note(history_item):
     return {
             'notes':notes,
             }
+    
+@register.filter(name='normal_name')    
+def normal_name(value):
+    value = value.split('/')
+    return value[len(value)-1]
+
+@register.inclusion_tag("helpdesk/templatetags/get_note.html")
+def ticket_get_note(ticket):
+    notes = Note.objects.filter(ticket = ticket)
+    return {
+            'notes':notes,
+            }
+
+
+
+

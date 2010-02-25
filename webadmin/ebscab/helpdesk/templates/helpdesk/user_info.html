@@ -1,4 +1,4 @@
-{% extends 'helpdesk_base_extended.html' %}
+{% extends 'helpdesk_base_extended_ticket.html' %}
 
 {% block extra_head %}
 	<script type="text/javascript" src="{{ MEDIA_URL }}js/datetimepicker/datetimepicker_css.js"></script>
@@ -11,7 +11,7 @@
 		var tariff = {{ tariff.id }};
 		{% for tariff_object in tariff_objects  %}
 			obj_arr[{{ tariff_object.from_tariff.id }}] = new Array();
-			obj_arr[{{ tariff_object.from_tariff.id }}][{{ tariff_object.id }}] = new Array({{ tariff_object.ballance_min }}, {{ tariff_object.cost }});
+			obj_arr[{{ tariff_object.from_tariff.id }}][{{ tariff_object.id }}] = new Array({{ tariff_object.ballance_min }}, {{ tariff_object.cost }}, {% if tariff_object.to_tariff.require_tarif_cost %} 'да' {% else %} 'нет', {% endif%});
 		{% endfor %}
 		
 		function change_ctatus() {
@@ -88,9 +88,11 @@
 		var need_ballance = document.getElementById("need_ballance");
 		var need_cost = document.getElementById("need_cost");
 		var error_message = document.getElementById("error_message");
+		var require_cost = document.getElementById("require_cost");
 		var send_button = document.getElementById("send_button");
 		try {
 			need_cost.innerHTML = eval('obj_arr[{{ tariff.tarif.id }}]['+new_tariff.value+'][1]')+'{{ CURRENCY }}';
+			require_cost.innerHTML = eval('obj_arr[{{ tariff.tarif.id }}]['+new_tariff.value+'][2]');
 			error_message.innerHTML = '';
 			return true;
 		} catch(err) {
@@ -128,57 +130,61 @@
 
 {% block content %}
 
-<table>
+<div class="name_object">
+	
+		<span style="margin-left:9px;">
+			Информация о клиенте
+		</span>
+	
+</div>
+
+<table class="info_table" cellpadding="0" cellspacing="0">
 	<tr>
-		<td>Пользователь</td>
+		<th>Пользователь</th>
 		<td>{{ account.username }}</td>
 	</tr>
 	<tr>
-		<td>{{ status_form.status.label }}<div id="status_message"></div></td>
+		<th>{{ status_form.status.label }}<div id="status_message"></div></th>
 		<td>{{ status_form.status }} <input type="submit" value="Изменить" onclick="change_ctatus();"> </td>
 	</tr>
 	<tr>
-		<td>{{ password_form.password.label }}<div id="password_message"></div></td>
+		<th>{{ password_form.password.label }}<div id="password_message"></div></th>
 		<td>{{ password_form.password }} <input type="submit" value="*" onclick="gen_password();"> <input type="submit" value="Изменить" onclick="change_password();"> </td>
 	</tr>
 	<tr>
-		<td>Дата создания</td>
-		<td></td>
-	</tr>
-	<tr>
-		<td>Тарифный план</td>
+		<th>Тарифный план</th>
 		<td>{{ account.get_account_tariff }}</td>
 	</tr>
 	<tr>
-		<td>Изменить тарифный план</td>
+		<th>Изменить тарифный план</th>
 		<td>{{ tariff_form.tariff_id }} <input type="submit" value="Изменить" id="send_button" onclick="change_tariff()"> {{ tariff_form.from_date.label }} {{ tariff_form.from_date }}</td> 
 	</tr>
 	<tr>
-		<td>Стоимость тарифного плана</td>
+		<th>Стоимость тарифного плана</th>
 		<td><div id="need_cost"></div><div id="error_message"></div></td>
 	</tr>
 	<tr>
-		<td>Требовать наличие суммы на наначало расчетного периода</td>
-		<td><div id="need_ballance"></div></td>
+		<th>Требовать наличие суммы на наначало расчетного периода</th>
+		<td><div id="require_cost"></div></td>
 	</tr>
 	<tr>
-		<td>Расчетный период</td>
-		<td></td>
+		<th>Расчетный период</th>
+		<td>{{ tariff.tarif.settlement_period }}</td>
 	</tr>
 	<tr>
-		<td>Баланс пользователя</td>
+		<th>Баланс пользователя</th>
 		<td>{{ ballance }}</td>
 	</tr>
 	<tr>
-		<td>Кредит пользователя</td>
+		<th>Кредит пользователя</th>
 		<td>{{ account.credit }}</td>
 	</tr>
 	<tr>
-		<td>Блокировка по нехватке баланса</td>
+		<th>Блокировка по нехватке баланса</th>
 		<td>{% if account.balance_blocked or account.ballance_isnt_good %}да{% else %}нет{% endif %}</td>
 	</tr>
 	<tr>
-		<td>Блокировка по превышению лемита</td>
+		<th>Блокировка по превышению лемита</th>
 		<td>{% if account.disabled_by_limit %}да{% else %}нет{% endif %}</td>
 	</tr>
 </table>
