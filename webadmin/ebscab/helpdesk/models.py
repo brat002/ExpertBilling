@@ -144,12 +144,20 @@ class Ticket(models.Model):
     def get_conten_type_label(self):
         return self.content_type.model
     
+    def get_user_url(self):
+        return u'/helpdesk/user/%s/' %self.account.id
     
     def get_status(self):
         return dict(TICKET_STATUS)[int(self.status)]
     
     def get_status_color(self):
         return dict(COLOR_TICKETS)[int(self.status)]
+    
+    def get_source(self):
+        return dict(SOURCE_TYPES)[int(self.source)]
+    
+    def get_type(self):
+        return dict(TICKET_TYPE)[int(self.type)]
     
 class Comment(models.Model):
     ticket = models.ForeignKey(Ticket)
@@ -159,6 +167,7 @@ class Comment(models.Model):
     body = models.TextField()
     time = models.IntegerField(null=True, blank=True)#потраченное время. Поле видно только пользователю хелпдеска
     created = models.DateTimeField()
+    file = models.FileField(upload_to = 'uploads/', null=True, blank=True)
     
     def get_user_link(self):
        model = self.content_type.model_class()

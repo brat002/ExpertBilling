@@ -469,6 +469,17 @@ class Tariff(models.Model):
         verbose_name = u"Тариф"
         verbose_name_plural = u"Тарифы"
 
+ACTIVE = 1
+NOT_ACTIVE_NOT_WRITING_OFF  = 2
+NOT_ACTIVE_WRITING_OFF = 3 
+
+ACCOUNT_STATUS = (
+                  (ACTIVE, u'Активен'),
+                  (NOT_ACTIVE_NOT_WRITING_OFF, u'Неактивен, не списывать периодические услуги'),
+                  (NOT_ACTIVE_WRITING_OFF, u'Неактивен, списывать периодические услуги'),
+                  )
+
+
 class Account(models.Model):
     """
     Если стоят галочки assign_vpn_ip_from_dhcp или assign_ipn_ip_from_dhcp,
@@ -602,6 +613,8 @@ class Account(models.Model):
         for tariff in tariff_info:
             return [tariff.id, tariff.name,]
         
+    def get_status(self):
+        return dict(ACCOUNT_STATUS)[int(self.status)]
 
 
 class Organization(models.Model):
@@ -826,7 +839,7 @@ class SystemGroup(models.Model):
     def get_tickets(self):
         from helpdesk.models import Ticket
         ctype = ContentType.objects.get_for_model(self)
-        return Ticket.objects.filter(content_type=ctype, object_id=self.id)
+        return Ticket.objects.filter(content_type=ctype, object_id=self.id, archived=False)
     
 class SystemUser(models.Model):
     username = models.CharField(max_length=255, unique=True)
@@ -857,7 +870,7 @@ class SystemUser(models.Model):
     def get_tickets(self):
         from helpdesk.models import Ticket
         ctype = ContentType.objects.get_for_model(self)
-        return Ticket.objects.filter(content_type=ctype, object_id=self.id)
+        return Ticket.objects.filter(content_type=ctype, object_id=self.id, archived=False)
     
 
 class Ports(models.Model):

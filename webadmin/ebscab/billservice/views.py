@@ -536,7 +536,7 @@ def card_acvation(request):
                    }   
     if request.method == 'POST':
         form = CardForm(request.POST)
-        
+        error_message = ''
         if form.is_valid():
             try:
                 authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
@@ -550,7 +550,6 @@ def card_acvation(request):
                     raise Exception('Status = False!')
                 res = connection_server.activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
                 #print "res=", res
-
                 if res == 'CARD_NOT_FOUND':
                     error_message = u'Ошибка активации. Карта не найдена.'
                 elif res == 'CARD_NOT_SOLD':

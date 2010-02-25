@@ -27,7 +27,7 @@
 
 				var panel_link =  jQuery(this).parent().children('.name_object')
 				if (jQuery(this).is(":visible")) {
-					panel_link.css('background-image', 'url(/media/img/bg3.gif)')
+					panel_link.css('font-weight', 'bold')
 					panel_link.children('a.link').children('img').attr('src', '/media/img/open2.gif')
 				}
 				var count_in_page=jQuery('select[name="count_in_page"]').val()
@@ -44,21 +44,15 @@
 {% block content %}
 	
 {% for departament in departaments %}
-<div id="menu" class="auroramenu">
-	<div class="name_object">
-	<a href="javascript:" class="link" >
-		<img src="{{MEDIA_URL}}img/close.gif"  style="vertical-align: middle;" ><b  style="margin-left:9px;">{{departament.name}}</b></a>
-	</div>
-<div id="ul_departament_{{departament.id}}" name="departament_{{departament.id}}" class="tickets content">
-	{% pannel_ticket_table 'departament' departament.id %}
-</div>
+<div class="departament">
+	{{departament}}
 </div>
 
 {% for user in departament.get_users %}
-<div id="menu2" class="auroramenu">
+<div class="auroramenu">
 	<div class="name_object">
 		<a href="javascript:" class="link" >
-			<img style="vertical-align: middle;" src="{{MEDIA_URL}}img/close.gif">
+			<img align="right" style="vertical-align: middle;" src="{{MEDIA_URL}}img/close.gif">
 			<span style="margin-left:9px;">
 			{{user.username}}
 			</span>

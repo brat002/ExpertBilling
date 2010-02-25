@@ -1,12 +1,30 @@
 {% extends 'helpdesk_base_extended.html' %}
+{% load form_tags %}
+
+
+{% block addon_menu %}
+	<div class="page_title">
+		<span>Изменение настроек</span>
+	</div>
+{% endblock %}
 
 {% block content %}
 
+<div class="name_object">
+		<span style="margin-left:9px;">
+			Изменение настроек
+		</span>
+</div>
+
 <form method="post">
-	<table>
-		{{ form }}
+	<table class="info_table" cellpadding="0" cellspacing="0">
+		{% for field in form %}
+			{% form_field field tr  %}
+		{% endfor %}
 	</table>
-	<input type="submit" value="Сохранить">
+	<div class="ticket_save_form">
+		<input type="image" class="buttons" src="{{ MEDIA_URL }}helpdesk_img/save_changes.png" value="Сохранить">
+	</div>
 </form>
 
 {% endblock %}

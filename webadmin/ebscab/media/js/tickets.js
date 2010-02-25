@@ -1,19 +1,11 @@
 var sorted_option={'object':'',
 							'reverse':''};
 
-function archived_ticket(table_id){
+function archived_ticket(table_id, ticket_id){
 	table_id = jQuery(table_id);
-	var tickets =[];
-	var data = table_id.parent().parent().data(table_id.parent().parent().attr('name'));
-	table_id.find('tr.ticket_content').each(function(){
-			var id  = jQuery(this).find('.id');
-			var is_archive = jQuery(this).find('input[name="is_archive"]');
-			var result = {'id':parseInt(id.text()), 'is_archived':is_archive.is(":checked")};
-	jQuery.merge(tickets,[result]);
-	});
 	jQuery.ajax({
 		url:"/helpdesk/ajax/archived/tickets/",
-		data:{'objects':JSON.stringify(tickets)},
+		data:{'ticket_id':ticket_id},
 		type:"POST",
 		success:function(data){
 			load_data( table_id.parent().parent(), data['order_by'], data['order_by_reverse'], data['count_in_page'])
@@ -111,15 +103,31 @@ function show_table(sender, is_show)
 	if (is_show){
 		var data = sender.next().data(sender.next().attr('name'));
 		load_data(sender.next(), data['order_by'], data['order_by_reverse'], data['count_in_page']);
-		sender.css('background-image','url(/media/img/bg3.gif)');
+		sender.css('font-weight', 'bold');
 		sender.children('a.link').children('img').attr('src','/media/img/open2.gif');
 	}
 	else{		
 		jQuery(sender.next()).stopTime(jQuery(sender).attr('name'));
-		sender.css('background-image','url(/media/img/bg2.gif)');
+		sender.css('font-weight', 'normal');
 		sender.children('a.link').children('img').attr('src','/media/img/close.gif');
 	};
 };
+
+function show_hide_table(sender, is_show)
+{
+	if (is_show){
+		var data = sender.next().data(sender.next().attr('name'));
+		sender.css('font-weight', 'bold');
+		sender.children('a.link').children('img').attr('src','/media/img/open2.gif');
+	}
+	else{		
+		jQuery(sender.next()).stopTime(jQuery(sender).attr('name'));
+		sender.css('font-weight', 'normal');
+		sender.children('a.link').children('img').attr('src','/media/img/close.gif');
+	};
+};
+
+
 function update_table(sender){
 	var name = sender.attr('name');
 	
