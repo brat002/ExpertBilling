@@ -1,19 +1,56 @@
 {% extends 'helpdesk_base_extended.html' %}
 
+{% block extra_head %}
+	
+	<script>
+		function user_filter() {
+			var win = window.open('/', 'Поиск пользователей', 'height=500,width=800,resizable=yes,scrollbars=yes');
+			win.focus();
+ 			return false;	
+		}
+		
+		function ticket_accept(ticket_id, this_id) {
+			jQuery.ajax({
+				url:"/helpdesk/ticket/accept/",
+				data:{'ticket_id':ticket_id},
+				type:"POST",
+				success:function(data){
+					var ret = eval('('+data+')');
+					$('#'+this_id).html(ret['message'])
+				}
+			});
+		}
+		 
+	</script>
+{% endblock %}
+
+{% block addon_menu %}
+	<div class="page_title">
+		<a href="/helpdesk/ticket/add/"><img align="right" src="{{ MEDIA_URL }}helpdesk_img/ticket_add.png"></a>
+		<span>Новые тикеты</span>
+	</div>
+{% endblock %}
+
 {% block content %}
-	<table cols=10 cellpadding=0 cellspacing=0 width=100% class="tickets" >
+	<table cellpadding=0 cellspacing=0 width=100% class="tickets" >
 		<tr class="title_table"> 
-			<th>№</th>
-			<th>Пользователь</th>
-			<th>Тема</th>
-			<th>Создан</th>
+			<td>№</td>
+			<td>Тема</td>
+			<td>Тип</td>
+			<td>Пользователь</td>
+			<td>Создан</td>
+			<td>Принять</td>
 		</tr>
 		{% for ticket in tickets %}
 			<tr style="background-color:{% cycle '#ffffff' '#ecf2fe'%}" class="ticket_content{% if forloop.last %} border_bottom{% endif %}">
-				<td class="id" style="border-left:1px solid #a0a0a0"><a href="{{ ticket.get_edit_url }}" class="ticket_id">{{ticket.id}}</a></td>
-				<td class="account"  style="border-left:1px solid #a0a0a0; text-align:left; padding-left:10px;">{{ticket.account}}</td>
-				<td class="subject" style="color:{{ticket.get_status_color}};  border-left:1px solid #a0a0a0">{{ticket.subject}}</td>
-				<td class="created" style="border-left:1px solid #a0a0a0">{{ ticket.created|date:"d-m-Y" }}</td>
+				<td class="id" style="border-left-color:{{ticket.get_status_color}};"><a href="{{ ticket.get_edit_url }}" class="ticket_id">{{ticket.id}}</a></td>
+				<td class="subject" style="color:{{ticket.get_status_color}};">{{ticket.subject}}</td>
+				<td>{{ticket.get_type}}</td>
+				<td class="account" >{{ticket.account}}</td>
+				<td class="created">{{ ticket.created|date:"d.m.Y" }}</td>
+				<td id="ticket_{{ ticket.id }}">
+					<a href="javascript:" onclick="ticket_accept({{ ticket.id }}, 'ticket_{{ ticket.id }}')"><img src="{{ MEDIA_URL }}helpdesk_img/accept.png"></a>
+				</td>
 			</tr>
 		{% endfor %}
 	</table>

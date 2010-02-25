@@ -1,17 +1,21 @@
-<table>
-	<tr>
-		<th>Номер Договора</th>
-		<th>UserName</th>
-		<th>ФИО</th>
-		<th>Город</th>
-		<th>Улица</th>
-		<th>Дом</th>
-		<th>Квартира</th>
-		<th>Телефон</th>
+<div class="name_object">
+	<span style="margin-left:9px;">
+		Результаты Поиска
+	</span>
+</div>
+<table cellpadding=0 cellspacing=0 width=100% class="tickets">
+	<tr class="title_table normal">
+		<td>Номер Договора</td>
+		<td>Пользователь</td>
+		<td>ФИО</td>
+		<td>Город</td>
+		<td>Улица</td>
+		<td>Дом</td>
+		<td>Квартира</td>
 	</tr>
 	{% if users %}
 		{% for user in users %}
-			<tr class="user" onclick="set_user({{ user.id }})">
+			<tr class="user ticket_content filter {% cycle 'first_tr' 'second_tr' %}" onclick="set_user('{{ user }}')">
 				<td>{{ user.id }}</td>
 				<td>{{ user.username }}</td>
 				<td>{{ user.fullname }}</td>
@@ -19,8 +23,8 @@
 				<td>{{ user.street }}</td>
 				<td>{{ user.house }} {% if user.house_bulk %}({{ user.house_bulk }}){% endif %}</td>
 				<td>{{ user.room }}</td>
-				<td>phone</td>
 			</tr>
 		{% endfor %}
 	{%endif %}
 </table>
+{% include 'paginator.html' %}
