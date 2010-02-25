@@ -483,7 +483,8 @@ class RPCServer(object):
         NAME_PREF = 'netflow.'
         STRFTEMPLATE = '%Y-%m-%d_%H-%M'
         state_got = options[0]
-        """ls -1 | mawk ' BEGIN {lines = 0} $0 > "netflow.2009-12-30" && $0 <= "netflow.2010-01-24_14-50" { print $0; i +=1; if (i >=2) exit }'"""
+        DEF_FILE_NUM = 100
+        SCRIPT_STR = """ls -1 %s | mawk ' BEGIN {lines = 0} $0 > "%s" && $0 <= "%s" { print $0; i +=1; if (i >=""" + str(DEF_FILE_NUM) + """) exit }'"""
         lambda file_date: ''.join((NAME_PREF, file_date.strftime(STRFTEMPLATE)))
         def check_state():
             if (state_got in ('next', 'prev', 'home') and
@@ -512,6 +513,23 @@ class RPCServer(object):
                 pass
             else:
                 raise Exception('End reached.')
+        def get_files(flow_dir, start_filename, end_filename, script_str):
+            return commands.getstatusoutput(script_str % (flow_dir, start_filename, end_filename))[0].split('/n')
+        def get_data(flow_dir, files, last_file_num, data_script):
+            #check awk for file options
+            pass
+        class TextReportInfo(object):
+            start_date = None
+            end_date   = None
+            current_data_file = None
+            got_more_files = False
+            files      = []
+            last_file_num = 0
+            got_more_data = False
+            read_data  = []
+            last_datum_num = 0
+            
+            
         check_state()
         if state_got == 'start':
             add_data['text_report'] = None
