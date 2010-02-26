@@ -484,8 +484,8 @@ class RPCServer(object):
         STRFTEMPLATE = '%Y-%m-%d_%H-%M'
         state_got = options[0]
         DEF_FILE_NUM = 100
-        SCRIPT_STR = """ls -1 %s | mawk ' BEGIN {lines = 0} $0 > "%s" && $0 <= "%s" { print $0; lines +=1; if (lines >=""" + str(DEF_FILE_NUM) + """) exit }'"""
-        DATA_SCRIPT_STR = """mawk 'BEGIN {lines = 0; filename = ""} ---cond--- {--- if (filename != FILENAME) {if (lines >= 2000) {print FILENAME; exit} else {filename = FILENAME}}}'"""
+        SCRIPT_STR = """ls -1 %s | mawk 'BEGIN {lines = 0}; $0 > "%s" && $0 <= "%s" { print $0; lines +=1; if (lines >=""" + str(DEF_FILE_NUM) + """) exit }'"""
+        DATA_SCRIPT_STR = """mawk 'BEGIN {FS = ","; lines = 0; filename = ""; -- acc_num = split("338,368", accounts, ","); for (item in accounts) {accounts[accounts[item]] = 1; delete accounts[item]};--}; --$21 in accounts-- {print $21,$1,$10,$2,$11,$7,$22; lines = lines + 1; if (filename != FILENAME) {if (lines >= 2000) {print FILENAME; exit} else {filename = FILENAME}}}'"""
         lambda file_date: ''.join((NAME_PREF, file_date.strftime(STRFTEMPLATE)))
         def check_state():
             if (state_got in ('next', 'prev', 'home') and
