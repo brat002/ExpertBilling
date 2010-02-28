@@ -454,7 +454,7 @@ class Tariff(models.Model):
     ps_null_ballance_checkout = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, default=False )
     active            = models.BooleanField(default=False, blank=True)
     deleted           = models.BooleanField(default=False, blank=True)
-    allow_express_pay = models.BooleanField(verbose_name=u'Оплата экспресс картами', blank=True, null=True, default=False)
+    allow_express_pay = models.BooleanField(verbose_name=u'Оплата экспресс картами', blank=True, default=False)
     require_tarif_cost = models.BooleanField(default=False, blank=True)
     
     def __unicode__(self):
