@@ -827,7 +827,7 @@ class OneTimeServiceHistory(models.Model):
 class SystemGroup(models.Model):
     
     name = models.CharField(max_length=255)
-    system = models.BooleanField(blank=True, null=True)
+    system = models.BooleanField(blank=True, default=False)
     system_name = models.CharField(max_length=255, blank=True, null=True)
     
     def __unicode__(self):
