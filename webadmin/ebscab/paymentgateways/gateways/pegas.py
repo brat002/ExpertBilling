@@ -57,7 +57,7 @@ class PegasPaymentGateway(BasePaymentGateway):
 
     DATE_FORMAT = '%Y%m%d%H%L%s' # ГГГММДДЧЧММСС
     
-    COMMANDS = ('check','pay','cancel','verify')
+    COMMANDS = ('check','pay','cancel','verify', 'status')
     
     def __init__(self, params_dict, callbacks=None):
         """
@@ -84,13 +84,19 @@ class PegasPaymentGateway(BasePaymentGateway):
             raise Exception('No callback functions defined!')
         
         self.params = params_dict
-        
+        self.callbacks = callbacks
         
     
     
     def get_param(self, name):
         return self.params.get(name,None)
-
+    
+    def get_callback(self, callback_name):
+       try:
+           return self.callbacks[callback_name]
+       except KeyError:
+           raise Exception("'Callback for command %s is not implemented!'"%(callback_name))
+    
     def is_error(self, error_code):
         return error_code != self.ERROR_OK
     
@@ -103,14 +109,13 @@ class PegasPaymentGateway(BasePaymentGateway):
     def error_is_fatal(self, error):
         return error[2]
     
-    def check(params, check_callback):
+    def check(self):
         """
         Performs check of existence of selected user
         """
-           
-        resp = self.get_callback('check')({'account':self.params.get('account'), \
+        account =self.params.get('account')
+        resp = self.get_callback('check')({'account':account, \
                                         'date':self.params.get('date')})
-        account = resp['account']
         error =  self.error(resp['error_code'])
         balance = resp['balance']
         account_name = resp['account_name']
@@ -124,7 +129,7 @@ class PegasPaymentGateway(BasePaymentGateway):
                   <name>%(account_name)s</name>
                   <balance>%(balance).02f</balance>
                 </response>""" % {'result':error[0],
-                                  'acount':account_name,
+                                  'account_name':account_name,
                                   'balance':balance}
         else: # error
             response = \
@@ -136,13 +141,11 @@ class PegasPaymentGateway(BasePaymentGateway):
                                    'comment':error[1]}
         return (response, error)
             
-            
     def pay(self):
         resp = self.get_callback('pay')()
-        account = resp['account']
         prv_tnx = resp['transaction_id']
         txn_id = self.params.get(self.PAYMENT_ID_NAME)
-        error = self.error(error_code)
+        error = self.error(resp['error_code'])
         if not self.is_error(error[0]):
             response = \
             u"""<?xml version="1.0" encoding="UTF-8"?>
@@ -162,7 +165,63 @@ class PegasPaymentGateway(BasePaymentGateway):
                   <result>%(result)d</result>
                   <comment>%(comment)s</comment>
                 </response>""" % {'txn_id':txn_id,
-                                  'transaction_id':transaction_id,
+                                  'transaction_id':prv_tnx,
                                   'result':error[0],
                                   'comment':error[1]}
+        return (response, error)
+    
+    
+    def cancel(self):
+        resp = self.get_callback('cancel')()
+        prv_txn = resp['transaction_id']
+        error = self.error(resp['error_code'])
+        if not self.is_error(error[0]):
+            response = \
+            u"""<?xml version="1.0" encoding="UTF-8"?>
+                     <response>
+                        <prv_txn>%(prv_txn)s</prv_txn>
+                        <result>%(result)d</result>
+                     </response>"""%{'prv_txn':prv_txn, 'result':error[0],}
+        else:
+            response = \
+            u"""<?xml version="1.0" encoding="UTF-8"?>
+                     <response>
+                       <prv_txn>%(prv_txn)s</prv_txn>
+                       <result>%(result)d</result>
+                       <comment>%(comment)s</comment>
+                      </response>""" %{'prv_txn':prv_txn, 'result':error[0], 'comment':error[1],}
+        return (response, error)
+    
+    def verify(self):
+        error = self.error(1)
+        response = \
+        u"""
+            <?xml version="1.0" encoding="UTF-8"?>
+                <response>
+                    <result>%(error)d</result>
+                      <comment>%(comment)s</comment>
+                </response>
+          """ %{'error':error[0], 'comment':error[1]}
+        return (response, error)
+    
+    def status(self):
+        resp = self.get_callback('status')()
+        error = self.error(resp['error_code'])
+        ballance = resp['balance']
+        if not self.is_error(error[0]):
+            response = \
+            u"""
+            <?xml version="1.0" encoding="UTF-8"?>
+                <response>
+                  <result>%(error)d</result>
+                  <balance>%(balance).02f</balance>
+                </response>"""% {'error':error[0], 'balance':ballance}
+        else:
+            response = \
+            u"""
+            <?xml version="1.0" encoding="UTF-8"?>
+                <response>
+                  <result>%(error)d</result>
+                  <comment>%(comment)s</comment>
+                </response>""" % {'error':error[0], 'comment':error[1]}
         return (response, error)
