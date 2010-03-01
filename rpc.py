@@ -515,20 +515,62 @@ class RPCServer(object):
             else:
                 raise Exception('End reached.')
         def get_files(flow_dir, start_filename, end_filename, script_str):
-            return commands.getstatusoutput(script_str % (flow_dir, start_filename, end_filename))[0].split('/n')
-        def get_data(flow_dir, files, last_file_num, data_script):
+            return commands.getstatusoutput(script_str % (flow_dir, start_filename, end_filename))
+            #[0].split('/n')
+        def get_data(textReportInfo):
             #check awk for file options
-            pass
+            take_index = textReportInfo.last_file_num[-1]
+            data_strs = []
+            total_count = 0
+            while True:
+                if total_count >= textReportInfo.take_data_by:
+                    break
+                fnames = map(lambda x: ''.join((textReportInfo.flow_dir, x)), files[take_index:textReportInfo.take_files_by])
+                if not fnames:
+                    break                
+                scr_output = commands.getstatusoutput(textReportInfo.data_script % ','.join(fnames))
+                if scr_output[0]:
+                    raise Exception('Text report: get data error!')
+                if not scr_output[1]:
+                    take_index += + len(fnames)
+                    continue
+                data_str = scr_output[1]
+                last_str_index = data_str.rfind('\n')
+                if last_str_index == -1:
+                    take_index += len(fnames)
+                    data_strs.append(data_str)
+                    total_count +=1
+                    continue
+                last_str = data_str[last_str_index+1:]
+                if last_str.find(textReportInfo.name_prefix) == -1:                    
+                    take_index += len(fnames)
+                else:
+                    take_index += fnames.index(last_str)
+                    data_str = data_str[:last_str_index]
+                
+                total_count += data_str.count('\n')
+                data_strs.append(data_str)
+            return (take_index, total_count, '\n'.join(data_strs).split['\n'])
+        
+        def get_saved_data(textReportInfo):
+            return textReportInfo.read_data[textReportInfo.last_datum_num[-1], textReportInfo.take_data_by]
+                    
         class TextReportInfo(object):
             start_date = None
             end_date   = None
             current_data_file = None
             got_more_files = False
             files      = []
-            last_file_num = 0
+            last_file_num = [0]
             got_more_data = False
             read_data  = []
-            last_datum_num = 0
+            last_datum_num = [0]
+            read_data_num = 0
+            data_script = ''
+            flow_dir = ''
+            name_prefix = 'netflow.'
+            take_files_by = 20
+            take_data_by = 2000
             
             
         check_state()
