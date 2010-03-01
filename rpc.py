@@ -27,6 +27,7 @@ from twisted.internet import reactor
 
 import isdlogger
 import saver, utilites, commands
+import text_reports
 
 from IPy import intToIp
 from hashlib import md5
@@ -479,101 +480,11 @@ class RPCServer(object):
 
     
     def text_report(self, options, cur=None, connection=None, add_data = {}):
-        F_NAME = 'TEXT_REP'
-        NAME_PREF = 'netflow.'
-        STRFTEMPLATE = '%Y-%m-%d_%H-%M'
         state_got = options[0]
-        DEF_FILE_NUM = 100
-        SCRIPT_STR = """ls -1 %s | mawk 'BEGIN {lines = 0}; $0 > "%s" && $0 <= "%s" { print $0; lines +=1; if (lines >=""" + str(DEF_FILE_NUM) + """) exit }'"""
-        DATA_SCRIPT_STR = """mawk 'BEGIN {FS = ","; lines = 0; filename = ""; -- acc_num = split("338,368", accounts, ","); for (item in accounts) {accounts[accounts[item]] = 1; delete accounts[item]};--}; --$21 in accounts-- {print $21,$1,$10,$2,$11,$7,$22; lines = lines + 1; if (filename != FILENAME) {if (lines >= 2000) {print FILENAME; exit} else {filename = FILENAME}}}'"""
-        lambda file_date: ''.join((NAME_PREF, file_date.strftime(STRFTEMPLATE)))
-        def check_state():
-            if (state_got in ('next', 'prev', 'home') and
-                    (not F_NAME in add_data or not add_data[F_NAME])):
-                raise Exception('Wrong state detected. Please load(reload) the report.')
-        
-        def get_first_filename(flow_dir):
-            return commands.getstatusoutput('ls -1 %s | head -n 1' % flow_dir)
-        def get_last_filename(flow_dir):
-            return commands.getstatusoutput('ls -1 %s | head -n 1' % flow_dir)
-        def check_filename(filename, name_pref):
-            return filename.startswith(name_pref)
-        def check_filename_exists(filename):
-            return os.path.exists(filename)
-        def check_filename_date(filename, date_filename):
-            if filename == date_filename:
-                return 0
-            elif date_filename > filename:
-                return 1
-            else:
-                return -1
-        def get_next_filename(flow_dir, last_date, period, get_filename_fn):
-            last_filename = get_last_filename(flow_dir)
-            date_filename = get_filename_fn(last_date + period)
-            if check_filename_date(last_filename, date_filename) == -1:
-                pass
-            else:
-                raise Exception('End reached.')
-        def get_files(flow_dir, start_filename, end_filename, script_str):
-            return commands.getstatusoutput(script_str % (flow_dir, start_filename, end_filename))
-            #[0].split('/n')
-        def get_data(textReportInfo):
-            #check awk for file options
-            take_index = textReportInfo.last_file_num[-1]
-            data_strs = []
-            total_count = 0
-            while True:
-                if total_count >= textReportInfo.take_data_by:
-                    break
-                fnames = map(lambda x: ''.join((textReportInfo.flow_dir, x)), files[take_index:textReportInfo.take_files_by])
-                if not fnames:
-                    break                
-                scr_output = commands.getstatusoutput(textReportInfo.data_script % ','.join(fnames))
-                if scr_output[0]:
-                    raise Exception('Text report: get data error!')
-                if not scr_output[1]:
-                    take_index += + len(fnames)
-                    continue
-                data_str = scr_output[1]
-                last_str_index = data_str.rfind('\n')
-                if last_str_index == -1:
-                    take_index += len(fnames)
-                    data_strs.append(data_str)
-                    total_count +=1
-                    continue
-                last_str = data_str[last_str_index+1:]
-                if last_str.find(textReportInfo.name_prefix) == -1:                    
-                    take_index += len(fnames)
-                else:
-                    take_index += fnames.index(last_str)
-                    data_str = data_str[:last_str_index]
-                
-                total_count += data_str.count('\n')
-                data_strs.append(data_str)
-            return (take_index, total_count, '\n'.join(data_strs).split['\n'])
-        
-        def get_saved_data(textReportInfo):
-            return textReportInfo.read_data[textReportInfo.last_datum_num[-1], textReportInfo.take_data_by]
-                    
-        class TextReportInfo(object):
-            start_date = None
-            end_date   = None
-            current_data_file = None
-            got_more_files = False
-            files      = []
-            last_file_num = [0]
-            got_more_data = False
-            read_data  = []
-            last_datum_num = [0]
-            read_data_num = 0
-            data_script = ''
-            flow_dir = ''
-            name_prefix = 'netflow.'
-            take_files_by = 20
-            take_data_by = 2000
-            
-            
-        check_state()
+        if (state_got in ('next', 'prev', 'home') and
+                (not text_reports.F_NAME in add_data or not add_data[text_reports.F_NAME])):
+            raise Exception('Wrong state detected. Please load(reload) the report.')            
+
         if state_got == 'start':
             add_data['text_report'] = None
             first_filename = get_first_filename(vars.FLOW_DIR)
