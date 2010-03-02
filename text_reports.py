@@ -23,9 +23,11 @@ def get_new_files(textReportInfo):
         if not textReportInfo.start_dates:
             textReportInfo.start_dates.append(textReportInfo.start_date)
         #textReportInfo.got_more_files = True
+        """
     elif textReportInfo.command == 'home':
         textReportInfo.start_dates = []
         textReportInfo.start_dates.append(textReportInfo.start_date)
+        """
     elif  textReportInfo.command == 'prev':
         textReportInfo.start_dates.pop()
         textReportInfo.start_dates.pop()
@@ -82,12 +84,26 @@ def get_data(textReportInfo):
             take_index += fnames.index(last_str)
             data_str = data_str[:last_str_index]
         
-        total_count += data_str.count('\n')
+        total_count += data_str.count('\n') + 1
         data_strs.append(data_str)
     return (take_index, total_count, '\n'.join(data_strs).split['\n'])
 
 def get_saved_data(textReportInfo):
-    return textReportInfo.read_data[textReportInfo.last_datum_num[-1], textReportInfo.take_data_by]
+    if textReportInfo.command == 'next':
+        ret_data = None
+        if (textReportInfo.read_data and not textReportInfo.last_datum_num[-1] < textReportInfo.read_data_num) \
+           or not textReportInfo.read_data:
+            #textReportInfo.read_data  = []
+            textReportInfo.last_datum_num = [0]
+            #textReportInfo.read_data_num = 0
+            file_num, data_num, read_data = get_data(textReportInfo)
+            textReportInfo.read_data  = read_data
+            textReportInfo.read_data_num = data_num
+            textReportInfo.last_file_num.append(file_num)
+        ret_data = textReportInfo.read_data[textReportInfo.last_datum_num[-1], textReportInfo.take_data_by]
+        textReportInfo.last_datum_num.append(textReportInfo.last_datum_num[-1] + len(ret_data))
+    elif textReportInfo.command == 'prev':
+        pass
             
 class TextReportInfo(object):
     start_date = None
