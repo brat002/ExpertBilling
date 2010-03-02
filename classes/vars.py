@@ -429,7 +429,7 @@ class CoreVars(Vars):
 
         
 class RpcVars(Vars):
-    __slots__ = ('pids', 'piddate', 'pidLock', 'db_connection', 'db_connection_lock', 'graph_connection', 'graph_connection_lock', 'LISTEN_PORT', 'USER_ID')
+    __slots__ = ('pids', 'piddate', 'pidLock', 'db_connection', 'db_connection_lock', 'graph_connection', 'graph_connection_lock', 'LISTEN_PORT', 'USER_ID', 'FLOW_DIR', 'text_report_lock')
     
     def __init__(self):
         super(RpcVars, self).__init__()
@@ -443,12 +443,15 @@ class RpcVars(Vars):
         self.graph_connection = None
         self.LISTEN_PORT = 7771
         self.USER_ID = [None, None]
+        self.FLOW_DIR = ''
+        self.text_report_lock = Lock()
        
     def get_dynamic(self, **kwargs):
         super(RpcVars, self).get_dynamic(**kwargs)
         config = kwargs['config']
         name = kwargs['name']
         if config.has_option(name, 'listen_port'): self.LISTEN_PORT = config.getint(name, 'listen_port')
+        if config.has_option(name, 'flow_dir'): self.FLOW_DIR = config.get(name, 'flow_dir')
         
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(RpcVars, self).__slots__ + self.__slots__))
