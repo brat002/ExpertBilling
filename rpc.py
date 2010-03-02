@@ -486,26 +486,21 @@ class RPCServer(object):
             raise Exception('Wrong state detected. Please load(reload) the report.')            
 
         if state_got == 'start':
-            add_data['text_report'] = None
-            first_filename = get_first_filename(vars.FLOW_DIR)
-            last_filename = get_last_filename(vars.FLOW_DIR)
-            #check start_date
-            #check end_date
-            
-            #get files
-            #save files
-            #get data
-            #send data
-        elif state_got == 'next':
-            prev_data = add_data[F_NAME]
+            add_data[text_reports.F_NAME] = None
+            textReportInfo = text_reports.TextReportInfo(options[1], options[2], options[3], 'next', vars.flow_dir)
+            text_reports.get_files(textReportInfo)
+            state_got = 'next'
+            add_data[text_reports.F_NAME] = textReportInfo
+        if state_got == 'next':
+            textReportInfo = add_data[text_reports.F_NAME]
             #calc next
             #send data
         elif state_got == 'prev':
-            prev_data = add_data[F_NAME]
+            textReportInfo = add_data[text_reports.F_NAME]
             #calc prev
             #send data
         elif state_got == 'home':
-            prev_data = add_data[F_NAME]
+            textReportInfo = add_data[text_reports.F_NAME]
             #calc home
             #send data
         else:

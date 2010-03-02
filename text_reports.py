@@ -35,7 +35,7 @@ def get_new_files(textReportInfo):
         
     start_date = textReportInfo.start_dates[-1]
     fl_out = get_files(textReportInfo.flow_dir, calc_fname(start_date), 
-                       calc_fname(textReportInfo.end_date, SCRIPT_STR))
+                       calc_fname(textReportInfo.end_date), SCRIPT_STR)
     if fl_out[0]:
         raise Exception('Text report: get file error')
     textReportInfo.files = fl_out[1].split('\n')
@@ -107,6 +107,11 @@ class TextReportInfo(object):
     take_files_by = 20
     take_data_by = 2000
     command = ''
-    executed = ''
-    def __init__(self, start_date, end_date, rep_type, flow_dir):
-        pass
+    #executed = ''
+    
+    def __init__(self, start_date, end_date, data_options, rep_type, flow_dir):
+        self.start_date = start_date
+        self.end_date = end_date
+        self.command = rep_type
+        self.flow_dir = flow_dir
+        self.data_script = DATA_SCRIPT_STR %  data_options + (self.take_data_by,)
