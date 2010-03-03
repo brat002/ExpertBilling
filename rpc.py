@@ -481,28 +481,33 @@ class RPCServer(object):
     
     def text_report(self, options, cur=None, connection=None, add_data = {}):
         state_got = options[0]
-        if (state_got in ('next', 'prev', 'home') and
+        if (state_got in ('next', 'prev', 'home', 'close') and
                 (not text_reports.F_NAME in add_data or not add_data[text_reports.F_NAME])):
             raise Exception('Wrong state detected. Please load(reload) the report.')            
-
+        if state_got == 'finish':
+            add_data[text_reports.F_NAME] = None
+            return 'OK'
         if state_got == 'start':
             add_data[text_reports.F_NAME] = None
             textReportInfo = text_reports.TextReportInfo(options[1], options[2], options[3], 'next', vars.flow_dir)
             text_reports.get_files(textReportInfo)
             state_got = 'next'
             add_data[text_reports.F_NAME] = textReportInfo
+        if state_got == 'home':
+            textReportInfo = add_data[text_reports.F_NAME]
+            textReportInfo.clear()
+            textReportInfo.command == 'next'
+            text_reports.get_files(textReportInfo)
+            state_got = 'next'
+            
         if state_got == 'next':
             textReportInfo = add_data[text_reports.F_NAME]
-            #calc next
-            #send data
+            textReportInfo.command == 'next'
+            return text_reports.get_saved_data(textReportInfo)        
         elif state_got == 'prev':
             textReportInfo = add_data[text_reports.F_NAME]
-            #calc prev
-            #send data
-        elif state_got == 'home':
-            textReportInfo = add_data[text_reports.F_NAME]
-            #calc home
-            #send data
+            textReportInfo.command == 'prev'
+            return text_reports.get_saved_data(textReportInfo)
         else:
             raise Exception('TEXT REPORT: Unknown state: %s' % state_got)
         

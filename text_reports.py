@@ -86,7 +86,7 @@ def get_data(textReportInfo):
         
         total_count += data_str.count('\n') + 1
         data_strs.append(data_str)
-    return (take_index, total_count, '\n'.join(data_strs).split['\n'])
+    return (take_index, '\n'.join(data_strs).split['\n'])
 
 def get_saved_data(textReportInfo):
     if textReportInfo.command == 'next':
@@ -96,14 +96,37 @@ def get_saved_data(textReportInfo):
             #textReportInfo.read_data  = []
             textReportInfo.last_datum_num = [0]
             #textReportInfo.read_data_num = 0
-            file_num, data_num, read_data = get_data(textReportInfo)
+            file_num, read_data = get_data(textReportInfo)
             textReportInfo.read_data  = read_data
-            textReportInfo.read_data_num = data_num
+            textReportInfo.read_data_num = len(read_data)
             textReportInfo.last_file_num.append(file_num)
         ret_data = textReportInfo.read_data[textReportInfo.last_datum_num[-1], textReportInfo.take_data_by]
         textReportInfo.last_datum_num.append(textReportInfo.last_datum_num[-1] + len(ret_data))
+        return ret_data
     elif textReportInfo.command == 'prev':
-        pass
+        if textReportInfo.last_datum_num == [0]:
+            if textReportInfo.last_file_num == [0]:
+                get_new_files(textReportInfo)
+            else:
+                textReportInfo.last_file_num.pop()
+                textReportInfo.last_file_num.pop()
+                if not textReportInfo.last_file_num:
+                    textReportInfo.last_file_num = [0]
+            textReportInfo.last_datum_num = [0]
+            file_num, read_data = get_data(textReportInfo)
+            textReportInfo.read_data  = read_data
+            textReportInfo.read_data_num = len(read_data)
+            textReportInfo.last_file_num.append(file_num)
+        else:
+            textReportInfo.last_datum_num.pop()
+            textReportInfo.last_datum_num.pop()
+            if not textReportInfo.last_datum_num:
+                textReportInfo.last_datum_num = [0]
+        ret_data = textReportInfo.read_data[textReportInfo.last_datum_num[-1], textReportInfo.take_data_by]
+        textReportInfo.last_datum_num.append(textReportInfo.last_datum_num[-1] + len(ret_data))
+        return ret_data
+    else:
+        raise Exception('Text report: unknown command %s!' % textReportInfo.command)
             
 class TextReportInfo(object):
     start_date = None
@@ -131,3 +154,13 @@ class TextReportInfo(object):
         self.command = rep_type
         self.flow_dir = flow_dir
         self.data_script = DATA_SCRIPT_STR %  data_options + (self.take_data_by,)
+    def clear(self):
+        self.got_more_files = True
+        self.files = []
+        self.start_dates = []
+        self.last_file_num = [0]
+        self.got_more_data = False
+        self.read_data  = []
+        self.last_datum_num = [0]
+        self.read_data_num = 0
+        
