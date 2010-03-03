@@ -60,10 +60,12 @@ class PersistentDBConnection(object):
         return self.cursor_.fetchall()
     
     def commit(self):
-        self.connection.commit()
+        if self.connected and not self.connection.closed:
+            self.connection.commit()
         
     def rollback(self):
-        self.connection.rollback()
+        if self.connected and not self.connection.closed:
+            self.connection.rollback()
         
     def cursor(self):
         return self.connection.cursor()
