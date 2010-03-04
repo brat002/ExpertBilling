@@ -497,7 +497,7 @@ class RPCServer(object):
         if state_got == 'home':
             textReportInfo = add_data[text_reports.F_NAME]
             textReportInfo.clear()
-            textReportInfo.command == 'next'
+            textReportInfo.command = 'next'
             text_reports.get_new_files(textReportInfo)
             state_got = 'next'            
         if state_got == 'next':
@@ -506,7 +506,7 @@ class RPCServer(object):
             return text_reports.get_saved_data(textReportInfo)        
         elif state_got == 'prev':
             textReportInfo = add_data[text_reports.F_NAME]
-            textReportInfo.command == 'prev'
+            textReportInfo.command = 'prev'
             return text_reports.get_saved_data(textReportInfo)
         else:
             raise Exception('TEXT REPORT: Unknown state: %s' % state_got)
