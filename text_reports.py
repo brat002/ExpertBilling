@@ -92,7 +92,7 @@ def get_data(textReportInfo):
         
         total_count += data_str.count('\n') + 1
         data_strs.append(data_str)
-    return (take_index, '\n'.join(data_strs).split['\n'])
+    return (take_index, '\n'.join(data_strs).split('\n'))
 
 def get_saved_data(textReportInfo):
     if textReportInfo.command == 'next':
