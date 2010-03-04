@@ -443,7 +443,7 @@ class RpcVars(Vars):
         self.graph_connection = None
         self.LISTEN_PORT = 7771
         self.USER_ID = [None, None]
-        self.FLOW_DIR = '/var/flow'
+        self.FLOW_DIR = '/var/flow/'
         self.text_report_lock = Lock()
        
     def get_dynamic(self, **kwargs):
