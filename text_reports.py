@@ -1,4 +1,4 @@
-import datetime   
+import datetime, commands
         
 F_NAME = 'TEXT_REP'
 NAME_PREF = 'netflow.'
