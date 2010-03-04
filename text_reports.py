@@ -106,7 +106,7 @@ def get_saved_data(textReportInfo):
             textReportInfo.read_data  = read_data
             textReportInfo.read_data_num = len(read_data)
             textReportInfo.last_file_num.append(file_num)
-        ret_data = textReportInfo.read_data[textReportInfo.last_datum_num[-1], textReportInfo.take_data_by]
+        ret_data = textReportInfo.read_data[textReportInfo.last_datum_num[-1]:textReportInfo.take_data_by]
         textReportInfo.last_datum_num.append(textReportInfo.last_datum_num[-1] + len(ret_data))
         return ret_data
     elif textReportInfo.command == 'prev':
