@@ -1194,18 +1194,20 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         self.repaint()
         i = 0
         c = 0
-        if rep_command == 'start':
-            users = {}
-            for x in xrange(0, self.child.selected_users_listWidget.count()):
+        users = {}
+        for x in xrange(0, self.child.selected_users_listWidget.count()):
                 users[self.child.selected_users_listWidget.item(x).id] = unicode(self.child.selected_users_listWidget.item(x).text())
+        if rep_command == 'start':
+            
+            
             icount = 0
-            users = []
+            users_str = ''
             if len(self.child.users) > 0:
-                users = ','.join(map(str, self.child.users))                
-            if not users:
+                users_str = ','.join(map(str, self.child.users))                
+            if not users_str:
                 flows = self.connection.text_report(['start', self.child.start_date, self.child.end_date, ['none']])
             else:
-                flows = self.connection.text_report(['start', self.child.start_date, self.child.end_date, ['account', users]])
+                flows = self.connection.text_report(['start', self.child.start_date, self.child.end_date, ['account', users_str]])
         else:
             flows = self.connection.text_report([rep_command]) 
         
