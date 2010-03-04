@@ -491,14 +491,14 @@ class RPCServer(object):
         if state_got == 'start':
             add_data[text_reports.F_NAME] = None
             textReportInfo = text_reports.TextReportInfo(options[1], options[2], options[3], 'next', vars.FLOW_DIR)
-            text_reports.get_files(textReportInfo)
+            text_reports.get_new_files(textReportInfo)
             state_got = 'next'
             add_data[text_reports.F_NAME] = textReportInfo
         if state_got == 'home':
             textReportInfo = add_data[text_reports.F_NAME]
             textReportInfo.clear()
             textReportInfo.command == 'next'
-            text_reports.get_files(textReportInfo)
+            text_reports.get_new_files(textReportInfo)
             state_got = 'next'            
         if state_got == 'next':
             textReportInfo = add_data[text_reports.F_NAME]

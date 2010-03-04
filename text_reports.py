@@ -68,7 +68,7 @@ def get_data(textReportInfo):
             raise Exception('Text report: no more files!')
         fnames = map(lambda x: ''.join((textReportInfo.flow_dir, x)), textReportInfo.files[take_index:textReportInfo.take_files_by])
         if not fnames:
-            get_new_files
+            get_new_files(textReportInfo)
             continue                
         scr_output = commands.getstatusoutput(textReportInfo.data_script % ','.join(fnames))
         if scr_output[0]:

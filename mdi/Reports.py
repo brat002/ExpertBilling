@@ -1203,11 +1203,11 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             if len(self.child.users) > 0:
                 users = ','.join(map(str, self.child.users))                
             if not users:
-                flows = self.connection.text_report('start', self.child.start_date, self.child.end_date, ['none'])
+                flows = self.connection.text_report(['start', self.child.start_date, self.child.end_date, ['none']])
             else:
-                flows = self.connection.text_report('start', self.child.start_date, self.child.end_date, ['account', users])
+                flows = self.connection.text_report(['start', self.child.start_date, self.child.end_date, ['account', users]])
         else:
-            flows = self.connection.text_report(rep_command) 
+            flows = self.connection.text_report([rep_command]) 
         
         self.tableWidget.clearContents()
         self.tableWidget.setRowCount(len(flows))
@@ -1230,7 +1230,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
   
     def closeEvent(self, event):
         if self.used:
-            self.connection.text_report('finish')
+            self.connection.text_report(['finish'])
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
         event.accept()    
