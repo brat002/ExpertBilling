@@ -70,7 +70,7 @@ def get_data(textReportInfo):
         if not fnames:
             get_new_files(textReportInfo)
             continue                
-        scr_output = commands.getstatusoutput(textReportInfo.data_script % ','.join(fnames))
+        scr_output = commands.getstatusoutput(textReportInfo.data_script % ' '.join(fnames))
         if scr_output[0] != 0:
             raise Exception('Text report: get data error: %s' % scr_output[0] )
         if not scr_output[1]:
