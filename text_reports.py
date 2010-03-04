@@ -6,10 +6,16 @@ STRFTEMPLATE = '%Y-%m-%d_%H-%M'
 
 DEF_FILE_NUM = 100
 SCRIPT_STR = """ls -1 %s | mawk 'BEGIN {lines = 0}; $0 => "%s" && $0 <= "%s" { print $0; lines +=1; if (lines >=""" + str(DEF_FILE_NUM) + """) exit }'"""
-DATA_SCRIPT_STR = """mawk 'BEGIN {FS = ","; lines = 0; filename = ""; -- acc_num = split("338,368", accounts, ","); for (item in accounts) {accounts[accounts[item]] = 1; delete accounts[item]};--}; --$21 in accounts-- {print $21,$1,$10,$2,$11,$7,$22; lines = lines + 1; if (filename != FILENAME) {if (lines >= %s) {print FILENAME; exit} else {filename = FILENAME}}}'"""
+DATA_SCRIPT_STR = """mawk 'BEGIN {FS = ","; lines = 0; filename = ""; %s}; %s {print $21,$1,$10,$2,$11,$7,$22; lines = lines + 1; if (filename != FILENAME) {if (lines >= %s) {print FILENAME; exit} else {filename = FILENAME}}}' %s"""
 
 calc_fname = lambda file_date: ''.join((NAME_PREF, file_date.strftime(STRFTEMPLATE)))
 
+def get_data_string(data_string, options_list):
+    if options_list[0] == 'none':
+        return data_string % ('', '', '%s', '%s')
+    elif options_list[1] == 'accounts':
+        return data_string % ('''acc_num = split("%s", accounts, ","); for (item in accounts) {accounts[accounts[item]] = 1; delete accounts[item]};''' % options_list[1],
+                              '$21 in accounts', '%s', '%s')
 
 def get_files(flow_dir, start_filename, end_filename, script_str):
     return commands.getstatusoutput(script_str % (flow_dir, start_filename, end_filename))
@@ -153,7 +159,7 @@ class TextReportInfo(object):
         self.end_date = end_date
         self.command = rep_type
         self.flow_dir = flow_dir
-        self.data_script = DATA_SCRIPT_STR %  data_options + (self.take_data_by,)
+        self.data_script = get_data_string(DATA_SCRIPT_STR, data_options) % (self.take_data_by, '%s')
     def clear(self):
         self.got_more_files = True
         self.files = []

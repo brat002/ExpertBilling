@@ -1,5 +1,4 @@
 # -*- coding=utf-8 -*-
-
 from __future__ import with_statement
 
 import IPy
@@ -480,6 +479,7 @@ class RPCServer(object):
 
     
     def text_report(self, options, cur=None, connection=None, add_data = {}):
+        #ret_val = None
         state_got = options[0]
         if (state_got in ('next', 'prev', 'home', 'close') and
                 (not text_reports.F_NAME in add_data or not add_data[text_reports.F_NAME])):
@@ -498,8 +498,7 @@ class RPCServer(object):
             textReportInfo.clear()
             textReportInfo.command == 'next'
             text_reports.get_files(textReportInfo)
-            state_got = 'next'
-            
+            state_got = 'next'            
         if state_got == 'next':
             textReportInfo = add_data[text_reports.F_NAME]
             textReportInfo.command == 'next'
