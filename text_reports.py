@@ -44,8 +44,8 @@ def get_new_files(textReportInfo):
     start_date = textReportInfo.start_dates[-1]
     fl_out = get_files(textReportInfo.flow_dir, calc_fname(start_date), 
                        calc_fname(textReportInfo.end_date), SCRIPT_STR)
-    if fl_out[0]:
-        raise Exception('Text report: get file error')
+    if fl_out[0] != '0':
+        raise Exception('Text report: get file error: %s' % fl_out[0])
     textReportInfo.files = fl_out[1].split('\n')
     if textReportInfo.command == 'next':
         if fl_out[1].count('\n') < DEF_FILE_NUM - 1:
@@ -71,8 +71,8 @@ def get_data(textReportInfo):
             get_new_files(textReportInfo)
             continue                
         scr_output = commands.getstatusoutput(textReportInfo.data_script % ','.join(fnames))
-        if scr_output[0]:
-            raise Exception('Text report: get data error!')
+        if scr_output[0] != '0':
+            raise Exception('Text report: get data error: %s' % scr_output[0] )
         if not scr_output[1]:
             take_index += + len(fnames)
             continue
