@@ -974,6 +974,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         initargs = {"setname":"netflow_frame_header", "objname":"NetFlowReportEbsMDI", "winsize":(0,0,800,587), "wintitle":"Сетевая статистика"}
         tabargs= [["tab0", columns_t0, "Детальная статистика"], ["tab1", columns_t1, "Сводная статистика"]]
         self.child = ReportPropertiesDialog(connection = connection)
+        self.used = False
         super(NetFlowReportEbs, self).__init__(connection, initargs, tabargs)
         
     def ebsPreInit(self, initargs, tabargs):
@@ -1062,17 +1063,17 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         self.tableWidget.setItem(x,y,headerItem)
  
     def startPage(self):
-        self.current_page=0
-        self.refresh()
+        #self.current_page=0
+        self.refresh('home')
          
     def addPage(self):
-        self.current_page+=1
-        self.refresh()
+        #self.current_page+=1
+        self.refresh('next')
         
     def delPage(self):
-        if self.current_page-1>=0:
-            self.current_page-=1
-            self.refresh()
+        #if self.current_page-1>=0:
+        #    self.current_page-=1
+        self.refresh('prev')
         
     def getProtocol(self, value):
         if str(value) in self.protocols_reverse:
@@ -1083,8 +1084,9 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         if self.child.exec_()!=1:
             return
         if self.tabWidget.currentIndex()==0:
-            self.current_page=0
-            self.refresh()
+            #self.current_page=0
+            self.used = True
+            self.refresh('start')
         elif self.tabWidget.currentIndex()==1:
             self.refresh_summary()
         
@@ -1187,161 +1189,38 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         HeaderUtil.getHeader(self.setname+"_tab_1", self.tableWidget_summary)
 
                     
-    def refresh(self):        
+    def refresh(self, rep_command):        
         self.status_label.setText(u"Подождите, идёт обработка.")
         self.repaint()
-        #self.status_label.setText(u"Готово")
-        #self.statusBar().showMessage(u"Ожидание ответа")
-        #self.tableWidget.setSortingEnabled(False)
-        groupP = False
-        userss   = set()
-        portss   = set()
-        classess = set()
-        udict     = {}
-        portdict  = {}
-        classdict = {}
-        '''
-        if self.child.with_grouping_checkBox.checkState()==0:
-            sql="""SELECT netflowstream.id,netflowstream.date_start, netflowstream.direction, netflowstream.protocol, 
-            netflowstream.src_addr, netflowstream.dst_addr, netflowstream.src_port, netflowstream.dst_port, netflowstream.octets, 
-            netflowstream.account_id, netflowstream.traffic_class_id
-            FROM billservice_netflowstream as netflowstream
-            WHERE date_start between '%s' and '%s'""" % (self.child.start_date, self.child.end_date)
-            
-        elif self.child.with_grouping_checkBox.checkState()==2:
-            sql="""SELECT netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username as account_username, class.name as class_name,  class.color as class_color, sum(netflowstream.octets) as octets
-            FROM billservice_netflowstream as netflowstream
-            JOIN billservice_account as account ON account.id = netflowstream.account_id
-            JOIN nas_trafficclass as class ON ARRAY[class.id] <@ netflowstream.traffic_class_id
-            WHERE date_start between '%s' and '%s'
-            
-            """ % (self.child.start_date, self.child.end_date)
-            #print 2            
-            groupP = True
-            
-        if len(self.child.users)>0 or len(self.child.classes)>0:
-            sql+=" AND " 
-        
-        if len(self.child.users)>0:
-            sql+= """ netflowstream.account_id IN (%s) """ % ','.join(map(str, self.child.users))
-            
-        if len(self.child.users)>0 and len(self.child.classes)>0:
-            sql+=""" and """
-        
-        if len(self.child.classes)>0:
-            sql+=""" netflowstream.traffic_class_id && ARRAY[%s]"""  % ','.join(map(str,self.child.classes))
-            
-        if self.child.with_grouping_checkBox.checkState()==2:
-            sql+="""GROUP BY netflowstream.direction, netflowstream.protocol, netflowstream.src_addr, netflowstream.dst_addr,  account.username, class.name, class.color"""
-        
-        if self.child.with_grouping_checkBox.checkState()==0 and self.child.order_by_desc.checkState()==0:
-            sql+="ORDER BY netflowstream.id ASC"
-        elif self.child.with_grouping_checkBox.checkState()==0 and self.child.order_by_desc.checkState()==2:
-            sql+="ORDER BY netflowstream.id DESC"
-            
-        if self.current_page==0:
-            sql+=" LIMIT 100"
-        else:            
-            sql+=" LIMIT 100 OFFSET %d" % (self.current_page*100)
-        '''
-        
-            
-#===============================================================================
-#        groupP = False if  self.child.with_grouping_checkBox.checkState() else True
-#        if groupP:
-#            sql = """SELECT account.username AS account_username, class.name AS class_name, class.color AS class_color, bgs.datetime,  
-#                            bgs.classbytes[bgs.classes#class.id][1] AS bytes_in, bgs.classbytes[bgs.classes#class.id][2] AS bytes_out 
-#                            FROM billservice_globalstat AS bgs 
-#                            JOIN billservice_account as account ON account.id = bgs.account_id 
-#                            JOIN nas_trafficclass as class ON (bgs.classes#class.id !=0) 
-#                            WHERE bgs.datetime BETWEEN '%s' AND '%s' """ % (self.child.start_date, self.child.end_date)
-#        else:
-#            sql = """SELECT account.username AS account_username,bgs.datetime, bgs.bytes_in AS bytes_in, bgs.bytes_out AS bytes_out 
-#                            FROM billservice_globalstat AS bgs 
-#                            JOIN billservice_account as account ON account.id = bgs.account_id 
-#                            WHERE bgs.datetime BETWEEN '%s' AND '%s' """ % (self.child.start_date, self.child.end_date)
-# 
-#        if len(self.child.users)>0 or len(self.child.classes)>0:
-#            sql+=" AND " 
-#        
-#        if len(self.child.users)>0:
-#            sql+= """ bgs.account_id IN (%s) """ % ','.join(map(str, self.child.users))
-#            
-#        if len(self.child.users)>0 and len(self.child.classes)>0:
-#            sql+=""" AND """
-#        
-#        if len(self.child.classes)>0:
-#            sql+=""" bgs.classes && ARRAY[%s]"""  % ','.join(map(str,self.child.classes))
-#            
-#        if self.child.order_by_desc.checkState()==0:
-#            sql+="ORDER BY bgs.datetime ASC"
-#        elif self.child.order_by_desc.checkState()==2:
-#            sql+="ORDER BY bgs.datetime DESC"
-#            
-#        if self.current_page==0:
-#            sql+=" LIMIT 100"
-#        else:            
-#            sql+=" LIMIT 100 OFFSET %d" % (self.current_page*100)
-#            
-#        flows = self.connection.sql(sql)
-#        self.connection.commit()
-#===============================================================================
-
-        i=0
-        users = {}
-        for x in xrange(0, self.child.selected_users_listWidget.count()):
-            users[self.child.selected_users_listWidget.item(x).id] = unicode(self.child.selected_users_listWidget.item(x).text())
-            
-
-        c=self.current_page*2000
-        icount = 0
-        
-        sql = """ SELECT account_id, src_addr, src_port, dst_addr, dst_port, octets, date_start FROM billservice_netflowstream
-        WHERE date_start BETWEEN '%s' AND '%s' """ % (self.child.start_date, self.child.end_date)
-        
-
-        if len(self.child.users)>0:
-            sql+= """ AND account_id IN (%s) """ % ','.join(map(str, self.child.users))
-        #else:
-
-        if self.child.order_by_desc.checkState()==0:
-            sql+=" ORDER BY date_start ASC "
-        elif self.child.order_by_desc.checkState()==2:
-            sql+=" ORDER BY date_start DESC "
-
-        if self.current_page==0:
-            sql+=" LIMIT 2000"
-        else:            
-            sql+=" LIMIT 2000 OFFSET %d" % (self.current_page*2000)
-
-        flows = self.connection.sql(sql)    
+        i = 0
+        c = 0
+        if rep_command == 'start':
+            users = {}
+            for x in xrange(0, self.child.selected_users_listWidget.count()):
+                users[self.child.selected_users_listWidget.item(x).id] = unicode(self.child.selected_users_listWidget.item(x).text())
+            icount = 0
+            users = []
+            if len(self.child.users) > 0:
+                users = ','.join(map(str, self.child.users))                
+            if not users:
+                flows = self.connection.text_report('start', self.child.start_date, self.child.end_date, ['none'])
+            else:
+                flows = self.connection.text_report('start', self.child.start_date, self.child.end_date, ['account', users])
+        else:
+            flows = self.connection.text_report(rep_command) 
         
         self.tableWidget.clearContents()
         self.tableWidget.setRowCount(len(flows))
         
         #['#', u'Аккаунт', u'Источник', u'Получатель', u'Передано',u'Дата']
-        for flow in flows:                   
-                        
+        for flowstr in flows:                   
+            flow = flowstr.split(' ')
             self.addrow(c, i, 0)
-            #if groupP:
-            #    self.addrow("%s" % (flow.class_name), i, 2, color=flow.class_color)
-
-                
-            #else:                
-            #self.addrow(flow.account_username, i, 1)   
-            #print dir(flow)
-            self.addrow(users.get(flow.account_id, ""), i, 1)         
-            self.addrow("%s:%s" % (flow.src_addr, flow.src_port), i, 2)
-            self.addrow("%s:%s" % (flow.dst_addr, flow.dst_port), i, 3)
-            self.addrow(humanable_bytes(flow.octets), i, 4)
-            self.addrow(flow.date_start.strftime(self.strftimeFormat), i, 5)
-
-            #self.addrow(flow.account_username, i, 1)            
-            #self.addrow(humanable_bytes(flow.bytes_in), i, 3)
-            #self.addrow(humanable_bytes(flow.bytes_out), i, 4)
-            #self.addrow(flow.datetime.strftime(self.strftimeFormat), i, 5)
-            
-            #self.tableWidget.setRowHeight(i, 16)            
+            self.addrow(users.get(int(flow[0]), ""), i, 1)   #acc_id      
+            self.addrow("%s:%s" % (flow[1], flow[2]), i, 2) #src ip, port
+            self.addrow("%s:%s" % (flow[3], flow[4]), i, 3) #dst
+            self.addrow(humanable_bytes(int(flow[5])), i, 4) #octets
+            self.addrow(datetime.datetime.fromtimestamp(float(flow[6])).strftime(self.strftimeFormat), i, 5)  #date        
             i+=1
             c+=1
         
@@ -1349,7 +1228,12 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         HeaderUtil.getHeader(self.setname+"_tab_0", self.tableWidget)
         self.status_label.setText(u"Готово")
   
-        
+    def closeEvent(self, event):
+        if self.used:
+            self.connection.text_report('finish')
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
+        event.accept()    
         
 
 class NetFlowReport(QtGui.QMainWindow):
