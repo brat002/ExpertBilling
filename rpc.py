@@ -490,7 +490,7 @@ class RPCServer(object):
             return 'OK'
         if state_got == 'start':
             add_data[text_reports.F_NAME] = None
-            textReportInfo = text_reports.TextReportInfo(options[1], options[2], options[3], 'next', vars.flow_dir)
+            textReportInfo = text_reports.TextReportInfo(options[1], options[2], options[3], 'next', vars.FLOW_DIR)
             text_reports.get_files(textReportInfo)
             state_got = 'next'
             add_data[text_reports.F_NAME] = textReportInfo
