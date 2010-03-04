@@ -552,11 +552,10 @@ class ConnectDialog(QtGui.QDialog):
             #print settings.value("ip", QtCore.QVariant(""))
             if settings.value("save", QtCore.QVariant("")).toBool():
                 self.save_checkBox.setCheckState(QtCore.Qt.Checked)      
-
-                self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
-                self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
                 self.password_edit.setText(settings.value("password", QtCore.QVariant("")).toString())
             else: self.save_checkBox.setCheckState(QtCore.Qt.Unchecked)
+            self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
+            self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
             #self.address_edit.setText(self._address)
             #self.name_edit.setText(self._name)
             #self.password_edit.setText("*******")
@@ -581,27 +580,15 @@ class ConnectDialog(QtGui.QDialog):
         try:
             self.password = unicode(self.password_edit.text())
 
-            #self.password = self._password
-#===============================================================================
-#            else:
-#                model = self.tableWidget.model()
-#                for i in range(model.rowCount()):
-#                    if (model.record(i).value(2).toString() == self.name_edit.text()) and (model.record(i).value(1).toString() == self.address_edit.text()):
-#                        self.password = model.record(i).value(3)
-#                        break
-#                if not self.password:
-#                    self.password = unicode(self.password_edit.text())
-#===============================================================================
-
             
             self.address = self.address_edit.text()
             self.name    = self.name_edit.text()
             #print self.name
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             if self.save_checkBox.isChecked() == True:
-                settings.setValue("ip", QtCore.QVariant(self.address))
-                settings.setValue("user", QtCore.QVariant(self.name))
                 settings.setValue("password", QtCore.QVariant(self.password))                
+            settings.setValue("ip", QtCore.QVariant(self.address))
+            settings.setValue("user", QtCore.QVariant(self.name))
             settings.setValue("save", QtCore.QVariant(self.save_checkBox.isChecked()))
             QtGui.QDialog.accept(self)
         except Exception, ex:
