@@ -135,26 +135,26 @@ def get_saved_data(textReportInfo):
         raise Exception('Text report: unknown command %s!' % textReportInfo.command)
             
 class TextReportInfo(object):
-    start_date = None
-    end_date   = None
-    current_data_file = None
-    got_more_files = True
-    files      = []
-    start_dates = []
-    last_file_num = [0]
-    got_more_data = False
-    read_data  = []
-    last_datum_num = [0]
-    read_data_num = 0
-    data_script = ''
-    flow_dir = ''
-    name_prefix = 'netflow.'
-    take_files_by = 20
-    take_data_by = 2000
-    command = ''
-    #executed = ''
-    
+
     def __init__(self, start_date, end_date, data_options, rep_type, flow_dir):
+        self.start_date = None
+        self.end_date   = None
+        self.current_data_file = None
+        self.got_more_files = True
+        self.files      = []
+        self.start_dates = []
+        self.last_file_num = [0]
+        self.got_more_data = False
+        self.read_data  = []
+        self.last_datum_num = [0]
+        self.read_data_num = 0
+        self.data_script = ''
+        self.flow_dir = ''
+        self.name_prefix = 'netflow.'
+        self.take_files_by = 20
+        self.take_data_by = 2000
+        self.command = ''
+        #----------------
         self.start_date = start_date
         self.end_date = end_date
         self.command = rep_type
