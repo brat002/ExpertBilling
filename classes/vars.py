@@ -443,14 +443,16 @@ class RpcVars(Vars):
         self.graph_connection = None
         self.LISTEN_PORT = 7771
         self.USER_ID = [None, None]
-        self.FLOW_DIR = ''
+        self.FLOW_DIR = '/var/flow'
         self.text_report_lock = Lock()
        
     def get_dynamic(self, **kwargs):
         super(RpcVars, self).get_dynamic(**kwargs)
         config = kwargs['config']
         name = kwargs['name']
+        nf_name = kwargs['nf_name']
         if config.has_option(name, 'listen_port'): self.LISTEN_PORT = config.getint(name, 'listen_port')
+        if config.has_option(nf_name, 'flow_dir'): self.FLOW_DIR = config.get(nf_name, 'flow_dir')
         if config.has_option(name, 'flow_dir'): self.FLOW_DIR = config.get(name, 'flow_dir')
         
     def __repr__(self):
