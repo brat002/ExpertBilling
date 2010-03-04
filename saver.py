@@ -19,7 +19,7 @@ def setAllowedUsers(licstr, dbconnection = None):
         else:
             log_error_('Test version: only 32 users allowed!' % ())
             allowed = str(2**3*2**2)
-            #allowed = str(1000) 
+            #allowed = str(400) 
         allowedUsers = lambda: int(allowed)
     except Exception, ex:
         log_error_("License file format error!")

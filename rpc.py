@@ -48,6 +48,7 @@ from rpc2.server_producer import install_logger as serv_install_logger, DBProces
 from rpc2.rpc_protocol import install_logger as proto_install_logger, RPCProtocol, ProtocolException, MD5_Authenticator, Object as Object
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 from encodings import idna, ascii
+import nf
 NAME = 'rpc'
 DB_NAME = 'db'
 DEFAULT_PORT = 7771
@@ -1227,11 +1228,6 @@ def get_producer(addr):
 def main():
     global threads, vars
     threads=[]
-    '''
-    threads.append(RPCServer())
-    for th in threads:	
-        th.start()
-        time.sleep(0.1)'''
     try:
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
@@ -1270,7 +1266,7 @@ if __name__ == "__main__":
     
     try:
         vars = RpcVars()        
-        vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
+        vars.get_vars(config=config, name=NAME, db_name=DB_NAME, nf_name=nf.NAME)
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
