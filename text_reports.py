@@ -5,7 +5,7 @@ NAME_PREF = 'netflow.'
 STRFTEMPLATE = '%Y-%m-%d_%H-%M'
 
 DEF_FILE_NUM = 100
-SCRIPT_STR = """ls -1 %s | mawk 'BEGIN {lines = 0}; $0 => "%s" && $0 <= "%s" { print $0; lines +=1; if (lines >=""" + str(DEF_FILE_NUM) + """) exit }'"""
+SCRIPT_STR = """ls -1 %s | mawk 'BEGIN {lines = 0}; $0 >= "%s" && $0 <= "%s" { print $0; lines +=1; if (lines >=""" + str(DEF_FILE_NUM) + """) exit }'"""
 DATA_SCRIPT_STR = """mawk 'BEGIN {FS = ","; lines = 0; filename = ""; %s}; %s {print $21,$1,$10,$2,$11,$7,$22; lines = lines + 1; if (filename != FILENAME) {if (lines >= %s) {print FILENAME; exit} else {filename = FILENAME}}}' %s"""
 
 calc_fname = lambda file_date: ''.join((NAME_PREF, file_date.strftime(STRFTEMPLATE)))
