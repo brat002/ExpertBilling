@@ -35,10 +35,13 @@ def get_new_files(textReportInfo):
         textReportInfo.start_dates.append(textReportInfo.start_date)
         """
     elif  textReportInfo.command == 'prev':
+        if len(textReportInfo.start_dates) <= 1 :
+            #textReportInfo.files = []
+            return
         textReportInfo.start_dates.pop()
         textReportInfo.start_dates.pop()
         if not textReportInfo.start_dates:
-            textReportInfo.files = []
+            #textReportInfo.files = []
             return
         
     start_date = textReportInfo.start_dates[-1]
