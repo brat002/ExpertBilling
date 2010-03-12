@@ -40,5 +40,13 @@ def login_required(func):
         if not request.user.is_authenticated():
             return HttpResponseRedirect(settings.LOGIN_URL)
         else:
-            return None 
+            return None
     return wrapper
+
+def render_xml(func):
+    """Decorated function must return a valid xml document in unicode"""
+    def wrapper(request, *args, **kwargs):
+        xml = func(request, *args, **kwargs)
+        return HttpResponse(response,mimetype="text/xml",contenttype="text/xml;charset=utf-8")
+    return wrapper
+
