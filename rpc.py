@@ -502,7 +502,7 @@ class RPCServer(object):
             state_got = 'next'            
         if state_got == 'next':
             textReportInfo = add_data[text_reports.F_NAME]
-            textReportInfo.command == 'next'
+            textReportInfo.command = 'next'
             return text_reports.get_saved_data(textReportInfo)        
         elif state_got == 'prev':
             textReportInfo = add_data[text_reports.F_NAME]
