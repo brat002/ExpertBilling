@@ -110,14 +110,18 @@ def get_saved_data(textReportInfo):
         textReportInfo.last_datum_num.append(textReportInfo.last_datum_num[-1] + len(ret_data))
         return ret_data
     elif textReportInfo.command == 'prev':
+        textReportInfo.last_datum_num.pop()
+        if not textReportInfo.last_datum_num:
+                textReportInfo.last_datum_num = [0]
+                
         if textReportInfo.last_datum_num == [0]:
+            textReportInfo.last_file_num.pop()
+            if not textReportInfo.last_file_num:
+                    textReportInfo.last_file_num = [0]
             if textReportInfo.last_file_num == [0]:
                 get_new_files(textReportInfo)
             else:
                 textReportInfo.last_file_num.pop()
-                textReportInfo.last_file_num.pop()
-                if not textReportInfo.last_file_num:
-                    textReportInfo.last_file_num = [0]
             textReportInfo.last_datum_num = [0]
             file_num, read_data = get_data(textReportInfo)
             textReportInfo.read_data  = read_data
@@ -125,9 +129,7 @@ def get_saved_data(textReportInfo):
             textReportInfo.last_file_num.append(file_num)
         else:
             textReportInfo.last_datum_num.pop()
-            textReportInfo.last_datum_num.pop()
-            if not textReportInfo.last_datum_num:
-                textReportInfo.last_datum_num = [0]
+            
         ret_data = textReportInfo.read_data[textReportInfo.last_datum_num[-1]:textReportInfo.last_datum_num[-1]+textReportInfo.take_data_by]
         textReportInfo.last_datum_num.append(textReportInfo.last_datum_num[-1] + len(ret_data))
         return ret_data
