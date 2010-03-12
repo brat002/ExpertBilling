@@ -2732,3 +2732,7 @@ UPDATE billservice_accounttarif SET datetime=date_trunc('second', datetime);
 
 UPDATE billservice_accountaddonservice SET activated=date_trunc('second', activated);
 UPDATE billservice_accountaddonservice SET deactivated=date_trunc('second', deactivated);
+
+-- 12.03.2010
+
+INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Оплата через платежные системы', 'PAYMENTGATEWAY_BILL'); 
