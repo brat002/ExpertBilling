@@ -1207,7 +1207,7 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
             if not users_str:
                 flows = self.connection.text_report(['start', self.child.start_date, self.child.end_date, ['none']])
             else:
-                flows = self.connection.text_report(['start', self.child.start_date, self.child.end_date, ['account', users_str]])
+                flows = self.connection.text_report(['start', self.child.start_date, self.child.end_date, ['accounts', users_str]])
         else:
             flows = self.connection.text_report([rep_command]) 
         

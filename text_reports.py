@@ -13,7 +13,7 @@ calc_fname = lambda file_date: ''.join((NAME_PREF, file_date.strftime(STRFTEMPLA
 def get_data_string(data_string, options_list):
     if options_list[0] == 'none':
         return data_string % ('', '', '%s', '%s')
-    elif options_list[1] == 'accounts':
+    elif options_list[0] == 'accounts':
         return data_string % ('''acc_num = split("%s", accounts, ","); for (item in accounts) {accounts[accounts[item]] = 1; delete accounts[item]};''' % options_list[1],
                               '$21 in accounts', '%s', '%s')
 
