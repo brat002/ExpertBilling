@@ -6,20 +6,13 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Example:
-    # (r'^ebscab/', include('ebscab.foo.urls')),
-    #(r'^$','ebscab.billing.views.index'),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
-    # Uncomment this for admin:
     ('^admin/(.*)', admin.site.root),
-     #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
-     #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
-     (r'^helpdesk/', include('helpdesk.urls')),
+    (r'^helpdesk/', include('helpdesk.urls')),
 )
 
 urlpatterns += patterns('billservice.views',
     # Uncomment this for admin:
-     #(r'^$', 'index'),
      (r'^$', 'index'),
      (r'^login/$', 'login'),
      (r'^prepaid/$', 'account_prepays_traffic'),
