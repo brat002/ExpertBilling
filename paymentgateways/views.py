@@ -11,11 +11,6 @@ from decimal import Decimal
 import random
 # pegas payments callbacks
 
-class TransactionException(Exception):
-    pass
-
-class RollbackException(Exception):
-    pass
 
 class AccountIdForm(forms.Form):
     account_id = models.CharField()
@@ -37,25 +32,7 @@ def check(request_data):
         data['error_code'] = pegas.ERROR_UNDEFINED
     return data
 
-def paymentgateway_transaction(cursor, account, t_sum, txn_date, txn_id):
-    #=======
-    #account = account_id???? 
-    if len(str(account)) > 12:
-        raise Exception('MAX account_id length reached!')
-    local_txn_id = ''.join(('PG',  ('%0.12d' % account), txn_date.strftime('%Y%m%d%H%M%S'), '%0.4d' % random.randint(0,9999)))
-    #local_id len = 32 
-    #assume that local_id is unique - MAYBE CHECK???
-    count = cursor.execute("""INSERT INTO billservice_transaction (account_id, summ, created, type_id, bill, description) VALUES (%s, %s, %s, %s, %s, %s)""",
-                           (account, t_sum * Decimal(-1), txn_date, 'PAYMENTGATEWAY_BILL', local_txn_id, txn_id))
-    if not count:
-        raise TransactionException('Transaction error!')
-    return {'prv_txn': local_txn_id}
 
-def paymentgateway_rollback(cursor, local_txn_id):
-    count = cursor.execute("""DELETE FROM billservice_transaction WHERE bill=%s;""", (local_txn_id,))
-    if not count:
-        raise RollbackException('Rollback error!')
-    return {'prv_txn': local_txn_id}
     
     
 def pay(request_data):
