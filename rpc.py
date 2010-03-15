@@ -47,6 +47,7 @@ from constants import rules
 from rpc2.server_producer import install_logger as serv_install_logger, DBProcessingThread, PersistentDBConnection, TCP_IntStringReciever, RPCFactory
 from rpc2.rpc_protocol import install_logger as proto_install_logger, RPCProtocol, ProtocolException, MD5_Authenticator, Object as Object
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+from rpc2.rpc_errors import TransactionException, RollbackException
 from encodings import idna, ascii
 import nf
 NAME = 'rpc'
@@ -1126,7 +1127,27 @@ class RPCServer(object):
         cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
         return res
 
-
+    def paymentgateway_transaction(self, account_id, t_sum, txn_date, txn_id, cur=None, connection=None, add_data = {}):
+        #=======
+        #account = account_id???? 
+        if len(str(account_id)) > 12:
+            raise Exception('MAX account_id length reached!')
+        local_txn_id = ''.join(('PG',  ('%0.12d' % account_id), txn_date.strftime('%Y%m%d%H%M%S'), '%0.4d' % random.randint(0,9999)))
+        #local_id len = 32 
+        #assume that local_id is unique - MAYBE CHECK???
+        count = cur.execute("""INSERT INTO billservice_transaction (account_id, summ, created, type_id, bill, description) VALUES (%s, %s, %s, %s, %s, %s)""",
+                               (account_id, t_sum * Decimal(-1), txn_date, 'PAYMENTGATEWAY_BILL', local_txn_id, txn_id))
+        connection.commit()
+        if not count:
+            raise TransactionException('Transaction error!')
+        return {'prv_txn': local_txn_id}
+    
+    def paymentgateway_rollback(self, local_txn_id, cur=None, connection=None, add_data = {}):
+        count = cur.execute("""DELETE FROM billservice_transaction WHERE bill=%s;""", (local_txn_id,))
+        connection.commit()
+        if not count:
+            raise RollbackException('Rollback error!')
+        return {'prv_txn': local_txn_id}
 def reread_pids():
     global vars
     newpids, newpiddate = readpids(vars.piddir, vars.piddate, exclude = [vars.name + '.pid'])
