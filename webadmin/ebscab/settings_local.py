@@ -21,6 +21,8 @@ DATABASE_PORT = '5432'             # Set to empty string for default. Not used w
 
 
 
+
+
 # Local time zone for this installation. Choices can be found here:
 # http://www.postgresql.org/docs/8.1/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
 # although not all variations may be possible on all operating systems.
@@ -108,6 +110,8 @@ INSTALLED_APPS = (
     'nas',
     'billservice',
     'lib',
+    'service_monitor',
+    'testcases',
 )
 
 AUTHENTICATION_BACKENDS = (

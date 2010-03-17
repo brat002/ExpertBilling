@@ -27,7 +27,7 @@ def service_data(request):
     if user.is_authenticated():
         
         code = request.GET.get('id', None)
-        
+                
         if code != None:            
             #request of user balance
             if code == u'1009':                                
@@ -53,12 +53,32 @@ def service_data(request):
                 data_pack['value'] = value   
                 
             #request of news
-            if code == u'1017':                 
-                news = AccountViewedNews.objects.filter(news__private=True, account=user, viewed=False).order_by('-id')[:1]
-                value = news[0].news.body.encode('utf-8')
-                data_pack = {'status_code' :'1018'}
+            if code == u'1017':                
+                try:                                                   
+                    news = (AccountViewedNews.objects.filter(account=user, viewed=False, news__agent=True).order_by('-id')[:1])
+                    news_id = news[0].id
+                    news = AccountViewedNews.objects.get(id = news_id)
+                    news.viewed = True
+                    news.save()
+                    value = news.news.body.encode('utf-8')
+                except:
+                    value=""
+                                           
+                data_pack = {'status_code' :'1018'}                    
                 data_pack['value'] = value
                 
+            #request blocked balance
+            if code == u'1019':
+                value = user.balance_blocked
+                data_pack = {'status_code' : '1020'}
+                data_pack['value'] = '%s' % value
+                
+            #request blocked limit
+            if code == u'1021':
+                value = user.disabled_by_limit
+                data_pack = {'status_code' : '1022'}
+                data_pack['value'] = '%s' % value
+            
             #otherwise data_pack is empty
             
             #encode to JSON
