@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowPreferences xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <_XPosLeft>-32000</_XPosLeft>
+  <_YPosUpper>-32000</_YPosUpper>
+  <_OpacityValue>0</_OpacityValue>
+  <_Opacity>false</_Opacity>
+  <_TopMost>true</_TopMost>
+  <_AutoRun>false</_AutoRun>
+  <_SavePassword>true</_SavePassword>
+  <_Disconnected>false</_Disconnected>
+  <_Login>mir</_Login>
+  <_EncryptPassword>mZgEVISy1Aw=</_EncryptPassword>
+  <_ServerName>http://127.0.0.1:8080</_ServerName>
+</WindowPreferences>
