@@ -1386,7 +1386,7 @@ class TarifFrame(QtGui.QDialog):
             except:
                 default_text=0.00
             
-            text = QtGui.QInputDialog.getDouble(self, u"Стоимость:", u"Введите стоимость", default_text)        
+            text = QtGui.QInputDialog.getDouble(self, u"Стоимость:", u"Введите стоимость", default_text,0,99999999,2)        
            
             self.timeaccess_table.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
                 
