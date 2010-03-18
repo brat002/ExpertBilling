@@ -182,7 +182,6 @@
             this.isAutoRun.TabIndex = 12;
             this.isAutoRun.Text = "Запускать при старте системы";
             this.isAutoRun.UseVisualStyleBackColor = true;
-            this.isAutoRun.Visible = false;
             // 
             // isTopmost
             // 
