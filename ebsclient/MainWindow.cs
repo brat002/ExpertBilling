@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 using CustomUIControls;
 using System.Timers;
 using System.Web.Script.Serialization;
-
+using ebsmon.Properties;
 using Preferences;
 using VistaButtonTest;
 using EbsWebClient;
@@ -103,7 +103,8 @@ namespace ebsmon
             }
             catch (IOException)
             {
-                MessageBox.Show("Ошибка при сохранении настроек. Возможно диск защищен от записи, либо у вас нет прав на создание файла.");
+                MessageBox.Show(Resources.SavePreferencesError, 
+                    Resources.Title, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             catch(Exception)
             {

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml.Serialization;
+using ebsmon;
 
 namespace Preferences
 {
@@ -139,13 +141,37 @@ namespace Preferences
             _XPosLeft = location_x;
             _YPosUpper = location_y;
 
+            try
+            {
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                AssemblyName assemblyName = assembly.GetName();
+                string assemblyPath = Application.ExecutablePath;
+                AutoRun autoRun = new AutoRun();
+                
+                if (this._AutoRun)
+                {
+                    autoRun.AddKey(assemblyName.Name, assemblyPath);
+                }
+                else
+                {
+                    autoRun.DeleteKey(assemblyName.Name);
+                }
+            }
+            catch (Exception)
+            {}
+            
             SetEncryptPassword(GetPassword());
 
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof(WindowPreferences));
-            TextWriter textWriter = new StreamWriter("settings.xml");
-            xmlSerializer.Serialize(textWriter, this);
-
-            textWriter.Close();
+            try
+            {
+                XmlSerializer xmlSerializer = new XmlSerializer(typeof(WindowPreferences));
+                TextWriter textWriter = new StreamWriter("settings.xml");
+                xmlSerializer.Serialize(textWriter, this);
+                textWriter.Close();
+            }
+            catch (Exception)
+            {}
+            
         }
 
         /// <summary>
