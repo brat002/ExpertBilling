@@ -5,6 +5,7 @@ from distutils.dist import command_re
 from dateutil.relativedelta import relativedelta
 #from log_adapter import log_debug_, log_info_, log_warning_, log_error_
 from period_utilities import in_period, in_period_info, settlement_period_info
+import encodings
 from encodings import idna, ascii #DONT REMOVE, BLATS!
 import re
 import glob
@@ -17,6 +18,7 @@ import commands
 import traceback
 import datetime, calendar, time
 import os, os.path, sys, time, md5, binascii, socket, select
+
 try:
     from os import kill
 except Exception, ex:
