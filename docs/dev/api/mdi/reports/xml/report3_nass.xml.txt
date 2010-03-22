@@ -1,4 +1,0 @@
-report3_nass.xml -- Untitled
-============================
-
-   :synopsis: None

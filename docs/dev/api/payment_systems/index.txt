@@ -1,9 +1,0 @@
-:mod:`payment_systems` -- Untitled
-==================================
-
-.. toctree::
-   :maxdepth: 1
-
-   payment_misc
-   osmp_routine
-   __init__

@@ -1,4 +1,0 @@
-retrans.sql -- Untitled
-=======================
-
-   :synopsis: None

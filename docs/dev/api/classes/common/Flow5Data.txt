@@ -1,8 +1,0 @@
-:mod:`Flow5Data` -- Untitled
-============================
-
-.. module:: Flow5Data
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: Flow5Data

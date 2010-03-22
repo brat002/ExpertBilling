@@ -1,8 +1,0 @@
-:mod:`core` -- Untitled
-=======================
-
-.. module:: core
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: core

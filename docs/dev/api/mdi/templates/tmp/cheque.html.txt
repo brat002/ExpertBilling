@@ -1,4 +1,0 @@
-cheque.html -- Untitled
-=======================
-
-   :synopsis: None

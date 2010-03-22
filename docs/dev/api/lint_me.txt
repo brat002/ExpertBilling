@@ -1,4 +1,0 @@
-lint_me -- Untitled
-===================
-
-   :synopsis: None

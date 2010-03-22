@@ -1,8 +1,0 @@
-:mod:`SpeedParameters` -- Untitled
-==================================
-
-.. module:: SpeedParameters
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: SpeedParameters

@@ -1,8 +1,0 @@
-:mod:`BillSession` -- Untitled
-==============================
-
-.. module:: BillSession
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: BillSession

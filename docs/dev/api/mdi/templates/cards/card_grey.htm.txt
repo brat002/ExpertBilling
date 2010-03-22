@@ -1,4 +1,0 @@
-card_grey.htm -- Untitled
-=========================
-
-   :synopsis: None

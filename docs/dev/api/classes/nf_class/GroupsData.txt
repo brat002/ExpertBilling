@@ -1,8 +1,0 @@
-:mod:`GroupsData` -- Untitled
-=============================
-
-.. module:: GroupsData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: GroupsData

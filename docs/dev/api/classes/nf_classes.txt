@@ -1,8 +1,0 @@
-:mod:`nf_classes` -- Untitled
-=============================
-
-.. module:: nf_classes
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: nf_classes

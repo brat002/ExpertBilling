@@ -1,4 +1,0 @@
-pychartdir24.dll -- Untitled
-============================
-
-   :synopsis: None

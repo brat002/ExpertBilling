@@ -1,8 +1,0 @@
-:mod:`SpeedlimitData` -- Untitled
-=================================
-
-.. module:: SpeedlimitData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: SpeedlimitData

@@ -1,8 +1,0 @@
-:mod:`enable_disable` -- Untitled
-=================================
-
-.. module:: enable_disable
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: enable_disable

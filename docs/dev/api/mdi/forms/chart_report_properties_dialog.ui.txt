@@ -1,4 +1,0 @@
-chart_report_properties_dialog.ui -- Untitled
-=============================================
-
-   :synopsis: None

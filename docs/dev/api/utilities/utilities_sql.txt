@@ -1,8 +1,0 @@
-:mod:`utilities_sql` -- Untitled
-================================
-
-.. module:: utilities_sql
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: utilities_sql

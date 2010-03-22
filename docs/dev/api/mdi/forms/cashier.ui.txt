@@ -1,4 +1,0 @@
-cashier.ui -- Untitled
-======================
-
-   :synopsis: None

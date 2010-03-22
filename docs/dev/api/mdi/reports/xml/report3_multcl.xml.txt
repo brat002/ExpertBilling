@@ -1,4 +1,0 @@
-report3_multcl.xml -- Untitled
-==============================
-
-   :synopsis: None

@@ -1,8 +1,0 @@
-:mod:`packet` -- Untitled
-=========================
-
-.. module:: packet
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: packet

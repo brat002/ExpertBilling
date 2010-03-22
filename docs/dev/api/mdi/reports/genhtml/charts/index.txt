@@ -1,6 +1,0 @@
-:mod:`charts` -- Untitled
-=========================
-
-.. toctree::
-   :maxdepth: 1
-

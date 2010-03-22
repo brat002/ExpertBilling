@@ -1,4 +1,0 @@
-sxpress_cards_series_edit.ui -- Untitled
-========================================
-
-   :synopsis: None

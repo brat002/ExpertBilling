@@ -1,4 +1,0 @@
-info -- Untitled
-================
-
-   :synopsis: None

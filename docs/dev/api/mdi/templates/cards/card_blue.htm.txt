@@ -1,4 +1,0 @@
-card_blue.htm -- Untitled
-=========================
-
-   :synopsis: None

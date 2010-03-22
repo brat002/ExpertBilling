@@ -1,8 +1,0 @@
-:mod:`TrafficLimitData` -- Untitled
-===================================
-
-.. module:: TrafficLimitData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: TrafficLimitData

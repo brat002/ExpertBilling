@@ -1,4 +1,0 @@
-dictionary -- Untitled
-======================
-
-   :synopsis: None

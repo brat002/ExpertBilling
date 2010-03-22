@@ -1,8 +1,0 @@
-:mod:`ssh_paramiko` -- Untitled
-===============================
-
-.. module:: ssh_paramiko
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: ssh_paramiko

@@ -1,4 +1,0 @@
-radius_attrs.ui -- Untitled
-===========================
-
-   :synopsis: None

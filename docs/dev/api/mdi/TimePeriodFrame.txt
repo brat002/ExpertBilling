@@ -1,8 +1,0 @@
-:mod:`TimePeriodFrame` -- Untitled
-==================================
-
-.. module:: TimePeriodFrame
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: TimePeriodFrame

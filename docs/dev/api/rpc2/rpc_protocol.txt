@@ -1,8 +1,0 @@
-:mod:`rpc_protocol` -- Untitled
-===============================
-
-.. module:: rpc_protocol
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: rpc_protocol

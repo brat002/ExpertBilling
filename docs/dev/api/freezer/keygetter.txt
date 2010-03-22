@@ -1,8 +1,0 @@
-:mod:`keygetter` -- Untitled
-============================
-
-.. module:: keygetter
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: keygetter

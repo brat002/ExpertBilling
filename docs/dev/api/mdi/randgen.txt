@@ -1,8 +1,0 @@
-:mod:`randgen` -- Untitled
-==========================
-
-.. module:: randgen
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: randgen

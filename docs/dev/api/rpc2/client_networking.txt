@@ -1,8 +1,0 @@
-:mod:`client_networking` -- Untitled
-====================================
-
-.. module:: client_networking
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: client_networking

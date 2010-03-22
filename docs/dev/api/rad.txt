@@ -1,8 +1,0 @@
-:mod:`rad` -- Untitled
-======================
-
-.. module:: rad
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: rad

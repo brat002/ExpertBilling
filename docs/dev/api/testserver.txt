@@ -1,8 +1,0 @@
-:mod:`testserver` -- Untitled
-=============================
-
-.. module:: testserver
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: testserver

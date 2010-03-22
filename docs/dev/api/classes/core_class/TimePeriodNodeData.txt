@@ -1,8 +1,0 @@
-:mod:`TimePeriodNodeData` -- Untitled
-=====================================
-
-.. module:: TimePeriodNodeData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: TimePeriodNodeData

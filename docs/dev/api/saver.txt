@@ -1,8 +1,0 @@
-:mod:`saver` -- Untitled
-========================
-
-.. module:: saver
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: saver

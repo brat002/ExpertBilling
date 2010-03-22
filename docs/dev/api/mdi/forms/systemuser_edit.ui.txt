@@ -1,4 +1,0 @@
-systemuser_edit.ui -- Untitled
-==============================
-
-   :synopsis: None

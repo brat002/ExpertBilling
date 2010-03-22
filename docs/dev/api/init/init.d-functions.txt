@@ -1,4 +1,0 @@
-init.d-functions -- Untitled
-============================
-
-   :synopsis: None

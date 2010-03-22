@@ -1,8 +1,0 @@
-:mod:`constants` -- Untitled
-============================
-
-.. module:: constants
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: constants

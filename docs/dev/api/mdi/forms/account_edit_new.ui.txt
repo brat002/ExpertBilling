@@ -1,4 +1,0 @@
-account_edit_new.ui -- Untitled
-===============================
-
-   :synopsis: None

@@ -1,8 +1,0 @@
-:mod:`regbill` -- Untitled
-==========================
-
-.. module:: regbill
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: regbill
