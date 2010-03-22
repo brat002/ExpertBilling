@@ -1,4 +1,0 @@
-card2.html -- Untitled
-======================
-
-   :synopsis: None

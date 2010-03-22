@@ -1,8 +1,0 @@
-:mod:`osmp-daemon` -- Untitled
-==============================
-
-.. module:: osmp-daemon
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: osmp-daemon

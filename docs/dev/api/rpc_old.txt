@@ -1,8 +1,0 @@
-:mod:`rpc_old` -- Untitled
-==========================
-
-.. module:: rpc_old
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: rpc_old

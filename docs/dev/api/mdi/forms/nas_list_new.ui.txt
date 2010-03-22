@@ -1,4 +1,0 @@
-nas_list_new.ui -- Untitled
-===========================
-
-   :synopsis: None

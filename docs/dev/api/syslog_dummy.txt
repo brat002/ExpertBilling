@@ -1,8 +1,0 @@
-:mod:`syslog_dummy` -- Untitled
-===============================
-
-.. module:: syslog_dummy
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: syslog_dummy

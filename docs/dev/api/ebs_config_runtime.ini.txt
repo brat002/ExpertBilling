@@ -1,4 +1,0 @@
-ebs_config_runtime.ini -- Untitled
-==================================
-
-   :synopsis: None

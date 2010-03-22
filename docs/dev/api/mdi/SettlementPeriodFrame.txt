@@ -1,8 +1,0 @@
-:mod:`SettlementPeriodFrame` -- Untitled
-========================================
-
-.. module:: SettlementPeriodFrame
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: SettlementPeriodFrame

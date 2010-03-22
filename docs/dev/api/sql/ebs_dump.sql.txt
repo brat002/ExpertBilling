@@ -1,4 +1,0 @@
-ebs_dump.sql -- Untitled
-========================
-
-   :synopsis: None

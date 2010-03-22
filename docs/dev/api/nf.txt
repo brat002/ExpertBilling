@@ -1,8 +1,0 @@
-:mod:`nf` -- Untitled
-=====================
-
-.. module:: nf
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: nf

@@ -1,4 +1,0 @@
-transaction_report.ui -- Untitled
-=================================
-
-   :synopsis: None

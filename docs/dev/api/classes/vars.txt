@@ -1,8 +1,0 @@
-:mod:`vars` -- Untitled
-=======================
-
-.. module:: vars
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: vars

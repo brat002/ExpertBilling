@@ -1,8 +1,0 @@
-:mod:`AddonServiceTarifData` -- Untitled
-========================================
-
-.. module:: AddonServiceTarifData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: AddonServiceTarifData

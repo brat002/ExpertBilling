@@ -1,4 +1,0 @@
-account_tarifs.ui -- Untitled
-=============================
-
-   :synopsis: None

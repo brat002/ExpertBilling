@@ -1,4 +1,0 @@
-ebs_test2.sql -- Untitled
-=========================
-
-   :synopsis: None

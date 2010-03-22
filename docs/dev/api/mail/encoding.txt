@@ -1,8 +1,0 @@
-:mod:`encoding` -- Untitled
-===========================
-
-.. module:: encoding
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: encoding

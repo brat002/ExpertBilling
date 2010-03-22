@@ -1,6 +1,0 @@
-:mod:`reports` -- Untitled
-==========================
-
-.. toctree::
-   :maxdepth: 1
-

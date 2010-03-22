@@ -1,4 +1,0 @@
-ebs_neo2.sql -- Untitled
-========================
-
-   :synopsis: None

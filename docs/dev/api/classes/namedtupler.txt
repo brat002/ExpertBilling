@@ -1,8 +1,0 @@
-:mod:`namedtupler` -- Untitled
-==============================
-
-.. module:: namedtupler
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: namedtupler

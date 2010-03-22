@@ -1,8 +1,0 @@
-:mod:`TPChangeRules` -- Untitled
-================================
-
-.. module:: TPChangeRules
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: TPChangeRules

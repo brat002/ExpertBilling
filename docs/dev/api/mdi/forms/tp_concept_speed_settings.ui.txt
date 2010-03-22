@@ -1,4 +1,0 @@
-tp_concept_speed_settings.ui -- Untitled
-========================================
-
-   :synopsis: None

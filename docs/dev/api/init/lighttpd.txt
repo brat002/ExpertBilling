@@ -1,4 +1,0 @@
-lighttpd -- Untitled
-====================
-
-   :synopsis: None

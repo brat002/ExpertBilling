@@ -1,8 +1,0 @@
-:mod:`cache_sql` -- Untitled
-============================
-
-.. module:: cache_sql
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: cache_sql

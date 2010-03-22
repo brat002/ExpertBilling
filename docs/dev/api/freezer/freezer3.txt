@@ -1,8 +1,0 @@
-:mod:`freezer3` -- Untitled
-===========================
-
-.. module:: freezer3
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: freezer3

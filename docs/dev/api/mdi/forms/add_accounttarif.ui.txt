@@ -1,4 +1,0 @@
-add_accounttarif.ui -- Untitled
-===============================
-
-   :synopsis: None

@@ -1,8 +1,0 @@
-:mod:`cards` -- Untitled
-========================
-
-.. toctree::
-   :maxdepth: 1
-
-   card.html
-   card2.html

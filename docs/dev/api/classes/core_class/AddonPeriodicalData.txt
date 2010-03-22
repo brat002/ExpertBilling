@@ -1,8 +1,0 @@
-:mod:`AddonPeriodicalData` -- Untitled
-======================================
-
-.. module:: AddonPeriodicalData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: AddonPeriodicalData

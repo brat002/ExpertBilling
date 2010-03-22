@@ -1,4 +1,0 @@
-db.conf -- Untitled
-===================
-
-   :synopsis: None

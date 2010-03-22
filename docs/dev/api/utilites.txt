@@ -1,8 +1,0 @@
-:mod:`utilites` -- Untitled
-===========================
-
-.. module:: utilites
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: utilites

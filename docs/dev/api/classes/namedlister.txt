@@ -1,8 +1,0 @@
-:mod:`namedlister` -- Untitled
-==============================
-
-.. module:: namedlister
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: namedlister

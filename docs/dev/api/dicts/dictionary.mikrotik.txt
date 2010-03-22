@@ -1,4 +1,0 @@
-dictionary.mikrotik -- Untitled
-===============================
-
-   :synopsis: None

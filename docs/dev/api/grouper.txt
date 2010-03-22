@@ -1,8 +1,0 @@
-:mod:`grouper` -- Untitled
-==========================
-
-.. module:: grouper
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: grouper

@@ -1,8 +1,0 @@
-:mod:`osmp_routine` -- Untitled
-===============================
-
-.. module:: osmp_routine
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: osmp_routine

@@ -1,4 +1,0 @@
-tp_concept.ui -- Untitled
-=========================
-
-   :synopsis: None

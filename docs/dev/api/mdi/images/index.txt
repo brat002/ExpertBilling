@@ -1,8 +1,0 @@
-:mod:`images` -- Untitled
-=========================
-
-.. toctree::
-   :maxdepth: 1
-
-   Thumbs.db
-   reports/index

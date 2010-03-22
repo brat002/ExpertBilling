@@ -1,4 +1,0 @@
-mdi_old.qrc -- Untitled
-=======================
-
-   :synopsis: None

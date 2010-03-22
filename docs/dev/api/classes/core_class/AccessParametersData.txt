@@ -1,8 +1,0 @@
-:mod:`AccessParametersData` -- Untitled
-=======================================
-
-.. module:: AccessParametersData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: AccessParametersData

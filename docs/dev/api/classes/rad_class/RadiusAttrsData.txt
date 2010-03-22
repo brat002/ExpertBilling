@@ -1,8 +1,0 @@
-:mod:`RadiusAttrsData` -- Untitled
-==================================
-
-.. module:: RadiusAttrsData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: RadiusAttrsData

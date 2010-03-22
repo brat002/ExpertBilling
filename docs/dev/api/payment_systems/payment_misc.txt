@@ -1,8 +1,0 @@
-:mod:`payment_misc` -- Untitled
-===============================
-
-.. module:: payment_misc
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: payment_misc

@@ -1,8 +1,0 @@
-:mod:`LogFrame` -- Untitled
-===========================
-
-.. module:: LogFrame
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: LogFrame

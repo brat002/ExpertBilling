@@ -1,8 +1,0 @@
-:mod:`daemonize` -- Untitled
-============================
-
-.. module:: daemonize
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: daemonize

@@ -1,8 +1,0 @@
-:mod:`ssh_utilities` -- Untitled
-================================
-
-.. module:: ssh_utilities
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: ssh_utilities

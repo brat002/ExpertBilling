@@ -1,8 +1,0 @@
-:mod:`server_producer` -- Untitled
-==================================
-
-.. module:: server_producer
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: server_producer

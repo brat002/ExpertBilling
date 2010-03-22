@@ -1,8 +1,0 @@
-:mod:`CardsFrame` -- Untitled
-=============================
-
-.. module:: CardsFrame
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: CardsFrame

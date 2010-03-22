@@ -1,4 +1,0 @@
-class_name_edit.ui -- Untitled
-==============================
-
-   :synopsis: None
