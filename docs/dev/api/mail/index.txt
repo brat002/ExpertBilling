@@ -1,0 +1,10 @@
+:mod:`mail` -- Untitled
+=======================
+
+.. toctree::
+   :maxdepth: 1
+
+   encoding
+   __init__
+   functional
+   mail

@@ -1,0 +1,8 @@
+:mod:`bpplotadapter` -- Untitled
+================================
+
+.. module:: bpplotadapter
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: bpplotadapter

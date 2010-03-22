@@ -1,0 +1,8 @@
+:mod:`pychartdir` -- Untitled
+=============================
+
+.. module:: pychartdir
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: pychartdir

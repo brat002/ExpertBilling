@@ -1,0 +1,8 @@
+:mod:`easter` -- Untitled
+=========================
+
+.. module:: easter
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: easter

@@ -1,0 +1,8 @@
+:mod:`setup_core` -- Untitled
+=============================
+
+.. module:: setup_core
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: setup_core

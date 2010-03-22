@@ -1,0 +1,4 @@
+Thumbs.db -- Untitled
+=====================
+
+   :synopsis: None

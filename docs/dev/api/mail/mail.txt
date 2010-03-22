@@ -1,0 +1,8 @@
+:mod:`mail` -- Untitled
+=======================
+
+.. module:: mail
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: mail
