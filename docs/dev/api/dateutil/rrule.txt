@@ -1,0 +1,8 @@
+:mod:`rrule` -- Untitled
+========================
+
+.. module:: rrule
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: rrule

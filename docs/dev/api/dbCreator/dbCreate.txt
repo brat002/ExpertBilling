@@ -1,0 +1,8 @@
+:mod:`dbCreate` -- Untitled
+===========================
+
+.. module:: dbCreate
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: dbCreate

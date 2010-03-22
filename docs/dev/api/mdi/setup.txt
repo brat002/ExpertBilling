@@ -1,0 +1,8 @@
+:mod:`setup` -- Untitled
+========================
+
+.. module:: setup
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: setup

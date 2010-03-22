@@ -1,0 +1,8 @@
+:mod:`tz` -- Untitled
+=====================
+
+.. module:: tz
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: tz

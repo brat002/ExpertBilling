@@ -1,0 +1,8 @@
+:mod:`SettlementPeriodData` -- Untitled
+=======================================
+
+.. module:: SettlementPeriodData
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: SettlementPeriodData

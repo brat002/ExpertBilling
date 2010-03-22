@@ -1,0 +1,8 @@
+:mod:`freezer2` -- Untitled
+===========================
+
+.. module:: freezer2
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: freezer2

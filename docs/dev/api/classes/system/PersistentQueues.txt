@@ -1,0 +1,8 @@
+:mod:`PersistentQueues` -- Untitled
+===================================
+
+.. module:: PersistentQueues
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: PersistentQueues

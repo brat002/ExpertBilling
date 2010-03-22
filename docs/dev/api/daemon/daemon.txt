@@ -1,0 +1,8 @@
+:mod:`daemon` -- Untitled
+=========================
+
+.. module:: daemon
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: daemon

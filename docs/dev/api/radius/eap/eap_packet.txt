@@ -1,0 +1,8 @@
+:mod:`eap_packet` -- Untitled
+=============================
+
+.. module:: eap_packet
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: eap_packet

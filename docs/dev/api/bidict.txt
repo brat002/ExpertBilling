@@ -1,0 +1,8 @@
+:mod:`bidict` -- Untitled
+=========================
+
+.. module:: bidict
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: bidict

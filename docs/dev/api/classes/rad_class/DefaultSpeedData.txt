@@ -1,0 +1,8 @@
+:mod:`DefaultSpeedData` -- Untitled
+===================================
+
+.. module:: DefaultSpeedData
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: DefaultSpeedData

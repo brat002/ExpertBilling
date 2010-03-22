@@ -1,0 +1,8 @@
+:mod:`__init__` -- Untitled
+===========================
+
+.. module:: __init__
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: __init__

@@ -1,0 +1,8 @@
+:mod:`bpmplQImage` -- Untitled
+==============================
+
+.. module:: bpmplQImage
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: bpmplQImage

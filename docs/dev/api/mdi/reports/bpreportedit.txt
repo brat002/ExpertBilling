@@ -1,0 +1,8 @@
+:mod:`bpreportedit` -- Untitled
+===============================
+
+.. module:: bpreportedit
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: bpreportedit

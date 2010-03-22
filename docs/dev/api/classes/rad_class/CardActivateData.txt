@@ -1,0 +1,8 @@
+:mod:`CardActivateData` -- Untitled
+===================================
+
+.. module:: CardActivateData
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: CardActivateData

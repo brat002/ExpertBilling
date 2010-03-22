@@ -1,0 +1,8 @@
+:mod:`TarifGroupEdgeData` -- Untitled
+=====================================
+
+.. module:: TarifGroupEdgeData
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: TarifGroupEdgeData

@@ -1,0 +1,8 @@
+:mod:`SystemUser` -- Untitled
+=============================
+
+.. module:: SystemUser
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: SystemUser

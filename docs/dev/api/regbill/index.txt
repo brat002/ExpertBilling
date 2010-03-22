@@ -1,0 +1,9 @@
+:mod:`regbill` -- Untitled
+==========================
+
+.. toctree::
+   :maxdepth: 1
+
+   genkey
+   regbill
+   README

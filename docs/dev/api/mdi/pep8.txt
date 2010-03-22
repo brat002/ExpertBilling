@@ -1,0 +1,8 @@
+:mod:`pep8` -- Untitled
+=======================
+
+.. module:: pep8
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: pep8
