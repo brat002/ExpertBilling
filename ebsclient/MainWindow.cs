@@ -377,12 +377,21 @@ namespace ebsmon
             timerConnect.Enabled = true;
         }
 
+        /// <summary>
+        /// Concat the service data string
+        /// </summary>
+        /// <returns>Url on which is login procedure</returns>
+        private string LoginUrl()
+        {
+            return ebsmon.Properties.Resources.ProtocolPrefix + winPrefs._ServerName +
+                   ebsmon.Properties.Resources.ConnectionUrl;
+        }
+
         private void ButtonConnect_Click(object sender, System.EventArgs e)
         {
             // Create new client to connect with a webserver
-            client = new Client(winPrefs._ServerName + ebsmon.Properties.Resources.ConnectionUrl);
-            
-            // Check connection with server
+            client = new Client(LoginUrl());
+            // Check connection with server)
             if (!client.ConnectionRequest())
             {
                 if (!winPrefs._Disconnected)
@@ -562,12 +571,21 @@ namespace ebsmon
             this.Close();
         }
 
+        /// <summary>
+        /// Concat the service data url string
+        /// </summary>
+        /// <returns>url on which is data exchange</returns>
+        private string ServiceDataUrl()
+        {
+            return Resources.ProtocolPrefix + winPrefs._ServerName + Resources.ServiceDataUrl;
+        }
+
         private string GetDataByRequestCode( string statusCode)
         {
             ResponseData response = new ResponseData();
             JavaScriptSerializer javaScriptSerializer = new JavaScriptSerializer();
 
-            response._Data = (javaScriptSerializer.Deserialize<Dictionary<string, string>>(client.GetJsonString(ebsmon.Properties.Resources.ServiceDataUrl + "?id=" + statusCode)));
+            response._Data = (javaScriptSerializer.Deserialize<Dictionary<string, string>>(client.GetJsonString(ServiceDataUrl() + "?id=" + statusCode)));
 
             return response.GetValue();
         }
