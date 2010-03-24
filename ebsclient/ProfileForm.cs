@@ -75,11 +75,30 @@ namespace ebsmon
             this.Close();
         }
 
+        private int LeftPos(int mainLeftPos)
+        {
+            
+            if (mainLeftPos + this.Width > Screen.PrimaryScreen.WorkingArea.Width)
+                return Screen.PrimaryScreen.WorkingArea.Width - this.Width;
+            if (mainLeftPos < Screen.PrimaryScreen.WorkingArea.X)
+                return Screen.PrimaryScreen.WorkingArea.X;
+            return mainLeftPos;
+        }
+
+        private int TopPos(int mainTopPos)
+        {
+            if (mainTopPos < Screen.PrimaryScreen.WorkingArea.Top)
+                return Screen.PrimaryScreen.WorkingArea.Top;
+            if (mainTopPos + this.Height > Screen.PrimaryScreen.WorkingArea.Height)
+                return Screen.PrimaryScreen.WorkingArea.Height - this.Height;
+            return mainTopPos;
+        }
+
         private void ProfileForm_Load(object sender, EventArgs e)
         {
             // 20 - offset between windows, not a magic number!!          
-            this.Left = _WindowPreferences._XPosLeft + 20;
-            this.Top = _WindowPreferences._YPosUpper + 20;
+            this.Left = LeftPos(_WindowPreferences._XPosLeft);
+            this.Top = TopPos(_WindowPreferences._YPosUpper);
 
             if ( _WindowPreferences._Opacity )
             {
