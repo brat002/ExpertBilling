@@ -214,6 +214,15 @@ namespace ebsmon.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to http://.
+        /// </summary>
+        internal static string ProtocolPrefix {
+            get {
+                return ResourceManager.GetString("ProtocolPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Для подключения к серверу введите в настройках его адрес, а так же логин и пароль.
         /// </summary>
         internal static string RequiredSettingsError {
@@ -232,7 +241,7 @@ namespace ebsmon.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to http://127.0.0.1:8080/service_data/.
+        ///   Looks up a localized string similar to /service_data/.
         /// </summary>
         internal static string ServiceDataUrl {
             get {
