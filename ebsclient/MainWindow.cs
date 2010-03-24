@@ -527,6 +527,7 @@ namespace ebsmon
             ProfileForm changeUserForm = new ProfileForm();
             // remember current pos of main window
             // to correct set position of pref window
+            //MessageBox.Show("X = " + Screen.PrimaryScreen.WorkingArea.Width + "\nY = " + Screen.PrimaryScreen.WorkingArea.Height);
             winPrefs._XPosLeft = this.Location.X > 0 ? this.Location.X : winPrefs._XPosLeft;
             winPrefs._YPosUpper = this.Location.Y > 0 ? this.Location.Y : winPrefs._YPosUpper;
             // copy the winPrefs to a preferences window

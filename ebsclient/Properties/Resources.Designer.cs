@@ -223,6 +223,15 @@ namespace ebsmon.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ошибка при сохранении настроек. Возможно диск защищен от записи, либо у вас нет прав на создание файла..
+        /// </summary>
+        internal static string SavePreferencesError {
+            get {
+                return ResourceManager.GetString("SavePreferencesError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to http://127.0.0.1:8080/service_data/.
         /// </summary>
         internal static string ServiceDataUrl {
