@@ -20,7 +20,7 @@
 1017 - news request
 1018 - response news for request user
 1019 - no news are found for this user
-""""
+"""
 
 import os, sys
 import jsonpickle
