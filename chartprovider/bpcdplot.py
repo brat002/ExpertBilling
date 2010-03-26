@@ -31,15 +31,29 @@ portdict = {\
     }
 
 
+defaultPalette = [
+	0xffffff, 0x000000, 0x000000, 0x808080, 
+	0x808080, 0x808080, 0x808080, 0x808080,
+	0xff3333, 0x33ff33, 0x6666ff, 0xffff00, 
+	0xff66ff, 0x99ffff,	0xffcc33, 0xcccccc, 
+	0xcc9999, 0x339966, 0x999900, 0xcc3300,	
+	0x669999, 0x993333, 0x006600, 0x990099,
+	0xff9966, 0x99ff99, 0x9999ff, 0xcc6600,
+	0x33cc33, 0xcc99ff, 0xff6666, 0x99cc66,
+	0x009999, 0xcc3333, 0x9933ff, 0xff0000,
+	0x0000ff, 0x00ff00, 0xffcc99, 0x999999,
+	-1
+]
+
 #tmpChart.gradientColor(0, 300, 0, 800, 0xa2c1e6, 0xe7f1fe)
 
-#pychartdir.defaultPalette = pychartdir.transparentPalette
+#defaultPalette = pychartdir.transparentPalette
 pychartdir.BackgroundColor = 0xFF000000L
 #metalColor(0xa2c1e6,0)
 class cdDrawer(object):
     cdchartoptdict = {\
         "nfs_total":\
-                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
+                                        {'xychart':(800, 300), 'setplotarea':(100, 45, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':defaultPalette, \
                                          'addlegend':(90, 0, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), \
                                          'yaxissettitle':("Трафик", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|2.}',\
                                          'yaxissettitlespeed':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18),\
@@ -63,7 +77,7 @@ class cdDrawer(object):
                                          'addlinelayer_total':(0x0000FF, "TOTAL"), 'setlinewidth_total':1.3},\
 
         "nfs_port_speed": \
-                                        {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':pychartdir.defaultPalette, \
+                                        {'xychart':(800, 450), 'setplotarea':(100, 85, 650, 200, 0xffffff, -1, 0xc0c0c0, 0xc0c0c0, -1), 'setcolors':defaultPalette, \
                                          'addlegend':(50, 30, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,  'addtitle':["Скорость по %s порту:", "fonts/LiberationSerif-Regular.ttf", 18], \
                                          'yaxissettitle':("Скорость", "fonts/LiberationSerif-Regular.ttf", 18), 'yaxissetwidth':2, 'yaxissetlabelformat':'{value|1.}',\
                                          'xaxissettitle':("Время", "fonts/LiberationSerif-Regular.ttf", 14), 'xaxissetwidth':2, 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}',\
@@ -83,7 +97,7 @@ class cdDrawer(object):
                                          'settickoffset':0.5, 'addboxwhiskersess':(None, None, None, 0x366e97, pychartdir.SameAsMainColor, pychartdir.SameAsMainColor), 'dashlinecolor':(0xff0000, DashLine)}, \
         "trans_deb": \
                                         {'xychart':(620, 310), 'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xa2c5de, 0xa2c5de), \
-                                         'setcolors':pychartdir.defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
+                                         'setcolors':defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
                                          'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
@@ -91,7 +105,7 @@ class cdDrawer(object):
                                          'settickoffset':0.5, 'addbarlayer':(-1, '', 0), 'xaxissetlabelformat':'{value|dd.mm.yy\nhh:nn:ss}', 'yaxissetlabelformat':'{value}', 'currency':''}, \
         "trans_crd":  \
                                         {'xychart':(620, 310), 'addtitle':("", "fonts/LiberationSerif-Regular.ttf", 18), 'setplotarea':(140, 55, 460, 200, 0xffffff, -1, -1, 0xc0c0c0, 0xc0c0c0), \
-                                         'setcolors':pychartdir.defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
+                                         'setcolors':defaultPalette, 'addlegend':(150, 20, 0, "fonts/LiberationSerif-Regular.ttf", 14), 'legendbackground':pychartdir.Transparent,\
                                          'xaxissetlabelstyle':("fonts/LiberationSerif-Regular.ttf",), 'yaxissetlabelstyle': ("fonts/LiberationSerif-Regular.ttf",), \
                                          'autoticks': False, \
                                          'antialias': False, \
