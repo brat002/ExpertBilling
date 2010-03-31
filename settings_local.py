@@ -2,7 +2,6 @@
 # Django settings for ebscab project.
 import os, sys
 DEBUG = True
-DEBUG_SQL=True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -13,10 +12,12 @@ MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
 DATABASE_NAME = 'ebs_driver'             # Or path to database file if using sqlite3.
-DATABASE_USER = 'mikrobill'             # Not used with sqlite3.
+DATABASE_USER = 'postgres'             # Not used with sqlite3.
 DATABASE_PASSWORD = '1234'         # Not used with sqlite3.
-DATABASE_HOST = '10.10.1.1'             # Set to empty string for localhost. Not used with sqlite3.
+DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = '5432'             # Set to empty string for default. Not used with sqlite3.
+
+
 
 
 
@@ -48,8 +49,8 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = '/opt/ebs/web/ebscab/media'
-#MEDIA_ROOT = os.path.abspath('./media')
+#MEDIA_ROOT = '/opt/ebs/web/ebscab/media'
+MEDIA_ROOT = os.path.abspath('./media')
 
 # URL that handles the media served from MEDIA_ROOT.
 # Example: "http://media.lawrence.com"
@@ -76,7 +77,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'notification.context_processors.footer',
     'notification.context_processors.notices',
-    'notification.context_processors.setCurrency',
 )
 
 
@@ -86,7 +86,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
-    'lib.threadlocals.ThreadLocalsMiddleware',
 
 )
 
@@ -96,10 +95,8 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    '/opt/ebs/web/ebscab/templates',
-    '/opt/ebs/web/ebscab/helpdesk/templates',
+    #'/opt/ebs/web/ebscab/templates',
     os.path.abspath('./templates'),
-    os.path.abspath('./helpdesk/templates'),
 )
 
 INSTALLED_APPS = (
@@ -109,7 +106,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
-    'helpdesk',
     'radius',
     'nas',
     'billservice',
@@ -119,7 +115,6 @@ INSTALLED_APPS = (
 )
 
 AUTHENTICATION_BACKENDS = (
-    'helpdesk.backend.LoginSystemUserBackend',
     'billservice.backend.LoginUserBackend',
 )
 
@@ -144,13 +139,4 @@ ALLOW_PROMISE = True
 MAX_PROMISE_SUM = 100000
 LEFT_PROMISE_DAYS = 7
 
-WEBCAB_LOG = '/opt/ebs/web/ebscab/log/webcab_log'
-
-CURRENCY = '$'
-
-TEST_RUNNER = 'testcases.test_runner.run_tests'
-
-try:
-    from settings_local import *
-except:
-    pass
+WEBCAB_LOG = 'log/webcab_log'
