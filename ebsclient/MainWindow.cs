@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Serialization;
 using CustomUIControls;
@@ -44,6 +45,7 @@ namespace ebsmon
         private Button buttonClose;
         private Label label1;
         private Client client = new Client(String.Empty);
+        private Thread connectionThread;
 
         /// <summary>
         /// Mouse track event id
@@ -404,8 +406,49 @@ namespace ebsmon
 
             // Set connection to web server and the sesion cookie
             // for use it in data exchange
+            connectionThread = new Thread(SetConnection);
+            connectionThread.Start();
+            //string res = client.SetConnection(winPrefs._Login, winPrefs.GetPassword());
+            //if ( string.IsNullOrEmpty(res) )
+            //{
+            //    if (winPrefs._Disconnected == false)
+            //    {
+            //        winPrefs._Disconnected = true;
+            //    }
+
+            //    if (client.ConnectionRequest())
+            //    {
+            //        MessageBox.Show(ebsmon.Properties.Resources.AuthorizationError, ebsmon.Properties.Resources.Title,
+            //                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //        CloseConnection(this, null);
+            //        if (timerConnect != null)
+            //            timerConnect.Close();
+            //    }
+
+            //    return;
+            //}
+
+            //timerConnect.Enabled = false;
+            //// 
+            //// timerBalance
+            //// 
+            //timerBalance = new System.Timers.Timer();
+            //timerBalance.Interval = Convert.ToDouble(ebsmon.Properties.Resources.BalanceTimerDelay);
+            //timerBalance.Elapsed += new ElapsedEventHandler(this.TimerBalanceElapsed);
+            //timerBalance.Enabled = true;
+            ////
+            //// timerNews
+            ////
+            //timerNews = new System.Timers.Timer();
+            //timerNews.Interval = Convert.ToDouble(ebsmon.Properties.Resources.NewsTimerDelay);
+            //timerNews.Elapsed += new ElapsedEventHandler(this.TimerNewsElapsed);
+            //timerNews.Enabled = true;
+        }
+
+        private void SetConnection()
+        {
             string res = client.SetConnection(winPrefs._Login, winPrefs.GetPassword());
-            if ( string.IsNullOrEmpty(res) )
+            if (string.IsNullOrEmpty(res))
             {
                 if (winPrefs._Disconnected == false)
                 {
@@ -643,6 +686,8 @@ namespace ebsmon
 
         private void TimerConnectionElapsed(object  sender, EventArgs e)
         {
+            if (connectionThread != null && connectionThread.IsAlive)
+                connectionThread.Abort();
             ButtonConnect_Click(this, null);
         }
 
