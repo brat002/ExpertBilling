@@ -148,7 +148,7 @@ namespace ebsmon.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 60000.
+        ///   Looks up a localized string similar to 120000.
         /// </summary>
         internal static string ConnectionTimerDelay {
             get {

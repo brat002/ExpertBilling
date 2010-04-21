@@ -23,6 +23,7 @@ namespace EbsWebClient
         private string _cookieString;
         public const int MAX_CONNECTIONS_COUNT = 10;
         private static int current_connections_count;
+        private static object _locker = new object();
 
         public static void ConnectionCountReset()
         {
@@ -45,27 +46,30 @@ namespace EbsWebClient
         /// <returns>Result of request</returns>
         public bool ConnectionRequest()
         {
-            try
+            lock (_locker)
             {
-                _httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(_loginUrl);
-                _httpWebRequest.UserAgent =
-                    "Mozilla/5.0 (Windows; U; Windows NT 6.0; ru; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6";
-                _httpWebRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-                _httpWebRequest.Headers.Add("Accept-Language", "ru,en-us;q=0.7,en;q=0.3");
-                _httpWebResponse = (HttpWebResponse)_httpWebRequest.GetResponse();
-                return true;
-            }
-            
-            catch(UriFormatException)
-            {
-                // uri is empty or incorrect
-                return false;
-            }
+                try
+                {
+                    _httpWebRequest = (HttpWebRequest) HttpWebRequest.Create(_loginUrl);
+                    _httpWebRequest.UserAgent =
+                        "Mozilla/5.0 (Windows; U; Windows NT 6.0; ru; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6";
+                    _httpWebRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+                    _httpWebRequest.Headers.Add("Accept-Language", "ru,en-us;q=0.7,en;q=0.3");
+                    _httpWebResponse = (HttpWebResponse) _httpWebRequest.GetResponse();
+                    return true;
+                }
 
-            catch (Exception)
-            {
-                return false;
-            } 
+                catch (UriFormatException)
+                {
+                    // uri is empty or incorrect
+                    return false;
+                }
+
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
         }
 
         /// <summary>
@@ -74,10 +78,9 @@ namespace EbsWebClient
         /// <returns>CookieString or EmptyString</returns>
         protected string GetCookieString()
         {
-            string sCookie = String.IsNullOrEmpty(_httpWebResponse.Headers["Set-Cookie"])
+            return String.IsNullOrEmpty(_httpWebResponse.Headers["Set-Cookie"])
                                  ? String.Empty
                                  : _httpWebResponse.Headers["Set-Cookie"];
-            return sCookie;
         }
 
         /// <summary>
@@ -90,29 +93,42 @@ namespace EbsWebClient
         {
             string sCookie = String.Empty;
 
-            if (ConnectionRequest())
-                sCookie = GetCookieString();
-            else
+            lock (_locker)
             {
-                return String.Empty;
+                _httpWebRequest = (HttpWebRequest)WebRequest.Create(_loginUrl);
+                _httpWebRequest.Method = "POST";
+                _httpWebRequest.UserAgent =
+                    "Mozilla/5.0 (Windows; U; Windows NT 6.0; ru; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6";
+                _httpWebRequest.KeepAlive = true;
+                _httpWebRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+                _httpWebRequest.Headers.Add("Accept-Language", "ru,en-us;q=0.7,en;q=0.3");
+                _httpWebRequest.ContentType = "application/x-www-form-urlencoded\n\n";
+                _httpWebRequest.Headers.Add(HttpRequestHeader.Cookie, sCookie);
+                _httpWebRequest.AllowAutoRedirect = false;
+                //_httpWebRequest.Timeout = 150000;
+                string sQueryString = "username=" + login + "&password=" + password + "&next=%2F";
+                byte[] bytes = Encoding.UTF8.GetBytes(sQueryString);
+                _httpWebRequest.ContentLength = bytes.Length;
+                try
+                {
+                    Stream requestStream = _httpWebRequest.GetRequestStream();
+                    requestStream.Write(bytes, 0, bytes.Length);
+                    requestStream.Close();
+                }
+                catch (Exception e)
+                {
+                    return string.Empty;
+                }
+                
+                try
+                {
+                    _httpWebResponse = (HttpWebResponse) _httpWebRequest.GetResponse();
+                }
+                catch (Exception e)
+                {
+                    return string.Empty;
+                }
             }
-
-            _httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(_loginUrl);
-            _httpWebRequest.Method = "POST";
-            _httpWebRequest.UserAgent =
-                "Mozilla/5.0 (Windows; U; Windows NT 6.0; ru; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6";
-            _httpWebRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-            _httpWebRequest.Headers.Add("Accept-Language", "ru,en-us;q=0.7,en;q=0.3");
-            _httpWebRequest.ContentType = "application/x-www-form-urlencoded";
-            _httpWebRequest.Headers.Add(HttpRequestHeader.Cookie, sCookie);
-            _httpWebRequest.AllowAutoRedirect = false;
-            string sQueryString = "username=" + login + "&password=" + password + "&next=%2F";
-            byte[] bytes = Encoding.UTF8.GetBytes(sQueryString);
-            _httpWebRequest.ContentLength = bytes.Length;
-            _httpWebRequest.GetRequestStream().Write(bytes, 0, bytes.Length);
-
-            _httpWebResponse = (HttpWebResponse) _httpWebRequest.GetResponse();
-
             _cookieString = GetCookieString();
 
             return _cookieString;
@@ -132,15 +148,18 @@ namespace EbsWebClient
 
             if (current_connections_count < MAX_CONNECTIONS_COUNT)
             {
-                try
+                lock (_locker)
                 {
-                    _httpWebResponse = (HttpWebResponse)_httpWebRequest.GetResponse();
+                    try
+                    {
+                        _httpWebResponse = (HttpWebResponse) _httpWebRequest.GetResponse();
+                    }
+                    catch (Exception)
+                    {
+                        throw new ConnectionTimeoutExeption(ebsmon.Properties.Resources.ConnectionFault);
+                    }
                 }
-                catch (Exception)
-                {
-                    throw new ConnectionTimeoutExeption(ebsmon.Properties.Resources.ConnectionFault);
-                }
-                
+
             }
             else
             {

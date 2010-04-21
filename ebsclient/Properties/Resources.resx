@@ -167,7 +167,7 @@
     <value>/login/?next=/</value>
   </data>
   <data name="ConnectionTimerDelay" xml:space="preserve">
-    <value>60000</value>
+    <value>120000</value>
   </data>
   <data name="DefaultBalanceString" xml:space="preserve">
     <value>--------------</value>
