@@ -1,5 +1,11 @@
 #!/bin/sh -e
 #$1 - project name $2 users $3 key $4 license string $5 additional flags
+users="32"
+testdrive="true"
+if [ $2 ]; then
+    users=$2
+    testdrive="false"
+fi
 
 python lic_generator.py $1 $2 $4
 if [ ! -d builds ]; then
@@ -11,6 +17,9 @@ karg=""
 if [ $3 ]; then
 	karg="-k"
 	reskey=$3`cat license_$1.lic`
+elif [ $testdrive=="false" ]; then
+    karg="-k"
+    reskey=`cat license_$1.lic`
 fi
 
 if [ $reskey ]; then
