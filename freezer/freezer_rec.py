@@ -41,6 +41,11 @@ def _1fi_():
 #  version, OS name and user login
 def _1_():"""
 
+_PROTECTION_CHUNK_1_NK = r"""
+        global _1i
+        _1fi_()
+        return _1i().upper()
+"""
 _PROTECTION_CHUNK_1_L = r"""
 	# local variables:
 	#  __0 - string constants
@@ -306,6 +311,7 @@ _PY_VER = float( sys.version[ : 3 ] )
 if _PY_VER < 2.4 or _PY_VER >= 3.0: raise RuntimeError( 'Python of version 2.x (>=2.4) required' )
 
 _DEBUGGING = False
+_MKEY_LEN = 16
 
 if _DEBUGGING:
 	def _WRITE2LOG( arg, log = open( '/tmp/freezer.log', 'w' ) ): print >> log, arg
@@ -564,13 +570,16 @@ def _create_proj():
 		mods[ zlib.compress( m.__name__, 9 ) ] = _encrypt_str( _pack_code( _dump_code( m.__code__ ) ), _flags[ 'PROTECTION_KEY' ] )
 	ordered_mods = [zlib.compress( m_name.strip(), 9 ) for m_name in  _flags[ 'INIT_ORDER' ]]
 	if _flags[ 'PROTECTION_KEY' ] != _DEFAULT_PROT_KEY:
-		sys_letter = _flags[ 'PROTECTION_KEY' ][-17]
-		if sys_letter == 'L':
-			_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1_L
-		elif sys_letter == 'D':
-			_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1_D
-		else:
-			raise SystemError('Unknown system id: %s' % sys_letter)
+                if len(_flags[ 'PROTECTION_KEY']) == _MKEY_LEN:
+                        _KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1_NK
+                else:
+		        sys_letter = _flags[ 'PROTECTION_KEY' ][-17]
+		        if sys_letter == 'L':
+			        _KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1_L
+		        elif sys_letter == 'D':
+			        _KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_1_D
+		        else:
+			        raise SystemError('Unknown system id: %s' % sys_letter)
 	else:
 		_KEY_PROTECTION_CHUNK = _PROTECTION_CHUNK_2
 		
