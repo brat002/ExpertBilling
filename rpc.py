@@ -721,10 +721,10 @@ class RPCServer(object):
         cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
         return result
 
-    def get_accounts_for_cachier(self, fullname, city, street, house, bulk, room, username, cur=None, connection=None, add_data = {}):
+    def get_accounts_for_cachier(self, fullname, city, street, house, bulk, room, username, contract, cur=None, connection=None, add_data = {}):
         
-        res={'fullname':fullname, 'city':city, 'street':street, 'house':house, 'house_bulk':bulk, 'room':room, 'username': username}
-        if fullname or city or street or house or bulk or room or username:
+        res={'fullname':fullname, 'city':city, 'street':street, 'house':house, 'house_bulk':bulk, 'room':room, 'username': username, "contract":contract,}
+        if fullname or city or street or house or bulk or room or username or contract:
             sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name FROM billservice_account as account WHERE %s and get_tarif(id)IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s))  ORDER BY username ASC;" % (' AND '.join([u"%s LIKE '%s%s%s'" % (key, "%",res[key],"%") for key in res]), add_data['USER_ID'][1],)
         else:
             sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name  FROM billservice_account as account WHERE get_tarif(id)IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s))ORDER BY username ASC;" % (add_data['USER_ID'][1],)

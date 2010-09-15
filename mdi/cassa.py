@@ -60,12 +60,18 @@ class CassaEbs(ebsTableWindow):
         self.groupBox_filter.setObjectName("groupBox_filter")
         self.gridLayout = QtGui.QGridLayout(self.groupBox_filter)
         self.gridLayout.setObjectName("gridLayout")
+        self.label_agreement = QtGui.QLabel(self.groupBox_filter)
+        self.label_agreement.setObjectName("label_agreement")
+        self.gridLayout.addWidget(self.label_agreement, 0, 0, 1, 1)
+        self.lineEdit_agreement = QtGui.QLineEdit(self.groupBox_filter)
+        self.lineEdit_agreement.setObjectName("lineEdit_agreement")
+        self.gridLayout.addWidget(self.lineEdit_agreement, 0, 2, 1, 1)
         self.label_fullname = QtGui.QLabel(self.groupBox_filter)
         self.label_fullname.setObjectName("label_fullname")
-        self.gridLayout.addWidget(self.label_fullname, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_fullname, 0, 3, 1, 1)
         self.lineEdit_fullname = QtGui.QLineEdit(self.groupBox_filter)
         self.lineEdit_fullname.setObjectName("lineEdit_fullname")
-        self.gridLayout.addWidget(self.lineEdit_fullname, 0, 2, 1, 7)
+        self.gridLayout.addWidget(self.lineEdit_fullname, 0, 4, 1, 5)
         self.label_street = QtGui.QLabel(self.groupBox_filter)
         self.label_street.setObjectName("label_street")
         self.gridLayout.addWidget(self.label_street, 1, 5, 1, 1)
@@ -203,6 +209,7 @@ class CassaEbs(ebsTableWindow):
         self.label_city.setText(QtGui.QApplication.translate("MainWindow", "Город", None, QtGui.QApplication.UnicodeUTF8))
         self.label_bulk.setText(QtGui.QApplication.translate("MainWindow", "Корпус", None, QtGui.QApplication.UnicodeUTF8))
         self.label_room.setText(QtGui.QApplication.translate("MainWindow", "Квартира", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_agreement.setText(QtGui.QApplication.translate("MainWindow", "Договор", None, QtGui.QApplication.UnicodeUTF8))
 #===============================================================================
 #        self.groupBox_tariffs.setTitle(QtGui.QApplication.translate("MainWindow", "Перевести на другой тарифный план", None, QtGui.QApplication.UnicodeUTF8))
 #        self.pushButton_change_tariff.setText(QtGui.QApplication.translate("MainWindow", "Перевести", None, QtGui.QApplication.UnicodeUTF8))
@@ -309,6 +316,7 @@ class CassaEbs(ebsTableWindow):
         
     def refreshTable(self):
         fullname = unicode(self.lineEdit_fullname.text())
+        agreement = unicode(self.lineEdit_agreement.text())
         username = u"%s" % unicode(self.lineEdit_username.text())
         city = u"%s" % unicode(self.lineEdit_city.text())
         street = u"%s" % unicode(self.lineEdit_street.text())
@@ -327,7 +335,7 @@ class CassaEbs(ebsTableWindow):
 #            sql=u"SELECT *, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name  FROM billservice_account as account ORDER BY username ASC;"
 #===============================================================================
         
-        accounts = self.connection.get_accounts_for_cachier(fullname, city, street, house, bulk, room, username)
+        accounts = self.connection.get_accounts_for_cachier(fullname, city, street, house, bulk, room, username, agreement)
         self.connection.commit()
         i=0
         self.tableWidget.setRowCount(len(accounts))
