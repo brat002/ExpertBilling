@@ -476,9 +476,10 @@ class ClassNodeFrame(QtGui.QDialog):
         if src_ip:
             #print src_ip
             #print self.ipValidator.validate(src_ip, 0)
-            if self.ipValidator.validate(src_ip, 0)[0] != QtGui.QValidator.Acceptable:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите Src IP до конца."))
-                return
+            #if self.ipValidator.validate(src_ip, 0)[0] != QtGui.QValidator.Acceptable:
+            #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Введите правильный Src IP."))
+            #    return
+            pass
         else:
             src_ip='0.0.0.0/0'
         
@@ -495,9 +496,10 @@ class ClassNodeFrame(QtGui.QDialog):
         
         dst_ip = unicode(self.dst_ip_edit.text())
         if dst_ip:
-            if self.ipValidator.validate(dst_ip, 0)[0]  != QtGui.QValidator.Acceptable:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность DST IP."))
-                return
+            #if self.ipValidator.validate(dst_ip, 0)[0]  != QtGui.QValidator.Acceptable:
+            #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность DST IP."))
+            #    return
+            pass
         else:
             src_mask='0.0.0.0/0'
         model.dst_ip = dst_ip
@@ -519,9 +521,10 @@ class ClassNodeFrame(QtGui.QDialog):
         next_hop = unicode(self.next_hop_edit.text())
         
         if next_hop:
-            if self.ipValidator.validate(next_hop, 0)[0]  != QtGui.QValidator.Acceptable:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность Next Hop."))
-                return
+            #if self.ipValidator.validate(next_hop, 0)[0]  != QtGui.QValidator.Acceptable:
+            #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность Next Hop."))
+            #    return
+            pass
         else:
             next_hop = '0.0.0.0'
         

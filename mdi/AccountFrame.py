@@ -4342,11 +4342,6 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         tariffs = self.connection.get_tariffs()
         self.connection.commit()
         self.tableWidget.setColumnHidden(0, True)
-        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
-        item.id = -1000
-        item.tarif_type = 'all'
-        item.setText(0, u"Все аккаунты")
-        item.setIcon(0,QtGui.QIcon("images/folder.png"))
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.id = tarif.id
@@ -4357,7 +4352,12 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #item.setText(1, tarif.ttype)
             if not tarif.active:
                 item.setIcon(0, QtGui.QIcon("images/folder_disabled.png"))
-           
+        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
+        item.id = -1000
+        item.tarif_type = 'all'
+        item.setText(0, u"Все аккаунты")
+        item.setIcon(0,QtGui.QIcon("images/folder.png"))
+        
         self.connectTree()
         if curItem != -1:
             self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))

@@ -603,20 +603,20 @@ class NetFlowRoutine(Thread):
                         srec[1][1][flow.node_direction] += flow.octets                        
 
                     tarif_mode = caches.period_cache.in_period.get(acc.traffic_transmit_service_id, False) if acc.traffic_transmit_service_id else False
-                    store_classes = list(caches.storeclass_cache.classes.intersection(flow.class_id))
+                    #store_classes = list(caches.storeclass_cache.classes.intersection(flow.class_id))
                     #if tarif_mode is False or tarif.active = False
                     #write statistics without billing it
-                    if store_classes and not (tarif_mode and acc.tarif_active and acc.account_status == 1):
-                        #cur = connection.cursor()
-                        self.cur.execute("""INSERT INTO billservice_netflowstream(
-                                       nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
-                                       dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-                                    """, (flow.nas_id, flow.account_id, acc.tarif_id, flow.node_direction, stream_date, \
-                                          intToIp(flow.src_addr,4), store_classes, intToIp(flow.dst_addr,4), flow.octets, \
-                                          flow.src_port, flow.dst_port, flow.protocol, False, False,))
-                        self.connection.commit()
-                        continue
+                    #if store_classes and not (tarif_mode and acc.tarif_active and acc.account_status == 1):
+                        ##cur = connection.cursor()
+                    #    self.cur.execute("""INSERT INTO billservice_netflowstream(
+                    #                   nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
+                    #                   dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
+                    #                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                    #                """, (flow.nas_id, flow.account_id, acc.tarif_id, flow.node_direction, stream_date, \
+                    #                      intToIp(flow.src_addr,4), store_classes, intToIp(flow.dst_addr,4), flow.octets, \
+                    #                      flow.src_port, flow.dst_port, flow.protocol, False, False,))
+                    #    self.connection.commit()
+                    #    continue
                     
                     if acc.traffic_transmit_service_id and flow.has_groups and flow.groups:
                         octets_summ = 0
@@ -688,15 +688,15 @@ class NetFlowRoutine(Thread):
                                 with queues.pickerLock:
                                     queues.picker.add_summ(acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ)
                                     
-                    if store_classes:
-                        self.cur.execute("""INSERT INTO billservice_netflowstream(
-                                       nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
-                                       dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-                                   """, (flow.nas_id, flow.account_id, acc.tarif_id, flow.node_direction, stream_date, \
-                                         intToIp(flow.src_addr,4), store_classes, intToIp(flow.dst_addr,4), flow.octets, \
-                                         flow.src_port, flow.dst_port, flow.protocol, True, False,))
-                        self.connection.commit()
+                    #if store_classes:
+                    #    self.cur.execute("""INSERT INTO billservice_netflowstream(
+                    #                   nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
+                    #                   dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
+                    #                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                    #               """, (flow.nas_id, flow.account_id, acc.tarif_id, flow.node_direction, stream_date, \
+                    #                     intToIp(flow.src_addr,4), store_classes, intToIp(flow.dst_addr,4), flow.octets, \
+                    #                     flow.src_port, flow.dst_port, flow.protocol, True, False,))
+                    #    self.connection.commit()
                  
                 if flags.writeProf:
                     icount += 1
