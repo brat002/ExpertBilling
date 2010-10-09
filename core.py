@@ -1495,7 +1495,7 @@ if __name__ == "__main__":
         vars = CoreVars()
         
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
-        print vars.SSH_BACKEND
+
         #create logger
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
         
