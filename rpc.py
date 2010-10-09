@@ -41,13 +41,14 @@ from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif
 from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running, in_period
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
     
-from classes.vars import RpcVars
+from classes.vars import RpcVars, CoreVars
 from constants import rules
 
 from rpc2.server_producer import install_logger as serv_install_logger, DBProcessingThread, PersistentDBConnection, TCP_IntStringReciever, RPCFactory
 from rpc2.rpc_protocol import install_logger as proto_install_logger, RPCProtocol, ProtocolException, MD5_Authenticator, Object as Object
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 from rpc2.rpc_errors import TransactionException, RollbackException
+import ssh_paramiko
 
 import nf
 NAME = 'rpc'
@@ -1288,6 +1289,9 @@ if __name__ == "__main__":
     try:
         vars = RpcVars()        
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME, nf_name=nf.NAME)
+        core_vars = CoreVars()
+        core_vars.get_vars(config=config, name='core', db_name=DB_NAME)
+        ssh_paramiko.SSH_BACKEND=core_vars.SSH_BACKEND
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
