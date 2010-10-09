@@ -6,7 +6,7 @@ import isdlogger
 #socket.setdefaulttimeout(20)
 #paramiko.common.logging.root.setLevel(logging.DEBUG)
 SSH_BACKEND=None
-logger = isdlogger.isdlogger('logging', loglevel=0, ident="ebs_core", filename="log/core_log")
+
 cs_pattern = re.compile('\$[_\w]+')
 def command_string_parser(command_string='', command_dict={}):
     """
@@ -42,11 +42,14 @@ def install_logger(lgr):
 def ssh_client(host, username, password, command):
     #print command
     global SSH_BACKEND
+    
+    logger = isdlogger.isdlogger('logging', loglevel=0, ident="ebs_core", filename="log/core_log")    
     if SSH_BACKEND==None:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         
         ssh.connect(host, username=username, password=password)
+        logger.debug("NAS Manipulation command string %s", (command, ))   
         stdin, stdout, stderr = ssh.exec_command(command)
         out = stdout.readlines()
         err = stderr.readlines()

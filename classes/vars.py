@@ -406,8 +406,8 @@ class CoreVars(Vars):
         self.SETTLEMENT_PERIOD_SLEEP = 120
         self.IPN_SLEEP = 120
         self.DICT_LIST = ("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
-        self.SSH_BACKEND=None
         self.DICT = None
+        self.SSH_BACKEND = None
         
     def get_dynamic(self, **kwargs):
         super(CoreVars, self).get_dynamic(**kwargs)
