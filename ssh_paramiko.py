@@ -42,8 +42,8 @@ def install_logger(lgr):
 def ssh_client(host, username, password, command):
     #print command
     global SSH_BACKEND
-    
-    logger = isdlogger.isdlogger('logging', loglevel=0, ident="ebs_core", filename="log/core_log")    
+    global logger
+    #logger = isdlogger.isdlogger('logging', loglevel=0, ident="ebs_core", filename="log/core_log")    
     if SSH_BACKEND==None:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
