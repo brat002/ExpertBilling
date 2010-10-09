@@ -1495,6 +1495,7 @@ if __name__ == "__main__":
         vars = CoreVars()
         
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
+        print vars.SSH_BACKEND
         #create logger
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
         
@@ -1502,6 +1503,7 @@ if __name__ == "__main__":
         saver.log_adapt    = logger.log_adapt
         
         logger.lprint('core start')
+        ssh_paramiko.SSH_BACKEND=vars.SSH_BACKEND
         ssh_paramiko.install_logger(logger)
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
         
