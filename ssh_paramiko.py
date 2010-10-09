@@ -56,7 +56,7 @@ def ssh_client(host, username, password, command):
         command_string=command_string_parser(command_string=SSH_BACKEND, command_dict=
                             {'host': host, 'username': username,'password': password,
                              'command': command})    
-        logger.debug("NAS Manipulation command string", (command_string, ))    
+        logger.debug("NAS Manipulation command string %s", (command_string, ))    
         status, output = commends.getstatusoutsput(command_string)
         logger.debug("NAS Manipulation try status=%s output=%s", (status, output))
         return output,status==0
