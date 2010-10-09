@@ -1,11 +1,32 @@
 import paramiko
 import commands
-from utilites import command_string_parser
+import re
 #import logging
 #import socket
 #socket.setdefaulttimeout(20)
 #paramiko.common.logging.root.setLevel(logging.DEBUG)
 SSH_BACKEND=None
+
+
+def command_string_parser(command_string='', command_dict={}):
+    """
+    
+    """    
+    
+    if len(command_string) == 0 or len(command_dict) == 0:
+        return ''
+    
+    match = cs_pattern.finditer(command_string)
+    if match is None:
+        return ''
+    params = [m.group()[1:] for m in match]
+    for p in params :
+        if p in command_dict.keys() :
+            cs_str = re.compile( '\$%s' % p)
+            command_string = cs_str.sub(str(command_dict[p]),command_string)
+    #print command_string
+    return command_string
+
 class PseudoLogger(object):
     def _pass(self, *args, **kwargs):
         pass
