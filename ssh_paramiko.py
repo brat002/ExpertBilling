@@ -7,7 +7,7 @@ import re
 #paramiko.common.logging.root.setLevel(logging.DEBUG)
 SSH_BACKEND=None
 
-
+cs_pattern = re.compile('\$[_\w]+')
 def command_string_parser(command_string='', command_dict={}):
     """
     
@@ -55,7 +55,8 @@ def ssh_client(host, username, password, command):
     else:
         command_string=command_string_parser(command_string=SSH_BACKEND, command_dict=
                             {'host': host, 'username': username,'password': password,
-                             'command': command})        
+                             'command': command})    
+        logger.debug("NAS Manipulation command string", (command_string, ))    
         status, output = commends.getstatusoutsput(command_string)
         logger.debug("NAS Manipulation try status=%s output=%s", (status, output))
         return output,status==0
