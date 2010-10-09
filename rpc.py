@@ -1291,8 +1291,9 @@ if __name__ == "__main__":
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME, nf_name=nf.NAME)
         #core_vars = CoreVars()
         #core_vars.get_vars(config=config, name='core', db_name=DB_NAME)
-        ssh_paramiko.SSH_BACKEND=vars.SSH_BACKEND
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
+        ssh_paramiko.SSH_BACKEND=vars.SSH_BACKEND
+        ssh_paramiko.install_logger(logger)
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
         serv_install_logger(logger)
