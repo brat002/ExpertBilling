@@ -393,7 +393,7 @@ class RadQueues(object):
         
 class CoreVars(Vars):
     __slots__ = ('TRANSACTIONS_PER_DAY', 'VPN_SLEEP', 'IPN_SLEEP', 'PERIODICAL_SLEEP', 'TIMEACCESS_SLEEP', 'LIMIT_SLEEP', 'SETTLEMENT_PERIOD_SLEEP',\
-                 'DICT_LIST', 'DICT')
+                 'DICT_LIST', 'DICT', 'SSH_BACKEND')
     
     def __init__(self):
         super(CoreVars, self).__init__()
@@ -406,6 +406,7 @@ class CoreVars(Vars):
         self.SETTLEMENT_PERIOD_SLEEP = 120
         self.IPN_SLEEP = 120
         self.DICT_LIST = ("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
+        self.SSH_BACKEND=None
         self.DICT = None
         
     def get_dynamic(self, **kwargs):
@@ -419,6 +420,7 @@ class CoreVars(Vars):
         if config.has_option(name, 'timeaccess_sleep'): self.TIMEACCESS_SLEEP = config.getint(name, 'timeaccess_sleep')
         if config.has_option(name, 'settlement_period_sleep'): self.SETTLEMENT_PERIOD_SLEEP = config.getint(name, 'settlement_period_sleep')
         if config.has_option(name, 'ipn_sleep'): self.IPN_SLEEP = config.getint(name, 'ipn_sleep')
+        if config.has_option(name, 'ssh_backend'): self.SSH_BACKEND = config.get(name, 'ssh_backend')
 
         if config.has_option(name, 'dict_list'):
             self.DICT_LIST = config.get(name, 'dict_list').split(',')
