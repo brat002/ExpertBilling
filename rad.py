@@ -1309,7 +1309,7 @@ class HandleSDHCP(HandleSBase):
             authobject.set_code(2)
             self.replypacket.AddAttribute('Framed-IP-Address', acc.ipn_ip_address)
             #self.replypacket.AddAttribute('Framed-IP-Netmask', "255.255.255.0")
-            self.replypacket.AddAttribute('Session-Timeout',   vars.SESSION_TIMEOUT)
+            #self.replypacket.AddAttribute('Session-Timeout',   vars.SESSION_TIMEOUT)
             if acc.access_type=='DHCP':
                 self.add_values(acc.tarif_id)
                 self.create_speed(nas, acc.tarif_id, acc.account_id, speed=acc.ipn_speed)
