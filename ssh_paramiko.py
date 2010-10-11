@@ -1,7 +1,7 @@
 import paramiko
 import commands
 import re
-import isdlogger
+#import isdlogger
 #import socket
 #socket.setdefaulttimeout(20)
 #paramiko.common.logging.root.setLevel(logging.DEBUG)
