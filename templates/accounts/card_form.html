@@ -3,7 +3,7 @@
 	function activate_car() {
 		var pin=document.getElementById("id_pin");
 		var series=document.getElementById("id_series");
-		var message=document.getElementById("message");
+		var message=document.getElementById("message_in_form");
         var card_id=document.getElementById("id_card_id");
 	 	jQuery.ajax({
         	type: "POST",
@@ -22,7 +22,7 @@
 				pin.value='';
 				series.value='';
                 card_id.value='';
-				window.location.reload();	
+				//window.location.reload();	
 			},
         	error: function(data, status){
 				var ret = eval('('+data+')'); 
@@ -45,6 +45,7 @@
 	<tr>
 		<th class="blue_caption white s-11 bold main_table_left_border right_border">
 			АКТИВАЦИЯ КАРТОЧЕК
+			<div id="message_in_form"></div>
 		</th>
 	</tr>
 	<tr>
