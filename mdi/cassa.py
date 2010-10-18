@@ -45,7 +45,7 @@ client_networking.install_logger(logger)
 
 class CassaEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns = ['#', u"Username", u'ФИО', u'Тарифный план', u'Баланс', u'Кредит', u'Улица', u'д.', u'корп.', u'кв.']
+        columns = [u'#', u'Договор #', u"Username", u'ФИО', u'Тарифный план', u'Баланс', u'Кредит', u'Улица', u'д.', u'корп.', u'кв.']
         initargs = {"setname":"cassa_period", "objname":"CassaEbsMDI", "winsize":(0,0,1024, 642), "wintitle":"Интерфейс кассира", "tablecolumns":columns, "centralwidget":True}
         super(CassaEbs, self).__init__(connection, initargs)
         self.printer = None
@@ -341,16 +341,17 @@ class CassaEbs(ebsTableWindow):
         self.tableWidget.setRowCount(len(accounts))
         for account in accounts:
             self.addrow(account.id, i, 0, enabled=account.status)
-            self.addrow(account.username, i, 1, enabled=account.status)
-            self.addrow(account.fullname, i, 2, enabled=account.status)
-            self.addrow(account.tarif_name, i, 3, enabled=account.status)
-            self.addrow("%.2f" % account.ballance, i, 4, enabled=account.status)
-            self.addrow(account.credit, i, 5, enabled=account.status)
+            self.addrow(account.contract, i, 1, enabled=account.status)
+            self.addrow(account.username, i, 2, enabled=account.status)
+            self.addrow(account.fullname, i, 3, enabled=account.status)
+            self.addrow(account.tarif_name, i, 4, enabled=account.status)
+            self.addrow("%.2f" % account.ballance, i, 5, enabled=account.status)
+            self.addrow(account.credit, i, 6, enabled=account.status)
             #self.addrow(account.city, i, 6, enabled=account.status)
-            self.addrow(account.street, i, 6, enabled=account.status)
-            self.addrow(account.house, i, 7, enabled=account.status)
-            self.addrow(account.house_bulk, i, 8, enabled=account.status)
-            self.addrow(account.room, i, 9, enabled=account.status)
+            self.addrow(account.street, i, 7, enabled=account.status)
+            self.addrow(account.house, i, 8, enabled=account.status)
+            self.addrow(account.house_bulk, i, 9, enabled=account.status)
+            self.addrow(account.room, i, 10, enabled=account.status)
 
             i+=1
   

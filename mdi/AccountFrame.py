@@ -1626,7 +1626,7 @@ class TarifFrame(QtGui.QDialog):
 
 
 
-        access_types = ["PPTP", "PPPOE", "IPN", "HotSpot", 'lISG']
+        access_types = ["PPTP", "PPPOE", "IPN", "HotSpot", 'lISG', "DHCP"]
         for access_type in access_types:
             self.access_type_edit.addItem(access_type)
         
