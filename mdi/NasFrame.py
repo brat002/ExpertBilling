@@ -514,7 +514,7 @@ class AddNasFrame(QtGui.QDialog):
             model.speed_value2 = unicode(self.lineEdit_value2.text())
         except Exception, e:
             print e
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Параметры Vendor и Attr Id должны бытьцелыми положитеьными числами."))
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Параметры Vendor и Attr Id должны быть целыми положительными числами."))
             return
         
 

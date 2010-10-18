@@ -766,6 +766,7 @@ if __name__ == "__main__":
     try:
         global mainwindow
         mainwindow = MainWindow()
+        
         splash.finish(mainwindow) 
         mainwindow.show()
         mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.3 #%s - %s" % (username, server_ip))  
@@ -778,6 +779,7 @@ if __name__ == "__main__":
         print "main-----------"
         print repr(ex)
         print traceback.format_exc()
+
 
     #QtGui.QStyle.SH_Table_GridLineColor
 
