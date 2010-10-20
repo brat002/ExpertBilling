@@ -1299,7 +1299,7 @@ class HandleSDHCP(HandleSBase):
             return self.auth_NA(authobject)
         #print dir(acc)
         acstatus = (acc.assign_dhcp_null or acc.ballance>0) and \
-                 (acc.assign_dhcp_block or (not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status)) and acc.tarif_active
+                 (acc.assign_dhcp_block or (not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status==1)) and acc.tarif_active
 
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false", acc.username)
