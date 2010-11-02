@@ -3,8 +3,8 @@
 <script>
 	var obj_arr = new Array();
 	var tariff = {{ tariff.id }};
+	 obj_arr[{{ tariff.tarif.id }}] = new Array();
 	{% for tariff_object in tariff_objects  %}
-		obj_arr[{{ tariff_object.from_tariff.id }}] = new Array();
 		obj_arr[{{ tariff_object.from_tariff.id }}][{{ tariff_object.id }}] = new Array({{ tariff_object.ballance_min }}, {{ tariff_object.cost }});
 	{% endfor %}
 	
@@ -41,9 +41,11 @@
 		var need_cost = document.getElementById("need_cost");
 		var error_message = document.getElementById("error_message");
 		var send_button = document.getElementById("send_button");
-		try {
-			var ballance = eval('obj_arr[{{ tariff.tarif.id }}]['+new_tariff.value+'][0]');
-			var price = {{ user.ballance }}-ballance;
+		//alert(obj_arr);
+		//alert(new_tariff.value);
+		//try {
+			var ballance = obj_arr[{{ tariff.tarif.id }}][new_tariff.value][0];
+			var price = {{ user.ballance }}+{{ user.credit }}-ballance;
 			send_button.style.visibility = 'visible';
 			if (price >= 0) {
 				need_ballance.innerHTML = '<h2>'+ballance+'{{ CURRENCY }}</h2>';
@@ -54,12 +56,13 @@
 			need_cost.innerHTML = '<h2>'+eval('obj_arr[{{ tariff.tarif.id }}]['+new_tariff.value+'][1]')+'{{ CURRENCY }}</h2>';
 			error_message.innerHTML = '';
 			return true;
-		} catch(err) {
-			error_message.innerHTML = '<div class="red">Вы не можите перейти на данный тарифный план</div>';
-			need_cost.innerHTML = '<h2>0</h2>';
-			need_ballance.innerHTML = '<h2>0</h2>';
-			send_button.style.visibility = 'hidden';
-		}
+		
+		//} catch(err) {
+		//	error_message.innerHTML = '<div class="red">Вы не можете перейти на данный тарифный план</div>';
+		//	need_cost.innerHTML = '<h2>0</h2>';
+		//	need_ballance.innerHTML = '<h2>0</h2>';
+		//	send_button.style.visibility = 'hidden';
+		//}
 		
 	}
 </script>

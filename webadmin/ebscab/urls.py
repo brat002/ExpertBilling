@@ -45,6 +45,7 @@ urlpatterns += patterns('billservice.views',
      (r'^traffic/transaction/info/$', 'traffic_transaction'),
      (r'^one/time/history/info/$', 'one_time_history'),
      (r'^news/delete/$', 'news_delete'),
+     (r'^jsonaccounts$', 'jsonaccounts'),
 )
 
 urlpatterns += patterns('service_monitor.views',

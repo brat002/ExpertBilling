@@ -418,7 +418,7 @@ def change_tariff_form(request):
     user = request.user
     account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('-datetime')[:1]
     account_tariff = account_tariff_id[0]
-    tariffs = TPChangeRule.objects.filter(ballance_min__lte=user.ballance, from_tariff = account_tariff.tarif)
+    tariffs = TPChangeRule.objects.filter(ballance_min__lte=(user.ballance+user.credit), from_tariff = account_tariff.tarif)
     form = ChangeTariffForm(user, account_tariff)
     return {
             'form': form,
@@ -442,10 +442,10 @@ def change_tariff(request):
         rule_id = request.POST.get('id_tariff_id', None)
         if rule_id != None:
             user = request.user       
-            account_tariff_id = AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('id')[:1]
+            account_tariff_id = AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('-datetime')[:1]
             account_tariff = account_tariff_id[0]
             from datetime import datetime
-            rules_id =[x.id for x in TPChangeRule.objects.filter(ballance_min__lte=user.ballance)]
+            rules_id =[x.id for x in TPChangeRule.objects.filter(ballance_min__lte=(user.ballance+user.credit))]
             rule = TPChangeRule.objects.get(id=rule_id)
             data_start_period = datetime.now()
             data_start_active = False
@@ -478,7 +478,7 @@ def change_tariff(request):
                                   VALUES(%s, 'Списание средств за переход на тарифный план %s', 'TP_CHANGE', True, get_tarif(%s), %s, now(), False)""" % (user.id, tariff.tarif.name, user.id, rule.cost))
                 cursor.connection.commit()
             if data_start_active:
-                ok_str = u'Вы успешно сменили тариф, арифный план будет изменён в следующем расчётном периоде c %s.<br> За переход на данный тарифный план с пользователя будет взыскано %s средств.' %(td[1], rule.cost)
+                ok_str = u'Вы успешно сменили тариф, тарифный план будет изменён в следующем расчётном периоде c %s.<br> За переход на данный тарифный план с пользователя будет взыскано %s средств.' %(td[1], rule.cost)
                 return {
                          'ok_message':ok_str,   
                         }
@@ -488,11 +488,11 @@ def change_tariff(request):
                         }
         else:
             return {
-                    'error_message':u'Проверьте Ваш тариф',
+                    'error_message':u'Системная ошибка.',
                     }
     else:
         return {
-                'error_message':u'Проверьте Ваш тариф',
+                'error_message':u'Попытка взлома',
                 }
 
 
@@ -925,5 +925,20 @@ def news_delete(request):
                 'message':u'Новость успешно удалена',
                 }
             
+
+@ajax_request
+@login_required
+def jsonaccounts(request):
+    accounts = Account.objects.all()
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for acc in accounts:
+        res.append({"taskId":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname})
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"data": res}
+
 
 
