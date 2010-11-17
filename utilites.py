@@ -84,7 +84,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
     #log_debug_('PoD args: %s' % str([account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string]))
     
     access_type = access_type.lower()
-    if (format_string=='' and access_type in ['pptp', 'pppoe', 'lisg'] ) or access_type=='hotspot' or nas_type=='cisco':
+    if (format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg'] ) or access_type=='hotspot' or nas_type=='cisco':
         log_debug_("Send PoD")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(20)
@@ -110,7 +110,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
         #    print attr, doc[attr][0]
             
         return doc.has_key("Error-Cause")==False
-    elif format_string!='' and access_type in ['pptp', 'pppoe']:
+    elif format_string!='' and access_type in ['pptp', 'l2tp', 'pppoe']:
         #ssh
         log_debug_('POD ROS')
         command_string=command_string_parser(command_string=format_string, command_dict=
@@ -154,7 +154,7 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
     format_string=nas.ipn_speed_action,
     """
     
-    if (format_string=='' and access_type in ['pptp', 'pppoe', 'lisg']) or access_type=='hotspot' or nas.type=='cisco':
+    if (format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg']) or access_type=='hotspot' or nas.type=='cisco':
 
         if not nas.speed_value1 and not nas.speed_value1:
             log_debug_('CoA noop change')
@@ -223,7 +223,7 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
         #    pass
         return doc.has_key("Error-Cause")==False
     
-    elif format_string!='' and access_type in ['pptp', 'pppoe', 'ipn']:
+    elif format_string!='' and access_type in ['pptp', 'l2tp', 'pppoe', 'ipn']:
         #ssh
         log_debug_('SetSpeed Via SSH')
         command_dict={
@@ -742,12 +742,14 @@ def speedlimit_logic(speed, limitspeed, speed_unit, speed_change_type):
     
 
     
-    if speed_change_type=='add':
-        return speed+limitspeed
+    if speed_change_type=='add' and speed_unit !='%':
+        return int(speed+limitspeed)
+    elif speed_change_type=='add':
+        return int(speed+limitspeed*speed)  
     elif speed_change_type == 'abs' and speed_unit == '%':
         return int(limitspeed*speed)
     elif speed_change_type == 'abs':
-        return limitspeed
+        return int(limitspeed)
          
 def correct_speed(speed, correction):
     """
