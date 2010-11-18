@@ -744,7 +744,7 @@ def speedlimit_logic(speed, limitspeed, speed_unit, speed_change_type):
     
     if speed_change_type=='add' and speed_unit !='%':
         return int(speed+limitspeed)
-    elif speed_change_type=='add':
+    elif speed_change_type=='add' and speed_unit =='%':
         return int(speed+limitspeed*speed)  
     elif speed_change_type == 'abs' and speed_unit == '%':
         return int(limitspeed*speed)
