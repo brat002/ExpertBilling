@@ -178,6 +178,6 @@ rad_sql = \
                         FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                         WHERE accountspeedlimit.speedlimit_id=speedlimit.id;""",
          'attrs'    :"""SELECT vendor, attrid, value, tarif_id FROM billservice_radiusattrs;""",
-         'subaccounts'    :"""SELECT account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, ipn_added, ipn_enabled, need_resync FROM billservice_subaccounts;""",
+         'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync FROM billservice_subaccount;""",
 
 }

@@ -349,11 +349,18 @@ class Packet(UserDict.UserDict):
 
        
 
-			
+	"""		
 	def __repr__(self):
 		return ', '.join((name + str(item) for name, item in (('code: ', self.code), ('id: ', self.id),\
 								      ('secret: ', self.secret), ('authenticator: ', self.authenticator), \
 								      ('packet: ', ' | '.join((str(self._DecodeKey(key))+ ': ' +str(self[self._DecodeKey(key)][0]) for key, value in self.iteritems()))))))
+	"""
+	
+	def __repr__(self):
+		return '\n '.join((name + str(item) for name, item in (('code: ', self.code), ('id: ', self.id),\
+								      ('secret: ', self.secret), ('authenticator: ', self.authenticator.encode("hex")), \
+								      ('packet: ', ' \n '.join((str(self._DecodeKey(key))+ ': ' + (str(self[self._DecodeKey(key)][0].encode("hex")) if str(self._DecodeKey(key)).startswith("MS-CHAP")==True else str(self[self._DecodeKey(key)][0])) for key, value in self.iteritems()))))))
+		
 class AuthPacket(Packet):
 	def __init__(self, code=AccessRequest, id=None, secret="", authenticator=None, **attributes):
 		"""Constructor
