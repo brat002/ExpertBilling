@@ -47,6 +47,127 @@ la_list = [u"Заблокировать пользователя", u"Измен�
 ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном и нулевом балансе"), CashType(2,u"При отрицательном балансе")]
 ps_list = [u"При любом балансе", u"При положительном и нулевом балансе", u"При отрицательном балансе"]
 
+class SubaccountLinkDialog(QtGui.QDialog):
+    def __init__(self, connection, account, model = None):
+        super(SubaccountLinkDialog, self).__init__()
+        #self.setObjectName("SubaccountLinkDialog")
+        self.connection = connection
+        self.account = account
+        self.model = model
+        self.resize(419, 261)
+        self.gridLayout_2 = QtGui.QGridLayout(self)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.groupBox_link_parameters = QtGui.QGroupBox(self)
+        self.groupBox_link_parameters.setObjectName("groupBox_link_parameters")
+        self.gridLayout = QtGui.QGridLayout(self.groupBox_link_parameters)
+        self.gridLayout.setObjectName("gridLayout")
+        self.lineEdit_link_login = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_link_login.setObjectName("lineEdit_link_login")
+        self.gridLayout.addWidget(self.lineEdit_link_login, 1, 1, 1, 1)
+        self.label_link_login = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_link_login.setObjectName("label_link_login")
+        self.gridLayout.addWidget(self.label_link_login, 1, 0, 1, 1)
+        self.label_nas = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_nas.setObjectName("label_nas")
+        self.gridLayout.addWidget(self.label_nas, 0, 0, 1, 1)
+        self.comboBox_nas = QtGui.QComboBox(self.groupBox_link_parameters)
+        self.comboBox_nas.setObjectName("comboBox_nas")
+        self.gridLayout.addWidget(self.comboBox_nas, 0, 1, 1, 1)
+        self.lineEdit_link_password = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_link_password.setObjectName("lineEdit_link_password")
+        self.gridLayout.addWidget(self.lineEdit_link_password, 3, 1, 1, 1)
+        self.label_link_password = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_link_password.setObjectName("label_link_password")
+        self.gridLayout.addWidget(self.label_link_password, 3, 0, 1, 1)
+        self.lineEdit_3 = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_3.setObjectName("lineEdit_3")
+        self.gridLayout.addWidget(self.lineEdit_3, 5, 1, 1, 1)
+        self.label_link_vpn_ip_address = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_link_vpn_ip_address.setObjectName("label_link_vpn_ip_address")
+        self.gridLayout.addWidget(self.label_link_vpn_ip_address, 5, 0, 1, 1)
+        self.label_link_vpn = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_link_vpn.setObjectName("label_link_vpn")
+        self.gridLayout.addWidget(self.label_link_vpn, 6, 0, 1, 1)
+        self.lineEdit_link_ipn_ip_address = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_link_ipn_ip_address.setObjectName("lineEdit_link_ipn_ip_address")
+        self.gridLayout.addWidget(self.lineEdit_link_ipn_ip_address, 6, 1, 1, 1)
+        self.label_link_ipn_mac_address = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_link_ipn_mac_address.setObjectName("label_link_ipn_mac_address")
+        self.gridLayout.addWidget(self.label_link_ipn_mac_address, 7, 0, 1, 1)
+        self.lineEdit_link_ipn_mac_address = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_link_ipn_mac_address.setObjectName("lineEdit_link_ipn_mac_address")
+        self.gridLayout.addWidget(self.lineEdit_link_ipn_mac_address, 7, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.groupBox_link_parameters, 0, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout_2.addWidget(self.buttonBox, 1, 0, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
+        
+        self.fixtures()
+        self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"),self.accept)
+        self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
+
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_link_parameters.setTitle(QtGui.QApplication.translate("Dialog", "Параметры связки", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_link_login.setText(QtGui.QApplication.translate("Dialog", "Логин", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_nas.setText(QtGui.QApplication.translate("Dialog", "NAS", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_link_password.setText(QtGui.QApplication.translate("Dialog", "Пароль", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_link_vpn_ip_address.setText(QtGui.QApplication.translate("Dialog", "VPN IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_link_vpn.setText(QtGui.QApplication.translate("Dialog", "IPN IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_link_ipn_mac_address.setText(QtGui.QApplication.translate("Dialog", "IPN MAC", None, QtGui.QApplication.UnicodeUTF8))
+        
+        
+    def fixtures(self):
+        nasses=self.connection.sql("SELECT id, name FROM nas_nas ORDER BY name;")
+        self.connection.commit()
+        self.comboBox_nas.addItem(u"---Любой---", QtCore.QVariant(0))
+        for nas in nasses:
+            self.comboBox_nas.addItem(nas.name, QtCore.QVariant(nas.id))
+
+        #print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
+
+        if self.model:
+            print "NAS_ID", self.model.nas_id
+            if self.model.nas_id:
+                self.comboBox_nas.setCurrentIndex(self.comboBox_nas.findData(self.model.nas_id))
+            self.lineEdit_link_login.setText(unicode(self.model.username))
+            self.lineEdit_link_password.setText(unicode(self.model.password))
+            self.lineEdit_3.setText(unicode(self.model.vpn_ip_address))
+            self.lineEdit_link_ipn_ip_address.setText(unicode(self.model.ipn_ip_address))
+            self.lineEdit_link_ipn_mac_address.setText(unicode(self.model.ipn_mac_address))
+                        
+    def accept(self):
+        if self.model:
+            model=self.model
+        else:
+            model = Object()
+            model.account_id = self.account.id
+        if self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]!=0:
+            model.nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
+            print "nas=", model.nas_id
+        print 'b',self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
+        model.username = unicode(self.lineEdit_link_login.text()) or ""
+        model.password = unicode(self.lineEdit_link_password.text()) or ""
+        model.vpn_ip_address = unicode(self.lineEdit_3.text()) or "0.0.0.0"
+        model.ipn_ip_address = unicode(self.lineEdit_link_ipn_ip_address.text()) or "0.0.0.0"
+        model.ipn_mac_address = unicode(self.lineEdit_link_ipn_mac_address.text()) or ""
+            
+            #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
+        try:
+            self.connection.save(model,"billservice_subaccount")
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()
+        QtGui.QDialog.accept(self)
+
+
 class AddAccountTarif(QtGui.QDialog):
     def __init__(self, connection, account=None, get_info=False, model=None):
         super(AddAccountTarif, self).__init__()
@@ -2845,6 +2966,18 @@ class AccountWindow(QtGui.QMainWindow):
         self.tableWidget_suspended.setObjectName("tableWidget_suspended")
         self.gridLayout_5.addWidget(self.tableWidget_suspended, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_suspended, "")
+#        
+        self.tab_subaccounts = QtGui.QWidget()
+        self.tab_subaccounts.setObjectName("tab_subaccounts")
+        self.gridLayout_51 = QtGui.QGridLayout(self.tab_subaccounts)
+        self.gridLayout_51.setObjectName("gridLayout_51")
+        self.tableWidget_subaccounts = QtGui.QTableWidget(self.tab_subaccounts)
+        self.tableWidget_subaccounts.setObjectName("tableWidget_subaccounts")
+        self.tableWidget_subaccounts = tableFormat(self.tableWidget_subaccounts)
+        self.gridLayout_51.addWidget(self.tableWidget_subaccounts, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_subaccounts, "")        
+        
+#        
         self.tab_tarifs = QtGui.QWidget()
         self.tab_tarifs.setObjectName("tab_tarifs")
         self.gridLayout_6 = QtGui.QGridLayout(self.tab_tarifs)
@@ -2906,6 +3039,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.connect(self.tableWidget_accounttarif, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_accounttarif)
         self.connect(self.tableWidget_addonservice, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editAddonService)
         self.connect(self.tableWidget_suspended, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_suspendedperiod)
+        self.connect(self.tableWidget_subaccounts, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editSubAccount)
         
         
         self.connect(self.tableWidget, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.editAccountInfo)
@@ -3062,6 +3196,7 @@ class AccountWindow(QtGui.QMainWindow):
         "", None, QtGui.QApplication.UnicodeUTF8))
 
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_network_settings), QtGui.QApplication.translate("MainWindow", "Сетевые параметры", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_subaccounts), QtGui.QApplication.translate("MainWindow", "Субаккаунты", None, QtGui.QApplication.UnicodeUTF8))
 
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_suspended), QtGui.QApplication.translate("MainWindow", "Не списывать ПУ", None, QtGui.QApplication.UnicodeUTF8))
 
@@ -3095,7 +3230,11 @@ class AccountWindow(QtGui.QMainWindow):
         columns = ["#", u"С",u"По"]
         self.tableWidget_suspended = tableFormat(self.tableWidget_suspended)
         makeHeaders(columns, self.tableWidget_suspended)
-        
+ 
+        columns=[u'#', u'Имя пользователя', u'Пароль', u'VPN IP', u'IPN IP', u'IPN MAC', u'Сервер доступа', u'Добавлен', u'Активирован',]
+        self.tableWidget_subaccounts = tableFormat(self.tableWidget_subaccounts)
+        makeHeaders(columns, self.tableWidget_subaccounts)
+                
         columns=[u'#', u'Тарифный план', u'Дата', u'Расчётный период закрыт']
         self.tableWidget_accounttarif = tableFormat(self.tableWidget_accounttarif)
         makeHeaders(columns, self.tableWidget_accounttarif)
@@ -3386,6 +3525,7 @@ class AccountWindow(QtGui.QMainWindow):
             self.accountTarifRefresh()
             self.suspendedPeriodRefresh()
             self.accountAddonServiceRefresh()
+            self.subAccountLinkRefresh()
         else:
             for i in xrange(self.tableWidget.rowCount()):
                 self.addrow(self.tableWidget, '', i,1)
@@ -3833,7 +3973,29 @@ class AccountWindow(QtGui.QMainWindow):
                 i+=1
             self.tableWidget_addonservice.setColumnHidden(0, True)
             self.tableWidget_addonservice.resizeColumnsToContents()
-                  
+            
+    def subAccountLinkRefresh(self):
+        if self.model:
+            sp = self.connection.get_models("billservice_subaccount", where={'account_id':self.model.id})
+            self.connection.commit()
+            self.tableWidget_subaccounts.setRowCount(len(sp))
+            i=0
+            for a in sp:
+                self.addrow(self.tableWidget_subaccounts, a.id, i, 0)
+                self.addrow(self.tableWidget_subaccounts, a.username, i, 1)
+                self.addrow(self.tableWidget_subaccounts, a.password, i, 2)
+                self.addrow(self.tableWidget_subaccounts, a.vpn_ip_address, i, 3)
+                self.addrow(self.tableWidget_subaccounts, a.ipn_ip_address, i, 4)
+                self.addrow(self.tableWidget_subaccounts, a.ipn_mac_address, i, 5)
+                self.addrow(self.tableWidget_subaccounts, a.nas_id, i, 6)
+                #self.addrow(self.tableWidget_subaccounts, a.start_date.strftime(strftimeFormat), i, 1)
+                #try:
+                #    self.addrow(self.tableWidget_subaccounts, a.end_date.strftime(strftimeFormat), i, 2)
+                #except:
+                #    self.addrow(self.tableWidget_subaccounts, u"Не закончен", i, 2)
+                i+=1
+            self.tableWidget_subaccounts.setColumnHidden(0, True)  
+    
     def addrow(self, widget, value, x, y, id=None, editable=False, widget_type = None):
         headerItem = QtGui.QTableWidgetItem()
         if widget_type == 'checkbox':
@@ -3857,19 +4019,28 @@ class AccountWindow(QtGui.QMainWindow):
             return -1
 
     def add_action(self):
-        if self.tabWidget.currentIndex()==3:
+        if self.tabWidget.currentIndex()==4:
             self.add_accounttarif()
         elif self.tabWidget.currentIndex()==2:
             self.add_suspendedperiod()
-        elif self.tabWidget.currentIndex()==4:
+        elif self.tabWidget.currentIndex()==5:
             self.addAddonService()
+        elif self.tabWidget.currentIndex()==3:
+            self.addSubAccountLink()
     
     def del_action(self):
-        if self.tabWidget.currentIndex()==3:
+        if self.tabWidget.currentIndex()==4:
             self.del_accounttarif()
         elif self.tabWidget.currentIndex()==2:
             self.del_suspendedperiod()
-                
+        elif self.tabWidget.currentIndex()==3:
+            self.delSubAccountLink()
+           
+    def addSubAccountLink(self):
+        child=SubaccountLinkDialog(connection=self.connection, account=self.model)
+        if child.exec_()==1:
+            self.subAccountLinkRefresh()
+            
     def add_accounttarif(self):
 
         child=AddAccountTarif(connection=self.connection, account=self.model)
@@ -3894,6 +4065,17 @@ class AccountWindow(QtGui.QMainWindow):
         if child.exec_()==1:
             self.accountAddonServiceRefresh()
         
+    def editSubAccount(self):
+        i=self.getSelectedId(self.tableWidget_subaccounts)
+        try:
+            model = self.connection.get_model(i, "billservice_subaccount")
+        except:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
+            return
+        child = SubaccountLinkDialog(connection=self.connection, model=model, account = self.model)
+        if child.exec_()==1:
+            self.subAccountLinkRefresh()
+            
     def del_accounttarif(self):
         i=self.getSelectedId(self.tableWidget_accounttarif)
         try:
@@ -3910,6 +4092,18 @@ class AccountWindow(QtGui.QMainWindow):
             self.connection.iddelete(i, "billservice_accounttarif")
             self.accountTarifRefresh()
 
+    def delSubAccountLink(self):
+        i=self.getSelectedId(self.tableWidget_subaccounts)
+        try:
+            model = self.connection.get_model(i, "billservice_subaccount")
+        except:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
+            return
+        
+        if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.iddelete(i, "billservice_subaccount")
+            self.subAccountLinkRefresh()
+            
     def add_suspendedperiod(self):
         child=SuspendedPeriodForm()
 

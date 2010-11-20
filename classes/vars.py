@@ -42,8 +42,8 @@ class Vars(object):
         if config.has_option(name, 'cache_time'): self.CACHE_TIME = config.getint(name, 'cache_time')
         if config.has_option(name, 'name'): self.name = config.get(name, 'name')
         if config.has_option(name, 'piddir'): self.piddir = config.get(name, 'piddir')
-        self.db_dsn = "dbname='%s' user='%s' host='%s' password='%s'" % (config.get(db_name, "name"), config.get(db_name, "username"),
-                                                                         config.get(db_name, "host"), config.get(db_name, "password"))
+        self.db_dsn = "dbname='%s' user='%s' host='%s' port='%s' password='%s'" % (config.get(db_name, "name"), config.get(db_name, "username"),
+                                                                         config.get(db_name, "host"), config.get(db_name, "port"), config.get(db_name, "password"))
         if config.has_option(db_name, 'session'): self.db_session = config.get(db_name, 'session').split(',')
         if config.has_option(name, 'log_type'): self.log_type = config.get(name, "log_type")
         if config.has_option(name, 'log_ident'): self.log_ident = config.get(name, 'log_ident')

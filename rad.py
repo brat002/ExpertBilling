@@ -788,7 +788,8 @@ class HandleSAuth(HandleSBase):
 
     def handle(self):
 
-        nas = self.caches.nas_cache.by_ip.get(self.nasip) 
+        nas = self.caches.nas_cache.by_ip.get(self.nasip)
+        logger.warning("NAS Found %s", nas.name) 
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
         self.nas_type = nas.type
@@ -798,7 +799,22 @@ class HandleSAuth(HandleSBase):
         user_name = str(self.packetobject['User-Name'][0])
 
         #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
+        logger.warning("Searching account %s", user_name)
         acc = self.caches.account_cache.by_username.get(user_name)
+        
+        subacc = None
+        #Если не нашли в аккаунтах - ищем в субаккаунтах
+        if not acc:
+            logger.warning("Searching account in subaccounts %s", user_name)
+            subacc = self.caches.subaccountaccount_cache.by_username.get(user_name)
+        
+        username = acc.username if not subacc else subacc.username 
+        password = acc.password if not subacc else subacc.password
+        vpn_ip_address = acc.vpn_ip_address if not subacc else subacc.vpn_ip_address
+        ipn_ip_address = acc.ipn_ip_address if not subacc else subacc.ipn_ip_address
+        ipn_mac_address = acc.ipn_mac_address if not subacc else subacc.ipn_mac_address
+        account_nas_id = acc.nas_id if not subacc else subacc.nas_id
+         
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges)
 
         if acc is None:
