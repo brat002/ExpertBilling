@@ -1,9 +1,12 @@
+#-*- coding:utf-8 -*-
+
 from operator import itemgetter, setitem
 from cacheutils import CacheCollection, CacheItem
 from cache_sql import nf_sql
 from nf_class.AccountData import AccountData
 from nf_class.ClassData import ClassData
 from nf_class.GroupsData import GroupsData
+from nf_class.NasData import NasData
 from IPy import IP, IPint, parseAddress
 from collections import defaultdict
 
@@ -22,17 +25,28 @@ class NfCaches(CacheCollection):
     
 class NasCache(CacheItem):
     '''Cache id -> nas.ip'''
-    __slots__ = ('ip_id',)
+    __slots__ = ('by_ip',)
     
-    datatype = dict
+    datatype = NasData
     sql = nf_sql['nas']
     
-    def transformdata(self):
-        pass
+    def __init__(self):
+        super(NasCache, self).__init__()
+        self.by_ip = {}
+
     
     def reindex(self):
-        self.ip_id = self.datatype(self.data)
-    
+        #self.ip_id = self.datatype(self.data)
+
+        for item in self.data:
+            #print item
+            #assert isinstance(item, self.datatype)
+
+            #Если такого адреса ещё нету в кэше
+            if not self.by_ip.get(item.ipaddress):
+                self.by_ip[item.ipaddress] = []
+            self.by_ip[item.ipaddress].append(item)
+                
 class AccountCache(CacheItem):
     __slots__ = ('vpn_ips', 'ipn_ips', 'ipn_range')
     
@@ -56,16 +70,17 @@ class AccountCache(CacheItem):
         self.ipn_ips = {}
         self.ipn_range = []
         for acct in self.data:
-            vpn_ip, ipn_ip = acct[1:3]
-            account_object = self.datatype._make((acct[0], acct[3], acct[4], acct[5]))
-            if vpn_ip != '0.0.0.0':
-                self.vpn_ips[(parseAddress(vpn_ip)[0], account_object.nas_id)] = account_object
-            if ipn_ip != '0.0.0.0':
-                if ipn_ip.find('/') != -1:
-                    range_ip = IPint(ipn_ip)
-                    self.ipn_range.append((range_ip.int(), range_ip.netmask(), account_object))
-                else:
-                    self.ipn_ips[(parseAddress(ipn_ip)[0], account_object.nas_id)] = account_object
+            for addr in acct[1]:
+                vpn_ip, ipn_ip, nas_id = addr.split("|")
+                account_object = self.datatype._make((acct[0], acct[2], acct[3]))
+                if vpn_ip != '0.0.0.0':
+                    self.vpn_ips[(parseAddress(vpn_ip.split('/')[0])[0], nas_id)] = account_object
+                if ipn_ip != '0.0.0.0':
+                    if ipn_ip.find('/') != -1:
+                        range_ip = IPint(ipn_ip)
+                        self.ipn_range.append((range_ip.int(), range_ip.netmask(), nas_id, account_object))
+                    else:
+                        self.ipn_ips[(parseAddress(ipn_ip)[0], nas_id)] = account_object
             
 class ClassCache(CacheItem):
     __slots__ = ('classes',)

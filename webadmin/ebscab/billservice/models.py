@@ -1141,3 +1141,9 @@ class Log(models.Model):
     text = models.TextField()
     created = models.DateTimeField()
     
+class SubAccount(models.Model):
+    account = models.ForeignKey(Account)
+    ipn_ip = models.IpAddressField()
+    ipn_mac = models.CharField()
+    vpn_ip = models.IpAddressField()
+    

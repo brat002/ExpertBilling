@@ -310,8 +310,8 @@ def nfPacketHandle(data, addrport, flowCache):
         return
     caches = cacheMaster.cache
     if 0: assert isinstance(caches, NfCaches)
-    nas_id = caches.nas_cache.ip_id.get(addrport[0])
-    if not nas_id: return
+    nasses = caches.nas_cache.by_ip.get(addrport[0])
+    if not caches: return
           
     flows=[]
     _nf = struct.unpack("!H", data[:2])
@@ -330,15 +330,37 @@ def nfPacketHandle(data, addrport, flowCache):
         #look for account for ip address
         if flow.out_index == 0 or flow.in_index == flow.out_index:
             continue
-        acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, nas_id)) or caches.account_cache.ipn_ips.get((flow.src_addr, nas_id))
-        acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nas_id)) or caches.account_cache.ipn_ips.get((flow.dst_addr, nas_id))
+        acc_data_src = None
+        acc_data_dst = None
+        nas_id = None
+        for nasitem in nasses:
+            if not acc_data_src:
+                #Если нашли - больше не проверяем
+                acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, nasitem.id)) or caches.account_cache.ipn_ips.get((flow.src_addr, nasitem.id))
+                if acc_data_src:
+                    nas_id = nasitem.id
+            if not acc_data_dst:
+                #Если нашли - больше не проверяем
+                acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nasitem.id)) or caches.account_cache.ipn_ips.get((flow.dst_addr, nasitem.id))
+
+        if not acc_data_src:
+            #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
+            acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, None)) or caches.account_cache.ipn_ips.get((flow.src_addr, None))
+            nas_id = nasses[0].id
+
+        if not acc_data_dst:
+            #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
+            acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, None)) or caches.account_cache.ipn_ips.get((flow.dst_addr, None))
+
+            
+        #Проверка на IPN сеть
         if not acc_data_src and caches.account_cache.ipn_range:
-            for src_ip, src_mask, account_data in caches.account_cache.ipn_range:
-                if (account_data.nas_id == nas_id) and (flow.src_addr & src_mask) == src_ip:
+            for src_ip, src_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
+                if (acc_nas_id == nas_id or acc_nas_id is None) and (flow.src_addr & src_mask) == src_ip:
                     acc_data_src = account_data
         if not acc_data_dst and caches.account_cache.ipn_range:
-            for dst_ip, dst_mask, account_data in caches.account_cache.ipn_range:
-                if (account_data.nas_id == nas_id) and (flow.dst_addr & dst_mask) == dst_ip:
+            for dst_ip, dst_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
+                if (acc_nas_id == nas_id  or acc_nas_id is None) and (flow.dst_addr & dst_mask) == dst_ip:
                     acc_data_dst = account_data
                     
         local = bool(acc_data_src and acc_data_dst)

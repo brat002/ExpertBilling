@@ -8,6 +8,7 @@ from rad_class.DefaultSpeedData import DefaultSpeedData
 from rad_class.SpeedData import SpeedData
 from rad_class.SpeedlimitData import SpeedlimitData
 from rad_class.RadiusAttrsData import RadiusAttrsData
+from rad_class.SubAccountsData import SubAccountsData
 from core_cache import TimePeriodAccessCache as PeriodCache
 from common.AddonServiceData import AddonServiceData
 #from common.AddonServiceTarifData import AddonServiceTarifData
@@ -16,7 +17,7 @@ from common.AccountAddonServiceData import AccountAddonServiceData
 from core_cache import AddonServiceCache, AddonServiceTarifCache, AccessParametersCache
 
 class RadCaches(CacheCollection):
-    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache')
+    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache', 'subaccounts_cache')
     
     def __init__(self, date, fMem):
         super(RadCaches, self).__init__(date)
@@ -29,7 +30,8 @@ class RadCaches(CacheCollection):
         self.radattrs_cache = RadiusAttrsCache()
         self.addonservice_cache = AddonServiceCache()
         self.accountaddonservice_cache = AccountAddonServiceCache()
-        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache]
+        self.subaccount_cache = SubAccountsCache()
+        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache, self.subaccount_cache]
 
 
 class AccountCache(CacheItem):
@@ -134,5 +136,28 @@ class AccountAddonServiceCache(CacheItem):
             self.by_id[addon.id]  = addon
             self.by_account[addon.account_id].append(addon)
             self.by_service[addon.service_id].append(addon)
+            
+            
+class SubAccountsCache(CacheItem):
+    __slots__ = ('by_account_id', 'by_username', 'by_mac')
+    
+    datatype = AccountData
+    sql = rad_sql['subaccounts']
+    
+    def __init__(self, date):
+        super(SubAccountsCache, self).__init__()
+        
+    def reindex(self):
+        self.by_account_id = {}
+        self.by_username = {}
+        self.by_mac = {}
+        
+        for item in self.data:
+            self.by_account_id[item.account_id] = item
+            if item.username:
+                self.by_username[item.username] = item
+            if item.ipn_mac_address:
+                self.by_mac[item.ipn_mac_address] = item
+
             
     
