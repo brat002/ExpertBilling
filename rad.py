@@ -61,6 +61,17 @@ SOCKTYPE_AUTH = 12
 SOCKTYPE_ACCT = 13
 MAX_PACKET_SIZE = 8192
 
+class SubAccount(object):
+    def __init__(self, id=None, account_id=None, username=None, password=None, vpn_ip_address=None, ipn_ip_address=None, ipn_ip_mac=None, nas_id=None):
+        self.id = id
+        self.account_id = account_id
+        self.username = username
+        self.password = password
+        self.vpn_ip_address = vpn_ip_address
+        self.ipn_ip_address = ipn_ip_address
+        self.ipn_ip_mac =ipn_ip_mac
+        self.nas_id = nas_id
+        
 def show_packet(packetobject):
     b = ''
     #b = ''.join((str(packetobject._DecodeKey(key))+str(packetobject[packetobject._DecodeKey(key)][0])+"\n" for key,item in packetobject.items()))
@@ -282,8 +293,11 @@ def get_accesstype(packetobject):
         elif nas_port_type == 'Virtual' and packetobject.get('Service-Type', [''])[0]=='lISG':
             #print 'lISG'
             return 'lISG'
+        elif packetobject.get('Acct-Status-Type', [''])[0]=='Accounting-On': 
+            return 'Accounting-On'
         else:
             logger.warning('Nas access type warning: unknown type: %s', nas_port_type)
+            logger.warning('Packet: %s', (repr(packetobject)))
     except Exception, ex:
         logger.error('Packet access type error: %s \n %s', (repr(ex), repr(packetobject)))
     return
@@ -328,7 +342,7 @@ class AsyncAuthServ(AsyncUDPServer):
             logger.debug("Received data packet from: %s", str(addrport))
             logger.debug("Access type: %s, packet: %s", (access_type, packetobject))
             if access_type in ['PPTP', 'PPPOE', 'W802.1x']:
-                logger.info("Auth Type %s, raw packet: %s", (access_type, data))
+                #logger.info("Auth Type %s, raw packet: %s", (access_type, data))
                 coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
                 coreconnect.nasip = nas_ip
                 coreconnect.fMem = fMem; coreconnect.caches = self.caches
@@ -682,7 +696,7 @@ class HandleSAuth(HandleSBase):
         self.packetobject = packetobject
         self.access_type=access_type
         self.secret = ''        
-        logger.debugfun('%s', show_packet, (packetobject,))
+        #logger.debugfun('%s', show_packet, (packetobject,))
 
 
     def auth_NA(self, authobject):
@@ -789,7 +803,7 @@ class HandleSAuth(HandleSBase):
     def handle(self):
 
         nas = self.caches.nas_cache.by_ip.get(self.nasip)
-        logger.warning("NAS Found %s", nas.name) 
+        logger.warning("NAS Found id=%s identify=%s", (nas.id, nas.identify)) 
         if not nas: return '',None
         if 0: assert isinstance(nas, NasData)
         self.nas_type = nas.type
@@ -806,7 +820,8 @@ class HandleSAuth(HandleSBase):
         #Если не нашли в аккаунтах - ищем в субаккаунтах
         if not acc:
             logger.warning("Searching account in subaccounts %s", user_name)
-            subacc = self.caches.subaccountaccount_cache.by_username.get(user_name)
+            subacc = self.caches.subaccount_cache.by_username.get(user_name)
+            acc = self.caches.account_cache.by_id.get(subacc.account_id)
         
         username = acc.username if not subacc else subacc.username 
         password = acc.password if not subacc else subacc.password
@@ -817,13 +832,13 @@ class HandleSAuth(HandleSBase):
          
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges)
 
-        if acc is None:
+        if acc and subacc  is None:
             logger.warning("Unknown User %s", user_name)
             return self.auth_NA(authobject)  
 
         if 0: assert isinstance(acc, AccountData)
-        authobject.plainusername = str(acc.username)
-        authobject.plainpassword = str(acc.password)
+        authobject.plainusername = str(username)
+        authobject.plainpassword = str(password)
 
         logger.debug("Account data : %s", repr(acc))
 
@@ -855,7 +870,7 @@ class HandleSAuth(HandleSBase):
 
         #print common_vpn,access_type,self.access_type
         if (not vars.COMMON_VPN) and ((acc.access_type is None) or (acc.access_type != self.access_type)):
-            logger.warning("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
+            logger.warning("Unallowed Tarif Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
             return self.auth_NA(authobject)
 
         acstatus = (((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
@@ -866,17 +881,17 @@ class HandleSAuth(HandleSBase):
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
             return self.auth_NA(authobject)      
 
-        if self.access_type == 'PPTP' and acc.associate_pptp_ipn_ip and not (acc.ipn_ip_address == station_id):
+        if self.access_type == 'PPTP' and acc.associate_pptp_ipn_ip and not (ipn_ip_address == station_id):
             logger.warning("Unallowed NAS PPTP for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (user_name, station_id, acc.ipn_ip_address, acc.ipn_mac_address, self.access_type))
             return self.auth_NA(authobject) 
         
-        if self.access_type == 'PPPOE' and acc.associate_pppoe_mac and not (acc.ipn_mac_address == station_id):
+        if self.access_type == 'PPPOE' and acc.associate_pppoe_mac and not (ipn_mac_address == station_id):
             logger.warning("Unallowed NAS PPPOE for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (user_name, station_id, acc.ipn_ip_address, acc.ipn_mac_address, self.access_type))
             return self.auth_NA(authobject) 
         
 
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
-        if vars.IGNORE_NAS_FOR_VPN is False and int(acc.nas_id)!=int(nas.id):
+        if vars.IGNORE_NAS_FOR_VPN is False and account_nas_id and int(account_nas_id)!=int(nas.id):
             logger.warning("Unallowed NAS for user %s", user_name)
             return self.auth_NA(authobject) 
 
@@ -903,10 +918,10 @@ class HandleSAuth(HandleSBase):
             '''
             authobject.set_code(2)
             self.replypacket.username = str(user_name) #Нельзя юникод
-            self.replypacket.password = str(acc.password) #Нельзя юникод
+            self.replypacket.password = str(password) #Нельзя юникод
             self.replypacket.AddAttribute('Service-Type', 2)
             self.replypacket.AddAttribute('Framed-Protocol', 1)
-            self.replypacket.AddAttribute('Framed-IP-Address', acc.vpn_ip_address)
+            self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
             #account_speed_limit_cache
             self.create_speed(nas, acc.tarif_id, acc.account_id, speed=acc.vpn_speed)
             self.add_values(acc.tarif_id)
@@ -1361,6 +1376,8 @@ class HandleSAcct(HandleSBase):
         return self.replypacket
 
     def handle(self):
+        # TODO: Дописать функционал хранения в активной сессии id субаккаунта
+        # TODO: Прикрутить корректное определение НАС-а
         nas_by_int_id = False
         nas_name = ''
         
@@ -1374,16 +1391,30 @@ class HandleSAcct(HandleSBase):
             logger.info('ACCT: unknown NAS: %s', (self.nasip,))
             return None
         
+
+        
         if 0: assert isinstance(nas, NasData)
 
-        self.replypacket.secret=str(nas.secret)        
+        self.replypacket.secret=str(nas.secret)  
+        if self.packetobject.get('Acct-Status-Type', [''])[0]=='Accounting-On':
+            self.replypacket.code = packet.AccountingResponse
+            logger.info('ACCT: Processing Accounting On from nas: %s', (self.nasip,))
+            return self.replypacket
+             
         #if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
         self.userName = str(self.packetobject['User-Name'][0])
-        
+        subacc = SubAccount()
         if self.access_type=='lISG':
             acc = self.caches.account_cache.by_ipn_ip_nas.get((self.userName, nas.id))
+            if not acc:
+                subacc = self.caches.subaccount_cache.by_ipn_ip.get(self.userName)
         else:
             acc = self.caches.account_cache.by_username.get(self.userName)
+            if not acc:
+                subacc = self.caches.subaccount_cache.by_username.get(self.userName)
+                
+        if subacc:
+            acc = self.caches.account_cache.by_id.get(subacc.account_id)
         if acc is None:
             self.cur.connection.commit()
             #self.cur.close()
@@ -1421,11 +1452,11 @@ class HandleSAcct(HandleSBase):
             allow_write = self.cur.fetchone() is None
 
             if allow_write:
-                self.cur.execute("""INSERT INTO radius_activesession(account_id, sessionid, date_start,
+                self.cur.execute("""INSERT INTO radius_activesession(account_id, subaccount_id, sessionid, date_start,
                                  caller_id, called_id, framed_ip_address, nas_id, 
                                  framed_protocol, session_status, nas_int_id, speed_string)
-                                 VALUES (%s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s);
-                                 """, (acc.account_id, self.packetobject['Acct-Session-Id'][0], now,
+                                 VALUES (%s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s);
+                                 """, (acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now,
                                         self.packetobject['Calling-Station-Id'][0], 
                                         self.packetobject['Called-Station-Id'][0], 
                                         self.packetobject.get('Framed-IP-Address',[''])[0],

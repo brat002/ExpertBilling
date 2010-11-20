@@ -17,7 +17,7 @@ from common.AccountAddonServiceData import AccountAddonServiceData
 from core_cache import AddonServiceCache, AddonServiceTarifCache, AccessParametersCache
 
 class RadCaches(CacheCollection):
-    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache', 'subaccounts_cache')
+    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache', 'subaccount_cache')
     
     def __init__(self, date, fMem):
         super(RadCaches, self).__init__(date)
@@ -35,7 +35,7 @@ class RadCaches(CacheCollection):
 
 
 class AccountCache(CacheItem):
-    __slots__ = ('by_username', 'by_ipn_mac', 'by_ipn_ip_nas')
+    __slots__ = ('by_username', 'by_ipn_mac', 'by_ipn_ip_nas', 'by_id')
     
     datatype = AccountData
     sql = rad_sql['accounts']
@@ -48,11 +48,13 @@ class AccountCache(CacheItem):
         self.by_username = {}
         self.by_ipn_mac  = {}
         self.by_ipn_ip_nas = {}
+        self.by_id = {}
 
         for acct in self.data:
             self.by_username[str(acct.username)] = acct
             self.by_ipn_mac[str(acct.ipn_mac_address)] = acct
             self.by_ipn_ip_nas[(acct.ipn_ip_address, acct.nas_id)] = acct
+            self.by_id[acct.account_id] = acct
             
 class DefaultSpeedCache(SimpleDictCache):
     '''By tarif id'''
@@ -139,18 +141,20 @@ class AccountAddonServiceCache(CacheItem):
             
             
 class SubAccountsCache(CacheItem):
-    __slots__ = ('by_account_id', 'by_username', 'by_mac')
+    __slots__ = ('by_account_id', 'by_username', 'by_mac', 'by_ipn_ip', 'by_vpn_ip')
     
-    datatype = AccountData
+    datatype = SubAccountsData
     sql = rad_sql['subaccounts']
     
-    def __init__(self, date):
+    def __init__(self):
         super(SubAccountsCache, self).__init__()
         
     def reindex(self):
         self.by_account_id = {}
         self.by_username = {}
         self.by_mac = {}
+        self.by_ipn_ip = {}
+        self.by_vpn_ip = {}
         
         for item in self.data:
             self.by_account_id[item.account_id] = item
@@ -158,6 +162,10 @@ class SubAccountsCache(CacheItem):
                 self.by_username[item.username] = item
             if item.ipn_mac_address:
                 self.by_mac[item.ipn_mac_address] = item
+            if item.ipn_ip_address and item.ipn_ip_address is not "0.0.0.0" :
+                self.by_ipn_ip[item.ipn_ip_address] = item
+            if item.vpn_ip_address and item.vpn_ip_address is not "0.0.0.0" :
+                self.by_vpn_ip[item.vpn_ip_address] = item
 
             
     
