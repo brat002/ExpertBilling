@@ -1,0 +1,8 @@
+:mod:`tmp_re` -- Untitled
+=========================
+
+.. module:: tmp_re
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: tmp_re

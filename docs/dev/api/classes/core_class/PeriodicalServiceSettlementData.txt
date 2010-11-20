@@ -1,0 +1,8 @@
+:mod:`PeriodicalServiceSettlementData` -- Untitled
+==================================================
+
+.. module:: PeriodicalServiceSettlementData
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: PeriodicalServiceSettlementData

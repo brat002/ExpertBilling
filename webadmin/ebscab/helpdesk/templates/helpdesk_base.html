@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>EBS::HelpDesk{% block title %}{% endblock %}</title>
+{% block context_extra %}
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+{% endblock %}
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/opera.css" type="opera.css" media="screen" />
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/typography.css"  />
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/style.css" />
+
+{% block extra_head %}
+{% endblock %}
+<!--[if IE]>
+	<link rel="stylesheet" href="{{ MEDIA_URL }}css/helpdesk-IE7.css" />
+<![endif]-->
+</head>
+
+<body>
+
+<div class="header-line">{% block user_block %}{% endblock %}</div>
+{% block main_menu %}
+{% endblock %}
+
+<div class="content_align wrapper">
+	{% block login %}
+	{% endblock %}
+	 <div id="content-clear"></div>
+</div>
+{% block content %}
+{% endblock %}
+<script type="text/javascript">
+	var path = location.pathname + location.search + location.hash;
+	$('li a[href$="' + path + '"]').parent('li').attr("class", "selected");
+</script>
+</body>
+</html>

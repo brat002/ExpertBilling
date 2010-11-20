@@ -1,0 +1,8 @@
+:mod:`nfroutine_cache` -- Untitled
+==================================
+
+.. module:: nfroutine_cache
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: nfroutine_cache

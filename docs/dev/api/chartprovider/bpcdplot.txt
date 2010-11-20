@@ -1,0 +1,8 @@
+:mod:`bpcdplot` -- Untitled
+===========================
+
+.. module:: bpcdplot
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: bpcdplot

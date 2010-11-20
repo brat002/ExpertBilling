@@ -1,0 +1,82 @@
+{% if form %}
+<script>
+	function activate_car() {
+		var pin=document.getElementById("id_pin");
+		var series=document.getElementById("id_series");
+		var message=document.getElementById("message_in_form");
+        var card_id=document.getElementById("id_card_id");
+	 	jQuery.ajax({
+        	type: "POST",
+        	cache: false,
+        	url: '/card/activation/',
+        	data: { 'series': series.value, 'pin': pin.value, 'card_id': card_id.value},
+        	timeout: 15000,
+			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        	//beforeSend: function(XMLHttpRequest){},
+        	success: function(data, status){
+				var ret = eval('('+data+')');
+				if (typeof ret['redirect'] != 'undefined') {
+					window.location.href = ret['redirect'];
+				} 
+				message.innerHTML = ret['error_message'];
+				pin.value='';
+				series.value='';
+                card_id.value='';
+				//window.location.reload();	
+			},
+        	error: function(data, status){
+				var ret = eval('('+data+')'); 
+				message.innerHTML = ret['error_message'];
+				pin.value='';
+				series.value=''; 
+			 },
+        	complete: function(data, status){  }
+    	});
+	}
+	
+</script>
+
+
+<div class="cs_tb_header">
+	<a href="javascript://" onclick="tb_remove()" class="cs_tb_close"></a>
+</div>
+<div class="pass_table_margin_top">
+<table class="pass_table wide" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="blue_caption white s-11 bold main_table_left_border right_border">
+			АКТИВАЦИЯ КАРТОЧЕК
+			<div id="message_in_form"></div>
+		</th>
+	</tr>
+	<tr>
+		<td>
+			<form method="post" onsubmit="return false;">
+				<div id="message" class="s-11"></div>
+				<table class="card_activation enter_table">
+					{{ form }}
+					<tr>
+						<td colspan="2">
+							<div class="f-right">
+								<input type="submit" value="Активировать" class="pass_button f-right" onclick="activate_car()">
+							</div>	
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2">
+							<div class="card_text f-left">
+								<span>Для активации карточек необходимо выполнить следующие действия:</span>
+								<ol type="1">
+									<li>Ввести в поля «пин», «серия», «номер карты» пин, серию и номер, которые указаны на Вашей карточке;</li>
+									<li>Если карточка еще не была активирована, то Ваш баланс пополняется автоматически на указанную сумму;</li>
+								</ol>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</form>
+				
+		</td>
+	</tr>
+</table>
+</div>
+{% endif %}

@@ -1,0 +1,8 @@
+:mod:`FinanceChart` -- Untitled
+===============================
+
+.. module:: FinanceChart
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: FinanceChart

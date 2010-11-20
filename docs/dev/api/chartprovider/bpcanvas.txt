@@ -1,0 +1,8 @@
+:mod:`bpcanvas` -- Untitled
+===========================
+
+.. module:: bpcanvas
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: bpcanvas

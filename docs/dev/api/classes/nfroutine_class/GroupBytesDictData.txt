@@ -1,0 +1,8 @@
+:mod:`GroupBytesDictData` -- Untitled
+=====================================
+
+.. module:: GroupBytesDictData
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: GroupBytesDictData

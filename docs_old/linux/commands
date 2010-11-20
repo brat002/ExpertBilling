@@ -1,0 +1,1 @@
+sysctl -w kernel.shmmax=536870912

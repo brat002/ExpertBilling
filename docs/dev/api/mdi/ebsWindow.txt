@@ -1,0 +1,8 @@
+:mod:`ebsWindow` -- Untitled
+============================
+
+.. module:: ebsWindow
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: ebsWindow

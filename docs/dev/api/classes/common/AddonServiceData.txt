@@ -1,0 +1,8 @@
+:mod:`AddonServiceData` -- Untitled
+===================================
+
+.. module:: AddonServiceData
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: AddonServiceData

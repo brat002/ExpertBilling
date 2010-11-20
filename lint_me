@@ -1,0 +1,16 @@
+#!/bin/sh -e
+
+dir_list="lint lint/classes lint/errors lint/errors/classes"
+for ldir in $dir_list; do
+    if [ ! -d $ldir ]; then
+        mkdir $ldir
+    fi
+done
+
+
+lint_list="core rad nf nfroutine sendmail classes/vars"
+
+for lfile in $lint_list; do
+	pylint $lfile.py > lint/$lfile.lint;
+	pylint -e $lfile.py > lint/errors/$lfile.lint.errors
+done

@@ -1,0 +1,66 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+
+package = ebs
+
+configure:configure-stamp
+configure-stamp:dh_testdir
+	touch configure-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build configure-stamp
+	rm -f debian/ebs.init
+	dh_clean 
+
+#install:build
+#	install-indep
+
+install-indep:
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs -s
+	mkdir -p $(CURDIR)/debian/$(package)/opt/ebs
+	mkdir -p $(CURDIR)/debian/$(package)/etc/init.d
+	cp -r $(CURDIR)/bin $(CURDIR)/debian/$(package)/opt/ebs/bin
+	cp -r $(CURDIR)/dicts $(CURDIR)/debian/$(package)/opt/ebs/bin/dicts
+	chmod +x $(CURDIR)/debian/$(package)/opt/ebs/bin/ebscore
+	chmod +x $(CURDIR)/debian/$(package)/opt/ebs/bin/rad
+	chmod +x $(CURDIR)/debian/$(package)/opt/ebs/bin/nf
+	#cp $(CURDIR)/scripts/init.d/ebs_core $(CURDIR)/debian/$(package)/etc/init.d
+	#cp $(CURDIR)/scripts/init.d/ebs_nf $(CURDIR)/debian/$(package)/etc/init.d
+	#cp $(CURDIR)/scripts/init.d/ebs_rad $(CURDIR)/debian/$(package)/etc/init.d
+	cp $(CURDIR)/scripts/init.d/ebs_core $(CURDIR)/debian/ebs.init
+	dh_installinit --no-start -p ebs --init-script=ebs_core
+	cp $(CURDIR)/scripts/init.d/ebs_nf $(CURDIR)/debian/ebs.init
+	dh_installinit --no-start -p ebs --init-script=ebs_nf
+	cp $(CURDIR)/scripts/init.d/ebs_rad $(CURDIR)/debian/ebs.init
+	dh_installinit --no-start -p ebs --init-script=ebs_rad
+	#dh_strip -s
+	dh_compress -s
+	dh_fixperms -s
+	dh_installdeb -s
+	dh_shlibdeps -s
+	dh_gencontrol -s
+	dh_md5sums -s
+	dh_builddeb -s
+	#dh_install
+
+build:
+	dh_testdir
+	touch build
+
+binary:install-indep
+#binary:binary-indep
+
+#binary-indep:install
+
+.PHONY: binary binary-indep clean configure install install-indep

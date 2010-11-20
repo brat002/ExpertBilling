@@ -1,0 +1,8 @@
+:mod:`AccountDataTuple` -- Untitled
+===================================
+
+.. module:: AccountDataTuple
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: AccountDataTuple

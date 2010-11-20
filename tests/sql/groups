@@ -1,0 +1,4 @@
+select sum (octets) as bytes from billservice_netflowstream where account_id=175 and date_start >= '2009-01-12 23:00:00'::timestamp without time zone AND date_start < '2009-01-12 23:05:00'::timestamp without time zone
+select bytes::numeric from billservice_groupstat where account_id=175 and datetime='2009-01-12 23:00:00'::timestamp without time zone;
+select sum(octets) from billservice_netflowstream where account_id=175 AND date_start >= '2009-01-14 12:00:00'::timestamp without time zone and date_start < '2009-01-14 12:30:00'::timestamp without time zone;
+select sum(bytes) from billservice_groupstat where account_id=175 and group_id=6 AND datetime >= '2009-01-14 12:00:00'::timestamp without time zone and datetime < '2009-01-14 12:30:00'::timestamp without time zone;

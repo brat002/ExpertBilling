@@ -1,0 +1,8 @@
+:mod:`isdlogger` -- Untitled
+============================
+
+.. module:: isdlogger
+   :platform: Unix, Windows
+   :synopsis: None
+
+.. currentmodule:: isdlogger
