@@ -1,0 +1,14 @@
+username | password | vpn_ip_address | ipn_ip_address | ipn_mac_address | nas_id
+    x         x            x                                                x              PPTP/L2TP/PPPOE с привязкой к серверу доступа
+    x         x            x                                                               PPTP/L2TP/PPPOE без привязки к серверу доступа
+    x         x            x                 x                 x            x              lISG с маппингом, DHCP, PPTP/L2TP/PPPOE с привязкой к серверу доступу
+    x         x            x                 x                              x              lISG c маппингом, PPTP/L2TP  с привязкой к IPN адресу и серверу доступа
+    x         x            x                 x                                             lISG c маппингом, PPTP/L2TP  с привязкой к IPN адресу
+    x         x            x                                   x            x              PPPOE с привязкой к mac адресу и серверу доступа                
+    x         x            x                                   x                           PPPOE с привязкой к mac адресу
+                                             x                              x              IPN/LISG с привязкой к серверу доступа
+                                             x                 x            x              DHCP/IPN/LISG с привязкой к серверу доступа
+                                             x                              x              IPN/LISG с привязкой к серверу доступа
+                                             x                                             LISG без привязки к серверу доступа
+                              
+
