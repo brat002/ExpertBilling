@@ -169,7 +169,7 @@ class RPCServer(object):
                 command = row['user_delete_action']
             #print command
     
-            sended = cred(account_id=row['account_id'], account_name=row['username'], account_password=row['password'], access_type = row['access_type'],
+            sended = cred(account_id=row['account_id'], '', account_name=row['username'], account_password=row['password'], access_type = row['access_type'],
                           account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
                           account_mac_address=row['ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
                           nas_password=row['nas_password'], format_string=command)

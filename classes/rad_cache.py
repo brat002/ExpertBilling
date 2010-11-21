@@ -97,8 +97,15 @@ class NasCache(CacheItem):
         self.by_ip = {}
         self.by_ip_n_identify = {}
         for nas in self.data:
-            self.by_ip_n_identify[(str(nas.ipaddress), str(nas.identify))] = nas
-            self.by_ip[str(nas.ipaddress)] = nas
+            
+            if not self.by_ip_n_identify.get((str(nas.ipaddress), str(nas.identify))):
+                self.by_ip_n_identify[(str(nas.ipaddress), str(nas.identify))] = []
+            self.by_ip_n_identify[(str(nas.ipaddress), str(nas.identify))].append(nas)
+            
+            if not self.by_ip.get(str(nas.ipaddress)):
+                self.by_ip[str(nas.ipaddress)] = []
+            self.by_ip[str(nas.ipaddress)].append(nas)
+            
             self.by_id[nas.id] = nas
             
 class RadiusAttrsCache(SimpleDefDictCache):

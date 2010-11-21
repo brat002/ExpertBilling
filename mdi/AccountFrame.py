@@ -150,8 +150,10 @@ class SubaccountLinkDialog(QtGui.QDialog):
             model.account_id = self.account.id
         if self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]!=0:
             model.nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
-            print "nas=", model.nas_id
-        print 'b',self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
+            
+        else:
+            model.nas_id = None
+        
         model.username = unicode(self.lineEdit_link_login.text()) or ""
         model.password = unicode(self.lineEdit_link_password.text()) or ""
         model.vpn_ip_address = unicode(self.lineEdit_3.text()) or "0.0.0.0"
