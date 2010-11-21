@@ -257,12 +257,12 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
             return False
     return False
 
-def cred(account_id, account_name, account_password, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
+def cred(account_id, subaccount_id, account_name, account_password, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
         """
         
         """
         command_dict={'access_type':access_type,
-                      'password':account_password, 'username': account_name, 'user_id':account_id,        
+                      'password':account_password, 'username': account_name, 'user_id':account_id, 'subaccount_id':subaccount_id,         
                       'account_ipn_ip': account_ipn_ip, 'account_vpn_ip': account_vpn_ip,
                       'account_mac_address':account_mac_address}
 

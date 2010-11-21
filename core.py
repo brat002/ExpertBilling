@@ -1399,89 +1399,101 @@ class ipn_service(Thread):
                 for acc in caches.account_cache.data:
                     try:
                         if 0: assert isinstance(acc, AccountData)
-                        """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Пропускаем."""                    
-                        if not acc.tarif_active or acc.ipn_ip_address == '0.0.0.0': continue
+                        """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Пропускаем."""       
+                        subaccounts = caches.subaccount_cache.by_account_id.get(acc.id)
+                        access_list = []
+                        if acc.ipn_ip_address != '0.0.0.0':
+                            access_list.append(('', acc.ipn_ip_address, acc.ipn_mac_address, acc.vpn_ip_address, acc.nas_id, True))
+                            
+                        for subacc in subaccounts:
+                            if not subacc.nas_id or subacc.ipn_ip_address=='0.0.0.0': continue
+                            access_list.append((subacc.id, subacc.ipn_ip_address,  subacc.ipn_mac_address, subacc.vpn_ip_address, subacc.nas_id, False))
+                        #if not acc.tarif_active or acc.ipn_ip_address == '0.0.0.0' and '0.0.0.0' in [[x.ipn_ip_address, x.nas_id] if x is not '0.0.0.0' else 1 for x in subaccounts]: continue
                         accps = caches.accessparameters_cache.by_id.get(acc.access_parameters_id)
                         if (not accps) or (not accps.ipn_for_vpn): continue
                         if 0: assert isinstance(accps, AccessParametersData)
-                        sended, recreate_speed = (None, False)
-    
                         account_ballance = (acc.ballance or 0) + (acc.credit or 0)
                         period = caches.timeperiodaccess_cache.in_period[acc.tarif_id]# True/False
-                        nas = caches.nas_cache.by_id[acc.nas_id]
-                        if 0: assert isinstance(nas, NasData)
-                        access_type = 'IPN'
-                        #now = datetime.datetime.now()
-                        now = dateAT
-                        # Если на сервере доступа ещё нет этого пользователя-значит добавляем.
-                        if not acc.ipn_added and acc.tarif_active:
-                            sended = cred(acc.account_id, acc.username,acc.password, access_type,
-                                          acc.vpn_ip_address, acc.ipn_ip_address, 
-                                          acc.ipn_mac_address, nas.ipaddress, nas.login, 
-                                          nas.password, format_string=nas.user_add_action)
-                            if sended is True: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
-                                
-                        if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active:
-                            """
-                            acc.ipn_status - отображает активна или неактивна ACL запись на сервере доступа для абонента
-                            """
-                            #шлём команду, на включение пользователя, account_ipn_status=True
-                            #ipn_added = acc.ipn_added
-                            """Делаем пользователя enabled"""
-
-                            sended = cred(acc.account_id, acc.username,acc.password, access_type,
-                                          acc.vpn_ip_address, acc.ipn_ip_address, 
-                                          acc.ipn_mac_address, nas.ipaddress, nas.login, 
-                                          nas.password, format_string=nas.user_enable_action)
-                            recreate_speed = True                        
-                            if sended is True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
+                        for id, ipn_ip_address, ipn_mac_address, vpn_ip_address, nas_id, legacy in access_list:
+                            sended, recreate_speed = (None, False)
                             
-                        elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and acc.ipn_status:
-                            #шлём команду на отключение пользователя,account_ipn_status=False
-                            sended = cred(acc.account_id, acc.username,acc.password, access_type,
-                                              acc.vpn_ip_address, acc.ipn_ip_address, 
-                                              acc.ipn_mac_address, nas.ipaddress, nas.login, 
-                                              nas.password, format_string=nas.user_disable_action)    
-                            if sended is True: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.account_id,))
+                            nas = caches.nas_cache.by_id[nas_id]
+                            if 0: assert isinstance(nas, NasData)
+                            access_type = 'IPN'
+                            #now = datetime.datetime.now()
+                            now = dateAT
+                            # Если на сервере доступа ещё нет этого пользователя-значит добавляем.
+                            if not acc.ipn_added and acc.tarif_active:
+                                sended = cred(acc.account_id, id, acc.username,acc.password, access_type,
+                                              vpn_ip_address, ipn_ip_address, 
+                                              ipn_mac_address, nas.ipaddress, nas.login, 
+                                              nas.password, format_string=nas.user_add_action)
+                                if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
+                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s" % (True, id))
+                                    
+                            if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active:
+                                """
+                                acc.ipn_status - отображает активна или неактивна ACL запись на сервере доступа для абонента
+                                """
+                                #шлём команду, на включение пользователя, account_ipn_status=True
+                                #ipn_added = acc.ipn_added
+                                """Делаем пользователя enabled"""
         
-                        self.connection.commit()
-    
-                        #Приступаем к генерации настроек скорости
-                        #Получаем настройки скорости по лимитам, если пользователь превысил какой-нибудь лимит.
-                        account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
-                        
-                        #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно?? 
-                        #Получаем подключаемые услуги абонента
-                        accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                            
-                        if acc.username=='user':                                
-                            pass                            
-                        addonservicespeed=[]                            
-                        for accservice in accservices:                                 
-                            service = caches.addonservice_cache.by_id.get(accservice.service_id)    
-                            #При нахождении подключаемой услуги, изменяющей скорость - выходим из цикла                            
-                            if not accservice.deactivated  and service.change_speed:                                                                        
-                                addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                                break   
-                        #Получаем параметры скорости                         
-                        speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.ipn_speed, dateAT)                            
-                
-
-    
-                        
-                        newspeed = ''.join([unicode(spi) for spi in speed[:6]])
-                        
-                        ipnsp = caches.ipnspeed_cache.by_id.get(acc.account_id, IpnSpeedData(*(None,)*6))
-                        if 0: assert isinstance(ipnsp, IpnSpeedData)
-                        if newspeed != ipnsp.speed or recreate_speed:
-                            #отправляем на сервер доступа новые настройки скорости, помечаем state=True
-
-                            sended_speed = change_speed(vars.DICT, acc, nas,
-                                                        access_type=access_type,
-                                                        format_string=nas.ipn_speed_action,
-                                                        speed=speed[:6])
+                                sended = cred(acc.account_id, id, acc.username,acc.password, access_type,
+                                              vpn_ip_address, ipn_ip_address, 
+                                              ipn_mac_address, nas.ipaddress, nas.login, 
+                                              nas.password, format_string=nas.user_enable_action)
+                                recreate_speed = True                        
+                                if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
+                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id))
+                                
+                            elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and acc.ipn_status:
+                                #шлём команду на отключение пользователя,account_ipn_status=False
+                                sended = cred(acc.account_id, id, acc.username,acc.password, access_type,
+                                                  vpn_ip_address, ipn_ip_address, 
+                                                  ipn_mac_address, nas.ipaddress, nas.login, 
+                                                  nas.password, format_string=nas.user_disable_action)    
+                                if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.account_id,))
+                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,))
+            
+                            self.connection.commit()
+        
+                            #Приступаем к генерации настроек скорости
+                            #Получаем настройки скорости по лимитам, если пользователь превысил какой-нибудь лимит.
+                            account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
                             
-                            cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
-                            cur.connection.commit()
+                            #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно?? 
+                            #Получаем подключаемые услуги абонента
+                            accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                            
+                            if acc.username=='user':                                
+                                pass                            
+                            addonservicespeed=[]                            
+                            for accservice in accservices:                                 
+                                service = caches.addonservice_cache.by_id.get(accservice.service_id)    
+                                #При нахождении подключаемой услуги, изменяющей скорость - выходим из цикла                            
+                                if not accservice.deactivated  and service.change_speed:                                                                        
+                                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                                    break   
+                            #Получаем параметры скорости                         
+                            speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.ipn_speed, dateAT)                            
+                    
+        
+        
+                            
+                            newspeed = ''.join([unicode(spi) for spi in speed[:6]])
+                            
+                            ipnsp = caches.ipnspeed_cache.by_id.get(acc.account_id, IpnSpeedData(*(None,)*6))
+                            if 0: assert isinstance(ipnsp, IpnSpeedData)
+                            if newspeed != ipnsp.speed or recreate_speed:
+                                #отправляем на сервер доступа новые настройки скорости, помечаем state=True
+        
+                                sended_speed = change_speed(vars.DICT, acc, nas,
+                                                            access_type=access_type,
+                                                            format_string=nas.ipn_speed_action,
+                                                            speed=speed[:6])
+                                
+                                cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
+                                cur.connection.commit()
                     except Exception, ex:
                         if ex.__class__ in vars.db_errors: raise ex
                         else:
