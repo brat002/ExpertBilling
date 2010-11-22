@@ -12,3 +12,5 @@ username | password | vpn_ip_address | ipn_ip_address | ipn_mac_address | nas_id
                                              x                                             LISG без привязки к серверу доступа
                               
 
+                           x                 x                                          
+    x         x            x                 x                              x
