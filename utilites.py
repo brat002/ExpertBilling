@@ -138,7 +138,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
                 log_error_('PoD SSH exception: %s' % repr(e))
                 return False
 
-def change_speed(dict, account, nas, session_id='', access_type='', format_string='', speed=''):
+def change_speed(dict, account, subacc ,nas, session_id='', access_type='', format_string='', speed=''):
     
     access_type = access_type.lower()
     """
@@ -179,13 +179,27 @@ def change_speed(dict, account, nas, session_id='', access_type='', format_strin
         #doc.AddAttribute((14988,8), speed_string)
         command_dict={
                              'access_type':str(access_type),
-                             'username': str(account.username),
+                             'session': str(session_id),
+                             }
+        if not subacc:
+            command_dict+={
+                            'username': str(account.username),
                              'user_id': str(account.account_id),
+                             'subaccount_id': '',
                              'account_ipn_ip': str(account.ipn_ip_address),
                              'account_vpn_ip': str(account.vpn_ip_address),
                              'account_mac_address':str(account.ipn_mac_address),
-                             'session': str(session_id),
-                             }
+                         }
+        else:
+            command_dict+={
+                             'username': str(subacc.username),
+                             'user_id': str(subacc.account_id),
+                             'subaccount_id': str(subacc.id),
+                             'account_ipn_ip': str(subacc.ipn_ip_address),
+                             'account_vpn_ip': str(subacc.vpn_ip_address),
+                             'account_mac_address':str(subacc.ipn_mac_address),  
+                             }          
+        
         speed = get_decimals_speeds(speed)
         #print speed
         speed = speed_list_to_dict(speed)

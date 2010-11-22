@@ -217,7 +217,7 @@ class check_vpn_access(Thread):
                                 #                        speed=speed[:6])                           
                                 
                                 logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
-                                coa_result = change_speed(vars.DICT, acc, nas,
+                                coa_result = change_speed(vars.DICT, acc, {},nas,
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
                                                     speed=speed)
@@ -420,7 +420,7 @@ class check_dhcp_access(Thread):
                                 #                        speed=speed[:6])                           
                                 
                                 logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
-                                coa_result = change_speed(vars.DICT, acc, nas,
+                                coa_result = change_speed(vars.DICT, acc, {},nas,
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
                                                     speed=speed)
@@ -1376,6 +1376,11 @@ class ipn_service(Thread):
         while True:     
     
             try:
+                """
+                Команды для админки
+                Создание подаккаунтов IPN с шарингом скорости между аккаунтами
+                /ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id;:if ([/queue simple find name=$user_id]="") do={/queue simple add name=$user_id disabled=yes};:local new "$ipn_ip_address"; :local res [/queue simple get $user_id target-addresses ]; :if ([:tostr [:find [:toarray $res] $new]] = "") do={:set res ($res + $new);  /queue simple set $user_id target-address=$res disabled=no; }}
+                """
                 if suicideCondition[self.__class__.__name__]:
                     try: self.connection.close()
                     except: pass
@@ -1400,21 +1405,21 @@ class ipn_service(Thread):
                     try:
                         if 0: assert isinstance(acc, AccountData)
                         """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Пропускаем."""       
-                        subaccounts = caches.subaccount_cache.by_account_id.get(acc.id)
+                        subaccounts = caches.subaccount_cache.by_account_id.get(acc.account_id)
                         access_list = []
                         if acc.ipn_ip_address != '0.0.0.0':
-                            access_list.append(('', acc.ipn_ip_address, acc.ipn_mac_address, acc.vpn_ip_address, acc.nas_id, True))
+                            access_list.append(('', acc.ipn_ip_address, acc.ipn_mac_address, acc.vpn_ip_address, acc.nas_id, True, None))
                             
                         for subacc in subaccounts:
                             if not subacc.nas_id or subacc.ipn_ip_address=='0.0.0.0': continue
-                            access_list.append((subacc.id, subacc.ipn_ip_address,  subacc.ipn_mac_address, subacc.vpn_ip_address, subacc.nas_id, False))
+                            access_list.append((subacc.id, subacc.ipn_ip_address,  subacc.ipn_mac_address, subacc.vpn_ip_address, subacc.nas_id, False,  subacc))
                         #if not acc.tarif_active or acc.ipn_ip_address == '0.0.0.0' and '0.0.0.0' in [[x.ipn_ip_address, x.nas_id] if x is not '0.0.0.0' else 1 for x in subaccounts]: continue
                         accps = caches.accessparameters_cache.by_id.get(acc.access_parameters_id)
                         if (not accps) or (not accps.ipn_for_vpn): continue
                         if 0: assert isinstance(accps, AccessParametersData)
                         account_ballance = (acc.ballance or 0) + (acc.credit or 0)
                         period = caches.timeperiodaccess_cache.in_period[acc.tarif_id]# True/False
-                        for id, ipn_ip_address, ipn_mac_address, vpn_ip_address, nas_id, legacy in access_list:
+                        for id, ipn_ip_address, ipn_mac_address, vpn_ip_address, nas_id, legacy, subacc in access_list:
                             sended, recreate_speed = (None, False)
                             
                             nas = caches.nas_cache.by_id[nas_id]
@@ -1465,8 +1470,7 @@ class ipn_service(Thread):
                             #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно?? 
                             #Получаем подключаемые услуги абонента
                             accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                            
-                            if acc.username=='user':                                
-                                pass                            
+                         
                             addonservicespeed=[]                            
                             for accservice in accservices:                                 
                                 service = caches.addonservice_cache.by_id.get(accservice.service_id)    
@@ -1484,15 +1488,20 @@ class ipn_service(Thread):
                             
                             ipnsp = caches.ipnspeed_cache.by_id.get(acc.account_id, IpnSpeedData(*(None,)*6))
                             if 0: assert isinstance(ipnsp, IpnSpeedData)
-                            if newspeed != ipnsp.speed or recreate_speed:
+                            if ((newspeed != ipnsp.speed and legacy) or (not legacy and (newspeed!=subacc.speed or recreate_speed))) or recreate_speed:
                                 #отправляем на сервер доступа новые настройки скорости, помечаем state=True
         
-                                sended_speed = change_speed(vars.DICT, acc, nas,
+                                sended_speed = change_speed(vars.DICT, acc, subacc, nas,
                                                             access_type=access_type,
                                                             format_string=nas.ipn_speed_action,
                                                             speed=speed[:6])
                                 
-                                cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
+                                if legacy: 
+                                    cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
+                                else:
+                                    cur.execute("UPDATE billservice_subaccount SET speed=%s WHERE id=%s;", (newspeed, id))      
+                            
+                                                          
                                 cur.connection.commit()
                     except Exception, ex:
                         if ex.__class__ in vars.db_errors: raise ex
