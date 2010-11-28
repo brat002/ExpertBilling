@@ -181,24 +181,26 @@ def change_speed(dict, account, subacc ,nas, session_id='', access_type='', form
                              'access_type':str(access_type),
                              'session': str(session_id),
                              }
-        if not subacc:
+
+        d = dict(nas)
+        for x in d.keys():
+            
             command_dict+={
-                            'username': str(account.username),
-                             'user_id': str(account.account_id),
-                             'subaccount_id': '',
-                             'account_ipn_ip': str(account.ipn_ip_address),
-                             'account_vpn_ip': str(account.vpn_ip_address),
-                             'account_mac_address':str(account.ipn_mac_address),
-                         }
-        else:
+                          'nas_%s' % x: str(d[x]),
+                           }  
+        d = dict(acc)
+        for x in d.keys():
+            
             command_dict+={
-                             'username': str(subacc.username),
-                             'user_id': str(subacc.account_id),
-                             'subaccount_id': str(subacc.id),
-                             'account_ipn_ip': str(subacc.ipn_ip_address),
-                             'account_vpn_ip': str(subacc.vpn_ip_address),
-                             'account_mac_address':str(subacc.ipn_mac_address),  
-                             }          
+                          'acc_%s' % x: str(d[x]),
+                           }  
+        if subacc:
+            d = dict(subacc)
+            for x in d.keys():
+                
+                command_dict+={
+                              'subacc_%s' % x: str(d[x]),
+                               }          
         
         speed = get_decimals_speeds(speed)
         #print speed
@@ -241,14 +243,28 @@ def change_speed(dict, account, subacc ,nas, session_id='', access_type='', form
         #ssh
         log_debug_('SetSpeed Via SSH')
         command_dict={
-                             'access_type':access_type,
-                             'username': account.username,
-                             'user_id':account.account_id,
-                             'account_ipn_ip': account.ipn_ip_address,
-                             'account_vpn_ip': account.vpn_ip_address,
-                             'account_mac_address':account.ipn_mac_address,
-                             'session': session_id,
-                             }
+                             'access_type':str(access_type),
+                             'session': str(session_id),
+                    }
+        d = dict(nas)
+        for x in d.keys():
+            
+            command_dict+={
+                          'nas_%s' % x: str(d[x]),
+                           }          
+        d = dict(acc)
+        for x in d.keys():
+            
+            command_dict+={
+                          'acc_%s' % x: str(d[x]),
+                           }  
+        if subacc :
+            d = dict(subacc)
+            for x in d.keys():
+                
+                command_dict+={
+                              'subacc_%s' % x: str(d[x]),
+                               }  
         speed = get_decimals_speeds(speed)
         #print speed
         speed = speed_list_to_dict(speed)
@@ -271,14 +287,32 @@ def change_speed(dict, account, subacc ,nas, session_id='', access_type='', form
             return False
     return False
 
-def cred(account_id, subaccount_id, account_name, account_password, access_type, account_vpn_ip, account_ipn_ip, account_mac_address, nas_ip, nas_login, nas_password, format_string):
+def cred(acc, subacc, access_type, nas, format_string):
         """
         
         """
-        command_dict={'access_type':access_type,
-                      'password':account_password, 'username': account_name, 'user_id':account_id, 'subaccount_id':subaccount_id,         
-                      'account_ipn_ip': account_ipn_ip, 'account_vpn_ip': account_vpn_ip,
-                      'account_mac_address':account_mac_address}
+        command_dict={
+                             'access_type':str(access_type),
+                    }
+        d = dict(acc)
+        for x in d.keys():
+            
+            command_dict+={
+                          'acc_%s' % x: str(d[x]),
+                           }  
+        d = dict(nas)
+        for x in d.keys():
+            
+            command_dict+={
+                          'nas_%s' % x: str(d[x]),
+                           }  
+        if subacc :
+            d = dict(subacc)
+            for x in d.keys():
+                
+                command_dict+={
+                              'subacc_%s' % x: str(d[x]),
+                               }  
 
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)        
         if not command_string: return True

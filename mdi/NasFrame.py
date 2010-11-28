@@ -403,11 +403,16 @@ class AddNasFrame(QtGui.QDialog):
         makeHeaders(columns, self.tableWidget)
         self.tableInfo=[
             ['user_add_action', u'Добавить абонента',''],
+            ['subacc_add_action', u'Добавить субаккаунт',''],
             ['user_delete_action', u'Удалить абонента',''],
+            ['subacc_delete_action', u'Удалить субаккаунт',''],
             ['user_enable_action', u'Включить абонента',''],
+            ['subacc_enable_action', u'Включить субаккаунт',''],
             ['user_disable_action',u'Отключить абонента',''],
+            ['subacc_disable_action', u'Отключить субаккаунт',''],
             ['vpn_speed_action',u'Установить скорость для VPN',''],
             ['ipn_speed_action',u'Установить скорость для IPN',''],
+            ['subacc_ipn_speed_action',u'Установить скорость для IPN субаккаунта',''],
             ['reset_action',u'Сбросить сессию',''],
             ]
         self.tableWidget.clearContents()
