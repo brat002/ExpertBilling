@@ -1392,6 +1392,10 @@ class HandleSDHCP(HandleSBase):
             logger.warning("Subaccount not found for DHCP request with mac address %s", (mac, ))
             #Не учитывается сервер доступа
             return self.auth_NA(authobject)
+        
+        if not subacc.allow_dhcp:
+            logger.warning("Subaccount with mac %s have no rights for DHCP ", (mac, ))
+            return self.auth_NA(authobject)            
         acc = self.caches.account_cache.by_id.get(subacc.account_id)
             
         if not acc:
@@ -1409,7 +1413,7 @@ class HandleSDHCP(HandleSBase):
             """
             logger.warning("Account nas(%s) is not in sended nasses and IGNORE_NAS_FOR_DHCP is False %s", (repr(nas), nasses,))
             return self.auth_NA(authobject)
-        elif not account_nas_id:
+        elif not nas_id:
             """
             Иначе, если указан любой NAS - берём первый из списка совпавших по IP
             """
@@ -1425,7 +1429,7 @@ class HandleSDHCP(HandleSBase):
                     (subacc.allow_dhcp_with_block or (not subacc.allow_dhcp_with_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status == 1)))
         #acstatus = True
         if not acstatus:
-            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
+            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (mac,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
             return self.auth_NA(authobject)      
 
         allow_dial = True
@@ -1433,12 +1437,12 @@ class HandleSDHCP(HandleSBase):
             allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
         if acstatus and allow_dial:
             authobject.set_code(2)
-            self.replypacket.AddAttribute('Framed-IP-Address', acc.ipn_ip_address)
+            self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)
             #self.replypacket.AddAttribute('Framed-IP-Netmask', "255.255.255.0")
             self.replypacket.AddAttribute('Session-Timeout',   vars.SESSION_TIMEOUT)
             if acc.access_type=='DHCP':
                 self.add_values(acc.tarif_id)
-                self.create_speed(nas, acc.tarif_id, acc.account_id, speed=acc.ipn_speed)
+                self.create_speed(nas, acc.tarif_id, acc.account_id, speed=subacc.ipn_speed)
             return authobject, self.replypacket
         else:
             return self.auth_NA(authobject)

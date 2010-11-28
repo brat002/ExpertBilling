@@ -339,7 +339,7 @@ class AddonPeriodicalCache(CacheItem):
     sql = core_sql['addon_periodical']
     
 class SubAccountsCache(CacheItem):
-    __slots__ = ('by_account_id', 'by_username', 'by_mac', 'by_ipn_ip', 'by_vpn_ip')
+    __slots__ = ('by_account_id', 'by_username', 'by_mac', 'by_ipn_ip', 'by_vpn_ip', 'by_id')
     
     datatype = SubAccountsData
     sql = rad_sql['subaccounts']
@@ -353,11 +353,13 @@ class SubAccountsCache(CacheItem):
         self.by_mac = {}
         self.by_ipn_ip = {}
         self.by_vpn_ip = {}
+        self.by_id = {}
         
         for item in self.data:
             if not self.by_account_id.get(item.account_id):
                 self.by_account_id[item.account_id]=[]
             self.by_account_id[item.account_id].append(item)
+            self.by_id[item.id] = item
             #if item.username:
             #    self.by_username[item.username] = item
             #if item.ipn_mac_address:

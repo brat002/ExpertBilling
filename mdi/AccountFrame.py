@@ -54,7 +54,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.connection = connection
         self.account = account
         self.model = model
-        self.resize(526, 553)
+        self.resize(526, 573)
         self.gridLayout_2 = QtGui.QGridLayout(self)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.groupBox_link_parameters = QtGui.QGroupBox(self)
@@ -135,20 +135,22 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.checkBox_allow_vpn_with_block.setObjectName("checkBox_allow_vpn_with_block")
         self.gridLayout.addWidget(self.checkBox_allow_vpn_with_block, 16, 1, 1, 2)
         self.checkBox_allow_vpn_with_null = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_vpn_with_null.setObjectName("checkBox_allow_vpn_with_null")
         self.gridLayout.addWidget(self.checkBox_allow_vpn_with_null, 14, 1, 1, 2)
+        self.checkBox_allow_addonservice = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_addonservice.setObjectName("checkBox_allow_addonservice")
+        self.gridLayout.addWidget(self.checkBox_allow_addonservice, 19, 1, 1, 2)
         self.lineEdit_vpn_speed = QtGui.QLineEdit(self.groupBox_link_parameters)
         self.lineEdit_vpn_speed.setObjectName("lineEdit_vpn_speed")
-        self.gridLayout.addWidget(self.lineEdit_vpn_speed, 19, 2, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_vpn_speed, 20, 2, 1, 1)
         self.label_vpn_speed = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_vpn_speed.setObjectName("label_vpn_speed")
-        self.gridLayout.addWidget(self.label_vpn_speed, 19, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_vpn_speed, 20, 1, 1, 1)
         self.label_ipn_speed = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_ipn_speed.setObjectName("label_ipn_speed")
-        self.gridLayout.addWidget(self.label_ipn_speed, 20, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_ipn_speed, 21, 1, 1, 1)
         self.lineEdit_ipn_speed = QtGui.QLineEdit(self.groupBox_link_parameters)
         self.lineEdit_ipn_speed.setObjectName("lineEdit_ipn_speed")
-        self.gridLayout.addWidget(self.lineEdit_ipn_speed, 20, 2, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_ipn_speed, 21, 2, 1, 1)
         self.gridLayout_2.addWidget(self.groupBox_link_parameters, 0, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -183,6 +185,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.checkBox_allow_dhcp_with_null.setText(QtGui.QApplication.translate("Dialog", "Выдавать IP адрес по DHCP при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_vpn_with_block.setText(QtGui.QApplication.translate("Dialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_vpn_with_null.setText(QtGui.QApplication.translate("Dialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_addonservice.setText(QtGui.QApplication.translate("Dialog", "Разрешить использование подключаемых услуг", None, QtGui.QApplication.UnicodeUTF8))
         self.label_vpn_speed.setText(QtGui.QApplication.translate("Dialog", "VPN скорость", None, QtGui.QApplication.UnicodeUTF8))
         self.label_ipn_speed.setText(QtGui.QApplication.translate("Dialog", "IPN скорось", None, QtGui.QApplication.UnicodeUTF8))
         
@@ -221,6 +224,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.checkBox_allow_vpn_with_block.setCheckState(QtCore.Qt.Checked if self.model.allow_vpn_with_block==True else QtCore.Qt.Unchecked )
             self.checkBox_associate_pppoe_ipn_mac.setCheckState(QtCore.Qt.Checked if self.model.associate_pppoe_ipn_mac==True else QtCore.Qt.Unchecked )
             self.checkBox_associate_pptp_ipn_ip.setCheckState(QtCore.Qt.Checked if self.model.associate_pptp_ipn_ip==True else QtCore.Qt.Unchecked )
+            self.checkBox_allow_addonservice.setCheckState(QtCore.Qt.Checked if self.model.allow_addonservice==True else QtCore.Qt.Unchecked )
             self.lineEdit_vpn_speed.setText(unicode(self.model.vpn_speed))
             self.lineEdit_ipn_speed.setText(unicode(self.model.ipn_speed))
                         
@@ -256,6 +260,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.allow_vpn_with_block = self.checkBox_allow_vpn_with_block.checkState()==QtCore.Qt.Checked
         model.associate_pppoe_ipn_mac = self.checkBox_associate_pppoe_ipn_mac.checkState()==QtCore.Qt.Checked
         model.associate_pptp_ipn_ip = self.checkBox_associate_pptp_ipn_ip.checkState()==QtCore.Qt.Checked
+        model.allow_addonservice = self.checkBox_allow_addonservice.checkState()==QtCore.Qt.Checked
         model.vpn_speed=unicode(self.lineEdit_vpn_speed.text()) or ""
         model.ipn_speed=unicode(self.lineEdit_ipn_speed.text()) or ""
         
