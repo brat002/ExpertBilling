@@ -57,7 +57,7 @@ core_sql = \
                             LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id WHERE act.datetime >= (SELECT datetime FROM billservice_accounttarif AS att WHERE att.id=act.id AND att.periodical_billed IS FALSE ORDER BY datetime ASC LIMIT 1) AND act.datetime<%s AND bt.active ORDER by ba.id, act.datetime DESC;""",
           'traftrss':"""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""",
           'settlper':"""SELECT id, date_trunc('second', time_start), length, length_in, autostart FROM billservice_settlementperiod;""",
-          'nas'     :"""SELECT id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2, identify, subacc_add_action, subacc_enable_action, subacc_disable_action,subacc_del_action, subacc_ipn_speed_action FROM nas_nas;""",
+          'nas'     :"""SELECT id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2, identify, subacc_add_action, subacc_enable_action, subacc_disable_action,subacc_delete_action, subacc_ipn_speed_action FROM nas_nas;""",
           'defsp'   :"""SELECT accessparameters.max_limit,accessparameters.burst_limit,
                         accessparameters.burst_treshold, accessparameters.burst_time,
                         accessparameters.priority, accessparameters.min_limit,
@@ -130,7 +130,7 @@ core_sql = \
           'addon_account':
                       """SELECT accs.id, accs.service_id, accs.account_id, date_trunc('second',accs.activated), date_trunc('second',accs.deactivated), accs.action_status, 
 
-                                accs.speed_status, accs.temporary_blocked, date_trunc('second',accs.last_checkout) 
+                                accs.speed_status, accs.temporary_blocked, date_trunc('second',accs.last_checkout), accs.subaccount_id
 
                            FROM billservice_accountaddonservice as accs 
                            JOIN billservice_addonservice as addons ON addons.id=accs.service_id
@@ -181,6 +181,6 @@ rad_sql = \
                         FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                         WHERE accountspeedlimit.speedlimit_id=speedlimit.id;""",
          'attrs'    :"""SELECT vendor, attrid, value, tarif_id FROM billservice_radiusattrs;""",
-         'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed FROM billservice_subaccount;""",
+         'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice FROM billservice_subaccount;""",
 
 }

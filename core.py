@@ -1060,6 +1060,7 @@ class addon_service(Thread):
 
                         deactivated = None
                         service = caches.addonservice_cache.by_id.get(accservice.service_id)
+                        subacc = caches.subaccount_cache.by_id.get(accservice.subaccount_id)
                         #Проверка на требование отключения услуги
                         if service.service_type=='onetime':
                             
@@ -1401,8 +1402,8 @@ class ipn_service(Thread):
                         """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Пропускаем."""       
                         subaccounts = caches.subaccount_cache.by_account_id.get(acc.account_id, [])
                         access_list = []
-                        if acc.ipn_ip_address != '0.0.0.0':
-                            access_list.append(('', acc.ipn_ip_address, acc.ipn_mac_address, acc.vpn_ip_address, acc.nas_id, True, None))
+                        #if acc.ipn_ip_address != '0.0.0.0':
+                        #access_list.append(('', '', '', '', '', True, None))
                             
                         for subacc in subaccounts:
                             if not subacc.nas_id or subacc.ipn_ip_address=='0.0.0.0': continue
@@ -1416,7 +1417,7 @@ class ipn_service(Thread):
                         for id, ipn_ip_address, ipn_mac_address, vpn_ip_address, nas_id, legacy, subacc in access_list:
                             sended, recreate_speed = (None, False)
                             
-                            nas = caches.nas_cache.by_id[nas_id]
+                            nas = caches.nas_cache.by_id.get(nas_id)
                             if 0: assert isinstance(nas, NasData)
                             access_type = 'IPN'
                             #now = datetime.datetime.now()
@@ -1426,7 +1427,7 @@ class ipn_service(Thread):
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.user_add_action)
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
                             if not subacc.ipn_added and acc.tarif_active and not legacy:
-                                sended = cred(acc, subacc, access_type, nas, format_string=nas.subaccount_add_action)
+                                sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_add_action)
                                 
                                 if sended is True: cur.execute("UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s" % (True, id))
                                     
