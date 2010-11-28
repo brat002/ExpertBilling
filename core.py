@@ -1092,23 +1092,17 @@ class addon_service(Thread):
                                 nas = caches.nas_cache.by_id.get(acc.nas_id)
                             else:
                                 nas = caches.nas_cache.by_id.get(service.nas_id)
-                                
+    
                             if (not accservice.deactivated and not deactivated) and (service.action and not accservice.action_status) and not accservice.temporary_blocked:
                                 #выполняем service_activation_action
                                 cur.connection.commit()
-                                sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
-                                              acc.vpn_ip_address, acc.ipn_ip_address, 
-                                              acc.ipn_mac_address, nas.ipaddress, nas.login, 
-                                              nas.password, format_string=service.service_activation_action)
+                                sended = cred(acc, subacc, 'ipn', nas, format_string=service.service_activation_action)
                                 if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, accservice.id))
                             
                             if (accservice.deactivated or accservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accservice.action_status==True:
                                 #выполняем service_deactivation_action
                                 cur.connection.commit()
-                                sended = cred(acc.account_id, acc.username,acc.password, 'ipn',
-                                              acc.vpn_ip_address, acc.ipn_ip_address, 
-                                              acc.ipn_mac_address, nas.ipaddress, nas.login, 
-                                              nas.password, format_string=service.service_deactivation_action)
+                                sended = cred(acc, subacc, 'ipn', nas, format_string=service.service_deactivation_action)
                                 if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accservice.id))
 
                     cur.connection.commit()
@@ -1405,7 +1399,7 @@ class ipn_service(Thread):
                     try:
                         if 0: assert isinstance(acc, AccountData)
                         """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Пропускаем."""       
-                        subaccounts = caches.subaccount_cache.by_account_id.get(acc.account_id)
+                        subaccounts = caches.subaccount_cache.by_account_id.get(acc.account_id, [])
                         access_list = []
                         if acc.ipn_ip_address != '0.0.0.0':
                             access_list.append(('', acc.ipn_ip_address, acc.ipn_mac_address, acc.vpn_ip_address, acc.nas_id, True, None))
@@ -1428,15 +1422,15 @@ class ipn_service(Thread):
                             #now = datetime.datetime.now()
                             now = dateAT
                             # Если на сервере доступа ещё нет этого пользователя-значит добавляем.
-                            if not acc.ipn_added and acc.tarif_active:
-                                sended = cred(acc.account_id, id, acc.username,acc.password, access_type,
-                                              vpn_ip_address, ipn_ip_address, 
-                                              ipn_mac_address, nas.ipaddress, nas.login, 
-                                              nas.password, format_string=nas.user_add_action)
+                            if not acc.ipn_added and acc.tarif_active and legacy:
+                                sended = cred(acc, subacc, access_type, nas, format_string=nas.user_add_action)
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
-                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s" % (True, id))
+                            if not subacc.ipn_added and acc.tarif_active and not legacy:
+                                sended = cred(acc, subacc, access_type, nas, format_string=nas.subaccount_add_action)
+                                
+                                if sended is True: cur.execute("UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s" % (True, id))
                                     
-                            if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active:
+                            if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active and legacy:
                                 """
                                 acc.ipn_status - отображает активна или неактивна ACL запись на сервере доступа для абонента
                                 """
@@ -1444,22 +1438,24 @@ class ipn_service(Thread):
                                 #ipn_added = acc.ipn_added
                                 """Делаем пользователя enabled"""
         
-                                sended = cred(acc.account_id, id, acc.username,acc.password, access_type,
-                                              vpn_ip_address, ipn_ip_address, 
-                                              ipn_mac_address, nas.ipaddress, nas.login, 
-                                              nas.password, format_string=nas.user_enable_action)
+                                sended = cred(acc, subacc, access_type, nas, format_string=nas.user_enable_action)
                                 recreate_speed = True                        
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
-                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id))
                                 
-                            elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and acc.ipn_status:
+                            elif (not subacc.ipn_enabled) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active and not legacy:
+                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id))
+                                sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_enable_action)
+                                
+                            elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and acc.ipn_status and legacy:
                                 #шлём команду на отключение пользователя,account_ipn_status=False
-                                sended = cred(acc.account_id, id, acc.username,acc.password, access_type,
-                                                  vpn_ip_address, ipn_ip_address, 
-                                                  ipn_mac_address, nas.ipaddress, nas.login, 
-                                                  nas.password, format_string=nas.user_disable_action)    
+                                sended = cred(acc, subacc, access_type, nas, format_string=nas.user_disable_action)    
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.account_id,))
-                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,))
+
+                            elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and subacc.ipn_enabled and not legacy:
+                                #шлём команду на отключение пользователя,account_ipn_status=False
+                                sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_disable_action)    
+                                
+                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,))                            
             
                             self.connection.commit()
         
@@ -1490,10 +1486,13 @@ class ipn_service(Thread):
                             if 0: assert isinstance(ipnsp, IpnSpeedData)
                             if ((newspeed != ipnsp.speed and legacy) or (not legacy and (newspeed!=subacc.speed or recreate_speed))) or recreate_speed:
                                 #отправляем на сервер доступа новые настройки скорости, помечаем state=True
-        
+                                if legacy: 
+                                    ipn_speed_action=nas.ipn_speed_action 
+                                else: 
+                                    ipn_speed_action = nas.aubacc_ipn_speed_action
                                 sended_speed = change_speed(vars.DICT, acc, subacc, nas,
                                                             access_type=access_type,
-                                                            format_string=nas.ipn_speed_action,
+                                                            format_string=ipn_speed_action,
                                                             speed=speed[:6])
                                 
                                 if legacy: 

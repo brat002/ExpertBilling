@@ -2735,4 +2735,7 @@ UPDATE billservice_accountaddonservice SET deactivated=date_trunc('second', deac
 
 -- 12.03.2010
 
-INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Оплата через платежные системы', 'PAYMENTGATEWAY_BILL'); 
+INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Оплата через платежные системы', 'PAYMENTGATEWAY_BILL');
+--- 23.11.2010
+alter table billservice_accountipnspeed alter column speed type text;
+ 

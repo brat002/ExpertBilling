@@ -148,7 +148,7 @@ class AccountAddonServiceCache(CacheItem):
             
             
 class SubAccountsCache(CacheItem):
-    __slots__ = ('by_account_id', 'by_username', 'by_mac', 'by_ipn_ip', 'by_vpn_ip')
+    __slots__ = ('by_account_id', 'by_username', 'by_mac', 'by_ipn_ip', 'by_vpn_ip', 'by_ipn_ip_nas_id')
     
     datatype = SubAccountsData
     sql = rad_sql['subaccounts']
@@ -162,6 +162,7 @@ class SubAccountsCache(CacheItem):
         self.by_mac = {}
         self.by_ipn_ip = {}
         self.by_vpn_ip = {}
+        self.by_ipn_ip_nas_id = {}
         
         for item in self.data:
             self.by_account_id[item.account_id] = item
@@ -171,6 +172,7 @@ class SubAccountsCache(CacheItem):
                 self.by_mac[item.ipn_mac_address] = item
             if item.ipn_ip_address and item.ipn_ip_address is not "0.0.0.0" :
                 self.by_ipn_ip[item.ipn_ip_address] = item
+                #self.by_ipn_ip_nas_id[(item.ipn_ip_address, item.nas_id)] = item                
             if item.vpn_ip_address and item.vpn_ip_address is not "0.0.0.0" :
                 self.by_vpn_ip[item.vpn_ip_address] = item
 

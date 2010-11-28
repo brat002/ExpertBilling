@@ -717,6 +717,7 @@ class HandleSAuth(HandleSBase):
                 self.replypacket.AddAttribute(attr.attrid, str(attr.value))
 
     def create_speed(self, nas, tarif_id, account_id, speed=''):
+        if not (nas.speed_value1 or nas.speed_value2): return
         result_params=speed
         if speed=='':
             defaults = self.caches.defspeed_cache.by_id.get(tarif_id)
@@ -816,48 +817,59 @@ class HandleSAuth(HandleSBase):
         user_name = str(self.packetobject['User-Name'][0])
 
         #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
-        logger.warning("Searching account %s", user_name)
-        acc = self.caches.account_cache.by_username.get(user_name)
+        #logger.warning("Searching account %s", user_name)
+        #acc = self.caches.account_cache.by_username.get(user_name)
         
-        subacc = SubAccount()
+        #subacc = SubAccount()
         #Если не нашли в аккаунтах - ищем в субаккаунтах
-        if not acc:
-            logger.warning("Searching account in subaccounts %s", user_name)
-            subacc = self.caches.subaccount_cache.by_username.get(user_name)
-            acc = self.caches.account_cache.by_id.get(subacc.account_id)
-        
-        username = acc.username if not subacc else subacc.username 
-        password = acc.password if not subacc else subacc.password
-        vpn_ip_address = acc.vpn_ip_address if not subacc else subacc.vpn_ip_address
-        ipn_ip_address = acc.ipn_ip_address if not subacc else subacc.ipn_ip_address
-        ipn_mac_address = acc.ipn_mac_address if not subacc else subacc.ipn_mac_address
-        # Сервер доступа может быть не указан 
-        account_nas_id = acc.nas_id if not subacc.id else subacc.nas_id
-
-        nas = self.caches.nas_cache.by_id.get(account_nas_id)
-        
+        #if not acc:
+        logger.warning("Searching account in subaccounts %s", user_name)
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
+        subacc = self.caches.subaccount_cache.by_username.get(user_name)
+        if not subacc:
+            logger.warning("Subaccount with username  %s not found", (user_name,))    
+            return self.auth_NA(authobject)       
+        acc = self.caches.account_cache.by_id.get(subacc.account_id)
         
-        if (nas and nas not in nasses) and vars.IGNORE_NAS_FOR_VPN is False:
+        if not acc:
+            logger.warning("Subaccount with username  %s not found", (user_name,))
+            return self.auth_NA(authobject)
+            
+        username = subacc.username 
+        password = subacc.password
+        vpn_ip_address = subacc.vpn_ip_address
+        ipn_ip_address = subacc.ipn_ip_address
+        ipn_mac_address =  subacc.ipn_mac_address
+        # Сервер доступа может быть не указан 
+        nas_id = subacc.nas_id
+
+        if self.access_type=='W802.1x':
+            nas = self.caches.nas_cache.by_id.get(subacc.switch_id, None)
+        else:
+            nas = self.caches.nas_cache.by_id.get(nas_id)
+        
+     
+        
+        if (nas and nas not in nasses) and vars.IGNORE_NAS_FOR_VPN is False and self.access_type in ['PPTP', 'PPPOE']:
             """
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
             """
             logger.warning("Account nas(%s) is not in sended nasses and IGNORE_NAS_FOR_VPN is False %s", (repr(nas), nasses,))
             return self.auth_NA(authobject)
-        elif not account_nas_id:
+        elif not nas_id and self.access_type!='W802.1x':
             """
             Иначе, если указан любой NAS - берём первый из списка совпавших по IP
             """
             nas = nasses[0]
+        elif self.access_type=='W802.1x' and not nas:
+            logger.warning("Requested 802.1x authorization nas(%s) not assigned to user %s", (repr(nas), repr(subacc),))
+            return self.auth_NA(authobject)            
             
 
         self.nas_type = nas.type
         self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.DICT)         
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges)
 
-        if acc and subacc  is None:
-            logger.warning("Unknown User %s", user_name)
-            return self.auth_NA(authobject)  
 
         if 0: assert isinstance(acc, AccountData)
         authobject.plainusername = str(username)
@@ -892,24 +904,24 @@ class HandleSAuth(HandleSBase):
             return self.auth_NA(authobject) 
 
         #print common_vpn,access_type,self.access_type
-        if (not vars.COMMON_VPN) and ((acc.access_type is None) or (acc.access_type != self.access_type)):
-            logger.warning("Unallowed Tarif Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
+        if (not vars.COMMON_VPN) and (acc.access_type != self.access_type) and acc.access_type not in ['PPTP', 'L2TP', 'PPPOE']:
+            logger.warning("Unallowed Tarif Access Type for user %s. Account access type - %s; packet access type - %s", (username, acc.access_type, self.access_type))
             return self.auth_NA(authobject)
 
-        acstatus = (((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
+        acstatus = (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
                     and \
-                    (acc.allow_vpn_block or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status == 1)))
+                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status == 1)))
         #acstatus = True
         if not acstatus:
-            logger.warning("Unallowed account status for user %s: account_status is false", user_name)
+            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
             return self.auth_NA(authobject)      
 
-        if self.access_type == 'PPTP' and acc.associate_pptp_ipn_ip and not (ipn_ip_address == station_id):
-            logger.warning("Unallowed NAS PPTP for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (user_name, station_id, acc.ipn_ip_address, acc.ipn_mac_address, self.access_type))
+        if self.access_type == 'PPTP' and subacc.associate_pptp_ipn_ip and not (ipn_ip_address == station_id):
+            logger.warning("Unallowed dialed ipn_ip_address for user %s vpn: station_id - %s , ipn_ip - %s; vpn_ip - %s access_type: %s", (username, station_id, subacc.ipn_ip_address, subacc.vpn_ip_address, self.access_type))
             return self.auth_NA(authobject) 
         
-        if self.access_type == 'PPPOE' and acc.associate_pppoe_mac and not (ipn_mac_address == station_id):
-            logger.warning("Unallowed NAS PPPOE for user %s: station_id status is false, station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (user_name, station_id, acc.ipn_ip_address, acc.ipn_mac_address, self.access_type))
+        if self.access_type == 'PPPOE' and subacc.associate_pppoe_ipn_mac and not (ipn_mac_address == station_id):
+            logger.warning("Unallowed dialed mac for user %s: station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (username, station_id, subacc.ipn_ip_address, subacc.ipn_mac_address, self.access_type))
             return self.auth_NA(authobject) 
         
 
@@ -918,7 +930,7 @@ class HandleSAuth(HandleSBase):
         allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tarif_active))
-        if self.packetobject['User-Name'][0] == user_name and allow_dial and acc.tarif_active:
+        if allow_dial and acc.tarif_active:
             '''
             framed_ip_address = None
             if acc.vpn_ip_address == '0.0.0.0' and acc.vpn_ipinuse_id:
@@ -937,13 +949,13 @@ class HandleSAuth(HandleSBase):
                 framed_ip_address = acc.vpn_ip_address
             '''
             authobject.set_code(2)
-            self.replypacket.username = str(user_name) #Нельзя юникод
+            self.replypacket.username = str(username) #Нельзя юникод
             self.replypacket.password = str(password) #Нельзя юникод
             self.replypacket.AddAttribute('Service-Type', 2)
             self.replypacket.AddAttribute('Framed-Protocol', 1)
             self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
             #account_speed_limit_cache
-            self.create_speed(nas, acc.tarif_id, acc.account_id, speed=acc.vpn_speed)
+            self.create_speed(nas, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
             self.add_values(acc.tarif_id)
             #print "Setting Speed For User" , self.speed
             return authobject, self.replypacket
@@ -968,27 +980,33 @@ class HandlelISGAuth(HandleSAuth):
         #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
         #print self.caches.account_cache.by_ipn_ip_nas
         logger.warning("Searching lISG account for ip address %s", station_id)
-        acc = self.caches.account_cache.by_ipn_ip_nas.get((station_id, nas.id))
-        subacc = SubAccount()
-        if not acc:
-            logger.warning("Searching lISG subaccount for ip address %s", (station_id,))
+        #acc = self.caches.account_cache.by_ipn_ip_nas.get((station_id, nas.id))
+        #subacc = SubAccount()
+        subacc = self.caches.subaccount_cache.by_ipn_ip.get(user_name)
+        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
+        if not subacc:
+            logger.warning("Subcccount for lISG not found for ip address %s", (station_id,))
             #Не учитывается сервер доступа
-            subacc = self.caches.subaccount_cache.by_ipn_ip.get(user_name)
-            acc = self.caches.account_cache.by_id.get(subacc.account_id)
+            return self.auth_NA(authobject)
+        acc = self.caches.account_cache.by_id.get(subacc.account_id)
+        
+        if not acc:
+            logger.warning("Account with username  %s not found", (user_name,))
+            return self.auth_NA(authobject)
             
-        account_nas_id = acc.nas_id if not subacc.id else subacc.nas_id
+        nas_id = subacc.nas_id
 
-        nas = self.caches.nas_cache.by_id.get(account_nas_id)
+        nas = self.caches.nas_cache.by_id.get(nas_id)
         
-        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)        
+
         
-        if (nas and nas not in nasses) and vars.IGNORE_NAS_FOR_VPN is False:
+        if vars.IGNORE_NAS_FOR_VPN is False and (nas and nas not in nasses):
             """
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
             """
             logger.warning("Account nas(%s) is not in sended nasses and IGNORE_NAS_FOR_VPN is False %s", (repr(nas), nasses,))
             return self.auth_NA(authobject)
-        elif not account_nas_id:
+        elif not nas_id:
             """
             Иначе, если указан любой NAS - берём первый из списка совпавших по IP
             """
@@ -1035,16 +1053,16 @@ class HandlelISGAuth(HandleSAuth):
 
         #print common_vpn,access_type,self.access_type
         if (acc.access_type is None) or (acc.access_type != self.access_type):
-            logger.warning("Unallowed Access Type for user %s: access_type error. access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
+            logger.warning("Unallowed Access Type for user %s. Access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
             return self.auth_NA(authobject)
 
-        acstatus = (((not acc.allow_vpn_null and acc.ballance >0) or acc.allow_vpn_null) \
+        acstatus = (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
                     and \
-                    (acc.allow_vpn_block or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status == 1)))
+                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status == 1)))
         #acstatus = True
         if not acstatus:
-            logger.warning("Unallowed account status for user %s: account_status is false", user_name)
-            return self.auth_NA(authobject)      
+            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
+            return self.auth_NA(authobject)     
 
      
 
@@ -1059,7 +1077,7 @@ class HandlelISGAuth(HandleSAuth):
             self.replypacket.password = '' #Нельзя юникод
 
             #account_speed_limit_cache
-            self.create_speed(nas, acc.tarif_id, acc.account_id, speed=acc.vpn_speed)
+            self.create_speed(nas, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
             self.add_values(acc.tarif_id)
             #print "Setting Speed For User" , self.speed
             return authobject, self.replypacket
@@ -1275,6 +1293,7 @@ class HandleSDHCP(HandleSBase):
                 self.replypacket.AddAttribute(attr.attrid, str(attr.value))
 
     def create_speed(self, nas, tarif_id, account_id, speed=''):
+        if not (nas.speed_value1 or nas.speed_value2): return
         result_params=speed
         if speed=='':
             defaults = self.caches.defspeed_cache.by_id.get(tarif_id)
@@ -1365,19 +1384,25 @@ class HandleSDHCP(HandleSBase):
         if not nasses: return '',None
         #if 0: assert isinstance(nas, NasData)
         mac = self.packetobject['User-Name'][0]
-        acc = self.caches.account_cache.by_ipn_mac.get(mac)
+        #acc = self.caches.account_cache.by_ipn_mac.get(mac)
  
-        subacc = SubAccount()
-        if not acc:
-            logger.warning("Searching SDHCP subaccount for mac address %s", (mac, ))
-            #Не учитывается сервер доступа
-            subacc = self.caches.subaccount_cache.by_mac.get(mac)
-            acc = self.caches.account_cache.by_id.get(subacc.account_id)
-            
-        account_nas_id = acc.nas_id if not subacc.id else subacc.nas_id
-
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type='DHCP')
-        nas = self.caches.nas_cache.by_id.get(account_nas_id) 
+        subacc = self.caches.subaccount_cache.by_mac.get(mac)
+        if not subacc:
+            logger.warning("Subaccount not found for DHCP request with mac address %s", (mac, ))
+            #Не учитывается сервер доступа
+            return self.auth_NA(authobject)
+        acc = self.caches.account_cache.by_id.get(subacc.account_id)
+            
+        if not acc:
+            logger.warning("Account not found for DHCP request with mac address %s", (mac, ))
+            #Не учитывается сервер доступа
+            return self.auth_NA(authobject)
+        
+        nas_id = subacc.nas_id
+
+        
+        nas = self.caches.nas_cache.by_id.get(nas_id) 
         if (nas and nas not in nasses) and vars.IGNORE_NAS_FOR_DHCP is False:
             """
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
@@ -1393,21 +1418,20 @@ class HandleSDHCP(HandleSBase):
 
         
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type='DHCP')
-        if acc is None:
-            return self.auth_NA(authobject)
-        if 0: assert isinstance(acc, AccountData)
 
-        if vars.IGNORE_NAS_FOR_DHCP is False and int(acc.nas_id)!=int(nas.id):
-            return self.auth_NA(authobject)
         #print dir(acc)
-        acstatus = (acc.assign_dhcp_null or acc.ballance>0) and \
-                 (acc.assign_dhcp_block or (not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status==1)) and acc.tarif_active
-
+        acstatus = (((subacc.allow_dhcp_with_null and acc.ballance >=0) or (subacc.allow_dhcp_with_minus and acc.ballance<=0) or acc.ballance>0)\
+                    and \
+                    (subacc.allow_dhcp_with_block or (not subacc.allow_dhcp_with_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status == 1)))
+        #acstatus = True
         if not acstatus:
-            logger.warning("Unallowed account status for user %s: account_status is false", acc.username)
-            return self.auth_NA(authobject)
+            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
+            return self.auth_NA(authobject)      
 
-        if acstatus:
+        allow_dial = True
+        if acc.access_type=='DHCP':
+            allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
+        if acstatus and allow_dial:
             authobject.set_code(2)
             self.replypacket.AddAttribute('Framed-IP-Address', acc.ipn_ip_address)
             #self.replypacket.AddAttribute('Framed-IP-Netmask', "255.255.255.0")
@@ -1473,18 +1497,18 @@ class HandleSAcct(HandleSBase):
              
         #if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
         self.userName = str(self.packetobject['User-Name'][0])
-        subacc = SubAccount()
+        #subacc = SubAccount()
         if self.access_type=='lISG':
-            acc = self.caches.account_cache.by_ipn_ip_nas.get((self.userName, nas.id))
-            if not acc:
-                subacc = self.caches.subaccount_cache.by_ipn_ip.get(self.userName)
+            subacc = self.caches.subaccount_cache.by_ipn_ip.get(self.userName)
         else:
-            acc = self.caches.account_cache.by_username.get(self.userName)
-            if not acc:
-                subacc = self.caches.subaccount_cache.by_username.get(self.userName)
-                
-        if subacc.id:
-            acc = self.caches.account_cache.by_id.get(subacc.account_id)
+            subacc = self.caches.subaccount_cache.by_username.get(self.userName)
+
+            
+        if subacc:
+            acc = self.caches.account_cache.by_id.get(subacc.account_id)  
+        else:              
+            return self.acct_NA()
+        
         if acc is None:
             self.cur.connection.commit()
             #self.cur.close()
@@ -1492,10 +1516,10 @@ class HandleSAcct(HandleSBase):
             return self.acct_NA()
         if 0: assert isinstance(acc, AccountData)
 
-        account_nas_id = acc.nas_id if not subacc.id else subacc.nas_id
+        account_nas_id = subacc.nas_id
         
         nas = self.caches.nas_cache.by_id.get(account_nas_id)
-        if (nas and nas not in nasses) and vars.IGNORE_NAS_FOR_VPN is False:
+        if (nas and nas not in nasses) and (vars.IGNORE_NAS_FOR_VPN is False):
             """
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
             """

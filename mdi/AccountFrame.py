@@ -54,7 +54,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.connection = connection
         self.account = account
         self.model = model
-        self.resize(419, 261)
+        self.resize(526, 553)
         self.gridLayout_2 = QtGui.QGridLayout(self)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.groupBox_link_parameters = QtGui.QGroupBox(self)
@@ -63,47 +63,98 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.gridLayout.setObjectName("gridLayout")
         self.lineEdit_link_login = QtGui.QLineEdit(self.groupBox_link_parameters)
         self.lineEdit_link_login.setObjectName("lineEdit_link_login")
-        self.gridLayout.addWidget(self.lineEdit_link_login, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_link_login, 1, 2, 1, 1)
         self.label_link_login = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_link_login.setObjectName("label_link_login")
-        self.gridLayout.addWidget(self.label_link_login, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_link_login, 1, 1, 1, 1)
         self.label_nas = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_nas.setObjectName("label_nas")
-        self.gridLayout.addWidget(self.label_nas, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_nas, 0, 1, 1, 1)
         self.comboBox_nas = QtGui.QComboBox(self.groupBox_link_parameters)
         self.comboBox_nas.setObjectName("comboBox_nas")
-        self.gridLayout.addWidget(self.comboBox_nas, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.comboBox_nas, 0, 2, 1, 1)
         self.lineEdit_link_password = QtGui.QLineEdit(self.groupBox_link_parameters)
         self.lineEdit_link_password.setObjectName("lineEdit_link_password")
-        self.gridLayout.addWidget(self.lineEdit_link_password, 3, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_link_password, 3, 2, 1, 1)
         self.label_link_password = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_link_password.setObjectName("label_link_password")
-        self.gridLayout.addWidget(self.label_link_password, 3, 0, 1, 1)
-        self.lineEdit_3 = QtGui.QLineEdit(self.groupBox_link_parameters)
-        self.lineEdit_3.setObjectName("lineEdit_3")
-        self.gridLayout.addWidget(self.lineEdit_3, 5, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_link_password, 3, 1, 1, 1)
+        self.lineEdit_vpn_ip_address = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_vpn_ip_address.setObjectName("lineEdit_vpn_ip_address")
+        self.gridLayout.addWidget(self.lineEdit_vpn_ip_address, 5, 2, 1, 1)
         self.label_link_vpn_ip_address = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_link_vpn_ip_address.setObjectName("label_link_vpn_ip_address")
-        self.gridLayout.addWidget(self.label_link_vpn_ip_address, 5, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_link_vpn_ip_address, 5, 1, 1, 1)
         self.label_link_vpn = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_link_vpn.setObjectName("label_link_vpn")
-        self.gridLayout.addWidget(self.label_link_vpn, 6, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_link_vpn, 6, 1, 1, 1)
         self.lineEdit_link_ipn_ip_address = QtGui.QLineEdit(self.groupBox_link_parameters)
         self.lineEdit_link_ipn_ip_address.setObjectName("lineEdit_link_ipn_ip_address")
-        self.gridLayout.addWidget(self.lineEdit_link_ipn_ip_address, 6, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_link_ipn_ip_address, 6, 2, 1, 1)
         self.label_link_ipn_mac_address = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_link_ipn_mac_address.setObjectName("label_link_ipn_mac_address")
-        self.gridLayout.addWidget(self.label_link_ipn_mac_address, 7, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_link_ipn_mac_address, 7, 1, 1, 1)
         self.lineEdit_link_ipn_mac_address = QtGui.QLineEdit(self.groupBox_link_parameters)
         self.lineEdit_link_ipn_mac_address.setObjectName("lineEdit_link_ipn_mac_address")
-        self.gridLayout.addWidget(self.lineEdit_link_ipn_mac_address, 7, 1, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_link_ipn_mac_address, 7, 2, 1, 1)
+        self.comboBox_link_switch_id = QtGui.QComboBox(self.groupBox_link_parameters)
+        self.comboBox_link_switch_id.setObjectName("comboBox_link_switch_id")
+        self.gridLayout.addWidget(self.comboBox_link_switch_id, 8, 2, 1, 1)
+        self.label_link_switch = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_link_switch.setObjectName("label_link_switch")
+        self.gridLayout.addWidget(self.label_link_switch, 8, 1, 1, 1)
+        self.spinBox_link_port = QtGui.QSpinBox(self.groupBox_link_parameters)
+        self.spinBox_link_port.setMaximum(512)
+        self.spinBox_link_port.setObjectName("spinBox_link_port")
+        self.gridLayout.addWidget(self.spinBox_link_port, 9, 2, 1, 1)
+        self.label_link_port = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_link_port.setObjectName("label_link_port")
+        self.gridLayout.addWidget(self.label_link_port, 9, 1, 1, 1)
+        self.checkBox_allow_dhcp = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_dhcp.setObjectName("checkBox_allow_dhcp")
+        self.gridLayout.addWidget(self.checkBox_allow_dhcp, 10, 1, 1, 2)
+        self.checkBox_associate_pptp_ipn_ip = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_associate_pptp_ipn_ip.setObjectName("checkBox_associate_pptp_ipn_ip")
+        self.gridLayout.addWidget(self.checkBox_associate_pptp_ipn_ip, 17, 1, 1, 2)
+        self.checkBox_associate_pppoe_ipn_mac = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_associate_pppoe_ipn_mac.setObjectName("checkBox_associate_pppoe_ipn_mac")
+        self.gridLayout.addWidget(self.checkBox_associate_pppoe_ipn_mac, 18, 1, 1, 2)
+        self.checkBox_allow_dhcp_with_minus = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_dhcp_with_minus.setObjectName("checkBox_allow_dhcp_with_minus")
+        self.gridLayout.addWidget(self.checkBox_allow_dhcp_with_minus, 12, 1, 1, 2)
+        self.checkBox_allow_dhcp_with_block = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_dhcp_with_block.setObjectName("checkBox_allow_dhcp_with_block")
+        self.gridLayout.addWidget(self.checkBox_allow_dhcp_with_block, 13, 1, 1, 2)
+        self.checkBox_allow_vpn_with_minus = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_vpn_with_minus.setObjectName("checkBox_allow_vpn_with_minus")
+        self.gridLayout.addWidget(self.checkBox_allow_vpn_with_minus, 15, 1, 1, 2)
+        self.checkBox_allow_dhcp_with_null = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_dhcp_with_null.setObjectName("checkBox_allow_dhcp_with_null")
+        self.gridLayout.addWidget(self.checkBox_allow_dhcp_with_null, 11, 1, 1, 2)
+        self.checkBox_allow_vpn_with_block = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_vpn_with_block.setObjectName("checkBox_allow_vpn_with_block")
+        self.gridLayout.addWidget(self.checkBox_allow_vpn_with_block, 16, 1, 1, 2)
+        self.checkBox_allow_vpn_with_null = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_vpn_with_null.setObjectName("checkBox_allow_vpn_with_null")
+        self.gridLayout.addWidget(self.checkBox_allow_vpn_with_null, 14, 1, 1, 2)
+        self.lineEdit_vpn_speed = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_vpn_speed.setObjectName("lineEdit_vpn_speed")
+        self.gridLayout.addWidget(self.lineEdit_vpn_speed, 19, 2, 1, 1)
+        self.label_vpn_speed = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_vpn_speed.setObjectName("label_vpn_speed")
+        self.gridLayout.addWidget(self.label_vpn_speed, 19, 1, 1, 1)
+        self.label_ipn_speed = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_ipn_speed.setObjectName("label_ipn_speed")
+        self.gridLayout.addWidget(self.label_ipn_speed, 20, 1, 1, 1)
+        self.lineEdit_ipn_speed = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_ipn_speed.setObjectName("lineEdit_ipn_speed")
+        self.gridLayout.addWidget(self.lineEdit_ipn_speed, 20, 2, 1, 1)
         self.gridLayout_2.addWidget(self.groupBox_link_parameters, 0, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.gridLayout_2.addWidget(self.buttonBox, 1, 0, 1, 1)
-
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
         
@@ -113,7 +164,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
 
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Параметры субаккаунта", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_link_parameters.setTitle(QtGui.QApplication.translate("Dialog", "Параметры связки", None, QtGui.QApplication.UnicodeUTF8))
         self.label_link_login.setText(QtGui.QApplication.translate("Dialog", "Логин", None, QtGui.QApplication.UnicodeUTF8))
         self.label_nas.setText(QtGui.QApplication.translate("Dialog", "NAS", None, QtGui.QApplication.UnicodeUTF8))
@@ -121,6 +172,19 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.label_link_vpn_ip_address.setText(QtGui.QApplication.translate("Dialog", "VPN IP", None, QtGui.QApplication.UnicodeUTF8))
         self.label_link_vpn.setText(QtGui.QApplication.translate("Dialog", "IPN IP", None, QtGui.QApplication.UnicodeUTF8))
         self.label_link_ipn_mac_address.setText(QtGui.QApplication.translate("Dialog", "IPN MAC", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_link_switch.setText(QtGui.QApplication.translate("Dialog", "Коммутатор", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_link_port.setText(QtGui.QApplication.translate("Dialog", "Порт", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_dhcp.setText(QtGui.QApplication.translate("Dialog", "Разрешить выдачу IPN IP адреса по DHCP", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_associate_pptp_ipn_ip.setText(QtGui.QApplication.translate("Dialog", "Привязать PPTP авторизацию к IPN IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_associate_pppoe_ipn_mac.setText(QtGui.QApplication.translate("Dialog", "Привязать PPPOE авторизацию к IPN MAC", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_dhcp_with_minus.setText(QtGui.QApplication.translate("Dialog", "Выдавать IP адрес по DHCP при нулевом и отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_dhcp_with_block.setText(QtGui.QApplication.translate("Dialog", "Выдавать IP адрес по DHCP при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_vpn_with_minus.setText(QtGui.QApplication.translate("Dialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при нулевом отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_dhcp_with_null.setText(QtGui.QApplication.translate("Dialog", "Выдавать IP адрес по DHCP при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_vpn_with_block.setText(QtGui.QApplication.translate("Dialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_vpn_with_null.setText(QtGui.QApplication.translate("Dialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_vpn_speed.setText(QtGui.QApplication.translate("Dialog", "VPN скорость", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_ipn_speed.setText(QtGui.QApplication.translate("Dialog", "IPN скорось", None, QtGui.QApplication.UnicodeUTF8))
         
         
     def fixtures(self):
@@ -130,17 +194,35 @@ class SubaccountLinkDialog(QtGui.QDialog):
         for nas in nasses:
             self.comboBox_nas.addItem(nas.name, QtCore.QVariant(nas.id))
 
+        self.comboBox_link_switch_id.addItem(u"---Не указан---", QtCore.QVariant(0))
+        for nas in nasses:
+            self.comboBox_link_switch_id.addItem(nas.name, QtCore.QVariant(nas.id))
+            
         #print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
 
         if self.model:
             print "NAS_ID", self.model.nas_id
             if self.model.nas_id:
                 self.comboBox_nas.setCurrentIndex(self.comboBox_nas.findData(self.model.nas_id))
+            if self.model.switch_id:
+                self.comboBox_link_switch_id.setCurrentIndex(self.comboBox_link_switch_id.findData(self.model.switch_id))                
             self.lineEdit_link_login.setText(unicode(self.model.username))
             self.lineEdit_link_password.setText(unicode(self.model.password))
-            self.lineEdit_3.setText(unicode(self.model.vpn_ip_address))
+            self.lineEdit_vpn_ip_address.setText(unicode(self.model.vpn_ip_address))
             self.lineEdit_link_ipn_ip_address.setText(unicode(self.model.ipn_ip_address))
             self.lineEdit_link_ipn_mac_address.setText(unicode(self.model.ipn_mac_address))
+            self.spinBox_link_port.setValue(self.model.switch_port if self.model.switch_port else 0)
+            self.checkBox_allow_dhcp.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp==True else QtCore.Qt.Unchecked )
+            self.checkBox_allow_dhcp_with_null.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp_with_null==True else QtCore.Qt.Unchecked )
+            self.checkBox_allow_dhcp_with_minus.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp_with_minus==True else QtCore.Qt.Unchecked )
+            self.checkBox_allow_dhcp_with_block.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp_with_block==True else QtCore.Qt.Unchecked )
+            self.checkBox_allow_vpn_with_null.setCheckState(QtCore.Qt.Checked if self.model.allow_vpn_with_null==True else QtCore.Qt.Unchecked )
+            self.checkBox_allow_vpn_with_minus.setCheckState(QtCore.Qt.Checked if self.model.allow_vpn_with_minus==True else QtCore.Qt.Unchecked )
+            self.checkBox_allow_vpn_with_block.setCheckState(QtCore.Qt.Checked if self.model.allow_vpn_with_block==True else QtCore.Qt.Unchecked )
+            self.checkBox_associate_pppoe_ipn_mac.setCheckState(QtCore.Qt.Checked if self.model.associate_pppoe_ipn_mac==True else QtCore.Qt.Unchecked )
+            self.checkBox_associate_pptp_ipn_ip.setCheckState(QtCore.Qt.Checked if self.model.associate_pptp_ipn_ip==True else QtCore.Qt.Unchecked )
+            self.lineEdit_vpn_speed.setText(unicode(self.model.vpn_speed))
+            self.lineEdit_ipn_speed.setText(unicode(self.model.ipn_speed))
                         
     def accept(self):
         if self.model:
@@ -150,16 +232,33 @@ class SubaccountLinkDialog(QtGui.QDialog):
             model.account_id = self.account.id
         if self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]!=0:
             model.nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
-            
         else:
             model.nas_id = None
         
+        if self.comboBox_link_switch_id.itemData(self.comboBox_link_switch_id.currentIndex()).toInt()[0]!=0:
+            model.switch_id = self.comboBox_link_switch_id.itemData(self.comboBox_link_switch_id.currentIndex()).toInt()[0]
+        else:
+            model.switch_id = None
+        
+        model.switch_port = int(self.spinBox_link_port.value() or 0)
         model.username = unicode(self.lineEdit_link_login.text()) or ""
         model.password = unicode(self.lineEdit_link_password.text()) or ""
-        model.vpn_ip_address = unicode(self.lineEdit_3.text()) or "0.0.0.0"
+        model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
         model.ipn_ip_address = unicode(self.lineEdit_link_ipn_ip_address.text()) or "0.0.0.0"
         model.ipn_mac_address = unicode(self.lineEdit_link_ipn_mac_address.text()) or ""
             
+        model.allow_dhcp = self.checkBox_allow_dhcp.checkState()==QtCore.Qt.Checked
+        model.allow_dhcp_with_null = self.checkBox_allow_dhcp_with_null.checkState()==QtCore.Qt.Checked
+        model.allow_dhcp_with_minus = self.checkBox_allow_dhcp_with_minus.checkState()==QtCore.Qt.Checked
+        model.allow_dhcp_with_block = self.checkBox_allow_dhcp_with_block.checkState()==QtCore.Qt.Checked
+        model.allow_vpn_with_null = self.checkBox_allow_vpn_with_null.checkState()==QtCore.Qt.Checked
+        model.allow_vpn_with_minus = self.checkBox_allow_vpn_with_minus.checkState()==QtCore.Qt.Checked
+        model.allow_vpn_with_block = self.checkBox_allow_vpn_with_block.checkState()==QtCore.Qt.Checked
+        model.associate_pppoe_ipn_mac = self.checkBox_associate_pppoe_ipn_mac.checkState()==QtCore.Qt.Checked
+        model.associate_pptp_ipn_ip = self.checkBox_associate_pptp_ipn_ip.checkState()==QtCore.Qt.Checked
+        model.vpn_speed=unicode(self.lineEdit_vpn_speed.text()) or ""
+        model.ipn_speed=unicode(self.lineEdit_ipn_speed.text()) or ""
+        
             #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
         try:
             self.connection.save(model,"billservice_subaccount")
