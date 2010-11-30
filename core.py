@@ -171,7 +171,7 @@ class check_vpn_access(Thread):
                 cur.connection.commit()
                 #cur.execute("""DELETE FROM radius_activesession WHERE session_time = 0;""")
                 #cur.connection.commit()
-                cur.execute("""SELECT rs.id,rs.account_id,rs.sessionid,rs.speed_string,
+                cur.execute("""SELECT rs.id,rs.account_id,rs.sessionid,rs.framed_ip_address, rs.speed_string,
                                     lower(rs.framed_protocol) AS access_type,rs.nas_id
                                     FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", (dateAT,))
                 rows=cur.fetchall()
@@ -217,9 +217,9 @@ class check_vpn_access(Thread):
                                 #                        speed=speed[:6])                           
                                 
                                 logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
-                                coa_result = change_speed(vars.DICT, acc, {},nas,
+                                coa_result = change_speed(vars.DICT, acc, {},nas, 
                                                     access_type=str(rs.access_type),
-                                                    format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
+                                                    format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), framed_ip_address=rs.framed_ip_address,
                                                     speed=speed)
 
 
@@ -230,10 +230,7 @@ class check_vpn_access(Thread):
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         else:
                             logger.debug("%s: about to send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                            result = PoD(vars.DICT, rs.account_id, str(acc.username),str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
-                                         str(acc.ipn_mac_address),str(rs.access_type),str(nas.ipaddress), nas_type=nas.type, 
-                                         nas_name=str(nas.name),nas_secret=str(nas.secret),nas_login=str(nas.login), 
-                                         nas_password=str(nas.password),session_id=str(rs.sessionid), format_string=str(nas.reset_action))
+                            result = PoD(vars.DICT, acc, subacc, nas,session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, format_string=str(nas.reset_action))
                             logger.debug("%s: POD over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
 
                         if result is True:
@@ -1284,12 +1281,12 @@ class settlement_period_service_dog(Thread):
                 cur.connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
                 cur.execute("""UPDATE billservice_transaction as tr
-                              SET promise_expired = True 
+                              SET promise_expired = True, summ=0, description='Обнуление обещанного платежа на сумму ' || summ*(-1) 
                               WHERE 
                               promise_expired = False and promise = True and
                               (SELECT sum(summ*(-1)) FROM billservice_transaction WHERE account_id=tr.account_id and promise=False and summ<0 and created>tr.created)>=summ""")
                 
-                cur.execute("""UPDATE billservice_transaction as tr SET summ=0, description='Обнуление обещанного платежа на сумму ' || summ*(-1) 
+                cur.execute("""UPDATE billservice_transaction as tr SET summ=0, description='Обнуление обещанного платежа на сумму ' || summ*(-1), promise_expired = True 
                                 WHERE promise=True and summ < 0 and end_promise<=now();""")
                 cur.connection.commit()
                 logger.info("SPALIVE: %s run time: %s", (self.getName(), time.clock() - a))
@@ -1403,7 +1400,8 @@ class ipn_service(Thread):
                         subaccounts = caches.subaccount_cache.by_account_id.get(acc.account_id, [])
                         access_list = []
                         #if acc.ipn_ip_address != '0.0.0.0':
-                        #access_list.append(('', '', '', '', '', True, None))
+                        if acc.nas_id:
+                            access_list.append(('', '', '', '', acc.nas_id, True, None))
                             
                         for subacc in subaccounts:
                             if not subacc.nas_id or subacc.ipn_ip_address=='0.0.0.0': continue
@@ -1424,7 +1422,8 @@ class ipn_service(Thread):
                             now = dateAT
                             # Если на сервере доступа ещё нет этого пользователя-значит добавляем.
                             if not acc.ipn_added and acc.tarif_active and legacy:
-                                sended = cred(acc, subacc, access_type, nas, format_string=nas.user_add_action)
+                                #sended = cred(acc, subacc, access_type, nas, format_string=nas.user_add_action)
+                                sended = cred(acc, {}, '', nas, format_string=nas.user_add_action)
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
                             if not subacc.ipn_added and acc.tarif_active and not legacy:
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_add_action)
@@ -1439,7 +1438,8 @@ class ipn_service(Thread):
                                 #ipn_added = acc.ipn_added
                                 """Делаем пользователя enabled"""
         
-                                sended = cred(acc, subacc, access_type, nas, format_string=nas.user_enable_action)
+                                #sended = cred(acc, subacc, access_type, nas, format_string=nas.user_enable_action)
+                                sended = cred(acc, {}, '', nas, format_string=nas.user_enable_action)
                                 recreate_speed = True                        
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
                                 
@@ -1449,7 +1449,8 @@ class ipn_service(Thread):
                                 
                             elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and acc.ipn_status and legacy:
                                 #шлём команду на отключение пользователя,account_ipn_status=False
-                                sended = cred(acc, subacc, access_type, nas, format_string=nas.user_disable_action)    
+                                #sended = cred(acc, subacc, access_type, nas, format_string=nas.user_disable_action)
+                                sended = cred(acc, {}, '', nas, format_string=nas.user_disable_action)    
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.account_id,))
 
                             elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and subacc.ipn_enabled and not legacy:
@@ -1491,10 +1492,14 @@ class ipn_service(Thread):
                                     ipn_speed_action=nas.ipn_speed_action 
                                 else: 
                                     ipn_speed_action = nas.aubacc_ipn_speed_action
-                                sended_speed = change_speed(vars.DICT, acc, subacc, nas,
-                                                            access_type=access_type,
-                                                            format_string=ipn_speed_action,
-                                                            speed=speed[:6])
+                                
+                                if ipn_speed_action:
+                                    sended_speed = change_speed(vars.DICT, acc, subacc, nas,
+                                                                access_type=access_type,
+                                                                format_string=ipn_speed_action,
+                                                                speed=speed[:6])
+                                else:
+                                    sended_speed = True
                                 
                                 if legacy: 
                                     cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
