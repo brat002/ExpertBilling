@@ -66,7 +66,7 @@ class IPNAccount(object):
         ipaddress=''
         mac_address=''
 
-def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name='', nas_secret='', nas_login='', nas_password='', session_id='', format_string=''):
+def PoD(dict, acc, subacc, nas, session_id='', vpn_ip_address='', format_string=''):
     """
     @param account_id: ID of account
     @param account_name: name of account
@@ -138,7 +138,7 @@ def PoD(dict, account_id, account_name, account_vpn_ip, account_ipn_ip, account_
                 log_error_('PoD SSH exception: %s' % repr(e))
                 return False
 
-def change_speed(dict, account, subacc ,nas, session_id='', access_type='', format_string='', speed=''):
+def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', access_type='', format_string='', speed=''):
     
     access_type = access_type.lower()
     """
@@ -168,14 +168,14 @@ def change_speed(dict, account, subacc ,nas, session_id='', access_type='', form
         doc.AddAttribute('NAS-IP-Address', str(nas.ipaddress))
         doc.AddAttribute('NAS-Identifier', str(nas.identify))
         if access_type=='lisg':
-            doc.AddAttribute('User-Name', str(account.ipn_ip_address))
+            doc.AddAttribute('User-Name', str(subacc.ipn_ip_address))
         else:
-            doc.AddAttribute('User-Name', str(account.username))
+            doc.AddAttribute('User-Name', str(subacc.username))
         doc.AddAttribute('Acct-Session-Id', str(session_id))
         if access_type=='hotspot':
-            doc.AddAttribute('Framed-IP-Address', str(account.ipn_ip_address))
+            doc.AddAttribute('Framed-IP-Address', str(subacc.ipn_ip_address))
         elif access_type not in ('hotspot', 'lisg'):
-            doc.AddAttribute('Framed-IP-Address', str(account.vpn_ip_address))
+            doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
         #doc.AddAttribute((14988,8), speed_string)
         command_dict={
                              'access_type':str(access_type),
