@@ -456,7 +456,14 @@ def change_tariff(request):
                     return {
                             'error_message':u'Вы не можете перейти на выбранный тариф. Для перехода вам необходимо отработать на старом тарифе ещё не менее %s дней' % (delta/86400*(-1), ),
                             }
-                if rule.on_next_sp:
+            if rule.on_next_sp:
+                sp = user.get_account_tarif().settlement_period
+                if sp:
+                    if sp.autostart:
+                        start = account_tariff.datetime
+                    else:
+                        start = sp.time_start
+                    td = settlement_period_info(start, sp.length_in, sp.length)
                     data_start_period = td[1]
                     data_start_active = True
             if not rule.id in rules_id:

@@ -823,9 +823,13 @@ class HandleSAuth(HandleSBase):
         #subacc = SubAccount()
         #Если не нашли в аккаунтах - ищем в субаккаунтах
         #if not acc:
-        logger.warning("Searching account in subaccounts %s", user_name)
+        logger.warning("Searching account username=%s in subaccounts with pptp-ipn_ip or pppoe-ipn_mac link %s", (user_name, station_id))
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
-        subacc = self.caches.subaccount_cache.by_username.get(user_name)
+        
+        subacc = self.caches.by_username_w_ipn_vpn_link.get((user_name, station_id))
+        if not subacc:
+            logger.warning("Searching account username=%s in subaccounts witouth pptp-ipn_ip or pppoe-ipn_mac link", (user_name, ))
+            subacc = self.caches.subaccount_cache.by_username.get(user_name)
         if not subacc:
             logger.warning("Subaccount with username  %s not found", (user_name,))    
             return self.auth_NA(authobject)       
@@ -916,13 +920,13 @@ class HandleSAuth(HandleSBase):
             logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
             return self.auth_NA(authobject)      
 
-        if self.access_type == 'PPTP' and subacc.associate_pptp_ipn_ip and not (ipn_ip_address == station_id):
-            logger.warning("Unallowed dialed ipn_ip_address for user %s vpn: station_id - %s , ipn_ip - %s; vpn_ip - %s access_type: %s", (username, station_id, subacc.ipn_ip_address, subacc.vpn_ip_address, self.access_type))
-            return self.auth_NA(authobject) 
+        #if self.access_type == 'PPTP' and subacc.associate_pptp_ipn_ip and not (ipn_ip_address == station_id):
+        #    logger.warning("Unallowed dialed ipn_ip_address for user %s vpn: station_id - %s , ipn_ip - %s; vpn_ip - %s access_type: %s", (username, station_id, subacc.ipn_ip_address, subacc.vpn_ip_address, self.access_type))
+        #    return self.auth_NA(authobject) 
         
-        if self.access_type == 'PPPOE' and subacc.associate_pppoe_ipn_mac and not (ipn_mac_address == station_id):
-            logger.warning("Unallowed dialed mac for user %s: station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (username, station_id, subacc.ipn_ip_address, subacc.ipn_mac_address, self.access_type))
-            return self.auth_NA(authobject) 
+        #if self.access_type == 'PPPOE' and subacc.associate_pppoe_ipn_mac and not (ipn_mac_address == station_id):
+        #    logger.warning("Unallowed dialed mac for user %s: station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (username, station_id, subacc.ipn_ip_address, subacc.ipn_mac_address, self.access_type))
+        #    return self.auth_NA(authobject) 
         
 
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
@@ -931,6 +935,21 @@ class HandleSAuth(HandleSBase):
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tarif_active))
         if allow_dial and acc.tarif_active:
+            
+            if vars.ONLY_ONE==True:
+                vars.cursor_lock.acquire()
+                try:
+                    vars.cursor.execute("""SELECT id from radius_activesession WHERE subaccount_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (subacc.id, nas.acct_interim_interval))
+                    if vars.cursor.fetchone():
+                        logger.warning("Account already have session on this NAS. If this error persist - check your nas settings and perform maintance radius_activesession table", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
+                        vars.cursor_lock.release()
+                        return self.auth_NA(authobject)                      
+                    vars.cursor_lock.release()    
+                except Exception, ex:
+                    vars.cursor_lock.release()
+                    logger.error("Couldn't check session dublicates for user %s account=%s because %s", (str(user_name), acc.account_id, repr(ex)))
+                    return self.auth_NA(authobject) 
+            
             '''
             framed_ip_address = None
             if acc.vpn_ip_address == '0.0.0.0' and acc.vpn_ipinuse_id:
@@ -954,6 +973,7 @@ class HandleSAuth(HandleSBase):
             self.replypacket.AddAttribute('Service-Type', 2)
             self.replypacket.AddAttribute('Framed-Protocol', 1)
             self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
+            self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             #account_speed_limit_cache
             self.create_speed(nas, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
             self.add_values(acc.tarif_id)
@@ -1435,7 +1455,7 @@ class HandleSDHCP(HandleSBase):
         allow_dial = True
         if acc.access_type=='DHCP':
             allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
-        if acstatus and allow_dial:
+        if acstatus and allow_dial and acc.tarif_active:
             authobject.set_code(2)
             self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)
             #self.replypacket.AddAttribute('Framed-IP-Netmask', "255.255.255.0")
