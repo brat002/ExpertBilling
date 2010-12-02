@@ -692,11 +692,12 @@ class HandleSNA(HandleSBase):
 authenticated_speeds={}
 #auth_class
 class HandleSAuth(HandleSBase):
-    __slots__ = () + ('access_type', 'secret', 'speed','nas_id', 'nas_type', 'multilink', 'fMem')
+    __slots__ = () + ('access_type', 'secret', 'speed','session_speed','nas_id', 'nas_type', 'multilink', 'fMem')
     def __init__(self,  packetobject, access_type):
         self.packetobject = packetobject
         self.access_type=access_type
-        self.secret = ''        
+        self.secret = ''     
+        self.session_speed = ''   
         #logger.debugfun('%s', show_packet, (packetobject,))
 
 
@@ -716,7 +717,7 @@ class HandleSAuth(HandleSBase):
             else:
                 self.replypacket.AddAttribute(attr.attrid, str(attr.value))
 
-    def create_speed(self, nas, tarif_id, account_id, speed=''):
+    def create_speed(self, nas, subacc_id, tarif_id, account_id, speed=''):
         if not (nas.speed_value1 or nas.speed_value2): return
         result_params=speed
         if speed=='':
@@ -746,7 +747,8 @@ class HandleSAuth(HandleSBase):
             #Проводим корректировку скорости в соответствии с лимитом
 
             result = get_corrected_speed(result, correction)
-            accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])                                                 
+            accservices = self.caches.accountaddonservice_cache.by_subaccount.get(subacc_id, [])    
+            if not accservices: accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])                                                 
             addonservicespeed=[]                            
             for accservice in accservices:                                 
                 service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
@@ -773,7 +775,7 @@ class HandleSAuth(HandleSBase):
             #print flatted
         
         speed_sess = "%s%s%s%s%s%s%s%s%s%s%s" % tuple(result)
-        sessions_speed[account_id] = speed_sess 
+        self.session_speed = speed_sess 
         #print speed_sess
         command_dict={'max_limit_rx': result[0],
         'max_limit_tx': result[1],
@@ -826,7 +828,7 @@ class HandleSAuth(HandleSBase):
         logger.warning("Searching account username=%s in subaccounts with pptp-ipn_ip or pppoe-ipn_mac link %s", (user_name, station_id))
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
         
-        subacc = self.caches.by_username_w_ipn_vpn_link.get((user_name, station_id))
+        subacc = self.caches.subaccount_cache.by_username_w_ipn_vpn_link.get((user_name, station_id))
         if not subacc:
             logger.warning("Searching account username=%s in subaccounts witouth pptp-ipn_ip or pppoe-ipn_mac link", (user_name, ))
             subacc = self.caches.subaccount_cache.by_username.get(user_name)
@@ -975,7 +977,8 @@ class HandleSAuth(HandleSBase):
             self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             #account_speed_limit_cache
-            self.create_speed(nas, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
+            self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
+            self.replypacket.AddAttribute('Class', str("%s,%s" % (subacc.id,str(self.session_speed))))
             self.add_values(acc.tarif_id)
             #print "Setting Speed For User" , self.speed
             return authobject, self.replypacket
@@ -1097,8 +1100,9 @@ class HandlelISGAuth(HandleSAuth):
             self.replypacket.password = '' #Нельзя юникод
 
             #account_speed_limit_cache
-            self.create_speed(nas, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
+            self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
             self.add_values(acc.tarif_id)
+            sessions_speed[acc.account_id] = self.session_speed
             #print "Setting Speed For User" , self.speed
             return authobject, self.replypacket
         else:
@@ -1184,7 +1188,8 @@ class HandleHotSpotAuth(HandleSBase):
             #print flatted
 
         speed_sess = "%s%s%s%s%s%s%s%s%s%s%s" % tuple(result)
-        sessions_speed[account_id] = speed_sess 
+        #sessions_speed[account_id] = speed_sess 
+        
         command_dict={'max_limit_rx': result[0],
         'max_limit_tx': result[1],
         'burst_limit_rx': result[2],
@@ -1369,7 +1374,7 @@ class HandleSDHCP(HandleSBase):
             #print flatted
         
         speed_sess = "%s%s%s%s%s%s%s%s%s%s%s" % tuple(result)
-        sessions_speed[account_id] = speed_sess 
+        #sessions_speed[account_id] = speed_sess 
         #print speed_sess
         command_dict={'max_limit_rx': result[0],
         'max_limit_tx': result[1],
@@ -1510,7 +1515,7 @@ class HandleSAcct(HandleSBase):
             return None
         
 
-        
+        subacc_id, session_speed = self.packetobject.get('Class', ",")[0].split(",")
         #if 0: assert isinstance(nas, NasData)
 
         self.replypacket.secret=str(nasses[0].secret)  
@@ -1524,8 +1529,10 @@ class HandleSAcct(HandleSBase):
         #subacc = SubAccount()
         if self.access_type=='lISG':
             subacc = self.caches.subaccount_cache.by_ipn_ip.get(self.userName)
-        else:
+        elif not subacc_id:
             subacc = self.caches.subaccount_cache.by_username.get(self.userName)
+        elif subacc_id:
+            subacc = self.caches.subaccount_cache.by_id.get(self.userName)
 
             
         if subacc:
@@ -1593,7 +1600,7 @@ class HandleSAcct(HandleSBase):
                                         self.packetobject['Calling-Station-Id'][0], 
                                         self.packetobject['Called-Station-Id'][0], 
                                         self.packetobject.get('Framed-IP-Address',[''])[0],
-                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id, sessions_speed.get(acc.account_id, "")))
+                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id, session_speed if not sessions_speed.get(acc.account_id, "") else sessions_speed.get(acc.account_id, "")))
                 try:
                     #???? Locks, anyone??
                     del sessions_speed[acc.account_id]

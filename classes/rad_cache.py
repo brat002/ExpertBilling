@@ -123,7 +123,7 @@ class AddonServiceCache(SimpleDictCache):
     sql = core_sql['addon_service']
     
 class AccountAddonServiceCache(CacheItem):
-    __slots__ = ('by_id', 'by_account', 'by_service')
+    __slots__ = ('by_id', 'by_account', 'by_subaccount', 'by_service')
     
     datatype = AccountAddonServiceData
     sql = core_sql['addon_account']
@@ -134,6 +134,7 @@ class AccountAddonServiceCache(CacheItem):
         self.by_service = defaultdict(list)
         #index on tariff_id
         self.by_account = defaultdict(list)
+        self.by_subaccount = defaultdict(list)
         
     def reindex(self):
         self.by_id.clear()
@@ -141,14 +142,18 @@ class AccountAddonServiceCache(CacheItem):
         self.by_service.clear()
         #index on tariff_id
         self.by_account.clear()
+        self.by_subaccount.clear()
         for addon in self.data:
             self.by_id[addon.id]  = addon
-            self.by_account[addon.account_id].append(addon)
+            if addon.account_id:
+                self.by_account[addon.account_id].append(addon)
+            if addon.subaccount_id:
+                self.by_subaccount[addon.subaccount_id].append(addon)
             self.by_service[addon.service_id].append(addon)
             
             
 class SubAccountsCache(CacheItem):
-    __slots__ = ('by_account_id', 'by_username', 'by_username_w_ipn_vpn_link', 'by_mac', 'by_ipn_ip', 'by_vpn_ip', 'by_ipn_ip_nas_id')
+    __slots__ = ('by_id', 'by_username', 'by_username_w_ipn_vpn_link', 'by_mac', 'by_ipn_ip', 'by_vpn_ip', 'by_ipn_ip_nas_id')
     
     datatype = SubAccountsData
     sql = rad_sql['subaccounts']
@@ -157,7 +162,7 @@ class SubAccountsCache(CacheItem):
         super(SubAccountsCache, self).__init__()
         
     def reindex(self):
-        self.by_account_id = {}
+        self.by_id = {}
         self.by_username = {}
         self.by_mac = {}
         self.by_ipn_ip = {}
@@ -167,7 +172,7 @@ class SubAccountsCache(CacheItem):
         #self.by_username_w_pppoe_mac = {}
         
         for item in self.data:
-            self.by_account_id[item.account_id] = item
+            self.by_id[item.id] = item
             if item.username:
                 self.by_username[item.username] = item
             if item.ipn_mac_address:
@@ -178,9 +183,9 @@ class SubAccountsCache(CacheItem):
             if item.vpn_ip_address and item.vpn_ip_address is not "0.0.0.0" :
                 self.by_vpn_ip[item.vpn_ip_address] = item
             if item.ipn_ip_address and item.ipn_ip_address is not "0.0.0.0" and item.associate_pptp_ipn_ip==True:
-                self.by_username_w_ipn_vpn_link[(item.username, item.ipn_ip_address)]
+                self.by_username_w_ipn_vpn_link[(item.username, item.ipn_ip_address)]=item
 
             if item.ipn_mac_address  and item.associate_pppoe_ipn_mac==True:
-                self.by_username_w_ipn_vpn_link[(item.username, item.ipn_mac_address)]
+                self.by_username_w_ipn_vpn_link[(item.username, item.ipn_mac_address)]=item
             
     
