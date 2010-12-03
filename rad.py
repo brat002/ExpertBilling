@@ -1293,115 +1293,117 @@ class HandleHotSpotAuth(HandleSBase):
 
 
 #auth_class
-class HandleSDHCP(HandleSBase):
+class HandleSDHCP(HandleSAuth):
     __slots__ = () + ('secret', 'nas_id', 'nas_type',)
     def __init__(self,  packetobject):
-        super(HandleSDHCP, self).__init__()
+        super(HandleSAuth, self).__init__()
 
         self.packetobject = packetobject
         self.secret = ""
         #logger.debugfun('%s', show_packet, (packetobject,))
 
-    def auth_NA(self, authobject):
-        """Deny access"""
-
-        authobject.set_code(3)
-        return authobject, self.packetobject
-
-    def add_values(self, tarif_id):
-        attrs = self.caches.radattrs_cache.by_id.get(tarif_id, [])
-        for attr in attrs:
-            if 0: assert isinstance(attr, RadiusAttrsData)
-            if attr.vendor:
-                self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
-            else:
-                self.replypacket.AddAttribute(attr.attrid, str(attr.value))
-
-    def create_speed(self, nas, tarif_id, account_id, speed=''):
-        if not (nas.speed_value1 or nas.speed_value2): return
-        result_params=speed
-        if speed=='':
-            defaults = self.caches.defspeed_cache.by_id.get(tarif_id)
-            speeds   = self.caches.speed_cache.by_id.get(tarif_id, [])
-            defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]
-            result=[]
-            min_delta, minimal_period = -1, []
-            now=datetime.datetime.now()
-            for speed in speeds:
-                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
-                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)
-                if res==True and (delta<min_delta or min_delta==-1):
-                    minimal_period=speed
-                    min_delta=delta
-
-            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]
-            for k in xrange(0, 6):
-                s=minimal_period[k]
-                if s=='0/0' or s=='/' or s=='':
-                    res=defaults[k]
-                else:
-                    res=s
-                result.append(res)           
-                
-            correction = self.caches.speedlimit_cache.by_account_id.get(account_id)
-            #Проводим корректировку скорости в соответствии с лимитом
-
-            result = get_corrected_speed(result, correction)
-            accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])                                                 
-            addonservicespeed=[]                            
-            for accservice in accservices:                                 
-                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                if not accservice.deactivated  and service.change_speed:                                                                        
-                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                    break 
-                
-            #Корректируем скорость подключаемой услугой
-            result = get_corrected_speed(result, addonservicespeed)
-            if result==[]: 
-                result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
-            else:
-                result = get_decimals_speeds(result)
-                
-            
-            #print result
-            #result_params=create_speed_string(result)
-            #print result
-        else:
-            #a = 
-            #print a, type(a)
-            #flatted = flatten(map(split_speed, a))
-            result = list(chain(*map(split_speed,parse_custom_speed_lst_rad(speed)) ))
-            #print flatted
-        
-        speed_sess = "%s%s%s%s%s%s%s%s%s%s%s" % tuple(result)
-        #sessions_speed[account_id] = speed_sess 
-        #print speed_sess
-        command_dict={'max_limit_rx': result[0],
-        'max_limit_tx': result[1],
-        'burst_limit_rx': result[2],
-        'burst_limit_tx': result[3],
-        'burst_treshold_rx': result[4],
-        'burst_treshold_tx': result[5],
-        'burst_time_rx': result[6],
-        'burst_time_tx': result[7],
-        'priority': result[8],
-        'min_limit_rx': result[9],
-        'min_limit_tx': result[10]}
-        
-        if nas.speed_value1:
-            result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
-            if result_params and nas.speed_vendor_1:
-                self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),str(result_params))
-            elif result_params and not nas.speed_vendor_1:
-                self.replypacket.AddAttribute(nas.speed_attr_id1,str(result_params))
-
-
-        if nas.speed_value2:
-            result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
-            if result_params and nas.speed_vendor_2:
-                self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
-            elif result_params and not nas.speed_vendor_2:
-                self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
+#===============================================================================
+#    def auth_NA(self, authobject):
+#        """Deny access"""
+# 
+#        authobject.set_code(3)
+#        return authobject, self.packetobject
+# 
+#    def add_values(self, tarif_id):
+#        attrs = self.caches.radattrs_cache.by_id.get(tarif_id, [])
+#        for attr in attrs:
+#            if 0: assert isinstance(attr, RadiusAttrsData)
+#            if attr.vendor:
+#                self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
+#            else:
+#                self.replypacket.AddAttribute(attr.attrid, str(attr.value))
+# 
+#    def create_speed(self, nas, tarif_id, account_id, speed=''):
+#        if not (nas.speed_value1 or nas.speed_value2): return
+#        result_params=speed
+#        if speed=='':
+#            defaults = self.caches.defspeed_cache.by_id.get(tarif_id)
+#            speeds   = self.caches.speed_cache.by_id.get(tarif_id, [])
+#            defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]
+#            result=[]
+#            min_delta, minimal_period = -1, []
+#            now=datetime.datetime.now()
+#            for speed in speeds:
+#                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
+#                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)
+#                if res==True and (delta<min_delta or min_delta==-1):
+#                    minimal_period=speed
+#                    min_delta=delta
+# 
+#            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]
+#            for k in xrange(0, 6):
+#                s=minimal_period[k]
+#                if s=='0/0' or s=='/' or s=='':
+#                    res=defaults[k]
+#                else:
+#                    res=s
+#                result.append(res)           
+#                
+#            correction = self.caches.speedlimit_cache.by_account_id.get(account_id)
+#            #Проводим корректировку скорости в соответствии с лимитом
+# 
+#            result = get_corrected_speed(result, correction)
+#            accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])                                                 
+#            addonservicespeed=[]                            
+#            for accservice in accservices:                                 
+#                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
+#                if not accservice.deactivated  and service.change_speed:                                                                        
+#                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+#                    break 
+#                
+#            #Корректируем скорость подключаемой услугой
+#            result = get_corrected_speed(result, addonservicespeed)
+#            if result==[]: 
+#                result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
+#            else:
+#                result = get_decimals_speeds(result)
+#                
+#            
+#            #print result
+#            #result_params=create_speed_string(result)
+#            #print result
+#        else:
+#            #a = 
+#            #print a, type(a)
+#            #flatted = flatten(map(split_speed, a))
+#            result = list(chain(*map(split_speed,parse_custom_speed_lst_rad(speed)) ))
+#            #print flatted
+#        
+#        speed_sess = "%s%s%s%s%s%s%s%s%s%s%s" % tuple(result)
+#        #sessions_speed[account_id] = speed_sess 
+#        #print speed_sess
+#        command_dict={'max_limit_rx': result[0],
+#        'max_limit_tx': result[1],
+#        'burst_limit_rx': result[2],
+#        'burst_limit_tx': result[3],
+#        'burst_treshold_rx': result[4],
+#        'burst_treshold_tx': result[5],
+#        'burst_time_rx': result[6],
+#        'burst_time_tx': result[7],
+#        'priority': result[8],
+#        'min_limit_rx': result[9],
+#        'min_limit_tx': result[10]}
+#        
+#        if nas.speed_value1:
+#            result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
+#            if result_params and nas.speed_vendor_1:
+#                self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),str(result_params))
+#            elif result_params and not nas.speed_vendor_1:
+#                self.replypacket.AddAttribute(nas.speed_attr_id1,str(result_params))
+# 
+# 
+#        if nas.speed_value2:
+#            result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
+#            if result_params and nas.speed_vendor_2:
+#                self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
+#            elif result_params and not nas.speed_vendor_2:
+#                self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
+#===============================================================================
 
 
     def handle(self):
@@ -1467,7 +1469,7 @@ class HandleSDHCP(HandleSBase):
             self.replypacket.AddAttribute('Session-Timeout',   vars.SESSION_TIMEOUT)
             if acc.access_type=='DHCP':
                 self.add_values(acc.tarif_id)
-                self.create_speed(nas, acc.tarif_id, acc.account_id, speed=subacc.ipn_speed)
+                self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.ipn_speed)
             return authobject, self.replypacket
         else:
             return self.auth_NA(authobject)

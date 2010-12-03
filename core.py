@@ -184,6 +184,7 @@ class check_vpn_access(Thread):
                         result=None
                         nas = caches.nas_cache.by_ip.get(str(rs.nas_id))
                         acc = caches.account_cache.by_account.get(rs.account_id)
+                        subacc = caches.subaccount_cache.by_id.get(rs.subaccount_id)
                         if not nas or not acc or not acc.account_status == 1: continue
                         
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
@@ -196,8 +197,11 @@ class check_vpn_access(Thread):
                         if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id):
                             #chech whether speed has changed
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
-                            #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно??                            
-                            accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                                                 
+                            
+                            accservices = caches.accountaddonservice_cache.by_subaccount.get(subacc_id, [])    
+                            if not accservices: accservices = caches.accountaddonservice_cache.by_account.get(account_id, [])    
+                                  
+                            #accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                                                 
                             addonservicespeed=[]                            
                             for accservice in accservices:                                 
                                 service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
@@ -217,7 +221,7 @@ class check_vpn_access(Thread):
                                 #                        speed=speed[:6])                           
                                 
                                 logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
-                                coa_result = change_speed(vars.DICT, acc, {},nas, 
+                                coa_result = change_speed(vars.DICT, acc, subacc, {},nas, 
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), framed_ip_address=rs.framed_ip_address,
                                                     speed=speed)
@@ -231,209 +235,6 @@ class check_vpn_access(Thread):
                         else:
                             logger.debug("%s: about to send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                             result = PoD(vars.DICT, acc, subacc, nas,session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, format_string=str(nas.reset_action))
-                            logger.debug("%s: POD over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-
-                        if result is True:
-                            disconnect_result='ACK'
-                        elif result is False:
-                            disconnect_result='NACK'
-                            
-                        if result is not None:
-                            cur.execute("""UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
-                                        """, (disconnect_result, rs.sessionid,))
-                            cur.connection.commit()                            
-                    
-                    except Exception, ex:
-                        logger.error("%s: row exec exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                        if isinstance(ex, vars.db_errors): raise ex
-                    
-                cur.connection.commit()   
-                cur.close()
-                logger.info("VPNALIVE: VPN thread run time: %s", time.clock() - a)
-            except Exception, ex:
-                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if ex.__class__ in vars.db_errors:
-                    time.sleep(5)
-                    try:
-                        self.connection = get_connection(vars.db_dsn)
-                    except Exception, eex:
-                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
-                        time.sleep(10)
-            time.sleep(vars.VPN_SLEEP + random.randint(0,5))
-
-    def run(self):
-        #self.remove_sessions()
-        self.check_access()
-
-class check_dhcp_access(Thread):
-    """
-    Получить всех пользователей на DHCP тарифах и отсортировать по NAS.
-    В пределах одного NAS получаем список сессий. По каждой сесси находим пользователя и проверяем его
-    
-    
-    """
-    def __init__ (self):          
-        Thread.__init__(self)
-
-    def create_speed(self, default, speeds,  correction, addonservicespeed, speed, date_):          
-        if speed=='':            
-            defaults = default            
-            defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]            
-            result=[]            
-            min_delta, minimal_period = -1, []            
-            now=date_            
-            for speed in speeds:                
-                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
-                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)                
-                #print "res=",res                
-                if res==True and (delta<min_delta or min_delta==-1):                    
-                    minimal_period=speed                    
-                min_delta=delta            
-            
-            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]            
-            for k in xrange(0, 6):                
-                s=minimal_period[k]                
-                if s=='0/0' or s=='/' or s=='':                    
-                    res=defaults[k]                
-                else:                    
-                    res=s                
-                result.append(res)   #Проводим корректировку скорости в соответствии с лимитом            
-            #print self.caches.speedlimit_cache      
-   
-            result = get_corrected_speed(result, correction)            
-            if addonservicespeed:                
-                result = get_corrected_speed(result, addonservicespeed)                        
-            if result==[]:                 
-                result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                            
-            
-            return result
-        else:
-            try:
-                return parse_custom_speed_lst(speed)
-            except Exception, ex:
-                logger.error("%s : exception: %s \n %s Can not parse account speed %s", (self.getName(), repr(ex), traceback.format_exc()), acc.ipn_speed)
-                return ["0/0","0/0","0/0","0/0","8","0/0"] 
-            
-
-
-    def check_access(self):
-        """
-            Раз в 30 секунд происходит выборка всех пользователей
-            OnLine, делается проверка,
-            1. не вышли ли они за рамки временного диапазона
-            2. Не ушли ли в нулевой балланс
-            если срабатывает одно из двух условий-посылаем команду на отключение пользователя
-            TO-DO: Переписать! Работает правильно.
-            nas_id содержит в себе IP адрес. Сделано для уменьшения выборок в модуле core при старте сессии
-            TO-DO: если NAS не поддерживает POD или в парметрах доступа ТП указан IPN - отсылать команды через SSH
-        """
-        global cacheMaster, suicideCondition, vars
-        dateAT = datetime.datetime(2000, 1, 1)
-        self.connection = get_connection(vars.db_dsn)
-        caches = None
-        while True:            
-            try:
-                if suicideCondition[self.__class__.__name__]:
-                    try: self.connection.close()
-                    except: pass
-                    break
-                a = time.clock()
-
-                if cacheMaster.date > dateAT:
-                    cacheMaster.lock.acquire()
-                    try:
-                        caches = cacheMaster.cache
-                        dateAT = deepcopy(cacheMaster.date)
-                    except Exception, ex:
-                        logger.error("%s: cache exception: %s", (self.getName, repr(ex)))
-                    finally:
-                        cacheMaster.lock.release()
-                if not caches:
-                    time.sleep(10)
-                    continue
-                if 0: assert isinstance(caches, CoreCaches)             
-                   
-                cur = self.connection.cursor()
-                #close frozen sessions
-                #now = datetime.datetime.now()
-                now = dateAT
-                #cur.execute("""UPDATE radius_activesession 
-                #               SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
-                #               WHERE ((now()-interrim_update>=interval '00:10:00') or (now()-date_start>=interval '00:10:00' and interrim_update IS Null)) AND date_end IS Null;
-                #               """)
-#===============================================================================
-#                cur.execute("""UPDATE radius_activesession 
-#                               SET session_time=extract(epoch FROM date_end-date_start), date_end=now(), session_status='NACK' 
-#                               WHERE now()-date_start>=interval '00:15:00' and interrim_update IS Null and session_status='ACTIVE' AND date_end IS Null;
-#                               UPDATE radius_activesession SET session_status='ACK' WHERE date_end IS Null AND session_status='ACTIVE');""")
-#===============================================================================
-                cur.connection.commit()
-                #cur.execute("""DELETE FROM radius_activesession WHERE session_time = 0;""")
-                #cur.connection.commit()
-                cur.execute("""SELECT account.id FROM billservice_account as account
-                                JOIN billservice
-                ;""", (dateAT,))
-                rows=cur.fetchall()
-                cur.connection.commit()
-                #try:
-                #    sessions = convert(rosClient('10.10.1.100', 'admin', 'Wind0za', r"/queue/simple/getall"))
-                for row in rows:
-                    try:
-                        rs = RadiusSession(*row)
-                        result=None
-                        nas = caches.nas_cache.by_ip.get(str(rs.nas_id))
-                        acc = caches.account_cache.by_account.get(rs.account_id)
-                        
-                        if not nas or not acc or not acc.account_status == 1: continue
-                        
-                        if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
-                        
-
-                        acstatus = (((not acc.allow_vpn_null and acc.ballance + acc.credit>0) or acc.allow_vpn_null) \
-                                    and \
-                                    (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status == 1 and acc.tarif_active==True
-                        
-                        if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id):
-                            #chech whether speed has changed
-                            account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
-                            #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно??                            
-                            accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                                                 
-                            addonservicespeed=[]                            
-                            for accservice in accservices:                                 
-                                service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                                if not accservice.deactivated  and service.change_speed:                                                                        
-                                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                                    break                            
-                            speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.vpn_speed, dateAT)                            
-
-                            speed = get_decimals_speeds(speed)
-                            newspeed = ''.join([unicode(spi) for spi in speed])
-
-                            if rs.speed_string != newspeed:
-                                #coa_result=change_speed(vars.DICT, rs.account_id, str(acc.username), str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
-                                #                        str(acc.ipn_mac_address), str(nas.ipaddress),nas.type, str(nas.name),
-                                #                        str(nas.login), str(nas.password), nas_secret=str(nas.secret),
-                                #                        session_id=str(rs.sessionid), access_type=str(rs.access_type),format_string=str(nas.vpn_speed_action),
-                                #                        speed=speed[:6])                           
-                                
-                                logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
-                                coa_result = change_speed(vars.DICT, acc, {},nas,
-                                                    access_type=str(rs.access_type),
-                                                    format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid),
-                                                    speed=speed)
-
-
-                                if coa_result==True:
-                                    cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
-                                                """ , (newspeed, rs.id,))
-                                    cur.connection.commit()
-                                logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                        else:
-                            logger.debug("%s: about to send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                            result = PoD(vars.DICT, rs.account_id, str(acc.username),str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
-                                         str(acc.ipn_mac_address),str(rs.access_type),str(nas.ipaddress), nas_type=nas.type, 
-                                         nas_name=str(nas.name),nas_secret=str(nas.secret),nas_login=str(nas.login), 
-                                         nas_password=str(nas.password),session_id=str(rs.sessionid), format_string=str(nas.reset_action))
                             logger.debug("%s: POD over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
 
                         if result is True:
