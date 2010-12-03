@@ -90,17 +90,17 @@ def PoD(dict, acc, subacc, nas, session_id='', vpn_ip_address='', format_string=
         sock.settimeout(20)
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=40, secret=str(nas_secret), dict=dict)
-        doc.AddAttribute('NAS-IP-Address', str(nas_ip))
-        doc.AddAttribute('NAS-Identifier', str(nas_name))
+        doc.AddAttribute('NAS-IP-Address', str(nas.ipaddress))
+        doc.AddAttribute('NAS-Identifier', str(nas.identify))
         if access_type=='lISG':
-            doc.AddAttribute('User-Name', str(account_ipn_ip))
+            doc.AddAttribute('User-Name', str(subacc.ipn_ip_address))
         else:
-            doc.AddAttribute('User-Name', str(account_name))
+            doc.AddAttribute('User-Name', str(subacc.username))
         doc.AddAttribute('Acct-Session-Id', str(session_id))
         if access_type=='hotspot':
-            doc.AddAttribute('Framed-IP-Address', str(account_ipn_ip))
+            doc.AddAttribute('Framed-IP-Address', str(subacc.ipn_ip_address))
         elif access_type not in ('hotspot', 'lisg'):
-            doc.AddAttribute('Framed-IP-Address', str(account_vpn_ip))
+            doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
         doc_data=doc.RequestPacket()
         sock.sendto(doc_data,(str(nas_ip), 1700))
         (data, addrport) = sock.recvfrom(8192)
@@ -112,11 +112,32 @@ def PoD(dict, acc, subacc, nas, session_id='', vpn_ip_address='', format_string=
         return doc.has_key("Error-Cause")==False
     elif format_string!='' and access_type in ['pptp', 'l2tp', 'pppoe']:
         #ssh
+        
         log_debug_('POD ROS')
-        command_string=command_string_parser(command_string=format_string, command_dict=
-                            {'access_type': access_type, 'username': account_name,'user_id': account_id,
-                             'account_ipn_ip': account_ipn_ip, 'account_vpn_ip': account_vpn_ip,
-                             'account_mac_address':account_mac_address,'session': session_id})
+        
+        command_dict={'access_type': access_type, 'session': session_id}
+        
+        d = dict(nas)
+        for x in d.keys():
+            
+            command_dict+={
+                          'nas_%s' % x: str(d[x]),
+                           }  
+        d = dict(acc)
+        for x in d.keys():
+            
+            command_dict+={
+                          'acc_%s' % x: str(d[x]),
+                           }  
+        if subacc:
+            d = dict(subacc)
+            for x in d.keys():
+                
+                command_dict+={
+                              'subacc_%s' % x: str(d[x]),
+                               }          
+                
+        command_string=command_string_parser(command_string=format_string, command_dict)
         #print command_string
         if nas_type=='mikrotik3' and False:
             log_debug_('POD ROS3')

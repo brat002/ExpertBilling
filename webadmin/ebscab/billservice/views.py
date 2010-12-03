@@ -189,7 +189,7 @@ def index(request):
         ballance = 0 
     traffic = TrafficLimit.objects.filter(tarif=tariff_id)      
     #account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
-    account_tariff = user.get_account_tariff()
+    account_tariff = AccountTarif.objects.filter(account=user, datetime__lte=datetime.datetime.now()).order_by('-datetime')[0]
     account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff)
     prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
     try:
@@ -208,7 +208,7 @@ def index(request):
             'active_class':'user-img',
             'next_tariff':next_tariff,
             }
-    
+
 @render_to('accounts/netflowstream_info.html')
 @login_required
 def netflowstream_info(request):
