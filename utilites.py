@@ -17,7 +17,8 @@ import psycopg2
 import commands
 import traceback
 import datetime, calendar, time
-import os, os.path, sys, time, md5, binascii, socket, select
+import os, os.path, sys, time, binascii, socket, select
+from hashlib import md5
 
 try:
     from os import kill

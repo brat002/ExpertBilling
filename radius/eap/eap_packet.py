@@ -1,4 +1,5 @@
-import struct, types, random, md5
+import struct, types, random
+from hashlib import md5
 import copy
 
 class EAP_Codes():
