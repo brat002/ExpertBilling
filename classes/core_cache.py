@@ -310,7 +310,7 @@ class AddonServiceTarifCache(CacheItem):
             self.by_service[addon.service_id].append(addon)
             
 class AccountAddonServiceCache(CacheItem):
-    __slots__ = ('by_id', 'by_account', 'by_service')
+    __slots__ = ('by_id', 'by_subaccount', 'by_account', 'by_service')
     
     datatype = AccountAddonServiceData
     sql = core_sql['addon_account']
@@ -321,6 +321,7 @@ class AccountAddonServiceCache(CacheItem):
         self.by_service = defaultdict(list)
         #index on tariff_id
         self.by_account = defaultdict(list)
+        self.by_subaccount =  defaultdict(list)
         
     def reindex(self):
         self.by_id.clear()
@@ -328,9 +329,11 @@ class AccountAddonServiceCache(CacheItem):
         self.by_service.clear()
         #index on tariff_id
         self.by_account.clear()
+        self.by_subaccount.clear()
         for addon in self.data:
             self.by_id[addon.id]  = addon
             self.by_account[addon.account_id].append(addon)
+            self.by_subaccount[addon.subaccount_id].append(addon)
             self.by_service[addon.service_id].append(addon)
             
 class AddonPeriodicalCache(CacheItem):

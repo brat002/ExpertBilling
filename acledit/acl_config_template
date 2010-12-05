@@ -1,0 +1,8 @@
+!
+no access-list 101
+% for row in result:
+access-list 101 permit tcp ${row['ipn_ip_address']} 0.0.0.0 any
+% endfor
+access-list 101 deny tcp any any
+!
+end

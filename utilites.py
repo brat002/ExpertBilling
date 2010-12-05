@@ -66,7 +66,7 @@ class IPNAccount(object):
         ipaddress=''
         mac_address=''
 
-def PoD(dict, acc, subacc, nas, session_id='', vpn_ip_address='', format_string=''):
+def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='', format_string=''):
     """
     @param account_id: ID of account
     @param account_name: name of account
@@ -84,7 +84,7 @@ def PoD(dict, acc, subacc, nas, session_id='', vpn_ip_address='', format_string=
     #log_debug_('PoD args: %s' % str([account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string]))
     
     access_type = access_type.lower()
-    if (format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg'] ) or access_type=='hotspot' or nas_type=='cisco':
+    if (format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg'] ) or access_type=='hotspot' or nas.type=='cisco':
         log_debug_("Send PoD")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(20)
@@ -117,39 +117,39 @@ def PoD(dict, acc, subacc, nas, session_id='', vpn_ip_address='', format_string=
         
         command_dict={'access_type': access_type, 'session': session_id}
         
-        d = dict(nas)
+        d = nas._asdict()
         for x in d.keys():
             
-            command_dict+={
+            command_dict.update({
                           'nas_%s' % x: str(d[x]),
-                           }  
-        d = dict(acc)
+                           })
+        d = account._asdict()
         for x in d.keys():
             
-            command_dict+={
+            command_dict.update({
                           'acc_%s' % x: str(d[x]),
-                           }  
+                           })
         if subacc:
-            d = dict(subacc)
+            d = subacc._asdict()
             for x in d.keys():
                 
-                command_dict+={
+                command_dict.update({
                               'subacc_%s' % x: str(d[x]),
-                               }          
+                               })
                 
-        command_string=command_string_parser(command_string=format_string, command_dict)
+        command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         #print command_string
-        if nas_type=='mikrotik3' and False:
+        if nas.type=='mikrotik3' and False:
             log_debug_('POD ROS3')
             rosClient(host=nas_ip, login=nas_login, password=nas_password, command=command_string)
             return True
         else:
             try:
                 if ssh_exec:
-                    sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
+                    sshclient = ssh_execute(nas.login, nas.ipaddress, nas.password, command_string)
                     log_debug_('PoD ssh %s' % sshclient)
                 else:
-                    sshclient=ssh_client(host=nas_ip, username=nas_login, password=nas_password, command = command_string)
+                    sshclient=ssh_client(host=nas.ipaddress, username=nas.login, password=nas.password, command = command_string)
                     log_debug_('ssh connected')
                     del sshclient
                 
@@ -203,25 +203,26 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
                              'session': str(session_id),
                              }
 
-        d = dict(nas)
+        d = nas._asdict()
         for x in d.keys():
             
-            command_dict+={
+            command_dict.update({
                           'nas_%s' % x: str(d[x]),
-                           }  
-        d = dict(acc)
+                           })
+            
+        d = account._asdict()
         for x in d.keys():
             
-            command_dict+={
+            command_dict.update({
                           'acc_%s' % x: str(d[x]),
-                           }  
+                           }) 
         if subacc:
-            d = dict(subacc)
+            d = subacc._asdict()
             for x in d.keys():
                 
-                command_dict+={
+                command_dict.update({
                               'subacc_%s' % x: str(d[x]),
-                               }          
+                               })    
         
         speed = get_decimals_speeds(speed)
         #print speed
@@ -267,30 +268,31 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
                              'access_type':str(access_type),
                              'session': str(session_id),
                     }
-        d = dict(nas)
+        d = nas._asdict()
         for x in d.keys():
             
-            command_dict+={
+            command_dict.update({
                           'nas_%s' % x: str(d[x]),
-                           }          
-        d = dict(acc)
+                           })          
+        d = account._asdict()
         for x in d.keys():
             
-            command_dict+={
+            command_dict.update({
                           'acc_%s' % x: str(d[x]),
-                           }  
+                           })
         if subacc :
-            d = dict(subacc)
+            d = subacc._asdict()
             for x in d.keys():
                 
-                command_dict+={
+                command_dict.update({
                               'subacc_%s' % x: str(d[x]),
-                               }  
+                               })
         speed = get_decimals_speeds(speed)
         #print speed
         speed = speed_list_to_dict(speed)
         command_dict.update(speed)
         #print 'command_dict=', command_dict
+        #print "command_dict=", command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         if not command_string: return True
         log_debug_("Change Speedcommand_string= %s" % command_string)
@@ -315,7 +317,7 @@ def cred(acc, subacc, access_type, nas, format_string):
         command_dict={
                              'access_type':str(access_type),
                     }
-        d = dict(acc)
+        d = dict(account)
         for x in d.keys():
             
             command_dict+={

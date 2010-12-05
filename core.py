@@ -171,9 +171,9 @@ class check_vpn_access(Thread):
                 cur.connection.commit()
                 #cur.execute("""DELETE FROM radius_activesession WHERE session_time = 0;""")
                 #cur.connection.commit()
-                cur.execute("""SELECT rs.id,rs.account_id,rs.sessionid,rs.framed_ip_address, rs.speed_string,
-                                    lower(rs.framed_protocol) AS access_type,rs.nas_id
-                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", (dateAT,))
+                cur.execute("""SELECT rs.id,rs.account_id, rs.subaccount_id, rs.sessionid,rs.framed_ip_address, rs.speed_string,
+                                    lower(rs.framed_protocol) AS access_type,rs.nas_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start
+                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", (dateAT, dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
                 #try:
@@ -185,7 +185,7 @@ class check_vpn_access(Thread):
                         nas = caches.nas_cache.by_ip.get(str(rs.nas_id))
                         acc = caches.account_cache.by_account.get(rs.account_id)
                         subacc = caches.subaccount_cache.by_id.get(rs.subaccount_id)
-                        if not nas or not acc or not acc.account_status == 1: continue
+                        if not nas or not acc : continue
                         
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
                         
@@ -198,16 +198,23 @@ class check_vpn_access(Thread):
                             #chech whether speed has changed
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
                             
-                            accservices = caches.accountaddonservice_cache.by_subaccount.get(subacc_id, [])    
-                            if not accservices: accservices = caches.accountaddonservice_cache.by_account.get(account_id, [])    
-                                  
-                            #accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                                                 
-                            addonservicespeed=[]                            
-                            for accservice in accservices:                                 
-                                service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                                if not accservice.deactivated  and service.change_speed:                                                                        
-                                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                                    break                            
+                            accservices = []
+                            addonservicespeed=[]  
+                            if subacc:
+                                accservices = caches.accountaddonservice_cache.by_subaccount.get(subacc.id, [])    
+                                for accservice in accservices:                                 
+                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                                    if not accservice.deactivated  and service.change_speed:                                                                        
+                                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                                        break   
+                            if not addonservicespeed: 
+                                accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])    
+                                for accservice in accservices:                                 
+                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                                    if not accservice.deactivated  and service.change_speed:                                                                        
+                                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                                        break    
+                                                            
                             speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.vpn_speed, dateAT)                            
 
                             speed = get_decimals_speeds(speed)
@@ -221,11 +228,10 @@ class check_vpn_access(Thread):
                                 #                        speed=speed[:6])                           
                                 
                                 logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
-                                coa_result = change_speed(vars.DICT, acc, subacc, {},nas, 
+                                coa_result = change_speed(vars.DICT, acc, subacc, nas, 
                                                     access_type=str(rs.access_type),
-                                                    format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), framed_ip_address=rs.framed_ip_address,
+                                                    format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address,
                                                     speed=speed)
-
 
                                 if coa_result==True:
                                     cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
@@ -234,7 +240,7 @@ class check_vpn_access(Thread):
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         else:
                             logger.debug("%s: about to send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                            result = PoD(vars.DICT, acc, subacc, nas,session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, format_string=str(nas.reset_action))
+                            result = PoD(vars.DICT, acc, subacc, nas, access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, format_string=str(nas.reset_action))
                             logger.debug("%s: POD over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
 
                         if result is True:
@@ -245,7 +251,14 @@ class check_vpn_access(Thread):
                         if result is not None:
                             cur.execute("""UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
                                         """, (disconnect_result, rs.sessionid,))
-                            cur.connection.commit()                            
+                            cur.connection.commit()  
+                        
+                        from_start = (dateAT-rs.date_start).seconds+(dateAT-rs.date_start).days*86400
+                            
+                        if (rs.time_from_last_update and rs.time_from_last_update+15>=nas.acct_interim_interval) or (not rs.time_from_last_update and from_start>=nas.acct_interim_interval+60):
+                            cur.execute("""UPDATE radius_activesession SET session_status='NACK' WHERE sessionid=%s;
+                                        """, (rs.sessionid,))
+                            cur.connection.commit()               
                     
                     except Exception, ex:
                         logger.error("%s: row exec exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -848,61 +861,68 @@ class addon_service(Thread):
                 oldid = -1
                 cur = self.connection.cursor()
 
-                for acc in caches.account_cache.data:
-                    if 0: assert isinstance(acc, AccountData)
-                    if not acc.account_status == 1: continue
+                for accountaddonservice in caches.accountaddonservice_cache.data:
+                    #if 0: assert isinstance(acc, AccountData)
+                    #if not acc.account_status == 1: continue
 
-                    accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                          
-                    for accservice in accservices:                        
-                        if 0: assert isinstance(service, AccountAddonServiceData)                        
+                    #accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                          
+                    #for accservice in accservices:                        
+                    #if 0: assert isinstance(service, AccountAddonServiceData)                        
 
-                        deactivated = None
-                        service = caches.addonservice_cache.by_id.get(accservice.service_id)
-                        subacc = caches.subaccount_cache.by_id.get(accservice.subaccount_id)
-                        #Проверка на требование отключения услуги
-                        if service.service_type=='onetime':
+                    deactivated = None
+                    service = caches.addonservice_cache.by_id.get(accountaddonservice.service_id)
+                    
+                    subacc = caches.subaccount_cache.by_id.get(accountaddonservice.subaccount_id)
+                    if subacc:
+                        acc = caches.account_cache.by_account.get(subacc.account_id)
+                    else:
+                        acc = caches.account_cache.by_account.get(accountaddonservice.account_id)
+                    #Проверка на требование отключения услуги
+                    if service.service_type=='onetime':
+                        
+                        cur.execute("SELECT id FROM billservice_addonservicetransaction WHERE type_id ='ADDONSERVICE_ONETIME' and accountaddonservice_id=%s", (accountaddonservice.id,))
+                        transactions = cur.fetchall()
+                        if not transactions and accountaddonservice.activated<=dateAT and not accountaddonservice.temporary_blocked:
+                            sql = """
+                            INSERT INTO billservice_addonservicetransaction(
+                                        service_id, service_type, account_id, accountaddonservice_id, 
+                                        accounttarif_id, type_id, summ, created)
+                                VALUES (%s, 'onetime', %s, %s, 
+                                        %s, '%s', %s, '%s')
+
+                            """ % (service.id, acc.account_id, accountaddonservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,)
+                            cur.execute(sql)
+                            cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = %s WHERE id=%s", (dateAT, accountaddonservice.id))
+
                             
-                            cur.execute("SELECT id FROM billservice_addonservicetransaction WHERE type_id ='ADDONSERVICE_ONETIME' and accountaddonservice_id=%s", (accservice.id,))
-                            transactions = cur.fetchall()
-                            if not transactions and accservice.activated<=dateAT and not accservice.temporary_blocked:
-                                sql = """
-                                INSERT INTO billservice_addonservicetransaction(
-                                            service_id, service_type, account_id, accountaddonservice_id, 
-                                            accounttarif_id, type_id, summ, created)
-                                    VALUES (%s, 'onetime', %s, %s, 
-                                            %s, '%s', %s, '%s')
-
-                                """ % (service.id, acc.account_id, accservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,)
-                                cur.execute(sql)
-                                cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = %s WHERE id=%s", (dateAT, accservice.id))
-
-                                
-                            sp = caches.settlementperiod_cache.by_id.get(service.sp_period_id)
-                            # Получаем delta
-                            sp_start, sp_end, delta = fMem.settlement_period_(accservice.activated, sp.length_in, sp.length, dateAT)
-                            tdelta = dateAT-accservice.activated
+                        sp = caches.settlementperiod_cache.by_id.get(service.sp_period_id)
+                        # Получаем delta
+                        sp_start, sp_end, delta = fMem.settlement_period_(accountaddonservice.activated, sp.length_in, sp.length, dateAT)
+                        tdelta = dateAT-accountaddonservice.activated
+                        
+                        if (tdelta.days*86400+tdelta.seconds)>=delta and not accountaddonservice.deactivated:
+                            deactivated = dateAT
+                            cur.execute("UPDATE billservice_accountaddonservice SET deactivated=%s WHERE id=%s", (dateAT,accountaddonservice.id,))
                             
-                            if (tdelta.days*86400+tdelta.seconds)>=delta and not accservice.deactivated:
-                                deactivated = dateAT
-                                cur.execute("UPDATE billservice_accountaddonservice SET deactivated=%s WHERE id=%s", (dateAT,accservice.id,))
-                                
-                        if service.action:
-                            if service.nas_id==0:
-                                nas = caches.nas_cache.by_id.get(acc.nas_id)
-                            else:
-                                nas = caches.nas_cache.by_id.get(service.nas_id)
-    
-                            if (not accservice.deactivated and not deactivated) and (service.action and not accservice.action_status) and not accservice.temporary_blocked:
-                                #выполняем service_activation_action
-                                cur.connection.commit()
-                                sended = cred(acc, subacc, 'ipn', nas, format_string=service.service_activation_action)
-                                if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, accservice.id))
-                            
-                            if (accservice.deactivated or accservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accservice.action_status==True:
-                                #выполняем service_deactivation_action
-                                cur.connection.commit()
-                                sended = cred(acc, subacc, 'ipn', nas, format_string=service.service_deactivation_action)
-                                if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accservice.id))
+                    if service.action:
+                        if service.nas_id==0 and acc:
+                            nas = caches.nas_cache.by_id.get(acc.nas_id)
+                        elif service.nas_id==0 and subacc:
+                            nas = caches.nas_cache.by_id.get(subacc.nas_id)
+                        elif service.nas_id!=0:
+                            nas = caches.nas_cache.by_id.get(service.nas_id)
+
+                        if (not accountaddonservice.deactivated and not deactivated) and (service.action and not accountaddonservice.action_status) and not accountaddonservice.temporary_blocked:
+                            #выполняем service_activation_action
+                            cur.connection.commit()
+                            sended = cred(acc, subacc, 'ipn', nas, format_string=service.service_activation_action)
+                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, accountaddonservice.id))
+                        
+                        if (accountaddonservice.deactivated or accountaddonservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accountaddonservice.action_status==True:
+                            #выполняем service_deactivation_action
+                            cur.connection.commit()
+                            sended = cred(acc, subacc, 'ipn', nas, format_string=service.service_deactivation_action)
+                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accountaddonservice.id))
 
                     cur.connection.commit()
                 cur.connection.commit()
@@ -1268,15 +1288,22 @@ class ipn_service(Thread):
                             
                             #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно?? 
                             #Получаем подключаемые услуги абонента
-                            accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])                            
-                         
-                            addonservicespeed=[]                            
-                            for accservice in accservices:                                 
-                                service = caches.addonservice_cache.by_id.get(accservice.service_id)    
-                                #При нахождении подключаемой услуги, изменяющей скорость - выходим из цикла                            
-                                if not accservice.deactivated  and service.change_speed:                                                                        
-                                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                                    break   
+                            accservices = []
+                            addonservicespeed=[]  
+                            if subacc:
+                                accservices = caches.accountaddonservice_cache.by_subaccount.get(subacc.id, [])    
+                                for accservice in accservices:                                 
+                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                                    if not accservice.deactivated  and service.change_speed:                                                                        
+                                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                                        break   
+                            if not addonservicespeed: 
+                                accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])    
+                                for accservice in accservices:                                 
+                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                                    if not accservice.deactivated  and service.change_speed:                                                                        
+                                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                                        break    
                             #Получаем параметры скорости                         
                             speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.ipn_speed, dateAT)                            
                     
