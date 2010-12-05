@@ -1,0 +1,7 @@
+!
+no access-list 101
+access-list 101 permit tcp 192.168.12.6 0.0.0.0 any
+access-list 101 permit tcp 192.168.12.65 0.0.0.0 any
+access-list 101 deny tcp any any
+!
+end

@@ -2738,4 +2738,35 @@ UPDATE billservice_accountaddonservice SET deactivated=date_trunc('second', deac
 INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Оплата через платежные системы', 'PAYMENTGATEWAY_BILL');
 --- 23.11.2010
 alter table billservice_accountipnspeed alter column speed type text;
- 
+
+--- 05.12.2010
+UPDATE billservice_template SET body='
+<html>
+ <head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+ <style>
+   td{
+        FONT: 9px Times New Roman;
+    }
+    h1{
+        FONT: 9px Arial;
+    }
+  </style>
+ </head>
+ <body>
+  <table align=center width="85%">
+    <tr>
+     <td>
+       <h1 align=center> <b> Квитанция об оплате услуг № ${transaction.id} </b> </h1>
+       <strong>Абонент:</strong> ${account.fullname} <br>
+       <strong>Тарифный план:</strong> ${tarif.name} <br>
+       <strong>Логин:</strong> ${account.username}<br>
+       <strong>Сумма:</strong> ${transaction.summ}<br>
+       <strong>Дата приема платежа:</strong> ${transaction.created}<br>
+    </td>
+   </tr>
+  </table>
+ </body>
+</html>
+'
+WHERE type_id=5;
