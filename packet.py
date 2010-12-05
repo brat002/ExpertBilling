@@ -4,7 +4,8 @@ RADIUS packet
 
 __docformat__	= "epytext en"
 
-import md5, struct, types, random, UserDict, hmac
+from hashlib import md5
+import  struct, types, random, UserDict, hmac
 import tools
 
 # Packet codes

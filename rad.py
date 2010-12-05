@@ -747,14 +747,25 @@ class HandleSAuth(HandleSBase):
             #Проводим корректировку скорости в соответствии с лимитом
 
             result = get_corrected_speed(result, correction)
-            accservices = self.caches.accountaddonservice_cache.by_subaccount.get(subacc_id, [])    
-            if not accservices: accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])                                                 
-            addonservicespeed=[]                            
-            for accservice in accservices:                                 
-                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                if not accservice.deactivated  and service.change_speed:                                                                        
-                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                    break 
+###
+            accservices = []
+            addonservicespeed=[]  
+            if subacc:
+                accservices = self.caches.accountaddonservice_cache.by_subaccount.get(subacc_id, [])    
+                for accservice in accservices:                                 
+                    service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                    if not accservice.deactivated  and service.change_speed:                                                                        
+                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                        break   
+            if not addonservicespeed: 
+                accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])    
+                for accservice in accservices:                                 
+                    service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
+                    if not accservice.deactivated  and service.change_speed:                                                                        
+                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                        break    
+###            
+
                 
             #Корректируем скорость подключаемой услугой
             result = get_corrected_speed(result, addonservicespeed)
