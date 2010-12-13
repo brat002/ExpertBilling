@@ -298,6 +298,7 @@ def del_subaccount(accountid, subaccount_ip, comment):
 
 def set_ipn_speed_subaccount(accountid, speed_settings):
     global nas_ip, nas_login, nas_password
+    print "speed_settings", speed_settings
     #accountid = sys.argv[4]
     #speed_settings = sys.argv[5]
     command = '/queue/simple/print ?name=acc_%s' % accountid
@@ -305,17 +306,17 @@ def set_ipn_speed_subaccount(accountid, speed_settings):
 
     id=get_id(res)
     if id:
-        command = '/queue/simple/set =.id=%s  =%s' % (id, speed_settings)
+        command = '/queue/simple/set =.id=%s %s' % (id, speed_settings)
     rosClient(nas_ip, nas_login, nas_password, command)
 
 
-def reset_vpn_session():
+def reset_vpn_session(access_type, username):
     global nas_ip, nas_login, nas_password
-    #command='/queue/simple/print ?name=<access_-ilia>'
+    command='/interface/%s-server/print ?user=%s' % (access_type, username)
     res=rosClient(nas_ip, nas_login, nas_password, command)
     id=get_id(res)
     if id:
-        command='/queue/simple/remove =.id=%s' % id
+        command='/interface/%s-server/remove =.id=%s' % (access_type, id)
         res=rosClient(nas_ip, nas_login, nas_password, command)
         return True
     return False
@@ -348,7 +349,9 @@ def main():
         comment = sys.argv[7]        
         del_subaccount(accountid, subaccount_ip, comment)
     elif action == 'reset':
-        pass
+        access_type = sys.argv[5]
+        username = sys.argv[6]
+        reset_vpn_session(access_type, username)
     elif action == 'set_speed':
         accountid = sys.argv[5]
         speed_settings = sys.argv[6]
@@ -358,6 +361,7 @@ def main():
     
 
 if __name__=='__main__':
+    """
     import getopt
     opts, args = getopt.getopt(
         sys.argv[ 1 : ],
@@ -368,6 +372,7 @@ if __name__=='__main__':
     print 'opts', opts
     for o in opts:
         print o
-
+    """
+    
     main()
     
