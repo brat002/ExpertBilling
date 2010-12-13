@@ -75,7 +75,14 @@ actions = {
                'ipn_speed_action': '',
                'reset_action': ''
                },
-               
+'localhost':{'user_add_action':'',
+               'user_delete_action':'',
+               'user_enable_action':'',
+               'user_disable_action':'',
+               'vpn_speed_action': '',
+               'ipn_speed_action': '',
+               'reset_action': ''
+               },               
 'cisco':{'user_add_action':'',
                'user_delete_action':'',
                'user_enable_action':'',

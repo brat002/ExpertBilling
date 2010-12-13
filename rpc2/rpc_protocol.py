@@ -11,7 +11,7 @@ CHALLENGE_LEN = 16
 KEY_LEN = 16
 import random
 import os, datetime
-
+from re import  escape
 from types import InstanceType, StringType, UnicodeType
 
 logger = None
@@ -26,7 +26,8 @@ def format_update (x,y):
     if y!=u'Null' and y!=u'None':
         if type(y)==StringType or type(y)==UnicodeType:
             #print True
-            y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+            #y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+            y=escape(y)
             #print 'y', y
         return "%s='%s'" % (x,y)
     else:
@@ -37,7 +38,8 @@ def format_insert(y):
         return 'Null'
     elif type(y)==StringType or type(y)==UnicodeType:
         #print True
-        return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+        return escape(y)
+        #return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
     else:
         return y
     

@@ -4,7 +4,7 @@ Database wrapper for mikrobill
 """
 #Post
 import psycopg2, datetime
-
+from re import  escape
 import os
 from types import InstanceType, StringType, UnicodeType
 
@@ -24,7 +24,8 @@ def format_insert(y):
         return 'Null'
     elif type(y)==StringType or type(y)==UnicodeType:
         #print True
-        return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+        #return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+        return escape(y)
     else:
         return y
     
