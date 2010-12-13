@@ -1,24 +1,30 @@
-с шарингом скорости
-Добавить абонента - добавляем базовую очередь и деактивируем её
+СЃ С€Р°СЂРёРЅРіРѕРј СЃРєРѕСЂРѕСЃС‚Рё
+Р”РѕР±Р°РІРёС‚СЊ Р°Р±РѕРЅРµРЅС‚Р° - РґРѕР±Р°РІР»СЏРµРј Р±Р°Р·РѕРІСѓСЋ РѕС‡РµСЂРµРґСЊ Рё РґРµР°РєС‚РёРІРёСЂСѓРµРј РµС‘
 :if ([/queue simple find name=parent_$acc_account_id] ="") do={/queue simple add name=parent_$acc_account_id disabled=yes};
 
-Добавить субаккаунт - добавляем неактивную запись в адрес лист inet_users, добавляем подочередь, если её ещё нет
+Р”РѕР±Р°РІРёС‚СЊ СЃСѓР±Р°РєРєР°СѓРЅС‚ - РґРѕР±Р°РІР»СЏРµРј РЅРµР°РєС‚РёРІРЅСѓСЋ Р·Р°РїРёСЃСЊ РІ Р°РґСЂРµСЃ Р»РёСЃС‚ inet_users, РґРѕР±Р°РІР»СЏРµРј РїРѕРґРѕС‡РµСЂРµРґСЊ, РµСЃР»Рё РµС‘ РµС‰С‘ РЅРµС‚
 
-/ip firewall address-list add list=internet_users address=$subacc_vpn_ip_address disabled=yes comment=$acc_account_id-$subacc_id;{:local new "$subacc_vpn_ip_address/32"; :local res [/queue simple get $acc_account_id-$subacc_id target-addresses ]; :if ([:tostr [:find [:toarray $res] $new]] = "") do={:set res ($res + $new);  /queue simple set $acc_account_id-$subacc_id target-address=$res  disabled=yes;
+/ip firewall address-list add list=internet_users address=$subacc_vpn_ip_address disabled=yes comment=acc_$acc_account_id-$subacc_id;{:local new "$subacc_vpn_ip_address/32"; :local res [/queue simple get parent_$acc_account_id target-addresses ]; :if ([:tostr [:find [:toarray $res] $new]] = "") do={:set res ($res + $new)};  /queue simple set parent_$acc_account_id target-address=$res  disabled=no;}
 
-Активировать субаккаунт
-/ip firewall address-list set [find comment=$acc_account_id-$subacc_id] disabled=no
+РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ СЃСѓР±Р°РєРєР°СѓРЅС‚
+/ip firewall address-list set [find comment=acc_$acc_account_id-$subacc_id] disabled=no
 
-Деактивировать субаккаунт
-/ip firewall address-list set [find comment=$acc_account_id-$subacc_id] disabled=yes
+Р”РµР°РєС‚РёРІРёСЂРѕРІР°С‚СЊ СЃСѓР±Р°РєРєР°СѓРЅС‚
+/ip firewall address-list set [find comment=acc_$acc_account_id-$subacc_id] disabled=yes
 
-Удалить субаккаунт
-/ip firewall address-list remove [find list=$acc_account_id-$subacc_id];/queue simple remove [find name=$acc_account_id-$subacc_id];{:local new "$subacc_vpn_ip_address/32"; :local old [/queue simple get $acc_account_id-$subacc_id target-addresses ]; :local res [:toarray ""]; :foreach i in=[:toarray $old] do={:if ($i != $new) do={:set res ($res + $i)}}; :if ($res!='') do={/queue simple set $acc_account_id-$subacc_id target-address=$res} else={/queue simple set $acc_account_id-$subacc_id target-address=$res disabled=yes}}
+РЈРґР°Р»РёС‚СЊ СЃСѓР±Р°РєРєР°СѓРЅС‚
+/ip firewall address-list remove [find list=acc_$acc_account_id-$subacc_id];{:local new "$subacc_vpn_ip_address/32"; :local old [/queue simple get parent_$acc_account_id target-addresses ]; :local res [:toarray ""]; :foreach i in=[:toarray $old] do={:if ($i != $new) do={:set res ($res + $i)}}; :if ($res!='') do={/queue simple set parent_$acc_account_id target-address=$res} else={/queue simple set $acc_account_id target-address=$res disabled=no}}
 
-Удалить абонента
-/queue simple remove [find name=$acc_account_id-$subacc_id]
+РЈРґР°Р»РёС‚СЊ Р°Р±РѕРЅРµРЅС‚Р°
+/queue simple remove [find name=parent_$acc_account_id]
 
+РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРєРѕСЂРѕСЃС‚СЊ РґР»СЏ IPN
+/queue simple set $acc_account_id max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx disabled=no;
 
+РЎР±СЂРѕСЃРёС‚СЊ VPN СЃРµСЃСЃРёСЋ
+/interface $access_type-server remove [find user=$subacc_username]
+
+---------------------------------
 #:if ([/queue simple find name=acc_$user_id]="") do={/queue simple add name=acc_$user_id disabled=yes};:local new "$account_ipn_ip"; :local res [/queue simple get acc_$user_id target-addresses ]; :if ([:tostr [:find [:toarray $res] $new]] = "") do={:set res ($res + $new);  /queue simple set acc_$user_id target-address=$res max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx disabled=no; }
 
 
@@ -27,4 +33,4 @@
 :if ([/queue simple find name=parent_$acc_account_id] ="") do={/queue simple add name=parent_$acc_account_id disabled=yes};:local new "$account_ipn_ip"; :local res [/queue simple get acc_$user_id target-addresses ]; :if ([:tostr [:find [:toarray $res] $new]] = "") do={:set res ($res + $new);  /queue simple set acc_$user_id target-address=$res max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx disabled=no; }
 
 
-без шаринга скорости
+Р±РµР· С€Р°СЂРёРЅРіР° СЃРєРѕСЂРѕСЃС‚Рё

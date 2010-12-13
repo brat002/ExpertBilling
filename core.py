@@ -1246,7 +1246,7 @@ class ipn_service(Thread):
                                 #sended = cred(acc, subacc, access_type, nas, format_string=nas.user_add_action)
                                 sended = cred(acc, {}, '', nas, format_string=nas.user_add_action)
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
-                            if not subacc.ipn_added and acc.tarif_active and not legacy:
+                            if subacc and not subacc.ipn_added and acc.tarif_active and not legacy:
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_add_action)
                                 
                                 if sended is True: cur.execute("UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s" % (True, id))
@@ -1264,7 +1264,7 @@ class ipn_service(Thread):
                                 recreate_speed = True                        
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
                                 
-                            elif (not subacc.ipn_enabled) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active and not legacy:
+                            elif subacc and (not subacc.ipn_enabled) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active and not legacy:
                                 if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id))
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_enable_action)
                                 
@@ -1319,7 +1319,7 @@ class ipn_service(Thread):
                                 if legacy: 
                                     ipn_speed_action=nas.ipn_speed_action 
                                 else: 
-                                    ipn_speed_action = nas.aubacc_ipn_speed_action
+                                    ipn_speed_action = nas.subacc_ipn_speed_action
                                 
                                 if ipn_speed_action:
                                     sended_speed = change_speed(vars.DICT, acc, subacc, nas,

@@ -296,6 +296,7 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
         #print "command_dict=", command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         if not command_string: return True
+        print command_string
         log_debug_("Change Speedcommand_string= %s" % command_string)
         try:
             if ssh_exec:
@@ -311,43 +312,48 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
             return False
     return False
 
-def cred(acc, subacc, access_type, nas, format_string):
+def cred(account, subacc, access_type, nas, format_string):
         """
         
         """
         command_dict={
                              'access_type':str(access_type),
                     }
-        d = dict(account)
+        d = account._asdict()
         for x in d.keys():
             
-            command_dict+={
+            command_dict.update({
                           'acc_%s' % x: str(d[x]),
-                           }  
-        d = dict(nas)
+                           })
+        d = nas._asdict()
         for x in d.keys():
             
-            command_dict+={
+            command_dict.update({
                           'nas_%s' % x: str(d[x]),
-                           }  
+                           })
         if subacc :
-            d = dict(subacc)
+            d = subacc._asdict()
             for x in d.keys():
                 
-                command_dict+={
+                command_dict.update({
                               'subacc_%s' % x: str(d[x]),
-                               }  
+                               })
 
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)        
         if not command_string: return True
+        print command_string
         try:
+            
             if ssh_exec:
-                sshclient = ssh_execute(nas_login, nas_ip, nas_password, command_string)
+                sshclient = ssh_execute(nas.login, nas.ipaddress, nas.password, command_string)
                 log_debug_('CRED ssh reply: %s' % sshclient)
-            else:
-                sshclient=ssh_client(host=nas_ip, username=nas_login, password=nas_password, command = command_string)
+            elif nas.type!='localhost':
+                sshclient=ssh_client(host=nas.ipaddress, username=nas.login, password=nas.password, command = command_string)
                 log_debug_('CRED ssh connected')
                 del sshclient
+            elif nas.type=='localhost':
+                status, output = commands.getstatusoutput(command_string)
+                log_debug_('Local command %s was executed with status %s and output %s' % (command_string, status, output))
             return True
         except Exception, e:
             log_error_('CRED ssh error: %s' % repr(e))
