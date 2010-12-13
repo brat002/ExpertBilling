@@ -180,21 +180,6 @@ def get_id(d):
         return d['.id']
     else:
         return 0
-#===============================================================================
-# host='10.20.3.1'
-# login='ebs'
-# password='ebspassword'
-# command='/queue/simple/print ?name=<pptp-ilia>'
-# #command='/queue/simple/set ?name=parent_360 name=parent_361'
-# res=rosClient(nas_ip, nas_login, nas_password, command)
-# print res
-# #print make_dict(res)
-# command='/queue/simple/remove =.id=*681'
-# res=rosClient(nas_ip, nas_login, nas_password, command)
-# print res
-# #print make_dict(res)
-#===============================================================================
-
 
 def add_subaccount(accountid,subaccount_id, subaccount_ip, comment):
     global nas_ip, nas_login, nas_password
