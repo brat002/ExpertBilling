@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!c:/python26/python.exe
 
 import sys, time, binascii, socket, select, md5
 #from hashlib import md5

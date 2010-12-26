@@ -18,7 +18,7 @@ NAS_LIST=(
                 (u'cisco',u'cisco'),
                 (u'common_radius',u'Общий RADIUS интерфейс'),
                 (u'common_ssh',u'common_ssh'),
-                (u'common_ssh',u'common_ssh'),
+                (u'localhost',u'Выполнение команд локально'),
                 )
 
             
@@ -264,6 +264,16 @@ class AddNasFrame(QtGui.QDialog):
         self.nas_secret = QtGui.QLineEdit(self.identify_groupBox)
         self.nas_secret.setObjectName("nas_secret")
         self.gridLayout_6.addWidget(self.nas_secret, 3, 1, 1, 1)
+
+        self.label_interim = QtGui.QLabel(self.identify_groupBox)
+        self.label_interim.setObjectName("label_interim")
+        self.gridLayout_6.addWidget(self.label_interim, 4, 0, 1, 1)
+        #self.nas_interim_update = QtGui.QLineEdit(self.identify_groupBox)
+        self.nas_interim_update = QtGui.QSpinBox(self.identify_groupBox)
+        self.nas_interim_update.setMaximum(999999)
+        self.nas_interim_update.setObjectName("nas_interim_update")
+        self.gridLayout_6.addWidget(self.nas_interim_update, 4, 1, 1, 1)
+
         self.toolButton_default_actions = QtGui.QToolButton(self.identify_groupBox)
         self.toolButton_default_actions.setObjectName("toolButton_default_actions")
         self.gridLayout_6.addWidget(self.toolButton_default_actions, 0, 2, 1, 1)
@@ -403,6 +413,7 @@ class AddNasFrame(QtGui.QDialog):
         self.ssh_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "SSH", None, QtGui.QApplication.UnicodeUTF8))
         self.ssh_name_label.setText(QtGui.QApplication.translate("Dialog", "Имя", None, QtGui.QApplication.UnicodeUTF8))
         self.ssh_password_label.setText(QtGui.QApplication.translate("Dialog", "Пароль", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_interim.setText(QtGui.QApplication.translate("Dialog", "Accounting interval", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton.setText(QtGui.QApplication.translate("Dialog", "Test", None, QtGui.QApplication.UnicodeUTF8))
         self.maintabWidget.setTabText(self.maintabWidget.indexOf(self.general_tab), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
         self.maintabWidget.setTabText(self.maintabWidget.indexOf(self.commands_tab), QtGui.QApplication.translate("Dialog", "Команды", None, QtGui.QApplication.UnicodeUTF8))
@@ -523,7 +534,7 @@ class AddNasFrame(QtGui.QDialog):
         model.identify = unicode(self.nas_name.text())
         model.ipaddress = unicode(self.nas_ip.text())
         model.secret = unicode(self.nas_secret.text())
-
+        model.acct_interim_interval = int(self.nas_interim_update.value())
         for i in xrange(self.tableWidget.rowCount()):
             model.__dict__[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text())
             
@@ -534,6 +545,7 @@ class AddNasFrame(QtGui.QDialog):
             model.speed_attr_id2 = int(unicode(self.lineEdit_attr_id2.text() or 0))
             model.speed_value1 = unicode(self.lineEdit_value1.text())
             model.speed_value2 = unicode(self.lineEdit_value2.text())
+            
         except Exception, e:
             print e
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Параметры Vendor и Attr Id должны быть целыми положительными числами."))
@@ -579,13 +591,16 @@ class AddNasFrame(QtGui.QDialog):
             self.lineEdit_attr_id2.setText(unicode(self.model.speed_attr_id2 or ''))
             self.lineEdit_value1.setText(unicode(self.model.speed_value1))
             self.lineEdit_value2.setText(unicode(self.model.speed_value2))
+            
+            self.nas_interim_update.setValue(self.model.acct_interim_interval)
         else:
             self.lineEdit_vendor1.setText('')
             self.lineEdit_vendor2.setText('')
             self.lineEdit_attr_id1.setText('')
             self.lineEdit_attr_id2.setText('')
             self.lineEdit_value1.setText('')
-            self.lineEdit_value2.setText('')            
+            self.lineEdit_value2.setText('')    
+            self.nas_interim_update.setValue(0)
             
         #else:
         #    self.buttonBox.setDisabled(True)
