@@ -25,7 +25,7 @@ from Reports import TransactionsReportEbs as TransactionsReport
 from helpers import tableFormat, check_speed
 from helpers import transaction, makeHeaders
 from helpers import Worker
-from CustomForms import tableImageWidget, IPAddressSelectForm, TemplateSelect
+from CustomForms import simpleTableImageWidget, tableImageWidget, IPAddressSelectForm, TemplateSelect
 from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog, PSCreatedForm, AccountAddonServiceEdit
 from MessagesFrame import MessageDialog
 from mako.template import Template
@@ -3337,7 +3337,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.tableWidget_suspended = tableFormat(self.tableWidget_suspended)
         makeHeaders(columns, self.tableWidget_suspended)
  
-        columns=[u'#', u'Имя пользователя', u'Пароль', u'VPN IP', u'IPN IP', u'IPN MAC', u'Сервер доступа', u'Добавлен', u'Активирован',]
+        columns=[u'#', u'Имя пользователя', u'Пароль', u'VPN IP', u'IPN IP', u'IPN MAC', u'Сервер доступа', u'IPN статус',]
         self.tableWidget_subaccounts = tableFormat(self.tableWidget_subaccounts)
         makeHeaders(columns, self.tableWidget_subaccounts)
                 
@@ -4094,6 +4094,7 @@ class AccountWindow(QtGui.QMainWindow):
                 self.addrow(self.tableWidget_subaccounts, a.ipn_ip_address, i, 4)
                 self.addrow(self.tableWidget_subaccounts, a.ipn_mac_address, i, 5)
                 self.addrow(self.tableWidget_subaccounts, a.nas_id, i, 6)
+                self.tableWidget_subaccounts.setCellWidget(i,7,tableImageWidget(ipn_sleep=a.ipn_sleep, ipn_status=a.ipn_enabled, ipn_added=a.ipn_added))
                 #self.addrow(self.tableWidget_subaccounts, a.start_date.strftime(strftimeFormat), i, 1)
                 #try:
                 #    self.addrow(self.tableWidget_subaccounts, a.end_date.strftime(strftimeFormat), i, 2)
@@ -4719,10 +4720,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 return
         
         if id==-1000:
-            columns=[u'#', u'Имя пользователя', u'Тарифный план', u'Баланс', u'Кредит', u'Имя',  u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'', u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Имя пользователя', u'Тарифный план', u'Баланс', u'Кредит', u'Имя',  u'Сервер доступа', u'', u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
         else:
-            columns=[u'#', u'Имя пользователя',  u'Баланс', u'Кредит', u'Имя', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'', u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Имя пользователя',  u'Баланс', u'Кредит', u'Имя', u'Сервер доступа', u'', u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
             
         accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
@@ -4752,15 +4753,15 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 self.addrow(float(a.credit), i,4, enabled=a.status)
                 self.addrow(a.fullname, i,5, enabled=a.status)
                 self.addrow(a.nas_name,i,6, enabled=a.status)
-                self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
-                self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
-                self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
+                #self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
+                #self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
+                #self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,10,tableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+                self.tableWidget.setCellWidget(i,7,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
-                self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
-                self.addrow(a.comment, i,12, enabled=a.status)
+                self.addrow(a.created.strftime(self.strftimeFormat), i,8, enabled=a.status)
+                self.addrow(a.comment, i,9, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
             else:
                 #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
@@ -4768,15 +4769,15 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 self.addrow(float(a.credit), i,3, enabled=a.status)
                 self.addrow(a.fullname, i,4, enabled=a.status)
                 self.addrow(a.nas_name,i,5, enabled=a.status)
-                self.addrow(a.vpn_ip_address, i,6, enabled=a.status)
-                self.addrow(a.ipn_ip_address, i,7, enabled=a.status)
-                self.addrow(a.ipn_mac_address, i,8, enabled=a.status)
+                #self.addrow(a.vpn_ip_address, i,6, enabled=a.status)
+                #self.addrow(a.ipn_ip_address, i,7, enabled=a.status)
+                #self.addrow(a.ipn_mac_address, i,8, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,9,tableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+                self.tableWidget.setCellWidget(i,6,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
-                self.addrow(a.created.strftime(self.strftimeFormat), i,10, enabled=a.status)
-                self.addrow(a.comment, i,11, enabled=a.status)
+                self.addrow(a.created.strftime(self.strftimeFormat), i,7, enabled=a.status)
+                self.addrow(a.comment, i,8, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
                 
             m_ballance += float(a.ballance)
