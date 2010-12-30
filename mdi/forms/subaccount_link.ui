@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>838</width>
+    <width>690</width>
     <height>729</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -130,83 +130,83 @@
             </property>
            </widget>
           </item>
-          <item row="20" column="1">
+          <item row="21" column="1">
            <widget class="QLabel" name="label_vpn_speed">
             <property name="text">
              <string>VPN скорость</string>
             </property>
            </widget>
           </item>
-          <item row="20" column="2" colspan="5">
+          <item row="21" column="2" colspan="5">
            <widget class="QLineEdit" name="lineEdit_vpn_speed"/>
           </item>
-          <item row="21" column="1">
+          <item row="22" column="1">
            <widget class="QLabel" name="label_ipn_speed">
             <property name="text">
              <string>IPN скорось</string>
             </property>
            </widget>
           </item>
-          <item row="21" column="2" colspan="4">
+          <item row="22" column="2" colspan="5">
            <widget class="QLineEdit" name="lineEdit_ipn_speed"/>
           </item>
-          <item row="19" column="1" colspan="6">
+          <item row="20" column="1" colspan="6">
            <widget class="QCheckBox" name="checkBox_allow_addonservice">
             <property name="text">
              <string>Разрешить активацию подключаемых услуг через веб-кабинет</string>
             </property>
            </widget>
           </item>
-          <item row="18" column="1" colspan="5">
+          <item row="19" column="1" colspan="5">
            <widget class="QCheckBox" name="checkBox_associate_pppoe_ipn_mac">
             <property name="text">
              <string>Привязать PPPOE авторизацию к IPN MAC</string>
             </property>
            </widget>
           </item>
-          <item row="17" column="1" colspan="5">
+          <item row="18" column="1" colspan="5">
            <widget class="QCheckBox" name="checkBox_associate_pptp_ipn_ip">
             <property name="text">
              <string>Привязать PPTP авторизацию к IPN IP</string>
             </property>
            </widget>
           </item>
-          <item row="14" column="1" colspan="5">
+          <item row="15" column="1" colspan="5">
            <widget class="QCheckBox" name="checkBox_allow_vpn_with_null">
             <property name="text">
              <string>Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при нулевом балансе</string>
             </property>
            </widget>
           </item>
-          <item row="16" column="1" colspan="5">
+          <item row="17" column="1" colspan="5">
            <widget class="QCheckBox" name="checkBox_allow_vpn_with_block">
             <property name="text">
              <string>Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при наличии блокировок или неактивности</string>
             </property>
            </widget>
           </item>
-          <item row="15" column="1" colspan="5">
+          <item row="16" column="1" colspan="5">
            <widget class="QCheckBox" name="checkBox_allow_vpn_with_minus">
             <property name="text">
              <string>Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при отрицательном балансе</string>
             </property>
            </widget>
           </item>
-          <item row="13" column="1" colspan="5">
+          <item row="14" column="1" colspan="5">
            <widget class="QCheckBox" name="checkBox_allow_dhcp_with_block">
             <property name="text">
              <string>Выдавать IP адрес по DHCP при наличии блокировок или неактивности</string>
             </property>
            </widget>
           </item>
-          <item row="12" column="1" colspan="5">
+          <item row="13" column="1" colspan="5">
            <widget class="QCheckBox" name="checkBox_allow_dhcp_with_minus">
             <property name="text">
              <string>Выдавать IP адрес по DHCP при отрицательном балансе</string>
             </property>
            </widget>
           </item>
-          <item row="11" column="1" colspan="5">
+          <item row="12" column="1" colspan="5">
            <widget class="QCheckBox" name="checkBox_allow_dhcp_with_null">
             <property name="text">
              <string>Выдавать IP адрес по DHCP при нулевом балансе</string>
@@ -252,19 +252,6 @@
                </property>
               </widget>
              </item>
-             <item>
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
             </layout>
            </widget>
           </item>
@@ -293,6 +280,13 @@
            <widget class="QToolButton" name="toolButton_login">
             <property name="text">
              <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="1" colspan="5">
+           <widget class="QCheckBox" name="checkBox_allow_dhcp">
+            <property name="text">
+             <string>Разрешить выдачу адресоп по DHCP</string>
             </property>
            </widget>
           </item>
