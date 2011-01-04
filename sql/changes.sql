@@ -2770,3 +2770,61 @@ UPDATE billservice_template SET body='
 </html>
 '
 WHERE type_id=5;
+
+--04.01.2011 1.4!!!
+
+ALTER TABLE nas_nas ADD COLUMN subacc_add_action text;
+ALTER TABLE nas_nas ALTER COLUMN subacc_add_action SET DEFAULT ''::text;
+
+
+ALTER TABLE nas_nas ADD COLUMN subacc_delete_action text;
+ALTER TABLE nas_nas ALTER COLUMN subacc_delete_action SET DEFAULT ''::text;
+ALTER TABLE nas_nas ADD COLUMN subacc_ipn_speed_action text;
+ALTER TABLE nas_nas ALTER COLUMN subacc_ipn_speed_action SET DEFAULT ''::text;
+ALTER TABLE nas_nas ADD COLUMN subacc_enable_action text;
+ALTER TABLE nas_nas ALTER COLUMN subacc_enable_action SET DEFAULT ''::text;
+ALTER TABLE nas_nas ADD COLUMN subacc_disable_action text;
+ALTER TABLE nas_nas ALTER COLUMN subacc_disable_action SET DEFAULT ''::text;
+ALTER TABLE nas_nas ADD COLUMN acct_interim_interval integer;
+ALTER TABLE nas_nas ALTER COLUMN acct_interim_interval SET DEFAULT 60;
+
+ALTER TABLE radius_activesession ADD COLUMN subaccount_id integer;
+
+CREATE TABLE billservice_subaccount
+(
+  id serial NOT NULL,
+  account_id integer NOT NULL,
+  username character varying(64) DEFAULT ''::character varying,
+  "password" character varying(64) DEFAULT ''::character varying,
+  vpn_ip_address inet DEFAULT '0.0.0.0'::inet,
+  ipn_ip_address inet DEFAULT '0.0.0.0'::inet,
+  ipn_mac_address character varying(18),
+  nas_id integer,
+  ipn_added boolean DEFAULT false,
+  ipn_enabled boolean NOT NULL DEFAULT false,
+  need_resync boolean DEFAULT false,
+  speed text DEFAULT ''::text,
+  switch_id integer,
+  switch_port integer,
+  allow_dhcp boolean DEFAULT false,
+  allow_dhcp_with_null boolean DEFAULT false,
+  allow_dhcp_with_minus boolean DEFAULT false,
+  allow_dhcp_with_block boolean DEFAULT false,
+  allow_vpn_with_null boolean DEFAULT false,
+  allow_vpn_with_minus boolean DEFAULT false,
+  allow_vpn_with_block boolean DEFAULT false,
+  associate_pptp_ipn_ip boolean DEFAULT false,
+  associate_pppoe_ipn_mac boolean DEFAULT false,
+  ipn_speed text DEFAULT ''::text,
+  vpn_speed text DEFAULT ''::text,
+  allow_addonservice boolean DEFAULT false,
+  ipn_sleep boolean DEFAULT false,
+  CONSTRAINT billservice_subaccount_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_subaccount_account_id_fkey FOREIGN KEY (account_id)
+      REFERENCES billservice_account (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+)
+WITH (
+  OIDS=FALSE
+);
+
