@@ -1,6 +1,6 @@
 # -*- coding=utf-8 -*-
 from __future__ import with_statement
-from encodings import idna, ascii, unicode-escape # DONT REMOVE!
+from encodings import idna, ascii, unicode_escape # DONT REMOVE!
 import IPy
 import time
 import zlib
