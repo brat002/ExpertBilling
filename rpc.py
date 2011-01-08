@@ -213,14 +213,14 @@ class RPCServer(object):
                 if not row: continue
                 subacc = Object(row)
 
-                cur.execute("SELECT * FROM billservice_account WHERE id=%s",(subacc.account_id,))
+                cur.execute("SELECT *, id as account_id FROM billservice_account WHERE id=%s",(subacc.account_id,))
                 
                 row = cur.fetchone()
                 if not row: continue
                 acc = Object(row)
                 
 
-                cur.execute("SELECT * FROM nas_nas WHERE id=%s",(subacc.nas_id,))
+                cur.execute("SELECT *, id as nas_id FROM nas_nas WHERE id=%s",(subacc.nas_id,))
                 row = cur.fetchone()
                 if not row: continue
                 nas = Object(row)
