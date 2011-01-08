@@ -1006,7 +1006,7 @@ class tableImageWidget(QtGui.QWidget):
         self.horizontalLayout.addWidget(self.toolButton_ipn_added)
 
     
-        print "!!!!!!!!", ipn_sleep
+        #print "!!!!!!!!", ipn_sleep
         if ipn_sleep==False: 
             self.toolButton_ipn_sleep.setIcon(QtGui.QIcon("images/ok.png"))
             self.toolButton_ipn_sleep.setToolTip(u"Менять IPN статус")
@@ -1031,7 +1031,7 @@ class tableImageWidget(QtGui.QWidget):
             
 
 class simpleTableImageWidget(QtGui.QWidget):
-    def __init__(self, nops=True, balance_blocked=False, trafic_limit=False):
+    def __init__(self, nops=True, balance_blocked=False, trafic_limit=False, ipn_status=False, ipn_added=False):
         super(simpleTableImageWidget,self).__init__()
         
         #self.resize(78, 20)
@@ -1054,7 +1054,18 @@ class simpleTableImageWidget(QtGui.QWidget):
         self.toolButton_trafic_limit.resize(17,17)
         self.horizontalLayout.addWidget(self.toolButton_trafic_limit)
 
-
+        self.toolButton_ipn_status = QtGui.QToolButton(self)
+        self.toolButton_ipn_status.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_status.setMaximumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_status.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_ipn_status)
+        
+        self.toolButton_ipn_added = QtGui.QToolButton(self)
+        self.toolButton_ipn_added.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_added.setMaximumSize(QtCore.QSize(17, 17))
+        self.toolButton_ipn_added.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_ipn_added)
+        
 
     
         if balance_blocked==True:
@@ -1071,7 +1082,21 @@ class simpleTableImageWidget(QtGui.QWidget):
             self.toolButton_trafic_limit.setIcon(QtGui.QIcon("images/ok.png"))
             self.toolButton_trafic_limit.setToolTip(u"Пользователь не исчерпал лимит трафика")
       
-                            
+        if ipn_status==True: 
+            self.toolButton_ipn_status.setIcon(QtGui.QIcon("images/ok.png"))
+            self.toolButton_ipn_status.setToolTip(u"Пользователь активен в ACL на NAS")
+        else:
+            self.toolButton_ipn_status.setIcon(QtGui.QIcon("images/false.png"))
+            self.toolButton_ipn_status.setToolTip(u"Пользователь не активен в ACL на NAS")
+            
+
+        if ipn_added==True: 
+            self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/ok.png"))
+            self.toolButton_ipn_added.setToolTip(u"Пользователь добавлен в ACL на NAS")
+        else:
+            self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/false.png"))
+            self.toolButton_ipn_added.setToolTip(u"Пользователь не добавлен в ACL на NAS")
+            
 class CustomWidget(QtGui.QTableWidgetItem):
     def __init__(self, parent, models, *args, **kwargs):
         super(CustomWidget, self).__init__()

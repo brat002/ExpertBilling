@@ -2828,3 +2828,6 @@ WITH (
   OIDS=FALSE
 );
 
+
+ALTER TABLE billservice_accountaddonservice ADD COLUMN subaccount_id integer;
+

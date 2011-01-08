@@ -63,6 +63,9 @@ class Object(object):
     def _toTuple(self):        
         return tuple(self.__dict__.items().append(self.__class__.__name__))
     
+    def _asdict(self):
+        return self.__dict__
+    
     @staticmethod
     def _fromTuple(tpl):
         return Object(dict(tpl))
