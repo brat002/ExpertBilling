@@ -131,80 +131,144 @@ class RPCServer(object):
 
 
     
-    def accountActions(self, account_id, action, cur=None, connection=None, add_data = {}):
+    def accountActions(self, account_id, subaccount_id, action, cur=None, connection=None, add_data = {}):
 
-        if type(account_id) is not list:
+        if account_id and type(account_id) is not list:
             account_id=[account_id]
-            
-        for account in account_id:
-            cur.execute("""SELECT account.id as account_id, account.username as username, account.password as password, account.ipn_ip_address as ipn_ip_address,
-                             account.vpn_ip_address as vpn_ip_address, account.ipn_mac_address as  ipn_mac_address,
-                             nas.login as nas_login, nas.password as nas_password, nas.ipaddress as nas_ipaddress,
-                             nas.user_add_action as user_add_action, nas.user_delete_action as user_delete_action, 
-                             nas.user_enable_action as user_enable_action, nas.user_disable_action as user_disable_action, ap.access_type as access_type 
-                             FROM billservice_account as account
-                             JOIN nas_nas as nas ON nas.id = account.nas_id
-                             JOIN billservice_tariff as tarif on tarif.id = get_tarif(account.id)
-                             JOIN billservice_accessparameters as ap ON ap.id=tarif.access_parameters_id
-                             WHERE account.id=%s
-                             """, (account,))
-    
-            row = cur.fetchone()
-            connection.commit()
-            #print "actions", row
-            #print action
-            if row==None:
-                return False
-    
-            if row['ipn_ip_address']=="0.0.0.0":
-                return False
-    
-            if action=='disable':
-                command = row['user_disable_action']
-            elif action=='enable':
-                command = row['user_enable_action']
-            elif action=='create':
-                command = row['user_add_action']
-            elif action =='delete':
-                command = row['user_delete_action']
-            #print command
-    
-            sended = cred(account_id=row['account_id'], subacc='', account_name=row['username'], account_password=row['password'], access_type = row['access_type'],
-                          account_vpn_ip=row['vpn_ip_address'], account_ipn_ip=row['ipn_ip_address'], 
-                          account_mac_address=row['ipn_mac_address'], nas_ip=row['nas_ipaddress'], nas_login=row['nas_login'], 
-                          nas_password=row['nas_password'], format_string=command)
- 
-            if action=='create' and sended==True:
-                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, True, row['account_id']))
-                cur.execute("UPDATE billservice_accountipnspeed SET state=False WHERE account_id=%s", (row['account_id'],))
-                
-            elif action=='create' and sended==False:
-                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, row['account_id']))
-                cur.execute("UPDATE billservice_accountipnspeed SET state=False WHERE account_id=%s", (row['account_id'],))
-            
-            if action =='delete'  and sended==True:
-                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, row['account_id']))
-                cur.execute("DELETE FROM billservice_accountipnspeed WHERE account_id=%s", (row['account_id'],))
-                
-            elif action =='delete'  and sended==False:
-                cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, row['account_id']))
-                cur.execute("DELETE FROM billservice_accountipnspeed WHERE account_id=%s", (row['account_id'],))
 
-            if action=='disable' and sended==True:
-                cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, row['account_id'],))
-                
-            if action=='enable' and sended==True:
-                cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (True, row['account_id'],))
-        
-        connection.commit()
+        if subaccount_id and type(subaccount_id) is not list:
+            subaccount_id=[subaccount_id]
+                        
+        if account_id:          
+            for account in account_id:
 
-        log_string = u"""Пользователь %s выполнил nas_action %s для аккаунта %s""" % (add_data['USER_ID'][0], action, row['username'],)
+                cur.execute("SELECT *, id as account_id FROM billservice_account WHERE id=%s",(account,))
+                
+                row = cur.fetchone()
+                if not row: continue
+                acc = Object(row)
+                
+                if not acc.nas_id: continue
+                cur.execute("SELECT *, id as nas_id FROM nas_nas WHERE id=%s",(acc.nas_id,))
+                row = cur.fetchone()
+                if row:
+                    nas = Object(row)
+                    
+                connection.commit()
+                #print "actions", row
+                #print action
+                if row==None:
+                    return False
         
-        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
+                if acc.ipn_ip_address=="0.0.0.0":
+                    continue
         
+                if action=='disable':
+                    command = nas.user_disable_action
+                elif action=='enable':
+                    command = nas.user_enable_action
+                elif action=='create':
+                    command = nas.user_add_action
+                elif action =='delete':
+                    command = nas.user_delete_action
+                #print command
+        
+                sended = cred(account=acc, subacc={}, access_type='ipn', nas=nas, format_string=command)
+     
+                if action=='create' and sended==True:
+                    cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, True, acc.id))
+                    cur.execute("UPDATE billservice_accountipnspeed SET state=False WHERE account_id=%s", (acc.id,))
+                    
+                elif action=='create' and sended==False:
+                    cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, acc.id))
+                    cur.execute("UPDATE billservice_accountipnspeed SET state=False WHERE account_id=%s", (acc.id,))
+                
+                if action =='delete'  and sended==True:
+                    cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, acc.id))
+                    cur.execute("DELETE FROM billservice_accountipnspeed WHERE account_id=%s", (acc.id,))
+                    
+                elif action =='delete'  and sended==False:
+                    cur.execute("UPDATE billservice_account SET ipn_status=%s, ipn_added=%s WHERE id=%s", (False, False, acc.id))
+                    cur.execute("DELETE FROM billservice_accountipnspeed WHERE account_id=%s", (acc.id,))
+    
+                if action=='disable' and sended==True:
+                    cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.id,))
+                    
+                if action=='enable' and sended==True:
+                    cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (True, acc.id,))
+        
+                connection.commit()
+
+                log_string = u"""Пользователь %s выполнил nas_action %s для аккаунта %s""" % (add_data['USER_ID'][0], action, acc.username,)
+        
+                cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
+
+                
+                
+        if subaccount_id:          
+            for subaccount in subaccount_id:
+                cur.execute("SELECT * FROM billservice_subaccount WHERE id=%s",(subaccount,))
+                
+                row = cur.fetchone()
+                if not row: continue
+                subacc = Object(row)
+
+                cur.execute("SELECT * FROM billservice_account WHERE id=%s",(subacc.account_id,))
+                
+                row = cur.fetchone()
+                if not row: continue
+                acc = Object(row)
+                
+
+                cur.execute("SELECT * FROM nas_nas WHERE id=%s",(subacc.nas_id,))
+                row = cur.fetchone()
+                if not row: continue
+                nas = Object(row)
+                    
+                connection.commit()
+                #print "actions", row
+                #print action
+        
+                if subacc.ipn_ip_address=="0.0.0.0":
+                    continue
+        
+                if action=='disable':
+                    command = nas.subacc_disable_action
+                elif action=='enable':
+                    command = nas.subacc_enable_action
+                elif action=='create':
+                    command = nas.subacc_add_action
+                elif action =='delete':
+                    command = nas.subacc_delete_action
+                #print command
+        
+                sended = cred(account=acc, subacc=subacc, access_type='ipn', nas=nas,  format_string=command)
+     
+                if action=='create' and sended==True:
+                    cur.execute("UPDATE billservice_subaccount SET ipn_added=%s, speed='' WHERE id=%s", (True, subacc.id))
+                    #cur.execute("UPDATE billservice_accountipnspeed SET state=False WHERE account_id=%s", (row['account_id'],))
+                    
+
+                
+                if action =='delete'  and sended==True:
+                    cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s, ipn_added=%s WHERE id=%s", (False, False, subacc.id))
+                    #cur.execute("DELETE FROM billservice_accountipnspeed WHERE account_id=%s", (row['account_id'],))
+                    
+    
+                if action=='disable' and sended==True:
+                    cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, subacc.id,))
+                    
+                if action=='enable' and sended==True:
+                    cur.execute("UPDATE billservice_subaccount SET ipn_status=%s WHERE id=%s", (True, subacc.id,))
+        
+                connection.commit()
+
+                log_string = u"""Пользователь %s выполнил nas_action %s для субаккаунта %s""" % (add_data['USER_ID'][0], action, subacc.username,)
+        
+                cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))        
         del account_id
         del row
-        del account
+        #del account
         return sended
 
     

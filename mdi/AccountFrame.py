@@ -236,6 +236,8 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.connect(self.toolButton_login,QtCore.SIGNAL("clicked()"),self.generate_login)
         self.connect(self.toolButton_password,QtCore.SIGNAL("clicked()"),self.generate_password)
 
+        self.connect(self.toolButton_ipn_added,QtCore.SIGNAL("clicked()"),self.subaccountAddDel)
+        self.connect(self.toolButton_ipn_enabled,QtCore.SIGNAL("clicked()"),self.subaccountEnableDisable)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("SubAccountDialog", "Параметры субаккаунта", None, QtGui.QApplication.UnicodeUTF8))
@@ -277,6 +279,29 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.tableWidget = tableFormat(self.tableWidget)
         makeHeaders(columns, self.tableWidget)
         
+    def subaccountEnableDisable(self):
+        if not self.model: return
+        state = True if self.toolButton_ipn_enabled.isChecked() else False
+        if state:
+            if not self.connection.accountActions(None, self.model.id, 'enable'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+        else:
+             if not self.connection.accountActions(None, self.model.id, 'disable'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+        #self.refresh()
+        
+
+    def subaccountAddDel(self):
+        if not self.model: return
+        state = True if self.toolButton_ipn_added.isChecked() else False
+        if state==True:
+            if not self.connection.accountActions(None, self.model.id,  'create'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+        else:
+            if not self.connection.accountActions(None, self.model.id,  'delete'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))            
+
+        
         
     def fixtures(self):
         nasses=self.connection.sql("SELECT id, name FROM nas_nas ORDER BY name;")
@@ -307,6 +332,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
             
             i+=1
 
+        if not self.model: self.groupBox.setDisabled(True)
         if self.model:
             if self.model.isnull('ipn_ipinuse_id')==False:
                 pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.ipn_ipinuse_id)[0]
@@ -350,6 +376,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.checkBox_allow_addonservice.setCheckState(QtCore.Qt.Checked if self.model.allow_addonservice==True else QtCore.Qt.Unchecked )
             self.lineEdit_vpn_speed.setText(unicode(self.model.vpn_speed))
             self.lineEdit_ipn_speed.setText(unicode(self.model.ipn_speed))
+            self.toolButton_ipn_sleep.setChecked(self.model.ipn_sleep)
                         
     def accept(self):
         if self.model:
@@ -386,7 +413,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.allow_addonservice = self.checkBox_allow_addonservice.checkState()==QtCore.Qt.Checked
         model.vpn_speed=unicode(self.lineEdit_vpn_speed.text()) or ""
         model.ipn_speed=unicode(self.lineEdit_ipn_speed.text()) or ""
-        
+        model.ipn_sleep = self.toolButton_ipn_sleep.isChecked()
             #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
         try:
             self.connection.save(model,"billservice_subaccount")
@@ -3543,8 +3570,7 @@ class AccountWindow(QtGui.QMainWindow):
             a=CardPreviewDialog(url="templates/tmp/temp.html")
             a.exec_()
        
-       
-           
+   
     def get_ipn_from_pool(self):
         pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
         if pool_id!=0:
@@ -4900,7 +4926,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 #self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,7,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit))
+                self.tableWidget.setCellWidget(i,7,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 self.addrow(a.created.strftime(self.strftimeFormat), i,8, enabled=a.status)
                 self.addrow(a.comment, i,9, enabled=a.status)
@@ -4916,7 +4942,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 #self.addrow(a.ipn_mac_address, i,8, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,6,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit))
+                self.tableWidget.setCellWidget(i,6,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 self.addrow(a.created.strftime(self.strftimeFormat), i,7, enabled=a.status)
                 self.addrow(a.comment, i,8, enabled=a.status)
@@ -4943,7 +4969,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         if not ids:return
         
         for id in ids:
-            if not self.connection.accountActions(id, 'enable'):
+            if not self.connection.accountActions(id, {}, 'enable'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
         self.refresh()
         
@@ -4954,7 +4980,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         if not ids:return
         
         for id in ids:
-            if not self.connection.accountActions(id, 'create'):
+            if not self.connection.accountActions(id, {},  'create'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
         self.refresh()
         
@@ -4963,7 +4989,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         if not ids:return
         
         for id in ids:
-            if not self.connection.accountActions(id, 'delete'):
+            if not self.connection.accountActions(id, {}, 'delete'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
         self.refresh()
 
@@ -4972,7 +4998,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         if not ids:return
         
         for id in ids:
-            if not self.connection.accountActions(id, 'disable'):
+            if not self.connection.accountActions(id, {}, 'disable'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
         self.refresh()
         
