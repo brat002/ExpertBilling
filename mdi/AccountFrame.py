@@ -44,8 +44,8 @@ limit_actions = [CashType(0, u"Заблокировать пользовател
 
 la_list = [u"Заблокировать пользователя", u"Изменить скорость"]
 
-ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном и нулевом балансе"), CashType(2,u"При отрицательном балансе")]
-ps_list = [u"При любом балансе", u"При положительном и нулевом балансе", u"При отрицательном балансе"]
+ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном и нулевом балансе"), CashType(2,u"При отрицательном балансе"), CashType(3,u"При положительнои балансе")]
+ps_list = [u"При любом балансе", u"При положительном и нулевом балансе", u"При отрицательном балансе", u"При положительнои балансе"]
 
 class SubaccountLinkDialog(QtGui.QDialog):
     def __init__(self, connection, account, model = None):
@@ -217,8 +217,6 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.gridLayout_5.addWidget(self.frame, 1, 0, 1, 1)
         self.tableWidget = QtGui.QTableWidget(self.tab_2)
         self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget.setColumnCount(0)
-        self.tableWidget.setRowCount(0)
         self.gridLayout_5.addWidget(self.tableWidget, 2, 0, 1, 1)
         self.tabWidget.addTab(self.tab_2, "")
         self.gridLayout_2.addWidget(self.tabWidget, 0, 0, 1, 1)
@@ -227,6 +225,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         QtCore.QMetaObject.connectSlotsByName(self)
         
         self.fixtures()
+        self.accountAddonServiceRefresh()
         self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"),self.accept)
         self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
         
@@ -238,6 +237,9 @@ class SubaccountLinkDialog(QtGui.QDialog):
 
         self.connect(self.toolButton_ipn_added,QtCore.SIGNAL("clicked()"),self.subaccountAddDel)
         self.connect(self.toolButton_ipn_enabled,QtCore.SIGNAL("clicked()"),self.subaccountEnableDisable)
+        
+        self.connect(self.commandLinkButton, QtCore.SIGNAL("clicked()"), self.addAddonService)
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editAddonService)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("SubAccountDialog", "Параметры субаккаунта", None, QtGui.QApplication.UnicodeUTF8))
@@ -278,7 +280,30 @@ class SubaccountLinkDialog(QtGui.QDialog):
         columns=[u'#', u'Название', u'Начата', u'Закрыта', u'Активирована на сервере доступа', u"Временная блокировка"]
         self.tableWidget = tableFormat(self.tableWidget)
         makeHeaders(columns, self.tableWidget)
+  
+
+    def addrow(self, widget, value, x, y, id=None, editable=False, widget_type = None):
+        headerItem = QtGui.QTableWidgetItem()
+        if widget_type == 'checkbox':
+            headerItem.setCheckState(QtCore.Qt.Unchecked)
+        if value==None or value=="None":
+            value=''
+        if y==0:
+            headerItem.id=value
+        headerItem.setText(unicode(value))
+        if id:
+            headerItem.id=id
+            
+           
+        widget.setItem(x,y,headerItem)
         
+          
+    def getSelectedId(self, table):
+        try:
+            return int(table.item(table.currentRow(), 0).text())
+        except:
+            return -1
+              
     def subaccountEnableDisable(self):
         if not self.model: return
         state = True if self.toolButton_ipn_enabled.isChecked() else False
@@ -301,8 +326,52 @@ class SubaccountLinkDialog(QtGui.QDialog):
             if not self.connection.accountActions(None, self.model.id,  'delete'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))            
 
+
+    def addAddonService(self):
+        i=self.getSelectedId(self.tableWidget)
+        child = AccountAddonServiceEdit(connection=self.connection, subaccount_model = self.model.id)
+        if child.exec_()==1:
+            self.accountAddonServiceRefresh()
         
-        
+    def editAddonService(self):
+        i=self.getSelectedId(self.tableWidget)
+        try:
+            model = self.connection.get_model(i, "billservice_accountaddonservice")
+        except:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
+            return
+        child = AccountAddonServiceEdit(connection=self.connection, model=model, subaccount_model = self.model.id)
+        if child.exec_()==1:
+            self.accountAddonServiceRefresh()
+                    
+    def accountAddonServiceRefresh(self):
+        if self.model:
+            sp = self.connection.sql("""
+            SELECT accadd.*, adds.name as addonservice_name, adds.id as addonservice_id FROM billservice_accountaddonservice as accadd
+            JOIN billservice_addonservice as adds ON adds.id=accadd.service_id
+            WHERE subaccount_id=%s ORDER BY id DESC
+            """ % self.model.id)
+            self.connection.commit()
+            self.tableWidget.clearContents()
+            self.tableWidget.setRowCount(len(sp))
+            i=0
+            for a in sp:
+                self.addrow(self.tableWidget, a.id, i, 0)
+                self.addrow(self.tableWidget, a.addonservice_name, i, 1)
+                self.addrow(self.tableWidget, a.activated.strftime(strftimeFormat), i, 2)
+                try:
+                    self.addrow(self.tableWidget, a.deactivated.strftime(strftimeFormat), i, 3)
+                except:
+                    self.addrow(self.tableWidget, u"Не закончен", i, 3)
+                self.addrow(self.tableWidget, a.action_status, i, 4)
+                try:
+                    self.addrow(self.tableWidget, a.temporary_blocked.strftime(strftimeFormat), i, 5)
+                except:
+                    self.addrow(self.tableWidget, u"Нет", i, 5)
+                i+=1
+            self.tableWidget.setColumnHidden(0, True)
+            self.tableWidget.resizeColumnsToContents()
+                    
     def fixtures(self):
         nasses=self.connection.sql("SELECT id, name FROM nas_nas ORDER BY name;")
         self.connection.commit()
@@ -2849,8 +2918,8 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_8 = QtGui.QGridLayout(self.tab_general)
         self.gridLayout_8.setObjectName("gridLayout_8")
         self.groupBox_account_data = QtGui.QGroupBox(self.tab_general)
-        self.groupBox_account_data.setMinimumSize(QtCore.QSize(381, 82))
-        self.groupBox_account_data.setMaximumSize(QtCore.QSize(381, 86))
+        #self.groupBox_account_data.setMinimumSize(QtCore.QSize(381, 82))
+        #self.groupBox_account_data.setMaximumSize(QtCore.QSize(381, 86))
         self.groupBox_account_data.setObjectName("groupBox_account_data")
         self.gridLayout_3 = QtGui.QGridLayout(self.groupBox_account_data)
         self.gridLayout_3.setObjectName("gridLayout_3")
@@ -2906,17 +2975,18 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_4.addWidget(self.dateTimeEdit_agreement_date, 0, 2, 1, 1)
         self.gridLayout_8.addWidget(self.groupBox_agreement, 0, 1, 1, 1)
         self.groupBox_account_info = QtGui.QGroupBox(self.tab_general)
-        self.groupBox_account_info.setMinimumSize(QtCore.QSize(381, 211))
-        self.groupBox_account_info.setMaximumSize(QtCore.QSize(381, 16381))
+        #self.groupBox_account_info.setMinimumSize(QtCore.QSize(381, 211))
+        #self.groupBox_account_info.setMaximumSize(QtCore.QSize(381, 16381))
         self.groupBox_account_info.setObjectName("groupBox_account_info")
         self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_account_info)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.tableWidget = QtGui.QTableWidget(self.groupBox_account_info)
-        self.tableWidget.setMinimumSize(QtCore.QSize(0, 300))
+        #self.tableWidget.setMinimumSize(QtCore.QSize(0, 300))
         self.tableWidget = tableFormat(self.tableWidget)
         self.tableWidget.setObjectName("AccountWindow-account_info")
         self.gridLayout_2.addWidget(self.tableWidget, 0, 0, 1, 1)
-        self.gridLayout_8.addWidget(self.groupBox_account_info, 1, 0, 5, 1)
+        self.gridLayout_8.addWidget(self.groupBox_account_info, 1, 0, 4, 1)
+
         self.groupBox_urdata = QtGui.QGroupBox(self.tab_general)
         self.groupBox_urdata.setMinimumSize(QtCore.QSize(391, 0))
         self.groupBox_urdata.setMaximumSize(QtCore.QSize(16381, 16381))
@@ -3037,6 +3107,14 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_status = QtGui.QComboBox(self.groupBox_status)
         self.comboBox_status.setObjectName("comboBox_status")
         self.horizontalLayout.addWidget(self.comboBox_status)
+        
+        self.groupBox_management_info = QtGui.QGroupBox(self.tab_general)
+        self.gridLayout_management = QtGui.QGridLayout(self.groupBox_management_info)
+        self.label_manager = QtGui.QLabel(self.groupBox_management_info)
+        self.gridLayout_management.addWidget(self.label_manager,0,0,1,1)
+        self.comboBox_manager = QtGui.QComboBox(self.groupBox_management_info)
+        self.gridLayout_management.addWidget(self.comboBox_manager,0,1,1,1)
+        self.gridLayout_8.addWidget(self.groupBox_management_info, 5, 0, 1, 1)
         self.gridLayout_8.addWidget(self.groupBox_status, 6, 0, 1, 1)
         self.groupBox = QtGui.QGroupBox(self.tab_general)
         self.groupBox.setObjectName("groupBox")
@@ -3072,6 +3150,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_ipn.setMinimumSize(QtCore.QSize(0, 0))
         self.groupBox_ipn.setMaximumSize(QtCore.QSize(597000, 151))
         self.groupBox_ipn.setObjectName("groupBox_ipn")
+        self.groupBox_ipn.setHidden(True)
         self.gridLayout_15 = QtGui.QGridLayout(self.groupBox_ipn)
         self.gridLayout_15.setObjectName("gridLayout_15")
         self.label_ipn_ip_address = QtGui.QLabel(self.groupBox_ipn)
@@ -3102,6 +3181,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_vpn.setMinimumSize(QtCore.QSize(0, 0))
         self.groupBox_vpn.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.groupBox_vpn.setObjectName("groupBox_vpn")
+        self.groupBox_vpn.setHidden(True)
         self.gridLayout_20 = QtGui.QGridLayout(self.groupBox_vpn)
         self.gridLayout_20.setObjectName("gridLayout_20")
         self.label_vpn_ip_address = QtGui.QLabel(self.groupBox_vpn)
@@ -3125,6 +3205,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_17.addWidget(self.groupBox_vpn, 2, 0, 1, 1)
         self.groupBox_accessparameters = QtGui.QGroupBox(self.tab_network_settings)
         self.groupBox_accessparameters.setObjectName("groupBox_accessparameters")
+        self.groupBox_accessparameters.setHidden(True)
         self.gridLayout_16 = QtGui.QGridLayout(self.groupBox_accessparameters)
         self.gridLayout_16.setObjectName("gridLayout_16")
         self.checkBox_allow_webcab = QtGui.QCheckBox(self.groupBox_accessparameters)
@@ -3162,6 +3243,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_vpn_speed.setMinimumSize(QtCore.QSize(0, 56))
         self.groupBox_vpn_speed.setCheckable(True)
         self.groupBox_vpn_speed.setChecked(False)
+        self.groupBox_vpn_speed.setHidden(True)
         self.groupBox_vpn_speed.setObjectName("groupBox_vpn_speed")
         self.gridLayout_11 = QtGui.QGridLayout(self.groupBox_vpn_speed)
         self.gridLayout_11.setObjectName("gridLayout_11")
@@ -3173,7 +3255,8 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_ipn_speed.setMinimumSize(QtCore.QSize(0, 56))
         self.groupBox_ipn_speed.setCheckable(True)
         self.groupBox_ipn_speed.setChecked(False)
-        self.groupBox_ipn_speed.setObjectName("groupBox_ipn_speed")
+        self.groupBox_ipn_speed.setHidden(True)
+        self.groupBox_vpn_speed.setObjectName("groupBox_ipn_speed")
         self.gridLayout_10 = QtGui.QGridLayout(self.groupBox_ipn_speed)
         self.gridLayout_10.setObjectName("gridLayout_10")
         self.ipn_speed_lineEdit = QtGui.QLineEdit(self.groupBox_ipn_speed)
@@ -3187,6 +3270,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_8021_x.setFlat(False)
         self.groupBox_8021_x.setCheckable(True)
         self.groupBox_8021_x.setChecked(False)
+        self.groupBox_8021_x.setHidden(True)
         self.groupBox_8021_x.setObjectName("groupBox_8021_x")
         self.gridLayout_12 = QtGui.QGridLayout(self.groupBox_8021_x)
         self.gridLayout_12.setObjectName("gridLayout_12")
@@ -3338,6 +3422,7 @@ class AccountWindow(QtGui.QMainWindow):
         
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Профиль аккаунта", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_management_info.setTitle(QtGui.QApplication.translate("MainWindow", "Менеджмент", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_account_data.setTitle(QtGui.QApplication.translate("MainWindow", "Учётные данные", None, QtGui.QApplication.UnicodeUTF8))
         self.label_username.setText(QtGui.QApplication.translate("MainWindow", "Логин", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_generate_login.setText(QtGui.QApplication.translate("MainWindow", "#", None, QtGui.QApplication.UnicodeUTF8))
@@ -3368,7 +3453,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_ipn.setTitle(QtGui.QApplication.translate("MainWindow", "IPN IP Адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.label_ipn_ip_address.setText(QtGui.QApplication.translate("MainWindow", "Текущий IP адрес", None, QtGui.QApplication.UnicodeUTF8))
         self.label_bank_code.setText(QtGui.QApplication.translate("MainWindow", "Код", None, QtGui.QApplication.UnicodeUTF8))
-        
+        self.label_manager.setText(QtGui.QApplication.translate("MainWindow", "Менеджер", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setColumnHidden(0, False)
         columns = [u"Название", u"Значение"]
         makeHeaders(columns, self.tableWidget)
@@ -3604,14 +3689,16 @@ class AccountWindow(QtGui.QMainWindow):
         self.connection.commit()
         i=0
         self.comboBox_nas.clear()
+        self.comboBox_nas.addItem("---")
+        self.comboBox_nas.setItemData(i, QtCore.QVariant(0))
         for nas in nasses:
             self.comboBox_nas.addItem(nas.name)
+            self.comboBox_nas.setItemData(i+1, QtCore.QVariant(nas.id))
             self.comboBox_8021x_nas.addItem(nas.name)
-            self.comboBox_nas.setItemData(i, QtCore.QVariant(nas.id))
             self.comboBox_8021x_nas.setItemData(i, QtCore.QVariant(nas.id))
             if self.model:
                 if nas.id==self.model.nas_id:
-                    self.comboBox_nas.setCurrentIndex(i)
+                    self.comboBox_nas.setCurrentIndex(i+1)
             
             i+=1
         if self.model:
@@ -4251,6 +4338,11 @@ class AccountWindow(QtGui.QMainWindow):
     def subAccountLinkRefresh(self):
         if self.model:
             sp = self.connection.get_models("billservice_subaccount", where={'account_id':self.model.id})
+            
+            sp = self.connection.sql("""
+            SELECT *, (SELECT name FROM nas_nas WHERE id=subaccount.nas_id) as nas_name FROM billservice_subaccount as subaccount
+            WHERE account_id=%s ORDER BY id DESC
+            """ % self.model.id)            
             self.connection.commit()
             self.tableWidget_subaccounts.setRowCount(len(sp))
             i=0
@@ -4261,7 +4353,7 @@ class AccountWindow(QtGui.QMainWindow):
                 self.addrow(self.tableWidget_subaccounts, a.vpn_ip_address, i, 3)
                 self.addrow(self.tableWidget_subaccounts, a.ipn_ip_address, i, 4)
                 self.addrow(self.tableWidget_subaccounts, a.ipn_mac_address, i, 5)
-                self.addrow(self.tableWidget_subaccounts, a.nas_id, i, 6)
+                self.addrow(self.tableWidget_subaccounts, a.nas_name, i, 6)
                 self.tableWidget_subaccounts.setCellWidget(i,7,tableImageWidget(ipn_sleep=a.ipn_sleep, ipn_status=a.ipn_enabled, ipn_added=a.ipn_added))
                 #self.addrow(self.tableWidget_subaccounts, a.start_date.strftime(strftimeFormat), i, 1)
                 #try:
@@ -4325,7 +4417,7 @@ class AccountWindow(QtGui.QMainWindow):
 
     def addAddonService(self):
         i=self.getSelectedId(self.tableWidget_addonservice)
-        child = AccountAddonServiceEdit(connection=self.connection, account_model = self.model)
+        child = AccountAddonServiceEdit(connection=self.connection, account_model = self.model.id)
         if child.exec_()==1:
             self.accountAddonServiceRefresh()
         
@@ -4336,7 +4428,7 @@ class AccountWindow(QtGui.QMainWindow):
         except:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
             return
-        child = AccountAddonServiceEdit(connection=self.connection, model=model, account_model = self.model)
+        child = AccountAddonServiceEdit(connection=self.connection, model=model, account_model = self.model.id)
         if child.exec_()==1:
             self.accountAddonServiceRefresh()
         

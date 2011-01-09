@@ -2426,11 +2426,12 @@ class PSCreatedForm(QtGui.QDialog):
         
         
 class AccountAddonServiceEdit(QtGui.QDialog):
-    def __init__(self, connection, model=None, account_model = None):
+    def __init__(self, connection, model=None, account_model = None, subaccount_model = None):
         super(AccountAddonServiceEdit, self).__init__()
         self.setObjectName("AccountAddonServiceEdit")
         self.model = model
         self.account_model = account_model
+        self.subaccount_model = subaccount_model
         self.connection = connection
         self.resize(437, 194)
         self.gridLayout_2 = QtGui.QGridLayout(self)
@@ -2536,8 +2537,11 @@ class AccountAddonServiceEdit(QtGui.QDialog):
             model = self.model
         else:
             model = Object()
+        if self.account_model:    
+            model.account_id = self.account_model
+        if self.subaccount_model:    
+            model.subaccount_id = self.subaccount_model
             
-        model.account_id = self.account_model.id
         model.service_id = self.comboBox_service.itemData(self.comboBox_service.currentIndex()).toInt()[0]
         date = self.dateTimeEdit_activation.dateTime().toPyDateTime()
         date = datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
