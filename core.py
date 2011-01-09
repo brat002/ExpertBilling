@@ -369,7 +369,7 @@ class periodical_service_bill(Thread):
                     #make an approved transaction
                     cash_summ = susp_per_mlt * (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
                     if pss_type == PERIOD:
-                        if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0):
+                        if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0) or (ps.condition==3 and account_ballance<=0):
                             #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                             cash_summ = 0
                         ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)

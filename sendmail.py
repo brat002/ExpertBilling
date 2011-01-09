@@ -2,7 +2,7 @@
 
 import os, sys
 
-sys.path.append("modules")
+sys.path.append("/opt/ebs/data/modules")
 
 import  datetime, time
 
@@ -70,7 +70,7 @@ def main ():
 if __name__=='__main__':
 
     config = ConfigParser.ConfigParser()
-    config.read("ebs_config.ini")
+    config.read("/opt/ebs/data/ebs_config.ini")
 
     
     pool = PooledDB(
