@@ -446,6 +446,8 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.lineEdit_vpn_speed.setText(unicode(self.model.vpn_speed))
             self.lineEdit_ipn_speed.setText(unicode(self.model.ipn_speed))
             self.toolButton_ipn_sleep.setChecked(self.model.ipn_sleep)
+            self.toolButton_ipn_added.setChecked(self.model.ipn_added)
+            self.toolButton_ipn_enabled.setChecked(self.model.ipn_enabled)
                         
     def accept(self):
         if self.model:
@@ -483,6 +485,8 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.vpn_speed=unicode(self.lineEdit_vpn_speed.text()) or ""
         model.ipn_speed=unicode(self.lineEdit_ipn_speed.text()) or ""
         model.ipn_sleep = self.toolButton_ipn_sleep.isChecked()
+        model.ipn_added = self.toolButton_ipn_added.isChecked()
+        model.ipn_enabled = self.toolButton_ipn_enabled.isChecked()
             #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
         try:
             self.connection.save(model,"billservice_subaccount")
