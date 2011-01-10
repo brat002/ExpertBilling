@@ -160,8 +160,8 @@ class RPCServer(object):
                 if row==None:
                     return False
         
-                if acc.ipn_ip_address=="0.0.0.0":
-                    continue
+                #if acc.ipn_ip_address=="0.0.0.0":
+                #    continue
         
                 if action=='disable':
                     command = nas.user_disable_action
@@ -229,8 +229,8 @@ class RPCServer(object):
                 #print "actions", row
                 #print action
         
-                if subacc.ipn_ip_address=="0.0.0.0":
-                    continue
+                #if subacc.ipn_ip_address=="0.0.0.0":
+                #    continue
         
                 if action=='disable':
                     command = nas.subacc_disable_action
@@ -259,7 +259,7 @@ class RPCServer(object):
                     cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, subacc.id,))
                     
                 if action=='enable' and sended==True:
-                    cur.execute("UPDATE billservice_subaccount SET ipn_status=%s WHERE id=%s", (True, subacc.id,))
+                    cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (True, subacc.id,))
         
                 connection.commit()
 

@@ -342,6 +342,8 @@ def cred(account, subacc, access_type, nas, format_string):
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)        
         if not command_string: return True
         print command_string
+        print command_dict
+        #log_debug_('CRED ssh dictionary: %s' % command_dict) 
         try:
             
             if ssh_exec:
