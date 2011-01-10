@@ -133,22 +133,8 @@ class ApiRos:
             ret += s
         return ret
     
-def rosClient(nas_ip, nas_login, nas_password, command):
-    """
-    @param host: IP address or Hostname
-    @param login: Username of System user
-    @param password: Password os system user
-    @param commant: command for execution    
-    """
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((nas_ip, 8728))
-    except Exception, e:
-        print e
-        return []
-        
-    apiros = ApiRos(s);
-    apiros.login(str(nas_login), str(nas_password))
+def rosExecute(command):
+    global apiros
     x=['']
     commands = command.split(" ")
 
@@ -162,8 +148,27 @@ def rosClient(nas_ip, nas_login, nas_password, command):
             break
         result.append(x)
         
-    s.close()
-    return make_dict(result)
+    #s.close()
+    return make_dict(result)      
+  
+def rosClient(nas_ip, nas_login, nas_password):
+    """
+    @param host: IP address or Hostname
+    @param login: Username of System user
+    @param password: Password os system user
+    @param commant: command for execution    
+    """
+    global s
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((nas_ip, 8728))
+    except Exception, e:
+        print e
+        return []
+        
+    apiros = ApiRos(s);
+    apiros.login(str(nas_login), str(nas_password))
+    return apiros
 
 def make_dict(res):
     d={}
@@ -184,23 +189,23 @@ def get_id(d):
 def add_subaccount(accountid,subaccount_id, subaccount_ip, comment):
     global nas_ip, nas_login, nas_password
     command = '/ip/firewall/address-list/print ?address=%s ?comment=%s' % (subaccount_ip, comment)
-    res=rosClient(nas_ip, nas_login, nas_password, command)
+    res=rosExecute(command)
     print res
     id=get_id(res)
     print "id=", id
     if not id:
         command='/ip/firewall/address-list/add =list=internet-users =address=%s =comment=%s =disabled=yes' % (subaccount_ip, comment)
-        rosClient(nas_ip, nas_login, nas_password, command)
+        rosExecute(command)
     
     command = '/queue/simple/print ?name=acc_%s' % accountid
-    res=rosClient(nas_ip, nas_login, nas_password, command)
+    res=rosExecute(command)
     id=get_id(res)
     if not id:
         command = '/queue/simple/add =name=acc_%s =disabled=yes' % accountid
-        rosClient(nas_ip, nas_login, nas_password, command)
+        rosExecute(command)
     
     command = '/queue/simple/print ?name=acc_%s' % accountid
-    res = rosClient(nas_ip, nas_login, nas_password, command)
+    res = rosExecute(command)
     
     id=get_id(res)
     print res
@@ -219,7 +224,7 @@ def add_subaccount(accountid,subaccount_id, subaccount_ip, comment):
         addresses = ','.join(addr_list)
         print "addresses", addresses
         command = '/queue/simple/set =.id=%s =disabled=no =target-addresses=%s' % (id, addresses)
-        print rosClient(nas_ip, nas_login, nas_password, command)
+        print rosExecute(command)
     
 
 def enable_subaccount(subaccount_ip, comment):
@@ -227,22 +232,22 @@ def enable_subaccount(subaccount_ip, comment):
     #address = sys.argv[2]
     #comment = sys.argv[3]
     command = '/ip/firewall/address-list/print ?address=%s ?comment=%s' % (subaccount_ip, comment)
-    res=rosClient(nas_ip, nas_login, nas_password, command)
+    res=rosExecute(command)
     id=get_id(res)
     if id:
         command='/ip/firewall/address-list/set =.id=%s =disabled=no' % (id, )
-        rosClient(nas_ip, nas_login, nas_password, command)
+        rosExecute(command)
 
 
 def disable_subaccount(subaccount_ip, comment):
     global nas_ip, nas_login, nas_password
 
     command = '/ip/firewall/address-list/print ?address=%s ?comment=%s' % (subaccount_ip, comment)
-    res=rosClient(nas_ip, nas_login, nas_password, command)
+    res=rosExecute(command)
     id=get_id(res)
     if id:
         command='/ip/firewall/address-list/set =.id=%s =disabled=yes' % (id, )
-        rosClient(nas_ip, nas_login, nas_password, command)
+        rosExecute(command)
 
 
 def del_subaccount(accountid, subaccount_ip, comment):
@@ -250,14 +255,14 @@ def del_subaccount(accountid, subaccount_ip, comment):
     #address = sys.argv[2]
     #comment = sys.argv[3]
     command = '/ip/firewall/address-list/print ?address=%s ?comment=%s' % (subaccount_ip, comment)
-    res=rosClient(nas_ip, nas_login, nas_password, command)
+    res=rosExecute(command)
     id=get_id(res)
     if id:
         command='/ip/firewall/address-list/remove =.id=%s' % (id, )
-        rosClient(nas_ip, nas_login, nas_password, command)
+        rosExecute(command)
 
     command = '/queue/simple/print ?name=acc_%s' % accountid
-    res = rosClient(nas_ip, nas_login, nas_password, command)
+    res = rosExecute(command)
 
     id=get_id(res)
     addresses = res.get('target-addresses', '')
@@ -278,7 +283,7 @@ def del_subaccount(accountid, subaccount_ip, comment):
                 command = '/queue/simple/set =.id=%s =disabled=no =target-addresses=%s' % (id, addresses)
             else:
                 command = '/queue/simple/set =.id=%s =disabled=yes =target-addresses=%s' % (id, addresses)
-            rosClient(nas_ip, nas_login, nas_password, command)
+            rosExecute(command)
 
 
 def set_ipn_speed_subaccount(accountid, speed_settings):
@@ -307,12 +312,12 @@ def reset_vpn_session(access_type, username):
     return False
 
 def main():
-    global nas_ip, nas_login, nas_password
+    global nas_ip, nas_login, nas_password, apiros, s
     nas_ip = sys.argv[1]
     nas_login = sys.argv[2]
     nas_password = sys.argv[3]
     action = sys.argv[4]
-    
+    apiros=rosClient(nas_ip, nas_login, nas_password)
     if action=='add':
         accountid = sys.argv[5]
         subaccount_id = sys.argv[6]
@@ -341,7 +346,7 @@ def main():
         accountid = sys.argv[5]
         speed_settings = sys.argv[6]
         set_ipn_speed_subaccount(accountid, speed_settings)
-    
+    s.close()
     
     
 
