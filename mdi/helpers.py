@@ -593,7 +593,7 @@ def get_type(nas_id, tarif_id):
 def get_free_addreses_from_pool(connection, pool_id, count=-1):
     pool = connection.sql("SELECT * FROM billservice_ippool WHERE id=%s" % (pool_id))[0]
     ipinuse = connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s" % pool.id)
-    accounts_ip = connection.sql("SELECT ipn_ip_address, vpn_ip_address FROM billservice_account")
+    accounts_ip = connection.sql("SELECT ipn_ip_address, vpn_ip_address FROM billservice_subaccount")
     connection.commit()
     accounts_used_ip = []
     for accip in accounts_ip:

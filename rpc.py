@@ -138,7 +138,7 @@ class RPCServer(object):
 
         if subaccount_id and type(subaccount_id) is not list:
             subaccount_id=[subaccount_id]
-                        
+        sended=False                
         if account_id:          
             for account in account_id:
 
@@ -266,9 +266,9 @@ class RPCServer(object):
                 log_string = u"""Пользователь %s выполнил nas_action %s для субаккаунта %s""" % (add_data['USER_ID'][0], action, subacc.username,)
         
                 cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))        
-        del account_id
-        del row
-        #del account
+            del account_id
+            
+        
         return sended
 
     
