@@ -102,9 +102,9 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.label_link_vpn = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_link_vpn.setObjectName("label_link_vpn")
         self.gridLayout.addWidget(self.label_link_vpn, 7, 1, 1, 1)
-        self.lineEdit_link_ipn_ip_address = QtGui.QLineEdit(self.groupBox_link_parameters)
-        self.lineEdit_link_ipn_ip_address.setObjectName("lineEdit_link_ipn_ip_address")
-        self.gridLayout.addWidget(self.lineEdit_link_ipn_ip_address, 7, 2, 1, 1)
+        self.lineEdit_ipn_ip_address = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_ipn_ip_address.setObjectName("lineEdit_ipn_ip_address")
+        self.gridLayout.addWidget(self.lineEdit_ipn_ip_address, 7, 2, 1, 1)
         self.comboBox_ipn_pool = QtGui.QComboBox(self.groupBox_link_parameters)
         self.comboBox_ipn_pool.setObjectName("comboBox_ipn_pool")
         self.gridLayout.addWidget(self.comboBox_ipn_pool, 7, 3, 1, 2)
@@ -240,6 +240,11 @@ class SubaccountLinkDialog(QtGui.QDialog):
         
         self.connect(self.commandLinkButton, QtCore.SIGNAL("clicked()"), self.addAddonService)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editAddonService)
+        
+        self.connect(self.comboBox_vpn_pool, QtCore.SIGNAL("currentIndexChanged(int)"), self.combobox_vpn_pool_action)
+        self.connect(self.comboBox_ipn_pool, QtCore.SIGNAL("currentIndexChanged(int)"), self.combobox_ipn_pool_action)
+
+
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("SubAccountDialog", "Параметры субаккаунта", None, QtGui.QApplication.UnicodeUTF8))
@@ -276,11 +281,43 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.commandLinkButton.setText(QtGui.QApplication.translate("SubAccountDialog", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton.setDescription(QtGui.QApplication.translate("SubAccountDialog", "Добавить подключаемую услугу", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("SubAccountDialog", "Подключаемые услуги", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.lineEdit_vpn_speed.setToolTip(QtGui.QApplication.translate("MainWindow", "Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] \n"
+        " Примеры: \n"
+        " 128k  - rx-rate=128000, tx-rate=128000 (no bursts) \n"
+        " 64k/128M - rx-rate=64000, tx-rate=128000000 \n"
+        " 64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s \n"
+        "64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s \n"
+        "", None, QtGui.QApplication.UnicodeUTF8))
+        self.lineEdit_vpn_speed.setWhatsThis(QtGui.QApplication.translate("MainWindow", "Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] \n"
+        " Примеры: \n"
+        " 128k  - rx-rate=128000, tx-rate=128000 (no bursts) \n"
+        " 64k/128M - rx-rate=64000, tx-rate=128000000 \n"
+        " 64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s \n"
+        "64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s \n"
+        "", None, QtGui.QApplication.UnicodeUTF8))
+        self.lineEdit_ipn_speed.setToolTip(QtGui.QApplication.translate("MainWindow", "Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] \n"
+        " Примеры: \n"
+        " 128k  - rx-rate=128000, tx-rate=128000 (no bursts) \n"
+        " 64k/128M - rx-rate=64000, tx-rate=128000000 \n"
+        " 64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s \n"
+        "64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s \n"
+        "", None, QtGui.QApplication.UnicodeUTF8))
+        self.lineEdit_ipn_speed.setWhatsThis(QtGui.QApplication.translate("MainWindow", "Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] \n"
+        " Примеры: \n"
+        " 128k  - rx-rate=128000, tx-rate=128000 (no bursts) \n"
+        " 64k/128M - rx-rate=64000, tx-rate=128000000 \n"
+        " 64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s \n"
+        "64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s \n"
+        "", None, QtGui.QApplication.UnicodeUTF8))
         columns=[u'#', u'Название', u'Начата', u'Закрыта', u'Активирована на сервере доступа', u"Временная блокировка"]
         self.tableWidget = tableFormat(self.tableWidget)
         makeHeaders(columns, self.tableWidget)
-  
+        self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
+        self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
+        
+        self.ipnRx = QtCore.QRegExp(r"\b(?:0\.0\.0\.0(/0)?)|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.0\.0\.0(?:/[1-8])?)|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){2}0\.0(?:/(?:9|1[0-6]))?)|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){3}0(?:/(?:1[7-9]|2[0-4]))?)|(?:(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/(?:2[5-9]|3[0-2]))?)\b")
+        self.ipnValidator = QtGui.QRegExpValidator(self.ipnRx, self)
+        self.macValidator = QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9a-fA-F]{2}[:]){5}[0-9a-fA-F]{2}$"), self)  
 
     def addrow(self, widget, value, x, y, id=None, editable=False, widget_type = None):
         headerItem = QtGui.QTableWidgetItem()
@@ -343,7 +380,24 @@ class SubaccountLinkDialog(QtGui.QDialog):
         child = AccountAddonServiceEdit(connection=self.connection, model=model, subaccount_model = self.model.id)
         if child.exec_()==1:
             self.accountAddonServiceRefresh()
-                    
+
+
+    def combobox_ipn_pool_action(self):
+		#print self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
+		if self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]:
+			self.lineEdit_ipn_ip_address.setDisabled(True)
+			self.lineEdit_ipn_ip_address.setText(u"0.0.0.0")
+		else:
+			self.lineEdit_ipn_ip_address.setDisabled(False)
+
+    def combobox_vpn_pool_action(self):
+		#print self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
+		if self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]:
+			self.lineEdit_vpn_ip_address.setDisabled(True)
+			self.lineEdit_vpn_ip_address.setText(u"0.0.0.0")
+		else:
+			self.lineEdit_vpn_ip_address.setDisabled(False)
+
     def accountAddonServiceRefresh(self):
         if self.model:
             sp = self.connection.sql("""
@@ -384,8 +438,13 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.comboBox_link_switch_id.addItem(nas.name, QtCore.QVariant(nas.id))
             
         #print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
-
+        if self.model:
+            if self.model.isnull('vpn_ipinuse_id')==False:
+                pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipinuse_id, return_response=True)[0]
+                #print "vpnipinuse pool_id", pool_id
+            
         pools = self.connection.get_models("billservice_ippool", where={'type':'0',})
+        
         self.connection.commit()
         i=1
         self.comboBox_vpn_pool.clear()
@@ -398,13 +457,14 @@ class SubaccountLinkDialog(QtGui.QDialog):
                 if self.model.isnull('vpn_ipinuse_id')==False:
                     if pool.id==pool_id.pool_id:
                         self.comboBox_vpn_pool.setCurrentIndex(i)
+                        self.lineEdit_vpn_ip_address.setDisabled(True)
             
             i+=1
 
         if not self.model: self.groupBox.setDisabled(True)
         if self.model:
             if self.model.isnull('ipn_ipinuse_id')==False:
-                pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.ipn_ipinuse_id)[0]
+                pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.ipn_ipinuse_id, return_response=True)[0]
             
         pools = self.connection.get_models("billservice_ippool", where={'type':'1',})
         self.connection.commit()
@@ -419,7 +479,9 @@ class SubaccountLinkDialog(QtGui.QDialog):
                 if self.model.isnull('ipn_ipinuse_id')==False:
                     if pool.id==pool_id.pool_id:
                         self.comboBox_ipn_pool.setCurrentIndex(i)
+                        self.lineEdit_ipn_ip_address.setDisabled(True)
             i+=1
+
             
         if self.model:
             #print "NAS_ID", self.model.nas_id
@@ -430,7 +492,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.lineEdit_link_login.setText(unicode(self.model.username))
             self.lineEdit_link_password.setText(unicode(self.model.password))
             self.lineEdit_vpn_ip_address.setText(unicode(self.model.vpn_ip_address))
-            self.lineEdit_link_ipn_ip_address.setText(unicode(self.model.ipn_ip_address))
+            self.lineEdit_ipn_ip_address.setText(unicode(self.model.ipn_ip_address))
             self.lineEdit_link_ipn_mac_address.setText(unicode(self.model.ipn_mac_address))
             self.spinBox_link_port.setValue(self.model.switch_port if self.model.switch_port else 0)
             self.checkBox_allow_dhcp.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp==True else QtCore.Qt.Unchecked )
@@ -448,6 +510,10 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.toolButton_ipn_sleep.setChecked(self.model.ipn_sleep)
             self.toolButton_ipn_added.setChecked(self.model.ipn_added)
             self.toolButton_ipn_enabled.setChecked(self.model.ipn_enabled)
+            
+            
+            #self.combobox_vpn_pool_action()
+            #self.combobox_ipn_pool_action()
                         
     def accept(self):
         if self.model:
@@ -468,9 +534,60 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.switch_port = int(self.spinBox_link_port.value() or 0)
         model.username = unicode(self.lineEdit_link_login.text()) or ""
         model.password = unicode(self.lineEdit_link_password.text()) or ""
-        model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
-        model.ipn_ip_address = unicode(self.lineEdit_link_ipn_ip_address.text()) or "0.0.0.0"
-        model.ipn_mac_address = unicode(self.lineEdit_link_ipn_mac_address.text()) or ""
+        #model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
+        #model.ipn_ip_address = unicode(self.lineEdit_ipn_ip_address.text()) or "0.0.0.0"
+        #------------------
+        if self.lineEdit_ipn_ip_address.text():
+			if self.ipnValidator.validate(self.lineEdit_ipn_ip_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+				QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте правильность написания IPN IP адреса."))
+				self.connection.rollback()
+				return
+			try:
+				ipn_address_account_id = self.connection.get("SELECT id FROM billservice_subaccount WHERE ipn_ip_address='%s'" % unicode(self.lineEdit_ipn_ip_address.text())).id
+				if ipn_address_account_id!=model.id and unicode(self.lineEdit_ipn_ip_address.text())!='0.0.0.0':
+					QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе уже существует такой IPN IP адрес."))
+					#self.connection.rollback()
+					#return  			  
+			except Exception, ex:
+				pass
+			model.ipn_ip_address = unicode(self.lineEdit_ipn_ip_address.text()) or "0.0.0.0"
+		
+				
+        if self.lineEdit_vpn_ip_address.text():
+			if self.ipValidator.validate(self.lineEdit_vpn_ip_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+				QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте правильность написания VPN IP адреса."))
+				self.connection.rollback()
+				return
+			try:
+				vpn_address_account_id = self.connection.get("SELECT id FROM billservice_subaccount WHERE vpn_ip_address='%s'" % unicode(self.lineEdit_vpn_ip_address.text())).id
+				#print "vpn_address_account_id", vpn_address_account_id
+				if vpn_address_account_id!=model.id and unicode(self.lineEdit_vpn_ip_address.text())!='0.0.0.0':
+					QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе уже существует такой VPN IP адрес."))	  
+			except Exception, ex:
+				pass
+			
+			model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
+
+        #---------------
+        if self.lineEdit_link_ipn_mac_address.text().isEmpty()==False:
+			if self.macValidator.validate(self.lineEdit_link_ipn_mac_address.text(), 0)[0]  == QtGui.QValidator.Acceptable:
+				try:
+					id = self.connection.get("SELECT id FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.lineEdit_ipn_mac_address.text()).upper()).id
+					if id!=model.id :
+						QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
+						#self.connection.rollback()
+						return
+				except:
+					pass
+				model.ipn_mac_address = unicode(self.lineEdit_link_ipn_mac_address.text()).upper()
+			else:
+				QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Указан некорректный MAC адрес."))
+				self.connection.rollback()
+				return
+        else:
+			model.ipn_mac_address=u""
+                
+        #model.ipn_mac_address = unicode(self.lineEdit_link_ipn_mac_address.text()) or ""
             
         model.allow_dhcp = self.checkBox_allow_dhcp.checkState()==QtCore.Qt.Checked
         model.allow_dhcp_with_null = self.checkBox_allow_dhcp_with_null.checkState()==QtCore.Qt.Checked
@@ -487,7 +604,74 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.ipn_sleep = self.toolButton_ipn_sleep.isChecked()
         model.ipn_added = self.toolButton_ipn_added.isChecked()
         model.ipn_enabled = self.toolButton_ipn_enabled.isChecked()
-            #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
+        
+        if model.ipn_ip_address!=self.model.ipn_ip_address:
+			"""
+			Если изменили IPN IP адрес-значит нужно добавить новый адрес в лист доступа
+			"""
+			model.ipn_added=False        
+			model.ipn_enabled=False        
+
+		 #Операции с пулом    
+        try:
+			pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
+			if pool_id!=0 and model.ipn_ip_address==u'0.0.0.0':
+				QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPN пул, но не назначили ip адрес."))
+				self.connection.rollback()
+				return 
+			if  model.__dict__.get('ipn_ipinuse_id'):
+				ipninuse_model = self.connection.get_model(model.ipn_ipinuse_id, "billservice_ipinuse")
+				
+				if ipninuse_model.id!=pool_id or ipninuse_model.ip!=model.ipn_ip_address:
+					self.connection.iddelete(ipninuse_model.id, "billservice_ipinuse")
+					model.ipn_ipinuse_id=None
+					
+			
+			if pool_id!=0:
+				ipninuse_model= Object()
+				ipninuse_model.pool_id=pool_id
+				ipninuse_model.ip=model.ipn_ip_address
+				ipninuse_model.datetime='now()'
+				ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
+				model.ipn_ipinuse_id=ipninuse_model.id
+				#self.connection.save(model, "billservice_account")
+        except Exception, e:
+			print e
+			QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки IPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
+			self.connection.rollback()
+			return 
+
+		 #Операции с пулом    
+        try:
+			pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
+			if pool_id!=0 and model.vpn_ip_address==u'0.0.0.0':
+				QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали VPN пул, но не назначили ip адрес."))
+				self.connection.rollback()
+				return 			
+			if  model.__dict__.get('vpn_ipinuse_id'):
+				ipninuse_model = self.connection.get_model(model.vpn_ipinuse_id, "billservice_ipinuse")
+				
+				if ipninuse_model.id!=pool_id or ipninuse_model.ip!=model.vpn_ip_address:
+					self.connection.iddelete(ipninuse_model.id, "billservice_ipinuse")
+					model.vpn_ipinuse_id=None
+					
+			
+			if pool_id!=0:
+				ipninuse_model= Object()
+				ipninuse_model.pool_id=pool_id
+				ipninuse_model.ip=model.vpn_ip_address
+				ipninuse_model.datetime='now()'
+				ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
+				model.vpn_ipinuse_id=ipninuse_model.id
+				#self.connection.save(model, "billservice_account")
+        except Exception, e:
+			print e
+			QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки VPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
+			self.connection.rollback()
+			return 
+                
+                
+            
         try:
             self.connection.save(model,"billservice_subaccount")
             self.connection.commit()
@@ -508,6 +692,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
             child = IPAddressSelectForm(self.connection, pool_id)
             if child.exec_()==1:
                 self.lineEdit_ipn_ip_address.setText(child.selected_ip)
+
                 
     def get_vpn_from_pool(self):
         pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
@@ -515,6 +700,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
             child = IPAddressSelectForm(self.connection, pool_id)
             if child.exec_()==1:
                 self.lineEdit_vpn_ip_address.setText(child.selected_ip)
+
 
 class AddAccountTarif(QtGui.QDialog):
     def __init__(self, connection, account=None, get_info=False, model=None):
@@ -3698,50 +3884,31 @@ class AccountWindow(QtGui.QMainWindow):
         for nas in nasses:
             self.comboBox_nas.addItem(nas.name)
             self.comboBox_nas.setItemData(i+1, QtCore.QVariant(nas.id))
-            self.comboBox_8021x_nas.addItem(nas.name)
-            self.comboBox_8021x_nas.setItemData(i, QtCore.QVariant(nas.id))
+            #self.comboBox_8021x_nas.addItem(nas.name)
+            #self.comboBox_8021x_nas.setItemData(i, QtCore.QVariant(nas.id))
             if self.model:
                 if nas.id==self.model.nas_id:
                     self.comboBox_nas.setCurrentIndex(i+1)
             
             i+=1
-        if self.model:
-            if self.model.isnull('vpn_ipinuse_id')==False:
-                pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipinuse_id)[0]
-        pools = self.connection.get_models("billservice_ippool", where={'type':'0',})
-        self.connection.commit()
-        i=1
-        self.comboBox_vpn_pool.clear()
-        self.comboBox_vpn_pool.addItem('---')
-        self.comboBox_vpn_pool.setItemData(0, QtCore.QVariant(0))
-        for pool in pools:
-            self.comboBox_vpn_pool.addItem(pool.name)
-            self.comboBox_vpn_pool.setItemData(i, QtCore.QVariant(pool.id))
-            if self.model:
-                if self.model.isnull('vpn_ipinuse_id')==False:
-                    if pool.id==pool_id.pool_id:
-                        self.comboBox_vpn_pool.setCurrentIndex(i)
             
-            i+=1
 
-        if self.model:
-            if self.model.isnull('ipn_ipinuse_id')==False:
-                pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.ipn_ipinuse_id)[0]
-            
-        pools = self.connection.get_models("billservice_ippool", where={'type':'1',})
+        managers = self.connection.get_models("billservice_systemuser")
         self.connection.commit()
-        i=1
-        self.comboBox_ipn_pool.clear()
-        self.comboBox_ipn_pool.addItem('---')
-        self.comboBox_ipn_pool.setItemData(i, QtCore.QVariant(0))
-        for pool in pools:
-            self.comboBox_ipn_pool.addItem(pool.name)
-            self.comboBox_ipn_pool.setItemData(i, QtCore.QVariant(pool.id))
+        i=0
+        self.comboBox_manager.clear()
+        self.comboBox_manager.addItem("---")
+        self.comboBox_manager.setItemData(i, QtCore.QVariant(0))
+        for manager in managers:
+            self.comboBox_manager.addItem(manager.username)
+            self.comboBox_manager.setItemData(i+1, QtCore.QVariant(manager.id))
             if self.model:
-                if self.model.isnull('ipn_ipinuse_id')==False:
-                    if pool.id==pool_id.pool_id:
-                        self.comboBox_ipn_pool.setCurrentIndex(i)
+                if nas.id==self.model.systemuser_id:
+                    self.comboBox_manager.setCurrentIndex(i+1)
+            
             i+=1
+                        
+
 
                   
         if not self.model:
@@ -3807,22 +3974,23 @@ class AccountWindow(QtGui.QMainWindow):
             self.lineEdit_ipn_ip_address.setText(unicode(self.model.ipn_ip_address))
             self.lineEdit_vpn_ip_address.setText(unicode(self.model.vpn_ip_address))
             #self.lineEdit_vlan.setText(unicode(self.model.vlan))
-            
+            """
             if self.model.ipn_mac_address==None or self.model.ipn_mac_address=="":
                 self.checkBox_assign_ipn_ip_from_dhcp.setCheckState(QtCore.Qt.Checked)
                 
             else:
                 self.lineEdit_ipn_mac_address.setText(unicode(self.model.ipn_mac_address))
-
+			"""
             #print "self.model.status", self.model.status
             #self.status_edit.setCheckState(self.model.status == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             #self.suspended_edit.setCheckState(self.model.suspended == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             
-            self.checkBox_assign_ipn_ip_from_dhcp.setCheckState(self.model.assign_ipn_ip_from_dhcp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+            #self.checkBox_assign_ipn_ip_from_dhcp.setCheckState(self.model.assign_ipn_ip_from_dhcp == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             
             self.lineEdit_balance.setText(unicode(self.model.ballance))
             self.lineEdit_credit.setText(unicode(self.model.credit))
             
+            """
             if self.model.vpn_speed!="" and self.model.vpn_speed!=None:
                 self.groupBox_vpn_speed.setChecked(True)
                 self.vpn_speed_lineEdit.setText(self.model.vpn_speed)
@@ -3843,10 +4011,10 @@ class AccountWindow(QtGui.QMainWindow):
             self.checkBox_allow_vpn_block.setChecked(self.model.allow_vpn_block or False)
             self.checkBox_associate_pptp_ipn_ip.setChecked(self.model.associate_pptp_ipn_ip  or False)
             self.checkBox_associate_pppoe_mac.setChecked(self.model.associate_pppoe_mac  or False)
+            """
             
             
-            
-            
+            """
             x8021 = self.connection.sql("SELECT * FROM billservice_x8021 WHERE account_id = %s" % self.model.id)
             
             if x8021:
@@ -3860,6 +4028,7 @@ class AccountWindow(QtGui.QMainWindow):
                 self.lineEdit_vlan_reject.setText(unicode(x8021.vlan_reject  or ""))
                 self.radioButton_8021x_login_auth.setChecked(x8021.typeauth == "BY_LOGIN")
                 self.groupBox_8021_x.setChecked(True)
+            """
             organization = self.connection.get_models("billservice_organization", where={'account_id':self.model.id})
             self.connection.commit()
             if organization:
@@ -3960,7 +4129,7 @@ class AccountWindow(QtGui.QMainWindow):
                 
             #print "passport_date", self.model.passport_date
             #dateTime().toPyDateTime()
-            
+            """
             if self.groupBox_vpn_speed.isChecked()==True and self.vpn_speed_lineEdit.text()!="":
                 model.vpn_speed = unicode(self.vpn_speed_lineEdit.text())
             else:
@@ -4015,7 +4184,7 @@ class AccountWindow(QtGui.QMainWindow):
             else:
                 model.vpn_ip_address = u'0.0.0.0'
                 
-
+			"""
 
 
 #===============================================================================
@@ -4031,62 +4200,40 @@ class AccountWindow(QtGui.QMainWindow):
 
 
             #model.netmask = unicode(self.netmask_edit.text())
-            if ((model.ipn_ip_address == '0.0.0.0') and (model.vpn_ip_address == '0.0.0.0')):
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Должен быть введён хотя бы один из адресов"))
-                self.connection.rollback()
-                return
+            #if ((model.ipn_ip_address == '0.0.0.0') and (model.vpn_ip_address == '0.0.0.0')):
+            #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Должен быть введён хотя бы один из адресов"))
+            #    self.connection.rollback()
+            #    return
 
-            if self.lineEdit_ipn_mac_address.text().isEmpty()==False:
-                if self.macValidator.validate(self.lineEdit_ipn_mac_address.text(), 0)[0]  == QtGui.QValidator.Acceptable:
-                    try:
-                        id = self.connection.get("SELECT id FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.lineEdit_ipn_mac_address.text()).upper()).id
-                        if id!=model.id :
-                            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
-                            self.connection.rollback()
-                            return
-                    except:
-                        pass
-                    model.ipn_mac_address = unicode(self.lineEdit_ipn_mac_address.text()).upper()
-                else:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте MAC адрес."))
-                    self.connection.rollback()
-                    return
-            else:
-                model.ipn_mac_address=u""
+
 
             model.nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
+            model.systemuser_id = self.comboBox_manager.itemData(self.comboBox_manager.currentIndex()).toInt()[0]
             #model.vlan = unicode(self.lineEdit_vlan.text()) or 0
 
             model.ballance = unicode(self.lineEdit_balance.text()) or 0
             model.credit = unicode(self.lineEdit_credit.text()) or 0
 
-            model.assign_ipn_ip_from_dhcp = self.checkBox_assign_ipn_ip_from_dhcp.isChecked()
+            #model.assign_ipn_ip_from_dhcp = self.checkBox_assign_ipn_ip_from_dhcp.isChecked()
             #model.suspended = self.checkBox_suspended.isChecked()
             #model.status = self.checkBox_active.isChecked()
 
-            if model.ipn_ip_address=="0.0.0.0" and self.ipn_for_vpn==True:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для работы на этом тарифном плане у пользователя должен быть указан IPN IP."))
-                self.connection.rollback()
-                return
-
-
-
-            model.allow_webcab = self.checkBox_allow_webcab.checkState() == QtCore.Qt.Checked
+            #if model.ipn_ip_address=="0.0.0.0" and self.ipn_for_vpn==True:
+            #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Для работы на этом тарифном плане у пользователя должен быть указан IPN IP."))
+            #    self.connection.rollback()
+            #    return
+			
+            """model.allow_webcab = self.checkBox_allow_webcab.checkState() == QtCore.Qt.Checked
             model.allow_expresscards = self.checkBox_allow_expresscards.checkState() == QtCore.Qt.Checked
             model.assign_dhcp_null = self.checkBox_assign_dhcp_null.checkState() == QtCore.Qt.Checked
             model.assign_dhcp_block = self.checkBox_assign_dhcp_block.checkState() == QtCore.Qt.Checked
             model.allow_vpn_null = self.checkBox_allow_vpn_null.checkState() == QtCore.Qt.Checked
             model.allow_vpn_block = self.checkBox_allow_vpn_block.checkState() == QtCore.Qt.Checked
             model.associate_pptp_ipn_ip = self.checkBox_associate_pptp_ipn_ip.checkState() == QtCore.Qt.Checked
-            model.associate_pppoe_mac = self.checkBox_associate_pppoe_mac.checkState() == QtCore.Qt.Checked
+            model.associate_pppoe_mac = self.checkBox_associate_pppoe_mac.checkState() == QtCore.Qt.Checked"""
             model.comment = unicode(self.plainTextEdit_comment.toPlainText())
 
             if self.model:
-                if model.ipn_ip_address!=self.model.ipn_ip_address:
-                    """
-                    Если изменили IPN IP адрес-значит нужно добавить новый адрес в лист доступа
-                    """
-                    model.ipn_status=False
                 model.id = self.connection.save(model, "billservice_account")
             else:
                 #print 123
@@ -4133,84 +4280,7 @@ class AccountWindow(QtGui.QMainWindow):
                     self.connection.iddelete(self.organization.id, "billservice_organization")    
             
  
-             #Операции с пулом    
-            try:
-                if model.isnull('ipn_ipinuse_id')==False and model.ipn_ip_address=='0.0.0.0':
-                    old_ipn = model.ipn_ipinuse_id
-                    model.ipn_ipinuse_id = None
-                    self.connection.save(model, "billservice_account")
-                    self.connection.iddelete(old_ipn, "billservice_ipinuse")
-                
-                if model.ipn_ip_address!='0.0.0.0':
-                    if model.isnull('ipn_ipinuse_id')==False:
-                        ipn_ip_model = self.connection.get_model(model.ipn_ipinuse_id, "billservice_ipinuse")
-                    elif model.isnull('ipn_ipinuse_id')==True:
-                        ipn_ip_model = Object()
-                
-                    pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
-                    
-                    if pool_id!=0:
-                        pool = self.connection.get_model(pool_id, "billservice_ippool")
-                        start_ip = IPy.IP(pool.start_ip).int()
-                        end_ip = IPy.IP(pool.end_ip).int()
-                        ip = IPy.IP(unicode(self.lineEdit_ipn_ip_address.text())).int()
 
-                        if ip < start_ip or ip>end_ip: raise Exception
-                        
-                        ipn_ip_model.pool_id = pool_id
-                        
-                        ipn_ip_model.ip = unicode(self.lineEdit_ipn_ip_address.text())
-                        ipn_ip_model.datetime = "now()"
-                        ipn_ip_model.id = self.connection.save(ipn_ip_model, "billservice_ipinuse")
-                        model.ipn_ipinuse_id = ipn_ip_model.id
-                    else:
-                        model.ipn_ipinuse_id = None
-                
-                    self.connection.save(model, "billservice_account")
-            except Exception:
-                print e
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте настройки IPN IP адресов. Возможно выбранный IP адрес уже используется в пуле или не принадлежит выбранному пулу."))
-                self.connection.rollback()
-                return 
-
-             #Операции с пулом    
-            try:
-                if model.isnull('vpn_ipinuse_id')==False and model.vpn_ip_address=='0.0.0.0':
-                    old_vpn = model.vpn_ipinuse_id
-                    model.vpn_ipinuse_id = None
-                    self.connection.save(model, "billservice_account")
-                    self.connection.iddelete(old_vpn, "billservice_ipinuse")
-                
-                if model.vpn_ip_address!='0.0.0.0':
-                    if model.isnull('vpn_ipinuse_id')==False:
-                        vpn_ip_model = self.connection.get_model(model.vpn_ipinuse_id, "billservice_ipinuse")
-                    elif model.isnull('vpn_ipinuse_id')==True:
-                        vpn_ip_model = Object()
-                
-                    pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
-                    if pool_id!=0:
-                        pool = self.connection.get_model(pool_id, "billservice_ippool")
-                        start_ip = IPy.IP(pool.start_ip).int()
-                        end_ip = IPy.IP(pool.end_ip).int()
-                        ip = IPy.IP(unicode(self.lineEdit_vpn_ip_address.text())).int()
-
-                        if ip < start_ip or ip>end_ip: raise Exception
-                        
-                        #ipn_ip_model.pool_id = pool_id
-                        vpn_ip_model.pool_id = pool_id
-                        vpn_ip_model.ip = unicode(self.lineEdit_vpn_ip_address.text())
-                        vpn_ip_model.datetime = "now()"
-                        vpn_ip_model.id = self.connection.save(vpn_ip_model, "billservice_ipinuse")
-                        model.vpn_ipinuse_id = vpn_ip_model.id
-                    else:
-                        model.vpn_ipinuse_id = None
-                
-                    self.connection.save(model, "billservice_account")
-            except:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте настройки VPN IP адресов. Возможно выбранный IP адрес уже используется в пуле или не принадлежит выбранному пулу."))
-                    self.connection.rollback()
-                    return 
-                
             #Проверка статуса             
 
 #===============================================================================

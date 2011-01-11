@@ -2859,3 +2859,31 @@ END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
+  
+ALTER TABLE billservice_account
+   ADD COLUMN systemuser_id integer;
+
+
+CREATE INDEX fki_billservice_account_systemuser_fkey ON billservice_account(systemuser_id);
+
+ALTER TABLE billservice_account
+  DROP CONSTRAINT billservice_account_vpnipinuse_fkey;
+  
+  ALTER TABLE billservice_account
+    ADD CONSTRAINT billservice_account_vpnipinuse_fkey FOREIGN KEY (vpn_ipinuse_id)
+    REFERENCES billservice_ipinuse (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE SET NULL;
+ALTER TABLE billservice_subaccount ADD COLUMN vpn_ipinuse_id integer;
+ALTER TABLE billservice_subaccount ADD COLUMN ipn_ipinuse_id integer;
+
+ALTER TABLE billservice_subaccount
+  ADD CONSTRAINT billservice_subaccount_vpnipinuse_fkey FOREIGN KEY (vpn_ipinuse_id)
+  REFERENCES billservice_ipinuse (id) MATCH SIMPLE
+  ON UPDATE NO ACTION ON DELETE SET NULL;
+              
+ALTER TABLE billservice_subaccount
+    ADD CONSTRAINT billservice_subaccount_ipnipinuse_fkey FOREIGN KEY (ipn_ipinuse_id)
+    REFERENCES billservice_ipinuse (id) MATCH SIMPLE
+    ON UPDATE NO ACTION ON DELETE SET NULL;
+                            
+                                            
