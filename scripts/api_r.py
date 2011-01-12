@@ -292,12 +292,12 @@ def set_ipn_speed_subaccount(accountid, speed_settings):
     #accountid = sys.argv[4]
     #speed_settings = sys.argv[5]
     command = '/queue/simple/print ?name=acc_%s' % accountid
-    res = rosClient(nas_ip, nas_login, nas_password, command)
+    res = rosExecute(command)
 
     id=get_id(res)
     if id:
         command = '/queue/simple/set =.id=%s %s' % (id, speed_settings)
-    rosClient(nas_ip, nas_login, nas_password, command)
+    rosExecute(command)
 
 
 def reset_vpn_session(access_type, username):

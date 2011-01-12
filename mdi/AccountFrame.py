@@ -3074,9 +3074,9 @@ class TarifFrame(QtGui.QDialog):
         self.connection.commit()
         x = [d.id for d in accounts]
         if prev==False and now==True:
-            return self.connection.accountActions(x, "create")
+            return self.connection.accountActions(x, {}, "create")
         elif prev==True and now==False:
-            return self.connection.accountActions(x, "delete")
+            return self.connection.accountActions(x, {}, "delete")
             
     def reject(self):
         self.connection.rollback()

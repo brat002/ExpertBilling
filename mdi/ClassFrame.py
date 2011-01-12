@@ -66,13 +66,23 @@ class NetworksImportDialog(QtGui.QDialog):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Импорт списка сетей", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "Путь к файлу(формат: Имя сети|Сеть)", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("Dialog", "Импортируемые сети", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("Dialog", "Связаные сети", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("Dialog", "Импортируемые сетиисточники)", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("Dialog", "Связаные сети(получатели)", None, QtGui.QApplication.UnicodeUTF8))
         self.plainTextEdit.setPlainText("0.0.0.0/0")
         
         columns = [u'Импортировать', u"Название сети", u"Сеть"]
         makeHeaders(columns, self.tableWidget)
         
+    def detect_delimeter(self, line):
+		if line.rfind('|')!=-1:
+			return "|"
+		elif line.rfind(',')!=-1:
+			return ","
+		elif line.rfind(';')!=-1:
+			return ';'
+		else:
+			return ' '
+			
     def importNetworks(self):
         
         fileName = str(QtGui.QFileDialog.getOpenFileName(self,
@@ -94,8 +104,16 @@ class NetworksImportDialog(QtGui.QDialog):
         i=0
         for info in filedata:
             try:
-                if not info.strip(): continue
-                name, net = info.strip().split("|")[0:2]
+                delimeter=self.detect_delimeter(info)
+                print delimeter
+                line = info.strip().split(delimeter)
+                if not line: continue
+                if len(line)==1:
+                    name, net = line[0], line[0]
+                elif len(line)==2:
+                    name, net = line[0:2]
+                else:
+                    continue
                 self.tableWidget.insertRow(i)
             except Exception, e:
                 print e
@@ -124,7 +142,8 @@ class NetworksImportDialog(QtGui.QDialog):
         local_nets_text = unicode(self.plainTextEdit.toPlainText()).strip()
         
         local_nets = local_nets_text.split("\n")
-        #print local_nets
+        print "local_nets", local_nets
+        print 'nodes', nodes
         for l in local_nets:
             try:
                 IP("%s" % (l))
@@ -139,19 +158,20 @@ class NetworksImportDialog(QtGui.QDialog):
             if self.tableWidget.item(x, 0).checkState()==QtCore.Qt.Unchecked: continue
             net_name = unicode(self.tableWidget.item(x, 1).text())
             net = unicode(self.tableWidget.item(x, 2).text())
+            nn = "%s" % net_name
             for l in local_nets:
-                if (net, l) not in nodes:
+                if (net, l) not in nodes: 
                     #self.connection.create_class_node(class_id, name, src_net, dst_net)
-                    nn_in = "%s" % net_name
-                    self.connection.create_class_node(class_id=self.class_id, name=nn_in, direction='INPUT', src_net=net, dst_net=l)
-                    
+                    print 'input', (net, l)
+                    self.connection.create_class_node(class_id=self.class_id, name=nn, direction='INPUT', src_net=net, dst_net=l)
                 if (l, net) not in nodes:
                     #Создать ноду
-                    nn_out = "%s" % net_name
-                    self.connection.create_class_node(class_id=self.class_id, name = nn_out, direction='OUTPUT', src_net=l, dst_net=net)
+                    print "output", (l, net)
+                    self.connection.create_class_node(class_id=self.class_id, name = nn, direction='OUTPUT', src_net=l, dst_net=net)
                 self.connection.commit()
                 
         QtGui.QDialog.accept(self)
+        
 class ClassEdit(QtGui.QDialog):
     def __init__(self, connection, model=None):
         super(ClassEdit, self).__init__()
@@ -814,7 +834,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
                         '6':'tcp'}
         for node in nodes:
 
-            self.addrow(node.id, i,0, id=node.id)
+            self.addrow(i, i,0, id=node.id)
             self.addrow(node.name, i,1)
             self.addrow(node.direction, i,2)
             self.addrow(protocols.get("%s" % node.protocol,""), i,3)
@@ -836,7 +856,11 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         if value==None:
             value=""
         headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(unicode(value))
+        if isinstance(value, basestring):            
+            headerItem.setText(unicode(value))        
+        else:            
+            headerItem.setData(0, QtCore.QVariant(value))    
+                    
         if y==1:
             headerItem.setIcon(QtGui.QIcon("images/tc.png"))
         
@@ -859,3 +883,5 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
                 ids.append(r.id)
         return ids
     
+    def getSelectedId(self):
+        return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).id)
