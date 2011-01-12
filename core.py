@@ -1074,8 +1074,14 @@ class settlement_period_service_dog(Thread):
                         if (shedl.prepaid_traffic_accrued is None or shedl.prepaid_traffic_accrued<period_start) and acc.traffic_transmit_service_id:                          
                             #Начислить новый предоплаченный трафик
                             #TODO:если начисляем первый раз - начислять согласно коэффициенту оставшейся части расчётного периода
-                            cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s::timestamp without time zone);", 
-                                        (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, now))
+                            if sp.autostart==False and shedl.prepaid_traffic_accrued is None and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta:
+                                delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)
+                                
+                                cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
+                                        (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, delta_coef, now))
+                            else:                                
+                                cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s::timestamp without time zone);", 
+                                            (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, now))
                             cur.connection.commit()
                         
                         prepaid_time, reset_time = caches.timeaccessservice_cache.by_id.get(acc.time_access_service_id, (None, 0, None))[1:3]   
@@ -1086,8 +1092,13 @@ class settlement_period_service_dog(Thread):
                                         (acc.account_id, acc.acctf_id, now))                            
                             cur.connection.commit()        
                         if (shedl.prepaid_time_accrued is None or shedl.prepaid_time_accrued<period_start) and acc.time_access_service_id:
-                            cur.execute("SELECT shedulelog_time_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
-                                        (acc.account_id, acc.acctf_id, acc.time_access_service_id, prepaid_time, now))
+                            if sp.autostart==False and shedl.prepaid_time_accrued is None and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta:
+                                delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)     
+                                cur.execute("SELECT shedulelog_time_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
+                                            (acc.account_id, acc.acctf_id, acc.time_access_service_id, prepaid_time*delta_coef, now))   
+                            else:                                                    
+                                cur.execute("SELECT shedulelog_time_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
+                                            (acc.account_id, acc.acctf_id, acc.time_access_service_id, prepaid_time, now))
                             cur.connection.commit()
                         
                         if account_balance > 0:

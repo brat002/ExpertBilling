@@ -3895,16 +3895,17 @@ class AccountWindow(QtGui.QMainWindow):
 
         managers = self.connection.get_models("billservice_systemuser")
         self.connection.commit()
-        i=0
+        
         self.comboBox_manager.clear()
         self.comboBox_manager.addItem("---")
-        self.comboBox_manager.setItemData(i, QtCore.QVariant(0))
+        self.comboBox_manager.setItemData(0, QtCore.QVariant(0))
+        i=1
         for manager in managers:
             self.comboBox_manager.addItem(manager.username)
-            self.comboBox_manager.setItemData(i+1, QtCore.QVariant(manager.id))
+            self.comboBox_manager.setItemData(i, QtCore.QVariant(manager.id))
             if self.model:
-                if nas.id==self.model.systemuser_id:
-                    self.comboBox_manager.setCurrentIndex(i+1)
+                if manager.id==self.model.systemuser_id:
+                    self.comboBox_manager.setCurrentIndex(i)
             
             i+=1
                         

@@ -590,7 +590,7 @@ def get_type(nas_id, tarif_id):
         return u"Карта предоплаты"
             
             
-def get_free_addreses_from_pool(connection, pool_id, count=-1):
+def get_free_addreses_from_pool(connection, pool_id, count=-1, only_from_pool=True):
     pool = connection.sql("SELECT * FROM billservice_ippool WHERE id=%s" % (pool_id))[0]
     ipinuse = connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s" % pool.id)
     accounts_ip = connection.sql("SELECT ipn_ip_address, vpn_ip_address FROM billservice_subaccount")
@@ -605,7 +605,8 @@ def get_free_addreses_from_pool(connection, pool_id, count=-1):
     end_pool_ip = IPy.IP(pool.end_ip).int()
     
     ipinuse_list = [IPy.IP(x.ip).int() for x in ipinuse]
-    ipinuse_list+= accounts_used_ip
+    if not only_from_pool:
+        ipinuse_list+= accounts_used_ip
     if count!=-1:
         if end_pool_ip-start_pool_ip-len(ipinuse_list)<count:
             QtGui.QMessageBox.warning(None, u"Внимание!", unicode(u"В выбранном пуле недостаточно свободных IP-адресов. Выберите другой пул."))
