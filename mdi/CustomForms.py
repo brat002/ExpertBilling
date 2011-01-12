@@ -2129,7 +2129,7 @@ class InfoDialog(QtGui.QDialog):
         self.setObjectName("InfoDialog")
         dateDelim = '.'
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
-        self.resize(550, 300)
+        self.resize(650, 300)
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
         self.tableWidget = QtGui.QTableWidget(self)
@@ -2145,14 +2145,37 @@ class InfoDialog(QtGui.QDialog):
         self.retranslateUi()
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        if self.type != "limit":
+            QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.prepaidTrafficCellEdit)
         QtCore.QMetaObject.connectSlotsByName(self)
         self.refresh()
         
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Информация", None, QtGui.QApplication.UnicodeUTF8))
         
-       
-    def addrow(self, value, x, y, id=None, color=None, enabled=True, ctext=None, setdata=False):
+    def prepaidTrafficCellEdit(self,y,x):
+        if x==3:
+            item = self.tableWidget.item(y,x)
+            try:
+                default_text=float(item.raw_value/1048576)
+            except Exception, e:
+                print e
+                default_text=0
+            
+            text = QtGui.QInputDialog.getDouble(self, u"Осталось МБ:", u"Введите количество мегабайт", default_text,0,99999999999,2)      
+           
+            if text[1]:
+                item=QtGui.QTableWidgetItem(unicode(text[0]))
+                item.raw_value=int(text[0])*1048576
+                self.tableWidget.setItem(y,x, item)     
+                id=self.getSelectedId(self.tableWidget)
+                
+                if id>0:
+                    model = self.connection.get_model(id, 'billservice_accountprepaystrafic')
+                    model.size=int(text[0])*1048576
+                    self.connection.save(model, 'billservice_accountprepaystrafic')  
+            
+    def addrow(self, value, x, y, id=None, raw_value=None, color=None, enabled=True, ctext=None, setdata=False):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=''
@@ -2181,12 +2204,19 @@ class InfoDialog(QtGui.QDialog):
             headerItem.setText(unicode(value))
         
         headerItem.id = id
+        headerItem.raw_value = raw_value
         self.tableWidget.setItem(x,y,headerItem)
-         
+    
+    def getSelectedId(self, table):
+        try:
+            return int(table.item(table.currentRow(), 0).id)
+        except:
+            return -1
+        
     def refresh(self):
         
         if self.type == "limit":
-            columns=["#", u"Название", u"Всего", u"Израсходовано", u"Начало", u"Окончание"]
+            columns=["#", u"Название", u"Всего", u"Израсходовано", u"Осталось", u"Начало", u"Окончание"]
             makeHeaders(columns, self.tableWidget)
             items = self.connection.get_limites(self.account_id)
 
@@ -2196,21 +2226,22 @@ class InfoDialog(QtGui.QDialog):
             for a in items:            
                 self.addrow(i, i,0)
                 self.addrow(a['limit_name'], i,1)
-                self.addrow("%s KB" % (a['limit_size']/1024), i,2)
-                self.addrow("%s KB" % (a['size']/1024), i,3)
+                self.addrow("%s MB" % (a['limit_size']/1048576), i,2)
+                self.addrow("%s MB" % int(a['size']/1048576), i,3)
+                self.addrow("%s MB" % (int(a['limit_size']-a['size'])/1048576), i,4)
                 try:
-                    self.addrow(a.get('settlement_period_start').strftime(self.strftimeFormat), i,4)
-                    self.addrow(a.get('settlement_period_end').strftime(self.strftimeFormat), i,5)
+                    self.addrow(a.get('settlement_period_start').strftime(self.strftimeFormat), i,5)
+                    self.addrow(a.get('settlement_period_end').strftime(self.strftimeFormat), i,6)
                 except Exception, e:
                     print e
                 i+=1
-            self.tableWidget.resizeRowsToContents()
+            self.tableWidget.resizeColumnsToContents()
             
         else:
-            columns=["#", u"Группа", u"Всего", u"Израсходовано", ]
+            columns=["#", u"Группа", u"Всего", u"Осталось", ]
             makeHeaders(columns, self.tableWidget)
             items = self.connection.sql("""
-            SELECT   ppt.size as size, ppt.datetime, pp.size as pp_size, (SELECT name FROM billservice_group WHERE id=pp.group_id) as group_name FROM billservice_accountprepaystrafic as ppt
+            SELECT   ppt.id as ppt_id, ppt.size as size, ppt.datetime, pp.size as pp_size, (SELECT name FROM billservice_group WHERE id=pp.group_id) as group_name FROM billservice_accountprepaystrafic as ppt
             JOIN billservice_prepaidtraffic as pp ON pp.id=ppt.prepaid_traffic_id
             WHERE account_tarif_id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY datetime DESC LIMIT 1);""" % (self.account_id,)            
             )
@@ -2220,12 +2251,13 @@ class InfoDialog(QtGui.QDialog):
             self.tableWidget.setRowCount(len(items))
             i=0
             for a in items:            
-                self.addrow(i, i,0)
+                self.addrow(i, i,0, id=a.ppt_id)
                 self.addrow(a.group_name, i,1)
-                self.addrow("%s KB" % (a.pp_size/1024), i, 2)
-                self.addrow("%s KB" % (a.size/1024), i, 3)
+                self.addrow("%s MB" % int(a.pp_size/(1048576)), i, 2)
+                self.addrow("%s MB" % int(a.size/1048576.00), i, 3, raw_value=a.size)
                 i+=1
-            self.tableWidget.resizeRowsToContents()            
+            self.tableWidget.resizeColumnsToContents()    
+               
 
         
 class RadiusAttrsDialog(QtGui.QDialog):
@@ -2591,26 +2623,30 @@ class IPAddressSelectForm(QtGui.QDialog):
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setContentsMargins(0, 0, 0, -1)
         self.gridLayout.setObjectName("gridLayout")
+        self.checkBox_only_pool = QtGui.QCheckBox(self)
+        self.checkBox_only_pool.setChecked(True)
+        self.gridLayout.addWidget(self.checkBox_only_pool, 0, 0, 1, 1)
         self.tableWidget = QtGui.QTableWidget(self)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(0)
         self.tableWidget.setRowCount(0)
-        self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.tableWidget, 1, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
-        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 1)
 
         self.retranslateUi()
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QObject.connect(self.checkBox_only_pool, QtCore.SIGNAL("stateChanged(int)"), self.refresh)
         QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.accept)
         QtCore.QMetaObject.connectSlotsByName(self)
-
+    
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Свободные IP адреса в выбранном пуле", None, QtGui.QApplication.UnicodeUTF8))
-        
+        self.checkBox_only_pool.setText(QtGui.QApplication.translate("Dialog", "Только не занятые из этого пула", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget = tableFormat(self.tableWidget)
         columns=['#', 'IP']
         makeHeaders(columns, self.tableWidget)
@@ -2632,7 +2668,7 @@ class IPAddressSelectForm(QtGui.QDialog):
         self.tableWidget.setItem(x,y,headerItem)
         
     def refresh(self):
-        items = get_free_addreses_from_pool(self.connection, self.pool_id)
+        items = get_free_addreses_from_pool(self.connection, self.pool_id, only_from_pool=self.checkBox_only_pool.isChecked())
         self.connection.commit()
         self.tableWidget.setRowCount(len(items))
         i=0
