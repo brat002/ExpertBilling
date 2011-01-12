@@ -1000,8 +1000,10 @@ class settlement_period_service_dog(Thread):
                         if 0: assert isinstance(shedl, ShedulelogData)
                         
                         time_start, period_end = None, None
-                        now = datetime.datetime.now()
+                        #now = datetime.datetime.now()
+                        now=dateAT
                         if not acc.settlement_period_id:
+                            #TODO:Проверить что находится в datetime. Теоретически все даты должны быть записаны датой начала расчётного периода
                             time_start, period_start, delta = (acc.datetime, acc.datetime, 86400*365*365)
                         else:
                             sp = caches.settlementperiod_cache.by_id.get(acc.settlement_period_id)
@@ -1071,6 +1073,7 @@ class settlement_period_service_dog(Thread):
         
                         if (shedl.prepaid_traffic_accrued is None or shedl.prepaid_traffic_accrued<period_start) and acc.traffic_transmit_service_id:                          
                             #Начислить новый предоплаченный трафик
+                            #TODO:если начисляем первый раз - начислять согласно коэффициенту оставшейся части расчётного периода
                             cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s::timestamp without time zone);", 
                                         (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, now))
                             cur.connection.commit()
