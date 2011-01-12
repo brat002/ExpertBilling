@@ -64,7 +64,7 @@ class NetworksImportDialog(QtGui.QDialog):
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Импорт списка сетей", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("Dialog", "Путь к файлу", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("Dialog", "Путь к файлу(формат: Имя сети|Сеть)", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton.setText(QtGui.QApplication.translate("Dialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Dialog", "Импортируемые сети", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Dialog", "Связаные сети", None, QtGui.QApplication.UnicodeUTF8))
@@ -76,34 +76,41 @@ class NetworksImportDialog(QtGui.QDialog):
     def importNetworks(self):
         
         fileName = str(QtGui.QFileDialog.getOpenFileName(self,
-                                          u"Выберите файл со списком сетей", unicode(self.lineEdit.text()), "TXT Files (*.txt)")).decode('mbcs')
+                                          u"Выберите файл со списком сетей", unicode(self.lineEdit.text()), "TXT Files (*.txt)"))
         if fileName=="":
             return
-        
+		
+        try:
+			fileName=fileName.decode('mbcs')
+        except Exception, e:
+            print e
+			
         self.lineEdit.setText(fileName)
         f = open(fileName, "r")
         
+        self.tableWidget.clearContents()
         filedata = f.readlines()
         f.close()
         i=0
         for info in filedata:
-            self.tableWidget.insertRow(i)
             try:
-                name, net = info.split("|")[0:2]
+                if not info.strip(): continue
+                name, net = info.strip().split("|")[0:2]
+                self.tableWidget.insertRow(i)
             except Exception, e:
                 print e
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Указанный файл имеет неправильный формат(Имя сети|Адрес сети)."))
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Указанный файл имеет неправильный формат(Имя сети|Адрес сети).\n %s" % info))
                 return 
             #print name, net
             item = QtGui.QTableWidgetItem()
             item.setCheckState(QtCore.Qt.Checked)
             self.tableWidget.setItem(i, 0,item)
             item = QtGui.QTableWidgetItem()
-            item.setText(unicode(name))
+            item.setText(unicode(name).strip())
             self.tableWidget.setItem(i, 1,item)
             
             item = QtGui.QTableWidgetItem()
-            item.setText(unicode(net))
+            item.setText(unicode(net).strip())
             self.tableWidget.setItem(i, 2,item)
 
             i+=1
@@ -749,6 +756,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         
     def delNode(self):
         ids = self.get_selected_nodes()
+        print ids
         if not ids:return
         if QtGui.QMessageBox.question(self, u"Удалить составляющие?" , u"Вы уверены, что хотите удалить составляющие этого класса?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
             return
@@ -790,7 +798,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         else:
             class_id=widget.id
         self.tableWidget.clearContents()
-        self.tableWidget.setColumnHidden(0, True)
+        self.tableWidget.setColumnHidden(0, False)
         #print text
         model = self.connection.get_model(class_id, "nas_trafficclass")
         nodes = self.connection.get_models(table="nas_trafficnode", where={'traffic_class_id':model.id})
