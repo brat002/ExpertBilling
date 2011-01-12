@@ -851,7 +851,7 @@ class RPCServer(object):
                     VALUES(%s,%s,%s,%s,%s,%s,%s,%s, %s)""", (class_id, name, direction, protocol, src_net, src_port, dst_net, dst_port, next_hop,)
                     )
         
-        log_string = u"""Пользователь %s создал составляющую класса %s с параметрами""" % (add_data['USER_ID'][0], class_id, str(name, direction, protocol, src_net, src_port, dst_net, dst_port, next_hop))
+        log_string = u"""Пользователь %s создал составляющую класса %s с параметрами""" % (add_data['USER_ID'][0], class_id, str((name, direction, protocol, src_net, src_port, dst_net, dst_port, next_hop)))
         
         cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
 
