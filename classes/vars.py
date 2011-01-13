@@ -395,7 +395,7 @@ class RadQueues(object):
         
 class CoreVars(Vars):
     __slots__ = ('TRANSACTIONS_PER_DAY', 'VPN_SLEEP', 'IPN_SLEEP', 'PERIODICAL_SLEEP', 'TIMEACCESS_SLEEP', 'LIMIT_SLEEP', 'SETTLEMENT_PERIOD_SLEEP',\
-                 'DICT_LIST', 'DICT', 'SSH_BACKEND', 'COMMANDSTRING_IP_DELIMETER', 'ACCOUNT_CREATE_ACTION', 'ACCOUNT_DELETE_ACTION', 'ACCOUNT_ENABLE_ACTION', 'ACCOUNT_DISABLE_ACTION')
+                 'DICT_LIST', 'DICT', 'SSH_BACKEND', 'USE_COEFF_FOR_PREPAID', 'ACCOUNT_CREATE_ACTION', 'ACCOUNT_DELETE_ACTION', 'ACCOUNT_ENABLE_ACTION', 'ACCOUNT_DISABLE_ACTION')
     
     def __init__(self):
         super(CoreVars, self).__init__()
@@ -408,7 +408,7 @@ class CoreVars(Vars):
         self.SETTLEMENT_PERIOD_SLEEP = 120
         self.IPN_SLEEP = 120
         self.DICT_LIST = ("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
-        self.COMMANDSTRING_IP_DELIMETER = None
+        self.USE_COEFF_FOR_PREPAID = False
         self.ACCOUNT_CREATE_ACTION = ''
         self.ACCOUNT_DELETE_ACTION = ''
         self.ACCOUNT_ENABLE_ACTION = ''
@@ -428,6 +428,7 @@ class CoreVars(Vars):
         if config.has_option(name, 'settlement_period_sleep'): self.SETTLEMENT_PERIOD_SLEEP = config.getint(name, 'settlement_period_sleep')
         if config.has_option(name, 'ipn_sleep'): self.IPN_SLEEP = config.getint(name, 'ipn_sleep')
         if config.has_option(name, 'ssh_backend'): self.SSH_BACKEND = config.get(name, 'ssh_backend')
+        if config.has_option(name, 'use_coeff_for_prepaid'): self.USE_COEFF_FOR_PREPAID = config.boolean(name, 'use_coeff_for_prepaid')
         if config.has_option(name, 'account_create_action'): self.ACCOUNT_CREATE_ACTION = config.get(name, 'account_create_action')
         if config.has_option(name, 'account_delete_action'): self.ACCOUNT_DELETE_ACTION = config.get(name, 'account_delete_action')
         if config.has_option(name, 'account_enable_action'): self.ACCOUNT_ENABLE_ACTION = config.get(name, 'account_enable_action')

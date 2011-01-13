@@ -1074,7 +1074,7 @@ class settlement_period_service_dog(Thread):
                         if (shedl.prepaid_traffic_accrued is None or shedl.prepaid_traffic_accrued<period_start) and acc.traffic_transmit_service_id:                          
                             #Начислить новый предоплаченный трафик
                             #TODO:если начисляем первый раз - начислять согласно коэффициенту оставшейся части расчётного периода
-                            if sp.autostart==False and shedl.prepaid_traffic_accrued is None and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta:
+                            if ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta and vars.USE_COEFF_FOR_PREPAID==True:
                                 delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)
                                 
                                 cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
@@ -1092,7 +1092,7 @@ class settlement_period_service_dog(Thread):
                                         (acc.account_id, acc.acctf_id, now))                            
                             cur.connection.commit()        
                         if (shedl.prepaid_time_accrued is None or shedl.prepaid_time_accrued<period_start) and acc.time_access_service_id:
-                            if sp.autostart==False and shedl.prepaid_time_accrued is None and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta:
+                            if ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta  and vars.USE_COEFF_FOR_PREPAID==True:
                                 delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)     
                                 cur.execute("SELECT shedulelog_time_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
                                             (acc.account_id, acc.acctf_id, acc.time_access_service_id, prepaid_time*delta_coef, now))   
