@@ -550,7 +550,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
 					#return  			  
 			except Exception, ex:
 				pass
-			model.ipn_ip_address = unicode(self.lineEdit_ipn_ip_address.text()) or "0.0.0.0"
+        model.ipn_ip_address = unicode(self.lineEdit_ipn_ip_address.text()) or "0.0.0.0"
 		
 				
         if self.lineEdit_vpn_ip_address.text():
@@ -566,7 +566,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
 			except Exception, ex:
 				pass
 			
-			model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
+        model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
 
         #---------------
         if self.lineEdit_link_ipn_mac_address.text().isEmpty()==False:
@@ -3972,8 +3972,8 @@ class AccountWindow(QtGui.QMainWindow):
 #===============================================================================
             
             #self.lineEdit_ipn_ip_mask.setText(unicode(self.model.netmask))
-            self.lineEdit_ipn_ip_address.setText(unicode(self.model.ipn_ip_address))
-            self.lineEdit_vpn_ip_address.setText(unicode(self.model.vpn_ip_address))
+            #self.lineEdit_ipn_ip_address.setText(unicode(self.model.ipn_ip_address))
+            #self.lineEdit_vpn_ip_address.setText(unicode(self.model.vpn_ip_address))
             #self.lineEdit_vlan.setText(unicode(self.model.vlan))
             """
             if self.model.ipn_mac_address==None or self.model.ipn_mac_address=="":

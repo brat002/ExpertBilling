@@ -1009,7 +1009,7 @@ class tableImageWidget(QtGui.QWidget):
         #print "!!!!!!!!", ipn_sleep
         if ipn_sleep==False: 
             self.toolButton_ipn_sleep.setIcon(QtGui.QIcon("images/ok.png"))
-            self.toolButton_ipn_sleep.setToolTip(u"Менять IPN статус")
+            self.toolButton_ipn_sleep.setToolTip(u"Можно менять IPN статус")
         else:
             self.toolButton_ipn_sleep.setIcon(QtGui.QIcon("images/false.png"))
             self.toolButton_ipn_sleep.setToolTip(u"Не менять IPN статус")
