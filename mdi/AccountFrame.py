@@ -605,13 +605,14 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.ipn_added = self.toolButton_ipn_added.isChecked()
         model.ipn_enabled = self.toolButton_ipn_enabled.isChecked()
         
-        if model.ipn_ip_address!=self.model.ipn_ip_address:
-			"""
-			Если изменили IPN IP адрес-значит нужно добавить новый адрес в лист доступа
-			"""
-			model.ipn_added=False        
-			model.ipn_enabled=False        
-
+        if self.model:
+            if model.ipn_ip_address!=self.model.ipn_ip_address:
+    			"""
+    			Если изменили IPN IP адрес-значит нужно добавить новый адрес в лист доступа
+    			"""
+    			model.ipn_added=False        
+    			model.ipn_enabled=False        
+        model.speed=''
 		 #Операции с пулом    
         try:
 			pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]

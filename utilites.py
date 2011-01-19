@@ -149,11 +149,14 @@ def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='
                 if ssh_exec:
                     sshclient = ssh_execute(nas.login, nas.ipaddress, nas.password, command_string)
                     log_debug_('PoD ssh %s' % sshclient)
-                else:
+                elif nas.type!='localhost':
                     sshclient=ssh_client(host=nas.ipaddress, username=nas.login, password=nas.password, command = command_string)
                     log_debug_('ssh connected')
                     del sshclient
-                
+                elif nas.type=='localhost':
+                    status, output = commands.getstatusoutput(command_string)
+                    log_debug_('Local command %s was executed with status %s and output %s' % (command_string, status, output))
+                    if status!=0:return False
                 log_debug_('POD SSH')
                 return True
             except Exception, e:
@@ -296,16 +299,20 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
         #print "command_dict=", command_dict
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         if not command_string: return True
-        print command_string
-        log_debug_("Change Speedcommand_string= %s" % command_string)
+        #print command_string
+        log_debug_("Change Speed command_string= %s" % command_string)
         try:
             if ssh_exec:
                     sshclient = ssh_execute(nas.login, nas.ipaddress, nas.password, command_string)
                     log_debug_('Change speed SSH reply: %s' % sshclient)
-            else:
+            elif nas.type!='localhost':
                 sshclient=ssh_client(host=nas.ipaddress, username=nas.login, password=nas.password, command = command_string)
                 log_debug_('ssh connected')
                 del sshclient
+            elif nas.type=='localhost':
+                status, output = commands.getstatusoutput(command_string)
+                log_debug_('Local command %s was executed with status %s and output %s' % (command_string, status, output))
+                if status!=0:return False
             return True
         except Exception, e:
             log_error_('Change Speed ssh exception %s' % repr(e))
