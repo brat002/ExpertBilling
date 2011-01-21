@@ -117,13 +117,13 @@ class AddPoolFrame(QtGui.QDialog):
             return
 
             
-        if self.ipValidator.validate(model.start_ip, 0)[0]  != QtGui.QValidator.Acceptable or self.ipValidator.validate(model.end_ip, 0)[0]  != QtGui.QValidator.Acceptable :
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте диапазон IP адресов"))
-            return
+        #if self.ipValidator.validate(str(model.start_ip), 0)[0]  != QtGui.QValidator.Acceptable or self.ipValidator.validate(str(model.end_ip), 0)[0]  != QtGui.QValidator.Acceptable :
+        #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте диапазон IP адресов"))
+        #    return
         
-        if IPy.IP(model.end_ip)<=IPy.IP(model.start_ip):
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Конечный IP адрес должен быть больше первого и не равен ему"))
-            return
+        #if IPy.IP(str(model.end_ip))<=IPy.IP(str(model.start_ip)):
+        #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Конечный IP адрес должен быть больше первого и не равен ему"))
+        #    return
         
         pools = self.connection.get_models("billservice_ippool")
         self.connection.commit()

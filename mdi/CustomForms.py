@@ -2613,11 +2613,12 @@ class AccountAddonServiceEdit(QtGui.QDialog):
         self.dateTimeEdit_deactivation.setDateTime(datetime.datetime.now())
         
 class IPAddressSelectForm(QtGui.QDialog):
-    def __init__(self, connection, pool_id):
+    def __init__(self, connection, pool_id, default_ip=''):
         super(IPAddressSelectForm, self).__init__()
         self.connection = connection
         self.pool_id = pool_id
         self.selected_ip = None
+        self.default_ip = default_ip
         self.setObjectName("IPAddressSelectForm")
         self.resize(400, 300)
         self.gridLayout = QtGui.QGridLayout(self)
@@ -2668,7 +2669,7 @@ class IPAddressSelectForm(QtGui.QDialog):
         self.tableWidget.setItem(x,y,headerItem)
         
     def refresh(self):
-        items = get_free_addreses_from_pool(self.connection, self.pool_id, only_from_pool=self.checkBox_only_pool.isChecked())
+        items = get_free_addreses_from_pool(self.connection, self.pool_id, only_from_pool=self.checkBox_only_pool.isChecked(), default_ip=self.default_ip)
         self.connection.commit()
         self.tableWidget.setRowCount(len(items))
         i=0
