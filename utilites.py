@@ -267,7 +267,7 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
     
     elif format_string!='' and access_type in ['pptp', 'l2tp', 'pppoe', 'ipn']:
         #ssh
-        log_debug_('SetSpeed Via SSH')
+        log_debug_('SetSpeed Via SSH/local command')
         command_dict={
                              'access_type':str(access_type),
                              'session': str(session_id),
