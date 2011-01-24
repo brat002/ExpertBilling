@@ -2918,4 +2918,68 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION shedulelog_tr_credit_fn(integer, integer, integer, numeric, timestamp without time zone) OWNER TO postgres;
-                             
+
+ALTER TABLE billservice_account
+   ADD COLUMN last_balance_null timestamp without time zone;
+CREATE OR REPLACE FUNCTION last_balance_null_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+  IF (TG_OP = 'UPDATE') OR (TG_OP = 'INSERT') THEN
+    IF NEW.ballance<=0 THEN
+        NEW.last_balance_null=now();
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+
+CREATE TRIGGER last_balance_null_trg
+  BEFORE INSERT OR UPDATE
+  ON billservice_account
+  FOR EACH ROW
+  EXECUTE PROCEDURE last_balance_null_trg_fn();
+
+CREATE TABLE billservice_balancehistory
+(
+  id serial NOT NULL,
+  account_id integer NOT NULL,
+  balance numeric NOT NULL,
+  datetime timestamp with time zone DEFAULT now(),
+  CONSTRAINT billservice_balancehistory_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_balancehistory_account_id_fkey FOREIGN KEY (account_id)
+      REFERENCES billservice_account (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE billservice_balancehistory OWNER TO ebs;
+
+CREATE OR REPLACE FUNCTION balance_history_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+  IF (TG_OP = 'UPDATE') THEN
+    IF NEW.ballance<>OLD.ballance THEN
+        INSERT INTO billservice_balancehistory(account_id, balance, datetime) VALUES(NEW.id, NEW.ballance, now());
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+  
+CREATE TRIGGER balance_history_trg
+  BEFORE INSERT OR UPDATE
+  ON billservice_account
+  FOR EACH ROW
+  EXECUTE PROCEDURE balance_history_trg_fn();
+
+
+  

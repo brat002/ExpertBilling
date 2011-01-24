@@ -1530,7 +1530,7 @@ class HandleSAcct(HandleSBase):
 
         subacc_id, session_speed = self.packetobject.get('Class', ",")[0].split(",")
         #if 0: assert isinstance(nas, NasData)
-
+        logger.info('ACCT: Extracting subacc_id, speed from cookie: subacc=%s cookie=%s', (subacc_id, session_speed,))
         self.replypacket.secret=str(nasses[0].secret)  
         if self.packetobject.get('Acct-Status-Type', [''])[0]=='Accounting-On':
             self.replypacket.code = packet.AccountingResponse
@@ -1551,6 +1551,7 @@ class HandleSAcct(HandleSBase):
         if subacc:
             acc = self.caches.account_cache.by_id.get(subacc.account_id)  
         else:              
+            logger.info('ACCT: Account from subaccount %s not found', (subacc_id,))
             return self.acct_NA()
         
         if acc is None:
