@@ -4,7 +4,8 @@ RADIUS packet
 
 __docformat__	= "epytext en"
 
-from hashlib import md5
+#from hashlib import md5
+from Crypto.Hash import MD5 as md5
 import  struct, types, random, UserDict, hmac
 import tools
 
