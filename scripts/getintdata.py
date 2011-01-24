@@ -4,6 +4,18 @@ import sys, os
 import os.path
 import time
 
+"""
+>>> import re
+>>> p=re.compile('^\<(pptp|ovpn|pppoe|l2tp|sstp)\-(.*)\>$')
+>>> m=p.match("<pptp-user5>")
+>>> m.group()
+'<pptp-user5>'
+>>> m.group(1)
+'pptp'
+>>> m.group(2)
+'user5'
+
+"""
 snmpget='/usr/bin/snmpget'
 snmpwalk='/usr/bin/snmpwalk'
 host='10.244.0.6'
