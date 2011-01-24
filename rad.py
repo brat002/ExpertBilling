@@ -1546,8 +1546,8 @@ class HandleSAcct(HandleSBase):
             logger.info('ACCT: Searching subaccount by username %s', (self.userName,))
             subacc = self.caches.subaccount_cache.by_username.get(self.userName)
         elif subacc_id:
-            logger.info('ACCT: Searching subaccount by id %s type=%s', (subacc_id, type(subacc_id)))
-            subacc = self.caches.subaccount_cache.by_id.get(subacc_id)
+            logger.info('ACCT: Searching subaccount by id %s', (subacc_id,))
+            subacc = self.caches.subaccount_cache.by_id.get(type(subacc_id))
 
 
         if subacc:
