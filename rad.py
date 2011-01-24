@@ -1549,7 +1549,6 @@ class HandleSAcct(HandleSBase):
             logger.info('ACCT: Searching subaccount by id %s', (subacc_id,))
             subacc = self.caches.subaccount_cache.by_id.get(int(subacc_id))
 
-
         if subacc:
             acc = self.caches.account_cache.by_id.get(subacc.account_id)  
         else:              
