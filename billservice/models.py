@@ -1143,7 +1143,12 @@ class Log(models.Model):
     
 class SubAccount(models.Model):
     account = models.ForeignKey(Account)
-    ipn_ip = models.IpAddressField()
-    ipn_mac = models.CharField()
-    vpn_ip = models.IpAddressField()
+    ipn_ip = models.IPAddressField()
+    ipn_mac = models.CharField(max_length=16)
+    vpn_ip = models.IPAddressField()
+    
+class BalanceHistory(models.Model):
+    account=models.ForeignKey(Account)
+    balance = models.DecimalField(max_digits=30, decimal_places=20)
+    datetime = models.DateTimeField()
     
