@@ -2572,7 +2572,8 @@ class AccountAddonServiceEdit(QtGui.QDialog):
         if self.account_model:    
             model.account_id = self.account_model
         if self.subaccount_model:    
-            model.subaccount_id = self.subaccount_model
+            model.subaccount_id = self.subaccount_model.id
+            model.account_id = self.subaccount_model.account_id
             
         model.service_id = self.comboBox_service.itemData(self.comboBox_service.currentIndex()).toInt()[0]
         date = self.dateTimeEdit_activation.dateTime().toPyDateTime()

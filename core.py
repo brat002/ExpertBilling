@@ -400,6 +400,7 @@ class periodical_service_bill(Thread):
                     last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
                     first_time = True
             elif pss_type == ADDON:
+                print "addon AT_START"
                 first_time = False
                 if last_checkout is None:
                     last_checkout = ps.created
@@ -419,6 +420,7 @@ class periodical_service_bill(Thread):
                     chk_date = period_start_ast + s_delta_ast
                     
                 while True:
+                    #Если тариф закрыт, а доснятие за прошлый расчётный период произошло-прерываем цикл
                     if acc.end_date and acc.end_date == period_end_ast:
                         break
                     cash_summ = ps.cost
@@ -430,11 +432,12 @@ class periodical_service_bill(Thread):
                     if pss_type == PERIOD:
                         cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
                     elif pss_type == ADDON:
+                        print "ADDON CHKDATE OK", chk_date
                         cash_summ = cash_summ * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
                     cur.connection.commit()
                     chk_date += s_delta_ast
-                    if not chk_date <= period_start: break
+                    if chk_date > period_start: print "ADDON AT START BREAK"; break
             cur.connection.commit()
         if ps.cash_method=="AT_END":
             """
@@ -469,23 +472,23 @@ class periodical_service_bill(Thread):
                 cash_summ = ps.cost
                 chk_date = last_checkout
                 if not first_time:
-                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                    chk_date = period_end_ast + SECOND
+                    chk_date = period_start_ast
                     time_start_ps = period_start_ast + s_delta_ast
                 while True:
                     cash_summ = ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                    chk_date = period_end_ast - SECOND
+                    #chk_date = period_end_ast
                     if first_time:
                         first_time = False
                         chk_date = last_checkout
-                        tr_date = period_start_ast - SECOND
+                        tr_date = period_start_ast
                         if pss_type == PERIOD:
                             ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, tr_date)
                         elif pss_type == ADDON:
-                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, chk_date)
+                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, tr_date)
                     else:
                         if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                             cash_summ = ZERO_SUM
@@ -499,12 +502,13 @@ class periodical_service_bill(Thread):
                             cash_summ = cash_summ * susp_per_mlt
                             tr_date = chk_date
                             if ps.deactivated and ps.deactivated < chk_date:
+                                #сделать расчёт остатка
                                 cash_summ = 0
                                 tr_date = ps.deactivated
                             addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, tr_date)
                     cur.connection.commit()
-                    chk_date = period_end_ast + SECOND
-                    if not chk_date < period_start: break
+                    chk_date = period_end_ast
+                    if chk_date > period_start: break
             #cur.connection.commit()
             
         if pss_type == ADDON and ps.deactivated and dateAT >= ps.deactivated:
@@ -1074,7 +1078,7 @@ class settlement_period_service_dog(Thread):
                         if (shedl.prepaid_traffic_accrued is None or shedl.prepaid_traffic_accrued<period_start) and acc.traffic_transmit_service_id:                          
                             #Начислить новый предоплаченный трафик
                             #TODO:если начисляем первый раз - начислять согласно коэффициенту оставшейся части расчётного периода
-                            if ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta and vars.USE_COEFF_FOR_PREPAID==True:
+                            if period_end and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta and vars.USE_COEFF_FOR_PREPAID==True:
                                 delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)
                                 
                                 cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
@@ -1092,7 +1096,7 @@ class settlement_period_service_dog(Thread):
                                         (acc.account_id, acc.acctf_id, now))                            
                             cur.connection.commit()        
                         if (shedl.prepaid_time_accrued is None or shedl.prepaid_time_accrued<period_start) and acc.time_access_service_id:
-                            if ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta  and vars.USE_COEFF_FOR_PREPAID==True:
+                            if period_end and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta  and vars.USE_COEFF_FOR_PREPAID==True:
                                 delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)     
                                 cur.execute("SELECT shedulelog_time_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
                                             (acc.account_id, acc.acctf_id, acc.time_access_service_id, prepaid_time*delta_coef, now))   
