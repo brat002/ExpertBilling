@@ -4388,7 +4388,7 @@ class AccountWindow(QtGui.QMainWindow):
             sp = self.connection.sql("""
             SELECT accadd.*, adds.name as addonservice_name, adds.id as addonservice_id FROM billservice_accountaddonservice as accadd
             JOIN billservice_addonservice as adds ON adds.id=accadd.service_id
-            WHERE account_id=%s ORDER BY id DESC
+            WHERE account_id=%s and subaccount_id is Null ORDER BY id DESC
             """ % self.model.id)
             self.connection.commit()
             self.tableWidget_addonservice.clearContents()
