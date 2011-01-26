@@ -366,7 +366,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
 
     def addAddonService(self):
         i=self.getSelectedId(self.tableWidget)
-        child = AccountAddonServiceEdit(connection=self.connection, subaccount_model = self.model.id)
+        child = AccountAddonServiceEdit(connection=self.connection, subaccount_model = self.model)
         if child.exec_()==1:
             self.accountAddonServiceRefresh()
         
@@ -377,7 +377,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         except:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
             return
-        child = AccountAddonServiceEdit(connection=self.connection, model=model, subaccount_model = self.model.id)
+        child = AccountAddonServiceEdit(connection=self.connection, model=model, subaccount_model = self.model)
         if child.exec_()==1:
             self.accountAddonServiceRefresh()
 
