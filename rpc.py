@@ -1156,6 +1156,11 @@ class RPCServer(object):
     def get_allowed_users(self, cur=None, connection=None, add_data = {}):
         return allowedUsers()
     
+    def get_daily(self, user, add_data = {}):
+        f = open("%s.jpg" % user, 'rb')
+        content = f.readall()
+        f.close()
+        return content
     
     def pod(self, session, cur=None, connection=None, add_data = {}):
         #print "Start POD"

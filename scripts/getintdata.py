@@ -3,19 +3,27 @@ import commands
 import sys, os
 import os.path
 import time
+import psycopg2
+import re
+p=re.compile('^\<(pptp|ovpn|pppoe|l2tp|sstp)\-(.*)\>$')
+#########################
+host = '127.0.0.1'
+port = '5433'
+database = 'ebs'
+user = 'ebs'
+password = 'ebspassword'
 
-"""
->>> import re
->>> p=re.compile('^\<(pptp|ovpn|pppoe|l2tp|sstp)\-(.*)\>$')
->>> m=p.match("<pptp-user5>")
->>> m.group()
-'<pptp-user5>'
->>> m.group(1)
-'pptp'
->>> m.group(2)
-'user5'
+try:
+    conn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s' port='%s'" % (database, user, host, password, port));
+except:
+    print "I am unable to connect to the database"
+    sys.exit()
 
-"""
+conn.set_isolation_level(0)
+cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+cur.execute("SELECT username, ARRAY('SELECT username FROM billservice_subaccount WHERE account_id=acc.id and vpn_ip_address is not '0.0.0.0/0') FROM billservice_account as acc")
+#########################
 snmpget='/usr/bin/snmpget'
 snmpwalk='/usr/bin/snmpwalk'
 host='10.244.0.6'
@@ -34,9 +42,10 @@ if status==0:
             continue
         id=oid.split(".")[-1]
         value = value.replace("\"", '')
+        m=p.match(value)
         try:
-            user=value.split('-',1)[1].strip('>')
-        except IndexError:
+            user=m.group(2)
+        except:
             continue
         user_db_path = db_path % user
 	if not os.path.isfile(user_db_path):
