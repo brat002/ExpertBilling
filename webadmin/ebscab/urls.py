@@ -52,3 +52,10 @@ urlpatterns += patterns('service_monitor.views',
                         #(?P<id>\d+)
     (r'^service_data/$', 'service_data'),
 )
+
+urlpatterns += patterns('statistics.views',
+                        #(?P<id>\d+)
+    (r'^statistics/account/$', 'account_stat'),
+    (r'^statistics/subaccount/$', 'subaccount_stat'),
+    (r'^statistics/overall/$', 'overall_stat'),
+)

@@ -14,6 +14,39 @@ from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 import datetime
 from decimal import Decimal
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
+
+class RrdReportMainWindow(QtGui.QMainWindow):
+    def __init__(self, connection):
+        self.connection=connection
+        super(RrdReportMainWindow, self).__init__()
+        self.setObjectName(_fromUtf8("RrdReportMainWindow"))
+        self.resize(800, 600)
+        self.centralwidget = QtGui.QWidget(self)
+        self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+        self.gridLayout = QtGui.QGridLayout(self.centralwidget)
+        self.gridLayout.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.webView = QtWebKit.QWebView(self)
+        #sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
+        #sizePolicy.setHorizontalStretch(0)
+        #sizePolicy.setVerticalStretch(0)
+        #sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
+        #self.webView.setSizePolicy(sizePolicy)        
+        self.webView.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath("index.html")))
+        self.gridLayout.addWidget(self.webView, 0, 0, 1, 1)
+        self.setCentralWidget(self.centralwidget)
+
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Отчёт по загрузке канала", None, QtGui.QApplication.UnicodeUTF8))
+        
 class CheckBoxDialog(QtGui.QDialog):
     def __init__(self, all_items, selected_items, select_mode='checkbox'):
         super(CheckBoxDialog, self).__init__()

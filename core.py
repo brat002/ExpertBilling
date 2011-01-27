@@ -474,11 +474,12 @@ class periodical_service_bill(Thread):
                 if not first_time:
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                    chk_date = period_start_ast
-                    time_start_ps = period_start_ast + s_delta_ast
+                    chk_date = period_end_ast
+                    time_start_ps = period_start_ast
                 while True:
                     cash_summ = ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    if period_start_ast>period_start: print "period_end_ast>period_start", period_end_ast, period_start; break
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     #chk_date = period_end_ast
                     if first_time:
@@ -508,7 +509,7 @@ class periodical_service_bill(Thread):
                             addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, tr_date)
                     cur.connection.commit()
                     chk_date = period_end_ast
-                    if chk_date > period_start: break
+                    if chk_date-SECOND > period_start: break
             #cur.connection.commit()
             
         if pss_type == ADDON and ps.deactivated and dateAT >= ps.deactivated:
