@@ -412,7 +412,7 @@ class RPCServer(object):
         
         return commands.getstatusoutput("tail -n %s log/%s" % (count, log_name))
     
-    
+        
     def activate_card(self, login, pin, cur=None, connection=None, add_data = {}):
         status_ok = 1
         status_bad_userpassword = 2

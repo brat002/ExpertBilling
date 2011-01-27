@@ -25,7 +25,7 @@ from Reports import TransactionsReportEbs as TransactionsReport
 from helpers import tableFormat, check_speed
 from helpers import transaction, makeHeaders
 from helpers import Worker
-from CustomForms import simpleTableImageWidget, tableImageWidget, IPAddressSelectForm, TemplateSelect
+from CustomForms import simpleTableImageWidget, tableImageWidget, IPAddressSelectForm, TemplateSelect, RrdReportMainWindow
 from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog, PSCreatedForm, AccountAddonServiceEdit
 from MessagesFrame import MessageDialog
 from mako.template import Template
@@ -4656,6 +4656,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("actionSetSuspendedPeriod", "Отключить списание периодических услуг", "", self.suspended_period),\
                  ("actionLimitInfo", "Остаток трафика по лимитам", "", self.limit_info),\
                  ("actionPrepaidTrafficInfo", "Остаток предоплаченного трафика", "", self.prepaidtraffic_info),\
+                 ("rrdTrafficInfo", "График использования канала", "", self.rrdtraffic_info),\
                  ("actionRadiusAttrs", "Дополнительные RADIUS атрибуты", "images/configure.png", self.radius_attrs),\
                 ]
 
@@ -4664,7 +4665,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
                    self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount", "messageDialogAction"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionRadiusAttrs", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
-                   self.menu       :["connectionAgreementAction", "separator", "actionChangeTarif", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo"],\
+                   self.menu       :["connectionAgreementAction", "separator", "actionChangeTarif", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", "separator", "rrdTrafficInfo"],\
                   }
         self.actionCreator(actList, objDict)
         
@@ -4702,6 +4703,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         child = MessageDialog(accounts = ids, connection=self.connection)
         child.exec_()
     
+    def rrdtraffic_info(self):
+        window = RrdReportMainWindow(connection=self.connection)
+        self.parent.workspace.addWindow(window)
+        window.show()
     def addTarif(self):
         #print connection
         tarifframe = TarifFrame(connection=self.connection)
