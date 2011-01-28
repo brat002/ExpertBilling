@@ -73,7 +73,7 @@ class AccountCache(CacheItem):
             for addr in acct[1]:
                 vpn_ip, ipn_ip, nas_id = addr.split("|")
                 account_object = self.datatype._make((acct[0], acct[2], acct[3]))
-                print vpn_ip, ipn_ip
+                
                 if type(nas_id)==str and nas_id not in ['None', '', None]:
                     nas_id=int(nas_id)
                 if vpn_ip != '0.0.0.0/32':
