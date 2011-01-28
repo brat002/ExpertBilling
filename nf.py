@@ -327,6 +327,7 @@ def nfPacketHandle(data, addrport, flowCache):
         flow_data = data[offset:offset + vars.flowLENGTH]
         flow = flow_class(flow_data)
         if 0: assert isinstance(flow, Flow5Data)
+        logger.debug("New flow arrived. src_ip=%s dst_ip=%s: ", IPy.intToIp(flow.src_addr, 4),IPy.intToIp(flow.dst_addr, 4))
         #look for account for ip address
         if flow.out_index == 0 or flow.in_index == flow.out_index:
             continue
@@ -334,25 +335,31 @@ def nfPacketHandle(data, addrport, flowCache):
         acc_data_dst = None
         nas_id = None
         for nasitem in nasses:
+            logger.debug("Checking flow for nas_id=: %s", (nasitem.id, ))
             if not acc_data_src:
                 #Если нашли - больше не проверяем
-                acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, nasitem.id)) or caches.account_cache.ipn_ips.get((flow.src_addr, nasitem.id))
+                acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, nasitem.id))
                 if acc_data_src:
                     nas_id = nasitem.id
             if not acc_data_dst:
                 #Если нашли - больше не проверяем
-                acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nasitem.id)) or caches.account_cache.ipn_ips.get((flow.dst_addr, nasitem.id))
-
+                acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nasitem.id))
+                if acc_data_dst:
+                    nas_id = nasitem.id
+            if acc_data_dst and acc_data_src: break
+        
+        logger.debug("VPN Account without nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
         if not acc_data_src:
             #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
-            acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, None)) or caches.account_cache.ipn_ips.get((flow.src_addr, None))
+            acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, None))
             nas_id = nasses[0].id
 
         if not acc_data_dst:
             #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
-            acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, None)) or caches.account_cache.ipn_ips.get((flow.dst_addr, None))
+            acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, None))
+            nas_id = nasses[0].id
 
-            
+        logger.debug("VPN Account with nas for flow src(%s) dst(%s) default nas(%s)", (acc_data_src, acc_data_dst, nas_id, ))
         #Проверка на IPN сеть
         if not acc_data_src and caches.account_cache.ipn_range:
             for src_ip, src_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
@@ -362,8 +369,10 @@ def nfPacketHandle(data, addrport, flowCache):
             for dst_ip, dst_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
                 if (acc_nas_id == nas_id  or acc_nas_id is None) and (flow.dst_addr & dst_mask) == dst_ip:
                     acc_data_dst = account_data
-                    
+        logger.debug("IPN Account for flow src(%s) dst(%s)", (acc_data_src, acc_data_dst, ))
         local = bool(acc_data_src and acc_data_dst)
+        if local:
+            logger.debug("Flow is local")
         acc_acct_tf = (acc_data_src, acc_data_dst) if local else (acc_data_src or acc_data_dst,)
         #print repr(acc_acct_tf)
             
