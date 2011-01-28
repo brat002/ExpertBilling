@@ -310,9 +310,9 @@ def nfPacketHandle(data, addrport, flowCache):
         return
     caches = cacheMaster.cache
     if 0: assert isinstance(caches, NfCaches)
-    nasses = caches.nas_cache.by_ip.get(addrport[0])
+    nasses = caches.nas_cache.by_ip.get(addrport[0], [])
     if not caches: return
-          
+    if not nasses: logger.warning("NAS %s not found in our beautiful system. Mybe it hackers?", repr(addrport)); return      
     flows=[]
     _nf = struct.unpack("!H", data[:2])
     pVersion = _nf[0]
@@ -327,7 +327,7 @@ def nfPacketHandle(data, addrport, flowCache):
         flow_data = data[offset:offset + vars.flowLENGTH]
         flow = flow_class(flow_data)
         if 0: assert isinstance(flow, Flow5Data)
-        logger.debug("New flow arrived. src_ip=%s dst_ip=%s: ", IPy.intToIp(flow.src_addr, 4),IPy.intToIp(flow.dst_addr, 4))
+        logger.debug("New flow arrived. src_ip=%s dst_ip=%s: ", (IPy.intToIp(flow.src_addr, 4),IPy.intToIp(flow.dst_addr, 4)))
         #look for account for ip address
         if flow.out_index == 0 or flow.in_index == flow.out_index:
             continue
@@ -352,12 +352,18 @@ def nfPacketHandle(data, addrport, flowCache):
         if not acc_data_src:
             #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
             acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, None))
-            nas_id = nasses[0].id
+            if nasses:
+                nas_id = nasses[0].id
+            else:
+                nas_id = None
 
         if not acc_data_dst:
             #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
             acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, None))
-            nas_id = nasses[0].id
+            if nasses:
+                nas_id = nasses[0].id
+            else:
+                nas_id = None
 
         logger.debug("VPN Account with nas for flow src(%s) dst(%s) default nas(%s)", (acc_data_src, acc_data_dst, nas_id, ))
         #Проверка на IPN сеть
