@@ -1506,7 +1506,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_6), QtGui.QApplication.translate("Dialog", "Разовые услуги", None, QtGui.QApplication.UnicodeUTF8))
         
         self.periodical_tableWidget.clear()
-        columns=[u'#', u'Название', u'Период', u'Способ снятия', u'Стоимость', u"Условие", u"Начало списаний", u"Закончить списания"]
+        columns=[u'#', u'Название', u'Период', u"Начало списаний", u'Способ снятия', u'Стоимость', u"Условие", u"Отключить услугу с"]
         
         makeHeaders(columns, self.periodical_tableWidget)
         
@@ -1698,15 +1698,15 @@ class TarifFrame(QtGui.QDialog):
     def addPeriodicalRow(self):
         current_row = self.periodical_tableWidget.rowCount()
         self.periodical_tableWidget.insertRow(current_row)
-        self.addrow(self.periodical_tableWidget, ps_list[0], current_row, 5)
-        self.addrow(self.periodical_tableWidget, '', current_row, 6)
+        self.addrow(self.periodical_tableWidget, ps_list[0], current_row, 6)
+        self.addrow(self.periodical_tableWidget, '', current_row, 3)
         #if QtGui.QMessageBox.question(self, u"Внимание!!!" , 
         #                                    u'''Вы хотите, чтобы по новой периодической услуге были поизведены списания с начала текущего расчётного периода?''', \
         #                                    QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
         #    self.periodical_tableWidget.item(current_row,5).created='now()'
         #else:
         #    self.periodical_tableWidget.item(current_row,5).created=None
-        self.periodical_tableWidget.item(current_row,5).selected_id=0
+        self.periodical_tableWidget.item(current_row,6).selected_id=0
         
         
     def delPeriodicalRow(self):
@@ -1714,8 +1714,9 @@ class TarifFrame(QtGui.QDialog):
         id = self.getIdFromtable(self.periodical_tableWidget, current_row)
         
         if id!=-1:
-            self.connection.iddelete(id, "billservice_periodicalservice")
-  
+            #self.connection.iddelete(id, "billservice_periodicalservice")
+            self.connection.sql("UPDATE billservice_periodicalservice SET deleted=True, deactivated=now() WHERE id=%s" % id)
+            
         self.periodical_tableWidget.removeRow(current_row)
 
          
@@ -2113,7 +2114,7 @@ class TarifFrame(QtGui.QDialog):
 
     def periodicalServicesEdit(self,y,x):
         
-                  
+        [u'#', u'Название', u'Период', u"Начало действия", u'Способ снятия', u'Стоимость', u"Условие", u"Отключить услугу с"]          
         if x==2:
             item = self.periodical_tableWidget.item(y,x)
             try:
@@ -2143,7 +2144,7 @@ class TarifFrame(QtGui.QDialog):
             
             self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(text[0]))
 
-        if x==3:
+        if x==4:
             item = self.periodical_tableWidget.item(y,x)
             try:
                 default_text = item.text()
@@ -2154,7 +2155,7 @@ class TarifFrame(QtGui.QDialog):
             if child.exec_()==1:
                 self.addrow(self.periodical_tableWidget, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)
              
-        if x==4:
+        if x==5:
             item = self.periodical_tableWidget.item(y,x)
             try:
                 default_text=float(item.text())
@@ -2166,7 +2167,7 @@ class TarifFrame(QtGui.QDialog):
             self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
 
 
-        if x==5:
+        if x==6:
             item = self.periodical_tableWidget.item(y,x)
             try:
                 default_text = item.text()
@@ -2182,7 +2183,7 @@ class TarifFrame(QtGui.QDialog):
             #print "created=", self.periodical_tableWidget.item(y,x).selected_id
 
 
-        if x==6:
+        if x==3:
             item = self.periodical_tableWidget.item(y,x)
             try:
                 default_text = item.created
@@ -2201,7 +2202,28 @@ class TarifFrame(QtGui.QDialog):
                 self.periodical_tableWidget.item(y,x).created=child.date
             #print "created=", self.periodical_tableWidget.item(y,x).selected_id
             
+        if x==7:
+            item = self.periodical_tableWidget.item(y,x)
+            try:
+                default_text = item.deactivated
+            except:
+                default_text = None
+                
+
+            child = PSCreatedForm(date = default_text, only_date=True )
+            #self.connection.commit()
+            if child.exec_()==1:
+
+                if child.date:
+                    self.periodical_tableWidget.item(y,x).setText(child.date.strftime(strftimeFormat))
+                else:
+                    self.periodical_tableWidget.item(y,x).setText(u"")
+                self.periodical_tableWidget.item(y,x).deactivated=child.date
+            #print "created=", self.periodical_tableWidget.item(y,x).selected_id
+            
    
+    
+       
     
     
     def addonserviceEdit(self,y,x):
@@ -2420,19 +2442,25 @@ class TarifFrame(QtGui.QDialog):
                 nodes = periodical_services
                 self.periodical_tableWidget.setRowCount(len(nodes))
                 i=0
+                
                 for node in nodes:
                     self.addrow(self.periodical_tableWidget, node.id,i, 0)
                     self.addrow(self.periodical_tableWidget, node.name,i, 1)
                     self.addrow(self.periodical_tableWidget, node.settlement_period_name,i, 2, 'combobox', node.settlement_period_id)
-                    self.addrow(self.periodical_tableWidget, node.cash_method, i, 3)
-                    self.addrow(self.periodical_tableWidget, node.cost,i, 4)
-                    self.addrow(self.periodical_tableWidget, ps_list[node.condition],i, 5)
-                    self.periodical_tableWidget.item(i, 5).selected_id = node.condition
+                    self.addrow(self.periodical_tableWidget, node.cash_method, i, 4)
+                    self.addrow(self.periodical_tableWidget, node.cost,i, 5)
+                    self.addrow(self.periodical_tableWidget, ps_list[node.condition],i, 6)
+                    self.periodical_tableWidget.item(i, 6).selected_id = node.condition
                     if node.created:
-                        self.addrow(self.periodical_tableWidget, node.created.strftime(strftimeFormat),i, 6)
+                        self.addrow(self.periodical_tableWidget, node.created.strftime(strftimeFormat),i, 3)
                     else:
-                        self.addrow(self.periodical_tableWidget, u"С начала расчётного периода",i, 6)
-                    self.periodical_tableWidget.item(i, 6).created = node.created
+                        self.addrow(self.periodical_tableWidget, u"С начала расчётного периода",i, 3)
+                    self.periodical_tableWidget.item(i, 3).created = node.created
+                    try:
+                        self.addrow(self.periodical_tableWidget, node.deactivated.strftime(strftimeFormat),i, 7)
+                    except:
+                        self.addrow(self.periodical_tableWidget, '',i, 7)
+                        self.periodical_tableWidget.item(i, 7).deactivated = node.deactivated
                     #print "node created", node.created
                     i+=1                   
             self.periodical_tableWidget.setColumnHidden(0, True)

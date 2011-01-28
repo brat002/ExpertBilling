@@ -2431,9 +2431,10 @@ class RadiusAttrsDialog(QtGui.QDialog):
             
 
 class PSCreatedForm(QtGui.QDialog):
-    def __init__(self, date):
+    def __init__(self, date, only_date=False):
         super(PSCreatedForm, self).__init__()
         self.date = date
+        self.only_date = only_date
         self.setObjectName("PSCreatedForm")
         self.resize(266, 95)
         self.gridLayout = QtGui.QGridLayout(self)
@@ -2453,6 +2454,8 @@ class PSCreatedForm(QtGui.QDialog):
 
         self.retranslateUi()
         self.checkBoxAction()
+        if self.only_date:
+            self.checkBox_as_start_ps.setHidden(True)
         self.connect(self.checkBox_as_start_ps, QtCore.SIGNAL("stateChanged(int)"), self.checkBoxAction)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
@@ -2471,6 +2474,9 @@ class PSCreatedForm(QtGui.QDialog):
         if self.checkBox_as_start_ps.checkState() == QtCore.Qt.Checked:
             self.dateTimeEdit.setDisabled(True)
         else:
+            self.dateTimeEdit.setDisabled(False)
+            
+        if self.only_date:
             self.dateTimeEdit.setDisabled(False)
             
             
