@@ -74,11 +74,12 @@ core_sql = \
                         JOIN billservice_timeperiod_time_period_nodes as tp ON tp.timeperiod_id=timespeed.time_id
                         JOIN billservice_timeperiodnode as timenode ON tp.timeperiodnode_id=timenode.id;""",
           'periodtf':"""SELECT id, settlement_period_id FROM billservice_tariff  as tarif
-                        WHERE id in (SELECT tarif_id FROM billservice_periodicalservice) AND tarif.active=True""",
+                        WHERE id in (SELECT tarif_id FROM billservice_periodicalservice WHERE deleted=False or deleted is Null) AND tarif.active=True""",
           'periodset':"""SELECT b.id, b.name, b.cost, b.cash_method, c.name, date_trunc('second', c.time_start),
-                        c.length, c.length_in, c.autostart, b.tarif_id, b.condition, b.created
+                        c.length, c.length_in, c.autostart, b.tarif_id, b.condition, b.created, b.deactivated, b.deleted
                         FROM billservice_periodicalservice as b 
-                        JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id;""",
+                        JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
+                        WHERE deactivated is Null or (deactivated>=%s) and (deleted=False or deleted is Null);""",
           'timeaccnode':"""SELECT tan.time_period_id, tan.cost, tan.time_access_service_id
                         FROM billservice_timeaccessnode as tan
                         JOIN billservice_timeperiod as tp ON tan.time_period_id=tp.id;""",

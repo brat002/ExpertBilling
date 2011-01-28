@@ -514,6 +514,9 @@ class periodical_service_bill(Thread):
             
         if pss_type == ADDON and ps.deactivated and dateAT >= ps.deactivated:
             cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = deactivated WHERE id=%s", (ps.ps_id,))
+        #if pss_type == ZERO_SUM and ps.deactivated and dateAT >= ps.deactivated:
+        #    cur.execute("UPDATE billservice_periodicalservice SET deleted = True WHERE id=%s;", (ps.ps_id,))
+
             #cur.connection.commit()
     
     def run(self):

@@ -37,7 +37,7 @@ class CoreCaches(CacheCollection):
         self.defspeed_cache = DefSpeedParametersCache()
         self.speed_cache = SpeedParametersCache()
         self.periodicaltarif_cache = PeriodicalTarifCache()
-        self.periodicalsettlement_cache = PeriodicalServiceSettlementCache()
+        self.periodicalsettlement_cache = PeriodicalServiceSettlementCache(date)
         self.timeaccessnode_cache = TimeAccessNodeCache()
         self.timeperiodnode_cache = TimePeriodNodeCache()
         self.trafficlimit_cache = TrafficLimitCache()
@@ -136,7 +136,10 @@ class PeriodicalServiceSettlementCache(SimpleDefDictCache):
     datatype = PeriodicalServiceSettlementData
     sql = core_sql['periodset']
     num = 9
-    
+    def __init__(self, date):
+        super(PeriodicalServiceSettlementCache, self).__init__()
+        self.vars = (date,)
+            
 class TimeAccessNodeCache(SimpleDefDictCache):
     '''By time access service id'''
     __slots__ = ()
