@@ -117,6 +117,7 @@ INSTALLED_APPS = (
     'service_monitor',
     'testcases',
     'statistics',
+    'helpdesk',
 )
 
 AUTHENTICATION_BACKENDS = (
