@@ -16,7 +16,7 @@ import datetime
 
 class MonitorEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=[u'#', u'Аккаунт', u'IPN IP', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Конец', u'Передано', u'Принято', u'Длительность, с', u'Статус']
+        columns=[u'#', u'Аккаунт', u'IPN IP', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Конец', u'Передано', u'Принято', u'Длительность, с', u'Статус', u'Причина разрыва']
         initargs = {"setname":"monitor_frame_header", "objname":"MonitorEbsMDI", "winsize":(0,0,1102,593), "wintitle":"Монитор активности", "tablecolumns":columns, "tablesize":(0,0,801,541)}
         super(MonitorEbs, self).__init__(connection, initargs)
         
@@ -236,6 +236,7 @@ class MonitorEbs(ebsTableWindow):
             self.addrow(self.tableWidget, humanable_bytes(session.bytes_in), i, 9)
             self.addrow(self.tableWidget, prntime(session.session_time), i, 10)
             self.addrow(self.tableWidget, session.session_status, i, 11, color=True)
+            self.addrow(self.tableWidget, session.acct_terminate_cause, i, 12)
             sess_time += session.session_time if session.session_time else 0
             i+=1
         if self.firsttime and sessions and HeaderUtil.getBinaryHeader("monitor_frame_header").isEmpty():

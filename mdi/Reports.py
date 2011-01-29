@@ -42,12 +42,20 @@ _chartopts = {\
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
 
 class TransactionsReportEbs(ebsTableWindow):
-    def __init__(self, connection ,account=None):
+    def __init__(self, connection ,account=None, report_type='transaction'):
         self.account = account
-        columns=[u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
-        initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
-        self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги"]
-        self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction"]
+        self.report_type = report_type
+        if report_type=='transaction':
+            columns=[u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
+            initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
+            self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги"]
+            self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction"]
+        elif report_type=='radius_log':
+            columns=[u'#', u'Аккаунт', u"Субаккаунт", u'Сервер доступа', u'Тип', u'Способ доступа', u"Сообщение", u'Дата']
+            initargs = {"setname":"radiusrep_frame_header", "objname":"RadiusReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История авторизацией", "tablecolumns":columns}
+            self.radiuslog_types = [u"---", u"Неудачные авторизации", u"Удачные авторизации"]
+            #self.radiuslog_types = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction"]
+            
         super(TransactionsReportEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
@@ -73,8 +81,8 @@ class TransactionsReportEbs(ebsTableWindow):
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            self.date_start.setDateTime(settings.value("trans_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
-            self.date_end.setDateTime(settings.value("trans_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.date_start.setDateTime(settings.value("%strans_date_start" % self.report_type, QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.date_end.setDateTime(settings.value("%strans_date_end" % self.report_type, QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
         except Exception, ex:
             print "Transactions settings error: ", ex
 
@@ -137,7 +145,8 @@ class TransactionsReportEbs(ebsTableWindow):
 
        
     def ebsPostInit(self, initargs):
-        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        if self.report_type=='transaction':
+            self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.refresh_table)
         QtCore.QObject.connect(self.comboBox_transactions_type,QtCore.SIGNAL("currentIndexChanged(int)"),self.setTableColumns)
@@ -157,38 +166,43 @@ class TransactionsReportEbs(ebsTableWindow):
         self.date_start.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
         #self.system_transactions_checkbox.setText(QtGui.QApplication.translate("Dialog", "Включить в отчёт системные проводки", None, QtGui.QApplication.UnicodeUTF8))        
         self.label_transactions_type.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_cashier.setText(QtGui.QApplication.translate("Dialog", "Кассир", None, QtGui.QApplication.UnicodeUTF8))
+        if self.report_type=='transaction':
+            self.label_cashier.setText(QtGui.QApplication.translate("Dialog", "Кассир", None, QtGui.QApplication.UnicodeUTF8))
+        else:
+            self.label_cashier.setText(QtGui.QApplication.translate("Dialog", "Способ доступа", None, QtGui.QApplication.UnicodeUTF8))
     
     def refresh(self):
-        systemusers = self.connection.get_models("billservice_systemuser")
-        self.connection.commit()
-        self.comboBox_cashier.addItem(unicode(u'--Все--'))
-        self.comboBox_cashier.setItemData(0, QtCore.QVariant(0))
-        i=1
-        for systemuser in systemusers:
-           self.comboBox_cashier.addItem(unicode(systemuser.username))
-           self.comboBox_cashier.setItemData(i, QtCore.QVariant(systemuser.id))
-           i+=1
-           
-        accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
-        self.connection.commit()
-        self.user_edit.addItem(u"-Все клиенты-")
-        self.user_edit.setItemData(0, QtCore.QVariant(0))
-        i=1
-        for account in accounts:
-            self.user_edit.addItem(account.username)
-            self.user_edit.setItemData(i, QtCore.QVariant(account.id))
-            i+=1
-        
-        if self.account:
-            self.user_edit.setCurrentIndex(self.user_edit.findText(self.account.username, QtCore.Qt.MatchCaseSensitive))
-            self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % self.account.username)
-
-        i=0
-        for tr_type in self.transactions_types:
-            self.comboBox_transactions_type.addItem(tr_type)
-            self.comboBox_transactions_type.setItemData(i, QtCore.QVariant(i))
-            i+=1
+        if self.report_type=='transaction':
+            systemusers = self.connection.get_models("billservice_systemuser")
+            self.connection.commit()
+            self.comboBox_cashier.addItem(unicode(u'--Все--'))
+            self.comboBox_cashier.setItemData(0, QtCore.QVariant(0))
+            i=1
+            for systemuser in systemusers:
+               self.comboBox_cashier.addItem(unicode(systemuser.username))
+               self.comboBox_cashier.setItemData(i, QtCore.QVariant(systemuser.id))
+               i+=1
+               
+            accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
+            self.connection.commit()
+            self.user_edit.addItem(u"-Все клиенты-")
+            self.user_edit.setItemData(0, QtCore.QVariant(0))
+            i=1
+            for account in accounts:
+                self.user_edit.addItem(account.username)
+                self.user_edit.setItemData(i, QtCore.QVariant(account.id))
+                i+=1
+            
+            if self.account:
+                self.user_edit.setCurrentIndex(self.user_edit.findText(self.account.username, QtCore.Qt.MatchCaseSensitive))
+                self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % self.account.username)
+    
+            i=0
+            for tr_type in self.transactions_types:
+                self.comboBox_transactions_type.addItem(tr_type)
+                self.comboBox_transactions_type.setItemData(i, QtCore.QVariant(i))
+                i+=1
+            
     def addrow(self, value, x, y, id=None, promise=False, date = None):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
