@@ -249,7 +249,7 @@ class check_vpn_access(Thread):
                             disconnect_result='NACK'
                             
                         if result is not None:
-                            cur.execute("""UPDATE radius_activesession SET session_status=%s WHERE sessionid=%s;
+                            cur.execute("""UPDATE radius_activesession SET session_status=%s, acct_terminate_cause='BILLING_POD_REQUEST' WHERE sessionid=%s;
                                         """, (disconnect_result, rs.sessionid,))
                             cur.connection.commit()  
                         

@@ -2982,4 +2982,5 @@ CREATE TRIGGER balance_history_trg
   EXECUTE PROCEDURE balance_history_trg_fn();
 
 
-  
+ALTER TABLE radius_activesession
+   ADD COLUMN acct_terminate_cause text DEFAULT '';

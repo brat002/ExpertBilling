@@ -322,7 +322,7 @@ class NfrQueues(object):
 class RadVars(Vars):
     __slots__ = ('SESSION_TIMEOUT', 'GIGAWORD', 'DICT_LIST', 'DICT', 'COMMON_VPN', 'IGNORE_NAS_FOR_VPN', 'IGNORE_NAS_FOR_DHCP',\
                  'MAX_DATAGRAM_LEN', 'AUTH_PORT', 'ACCT_PORT', 'AUTH_SOCK_TIMEOUT', 'ACCT_SOCK_TIMEOUT',\
-                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE', 'POLL_TIMEOUT','EAP_ACCESS_TYPES', 'ONLY_ONE')
+                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE', 'POLL_TIMEOUT','EAP_ACCESS_TYPES', 'ONLY_ONE', 'ENABLE_SQLLOG','SQLLOG_FLUSH_TIMEOUT', 'SQLLOG_SUCCESS')
     
     def __init__(self):
         super(RadVars, self).__init__()
@@ -346,6 +346,9 @@ class RadVars(Vars):
         self.EAP_ACCESS_TYPES = {'802.1x':'eap-tls', 'PPTP':'eap-md5', 'PPPOE':'eap-md5'}
         self.POLL_TIMEOUT = 500
         self.ONLY_ONE = False
+        self.ENABLE_SQLLOG = False
+        self.SQLLOG_FLUSH_TIMEOUT = 60
+        self.SQLLOG_SUCCESS = False
         
     def get_dynamic(self, **kwargs):
         super(RadVars, self).get_dynamic(**kwargs)
@@ -371,6 +374,9 @@ class RadVars(Vars):
         if config.has_option(name, 'listen_thread_num'): self.LISTEN_THREAD_NUM = config.getint(name, 'listen_thread_num')
         if config.has_option(name, 'poll_timeout'): self.POLL_TIMEOUT = config.getint(name, 'poll_timeout')
         if config.has_option(name, 'only_one'): self.ONLY_ONE = config.getboolean(name, 'only_one')
+        if config.has_option(name, 'enable_sqllog'): self.ENABLE_SQLLOG = config.getboolean(name, 'enable_sqllog')
+        if config.has_option(name, 'sqllog_success'): self.SQLLOG_SUCCESS = config.getboolean(name, 'sqllog_success')
+        if config.has_option(name, 'sqllog_flush_timeout'): self.SQLLOG_FLUSH_TIMEOUT = config.getint(name, 'sqllog_flush_timeout')
         if config.has_option(name, 'eap_id_type'):
             self.EAP_ID_TYPE = config.get(name, 'eap_id_type').lower()
         if config.has_option(name, 'eap_access_type'):
@@ -382,7 +388,7 @@ class RadVars(Vars):
     
 class RadQueues(object):
     __slots__ = ('account_timeaccess_cache', 'account_timeaccess_cache_count', 'eap_auth_chs', 'eap_auth_locks',\
-                 'rad_server', 'challenges', 'sessions', 'sessions_lock')
+                 'rad_server', 'challenges', 'sessions', 'sessions_lock', 'sqllog', 'sqllog_lock')
     def __init__(self):
         self.account_timeaccess_cache = {}
         self.account_timeaccess_cache_count = 0
