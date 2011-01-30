@@ -20,7 +20,7 @@ import datetime, time, calendar
 from time import mktime
 from CustomForms import RadiusAttrsDialog, CheckBoxDialog, ComboBoxDialog, SpeedEditDialog , TransactionForm
 import time
-from Reports import TransactionsReportEbs as TransactionsReport
+from Reports import TransactionsReportEbs as TransactionsReport, SimpleReportEbs
 
 from helpers import tableFormat, check_speed
 from helpers import transaction, makeHeaders
@@ -4680,20 +4680,23 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("editTarifAction", "Редактировать", "images/edit.png", self.editTarif),\
                  ("editAccountAction", "Редактировать", "images/configure.png", self.editframe),\
                  ("connectionAgreementAction", "Договор на подключение", "", self.pass_),\
-                 ("actionChangeTarif", "Сменить тарифный план", "", self.changeTariff),\
+                 ("actionChangeTarif", "Сменить тарифный план", "images/tarif_change.png", self.changeTariff),\
                  ("actionSetSuspendedPeriod", "Отключить списание периодических услуг", "", self.suspended_period),\
                  ("actionLimitInfo", "Остаток трафика по лимитам", "", self.limit_info),\
                  ("actionPrepaidTrafficInfo", "Остаток предоплаченного трафика", "", self.prepaidtraffic_info),\
-                 ("rrdTrafficInfo", "График использования канала", "", self.rrdtraffic_info),\
-                 ("actionRadiusAttrs", "Дополнительные RADIUS атрибуты", "images/configure.png", self.radius_attrs),\
+                 ("rrdTrafficInfo", "График использования канала", "images/bandwidth.png", self.rrdtraffic_info),\
+                 ("radiusauth_logInfo", "Логи RADIUS авторизаций", "images/easytag.png", self.radiusauth_log),\
+                 ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs),\
+                 ("actionBalanceLog", "История изменения баланса", "images/money.png", self.balance_log),\
+                 
                 ]
-
+                
 
 
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
-                   self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount", "messageDialogAction"], \
+                   self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount", "messageDialogAction", "radiusauth_logInfo", "actionBalanceLog"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionRadiusAttrs", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
-                   self.menu       :["connectionAgreementAction", "separator", "actionChangeTarif", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", "separator", "rrdTrafficInfo"],\
+                   self.menu       :[ "actionChangeTarif", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", "separator", "rrdTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog"],\
                   }
         self.actionCreator(actList, objDict)
         
@@ -4735,6 +4738,19 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         window = RrdReportMainWindow(connection=self.connection)
         self.parent.workspace.addWindow(window)
         window.show()
+
+    def radiusauth_log(self):
+        id = self.getSelectedId()
+        window = SimpleReportEbs(connection=self.connection, report_type='radius_authlog', account_id=id)
+        self.parent.workspace.addWindow(window)
+        window.show()
+    
+    def balance_log(self):
+        id = self.getSelectedId()
+        window = SimpleReportEbs(connection=self.connection, report_type='balance_log', account_id=id)
+        self.parent.workspace.addWindow(window)
+        window.show()
+                
     def addTarif(self):
         #print connection
         tarifframe = TarifFrame(connection=self.connection)
@@ -4752,12 +4768,13 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         return ids
     
     def changeTariff(self):
-
+        tarif_id = None
         ids = self.get_selected_accounts()
         child=AddAccountTarif(connection=self.connection, account=None, get_info = True)
         if child.exec_()==1:
             tarif_id = child.tarif_edit.itemData(child.tarif_edit.currentIndex()).toInt()[0]
             date = child.date_edit.dateTime().toPyDateTime()
+        if not tarif_id: return
         if not self.connection.change_tarif(ids, tarif_id, date):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Во время выполнения операции произошла ошибка."))
         else:

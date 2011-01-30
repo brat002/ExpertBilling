@@ -23,6 +23,7 @@ except AttributeError:
 class RrdReportMainWindow(QtGui.QMainWindow):
     def __init__(self, connection):
         self.connection=connection
+        print connection.server_ip
         super(RrdReportMainWindow, self).__init__()
         self.setObjectName(_fromUtf8("RrdReportMainWindow"))
         self.resize(800, 600)
@@ -37,7 +38,8 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         #sizePolicy.setVerticalStretch(0)
         #sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
         #self.webView.setSizePolicy(sizePolicy)        
-        self.webView.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath("index.html")))
+        #self.webView.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath("index.html")))
+        self.webView.load(QtCore.QUrl("http://www.ya.ru"))
         self.gridLayout.addWidget(self.webView, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
 
