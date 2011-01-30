@@ -18,7 +18,7 @@ http://martybugs.net/linux/rrdtool/traffic.cgi
 """
 @render_to("statistics/account_stat.html")
 def generate_graph(path, user, start_date, end_date):
-    rrd=u"""%s graph %s -a PNG -h 125 -v "Bandwidth data %s" --start %s --end %s 'DEF:in=%s.rrd:in:AVERAGE' 'DEF:out=%s.rrd:out:AVERAGE' 'CDEF:kbin=in,3,*,1024,/' 'CDEF:kbout=out,3,*,1024,/' 'AREA:in#1ED103:In' 'AREA:out#5AA5DA:Out' 'GPRINT:kbin:L:Last value In\: %%3.2lf kb/s' 'GPRINT:kbout:LAST:Last value Out\: %%3.2lfk\j'""" % (RRD_PATH, path, user, start_date, end_date, RRDDB_PATH+'bandwidth_'+user, RRDDB_PATH+'bandwidth_'+user,)
+    rrd=u"""%s graph %s -a PNG -h 125 -t "График загрузки канала пользователем %s" --lazy -l 0 -v bytes/sec --start %s --end %s 'DEF:in=%s.rrd:in:AVERAGE' 'DEF:out=%s.rrd:out:AVERAGE'         "CDEF:out_neg=out,-1,*","AREA:in#32CD32:Incoming", "LINE1:in#336600",    "GPRINT:in:MAX:  Max\\: %5.1lf %%s","GPRINT:in:AVERAGE: Avg\\: %5.1lf %S","GPRINT:in:LAST: Current\\: %5.1lf %Sbytes/sec\\n",        "AREA:out_neg#4169E1:Outgoing",        "LINE1:out_neg#0033CC",        "GPRINT:out:MAX:  Max\\: %5.1lf %S",        "GPRINT:out:AVERAGE: Avg\\: %5.1lf %S",    "GPRINT:out:LAST: Current\\: %5.1lf %Sbytes/sec", "HRULE:0#000000" """ % (RRD_PATH, path, user, start_date, end_date, RRDDB_PATH+'bandwidth_'+user, RRDDB_PATH+'bandwidth_'+user,)
     print rrd
     status, output = commands.getstatusoutput(rrd)
     

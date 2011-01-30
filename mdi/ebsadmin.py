@@ -50,7 +50,7 @@ from MonitorFrame import MonitorEbs as MonitorFrame
 from PoolFrame import PoolEbs as PoolFrame
 from SystemUser import SystemEbs
 from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
-from Reports import NetFlowReportEbs as NetFlowReport, StatReport , LogViewWindow
+from Reports import NetFlowReportEbs as NetFlowReport, StatReport , LogViewWindow, SimpleReportEbs
 from CardsFrame import CardsChildEbs as CardsChild
 from DealerFrame import DealerMdiEbs as DealerMdiChild
 from CustomForms import TemplatesWindow, SqlDialog
@@ -310,8 +310,8 @@ class MainWindow(QtGui.QMainWindow):
         child.show()
 
     @connlogin
-    def netflowReport(self):
-        child = NetFlowReport(connection = connection)
+    def radiuslog_report(self):
+        child = SimpleReportEbs(connection = connection, report_type='radius_authlog')
         self.workspace.addWindow(child)
         child.show()
         
@@ -454,11 +454,11 @@ class MainWindow(QtGui.QMainWindow):
 
         self.connect(self.cardsAct, QtCore.SIGNAL("triggered()"), self.cardsFrame)
 
-        self.netflowReportAct=QtGui.QAction(QtGui.QIcon("images/nfstat.png"), u"Сетевая статистика", self)
+        self.radiuslogReportAct=QtGui.QAction(QtGui.QIcon("images/easytag.png"), u"История RADIUS авторизаций", self)
 
-        self.netflowReportAct.setStatusTip(u"Сетевая статистика")
+        self.radiuslogReportAct.setStatusTip(u"История RADIUS авторизаций пользователей")
 
-        self.connect(self.netflowReportAct, QtCore.SIGNAL("triggered()"), self.netflowReport)
+        self.connect(self.radiuslogReportAct, QtCore.SIGNAL("triggered()"), self.radiuslog_report)
 
         self.reloginAct = QtGui.QAction(QtGui.QIcon("images/refresh_connection.png"),self.tr("&Reconnect"), self)
         self.reloginAct.setStatusTip(self.tr("Reconnect"))
@@ -631,7 +631,7 @@ class MainWindow(QtGui.QMainWindow):
         self.fileToolBar.addAction(self.copyAct)
         self.fileToolBar.addAction(self.pasteAct)
         self.fileToolBar.addAction(self.cardsAct)
-        self.fileToolBar.addAction(self.netflowReportAct)
+        self.fileToolBar.addAction(self.radiuslogReportAct)
 
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.fileToolBar)
 
@@ -762,7 +762,7 @@ if __name__ == "__main__":
         sys.exit()
     #connection.commit()
     
-
+    connection.server_ip = server_ip
     try:
         global mainwindow
         mainwindow = MainWindow()

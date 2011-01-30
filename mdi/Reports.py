@@ -42,20 +42,12 @@ _chartopts = {\
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
 
 class TransactionsReportEbs(ebsTableWindow):
-    def __init__(self, connection ,account=None, report_type='transaction'):
+    def __init__(self, connection ,account=None):
         self.account = account
-        self.report_type = report_type
-        if report_type=='transaction':
-            columns=[u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
-            initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
-            self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги"]
-            self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction"]
-        elif report_type=='radius_log':
-            columns=[u'#', u'Аккаунт', u"Субаккаунт", u'Сервер доступа', u'Тип', u'Способ доступа', u"Сообщение", u'Дата']
-            initargs = {"setname":"radiusrep_frame_header", "objname":"RadiusReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История авторизацией", "tablecolumns":columns}
-            self.radiuslog_types = [u"---", u"Неудачные авторизации", u"Удачные авторизации"]
-            #self.radiuslog_types = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction"]
-            
+        columns=[u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
+        initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
+        self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги"]
+        self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction"]
         super(TransactionsReportEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
@@ -81,8 +73,8 @@ class TransactionsReportEbs(ebsTableWindow):
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            self.date_start.setDateTime(settings.value("%strans_date_start" % self.report_type, QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
-            self.date_end.setDateTime(settings.value("%strans_date_end" % self.report_type, QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.date_start.setDateTime(settings.value("trans_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
+            self.date_end.setDateTime(settings.value("trans_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
         except Exception, ex:
             print "Transactions settings error: ", ex
 
@@ -145,8 +137,7 @@ class TransactionsReportEbs(ebsTableWindow):
 
        
     def ebsPostInit(self, initargs):
-        if self.report_type=='transaction':
-            self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.refresh_table)
         QtCore.QObject.connect(self.comboBox_transactions_type,QtCore.SIGNAL("currentIndexChanged(int)"),self.setTableColumns)
@@ -166,43 +157,38 @@ class TransactionsReportEbs(ebsTableWindow):
         self.date_start.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
         #self.system_transactions_checkbox.setText(QtGui.QApplication.translate("Dialog", "Включить в отчёт системные проводки", None, QtGui.QApplication.UnicodeUTF8))        
         self.label_transactions_type.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
-        if self.report_type=='transaction':
-            self.label_cashier.setText(QtGui.QApplication.translate("Dialog", "Кассир", None, QtGui.QApplication.UnicodeUTF8))
-        else:
-            self.label_cashier.setText(QtGui.QApplication.translate("Dialog", "Способ доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_cashier.setText(QtGui.QApplication.translate("Dialog", "Кассир", None, QtGui.QApplication.UnicodeUTF8))
     
     def refresh(self):
-        if self.report_type=='transaction':
-            systemusers = self.connection.get_models("billservice_systemuser")
-            self.connection.commit()
-            self.comboBox_cashier.addItem(unicode(u'--Все--'))
-            self.comboBox_cashier.setItemData(0, QtCore.QVariant(0))
-            i=1
-            for systemuser in systemusers:
-               self.comboBox_cashier.addItem(unicode(systemuser.username))
-               self.comboBox_cashier.setItemData(i, QtCore.QVariant(systemuser.id))
-               i+=1
-               
-            accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
-            self.connection.commit()
-            self.user_edit.addItem(u"-Все клиенты-")
-            self.user_edit.setItemData(0, QtCore.QVariant(0))
-            i=1
-            for account in accounts:
-                self.user_edit.addItem(account.username)
-                self.user_edit.setItemData(i, QtCore.QVariant(account.id))
-                i+=1
-            
-            if self.account:
-                self.user_edit.setCurrentIndex(self.user_edit.findText(self.account.username, QtCore.Qt.MatchCaseSensitive))
-                self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % self.account.username)
-    
-            i=0
-            for tr_type in self.transactions_types:
-                self.comboBox_transactions_type.addItem(tr_type)
-                self.comboBox_transactions_type.setItemData(i, QtCore.QVariant(i))
-                i+=1
-            
+        systemusers = self.connection.get_models("billservice_systemuser")
+        self.connection.commit()
+        self.comboBox_cashier.addItem(unicode(u'--Все--'))
+        self.comboBox_cashier.setItemData(0, QtCore.QVariant(0))
+        i=1
+        for systemuser in systemusers:
+           self.comboBox_cashier.addItem(unicode(systemuser.username))
+           self.comboBox_cashier.setItemData(i, QtCore.QVariant(systemuser.id))
+           i+=1
+           
+        accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
+        self.connection.commit()
+        self.user_edit.addItem(u"-Все клиенты-")
+        self.user_edit.setItemData(0, QtCore.QVariant(0))
+        i=1
+        for account in accounts:
+            self.user_edit.addItem(account.username)
+            self.user_edit.setItemData(i, QtCore.QVariant(account.id))
+            i+=1
+        
+        if self.account:
+            self.user_edit.setCurrentIndex(self.user_edit.findText(self.account.username, QtCore.Qt.MatchCaseSensitive))
+            self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % self.account.username)
+
+        i=0
+        for tr_type in self.transactions_types:
+            self.comboBox_transactions_type.addItem(tr_type)
+            self.comboBox_transactions_type.setItemData(i, QtCore.QVariant(i))
+            i+=1
     def addrow(self, value, x, y, id=None, promise=False, date = None):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
@@ -2495,3 +2481,231 @@ class LogViewWindow(QtGui.QMainWindow):
         self.plainTextEdit.setPlainText(u)
         #self.plainTextEdit.setPla
         
+        
+class SimpleReportEbs(ebsTableWindow):
+    def __init__(self, connection, report_type='radius_authlog', account_id=None, subaccount_id=None, nas_id=None):
+        self.report_type=report_type
+        self.connection=connection
+        self.account_id = account_id
+        if self.report_type=='radius_authlog':
+            columns=[u'#', u'Аккаунт', u"Субаккаунт", u'Сервер доступа', u'Способ доступа', u'Тип события', u"Событие", u'Дата']
+            initargs = {"setname":"%s_frame_header" % self.report_type, "objname":"%sSimpleReportEbs" % self.report_type, "winsize":(0,0,903,483), "wintitle":"История авторизаций пользователя пользователя", "tablecolumns":columns}
+            #self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги"]
+            #self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction"]
+        elif  self.report_type=='balance_log':
+            columns=[u'#', u'Аккаунт', u"Новый баланс", u'Дата']
+            initargs = {"setname":"%s_frame_header" % self.report_type, "objname":"%sSimpleReportEbs" % self.report_type, "winsize":(0,0,903,483), "wintitle":"История изменения баланса", "tablecolumns":columns}
+            
+        super(SimpleReportEbs, self).__init__(connection, initargs)
+        
+    def ebsInterInit(self, initargs):
+        
+        self.comboBox_account = QtGui.QComboBox(self)
+        self.comboBox_account.setGeometry(QtCore.QRect(100,12,201,20))
+        self.comboBox_account.setObjectName("comboBox_account")    
+        
+        dt_now = datetime.datetime.now()
+        
+        self.dateTimeEdit_date_start = QtGui.QDateTimeEdit(self)
+        self.dateTimeEdit_date_start.setGeometry(QtCore.QRect(420,9,161,20))
+        self.dateTimeEdit_date_start.setCalendarPopup(True)
+        self.dateTimeEdit_date_start.setObjectName("dateTimeEdit_date_start")
+        self.dateTimeEdit_date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+
+        self.dateTimeEdit_date_end = QtGui.QDateTimeEdit(self)
+        self.dateTimeEdit_date_end.setGeometry(QtCore.QRect(420,42,161,20))
+        self.dateTimeEdit_date_end.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
+        self.dateTimeEdit_date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        self.dateTimeEdit_date_end.setCalendarPopup(True)
+        self.dateTimeEdit_date_end.setObjectName("dateTimeEdit_date_end")
+        self.dateTimeEdit_date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            self.dateTimeEdit_date_start.setDateTime(settings.value("%strans_date_start" % self.report_type, QtCore.QVariant(QtCore.QDateTime(2010,1,1,0,0))).toDateTime())
+            self.dateTimeEdit_date_end.setDateTime(settings.value("%strans_date_end" % self.report_type, QtCore.QVariant(QtCore.QDateTime(2010,1,1,0,0))).toDateTime())
+        except Exception, ex:
+            print "Transactions settings error: ", ex
+        
+        self.label_date_start = QtGui.QLabel(self)
+        self.label_date_start.setMargin(10)
+        self.label_date_start.setObjectName("label_date_start")
+
+        self.label_date_end = QtGui.QLabel(self)
+        self.label_date_end.setMargin(10)
+        self.label_date_end.setObjectName("label_date_end")
+
+        self.label_account = QtGui.QLabel(self)
+        self.label_account.setMargin(10)
+        self.label_account.setObjectName("user_label")
+        """
+        self.label_transactions_type = QtGui.QLabel(self)
+        self.label_transactions_type.setMargin(10)
+
+        self.label_cashier = QtGui.QLabel(self)
+        self.label_cashier.setMargin(10)
+           
+        self.comboBox_transactions_type = QtGui.QComboBox(self)
+        self.comboBox_cashier = QtGui.QComboBox(self)
+        """
+        
+        self.go_pushButton = QtGui.QPushButton(self)
+        self.go_pushButton.setGeometry(QtCore.QRect(590,40,101,25))
+        self.go_pushButton.setObjectName("go_pushButton")        
+        #self.system_transactions_checkbox = QtGui.QCheckBox(self)
+        #self.system_transactions_checkbox.setObjectName("system_transactions_checkbox")
+
+        self.toolBar = QtGui.QToolBar(self)      
+        
+        self.toolBar.addWidget(self.label_account)
+        self.toolBar.addWidget(self.comboBox_account)
+        
+        #self.toolBar.addWidget(self.label_transactions_type)
+        #self.toolBar.addWidget(self.comboBox_transactions_type)
+        #self.toolBar.addWidget(self.label_cashier)
+        #self.toolBar.addWidget(self.comboBox_cashier)
+        self.toolBar.addWidget(self.label_date_start)
+        self.toolBar.addWidget(self.dateTimeEdit_date_start)
+        self.toolBar.addWidget(self.label_date_end)
+        self.toolBar.addWidget(self.dateTimeEdit_date_end)
+        #self.toolBar.addWidget(self.system_transactions_checkbox)
+        
+        self.toolBar.addWidget(self.go_pushButton)
+        self.toolBar.addSeparator()        
+        
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        
+        self.columns = {}
+       
+        #if self.report_type=='radius_authlog':
+        #    self.radius_auth_fixtures()   
+                
+    def ebsPostInit(self, initargs):
+        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        if self.report_type=='radius_authlog':
+            QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.radius_auth_fixtures)
+        if self.report_type=='balance_log':
+            QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.balance_log_fixtures)
+
+        #QtCore.QObject.connect(self.comboBox_transactions_type,QtCore.SIGNAL("currentIndexChanged(int)"),self.setTableColumns)
+        
+        #actList=[("actionDeleteTransaction", "Удалить", "images/del.png", self.delete_transaction),]
+        #objDict = {self.tableWidget:["actionDeleteTransaction", ]}
+        #self.actionCreator(actList, objDict)
+        #self.setTableColumns()
+        self.fixtures()
+        
+    def retranslateUI(self, initargs):
+        super(SimpleReportEbs, self).retranslateUI(initargs)
+        
+        self.label_date_start.setText(QtGui.QApplication.translate("Dialog", "С", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_date_end.setText(QtGui.QApplication.translate("Dialog", "По", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_account.setText(QtGui.QApplication.translate("Dialog", "Пользователь", None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit_date_end.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit_date_start.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
+        #self.system_transactions_checkbox.setText(QtGui.QApplication.translate("Dialog", "Включить в отчёт системные проводки", None, QtGui.QApplication.UnicodeUTF8))        
+        #self.label_transactions_type.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
+        #self.label_cashier.setText(QtGui.QApplication.translate("Dialog", "Кассир", None, QtGui.QApplication.UnicodeUTF8))
+        
+        self.go_pushButton.setText(QtGui.QApplication.translate("Dialog", "Показать", None, QtGui.QApplication.UnicodeUTF8))
+
+
+    def addrow(self, value, x, y, id=None, promise=False, date = None):
+        headerItem = QtGui.QTableWidgetItem()
+        if value==None:
+            value=""
+        if y==1:
+            headerItem.setIcon(QtGui.QIcon("images/user.png"))
+        
+        if y==5 and value!='AUTH_OK':
+            headerItem.setBackgroundColor(QtGui.QColor("red"))
+        elif y==5 and value=='AUTH_OK':
+            headerItem.setBackgroundColor(QtGui.QColor("lightgreen"))
+        headerItem.setText(unicode(value))
+        if id:
+            headerItem.id = id
+            headerItem.date = date
+        self.tableWidget.setItem(x,y,headerItem)
+             
+    def radius_auth_fixtures(self):
+        self.tableWidget.clearContents()
+        account_id = self.comboBox_account.itemData(self.comboBox_account.currentIndex()).toInt()[0]
+        acc_str = ''
+        if account_id:
+            acc_str = " and account_id=%s" % account_id
+        start_date = self.dateTimeEdit_date_start.dateTime().toPyDateTime()
+        end_date = self.dateTimeEdit_date_end.dateTime().toPyDateTime()
+        items = self.connection.sql("""SELECT ra.id as id, ra.account_id as account_id,(SELECT username FROM billservice_account WHERE id=ra.account_id) as account_username,
+        ra.type as type, ra.service as service, (SELECT username FROM billservice_subaccount WHERE id=ra.subaccount_id) as subaccount_username, (SELECT name FROM nas_nas WHERE id=ra.nas_id) as nas_name, ra.cause as cause, ra.datetime as datetime FROM radius_authlog as ra 
+        WHERE datetime between '%s' and '%s' %s
+        ORDER BY datetime DESC""" % (start_date, end_date, acc_str))
+        
+        [u'#', u'Аккаунт', u"Субаккаунт", u'Сервер доступа', u'Способ доступа', u'Тип события', u"Событие", u'Дата']
+        self.connection.commit()
+        self.tableWidget.setRowCount(len(items)+1)
+        i=0
+        for item in items:
+            self.addrow(i, i, 0, id=item.id, )
+            self.addrow(item.account_username, i, 1)
+            self.addrow(item.subaccount_username, i, 2)
+            self.addrow(item.nas_name, i, 3)
+            self.addrow(item.service, i, 4)
+            self.addrow(item.type, i, 5)
+            self.addrow(item.cause, i, 6)
+            self.addrow(item.datetime.strftime(self.strftimeFormat), i, 7)
+            i+=1
+
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("%strans_date_start" % self.report_type, QtCore.QVariant(self.dateTimeEdit_date_start.dateTime()))
+            settings.setValue("%strans_date_end" % self.report_type, QtCore.QVariant(self.dateTimeEdit_date_end.dateTime()))
+        except Exception, ex:
+            print "Transactions settings save error: ", ex
+            
+    def balance_log_fixtures(self):
+        self.tableWidget.clearContents()
+        account_id = self.comboBox_account.itemData(self.comboBox_account.currentIndex()).toInt()[0]
+        acc_str = ''
+        if account_id:
+            acc_str = " and account_id=%s" % account_id
+        start_date = self.dateTimeEdit_date_start.dateTime().toPyDateTime()
+        end_date = self.dateTimeEdit_date_end.dateTime().toPyDateTime()
+        items = self.connection.sql("""SELECT bah.id,(SELECT username FROM billservice_account WHERE id=bah.account_id) as account_username, bah.balance as balance, bah.datetime as datetime FROM billservice_balancehistory as bah 
+        WHERE datetime between '%s' and '%s' %s
+        ORDER BY datetime DESC""" % (start_date, end_date, acc_str))
+        
+        [u'#', u'Аккаунт', u"Баланс", u'Дата']
+        self.connection.commit()
+        self.tableWidget.setRowCount(len(items)+1)
+        i=0
+        for item in items:
+            self.addrow(i, i, 0, id=item.id, )
+            self.addrow(item.account_username, i, 1)
+            self.addrow(item.balance, i, 2)
+            self.addrow(item.datetime.strftime(self.strftimeFormat), i, 3)
+            i+=1
+
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("%strans_date_start" % self.report_type, QtCore.QVariant(self.dateTimeEdit_date_start.dateTime()))
+            settings.setValue("%strans_date_end" % self.report_type, QtCore.QVariant(self.dateTimeEdit_date_end.dateTime()))
+        except Exception, ex:
+            print "Transactions settings save error: ", ex
+            
+    def fixtures(self):            
+        accounts = self.connection.sql("SELECT id, username FROM billservice_account ORDER BY username ASC")
+        self.connection.commit()
+        self.comboBox_account.addItem(u"-Все клиенты-")
+        self.comboBox_account.setItemData(0, QtCore.QVariant(0))
+        i=1
+        for account in accounts:
+            self.comboBox_account.addItem(account.username)
+            self.comboBox_account.setItemData(i, QtCore.QVariant(account.id))
+            if self.account_id==account.id:
+                self.comboBox_account.setCurrentIndex(i)
+            i+=1
+        
+            
