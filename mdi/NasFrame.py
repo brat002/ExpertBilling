@@ -19,8 +19,14 @@ NAS_LIST=(
                 (u'common_radius',u'Общий RADIUS интерфейс'),
                 (u'common_ssh',u'common_ssh'),
                 (u'localhost',u'Выполнение команд локально'),
+                (u'switch',u'Коммутатор(switch)'),
                 )
 
+SNMP_LIST = (
+             ('', '---'),
+             (u'v1', 'v1'),
+             (u'v2c', 'v2c'),
+             )
             
 actions = {
 'mikrotik2.8':{'user_add_action':'/ip firewall address-list add list=internet_users address=$account_ipn_ip disabled=yes comment=$user_id',
@@ -92,13 +98,23 @@ actions = {
                'reset_action': '',
                'radius_speed': {'vendor1':9, 'attrid1':1, 'value1':'lcp:interface-config#1=rate-limit input $max_limit_tx 8000 8000 conform-action transmit exceed-action drop', 'vendor2':9, 'attrid2':1, 'value2':'lcp:interface-config#1=rate-limit output $max_limit_tx 8000 8000 conform-action transmit exceed-action drop'},
                },
+'switch':{'user_add_action':'',
+               'user_delete_action':'',
+               'user_enable_action':'',
+               'user_disable_action':'',
+               'vpn_speed_action': '',
+               'ipn_speed_action': '',
+               'reset_action': '',
+               'radius_speed': { 'vendor1':'', 'attrid1':'', 'value1':'', 'vendor2':'', 'attrid2':'', 'value2':''},
+               },               
 '---':{'user_add_action':'',
                'user_delete_action':'',
                'user_enable_action':'',
                'user_disable_action':'',
                'vpn_speed_action': '',
                'ipn_speed_action': '',
-               'reset_action': ''
+               'reset_action': '', 
+               'radius_speed': { 'vendor1':'', 'attrid1':'', 'value1':'', 'vendor2':'', 'attrid2':'', 'value2':''},
                },
 }
 class ConfigureDialog(QtGui.QDialog):
@@ -273,7 +289,12 @@ class AddNasFrame(QtGui.QDialog):
         self.nas_interim_update.setMaximum(999999)
         self.nas_interim_update.setObjectName("nas_interim_update")
         self.gridLayout_6.addWidget(self.nas_interim_update, 4, 1, 1, 1)
-
+        self.snmp_label = QtGui.QLabel(self.identify_groupBox)
+        self.snmp_label.setObjectName("snmp_label")
+        self.gridLayout_6.addWidget(self.snmp_label, 5, 0, 1, 1)
+        self.snmp_comboBox = QtGui.QComboBox(self.identify_groupBox)
+        self.snmp_comboBox.setObjectName("snmp_comboBox")
+        self.gridLayout_6.addWidget(self.snmp_comboBox, 5, 1, 1, 1)
         self.toolButton_default_actions = QtGui.QToolButton(self.identify_groupBox)
         self.toolButton_default_actions.setObjectName("toolButton_default_actions")
         self.gridLayout_6.addWidget(self.toolButton_default_actions, 0, 2, 1, 1)
@@ -400,9 +421,10 @@ class AddNasFrame(QtGui.QDialog):
         self.name_label.setText(QtGui.QApplication.translate("Dialog", "Сетевое имя", None, QtGui.QApplication.UnicodeUTF8))
         self.ip_label.setText(QtGui.QApplication.translate("Dialog", "IP", None, QtGui.QApplication.UnicodeUTF8))
         self.nas_ip.setInputMask(QtGui.QApplication.translate("Dialog", "000.000.000.000; ", None, QtGui.QApplication.UnicodeUTF8))
+        self.snmp_label.setText(QtGui.QApplication.translate("Dialog", "SNMP", None, QtGui.QApplication.UnicodeUTF8))
         self.secret_label.setText(QtGui.QApplication.translate("Dialog", "Секретная фраза", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_default_actions.setWhatsThis(QtGui.QApplication.translate("Dialog", "Заполнить параметрами по-умолчанию", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton_default_actions.setText(QtGui.QApplication.translate("Dialog", "x", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_default_actions.setText(QtGui.QApplication.translate("Dialog", "Fill", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_radius_speed.setTitle(QtGui.QApplication.translate("Dialog", "Установка скорости через RADIUS атрибуты", None, QtGui.QApplication.UnicodeUTF8))
         self.label_vendor1.setText(QtGui.QApplication.translate("Dialog", "Vendor", None, QtGui.QApplication.UnicodeUTF8))
         self.label_attr_id1.setText(QtGui.QApplication.translate("Dialog", "Attr ID", None, QtGui.QApplication.UnicodeUTF8))
@@ -535,6 +557,7 @@ class AddNasFrame(QtGui.QDialog):
         model.ipaddress = unicode(self.nas_ip.text())
         model.secret = unicode(self.nas_secret.text())
         model.acct_interim_interval = int(self.nas_interim_update.value())
+        model.snmp_version = self.snmp_comboBox.itemData(self.snmp_comboBox.currentIndex()).toString()
         for i in xrange(self.tableWidget.rowCount()):
             model.__dict__[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text())
             
@@ -570,6 +593,15 @@ class AddNasFrame(QtGui.QDialog):
         self.nas_comboBox.addItem('---')
         for nas, value in nasses:
             self.nas_comboBox.addItem(nas)
+
+        snmps = SNMP_LIST
+        i=0
+        for snmp in snmps:
+            self.snmp_comboBox.addItem(snmp[1])
+            self.snmp_comboBox.setItemData(i, QtCore.QVariant(snmp[0]))
+            if self.model and self.model.snmp_version==snmp[0]:
+                self.snmp_comboBox.setCurrentIndex(i)
+            i+=1
 
         if self.model:
             self.lineEdit_name.setText(unicode(self.model.name))

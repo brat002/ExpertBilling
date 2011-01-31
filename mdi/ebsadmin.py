@@ -399,12 +399,12 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.adminLogViewAct, QtCore.SIGNAL("triggered()"), self.adminsLogViewWindow)
         
         
-        self.saveAsAct = QtGui.QAction(QtGui.QIcon("images/system_administrators.png"),u'Администраторы', self)
-        self.saveAsAct.setStatusTip(u"Системные администраторы")
+        self.saveAsAct = QtGui.QAction(QtGui.QIcon("images/system_administrators.png"),u'Администраторы и работники', self)
+        self.saveAsAct.setStatusTip(u"Администраторы и работники")
         self.connect(self.saveAsAct, QtCore.SIGNAL("triggered()"), self.saveAs)
 
         self.poolAct = QtGui.QAction(u'IP пулы', self)
-        self.poolAct.setStatusTip(u"Системные администраторы")
+        self.poolAct.setStatusTip(u"Пулы IP адресов")
         self.connect(self.poolAct, QtCore.SIGNAL("triggered()"), self.pool)
 
 
@@ -448,9 +448,9 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.pasteAct, QtCore.SIGNAL("triggered()"), self.paste)
 
         self.cardsAct = QtGui.QAction(QtGui.QIcon("images/cards.png"),
-                                      u"Карты экспресс-оплаты", self)
+                                      u"Карточная система", self)
         #self.reportPropertiesAct.setShortcut(self.tr("Ctrl+V"))
-        self.cardsAct.setStatusTip(u"Карты экспресс-оплаты")
+        self.cardsAct.setStatusTip(u"Карточная система")
 
         self.connect(self.cardsAct, QtCore.SIGNAL("triggered()"), self.cardsFrame)
 

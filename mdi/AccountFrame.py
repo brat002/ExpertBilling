@@ -871,9 +871,9 @@ class TarifFrame(QtGui.QDialog):
         self.sp_groupbox.setObjectName("sp_groupbox")
         self.sp_groupbox.setCheckable(True)
 
-        self.sp_type_edit = QtGui.QCheckBox(self.sp_groupbox)
-        self.sp_type_edit.setGeometry(QtCore.QRect(11,20,466,19))
-        self.sp_type_edit.setObjectName("sp_type_edit")
+        #self.sp_type_edit = QtGui.QCheckBox(self.sp_groupbox)
+        #self.sp_type_edit.setGeometry(QtCore.QRect(11,20,466,19))
+        #self.sp_type_edit.setObjectName("sp_type_edit")
 
         self.sp_name_label = QtGui.QLabel(self.sp_groupbox)
         self.sp_name_label.setGeometry(QtCore.QRect(10,50,100,21))
@@ -1355,7 +1355,7 @@ class TarifFrame(QtGui.QDialog):
         QtCore.QObject.connect(self.add_addonservice_button, QtCore.SIGNAL("clicked()"), self.addAddonServiceRow)
         QtCore.QObject.connect(self.del_addonservice_button, QtCore.SIGNAL("clicked()"), self.delAddonServiceRow)   
         
-        QtCore.QObject.connect(self.sp_type_edit, QtCore.SIGNAL("stateChanged(int)"), self.filterSettlementPeriods)
+        #QtCore.QObject.connect(self.sp_type_edit, QtCore.SIGNAL("stateChanged(int)"), self.filterSettlementPeriods)
         
         QtCore.QObject.connect(self.transmit_service_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.transmitTabActivityActions)
         
@@ -1371,8 +1371,8 @@ class TarifFrame(QtGui.QDialog):
 
         QtCore.QObject.connect(self.sp_name_edit, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.spChangedActions)
 #-----------------------        
-        self.setTabOrder(self.tabWidget,self.sp_type_edit)
-        self.setTabOrder(self.sp_type_edit,self.ps_null_ballance_checkout_edit)
+        #self.setTabOrder(self.tabWidget,self.sp_type_edit)
+        self.setTabOrder(self.tabWidget,self.ps_null_ballance_checkout_edit)
         self.setTabOrder(self.ps_null_ballance_checkout_edit,self.reset_tarif_cost_edit)
         self.setTabOrder(self.reset_tarif_cost_edit,self.tarif_description_edit)
         self.setTabOrder(self.tarif_description_edit,self.tarif_status_edit)
@@ -1422,7 +1422,7 @@ class TarifFrame(QtGui.QDialog):
         self.tarif_status_edit.setText(QtGui.QApplication.translate("Dialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
         self.sp_groupbox.setTitle(QtGui.QApplication.translate("Dialog", "Фиксированный расчётный период", None, QtGui.QApplication.UnicodeUTF8))
-        self.sp_type_edit.setText(QtGui.QApplication.translate("Dialog", "Начать при активации у пользователя данного тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
+        #self.sp_type_edit.setText(QtGui.QApplication.translate("Dialog", "Начать при активации у пользователя данного тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.sp_name_label.setText(QtGui.QApplication.translate("Dialog", "Расчётный период", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_cost_label.setText(QtGui.QApplication.translate("Dialog", "Стоимость пакета", None, QtGui.QApplication.UnicodeUTF8))
         self.reset_tarif_cost_edit.setText(QtGui.QApplication.translate("Dialog", "Производить доснятие суммы до стоимости тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
@@ -1699,6 +1699,7 @@ class TarifFrame(QtGui.QDialog):
         current_row = self.periodical_tableWidget.rowCount()
         self.periodical_tableWidget.insertRow(current_row)
         self.addrow(self.periodical_tableWidget, ps_list[0], current_row, 6)
+        self.addrow(self.periodical_tableWidget, '', current_row, 7)
         self.addrow(self.periodical_tableWidget, '', current_row, 3)
         #if QtGui.QMessageBox.question(self, u"Внимание!!!" , 
         #                                    u'''Вы хотите, чтобы по новой периодической услуге были поизведены списания с начала текущего расчётного периода?''', \
@@ -1707,6 +1708,7 @@ class TarifFrame(QtGui.QDialog):
         #else:
         #    self.periodical_tableWidget.item(current_row,5).created=None
         self.periodical_tableWidget.item(current_row,6).selected_id=0
+        self.periodical_tableWidget.item(current_row,7).deactivated=None
         
         
     def delPeriodicalRow(self):
@@ -1750,27 +1752,7 @@ class TarifFrame(QtGui.QDialog):
                 self.ipn_for_vpn.setEnabled(True)
                 self.ipn_for_vpn.setCheckState(self.ipn_for_vpn_state)
 
-    #---------Local Logic
-    def filterSettlementPeriods(self):
-        
-        self.sp_name_edit.clear()
-        self.sp_name_edit.addItem("")
-        if self.sp_type_edit.checkState()==2:         
-            settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=True")
-            ast=True
-        else:
-            ast=False
-            settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
-            
-        for sp in settlement_periods:
-            self.sp_name_edit.addItem(sp.name)
-            
-        try:
-            if self.model.settlement_period and self.model.settlement_period.autostart==ast:
-                self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(self.model.settlement_period.name, QtCore.Qt.MatchCaseSensitive))
-        except:
-            pass
-            
+           
     #------------------tab actions         
     def timeaccessTabActivityActions(self):
         if self.time_access_service_checkbox.checkState()!=2:
@@ -2277,21 +2259,16 @@ class TarifFrame(QtGui.QDialog):
                 #print "self.model.settlement_period_id", self.model.settlement_period_id
                 settlement_period=self.connection.get_model(self.model.settlement_period_id, "billservice_settlementperiod")
                 self.sp_groupbox.setChecked(True)
-                if settlement_period.autostart==True:
+                #if settlement_period.autostart==True:
                     
-                    self.sp_type_edit.setChecked(True)
+                #    self.sp_type_edit.setChecked(True)
                         
-                    settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=True")
+               #     settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=True")
                 
-                else:
-                    settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
-                
+                #else:
             else:
                 self.sp_groupbox.setChecked(False)
-                settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
-        else:
-            self.sp_groupbox.setChecked(False)
-            settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod WHERE autostart=False")
+            settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod")
         
 
         
@@ -2869,14 +2846,15 @@ class TarifFrame(QtGui.QDialog):
                         periodical_service = self.connection.get_model(id, "billservice_periodicalservice")
                     else:
                         periodical_service = Object()
-                    
+                    [u'#', u'Название', u'Период', u"Начало списаний", u'Способ снятия', u'Стоимость', u"Условие", u"Отключить услугу с"]
                     periodical_service.tarif_id = model.id
                     periodical_service.name=unicode(self.periodical_tableWidget.item(i, 1).text())
                     periodical_service.settlement_period_id = unicode(self.periodical_tableWidget.item(i, 2).id)
-                    periodical_service.cash_method = unicode(self.periodical_tableWidget.item(i, 3).text())
-                    periodical_service.cost=unicode(self.periodical_tableWidget.item(i, 4).text())
-                    periodical_service.condition = self.periodical_tableWidget.item(i,5).selected_id
-                    periodical_service.created = self.periodical_tableWidget.item(i,6).created
+                    periodical_service.cash_method = unicode(self.periodical_tableWidget.item(i, 4).text())
+                    periodical_service.cost=unicode(self.periodical_tableWidget.item(i, 5).text())
+                    periodical_service.condition = self.periodical_tableWidget.item(i,6).selected_id
+                    periodical_service.created = self.periodical_tableWidget.item(i,3).created
+                    periodical_service.deactivated = self.periodical_tableWidget.item(i,7).deactivated
                     
                     self.connection.save(periodical_service, "billservice_periodicalservice")    
                       
@@ -3687,6 +3665,7 @@ class AccountWindow(QtGui.QMainWindow):
             ['phone_h',u'Телефон дом.',''],
             ['phone_m',u'Телефон моб.',''],
             ['passport',u'Паспорт №',''],
+            ['private_passport_number',u'Личный номер',''],
             ['passport_given',u'Кем выдан',''],
             ['passport_date',u'Когда выдан',''],
             ['city', u'Город',''],
@@ -3696,6 +3675,7 @@ class AccountWindow(QtGui.QMainWindow):
             ['house',u'Дом',''],
             ['house_bulk',u'Корпус',''],
             ['entrance',u'Подъезд',''],
+            ['entrance_code',u'Код домофона',''],
             ['row',u'Этаж',''],
             ['elevator_direction',u'Направление от лифта',''],
             ['room', u'Квартира',''],
@@ -5186,6 +5166,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.delNodeLocalAction()
         #self.tablewidget.setShowGrid(False)
         self.tableWidget.setSortingEnabled(True)
+        
+        #self.setCentralWidget(QtGui.QWidget(self))
         
 
     def accountEnable(self):
