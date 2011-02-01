@@ -1152,3 +1152,14 @@ class BalanceHistory(models.Model):
     balance = models.DecimalField(max_digits=30, decimal_places=20)
     datetime = models.DateTimeField()
     
+class City(models.Model):
+    name = models.CharField(max_length=320)
+
+class Street(models.Model):
+    name = models.CharField(max_length=320)
+    city= models.ForeignKey(City)
+
+class House(models.Model):
+    name = models.CharField(max_length=320)
+    street = models.ForeignKey(Street)
+        
