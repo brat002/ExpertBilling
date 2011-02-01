@@ -58,6 +58,7 @@ from TPChangeRules import TPRulesEbs
 from AddonServiceFrame import AddonServiceEbs
 from MessagesFrame import MessagesEbs
 from LogFrame import LogViewEbs
+from AddressFrame import AddressEbs
 
 _reportsdict = [['Статистика по группам',[['report3_users.xml', ['groups'], 'Общий трафик']]],\
                 ['Глобальная статистика',[['report3_users.xml', ['gstat_globals'], 'Общий трафик'],['report3_users.xml', ['gstat_multi'], 'Трафик с выбором классов'], ['report3_pie.xml', ['pie_gmulti'], 'Пирог']]],\
@@ -283,7 +284,16 @@ class MainWindow(QtGui.QMainWindow):
         self.workspace.addWindow(child)
         child.show()
 
-        
+    @connlogin
+    def addressview(self):
+        child = AddressEbs(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        child.show()
+    
     @connlogin
     def about(self):
         QtGui.QMessageBox.about(self, u"О программе",
@@ -398,7 +408,12 @@ class MainWindow(QtGui.QMainWindow):
         self.adminLogViewAct.setStatusTip(u"Лог действий")
         self.connect(self.adminLogViewAct, QtCore.SIGNAL("triggered()"), self.adminsLogViewWindow)
         
+
+        self.addressViewAct = QtGui.QAction(QtGui.QIcon("images/add.png"), u'Адреса', self)
+        self.addressViewAct.setStatusTip(u"Адреса")
+        self.connect(self.addressViewAct, QtCore.SIGNAL("triggered()"), self.addressview)
         
+                
         self.saveAsAct = QtGui.QAction(QtGui.QIcon("images/system_administrators.png"),u'Администраторы и работники', self)
         self.saveAsAct.setStatusTip(u"Администраторы и работники")
         self.connect(self.saveAsAct, QtCore.SIGNAL("triggered()"), self.saveAs)
@@ -565,6 +580,8 @@ class MainWindow(QtGui.QMainWindow):
         self.fileMenu.addAction(self.pasteAct)
         
         self.fileMenu.addAction(self.poolAct)
+        self.fileMenu.addSeparator()
+        self.fileMenu.addAction(self.addressViewAct)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.saveAsAct)
         self.fileMenu.addAction(self.dealerAct)
