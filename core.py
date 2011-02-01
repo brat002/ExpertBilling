@@ -393,14 +393,15 @@ class periodical_service_bill(Thread):
             
             summ = 0
             if pss_type == PERIOD:
-                if not (ps.created is None or ps.created <= period_start) or (ps.created is not None and acc.datetime >= ps.created):
+                #если не (указано начало периода или начало услуги меньше начала текущего периода) или (указано начало услуги и дата подключения на тариф больше или равна началу действия услуги 
+                if (last_checkout is None and ps.created is not None and period_start<ps.created):
                     return
                 first_time = False
                 if last_checkout is None:
                     last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
                     first_time = True
             elif pss_type == ADDON:
-                print "addon AT_START"
+                #print "addon AT_START"
                 first_time = False
                 if last_checkout is None:
                     last_checkout = ps.created
@@ -449,7 +450,7 @@ class periodical_service_bill(Thread):
             cur.connection.commit()
             #first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
             if pss_type == PERIOD:
-                if not (ps.created is None or ps.created <= period_end) or (ps.created is not None and acc.datetime >= ps.created):
+                if (last_checkout is None and ps.created is not None and period_end<ps.created):
                     return
                 first_time = False
                 if last_checkout is None:
@@ -1268,11 +1269,12 @@ class ipn_service(Thread):
                                 #sended = cred(acc, subacc, access_type, nas, format_string=nas.user_add_action)
                                 sended = cred(acc, {}, '', nas, format_string=nas.user_add_action)
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
+                                acc = acc._replace(ipn_added=sended)
                             if subacc and not subacc.ipn_added and acc.tarif_active and not legacy:
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_add_action)
                                 
                                 if sended is True: cur.execute("UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s" % (True, id))
-                                    
+                                subacc = subacc._replace(ipn_added=sended)    
                             if (not acc.ipn_status) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active and legacy:
                                 """
                                 acc.ipn_status - отображает активна или неактивна ACL запись на сервере доступа для абонента
@@ -1285,23 +1287,23 @@ class ipn_service(Thread):
                                 sended = cred(acc, {}, '', nas, format_string=nas.user_enable_action)
                                 recreate_speed = True                        
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
-                                
+                                acc = acc._replace(ipn_status=sended)
                             elif subacc and (not subacc.ipn_enabled) and (account_ballance>0 and period and not acc.disabled_by_limit and acc.account_status == 1 and not acc.balance_blocked) and acc.tarif_active and not legacy:
                                 if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id))
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_enable_action)
-                                
+                                subacc = subacc._replace(ipn_enabled=sended)
                             elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and acc.ipn_status and legacy:
                                 #шлём команду на отключение пользователя,account_ipn_status=False
                                 #sended = cred(acc, subacc, access_type, nas, format_string=nas.user_disable_action)
                                 sended = cred(acc, {}, '', nas, format_string=nas.user_disable_action)    
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.account_id,))
-
-                            elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and subacc.ipn_enabled and not legacy:
+                                acc = acc._replace(ipn_status=sended)
+                            elif (acc.disabled_by_limit or account_ballance<=0 or period is False or acc.balance_blocked or not acc.account_status == 1 or not acc.tarif_active) and subacc and subacc.ipn_enabled and not legacy:
                                 #шлём команду на отключение пользователя,account_ipn_status=False
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_disable_action)    
                                 
                                 if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,))                            
-            
+                                acc = acc._replace(ipn_enabled=sended)
                             self.connection.commit()
         
                             #Приступаем к генерации настроек скорости
@@ -1355,7 +1357,7 @@ class ipn_service(Thread):
                                     cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
                                 else:
                                     cur.execute("UPDATE billservice_subaccount SET speed=%s WHERE id=%s;", (newspeed, id))      
-                            
+                                    subacc = subacc._replace(speed=newspeed)
                                                           
                                 cur.connection.commit()
                     except Exception, ex:

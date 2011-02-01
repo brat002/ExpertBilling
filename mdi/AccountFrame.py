@@ -3656,6 +3656,10 @@ class AccountWindow(QtGui.QMainWindow):
         makeHeaders(columns, self.tableWidget)
         #self.tableWidget.
         
+        cities = self.connection.sql("SELECT id, name FROM billservice_city ORDER BY name ASC;")
+        streets = self.connection.sql("SELECT id, name FROM billservice_street ORDER BY name ASC;")
+        houses = self.connection.sql("SELECT id, name FROM billservice_house ORDER BY name ASC;")
+        self.connection.commit()
         self.tableInfo=[
             #['ur', u'Юридическое лицо','checkbox'],
             ['contactperson', u'Контактное лицо',''],
@@ -3668,25 +3672,25 @@ class AccountWindow(QtGui.QMainWindow):
             ['private_passport_number',u'Личный номер',''],
             ['passport_given',u'Кем выдан',''],
             ['passport_date',u'Когда выдан',''],
-            ['city', u'Город',''],
+            ['city', u'Город','combobox', {"default":1, "value":cities}],
             ['postcode',u'Индекс',''],
             ['region',u'Район',''],
-            ['street',u'Улица',''],
-            ['house',u'Дом',''],
+            ['street',u'Улица','combobox', {"default":1, "value":streets}],
+            ['house',u'Дом','combobox', {"default":1, "value":houses}],
             ['house_bulk',u'Корпус',''],
             ['entrance',u'Подъезд',''],
             ['entrance_code',u'Код домофона',''],
             ['row',u'Этаж',''],
             ['elevator_direction',u'Направление от лифта',''],
             ['room', u'Квартира',''],
-             ]
+            ]
         self.tableWidget.clearContents()
         self.tableWidget.setRowCount(len(self.tableInfo))
         i=0
         for item in self.tableInfo:
             self.addrow(self.tableWidget, item[1], i, 0, id=item[0])
             if item[2]:
-                self.addrow(self.tableWidget, '', i, 1, widget_type = item[2])
+                self.addrow(self.tableWidget, '', i, 1, widget_type = item[2], widget_value=item[3])
             i+=1
             
 
@@ -4447,10 +4451,18 @@ class AccountWindow(QtGui.QMainWindow):
                 i+=1
             self.tableWidget_subaccounts.setColumnHidden(0, True)  
     
-    def addrow(self, widget, value, x, y, id=None, editable=False, widget_type = None):
+    def addrow(self, widget, value, x, y, id=None, editable=False, widget_type = None, widget_value={}):
         headerItem = QtGui.QTableWidgetItem()
         if widget_type == 'checkbox':
             headerItem.setCheckState(QtCore.Qt.Unchecked)
+        if widget_type == 'combobox':
+            headerItem = QtGui.QComboBox(self)
+            widget.setCellWidget(x,y,headerItem)
+            
+            default = widget_value.get("default")
+            for v in widget_value.get('value', []):
+                headerItem.addItem(v.name, v.id)
+            return
         if value==None or value=="None":
             value=''
         if y==0:
