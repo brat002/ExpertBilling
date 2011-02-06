@@ -109,7 +109,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
-    'helpdesk',
+    #'helpdesk',
     'radius',
     'nas',
     'billservice',
@@ -117,7 +117,7 @@ INSTALLED_APPS = (
     'service_monitor',
     'testcases',
     'statistics',
-    'helpdesk',
+    #'helpdesk',
 )
 
 AUTHENTICATION_BACKENDS = (

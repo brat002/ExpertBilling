@@ -4072,3 +4072,11 @@ ALTER TABLE billservice_account
    ADD COLUMN private_passport_number character varying(128) DEFAULT '';
 
 
+ALTER TABLE billservice_account
+   ADD COLUMN city_id integer;
+
+ALTER TABLE billservice_account
+   ADD COLUMN street_id integer;
+
+ALTER TABLE billservice_account
+   ADD COLUMN house_id integer;

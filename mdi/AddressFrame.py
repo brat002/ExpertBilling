@@ -83,7 +83,7 @@ class AddressEbs(ebsTableWindow):
     def ebsPostInit(self, initargs):
         #self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         #self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
-
+        
         actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete)]
         objDict = {self.tableWidget:["editAction", "addAction", "delAction"], self.toolBar:["addAction", "delAction"]}
         self.actionCreator(actList, objDict)
@@ -92,33 +92,67 @@ class AddressEbs(ebsTableWindow):
         self.connect(self.listWidget_city, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.refresh_street)
         self.connect(self.listWidget_street, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.refresh_house)
         #self.tableWidget = tableFormat(self.tableWidget)
-        self.connect(self.listWidget_city, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.city_clicked)
-        self.connect(self.listWidget_street, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.street_clicked)
-        self.connect(self.listWidget_house, QtCore.SIGNAL("itemClicked(QListWidgetItem *)"), self.house_clicked)
+        self.connect(self.listWidget_city, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.city_clicked)
+        self.connect(self.listWidget_street, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.street_clicked)
+        self.connect(self.listWidget_house, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.house_clicked)
         
     def retranslateUI(self, initargs):
         super(AddressEbs, self).retranslateUI(initargs)
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.label.setText(QtGui.QApplication.translate("MainWindow", "Город", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Улица", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Номер дома", None, QtGui.QApplication.UnicodeUTF8))
         
     
-    def city_clicked(self):
+    def city_clicked(self, item):
         #self.city_ce.setStrength(100)
         #self.street_ce.setStrength(0)
         #self.house_ce.setStrength(0)
+        id = item.id
+        default_text = item.text()
+        text = QtGui.QInputDialog.getText(self,u"Введите название города", u"Название города:", QtGui.QLineEdit.Normal, default_text)      
         
+        if text[0].isEmpty()==True:
+            #QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
+            return            
+        
+        model = Object()
+        model.id = id
+        model.name = unicode(text[0])
+        self.connection.save(model, "billservice_city")
+        self.refresh_city()
         print "city"
         #ce.setEnabled(False)
-    def street_clicked(self):
-        #self.city_ce.setStrength(0)
-        #self.house_ce.setStrength(0)
-        #self.street_ce.setStrength(100)
+    def street_clicked(self, item):
+        id = item.id
+        default_text = item.text()
+        text = QtGui.QInputDialog.getText(self,u"Введите название улицы", u"Название улицы:", QtGui.QLineEdit.Normal, default_text)      
+        
+        if text[0].isEmpty()==True:
+            #QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
+            return            
+        
+        model = Object()
+        model.id = id
+        model.name = unicode(text[0])
+        self.connection.save(model, "billservice_street")
+        self.refresh_street()
         print "street"
         #ce.setEnabled(False)
-    def house_clicked(self):
-        #self.city_ce.setStrength(0)
-        #self.street_ce.setStrength(0)
-        #self.house_ce.setStrength(100)
+    def house_clicked(self, item):
+        id = item.id
+        default_text = item.text()
+        text = QtGui.QInputDialog.getText(self,u"Введите номер дома", u"Номер дома:", QtGui.QLineEdit.Normal, default_text)      
+        
+        if text[0].isEmpty()==True:
+            #QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
+            return            
+        
+        model = Object()
+        model.id = id
+        model.name = unicode(text[0])
+        self.connection.save(model, "billservice_house")
+        self.refresh_street()
         print "house"
                 #ce.setEnabled(False)                
     
@@ -142,7 +176,7 @@ class AddressEbs(ebsTableWindow):
             parent = self.listWidget_street.currentItem().id
             type=3
         
-        print "yupe", type, selected_listwidget
+        #print "yupe", type, selected_listwidget
         #if not selected_listwidget: print 123;return
         default_text = ""
         print 123
@@ -154,7 +188,7 @@ class AddressEbs(ebsTableWindow):
             text = QtGui.QInputDialog.getText(self,u"Введите номер дома", u"Название:", QtGui.QLineEdit.Normal, default_text)        
         
         if text[0].isEmpty()==True:
-            QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
+            #QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
             return            
         
         model = Object()
@@ -250,6 +284,8 @@ class AddressEbs(ebsTableWindow):
         
     
         self.listWidget_city.clear()
+        self.listWidget_street.clear()
+        self.listWidget_house.clear()
         
         
         cities = self.connection.sql("SELECT id, name FROM billservice_city ORDER BY name ASC;")
@@ -266,6 +302,7 @@ class AddressEbs(ebsTableWindow):
     
     def refresh_street(self):
         self.listWidget_street.clear()
+        self.listWidget_house.clear()
         ce = QtGui.QGraphicsColorizeEffect()
         self.listWidget_city.setGraphicsEffect(ce)
         #ce.setEnabled(False)
