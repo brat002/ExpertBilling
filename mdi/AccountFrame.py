@@ -3010,7 +3010,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("addTarifAction", "Добавить тариф", "images/folder_add.png", self.addTarif), \
                  ("delTarifAction", "Удалить тариф", "images/folder_delete.png", self.delTarif), \
                  ("transactionAction", "Пополнить счёт", "images/pay.png", self.makeTransation), \
-                 ("transactionReportAction", "История платежей", "images/moneybook.png", self.transactionReport), \
+                 ("transactionReportAction", "Платежи и списания", "images/moneybook.png", self.transactionReport), \
                  ("messageDialogAction", "Сообщения", "images/mesages.png", self.messageDialogForm), \
                  
                  ("actionEnableSession", "Включить на сервере доступа", "images/add.png", self.accountEnable), \
