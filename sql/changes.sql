@@ -4080,3 +4080,28 @@ ALTER TABLE billservice_account
 
 ALTER TABLE billservice_account
    ADD COLUMN house_id integer;
+
+CREATE OR REPLACE FUNCTION get_tarif_name(acc_id integer, dattime timestamp without time zone)
+  RETURNS text AS
+$BODY$
+declare
+xxx text;
+begin
+SELECT "name" INTO xxx
+  FROM billservice_tariff WHERE id=(SELECT tarif_id FROM billservice_accounttarif WHERE account_id=acc_id and datetime<dattime ORDER BY datetime DESC LIMIT 1);
+RETURN xxx;
+end;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+
+ALTER TABLE billservice_subaccount
+   ADD COLUMN allow_ipn_with_null boolean DEFAULT False;
+
+ALTER TABLE billservice_subaccount
+   ADD COLUMN allow_ipn_with_minus boolean DEFAULT False;
+
+ALTER TABLE billservice_subaccount
+   ADD COLUMN allow_ipn_with_block boolean DEFAULT False;
+
