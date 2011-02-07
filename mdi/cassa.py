@@ -422,8 +422,8 @@ class CassaEbs(ebsTableWindow):
             self.connection.commit()
             sum = 10000
             transaction.summ = transaction.summ*(-1)
-            data=templ.render_unicode(account=account, tarif=tarif, transaction=transaction)
-            
+            data=templ.render_unicode(account=account, tarif=tarif, transaction=transaction, connection=self.connection)
+            self.connection.commit()
             #it seem that software printers can change the path!
             file= open('templates/tmp/temp.html', 'wb')
             file.write(data.encode("utf-8", 'replace'))

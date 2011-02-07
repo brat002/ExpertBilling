@@ -2900,16 +2900,18 @@ class TransactionForm(QtGui.QDialog):
         account = self.connection.get("SELECT * FROM billservice_account WHERE id=%s LIMIT 1" % self.transaction.account_id)
 
         tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+        #transaction = self.connection.get("SELECT * FROM billservice_transaction WHERE id=%s" % self.transaction)
         transaction = self.transaction
         self.connection.commit()
         sum = 10000
         transaction.summ = transaction.summ*(-1)
-        try:
-            data=templ.render_unicode(account=account, tarif=tarif, transaction=transaction)
-        except Exception, e:
-            print e
-            QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Ошибка рендеринга чека. Проверьте шаблон 'Кассовый чек'."))
-            return
+        #try:
+        data=templ.render_unicode(account=account, tarif=tarif, transaction=transaction, connection=self.connection)
+        self.connection.commit()
+        #except Exception, e:
+        #    print e
+        #    QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Ошибка рендеринга чека. Проверьте шаблон 'Кассовый чек'."))
+        #    return
         
         #it seem that software printers can change the path!
         file= open('templates/tmp/temp.html', 'wb')
