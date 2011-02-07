@@ -129,25 +129,25 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.gridLayout.addWidget(self.spinBox_link_port, 10, 2, 1, 4)
         self.label_vpn_speed = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_vpn_speed.setObjectName("label_vpn_speed")
-        self.gridLayout.addWidget(self.label_vpn_speed, 21, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_vpn_speed, 24, 1, 1, 1)
         self.lineEdit_vpn_speed = QtGui.QLineEdit(self.groupBox_link_parameters)
         self.lineEdit_vpn_speed.setObjectName("lineEdit_vpn_speed")
-        self.gridLayout.addWidget(self.lineEdit_vpn_speed, 21, 2, 1, 5)
+        self.gridLayout.addWidget(self.lineEdit_vpn_speed, 24, 2, 1, 5)
         self.label_ipn_speed = QtGui.QLabel(self.groupBox_link_parameters)
         self.label_ipn_speed.setObjectName("label_ipn_speed")
-        self.gridLayout.addWidget(self.label_ipn_speed, 22, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_ipn_speed, 25, 1, 1, 1)
         self.lineEdit_ipn_speed = QtGui.QLineEdit(self.groupBox_link_parameters)
         self.lineEdit_ipn_speed.setObjectName("lineEdit_ipn_speed")
-        self.gridLayout.addWidget(self.lineEdit_ipn_speed, 22, 2, 1, 5)
+        self.gridLayout.addWidget(self.lineEdit_ipn_speed, 25, 2, 1, 5)
         self.checkBox_allow_addonservice = QtGui.QCheckBox(self.groupBox_link_parameters)
         self.checkBox_allow_addonservice.setObjectName("checkBox_allow_addonservice")
-        self.gridLayout.addWidget(self.checkBox_allow_addonservice, 20, 1, 1, 6)
+        self.gridLayout.addWidget(self.checkBox_allow_addonservice, 23, 1, 1, 6)
         self.checkBox_associate_pppoe_ipn_mac = QtGui.QCheckBox(self.groupBox_link_parameters)
         self.checkBox_associate_pppoe_ipn_mac.setObjectName("checkBox_associate_pppoe_ipn_mac")
-        self.gridLayout.addWidget(self.checkBox_associate_pppoe_ipn_mac, 19, 1, 1, 5)
+        self.gridLayout.addWidget(self.checkBox_associate_pppoe_ipn_mac, 22, 1, 1, 5)
         self.checkBox_associate_pptp_ipn_ip = QtGui.QCheckBox(self.groupBox_link_parameters)
         self.checkBox_associate_pptp_ipn_ip.setObjectName("checkBox_associate_pptp_ipn_ip")
-        self.gridLayout.addWidget(self.checkBox_associate_pptp_ipn_ip, 18, 1, 1, 5)
+        self.gridLayout.addWidget(self.checkBox_associate_pptp_ipn_ip, 21, 1, 1, 5)
         self.checkBox_allow_vpn_with_null = QtGui.QCheckBox(self.groupBox_link_parameters)
         self.checkBox_allow_vpn_with_null.setObjectName("checkBox_allow_vpn_with_null")
         self.gridLayout.addWidget(self.checkBox_allow_vpn_with_null, 15, 1, 1, 5)
@@ -166,6 +166,17 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.checkBox_allow_dhcp_with_null = QtGui.QCheckBox(self.groupBox_link_parameters)
         self.checkBox_allow_dhcp_with_null.setObjectName("checkBox_allow_dhcp_with_null")
         self.gridLayout.addWidget(self.checkBox_allow_dhcp_with_null, 12, 1, 1, 5)
+        
+        self.checkBox_allow_ipn_with_block = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_dhcp_with_block.setObjectName("checkBox_allow_ipn_with_block")
+        self.gridLayout.addWidget(self.checkBox_allow_ipn_with_block, 18, 1, 1, 5)
+        self.checkBox_allow_ipn_with_minus = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_ipn_with_minus.setObjectName("checkBox_allow_ipn_with_minus")
+        self.gridLayout.addWidget(self.checkBox_allow_ipn_with_minus, 19, 1, 1, 5)
+        self.checkBox_allow_ipn_with_null = QtGui.QCheckBox(self.groupBox_link_parameters)
+        self.checkBox_allow_ipn_with_null.setObjectName("checkBox_allow_ipn_with_null")
+        self.gridLayout.addWidget(self.checkBox_allow_ipn_with_null, 20, 1, 1, 5)        
+        
         self.groupBox = QtGui.QGroupBox(self.groupBox_link_parameters)
         self.groupBox.setObjectName("groupBox")
         self.horizontalLayout = QtGui.QHBoxLayout(self.groupBox)
@@ -268,6 +279,12 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.checkBox_allow_dhcp_with_block.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_dhcp_with_minus.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_dhcp_with_null.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
+        
+        self.checkBox_allow_ipn_with_block.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_ipn_with_minus.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_ipn_with_null.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
+
+
         self.groupBox.setTitle(QtGui.QApplication.translate("SubAccountDialog", "IPN статусы", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_ipn_added.setText(QtGui.QApplication.translate("SubAccountDialog", "Добавлен", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_ipn_enabled.setText(QtGui.QApplication.translate("SubAccountDialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
@@ -499,9 +516,15 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.checkBox_allow_dhcp_with_null.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp_with_null==True else QtCore.Qt.Unchecked )
             self.checkBox_allow_dhcp_with_minus.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp_with_minus==True else QtCore.Qt.Unchecked )
             self.checkBox_allow_dhcp_with_block.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp_with_block==True else QtCore.Qt.Unchecked )
+            
             self.checkBox_allow_vpn_with_null.setCheckState(QtCore.Qt.Checked if self.model.allow_vpn_with_null==True else QtCore.Qt.Unchecked )
             self.checkBox_allow_vpn_with_minus.setCheckState(QtCore.Qt.Checked if self.model.allow_vpn_with_minus==True else QtCore.Qt.Unchecked )
             self.checkBox_allow_vpn_with_block.setCheckState(QtCore.Qt.Checked if self.model.allow_vpn_with_block==True else QtCore.Qt.Unchecked )
+
+            self.checkBox_allow_ipn_with_null.setCheckState(QtCore.Qt.Checked if self.model.allow_ipn_with_null==True else QtCore.Qt.Unchecked )
+            self.checkBox_allow_ipn_with_minus.setCheckState(QtCore.Qt.Checked if self.model.allow_ipn_with_minus==True else QtCore.Qt.Unchecked )
+            self.checkBox_allow_ipn_with_block.setCheckState(QtCore.Qt.Checked if self.model.allow_ipn_with_block==True else QtCore.Qt.Unchecked )
+            
             self.checkBox_associate_pppoe_ipn_mac.setCheckState(QtCore.Qt.Checked if self.model.associate_pppoe_ipn_mac==True else QtCore.Qt.Unchecked )
             self.checkBox_associate_pptp_ipn_ip.setCheckState(QtCore.Qt.Checked if self.model.associate_pptp_ipn_ip==True else QtCore.Qt.Unchecked )
             self.checkBox_allow_addonservice.setCheckState(QtCore.Qt.Checked if self.model.allow_addonservice==True else QtCore.Qt.Unchecked )
@@ -596,6 +619,12 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.allow_vpn_with_null = self.checkBox_allow_vpn_with_null.checkState()==QtCore.Qt.Checked
         model.allow_vpn_with_minus = self.checkBox_allow_vpn_with_minus.checkState()==QtCore.Qt.Checked
         model.allow_vpn_with_block = self.checkBox_allow_vpn_with_block.checkState()==QtCore.Qt.Checked
+        
+        model.allow_ipn_with_null = self.checkBox_allow_ipn_with_null.checkState()==QtCore.Qt.Checked
+        model.allow_ipn_with_minus = self.checkBox_allow_ipn_with_minus.checkState()==QtCore.Qt.Checked
+        model.allow_ipn_with_block = self.checkBox_allow_ipn_with_block.checkState()==QtCore.Qt.Checked
+
+
         model.associate_pppoe_ipn_mac = self.checkBox_associate_pppoe_ipn_mac.checkState()==QtCore.Qt.Checked
         model.associate_pptp_ipn_ip = self.checkBox_associate_pptp_ipn_ip.checkState()==QtCore.Qt.Checked
         model.allow_addonservice = self.checkBox_allow_addonservice.checkState()==QtCore.Qt.Checked

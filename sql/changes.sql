@@ -4105,3 +4105,72 @@ ALTER TABLE billservice_subaccount
 ALTER TABLE billservice_subaccount
    ADD COLUMN allow_ipn_with_block boolean DEFAULT False;
 
+CREATE TABLE billservice_city
+(
+  id serial NOT NULL,
+  "name" character varying(320) NOT NULL,
+  CONSTRAINT billservice_city_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+
+CREATE TABLE billservice_street
+(
+  id serial NOT NULL,
+  "name" character varying(320) NOT NULL,
+  city_id integer NOT NULL,
+  CONSTRAINT billservice_street_pkey PRIMARY KEY (id),
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE billservice_street OWNER TO ebs;
+
+-- Index: billservice_street_city_id
+
+-- DROP INDEX billservice_street_city_id;
+
+CREATE INDEX billservice_street_city_id
+  ON billservice_street
+  USING btree
+  (city_id);
+
+CREATE TABLE billservice_house
+(
+  id serial NOT NULL,
+  "name" character varying(320) NOT NULL,
+  street_id integer NOT NULL,
+  CONSTRAINT billservice_house_pkey PRIMARY KEY (id),
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE billservice_house OWNER TO ebs;
+
+-- Index: billservice_house_street_id
+
+-- DROP INDEX billservice_house_street_id;
+
+CREATE INDEX billservice_house_street_id
+  ON billservice_house
+  USING btree
+  (street_id);
+
+
+CREATE TABLE radius_authlog
+(
+  id serial NOT NULL,
+  account_id integer,
+  "type" character varying(100) NOT NULL,
+  service character varying(40) NOT NULL,
+  subaccount_id integer,
+  nas_id integer,
+  cause text NOT NULL,
+  datetime timestamp with time zone DEFAULT now(),
+  CONSTRAINT radius_authlog_pkey PRIMARY KEY (id),
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE radius_authlog OWNER TO ebs;
