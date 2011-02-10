@@ -4174,3 +4174,13 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE radius_authlog OWNER TO ebs;
+
+ALTER TABLE billservice_account
+   ADD COLUMN city_id integer;
+
+ALTER TABLE billservice_account
+   ADD COLUMN street_id integer;
+
+ALTER TABLE billservice_account
+   ADD COLUMN house_id integer;
+

@@ -1,5 +1,5 @@
 import struct, types, random
-from hashlib import md5
+from Crypto.Hash import MD5 as md5
 import copy
 
 class EAP_Codes():
