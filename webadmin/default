@@ -1,0 +1,27 @@
+<VirtualHost *:80>
+        ServerAdmin webmaster@localhost
+
+        DocumentRoot /opt/ebs/web/ebscab
+        <Directory />
+                Options FollowSymLinks
+                AllowOverride None
+        </Directory>
+
+        Alias /media/ /opt/ebs/web/ebscab/media/
+
+        <Directory /opt/ebs/web/ebscab/media>
+            Order deny,allow
+            Allow from all
+        </Directory>
+
+        WSGIScriptAlias / /opt/ebs/web/django.wsgi
+
+        ErrorLog /opt/ebs/web/error.log
+
+        # Possible values include: debug, info, notice, warn, error, crit,
+        # alert, emerg.
+        LogLevel warn
+
+        CustomLog /var/log/apache2/access.log combined
+
+</VirtualHost>
