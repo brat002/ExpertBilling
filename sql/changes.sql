@@ -4120,7 +4120,7 @@ CREATE TABLE billservice_street
   id serial NOT NULL,
   "name" character varying(320) NOT NULL,
   city_id integer NOT NULL,
-  CONSTRAINT billservice_street_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_street_pkey PRIMARY KEY (id)
 )
 WITH (
   OIDS=FALSE
@@ -4141,7 +4141,7 @@ CREATE TABLE billservice_house
   id serial NOT NULL,
   "name" character varying(320) NOT NULL,
   street_id integer NOT NULL,
-  CONSTRAINT billservice_house_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_house_pkey PRIMARY KEY (id)
 )
 WITH (
   OIDS=FALSE
@@ -4168,7 +4168,7 @@ CREATE TABLE radius_authlog
   nas_id integer,
   cause text NOT NULL,
   datetime timestamp with time zone DEFAULT now(),
-  CONSTRAINT radius_authlog_pkey PRIMARY KEY (id),
+  CONSTRAINT radius_authlog_pkey PRIMARY KEY (id)
 )
 WITH (
   OIDS=FALSE
@@ -4183,4 +4183,9 @@ ALTER TABLE billservice_account
 
 ALTER TABLE billservice_account
    ADD COLUMN house_id integer;
+
+ALTER TABLE billservice_periodicalservice ADD COLUMN deleted boolean;
+ALTER TABLE billservice_periodicalservice ALTER COLUMN deleted SET DEFAULT false;
+
+ALTER TABLE billservice_periodicalservice ADD COLUMN deactivated timestamp without time zone;
 

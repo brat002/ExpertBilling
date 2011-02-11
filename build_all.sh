@@ -61,11 +61,13 @@ mkdir builds/$1/temp
 mkdir builds/$1/init.d
 cp -rf dicts builds/$1/dicts
 cp -rf fonts builds/$1/fonts
+cp -rf scripts builds/$1/scripts
 rm -rf builds/$1/modules/chartprovider
 cp chartprovider/pychartdir.pyc chartprovider/pychartdir25.pyd chartprovider/pychartdir25.so chartprovider/libchartdir.so builds/$1/modules
-svn export --username dolphinik --password planeta svn://127.0.0.1/mikrobill/trunk/webadmin/ebscab ebscab/ --force
-
 mkdir builds/$1/ebscab
+svn export --username dolphinik --password planeta svn://127.0.0.1/mikrobill/trunk/webadmin/ebscab ebscab/ --force
+cp webadmin/django.wsgi builds/$1/ebscab/
+cp webadmin/default builds/$1/ebscab/
 cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/sql
 cp sql/ebs_dump.sql builds/$1/sql/
