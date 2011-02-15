@@ -1275,7 +1275,7 @@ class ipn_service(Thread):
                                 
                                 if sended is True: cur.execute("UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s" % (True, id))
                                 subacc = subacc._replace(ipn_added=sended)    
-                            if (not acc.ipn_status) and ( (account_ballance>0 or (account_ballance==0 and acc.allow_ipn_with_null==True) or (account_ballance<0 and acc.allow_ipn_with_minus==True) ) and period and acc.account_status == 1 and ((not acc.disabled_by_limit and not acc.balance_blocked) or acc.allow_ipn_with_block==True)) and acc.tarif_active and legacy:
+                            if legacy and (not acc.ipn_status) and ( (account_ballance>0 or (account_ballance==0 and acc.allow_ipn_with_null==True) or (account_ballance<0 and acc.allow_ipn_with_minus==True) ) and period and acc.account_status == 1 and ((not acc.disabled_by_limit and not acc.balance_blocked) or acc.allow_ipn_with_block==True)) and acc.tarif_active:
                                 """
                                 acc.ipn_status - отображает активна или неактивна ACL запись на сервере доступа для абонента
                                 """
