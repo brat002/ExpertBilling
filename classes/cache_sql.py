@@ -139,7 +139,7 @@ core_sql = \
                            ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.service_id)='onetime' and (accs.action_status=True or accs.last_checkout is Null))) or (accs.action_status=True and accs.deactivated is not Null and addons.action=True);""",
         'addon_periodical': """SELECT accas.id, ads.name, ads.cost, ads.sp_type, sp.name, sp.time_start,
                         sp.length, sp.length_in, sp.autostart,
-                        accas.account_id, accas.activated, accas.deactivated, accas.temporary_blocked, accas.last_checkout,ads.id 
+                        accas.account_id, accas.activated, accas.deactivated, accas.temporary_blocked, accas.last_checkout,ads.id, accas.subaccount_id
                         FROM billservice_addonservice AS ads JOIN billservice_settlementperiod AS sp ON ads.sp_period_id = sp.id JOIN billservice_accountaddonservice AS accas ON accas.service_id = ads.id 
                         WHERE ads.service_type = 'periodical' AND (accas.deactivated ISNULL OR accas.last_checkout ISNULL OR NOT accas.last_checkout >= accas.deactivated);"""}
 rad_sql = \

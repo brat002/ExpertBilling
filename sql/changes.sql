@@ -4184,13 +4184,35 @@ ALTER TABLE billservice_account
 ALTER TABLE billservice_account
    ADD COLUMN house_id integer;
 
+ALTER TABLE billservice_periodicalservice ADD COLUMN deactivated timestamp without time zone;
 ALTER TABLE billservice_periodicalservice ADD COLUMN deleted boolean;
 ALTER TABLE billservice_periodicalservice ALTER COLUMN deleted SET DEFAULT false;
+--- 13.02.2011 15:47
+CREATE TABLE billservice_templatetype
+(
+  id serial NOT NULL,
+  "name" text NOT NULL,
+  CONSTRAINT billservice_templatetype_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE billservice_templatetype OWNER TO ebs;
 
-ALTER TABLE billservice_periodicalservice ADD COLUMN deactivated timestamp without time zone;
+INSERT INTO billservice_templatetype(name, id) VALUES('Информационное письмо',8);
+INSERT INTO billservice_templatetype(name, id) VALUES('Договор',1);
+INSERT INTO billservice_templatetype(name, id) VALUES('Акт выполненных работ',4);
+INSERT INTO billservice_templatetype(name, id) VALUES('Счет фактура',3);
+INSERT INTO billservice_templatetype(name, id) VALUES('Договор на подключение юр. лиц',2);
+INSERT INTO billservice_templatetype(name, id) VALUES('Кассовый чек',5);
+INSERT INTO billservice_templatetype(name, id) VALUES('Накладная на карты экспресс-оплаты',6);
+INSERT INTO billservice_templatetype(name, id) VALUES('Шаблон карты экспресс-оплаты',7);
 
 
---- 15.02.2011
+ALTER TABLE billservice_template ADD CONSTRAINT billservice_template_type_id_billservice_templatetype_fkey FOREIGN KEY (type_id) REFERENCES billservice_templatetype (id)
+   ON UPDATE SET NULL ON DELETE SET NULL;
+
+
 ALTER TABLE billservice_account ADD COLUMN allow_ipn_with_null boolean;
 ALTER TABLE billservice_account ALTER COLUMN allow_ipn_with_null SET DEFAULT false;
 
@@ -4199,4 +4221,3 @@ ALTER TABLE billservice_account ALTER COLUMN allow_ipn_with_minus SET DEFAULT fa
 
 ALTER TABLE billservice_account ADD COLUMN allow_ipn_with_block boolean;
 ALTER TABLE billservice_account ALTER COLUMN allow_ipn_with_block SET DEFAULT false;
-

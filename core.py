@@ -573,7 +573,8 @@ class periodical_service_bill(Thread):
                 cur.connection.commit()
                 for addon_ps in caches.addonperiodical_cache.data:
                     if 0: assert isinstance(addon_ps, AddonPeriodicalData)
-                    acc = caches.account_cache.by_account.get(addon_ps.account_id)
+                    subacc = caches.subaccount_cache.by_id.get(addon_ps.subaccount_id)
+                    acc = caches.account_cache.by_account.get(subacc.account_id)
                     if not acc:
                         logger.warning('%s: Addon Periodical Service: %s Account not found: %s', (self.getName(), addon_ps.ps_id, addon_ps.account_id))
                     try:
