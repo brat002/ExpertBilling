@@ -882,6 +882,9 @@ class Ports(models.Model):
 class DocumentType(models.Model):
     name = models.CharField(max_length=255)
     
+class TemplateType(models.Model):
+    name = models.TextField()
+        
 class Template(models.Model):
     name = models.CharField(max_length=255)
     type = models.ForeignKey(DocumentType)
@@ -1162,4 +1165,5 @@ class Street(models.Model):
 class House(models.Model):
     name = models.CharField(max_length=320)
     street = models.ForeignKey(Street)
+    
         
