@@ -2158,11 +2158,7 @@ class TarifFrame(QtGui.QDialog):
                 #else:
             else:
                 self.sp_groupbox.setChecked(False)
-            settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod")
-        
-
-        
-        
+        settlement_periods = self.connection.sql("SELECT * FROM billservice_settlementperiod")
         for sp in settlement_periods:
             self.sp_name_edit.addItem(sp.name)
             

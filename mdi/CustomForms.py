@@ -38,7 +38,7 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         #sizePolicy.setVerticalStretch(0)
         #sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
         #self.webView.setSizePolicy(sizePolicy)        
-        #self.webView.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath("index.html")))
+        #self.webView.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath("templates/tmp/temp.html")))
         self.webView.load(QtCore.QUrl("http://www.ya.ru"))
         self.gridLayout.addWidget(self.webView, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
@@ -1154,49 +1154,68 @@ class TemplatesWindow(QtGui.QMainWindow):
         super(TemplatesWindow, self).__init__()
         self.connection = connection
         self.setObjectName("MainWindow")
-        self.resize(891, 583)
+        self.resize(995, 730)
         self.setIconSize(QtCore.QSize(18, 18))
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout = QtGui.QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName("gridLayout")
+        self.gridLayout_2 = QtGui.QGridLayout(self.centralwidget)
+        self.gridLayout_2.setObjectName("gridLayout_2")
         self.treeWidget = QtGui.QTreeWidget(self.centralwidget)
         self.treeWidget.setMaximumSize(QtCore.QSize(250, 16777215))
         self.treeWidget.setObjectName("treeWidget")
-        tree_header = self.treeWidget.headerItem()
-        sz = QtCore.QSize()
-        hght = 17
-        sz.setHeight(hght)
-        tree_header.setSizeHint(0,sz)
 
-        self.titles = ['',u'Договор на подключение для физ. лиц',
-                  u'Договор на подключение для юр. лиц',
-                  u'Счет-фактура',
-                  u'Акт выполненных работ',
-                  u'Кассовый чек',
-                  u'Накладная на карты экспресс оплаты',
-                  u'Карты экспресс-оплаты',
-                  ]
-        
-        self.gridLayout.addWidget(self.treeWidget, 0, 0, 2, 1)
-        self.label = QtGui.QLabel(self.centralwidget)
+        self.gridLayout_2.addWidget(self.treeWidget, 0, 0, 2, 1)
+        self.groupBox = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout.setObjectName("gridLayout")
+        self.label = QtGui.QLabel(self.groupBox)
         self.label.setObjectName("label")
-        self.gridLayout.addWidget(self.label, 0, 1, 1, 1)
-        self.lineEdit_name = QtGui.QLineEdit(self.centralwidget)
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.lineEdit_name = QtGui.QLineEdit(self.groupBox)
         self.lineEdit_name.setMinimumSize(QtCore.QSize(0, 22))
         self.lineEdit_name.setObjectName("lineEdit_name")
-        self.gridLayout.addWidget(self.lineEdit_name, 0, 2, 1, 1)
-        self.textBrowser_remplate_body = QtGui.QTextBrowser(self.centralwidget)
-        #self.textBrowser_remplate_body = QtGui.QTextEdit(self.centralwidget)
-        #self.textBrowser_remplate_body.setFrameShape(QtGui.QFrame.StyledPanel)
-        #self.textBrowser_remplate_body.setFrameShadow(QtGui.QFrame.Sunken)
-        #self.textBrowser_remplate_body.setLineWidth(1)
+        self.gridLayout.addWidget(self.lineEdit_name, 0, 1, 1, 1)
+        self.label_template_type = QtGui.QLabel(self.groupBox)
+        self.label_template_type.setObjectName("label_template_type")
+        self.gridLayout.addWidget(self.label_template_type, 1, 0, 1, 1)
+        self.comboBox_template_type = QtGui.QComboBox(self.groupBox)
+        self.comboBox_template_type.setObjectName("comboBox_template_type")
+        self.gridLayout.addWidget(self.comboBox_template_type, 1, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.groupBox, 0, 1, 1, 1)
+        self.splitter = QtGui.QSplitter(self.centralwidget)
+        self.splitter.setOrientation(QtCore.Qt.Vertical)
+        self.splitter.setObjectName("splitter")
+        self.widget = QtGui.QWidget(self.splitter)
+        self.widget.setObjectName("widget")
+        self.verticalLayout = QtGui.QVBoxLayout(self.widget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label_source_code = QtGui.QLabel(self.widget)
+        self.label_source_code.setObjectName("label_source_code")
+        self.verticalLayout.addWidget(self.label_source_code)
+        self.textBrowser_remplate_body = QtGui.QTextBrowser(self.widget)
+        self.textBrowser_remplate_body.setMinimumSize(QtCore.QSize(0, 0))
+        self.textBrowser_remplate_body.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.textBrowser_remplate_body.setFrameShadow(QtGui.QFrame.Sunken)
+        self.textBrowser_remplate_body.setLineWidth(1)
         self.textBrowser_remplate_body.setUndoRedoEnabled(True)
         self.textBrowser_remplate_body.setReadOnly(False)
         self.textBrowser_remplate_body.setAcceptRichText(False)
         self.textBrowser_remplate_body.setOpenLinks(False)
         self.textBrowser_remplate_body.setObjectName("textBrowser_remplate_body")
-        self.gridLayout.addWidget(self.textBrowser_remplate_body, 1, 1, 1, 2)
+        self.verticalLayout.addWidget(self.textBrowser_remplate_body)
+        self.widget1 = QtGui.QWidget(self.splitter)
+        self.widget1.setObjectName("widget1")
+        self.verticalLayout_2 = QtGui.QVBoxLayout(self.widget1)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.label_3 = QtGui.QLabel(self.widget1)
+        self.label_3.setObjectName("label_3")
+        self.verticalLayout_2.addWidget(self.label_3)
+        self.webView = QtWebKit.QWebView(self.widget1)
+        self.webView.setUrl(QtCore.QUrl("about:blank"))
+        self.webView.setObjectName("webView")
+        self.verticalLayout_2.addWidget(self.webView)
+        self.gridLayout_2.addWidget(self.splitter, 1, 1, 1, 1)
         self.setCentralWidget(self.centralwidget)
         self.toolBar = QtGui.QToolBar(self)
         self.toolBar.setMovable(False)
@@ -1204,7 +1223,7 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolBar.setFloatable(False)
         self.toolBar.setObjectName("toolBar")
-        self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
+        self.addToolBar(QtCore.Qt.ToolBarArea(QtCore.Qt.TopToolBarArea), self.toolBar)
         self.statusBar = QtGui.QStatusBar(self)
         self.statusBar.setObjectName("statusBar")
         self.setStatusBar(self.statusBar)
@@ -1254,21 +1273,26 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.actionDeleteTemplate.setText(QtGui.QApplication.translate("MainWindow", "Удалить шаблон", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Сохранить", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPreview.setText(QtGui.QApplication.translate("MainWindow", "Предпросмотр", None, QtGui.QApplication.UnicodeUTF8))
-        
+        self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Предпросмотр", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("MainWindow", "Параметры шаблона", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("MainWindow", "Название шаблона", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_template_type.setText(QtGui.QApplication.translate("MainWindow", "Тип шаблона", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_source_code.setText(QtGui.QApplication.translate("MainWindow", "Исходный код шаблона", None, QtGui.QApplication.UnicodeUTF8))
         
     def addCardTemplate(self):
-        model = Object()
-        model.type_id = 7
-        item = QtGui.QTreeWidgetItem(self.treeWidget)
-        item.model = model
-        self.lineEdit_name.clear()
-        self.textBrowser_remplate_body.clear()
-        self.treeWidget.setCurrentItem(item)
+        #model = Object()
+        #model.type_id = 7
+        #item = QtGui.QTreeWidgetItem(self.treeWidget)
+        #item.model = model
+        #self.lineEdit_name.clear()
+        #self.textBrowser_remplate_body.clear()
+        #self.treeWidget.setCurrentItem(item)
+        pass
 
     def delCardTemplate(self):
-        model = self.treeWidget.currentItem().model
-        if model.type_id==7:
-            self.connection.iddelete(model.id, "billservice_template")
+        item = self.treeWidget.currentItem()
+        if item.type_id:
+            self.connection.iddelete(item.id, "billservice_template")
             self.connection.commit()
             self.refresh()
             self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(0))
@@ -1276,21 +1300,25 @@ class TemplatesWindow(QtGui.QMainWindow):
     def editTemplate(self, item1, item2):
         
         try:
-            model = self.treeWidget.currentItem().model
-            id = model.id
+            type_id = self.treeWidget.currentItem().type_id
+            id = self.treeWidget.currentItem().id
         except:
             return
         self.textBrowser_remplate_body.clear()
 
 
-        template = self.connection.get_model(model.id, "billservice_template")
+        template = self.connection.get_model(id, "billservice_template")
         self.connection.commit()
         
-        self.treeWidget.currentItem().model = template
+        #self.treeWidget.currentItem().model = template
         if template:
             self.lineEdit_name.setText(unicode(template.name))
             self.textBrowser_remplate_body.setPlainText(template.body)
-            
+            i=0
+            d=self.comboBox_template_type.findData(type_id)
+            self.comboBox_template_type.setCurrentIndex(d)
+                
+            #self.comboBox_template_type.setC
 
         elif template.type_id!=7 and not template:
             self.lineEdit_name.setText(unicode(''))
@@ -1312,14 +1340,17 @@ class TemplatesWindow(QtGui.QMainWindow):
             
     
     def saveTemplate(self):
-        if self.treeWidget.currentItem().model:
-            model = self.treeWidget.currentItem().model
+        if self.treeWidget.currentItem() and self.treeWidget.currentItem().type_id:
+            #model = self.treeWidget.currentItem().model
+            model = Object()
+            #model.type_id = self.treeWidget.currentItem().type_id
+            model.id = self.treeWidget.currentItem().id
         else:
             model = Object()
 
         model.name = unicode(self.lineEdit_name.text())
         model.body = unicode(self.textBrowser_remplate_body.toPlainText())
- 
+        model.type_id = unicode(self.comboBox_template_type.itemData(self.comboBox_template_type.currentIndex()).toInt()[0]) 
         #for x in model.__dict__:
         #    print x, model.__dict__[x]
 
@@ -1339,24 +1370,59 @@ class TemplatesWindow(QtGui.QMainWindow):
         6;"Накладная на карты экспресс оплаты"
         7;"Карты экспресс-оплаты"
         """
-        ind = self.treeWidget.currentItem()
-        self.treeWidget.clear()
-        card_templates = self.connection.sql("""SELECT * FROM billservice_template as template ORDER BY type_id ASC""")
-        self.connection.commit()
         
-        for ct in card_templates:
-            item = QtGui.QTreeWidgetItem(self.treeWidget)
-            item.model=ct
-            item.setText(0, ct.name)
-            try:
-                if ind.model.id==ct.id:
-                    self.treeWidget.setCurrentItem(item)
-            except:
-                pass
+
+        tempaltetypes = self.connection.get_models("billservice_templatetype")
+        # 
+        self.connection.commit()
+        i=0
+        self.comboBox_template_type.clear()
+        #self.comboBox_template_type.addItem('---')
+        #self.comboBox_template_type.setItemData(0, QtCore.QVariant(0))
+        for ttype in tempaltetypes:
+           self.comboBox_template_type.addItem(ttype.name)
+           self.comboBox_template_type.setItemData(i, QtCore.QVariant(ttype.id))
+           i+=1
+        
+        try:            
+            ind = self.treeWidget.currentItem()
+        except:
+            pass
+        self.treeWidget.clear()
+        #te = self.connection.get_models("""billservice_template as template ORDER BY type_id ASC""")
+        #tempaltetypes = self.connection.get_models("billservice_templatetype", order={'name':'ASC'})
+        tempaltetypes = self.connection.get_models("billservice_templatetype")
+        templates = self.connection.get_models("billservice_template")
+        
+        tmpl = {}
+        for x in templates:
+            if not tmpl.get(x.type_id):
+                tmpl[x.type_id]=[]
+            tmpl[x.type_id].append(x)    
+            
+        
+        self.connection.commit()
+        #
+        for tt in tempaltetypes:
+            r_item = QtGui.QTreeWidgetItem(self.treeWidget)
+            r_item.id=tt.id
+            r_item.setText(0, tt.name)
+            if not tmpl.get(tt.id): continue
+            for x in tmpl.get(tt.id):
+                item = QtGui.QTreeWidgetItem(r_item)
+                item.id=x.id
+                item.type_id=x.type_id
+                item.setText(0, x.name)  
+                  
+                try:
+                    if ind.type_id and ind.id == x.id:
+                        self.treeWidget.setCurrentItem(item)
+                except:
+                    pass
 
             
     def preview(self):
-        id = self.treeWidget.currentItem().model.type_id
+        id = self.treeWidget.currentItem().type_id
         templ = Template(unicode(self.textBrowser_remplate_body.toPlainText()), input_encoding='utf-8')
         if id==1:
 
@@ -1436,8 +1502,10 @@ class TemplatesWindow(QtGui.QMainWindow):
         file= open('templates/tmp/temp.html', 'wb')
         file.write(data.encode("utf-8", 'replace'))
         file.flush()
-        a=CardPreviewDialog(url="templates/tmp/temp.html")
-        a.exec_()
+        #a=CardPreviewDialog(url="templates/tmp/temp.html")
+        #a.exec_()
+        self.webView.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath("templates/tmp/temp.html")))
+        
 
         
     def keyPressEvent(self, event):

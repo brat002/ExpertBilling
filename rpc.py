@@ -672,10 +672,13 @@ class RPCServer(object):
         return result
     
     
-    def get_models(self, table='', fields = [], where={}, cur=None, connection=None, add_data = {}):
+    def get_models(self, table='', fields = [], where={}, order = {'id':'ASC',}, cur=None, connection=None, add_data = {}):
         log_string = u"""Пользователь %s получил список записей из таблицы  %s""" % (add_data['USER_ID'][0], table,)
         
         cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
+        
+        
+        order_str = "ORDER BY %s" % ','.join(["%s %s" % (x, order[x]) for x in order])
         
         cur.execute("SELECT %s FROM %s WHERE %s ORDER BY id ASC;" % (",".join(fields) or "*", table, " AND ".join("%s=%s" % (wh, where[wh]) for wh in where) or 'id>0'))
         

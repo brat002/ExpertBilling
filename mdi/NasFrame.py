@@ -557,7 +557,7 @@ class AddNasFrame(QtGui.QDialog):
         model.ipaddress = unicode(self.nas_ip.text())
         model.secret = unicode(self.nas_secret.text())
         model.acct_interim_interval = int(self.nas_interim_update.value())
-        model.snmp_version = self.snmp_comboBox.itemData(self.snmp_comboBox.currentIndex()).toString()
+        model.snmp_version = unicode(self.snmp_comboBox.itemData(self.snmp_comboBox.currentIndex()).toString())
         for i in xrange(self.tableWidget.rowCount()):
             model.__dict__[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text())
             
