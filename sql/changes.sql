@@ -4189,3 +4189,14 @@ ALTER TABLE billservice_periodicalservice ALTER COLUMN deleted SET DEFAULT false
 
 ALTER TABLE billservice_periodicalservice ADD COLUMN deactivated timestamp without time zone;
 
+
+--- 15.02.2011
+ALTER TABLE billservice_account ADD COLUMN allow_ipn_with_null boolean;
+ALTER TABLE billservice_account ALTER COLUMN allow_ipn_with_null SET DEFAULT false;
+
+ALTER TABLE billservice_account ADD COLUMN allow_ipn_with_minus boolean;
+ALTER TABLE billservice_account ALTER COLUMN allow_ipn_with_minus SET DEFAULT false;
+
+ALTER TABLE billservice_account ADD COLUMN allow_ipn_with_block boolean;
+ALTER TABLE billservice_account ALTER COLUMN allow_ipn_with_block SET DEFAULT false;
+
