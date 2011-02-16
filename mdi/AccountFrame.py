@@ -30,10 +30,21 @@ from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, Gr
 from MessagesFrame import MessageDialog
 from AccountEditFrame import AccountWindow, AddAccountTarif
 from mako.template import Template
+
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 qtTimeFormat = "YYYY-MM-DD HH:MM:SS"
 import IPy
 
+class CashType(object):
+    def __init__(self, id, name):
+        self.id = id
+        self.name=name
+        
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
+    
 class CashType(object):
     def __init__(self, id, name):
         self.id = id
@@ -47,7 +58,8 @@ la_list = [u"Заблокировать пользователя", u"Измен�
 
 ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном и нулевом балансе"), CashType(2,u"При отрицательном балансе"), CashType(3,u"При положительнои балансе")]
 ps_list = [u"При любом балансе", u"При положительном и нулевом балансе", u"При отрицательном балансе", u"При положительнои балансе"]
-
+round_types = [CashType(0, u"Не округлять"),CashType(1, u"В большую сторону")]
+direction_types = [CashType(0, u"Входящий"),CashType(1, u"Исходящий"),CashType(2, u"Вх.+Исх."),CashType(3, u"Большее направление")]
 class SubaccountLinkDialog(QtGui.QDialog):
     def __init__(self, connection, account, model = None):
         super(SubaccountLinkDialog, self).__init__()
@@ -829,11 +841,11 @@ class TarifFrame(QtGui.QDialog):
         self.ipn_for_vpn.setObjectName("ipn_for_vpn")
         
         self.components_groupBox = QtGui.QGroupBox(self.tab_1)
-        self.components_groupBox.setGeometry(QtCore.QRect(420,60,184,179))
+        self.components_groupBox.setGeometry(QtCore.QRect(420,60,190,190))
         self.components_groupBox.setObjectName("components_groupBox")
 
         self.widget = QtGui.QWidget(self.components_groupBox)
-        self.widget.setGeometry(QtCore.QRect(11,20,168,131))
+        self.widget.setGeometry(QtCore.QRect(11,20,198,151))
         self.widget.setObjectName("widget")
 
         self.vboxlayout = QtGui.QVBoxLayout(self.widget)
@@ -846,6 +858,11 @@ class TarifFrame(QtGui.QDialog):
         self.time_access_service_checkbox = QtGui.QCheckBox(self.widget)
         self.time_access_service_checkbox.setObjectName("time_access_service_checkbox")
         self.vboxlayout.addWidget(self.time_access_service_checkbox)
+        
+        self.radius_traffic_access_service_checkbox = QtGui.QCheckBox(self.widget)
+        self.radius_traffic_access_service_checkbox.setObjectName("radius_traffic_access_service_checkbox")
+        self.vboxlayout.addWidget(self.radius_traffic_access_service_checkbox)
+
 
         self.onetime_services_checkbox = QtGui.QCheckBox(self.widget)
         self.onetime_services_checkbox.setObjectName("onetime_services_checkbox")
@@ -957,56 +974,8 @@ class TarifFrame(QtGui.QDialog):
         #self.speed_table = tableFormat(self.speed_table)
         #-------------
         
-        self.speed_panel = QtGui.QFrame(self.tab_2)
-        self.speed_panel.setGeometry(QtCore.QRect(9,260,597,27))
-        self.speed_panel.setFrameShape(QtGui.QFrame.Box)
-        self.speed_panel.setFrameShadow(QtGui.QFrame.Raised)
-        self.speed_panel.setObjectName("speed_panel")
 
-        self.del_speed_button = QtGui.QToolButton(self.speed_panel)
-        self.del_speed_button.setGeometry(QtCore.QRect(40,3,25,20))
-        self.del_speed_button.setObjectName("del_speed_button")
-
-        self.add_speed_button = QtGui.QToolButton(self.speed_panel)
-        self.add_speed_button.setGeometry(QtCore.QRect(6,3,24,20))
-        self.add_speed_button.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
-        self.add_speed_button.setObjectName("add_speed_button")
         
-
-        self.tab_3 = QtGui.QWidget()
-        self.tab_3.setObjectName("tab_3")
-
-        self.prepaid_time_label = QtGui.QLabel(self.tab_3)
-        self.prepaid_time_label.setGeometry(QtCore.QRect(10,10,121,16))
-        self.prepaid_time_label.setObjectName("prepaid_time_label")
-
-        self.reset_time_checkbox = QtGui.QCheckBox(self.tab_3)
-        self.reset_time_checkbox.setGeometry(QtCore.QRect(10,40,361,19))
-        self.reset_time_checkbox.setObjectName("reset_time_checkbox")
-
-        self.timeaccess_table = QtGui.QTableWidget(self.tab_3)
-        self.timeaccess_table.setGeometry(QtCore.QRect(10,90,595,436))
-        #----------------
-        #self.timeaccess_table = tableFormat(self.timeaccess_table)
-        #----------------
-
-        self.timeaccess_panel = QtGui.QFrame(self.tab_3)
-        self.timeaccess_panel.setGeometry(QtCore.QRect(10,60,596,27))
-        self.timeaccess_panel.setFrameShape(QtGui.QFrame.Box)
-        self.timeaccess_panel.setFrameShadow(QtGui.QFrame.Raised)
-        self.timeaccess_panel.setObjectName("timeaccess_panel")
-
-        self.del_timecost_button = QtGui.QToolButton(self.timeaccess_panel)
-        self.del_timecost_button.setGeometry(QtCore.QRect(40,3,25,20))
-        self.del_timecost_button.setObjectName("del_timecost_button")
-
-        self.add_timecost_button = QtGui.QToolButton(self.timeaccess_panel)
-        self.add_timecost_button.setGeometry(QtCore.QRect(6,3,24,20))
-        self.add_timecost_button.setObjectName("add_timecost_button")
-
-        self.prepaid_time_edit = QtGui.QSpinBox(self.tab_3)
-        self.prepaid_time_edit.setGeometry(QtCore.QRect(130,10,221,21))
-        self.prepaid_time_edit.setObjectName("prepaid_time_edit")
         
 
 
@@ -1072,8 +1041,155 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.addTab(self.tab_1,"")
         self.tabWidget.addTab(self.tab_2,"")
         self.tabWidget.addTab(self.tab_4,"")
-        self.tabWidget.addTab(self.tab_3,"")
+
         
+        #
+        self.speed_panel = QtGui.QFrame(self.tab_2)
+        self.speed_panel.setGeometry(QtCore.QRect(9,260,597,27))
+        self.speed_panel.setFrameShape(QtGui.QFrame.Box)
+        self.speed_panel.setFrameShadow(QtGui.QFrame.Raised)
+        self.speed_panel.setObjectName("speed_panel")
+
+        self.del_speed_button = QtGui.QToolButton(self.speed_panel)
+        self.del_speed_button.setGeometry(QtCore.QRect(40,3,25,20))
+        self.del_speed_button.setObjectName("del_speed_button")
+
+        self.add_speed_button = QtGui.QToolButton(self.speed_panel)
+        self.add_speed_button.setGeometry(QtCore.QRect(6,3,24,20))
+        self.add_speed_button.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
+        self.add_speed_button.setObjectName("add_speed_button")
+        
+        #======================================================
+        self.tab_radius_traffic = QtGui.QWidget()
+        self.tab_radius_traffic.setObjectName(_fromUtf8("tab_radius_traffic"))
+        self.gridLayout_5 = QtGui.QGridLayout(self.tab_radius_traffic)
+        self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
+        self.commandLinkButton_add_radius_trafficcost = QtGui.QCommandLinkButton(self.tab_radius_traffic)
+        self.commandLinkButton_add_radius_trafficcost.setDefault(True)
+        self.commandLinkButton_add_radius_trafficcost.setObjectName(_fromUtf8("commandLinkButton_add_radius_trafficcost"))
+        self.gridLayout_5.addWidget(self.commandLinkButton_add_radius_trafficcost, 0, 0, 1, 1)
+        self.commandLinkButton_del_radius_trafficcost = QtGui.QCommandLinkButton(self.tab_radius_traffic)
+        self.commandLinkButton_del_radius_trafficcost.setObjectName(_fromUtf8("commandLinkButton_del_radius_trafficcost"))
+        self.gridLayout_5.addWidget(self.commandLinkButton_del_radius_trafficcost, 0, 1, 1, 1)
+        self.tableWidget_radius_traffic_trafficcost = QtGui.QTableWidget(self.tab_radius_traffic)
+        self.tableWidget_radius_traffic_trafficcost.setObjectName(_fromUtf8("tableWidget_radius_traffic_trafficcost"))
+        self.tableWidget_radius_traffic_trafficcost.setColumnCount(3)
+        self.tableWidget_radius_traffic_trafficcost.setRowCount(0)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidget_radius_traffic_trafficcost.setHorizontalHeaderItem(0, item)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidget_radius_traffic_trafficcost.setHorizontalHeaderItem(1, item)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidget_radius_traffic_trafficcost.setHorizontalHeaderItem(2, item)
+        self.gridLayout_5.addWidget(self.tableWidget_radius_traffic_trafficcost, 1, 0, 1, 2)
+        self.groupBox_radius_traffic_tarification_settings = QtGui.QGroupBox(self.tab_radius_traffic)
+        self.groupBox_radius_traffic_tarification_settings.setObjectName(_fromUtf8("groupBox_radius_traffic_tarification_settings"))
+        self.gridLayout_4 = QtGui.QGridLayout(self.groupBox_radius_traffic_tarification_settings)
+        self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
+        self.label_radius_traffic_direction = QtGui.QLabel(self.groupBox_radius_traffic_tarification_settings)
+        self.label_radius_traffic_direction.setObjectName(_fromUtf8("label_radius_traffic_direction"))
+        self.gridLayout_4.addWidget(self.label_radius_traffic_direction, 0, 0, 2, 1)
+        self.comboBox_radius_traffic_direction = QtGui.QComboBox(self.groupBox_radius_traffic_tarification_settings)
+        self.comboBox_radius_traffic_direction.setObjectName(_fromUtf8("comboBox_radius_traffic_direction"))
+        self.gridLayout_4.addWidget(self.comboBox_radius_traffic_direction, 0, 1, 2, 2)
+        self.label_radius_traffic_tarification_step = QtGui.QLabel(self.groupBox_radius_traffic_tarification_settings)
+        self.label_radius_traffic_tarification_step.setObjectName(_fromUtf8("label_radius_traffic_tarification_step"))
+        self.gridLayout_4.addWidget(self.label_radius_traffic_tarification_step, 2, 0, 1, 1)
+        self.label_radius_traffic_rounding = QtGui.QLabel(self.groupBox_radius_traffic_tarification_settings)
+        self.label_radius_traffic_rounding.setObjectName(_fromUtf8("label_radius_traffic_rounding"))
+        self.gridLayout_4.addWidget(self.label_radius_traffic_rounding, 3, 0, 1, 1)
+        self.comboBox_radius_traffic_rounding = QtGui.QComboBox(self.groupBox_radius_traffic_tarification_settings)
+        self.comboBox_radius_traffic_rounding.setObjectName(_fromUtf8("comboBox_radius_traffic_rounding"))
+        self.gridLayout_4.addWidget(self.comboBox_radius_traffic_rounding, 3, 1, 1, 2)
+        self.spinBox_radius_traffic_tarification_step = QtGui.QSpinBox(self.groupBox_radius_traffic_tarification_settings)
+        self.spinBox_radius_traffic_tarification_step.setMaximum(999999999)
+        self.spinBox_radius_traffic_tarification_step.setObjectName(_fromUtf8("spinBox_radius_traffic_tarification_step"))
+        self.gridLayout_4.addWidget(self.spinBox_radius_traffic_tarification_step, 2, 1, 1, 2)
+        self.gridLayout_5.addWidget(self.groupBox_radius_traffic_tarification_settings, 3, 0, 1, 2)
+        self.groupBox_radius_prepaidtraffic = QtGui.QGroupBox(self.tab_radius_traffic)
+        self.groupBox_radius_prepaidtraffic.setObjectName(_fromUtf8("groupBox_radius_prepaidtraffic"))
+        self.gridLayout_6 = QtGui.QGridLayout(self.groupBox_radius_prepaidtraffic)
+        self.gridLayout_6.setObjectName(_fromUtf8("gridLayout_6"))
+        self.label_radius_traffic_prepaid_direction = QtGui.QLabel(self.groupBox_radius_prepaidtraffic)
+        self.label_radius_traffic_prepaid_direction.setObjectName(_fromUtf8("label_radius_traffic_prepaid_direction"))
+        self.gridLayout_6.addWidget(self.label_radius_traffic_prepaid_direction, 0, 0, 1, 1)
+        self.comboBox_radius_traffic_prepaid_direction = QtGui.QComboBox(self.groupBox_radius_prepaidtraffic)
+        self.comboBox_radius_traffic_prepaid_direction.setObjectName(_fromUtf8("comboBox_radius_traffic_prepaid_direction"))
+        self.gridLayout_6.addWidget(self.comboBox_radius_traffic_prepaid_direction, 0, 1, 1, 1)
+        self.spinBox_radius_traffic_prepaid_volume = QtGui.QSpinBox(self.groupBox_radius_prepaidtraffic)
+        self.spinBox_radius_traffic_prepaid_volume.setMaximum(999999999)
+        self.spinBox_radius_traffic_prepaid_volume.setObjectName(_fromUtf8("spinBox_radius_traffic_prepaid_volume"))
+        self.gridLayout_6.addWidget(self.spinBox_radius_traffic_prepaid_volume, 1, 1, 1, 1)
+        self.label_radius_traffic_prepaid_volume = QtGui.QLabel(self.groupBox_radius_prepaidtraffic)
+        self.label_radius_traffic_prepaid_volume.setObjectName(_fromUtf8("label_radius_traffic_prepaid_volume"))
+        self.gridLayout_6.addWidget(self.label_radius_traffic_prepaid_volume, 1, 0, 1, 1)
+        self.checkBox_radius_traffic_reset_prepaidtraffic = QtGui.QCheckBox(self.groupBox_radius_prepaidtraffic)
+        self.checkBox_radius_traffic_reset_prepaidtraffic.setObjectName(_fromUtf8("checkBox_radius_traffic_reset_prepaidtraffic"))
+        self.gridLayout_6.addWidget(self.checkBox_radius_traffic_reset_prepaidtraffic, 2, 0, 1, 2)
+        self.gridLayout_5.addWidget(self.groupBox_radius_prepaidtraffic, 2, 0, 1, 2)
+        self.tabWidget.addTab(self.tab_radius_traffic, _fromUtf8(""))
+        self.tab_radius_time = QtGui.QWidget()
+        self.tab_radius_time.setObjectName(_fromUtf8("tab_radius_time"))
+        self.gridLayout = QtGui.QGridLayout(self.tab_radius_time)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.timeaccess_table = QtGui.QTableWidget(self.tab_radius_time)
+        self.timeaccess_table.setFrameShape(QtGui.QFrame.Panel)
+        self.timeaccess_table.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.timeaccess_table.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.timeaccess_table.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.timeaccess_table.setHorizontalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.timeaccess_table.setGridStyle(QtCore.Qt.DotLine)
+        self.timeaccess_table.setObjectName(_fromUtf8("timeaccess_table"))
+        self.timeaccess_table.setColumnCount(3)
+        self.timeaccess_table.setRowCount(0)
+        item = QtGui.QTableWidgetItem()
+        self.timeaccess_table.setHorizontalHeaderItem(0, item)
+        item = QtGui.QTableWidgetItem()
+        self.timeaccess_table.setHorizontalHeaderItem(1, item)
+        item = QtGui.QTableWidgetItem()
+        self.timeaccess_table.setHorizontalHeaderItem(2, item)
+        self.gridLayout.addWidget(self.timeaccess_table, 2, 0, 1, 2)
+        self.groupBox_radius_time_tarification_settings = QtGui.QGroupBox(self.tab_radius_time)
+        self.groupBox_radius_time_tarification_settings.setObjectName(_fromUtf8("groupBox_radius_time_tarification_settings"))
+        self.gridLayout_3 = QtGui.QGridLayout(self.groupBox_radius_time_tarification_settings)
+        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
+        self.comboBox_radius_time_rounding = QtGui.QComboBox(self.groupBox_radius_time_tarification_settings)
+        self.comboBox_radius_time_rounding.setObjectName(_fromUtf8("comboBox_radius_time_rounding"))
+        self.gridLayout_3.addWidget(self.comboBox_radius_time_rounding, 0, 1, 1, 1)
+        self.label_radius_time_rounding = QtGui.QLabel(self.groupBox_radius_time_tarification_settings)
+        self.label_radius_time_rounding.setObjectName(_fromUtf8("label_radius_time_rounding"))
+        self.gridLayout_3.addWidget(self.label_radius_time_rounding, 0, 0, 1, 1)
+        self.label_radius_time_tarification_step = QtGui.QLabel(self.groupBox_radius_time_tarification_settings)
+        self.label_radius_time_tarification_step.setObjectName(_fromUtf8("label_radius_time_tarification_step"))
+        self.gridLayout_3.addWidget(self.label_radius_time_tarification_step, 1, 0, 1, 1)
+        self.spinBox_radius_time_tarification_step = QtGui.QSpinBox(self.groupBox_radius_time_tarification_settings)
+        self.spinBox_radius_time_tarification_step.setMaximum(999999999)
+        self.spinBox_radius_time_tarification_step.setObjectName(_fromUtf8("spinBox_radius_time_tarification_step"))
+        self.gridLayout_3.addWidget(self.spinBox_radius_time_tarification_step, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.groupBox_radius_time_tarification_settings, 4, 0, 1, 2)
+        self.commandLinkButton_add_radius_timecost = QtGui.QCommandLinkButton(self.tab_radius_time)
+        self.commandLinkButton_add_radius_timecost.setDefault(True)
+        self.commandLinkButton_add_radius_timecost.setObjectName(_fromUtf8("commandLinkButton_add_radius_timecost"))
+        self.gridLayout.addWidget(self.commandLinkButton_add_radius_timecost, 0, 0, 1, 1)
+        self.commandLinkButton_del_radius_timecost = QtGui.QCommandLinkButton(self.tab_radius_time)
+        self.commandLinkButton_del_radius_timecost.setObjectName(_fromUtf8("commandLinkButton_del_radius_timecost"))
+        self.gridLayout.addWidget(self.commandLinkButton_del_radius_timecost, 0, 1, 1, 1)
+        self.groupBox_radius_time_prepaid = QtGui.QGroupBox(self.tab_radius_time)
+        self.groupBox_radius_time_prepaid.setObjectName(_fromUtf8("groupBox_radius_time_prepaid"))
+        self.gridLayout_7 = QtGui.QGridLayout(self.groupBox_radius_time_prepaid)
+        self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
+        self.prepaid_time_label = QtGui.QLabel(self.groupBox_radius_time_prepaid)
+        self.prepaid_time_label.setObjectName(_fromUtf8("prepaid_time_label"))
+        self.gridLayout_7.addWidget(self.prepaid_time_label, 0, 0, 1, 1)
+        self.prepaid_time_edit = QtGui.QSpinBox(self.groupBox_radius_time_prepaid)
+        self.prepaid_time_edit.setMaximum(999999999)
+        self.prepaid_time_edit.setObjectName(_fromUtf8("prepaid_time_edit"))
+        self.gridLayout_7.addWidget(self.prepaid_time_edit, 0, 1, 1, 1)
+        self.reset_time_checkbox = QtGui.QCheckBox(self.groupBox_radius_time_prepaid)
+        self.reset_time_checkbox.setObjectName(_fromUtf8("reset_time_checkbox"))
+        self.gridLayout_7.addWidget(self.reset_time_checkbox, 1, 0, 1, 2)
+        self.gridLayout.addWidget(self.groupBox_radius_time_prepaid, 3, 0, 1, 2)
+        self.tabWidget.addTab(self.tab_radius_time, _fromUtf8(""))        
 
         self.tab_6 = QtGui.QWidget()
         self.tab_6.setObjectName("tab_6")
@@ -1229,8 +1345,8 @@ class TarifFrame(QtGui.QDialog):
         QtCore.QObject.connect(self.add_onetime_button, QtCore.SIGNAL("clicked()"), self.addOneTimeRow)
         QtCore.QObject.connect(self.del_onetime_button, QtCore.SIGNAL("clicked()"), self.delOneTimeRow)        
         
-        QtCore.QObject.connect(self.add_timecost_button, QtCore.SIGNAL("clicked()"), self.addTimeAccessRow)
-        QtCore.QObject.connect(self.del_timecost_button, QtCore.SIGNAL("clicked()"), self.delTimeAccessRow)
+        QtCore.QObject.connect(self.commandLinkButton_add_radius_timecost, QtCore.SIGNAL("clicked()"), self.addTimeAccessRow)
+        QtCore.QObject.connect(self.commandLinkButton_del_radius_timecost, QtCore.SIGNAL("clicked()"), self.delTimeAccessRow)
 
 
         QtCore.QObject.connect(self.add_prepaid_traffic_button, QtCore.SIGNAL("clicked()"), self.addPrepaidTrafficRow)
@@ -1250,6 +1366,7 @@ class TarifFrame(QtGui.QDialog):
         QtCore.QObject.connect(self.transmit_service_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.transmitTabActivityActions)
         
         QtCore.QObject.connect(self.time_access_service_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.timeaccessTabActivityActions)
+        QtCore.QObject.connect(self.radius_traffic_access_service_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.radiusTrafficTabActivityActions)
         
         QtCore.QObject.connect(self.onetime_services_checkbox, QtCore.SIGNAL("stateChanged(int)"), self.onetimeTabActivityActions)
         
@@ -1261,45 +1378,7 @@ class TarifFrame(QtGui.QDialog):
 
         QtCore.QObject.connect(self.sp_name_edit, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.spChangedActions)
 #-----------------------        
-        #self.setTabOrder(self.tabWidget,self.sp_type_edit)
-        self.setTabOrder(self.tabWidget,self.ps_null_ballance_checkout_edit)
-        self.setTabOrder(self.ps_null_ballance_checkout_edit,self.reset_tarif_cost_edit)
-        self.setTabOrder(self.reset_tarif_cost_edit,self.tarif_description_edit)
-        self.setTabOrder(self.tarif_description_edit,self.tarif_status_edit)
-        self.setTabOrder(self.tarif_status_edit,self.speed_max_in_edit)
-        self.setTabOrder(self.speed_max_in_edit,self.speed_max_out_edit)
-        self.setTabOrder(self.speed_max_out_edit,self.speed_min_in_edit)
-        self.setTabOrder(self.speed_min_in_edit,self.speed_min_out_edit)
-        self.setTabOrder(self.speed_min_out_edit,self.speed_burst_in_edit)
-        self.setTabOrder(self.speed_burst_in_edit,self.speed_burst_out_edit)
-        self.setTabOrder(self.speed_burst_out_edit,self.speed_burst_treshold_in_edit)
-        self.setTabOrder(self.speed_burst_treshold_in_edit,self.speed_burst_treshold_out_edit)
-        self.setTabOrder(self.speed_burst_treshold_out_edit,self.speed_burst_time_in_edit)
-        self.setTabOrder(self.speed_burst_time_in_edit,self.speed_burst_time_out_edit)
-        self.setTabOrder(self.speed_burst_time_out_edit,self.add_speed_button)
-        self.setTabOrder(self.add_speed_button,self.del_speed_button)
-        self.setTabOrder(self.del_speed_button,self.speed_table)
-        self.setTabOrder(self.speed_table,self.reset_time_checkbox)
-        self.setTabOrder(self.reset_time_checkbox,self.add_timecost_button)
-        self.setTabOrder(self.add_timecost_button,self.del_timecost_button)
-        self.setTabOrder(self.del_timecost_button,self.timeaccess_table)
-        self.setTabOrder(self.timeaccess_table,self.reset_traffic_edit)
-        self.setTabOrder(self.reset_traffic_edit,self.add_traffic_cost_button)
-        self.setTabOrder(self.add_traffic_cost_button,self.del_traffic_cost_button)
-        self.setTabOrder(self.del_traffic_cost_button,self.trafficcost_tableWidget)
-        self.setTabOrder(self.trafficcost_tableWidget,self.add_prepaid_traffic_button)
-        self.setTabOrder(self.add_prepaid_traffic_button,self.del_prepaid_traffic_button)
-        self.setTabOrder(self.del_prepaid_traffic_button,self.prepaid_tableWidget)
-        self.setTabOrder(self.prepaid_tableWidget,self.add_periodical_button)
-        self.setTabOrder(self.add_periodical_button,self.del_periodical_button)
-        self.setTabOrder(self.del_periodical_button,self.periodical_tableWidget)
-        self.setTabOrder(self.periodical_tableWidget,self.onetime_tableWidget)
-        self.setTabOrder(self.onetime_tableWidget,self.add_onetime_button)
-        self.setTabOrder(self.add_onetime_button,self.del_onetime_button)
-        self.setTabOrder(self.del_onetime_button,self.limit_tableWidget)
-        self.setTabOrder(self.limit_tableWidget,self.del_limit_button)
-        self.setTabOrder(self.del_limit_button,self.add_limit_button)
-        self.setTabOrder(self.add_limit_button,self.buttonBox)  
+
         
 
         
@@ -1359,9 +1438,10 @@ class TarifFrame(QtGui.QDialog):
         
         makeHeaders(columns, self.timeaccess_table)     
         
-        self.del_timecost_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
-        self.add_timecost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "Оплата за время", None, QtGui.QApplication.UnicodeUTF8))
+        #self.del_timecost_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
+        #self.add_timecost_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
+        #self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "Оплата за время", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.reset_traffic_edit.setText(QtGui.QApplication.translate("Dialog", "Сбрасывать в конце периода предоплаченый трафик", None, QtGui.QApplication.UnicodeUTF8))
         
         self.trafficcost_tableWidget.clear()
@@ -1421,6 +1501,32 @@ class TarifFrame(QtGui.QDialog):
         self.del_addonservice_button.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
         self.add_addonservice_button.setText(QtGui.QApplication.translate("Dialog", "+", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_8), QtGui.QApplication.translate("Dialog", "Подключаемые услуги", None, QtGui.QApplication.UnicodeUTF8))
+
+        self.commandLinkButton_add_radius_trafficcost.setText(QtGui.QApplication.translate("Dialog", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_add_radius_trafficcost.setDescription(QtGui.QApplication.translate("Dialog", "Добавить цену", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_del_radius_trafficcost.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_del_radius_trafficcost.setDescription(QtGui.QApplication.translate("Dialog", "Удалить цену", None, QtGui.QApplication.UnicodeUTF8))
+        columns=[u'Объём', u'Период тарификации', u'Цена']
+        makeHeaders(columns, self.tableWidget_radius_traffic_trafficcost)     
+        self.groupBox_radius_traffic_tarification_settings.setTitle(QtGui.QApplication.translate("Dialog", "Параметры тарификации", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_radius_traffic_direction.setText(QtGui.QApplication.translate("Dialog", "Направление", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_radius_traffic_tarification_step.setText(QtGui.QApplication.translate("Dialog", "Единица тарификации, кб.", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_radius_traffic_rounding.setText(QtGui.QApplication.translate("Dialog", "Способ округления", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_radius_prepaidtraffic.setTitle(QtGui.QApplication.translate("Dialog", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_radius_traffic_prepaid_direction.setText(QtGui.QApplication.translate("Dialog", "Направление", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_radius_traffic_prepaid_volume.setText(QtGui.QApplication.translate("Dialog", "Объём", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_radius_traffic_reset_prepaidtraffic.setText(QtGui.QApplication.translate("Dialog", "Cбрасывать в конце расчётного периода предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_radius_traffic), QtGui.QApplication.translate("Dialog", "Radius трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_radius_time), QtGui.QApplication.translate("Dialog", "Оплата за время", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_radius_time_tarification_settings.setTitle(QtGui.QApplication.translate("Dialog", "Параметры тарификации", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_radius_time_rounding.setText(QtGui.QApplication.translate("Dialog", "Способ округления", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_radius_time_tarification_step.setText(QtGui.QApplication.translate("Dialog", "Период тарификации, сек.", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_add_radius_timecost.setText(QtGui.QApplication.translate("Dialog", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_add_radius_timecost.setDescription(QtGui.QApplication.translate("Dialog", "Добавитьц ену", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_del_radius_timecost.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_del_radius_timecost.setDescription(QtGui.QApplication.translate("Dialog", "Удалить цену", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_radius_time_prepaid.setTitle(QtGui.QApplication.translate("Dialog", "Предоплаченное время", None, QtGui.QApplication.UnicodeUTF8))
+        self.radius_traffic_access_service_checkbox.setText(QtGui.QApplication.translate("Dialog", "RADIUS трафик", None, QtGui.QApplication.UnicodeUTF8))
 
         
     def spChangedActions(self, text):
@@ -1646,15 +1752,25 @@ class TarifFrame(QtGui.QDialog):
     #------------------tab actions         
     def timeaccessTabActivityActions(self):
         if self.time_access_service_checkbox.checkState()!=2:
-            self.tab_3.setDisabled(True)
+            self.tab_radius_time.setDisabled(True)
             #self.tab_3.hide()
             #self.tabWidget.removeTab(3)
         else:
-            self.tab_3.setDisabled(False)
+            self.tab_radius_time.setDisabled(False)
             #self.tab_3.sho
             #self.tabWidget.insertTab(3, self.tab_3,"")
             #self.retranslateUi()
-               
+    
+    def radiusTrafficTabActivityActions(self):
+        if self.radius_traffic_access_service_checkbox.checkState()!=2:
+            self.tab_radius_traffic.setDisabled(True)
+            #self.tab_3.hide()
+            #self.tabWidget.removeTab(3)
+        else:
+            self.tab_radius_traffic.setDisabled(False)
+            #self.tab_3.sho
+            #self.tabWidget.insertTab(3, se
+                               
     def transmitTabActivityActions(self):
         if self.transmit_service_checkbox.checkState()!=2:
             self.tab_4.setDisabled(True)
@@ -2187,6 +2303,25 @@ class TarifFrame(QtGui.QDialog):
             self.comboBox_system_group.setItemData(i, QtCore.QVariant(systemgroup.id))
             i+=1
         
+        
+        i=0
+        for round_type in round_types:
+            self.comboBox_radius_time_rounding.addItem(unicode(round_type.name))
+            self.comboBox_radius_time_rounding.setItemData(i, QtCore.QVariant(round_type.id))
+            self.comboBox_radius_traffic_rounding.addItem(unicode(round_type.name))
+            self.comboBox_radius_traffic_rounding.setItemData(i, QtCore.QVariant(round_type.id))
+            i+=1        
+
+        
+        
+        i=0
+        for direction_type in direction_types:
+            self.comboBox_radius_traffic_direction.addItem(unicode(direction_type.name))
+            self.comboBox_radius_traffic_direction.setItemData(i, QtCore.QVariant(direction_type.id))
+            self.comboBox_radius_traffic_prepaid_direction.addItem(unicode(direction_type.name))
+            self.comboBox_radius_traffic_prepaid_direction.setItemData(i, QtCore.QVariant(direction_type.id))
+            i+=1  
+                    
         if self.model:
             if not self.model.isnull('settlement_period_id'):
                 self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(settlement_period.name, QtCore.Qt.MatchCaseSensitive))
@@ -2504,6 +2639,7 @@ class TarifFrame(QtGui.QDialog):
         self.transmitTabActivityActions()
         self.onetimeTabActivityActions()
         self.periodicalServicesTabActivityActions()
+        self.radiusTrafficTabActivityActions()
         self.limitTabActivityActions()
         self.addonservicesTabActivityActions()
         self.trafficcost_tableWidget.resizeRowsToContents()
