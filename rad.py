@@ -782,7 +782,7 @@ class HandleSAuth(HandleSBase):
 ###
             accservices = []
             addonservicespeed=[]  
-            if subacc:
+            if subacc_id:
                 accservices = self.caches.accountaddonservice_cache.by_subaccount.get(subacc_id, [])    
                 for accservice in accservices:                                 
                     service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                

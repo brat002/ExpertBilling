@@ -122,20 +122,20 @@ def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='
         for x in d.keys():
             
             command_dict.update({
-                          'nas_%s' % x: str(d[x]),
+                          'nas_%s' % x: unicode(d[x]),
                            })
         d = account._asdict()
         for x in d.keys():
             
             command_dict.update({
-                          'acc_%s' % x: str(d[x]),
+                          'acc_%s' % x: unicode(d[x]),
                            })
         if subacc:
             d = subacc._asdict()
             for x in d.keys():
                 
                 command_dict.update({
-                              'subacc_%s' % x: str(d[x]),
+                              'subacc_%s' % x: unicode(d[x]),
                                })
                 
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
@@ -211,21 +211,21 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
         for x in d.keys():
             
             command_dict.update({
-                          'nas_%s' % x: str(d[x]),
+                          'nas_%s' % x: unicode(d[x]),
                            })
             
         d = account._asdict()
         for x in d.keys():
             
             command_dict.update({
-                          'acc_%s' % x: str(d[x]),
+                          'acc_%s' % x: unicode(d[x]),
                            }) 
         if subacc:
             d = subacc._asdict()
             for x in d.keys():
                 
                 command_dict.update({
-                              'subacc_%s' % x: str(d[x]),
+                              'subacc_%s' % x: unicode(d[x]),
                                })    
         
         speed = get_decimals_speeds(speed)
@@ -276,20 +276,20 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
         for x in d.keys():
             
             command_dict.update({
-                          'nas_%s' % x: str(d[x]),
+                          'nas_%s' % x: unicode(d[x]),
                            })          
         d = account._asdict()
         for x in d.keys():
             
             command_dict.update({
-                          'acc_%s' % x: str(d[x]),
+                          'acc_%s' % x: unicode(d[x]),
                            })
         if subacc :
             d = subacc._asdict()
             for x in d.keys():
                 
                 command_dict.update({
-                              'subacc_%s' % x: str(d[x]),
+                              'subacc_%s' % x: unicode(d[x]),
                                })
         speed = get_decimals_speeds(speed)
         #print speed
@@ -324,26 +324,26 @@ def cred(account, subacc, access_type, nas, format_string):
         
         """
         command_dict={
-                             'access_type':str(access_type),
+                             'access_type':unicode(access_type),
                     }
         d = account._asdict()
         for x in d.keys():
             
             command_dict.update({
-                          'acc_%s' % x: str(d[x]),
+                          'acc_%s' % x: unicode(d[x]),
                            })
         d = nas._asdict()
         for x in d.keys():
             
             command_dict.update({
-                          'nas_%s' % x: str(d[x]),
+                          'nas_%s' % x: unicode(d[x]),
                            })
         if subacc :
             d = subacc._asdict()
             for x in d.keys():
                 
                 command_dict.update({
-                              'subacc_%s' % x: str(d[x]),
+                              'subacc_%s' % x: unicode(d[x]),
                                })
 
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)        
