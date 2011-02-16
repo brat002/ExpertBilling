@@ -1,0 +1,9 @@
+﻿{% load custom_filters %}
+{% load billservice_tags %}
+<tr>
+	<td class="{{ iter_num|coll_bg  }} {% if last %}no_border{% endif %}">{{ subaccount.username }}&nbsp;</td>
+	<td class="left_border {{ iter_num|coll_bg  }} {% if last %}no_border{% endif %}">*****</td>
+   	<td class="left_border {{ iter_num|coll_bg  }} {% if last %}no_border{% endif %}">{{ subaccount.ipn_ip_address }}&nbsp;</td>
+   	<td class="left_border {{ iter_num|coll_bg  }} {% if last %}no_border{% endif %}">{{ subaccount.vpn_ip_address }}&nbsp;</td>
+   	<td class="left_border {{ iter_num|coll_bg  }} {% if last %}no_border{% endif %}">{{ subaccount.ipn_mac_address }}&nbsp;</td>
+</tr>

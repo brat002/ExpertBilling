@@ -14,7 +14,7 @@ urlpatterns = patterns('',
     ('^admin/(.*)', admin.site.root),
      #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
      #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
-     (r'helpdesk/', include('helpdesk.urls')),
+     #(r'helpdesk/', include('helpdesk.urls')),
 
 )
 

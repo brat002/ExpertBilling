@@ -129,6 +129,14 @@ def traffic_limit_row(trafficlimit, user, iter_nom, last=False):
             'last':last,
             }
     
+@register.inclusion_tag('accounts/tags/subaccount_row.html')
+def subaccounts_row(subaccount, iter_num, last=False):
+
+    return {
+            'subaccount': subaccount,
+            'iter_num':iter_num,
+            'last':last,
+            }
     
 @register.filter(name='coll_bg')
 def coll_bg(value):
