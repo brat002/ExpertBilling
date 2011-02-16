@@ -82,3 +82,22 @@ TCPException: READ FAILED!
 2009-10-13 18:29:27,944 DEBUG    CLIENT: read time: 0.00395525129602
 2009-10-13 18:29:27,944 DEBUG    CLIENT: needed length: 40
 2009-10-13 18:29:27,944 DEBUG    CLIENT: read time: 0.00338059725482
+2011-02-16 15:53:33,670 INFO     TCP CLIENT CONNECTING: ('127.0.0.1', 7771)
+2011-02-16 15:53:33,689 INFO     TCP CLIENT CONNECTED: sock: ('127.0.0.1', 38393) peer: ('127.0.0.1', 7771)
+2011-02-16 15:53:33,692 DEBUG    CLIENT: needed length: 32
+2011-02-16 15:53:33,692 DEBUG    CLIENT: read time: 0.01
+2011-02-16 15:53:33,718 DEBUG    CLIENT: needed length: 40
+2011-02-16 15:53:33,719 DEBUG    CLIENT: read time: 0.0
+2011-02-16 15:53:33,719 DEBUG    RPC: basic client args: ('activate_card', u'brat002', u'02111984')
+2011-02-16 15:53:33,719 DEBUG    RPC: send_process_data: objectify time: 0.0
+2011-02-16 15:53:33,719 DEBUG    RPC: send_process_data: serialize time: 0.0
+2011-02-16 15:53:33,720 DEBUG    RPC: send_process_data: compress time: 0.0
+2011-02-16 15:53:33,720 DEBUG    RPC: send_process_data: encrypt time: 0.0
+2011-02-16 15:53:33,721 DEBUG    RPC: send_process_data: pack time: 0.0
+2011-02-16 15:53:33,853 DEBUG    CLIENT: needed length: 56
+2011-02-16 15:53:33,854 DEBUG    CLIENT: read time: 0.0
+2011-02-16 15:53:33,854 DEBUG    RPC: get_process_data: encrypt time: 0.0
+2011-02-16 15:53:33,854 DEBUG    RPC: get_process_data: compress time: 0.0
+2011-02-16 15:53:33,854 DEBUG    RPC: loaded data: ('activate_card', (2,))
+2011-02-16 15:53:33,854 DEBUG    RPC: get_process_data: serialize time: 0.0
+2011-02-16 15:53:33,854 DEBUG    RPC: get_process_data: objectify time: 0.0

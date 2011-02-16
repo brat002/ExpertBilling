@@ -30,7 +30,7 @@ from django.contrib.auth.decorators import login_required
 
 from lib.http import JsonResponse
 
-from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic 
+from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount 
 from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession  
@@ -188,6 +188,7 @@ def index(request):
     except:
         ballance = 0 
     traffic = TrafficLimit.objects.filter(tarif=tariff_id)      
+    subaccounts = SubAccount.objects.filter(account=user)
     #account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
     account_tariff = AccountTarif.objects.filter(account=user, datetime__lte=datetime.datetime.now()).order_by('-datetime')[0]
     account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff)
@@ -207,6 +208,7 @@ def index(request):
             'prepaidtraffic':prepaidtraffic,
             'active_class':'user-img',
             'next_tariff':next_tariff,
+            'subaccounts':subaccounts,
             }
 
 @render_to('accounts/netflowstream_info.html')
@@ -457,7 +459,7 @@ def change_tariff(request):
                             'error_message':u'Вы не можете перейти на выбранный тариф. Для перехода вам необходимо отработать на старом тарифе ещё не менее %s дней' % (delta/86400*(-1), ),
                             }
             if rule.on_next_sp:
-                sp = user.get_account_tarif().settlement_period
+                sp = user.get_account_tariff().settlement_period
                 if sp:
                     if sp.autostart:
                         start = account_tariff.datetime

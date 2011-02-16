@@ -97,9 +97,9 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     '/opt/ebs/web/ebscab/templates',
-    '/opt/ebs/web/ebscab/helpdesk/templates',
+    #'/opt/ebs/web/ebscab/helpdesk/templates',
     os.path.abspath('./templates'),
-    os.path.abspath('./helpdesk/templates'),
+    #os.path.abspath('./helpdesk/templates'),
 )
 
 INSTALLED_APPS = (
@@ -121,7 +121,7 @@ INSTALLED_APPS = (
 )
 
 AUTHENTICATION_BACKENDS = (
-    'helpdesk.backend.LoginSystemUserBackend',
+    #'helpdesk.backend.LoginSystemUserBackend',
     'billservice.backend.LoginUserBackend',
 )
 
@@ -147,6 +147,7 @@ MAX_PROMISE_SUM = 100000
 LEFT_PROMISE_DAYS = 7
 
 WEBCAB_LOG = '/opt/ebs/web/ebscab/log/webcab_log'
+WEBCAB_LOG = os.path.abspath('log/webcab_log')
 
 CURRENCY = '$'
 
