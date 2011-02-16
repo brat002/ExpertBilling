@@ -117,7 +117,7 @@
 		<td class="account_information main_table_left_border user_info" id="account_information">
 			<div class="user_block">
 				<div class="f-right">
-					<div><span class="bold">VPN IP адрес :</span> {{ user.vpn_ip_address }}</div>
+					
 					<div><span class="bold">Тарифный план :</span> {{ tariff }}</div>
 					{% if next_tariff %}
 						<div><span class="bold">Следующий тарифный план :</span>{{ next_tariff.tarif.name }}</div>
@@ -132,7 +132,7 @@
 					{% if user.email %}
 						<div><span class="bold">E-mail : {{ user.email }}</div>
 					{% endif %}
-					<div><span class="bold">Cетевой IP адрес :</span> {{ user.ipn_ip_address }}</div>
+					
 					<div><span class="bold">Дата подключения :</span> {{ user.created|date:"d.m.Y  H:i" }}</div>
 				</div>
 				<div class="clear"></div>
@@ -140,6 +140,38 @@
 		</td>
 	</tr>
 	
+    <!--- Субаккаунты - загаловки --->
+    <tr>
+        <td class="blue_caption white s-11 bold">ВАШИ АККАУНТЫ<a id="traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic')">&nbsp;</a></td>
+    </tr>
+    <!--- Субаккаунты - данные --->
+    <tr>
+        {% spaceless %}
+        <td class="right_border bottom_border main_table_left_border" valign="top" id="traffic">
+                {% if subaccounts %}
+                    <table class="wide extra_table trafficlimit_margin" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <th class="first_row">Имя пользователя</th>
+                            <th>Пароль</th>
+                            <th>VPN IP</th>
+                            <th>IPN IP</th>
+                            <th>MAC-аддрес</th>
+                        </tr>
+                        {% for subaccount in subaccounts %}
+                            {% subaccounts_row subaccount forloop.counter forloop.last %}
+                        {% endfor %}
+                        <tr>
+                            <td colspan="5" class="no_border">&nbsp;</td>
+                        </tr>
+                    </table>
+                {% else %}
+                     <div class="padding_bottom"></div>
+                {% endif %}
+        </td>
+        {% endspaceless %}
+    </tr>
+	
+
 	
 	<!--- остаток трафика по лимитам - загаловки --->
 	<tr>

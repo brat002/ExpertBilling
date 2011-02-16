@@ -238,7 +238,9 @@ class TimeAccessService(models.Model):
     #name              = models.CharField(max_length=255, verbose_name=u'Название услуги', unuque=True)
     prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время', default=0, blank=True)
     reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время', blank=True, default=False)
-
+    rounding = models.IntegerField()
+    tarification_step = models.IntegerField()
+    
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -405,6 +407,31 @@ class AccountPrepaysTrafic(models.Model):
         verbose_name = u"Предоплаченый трафик пользователя"
         verbose_name_plural = u"Предоплаченный трафик пользователя"
 
+class AccountPrepaysRadiusTrafic(models.Model):
+    """
+    При подключении пользователю тарифного плана, у которого есть предоплаченный трафик
+    в таблице должны создаваться записи
+    В начале каждого расчётного периода пользователю должен заново начисляться трафик
+    """
+    account_tarif = models.ForeignKey(to="AccountTarif")
+    prepaid_traffic = models.ForeignKey(to='RadiusTraffic')
+    size = models.FloatField(blank=True, default=0)
+    direction = models.IntegerField()
+    datetime = models.DateTimeField(auto_now_add=True, default='')
+
+    def __unicode__(self):
+        return u"%s" % (self.prepaid_traffic)
+
+    class Admin:
+        pass
+
+    class Meta:
+        verbose_name = u"Предоплаченый radius трафик пользователя"
+        verbose_name_plural = u"Предоплаченный radius трафик пользователя"
+
+
+
+
 class AccountPrepaysTime(models.Model):
     account_tarif = models.ForeignKey(to="AccountTarif")
     prepaid_time_service = models.ForeignKey(to=TimeAccessService)
@@ -527,7 +554,7 @@ class Account(models.Model):
     balance_blocked = models.BooleanField(blank=True, default=False)
     ipn_speed = models.CharField(max_length=96, blank=True, default="")
     vpn_speed = models.CharField(max_length=96, blank=True, default="")
-    netmask = models.IPAddressField(blank=True, default='0.0.0.0')
+    #netmask = models.IPAddressField(blank=True, default='0.0.0.0')
     vlan = models.IntegerField()
     allow_webcab = models.BooleanField()
     allow_expresscards = models.BooleanField()
@@ -1146,9 +1173,11 @@ class Log(models.Model):
     
 class SubAccount(models.Model):
     account = models.ForeignKey(Account)
-    ipn_ip = models.IPAddressField()
-    ipn_mac = models.CharField(max_length=16)
-    vpn_ip = models.IPAddressField()
+    username = models.CharField(max_length=512)
+    password = models.CharField(max_length=512)
+    ipn_ip_address = models.IPAddressField()
+    ipn_mac_address = models.CharField(max_length=16)
+    vpn_ip_address = models.IPAddressField()
     
 class BalanceHistory(models.Model):
     account=models.ForeignKey(Account)
@@ -1165,5 +1194,18 @@ class Street(models.Model):
 class House(models.Model):
     name = models.CharField(max_length=320)
     street = models.ForeignKey(Street)
+    
+class RadiusTraffic(models.Model):
+    value = models.DecimalField(max_digits=30, decimal_places=20)
+    timeperiod = models.ForeignKey(TimePeriod)
+    cost = models.DecimalField(max_digits=30, decimal_places=20)
+    direction = models.IntegerField()
+    tarification_step = models.IntegerField()
+    rounding = models.IntegerField()
+    prepaid_direction = models.IntegerField()
+    prepaid_value = models.IntegerField()
+    created = models.DateTimeField()
+    deleted = models.DateTimeField()
+    
     
         
