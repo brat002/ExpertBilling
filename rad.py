@@ -1169,11 +1169,15 @@ class HandlelISGAuth(HandleSAuth):
             authobject.set_code(2)
             self.replypacket.username = '' #Нельзя юникод
             self.replypacket.password = '' #Нельзя юникод
-
+            if subacc.vpn_ip_address not in ['', '0.0.0.0', '0.0.0.0/0']:
+                self.replypacket.AddAttribute('Framed-IP-Address', subacc.vpn_ip_address)
+            else:
+                self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)
             #account_speed_limit_cache
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
+            self.replypacket.AddAttribute('Class', str("%s,%s" % (subacc.id,str(self.session_speed))))
             self.add_values(acc.tarif_id)
-            sessions_speed[acc.account_id] = self.session_speed
+            #sessions_speed[acc.account_id] = self.session_speed
             #print "Setting Speed For User" , self.speed
             return authobject, self.replypacket
         else:
@@ -1602,7 +1606,7 @@ class HandleSAcct(HandleSBase):
                     with queues.sessions_lock:
                         queues.sessions[str(self.packetobject['Acct-Session-Id'][0])] = (nas.id, now)
 
-            if acc.time_access_service_id:
+            if acc.time_access_service_id or acc.radius_traffic_transmit_service_id:
                 self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, date_start,
                                  caller_id, called_id, framed_ip_address, nas_id, 
                                  framed_protocol, checkouted_by_time, checkouted_by_trafic) 
@@ -1618,7 +1622,7 @@ class HandleSAcct(HandleSBase):
 
         elif self.packetobject['Acct-Status-Type']==['Alive']:
             bytes_in, bytes_out = self.get_bytes()
-            if acc.time_access_service_id:
+            if acc.time_access_service_id or acc.radius_traffic_transmit_service_id:
                 self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, interrim_update,
                                  caller_id, called_id, framed_ip_address, nas_id, session_time,
                                  bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
@@ -1648,7 +1652,7 @@ class HandleSAcct(HandleSBase):
 
         elif self.packetobject['Acct-Status-Type']==['Stop']:
             bytes_in, bytes_out=self.get_bytes()
-            if acc.time_access_service_id:
+            if acc.time_access_service_id or acc.radius_traffic_transmit_service_id:
                 self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, interrim_update, date_end,
                                  caller_id, called_id, framed_ip_address, nas_id, session_time,
                                     bytes_in, bytes_out, framed_protocol, checkouted_by_time, checkouted_by_trafic)

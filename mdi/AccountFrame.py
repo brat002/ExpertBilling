@@ -1312,6 +1312,7 @@ class TarifFrame(QtGui.QDialog):
         self.onetime_tableWidget = tableFormat(self.onetime_tableWidget)
         self.prepaid_tableWidget = tableFormat(self.prepaid_tableWidget, no_vsection_size=True)
         self.trafficcost_tableWidget = tableFormat(self.trafficcost_tableWidget, no_vsection_size=True)
+        self.tableWidget_radius_traffic_trafficcost = tableFormat(self.tableWidget_radius_traffic_trafficcost)
         self.tableWidget_addonservices = tableFormat(self.tableWidget_addonservices, no_vsection_size=True)
         self.tabWidget.setCurrentIndex(0)
         
@@ -1328,6 +1329,8 @@ class TarifFrame(QtGui.QDialog):
         
         
         QtCore.QObject.connect(self.timeaccess_table, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.timeAccessServiceEdit)
+        
+        QtCore.QObject.connect(self.tableWidget_radius_traffic_trafficcost, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.radiusTrafficEdit)
         
         QtCore.QObject.connect(self.periodical_tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.periodicalServicesEdit)
         
@@ -1348,6 +1351,8 @@ class TarifFrame(QtGui.QDialog):
         QtCore.QObject.connect(self.commandLinkButton_add_radius_timecost, QtCore.SIGNAL("clicked()"), self.addTimeAccessRow)
         QtCore.QObject.connect(self.commandLinkButton_del_radius_timecost, QtCore.SIGNAL("clicked()"), self.delTimeAccessRow)
 
+        QtCore.QObject.connect(self.commandLinkButton_add_radius_trafficcost, QtCore.SIGNAL("clicked()"), self.addRadiusTrafficRow)
+        QtCore.QObject.connect(self.commandLinkButton_del_radius_trafficcost, QtCore.SIGNAL("clicked()"), self.delRadiusTrafficRow)
 
         QtCore.QObject.connect(self.add_prepaid_traffic_button, QtCore.SIGNAL("clicked()"), self.addPrepaidTrafficRow)
         QtCore.QObject.connect(self.del_prepaid_traffic_button, QtCore.SIGNAL("clicked()"), self.delPrepaidTrafficRow)        
@@ -1377,8 +1382,12 @@ class TarifFrame(QtGui.QDialog):
         QtCore.QObject.connect(self.ipn_for_vpn, QtCore.SIGNAL("stateChanged(int)"), self.ipn_for_vpnActions)
 
         QtCore.QObject.connect(self.sp_name_edit, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.spChangedActions)
-#-----------------------        
-
+        
+        QtCore.QObject.connect(self.comboBox_radius_time_rounding, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.timeRoundingActions)
+        QtCore.QObject.connect(self.comboBox_radius_traffic_rounding, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.trafficRoundingActions)
+        #-----------------------
+        self.timeRoundingActions()        
+        self.trafficRoundingActions()
         
 
         
@@ -1506,13 +1515,13 @@ class TarifFrame(QtGui.QDialog):
         self.commandLinkButton_add_radius_trafficcost.setDescription(QtGui.QApplication.translate("Dialog", "Добавить цену", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton_del_radius_trafficcost.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton_del_radius_trafficcost.setDescription(QtGui.QApplication.translate("Dialog", "Удалить цену", None, QtGui.QApplication.UnicodeUTF8))
-        columns=[u'Объём', u'Период тарификации', u'Цена']
+        columns=['#',u'Объём', u'Период тарификации', u'Цена за МБ.']
         makeHeaders(columns, self.tableWidget_radius_traffic_trafficcost)     
         self.groupBox_radius_traffic_tarification_settings.setTitle(QtGui.QApplication.translate("Dialog", "Параметры тарификации", None, QtGui.QApplication.UnicodeUTF8))
         self.label_radius_traffic_direction.setText(QtGui.QApplication.translate("Dialog", "Направление", None, QtGui.QApplication.UnicodeUTF8))
         self.label_radius_traffic_tarification_step.setText(QtGui.QApplication.translate("Dialog", "Единица тарификации, кб.", None, QtGui.QApplication.UnicodeUTF8))
         self.label_radius_traffic_rounding.setText(QtGui.QApplication.translate("Dialog", "Способ округления", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_radius_prepaidtraffic.setTitle(QtGui.QApplication.translate("Dialog", "Предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_radius_prepaidtraffic.setTitle(QtGui.QApplication.translate("Dialog", "Предоплаченный трафик, мб.", None, QtGui.QApplication.UnicodeUTF8))
         self.label_radius_traffic_prepaid_direction.setText(QtGui.QApplication.translate("Dialog", "Направление", None, QtGui.QApplication.UnicodeUTF8))
         self.label_radius_traffic_prepaid_volume.setText(QtGui.QApplication.translate("Dialog", "Объём", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_radius_traffic_reset_prepaidtraffic.setText(QtGui.QApplication.translate("Dialog", "Cбрасывать в конце расчётного периода предоплаченный трафик", None, QtGui.QApplication.UnicodeUTF8))
@@ -1522,7 +1531,7 @@ class TarifFrame(QtGui.QDialog):
         self.label_radius_time_rounding.setText(QtGui.QApplication.translate("Dialog", "Способ округления", None, QtGui.QApplication.UnicodeUTF8))
         self.label_radius_time_tarification_step.setText(QtGui.QApplication.translate("Dialog", "Период тарификации, сек.", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton_add_radius_timecost.setText(QtGui.QApplication.translate("Dialog", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_add_radius_timecost.setDescription(QtGui.QApplication.translate("Dialog", "Добавитьц ену", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_add_radius_timecost.setDescription(QtGui.QApplication.translate("Dialog", "Добавить цену", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton_del_radius_timecost.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton_del_radius_timecost.setDescription(QtGui.QApplication.translate("Dialog", "Удалить цену", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_radius_time_prepaid.setTitle(QtGui.QApplication.translate("Dialog", "Предоплаченное время", None, QtGui.QApplication.UnicodeUTF8))
@@ -1544,6 +1553,20 @@ class TarifFrame(QtGui.QDialog):
             self.reset_traffic_edit.setDisabled(False)
             self.reset_time_checkbox.setDisabled(False)
 
+    def timeRoundingActions(self):
+        if self.comboBox_radius_time_rounding.itemData(self.comboBox_radius_time_rounding.currentIndex()).toInt()[0]==0:
+            self.spinBox_radius_time_tarification_step.setValue(0)
+            self.spinBox_radius_time_tarification_step.setDisabled(True)
+        else:
+            self.spinBox_radius_time_tarification_step.setDisabled(False)
+                        
+    def trafficRoundingActions(self):
+        if self.comboBox_radius_traffic_rounding.itemData(self.comboBox_radius_traffic_rounding.currentIndex()).toInt()[0]==0:
+            self.spinBox_radius_traffic_tarification_step.setValue(0)
+            self.spinBox_radius_traffic_tarification_step.setDisabled(True)
+        else:
+            self.spinBox_radius_traffic_tarification_step.setDisabled(False)
+                        
     def ipn_for_vpnActions(self, value):
         if self.model is not None:
             if value==2 and self.connection.get("SELECT count(*) as accounts FROM billservice_account WHERE ipn_ip_address='0.0.0.0' and get_tarif(id)=%s" % self.model.id).accounts>0:
@@ -1644,7 +1667,22 @@ class TarifFrame(QtGui.QDialog):
     def addTimeAccessRow(self):
         current_row = self.timeaccess_table.rowCount()
         self.timeaccess_table.insertRow(current_row)
+        
+    def addRadiusTrafficRow(self):
+        current_row = self.tableWidget_radius_traffic_trafficcost.rowCount()
+        self.tableWidget_radius_traffic_trafficcost.insertRow(current_row)
+
+    def delRadiusTrafficRow(self):
+        current_row = self.tableWidget_radius_traffic_trafficcost.rowCount() 
+        id = self.getIdFromtable(self.tableWidget_radius_traffic_trafficcost, current_row)
+        
+        if id!=-1:
+            self.connection.iddelete(id ,"billservice_radiustraffic")
+            #TimeAccessNode.objects.get(id=id).delete()
     
+        self.tableWidget_radius_traffic_trafficcost.removeRow(current_row)
+
+        
     def delTimeAccessRow(self):
         current_row = self.timeaccess_table.currentRow()   
         id = self.getIdFromtable(self.timeaccess_table, current_row)
@@ -2036,7 +2074,39 @@ class TarifFrame(QtGui.QDialog):
             self.timeaccess_table.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
                 
                                      
-   
+    def radiusTrafficEdit(self,y,x):
+        if x==1:
+            item = self.tableWidget_radius_traffic_trafficcost.item(y,x)
+            try:
+                default_text=float(item.text())
+            except:
+                default_text=0.00
+            
+            text = QtGui.QInputDialog.getDouble(self, u"Объём(МБ):", u"Введите объём трафика за расчётный период", default_text,0,99999999,2)        
+           
+            self.tableWidget_radius_traffic_trafficcost.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
+        
+        if x==2:
+            item = self.tableWidget_radius_traffic_trafficcost.item(y,x)
+            try:
+                default_text = item.text()
+            except:
+                default_text=u""
+            child = ComboBoxDialog(items=self.connection.get_models("billservice_timeperiod"), selected_item = default_text )
+            if child.exec_()==1:
+                self.addrow(self.tableWidget_radius_traffic_trafficcost, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)  
+
+        if x==3:
+            item = self.tableWidget_radius_traffic_trafficcost.item(y,x)
+            try:
+                default_text=float(item.text())
+            except:
+                default_text=0.00
+            
+            text = QtGui.QInputDialog.getDouble(self, u"Стоимость:", u"Введите цену", default_text,0,99999999,2)        
+           
+            self.tableWidget_radius_traffic_trafficcost.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
+                                             
     def trafficCostCellEdit(self,y,x):
         
         #Стоимость за трафик
@@ -2415,6 +2485,8 @@ class TarifFrame(QtGui.QDialog):
                 self.time_access_service_checkbox.setChecked(True)
                 time_access_service = self.connection.get_model(self.model.time_access_service_id, "billservice_timeaccessservice")
                 self.prepaid_time_edit.setValue(time_access_service.prepaid_time)
+                self.spinBox_radius_time_tarification_step.setValue(time_access_service.tarification_step)
+                self.comboBox_radius_time_rounding.setCurrentIndex(self.comboBox_radius_time_rounding.findData(QtCore.QVariant(time_access_service.rounding)))
                 self.reset_time_checkbox.setCheckState(time_access_service.reset_time == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
                 #nodes = self.model.time_access_service.time_access_nodes.all()
                 nodes = self.connection.sql("""SELECT timeaccessnode.*, timeperiod.name as time_period_name, timeperiod.id as timeperiod_id FROM billservice_timeaccessnode as timeaccessnode  
@@ -2428,7 +2500,33 @@ class TarifFrame(QtGui.QDialog):
                     self.addrow(self.timeaccess_table, node.cost,i, 2)
                     i+=1                
             self.timeaccess_table.setColumnHidden(0, True)
-            
+
+            if not self.model.isnull('radius_traffic_transmit_service_id'):
+                self.radius_traffic_access_service_checkbox.setChecked(True)
+                radius_traffic_transmit_service = self.connection.get_model(self.model.radius_traffic_transmit_service_id, "billservice_radiustraffic")
+                self.spinBox_radius_traffic_prepaid_volume.setValue(radius_traffic_transmit_service.prepaid_value)
+                self.comboBox_radius_traffic_prepaid_direction.setCurrentIndex(self.comboBox_radius_traffic_prepaid_direction.findData(QtCore.QVariant(radius_traffic_transmit_service.prepaid_direction)))
+                self.spinBox_radius_traffic_tarification_step.setValue(radius_traffic_transmit_service.tarification_step)
+                self.comboBox_radius_traffic_direction.setCurrentIndex(self.comboBox_radius_traffic_direction.findData(QtCore.QVariant(radius_traffic_transmit_service.direction)))
+                self.comboBox_radius_traffic_rounding.setCurrentIndex(self.comboBox_radius_traffic_rounding.findData(QtCore.QVariant(radius_traffic_transmit_service.rounding)))
+                
+                #self.checkBox_radius_traffic_reset_prepaidtraffic.setValue(rad.prepaid_time)
+                self.checkBox_radius_traffic_reset_prepaidtraffic.setCheckState(radius_traffic_transmit_service.reset_prepaid_traffic == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
+                #nodes = self.model.time_access_service.time_access_nodes.all()
+                
+                nodes = self.connection.sql("""SELECT node.id, node.value, timeperiod.name as time_period_name, timeperiod.id as timeperiod_id, node.cost FROM billservice_radiustrafficnode as node  
+                JOIN billservice_timeperiod as timeperiod ON timeperiod.id=node.timeperiod_id
+                WHERE node.radiustraffic_id=%d ORDER BY value ASC""" % self.model.radius_traffic_transmit_service_id)
+                self.tableWidget_radius_traffic_trafficcost.setRowCount(len(nodes))
+                i=0
+                for node in nodes:
+                    self.addrow(self.tableWidget_radius_traffic_trafficcost, node.id,i, 0)
+                    self.addrow(self.tableWidget_radius_traffic_trafficcost, node.value,i, 1)
+                    self.addrow(self.tableWidget_radius_traffic_trafficcost, node.time_period_name,i, 2, 'combobox', node.timeperiod_id)
+                    self.addrow(self.tableWidget_radius_traffic_trafficcost, node.cost,i, 3)
+                    i+=1                
+                self.tableWidget_radius_traffic_trafficcost.setColumnHidden(0, True)
+                        
             #PeriodicalService
             periodical_services = self.connection.sql("""SELECT periodicalservice.*, settlementperiod.name as settlement_period_name
             FROM billservice_periodicalservice as periodicalservice
@@ -2790,6 +2888,10 @@ class TarifFrame(QtGui.QDialog):
                 #print 1
                 time_access_service.reset_time = self.reset_time_checkbox.checkState()==2
                 time_access_service.prepaid_time = unicode(self.prepaid_time_edit.text())
+                time_access_service.rounding = self.comboBox_radius_time_rounding.itemData(self.comboBox_radius_time_rounding.currentIndex()).toInt()[0]
+                time_access_service.tarification_step = unicode(self.spinBox_radius_time_tarification_step.value())
+
+
                 
                 model.time_access_service_id = self.connection.save(time_access_service, 'billservice_timeaccessservice')
                 
@@ -2829,6 +2931,60 @@ class TarifFrame(QtGui.QDialog):
                 else:
                     model.time_access_service_id = None
                     
+                    
+            #RADIUS траффик
+            if self.radius_traffic_access_service_checkbox.checkState()==2 and self.tableWidget_radius_traffic_trafficcost.rowCount()>0:
+                    
+                if not model.isnull('radius_traffic_transmit_service_id'):
+                    radius_traffic_service = self.connection.get_model(self.model.radius_traffic_transmit_service_id, "billservice_radiustraffic" )
+                else:
+                    radius_traffic_service=Object()
+                #print 1
+                radius_traffic_service.reset_prepaid_traffic = self.checkBox_radius_traffic_reset_prepaidtraffic.checkState()==2
+                radius_traffic_service.prepaid_value = unicode(self.spinBox_radius_traffic_prepaid_volume.value())
+                radius_traffic_service.direction = self.comboBox_radius_traffic_direction.itemData(self.comboBox_radius_traffic_direction.currentIndex()).toInt()[0]
+                radius_traffic_service.prepaid_direction = self.comboBox_radius_traffic_prepaid_direction.itemData(self.comboBox_radius_traffic_prepaid_direction.currentIndex()).toInt()[0]
+                radius_traffic_service.rounding = self.comboBox_radius_traffic_rounding.itemData(self.comboBox_radius_traffic_rounding.currentIndex()).toInt()[0]
+                radius_traffic_service.tarification_step = unicode(self.spinBox_radius_traffic_tarification_step.value())
+                model.radius_traffic_transmit_service_id = self.connection.save(radius_traffic_service, 'billservice_radiustraffic')
+                
+                for i in xrange(0, self.tableWidget_radius_traffic_trafficcost.rowCount()):
+                    #print "pre save"
+                    if self.tableWidget_radius_traffic_trafficcost.item(i,1)==None or self.tableWidget_radius_traffic_trafficcost.item(i,2)==None:
+                        QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки оплаты за radius трафик")
+                        self.connection.rollback()
+                        return
+ 
+                    #print "post save"
+                    id = self.getIdFromtable(self.tableWidget_radius_traffic_trafficcost, i)
+                    if id!=-1:
+                        radius_traffic_node = self.connection.get_model(id, "billservice_radiustrafficnode")
+                    else:
+                        radius_traffic_node = Object()
+                    
+                    radius_traffic_node.radiustraffic_id=model.radius_traffic_transmit_service_id
+                    
+                    radius_traffic_node.value = unicode(self.tableWidget_radius_traffic_trafficcost.item(i,1).text())
+                    radius_traffic_node.timeperiod_id = self.tableWidget_radius_traffic_trafficcost.item(i,2).id
+                    radius_traffic_node.cost = unicode(self.tableWidget_radius_traffic_trafficcost.item(i,3).text())
+                    self.connection.save(radius_traffic_node, "billservice_radiustrafficnode")
+            
+            elif self.radius_traffic_access_service_checkbox.checkState()==0 and model.hasattr("radius_traffic_transmit_service_id"):
+                if  not model.isnull("radius_traffic_transmit_service_id"):
+                    
+                    self.connection.iddelete(self.model.radius_traffic_transmit_service_id, "billservice_radiustraffic" )
+                    
+                    radius_traffic_transmit_service_id=model.radius_traffic_transmit_service_id
+                    model.radius_traffic_transmit_service_id=None
+                    self.connection.save(model, "billservice_tariff")
+                    self.connection.iddelete(radius_traffic_transmit_service_id, "billservice_radiustraffic")
+                    
+                    model.radius_traffic_transmit_service_id = None
+            
+                else:
+                    model.radius_traffic_transmit_service_id = None
+                                
+            
             #Разовые услуги
             
             if self.onetime_tableWidget.rowCount()>0 and self.onetime_services_checkbox.checkState()==2:

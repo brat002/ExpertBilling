@@ -646,12 +646,12 @@ class TimeAccessBill(Thread):
                 if 0: assert isinstance(caches, CoreCaches)
                 
                 cur = self.connection.cursor()
-                cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.id, acc_t.id 
+                cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.radius_traffic_transmit_service_id, tarif.id, acc_t.id 
                                  FROM radius_session AS rs
                                  JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<%s ORDER BY datetime DESC LIMIT 1) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
-                                 WHERE (NOT rs.checkouted_by_time) AND (tarif.active) AND (acc_t.datetime < rs.interrim_update) AND (tarif.time_access_service_id is NOT NULL)
-                                 AND rs.interrim_update < %s ORDER BY rs.interrim_update ASC;""", (dateAT,dateAT,))
+                                 WHERE (NOT rs.checkouted_by_time) AND (tarif.active) AND (acc_t.datetime < rs.interrim_update) AND (tarif.time_access_service_id is NOT NULL or tarif.radius_traffic_transmit_service_id is not NULL)
+                                 AND rs.interrim_update < %s ORDER BY rs.interrim_update ASC LIMIT 20000;""", (dateAT,dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
                 for row in rows:
@@ -663,6 +663,9 @@ class TimeAccessBill(Thread):
                     # рассчитав соотв снятия.
                     #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
                     #rs_id,  account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id = row
+                    
+                    acc = caches.account_cache.by_account.get(rs.account_id)
+                    if acc.radius_traffic_transmit_service_id:continue
                     cur.execute("""SELECT session_time FROM radius_session WHERE sessionid=%s AND checkouted_by_time IS TRUE \
                                    AND interrim_update < %s 
                                    ORDER BY interrim_update DESC LIMIT 1""", (rs.sessionid, dateAT))
