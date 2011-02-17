@@ -4221,3 +4221,13 @@ ALTER TABLE billservice_account ALTER COLUMN allow_ipn_with_minus SET DEFAULT fa
 
 ALTER TABLE billservice_account ADD COLUMN allow_ipn_with_block boolean;
 ALTER TABLE billservice_account ALTER COLUMN allow_ipn_with_block SET DEFAULT false;
+
+---17.02.2011
+ALTER TABLE billservice_tariff ADD COLUMN radius_traffic_transmit_service_id integer;
+ALTER TABLE billservice_timeaccessservice
+   ADD COLUMN rounding integer DEFAULT 0;
+
+ALTER TABLE billservice_timeaccessservice
+   ADD COLUMN tarification_step integer DEFAULT 0;
+
+

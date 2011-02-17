@@ -19,6 +19,8 @@ from core_class.OneTimeServiceData import OneTimeServiceData
 from core_class.AccessParametersData import AccessParametersData
 from core_class.IpnSpeedData import IpnSpeedData
 from core_class.SuspendedPeriodData import SuspendedPeriodData
+from core_class.RadiusTrafficTransmitSData import RadiusTrafficTransmitSData
+from core_class.RadiusTrafficNodeData import RadiusTrafficNodeData
 from common.AddonServiceData import AddonServiceData
 from common.AddonServiceTarifData import AddonServiceTarifData
 from common.AccountAddonServiceData import AccountAddonServiceData
@@ -26,7 +28,7 @@ from core_class.AddonPeriodicalData import AddonPeriodicalData
 from rad_class.SubAccountsData import SubAccountsData
 
 class CoreCaches(CacheCollection):
-    __slots__ = () + ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache', 'addonservice_cache', 'addontarifservice_cache', 'accountaddonservice_cache', 'addonperiodical_cache', 'subaccount_cache')
+    __slots__ = () + ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache', 'addonservice_cache', 'addontarifservice_cache', 'accountaddonservice_cache', 'addonperiodical_cache', 'subaccount_cache', 'radius_traffic_transmit_service_cache', 'radius_traffic_node_cache')
     
     def __init__(self, date, fMem):
         super(CoreCaches, self).__init__(date)
@@ -56,7 +58,9 @@ class CoreCaches(CacheCollection):
         self.accountaddonservice_cache = AccountAddonServiceCache()
         self.addonperiodical_cache = AddonPeriodicalCache()
         self.subaccount_cache = SubAccountsCache()
-        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache, self.addonservice_cache, self.addontarifservice_cache, self.accountaddonservice_cache, self.addonperiodical_cache, self.subaccount_cache]
+        self.radius_traffic_transmit_service_cache = RadiusTrafficTransmitServiceCache()
+        self.radius_traffic_node_cache = RadiusTrafficNodeCache()
+        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache, self.addonservice_cache, self.addontarifservice_cache, self.accountaddonservice_cache, self.addonperiodical_cache, self.subaccount_cache, self.radius_traffic_transmit_service_cache]
         
         
 class AccountCache(CacheItem):
@@ -93,7 +97,29 @@ class TrafficTransmitServiceCache(SimpleDictCache):
     sql = core_sql['traftrss']
     num = 0
 
+class RadiusTrafficTransmitServiceCache(SimpleDictCache):
+    __slots__ = ('by_id',)
+    datatype = RadiusTrafficTransmitSData
+    sql = core_sql['radiustraftrss']
+    def transformdata(self): pass
+    def reindex(self):
+        self.by_id = {}
+        for item in self.data:
+            self.by_id[item[0]] = item
         
+class RadiusTrafficNodeCache(SimpleDictCache): 
+    __slots__ = ('by_radiustraffic_id',)
+    datatype = TrafficTransmitSData
+    sql = core_sql['radiustrafnodes']
+    
+    datatype = RadiusTrafficNodeData
+    def transformdata(self): pass
+    def reindex(self):
+        self.by_radiustraffic_id = {}
+        for item in self.data:
+            self.by_radiustraffic_id[item[0]] = item
+
+               
 class SettlementPeriodCache(SimpleDictCache):
     __slots__ = ()
     datatype = SettlementPeriodData
