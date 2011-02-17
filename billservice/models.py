@@ -1196,9 +1196,6 @@ class House(models.Model):
     street = models.ForeignKey(Street)
     
 class RadiusTraffic(models.Model):
-    value = models.DecimalField(max_digits=30, decimal_places=20)
-    timeperiod = models.ForeignKey(TimePeriod)
-    cost = models.DecimalField(max_digits=30, decimal_places=20)
     direction = models.IntegerField()
     tarification_step = models.IntegerField()
     rounding = models.IntegerField()
@@ -1207,5 +1204,8 @@ class RadiusTraffic(models.Model):
     created = models.DateTimeField()
     deleted = models.DateTimeField()
     
-    
-        
+class RadiusTrafficNode(models.Model):
+    radiustraffic = models.ForeignKey(RadiusTraffic)
+    value = models.DecimalField(max_digits=30, decimal_places=20)
+    timeperiod = models.ForeignKey(TimePeriod)
+    cost = models.DecimalField(max_digits=30, decimal_places=20)
