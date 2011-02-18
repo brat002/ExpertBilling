@@ -1102,6 +1102,7 @@ class TarifFrame(QtGui.QDialog):
         self.comboBox_radius_traffic_rounding.setObjectName(_fromUtf8("comboBox_radius_traffic_rounding"))
         self.gridLayout_4.addWidget(self.comboBox_radius_traffic_rounding, 3, 1, 1, 2)
         self.spinBox_radius_traffic_tarification_step = QtGui.QSpinBox(self.groupBox_radius_traffic_tarification_settings)
+        self.spinBox_radius_traffic_tarification_step.setMinimum(1)
         self.spinBox_radius_traffic_tarification_step.setMaximum(999999999)
         self.spinBox_radius_traffic_tarification_step.setObjectName(_fromUtf8("spinBox_radius_traffic_tarification_step"))
         self.gridLayout_4.addWidget(self.spinBox_radius_traffic_tarification_step, 2, 1, 1, 2)
@@ -1163,6 +1164,7 @@ class TarifFrame(QtGui.QDialog):
         self.label_radius_time_tarification_step.setObjectName(_fromUtf8("label_radius_time_tarification_step"))
         self.gridLayout_3.addWidget(self.label_radius_time_tarification_step, 1, 0, 1, 1)
         self.spinBox_radius_time_tarification_step = QtGui.QSpinBox(self.groupBox_radius_time_tarification_settings)
+        self.spinBox_radius_time_tarification_step.setMinimum(1)
         self.spinBox_radius_time_tarification_step.setMaximum(999999999)
         self.spinBox_radius_time_tarification_step.setObjectName(_fromUtf8("spinBox_radius_time_tarification_step"))
         self.gridLayout_3.addWidget(self.spinBox_radius_time_tarification_step, 1, 1, 1, 1)
@@ -1555,14 +1557,14 @@ class TarifFrame(QtGui.QDialog):
 
     def timeRoundingActions(self):
         if self.comboBox_radius_time_rounding.itemData(self.comboBox_radius_time_rounding.currentIndex()).toInt()[0]==0:
-            self.spinBox_radius_time_tarification_step.setValue(0)
+            self.spinBox_radius_time_tarification_step.setValue(1)
             self.spinBox_radius_time_tarification_step.setDisabled(True)
         else:
             self.spinBox_radius_time_tarification_step.setDisabled(False)
                         
     def trafficRoundingActions(self):
         if self.comboBox_radius_traffic_rounding.itemData(self.comboBox_radius_traffic_rounding.currentIndex()).toInt()[0]==0:
-            self.spinBox_radius_traffic_tarification_step.setValue(0)
+            self.spinBox_radius_traffic_tarification_step.setValue(1)
             self.spinBox_radius_traffic_tarification_step.setDisabled(True)
         else:
             self.spinBox_radius_traffic_tarification_step.setDisabled(False)

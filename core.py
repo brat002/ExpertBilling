@@ -646,11 +646,11 @@ class TimeAccessBill(Thread):
                 if 0: assert isinstance(caches, CoreCaches)
                 
                 cur = self.connection.cursor()
-                cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.bytes_in, rs.bytes_out, rs.interrim_update,tarif.time_access_service_id, tarif.radius_traffic_transmit_service_id, tarif.id, acc_t.id 
-                                 FROM radius_session AS rs
-                                 JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<%s ORDER BY datetime DESC LIMIT 1) 
+                cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.bytes_in, rs.bytes_out, rs.interrim_update, rs.date_end, tarif.time_access_service_id, tarif.radius_traffic_transmit_service_id, tarif.id, acc_t.id, rs.lt_time, rs.lt_bytes_in, rs.lt_bytes_out  
+                                 FROM radius_activesession AS rs
+                                 JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<rs.date_start ORDER BY datetime DESC LIMIT 1) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
-                                 WHERE (NOT rs.checkouted_by_time) AND (tarif.active) AND (acc_t.datetime < rs.interrim_update) AND (tarif.time_access_service_id is NOT NULL or tarif.radius_traffic_transmit_service_id is not NULL)
+                                 WHERE (rs.lt_time<rs.session_time and tarif.time_access_service_id is not null) or (rs.lt_bytes_in<rs.bytes_in and rs.lt_bytes_out<rs.bytes_out and tarif.radius_traffic_transmit_service_id is not null);
                                  AND rs.interrim_update < %s ORDER BY rs.interrim_update ASC LIMIT 20000;""", (dateAT,dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
@@ -665,43 +665,50 @@ class TimeAccessBill(Thread):
                     #rs_id,  account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id = row
                     
                     acc = caches.account_cache.by_account.get(rs.account_id)
-                    if acc.radius_traffic_transmit_service_id:continue
-                    cur.execute("""SELECT session_time FROM radius_session WHERE sessionid=%s AND checkouted_by_time IS TRUE \
-                                   AND interrim_update < %s 
-                                   ORDER BY interrim_update DESC LIMIT 1""", (rs.sessionid, dateAT))
-                    old_time = cur.fetchone()
-                    old_time = old_time[0] if old_time else 0
-                    
-                    total_time = rs.session_time - old_time
-    
-                    cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s""", (rs.acctf_id,))
-                    result = cur.fetchone()
-                    cur.connection.commit()
-                    prepaid_id, prepaid = result if result else (0, -1)
-                    if prepaid > 0:
-                        if prepaid >= total_time:
-                            total_time, prepaid = 0, prepaid - total_time
-                        elif total_time >= prepaid:
-                            total_time, prepaid = total_time - prepaid, 0
-                        cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
+                    #if acc.radius_traffic_transmit_service_id:continue
+                    if acc.time_access_service_id:
+                        old_time = rs.lt_time or 0
+    #                    old_time = old_time[0] if old_time else 0
+                        
+                        total_time = rs.session_time - old_time
+                        
+                        if rs.date_end:
+                            taccs_service = caches.timeaccessservice_cache.by_id.get(time_access_service_id)
+                            
+                            if taccs_service.rounding:
+                                if taccs_service.tarification_step>0:
+                                    total_time = divmod(total_time, taccs_service.tarification_step)[1]*taccs_service.tarification_step+taccs_service.tarification_step
+        
+                        cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s""", (rs.acctf_id,))
+                        result = cur.fetchone()
                         cur.connection.commit()
-                    #get the list of time periods and their cost
-                    now = datetime.datetime.now()
-                    for period in caches.timeaccessnode_cache.by_id.get(rs.taccs_id, []):
-                        if 0: assert isinstance(period, TimeAccessNodeData)
-                        #get period nodes and check them
-                        for pnode in caches.timeperiodnode_cache.by_id.get(period.time_period_id, []):
-                            if 0: assert isinstance(pnode, TimePeriodNodeData)
-                            if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
-                                summ = (total_time * period.cost) / 60
-                                if summ > 0:
-                                    #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
-                                    db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
-                                    cur.connection.commit()
-                    cur.execute("""UPDATE radius_session SET checkouted_by_time=True
-                                   WHERE account_id=%s AND sessionid=%s AND interrim_update=%s
-                                """, (rs.account_id, unicode(rs.sessionid),rs.interrim_update,))
-                    cur.connection.commit()                    
+                        prepaid_id, prepaid = result if result else (0, -1)
+                        if prepaid > 0:
+                            if prepaid >= total_time:
+                                total_time, prepaid = 0, prepaid - total_time
+                            elif total_time >= prepaid:
+                                total_time, prepaid = total_time - prepaid, 0
+                            cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
+                            cur.connection.commit()
+                        #get the list of time periods and their cost
+                        now = dateAT
+                        for period in caches.timeaccessnode_cache.by_id.get(rs.taccs_id, []):
+                            if 0: assert isinstance(period, TimeAccessNodeData)
+                            #get period nodes and check them
+                            for pnode in caches.timeperiodnode_cache.by_id.get(period.time_period_id, []):
+                                if 0: assert isinstance(pnode, TimePeriodNodeData)
+                                if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
+                                    summ = (total_time * period.cost) / 60
+                                    if summ > 0:
+                                        #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
+                                        db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
+                                        cur.connection.commit()
+                        cur.execute("""UPDATE radius_activesession SET lt_time=%s
+                                       WHERE account_id=%s AND sessionid=%s
+                                    """, (rs.session_time, rs.account_id, unicode(rs.sessionid),))
+                        cur.connection.commit()  
+                    if acc.radius_traffic_transmit_service_id:  
+                        pass            
                 cur.connection.commit()
                 cur.close()
                 logger.info("TIMEALIVE: Time access thread run time: %s", time.clock() - a)
