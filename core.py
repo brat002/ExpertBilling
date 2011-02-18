@@ -646,7 +646,7 @@ class TimeAccessBill(Thread):
                 if 0: assert isinstance(caches, CoreCaches)
                 
                 cur = self.connection.cursor()
-                cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.interrim_update,tarif.time_access_service_id, tarif.radius_traffic_transmit_service_id, tarif.id, acc_t.id 
+                cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.bytes_in, rs.bytes_out, rs.interrim_update,tarif.time_access_service_id, tarif.radius_traffic_transmit_service_id, tarif.id, acc_t.id 
                                  FROM radius_session AS rs
                                  JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<%s ORDER BY datetime DESC LIMIT 1) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
