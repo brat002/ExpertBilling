@@ -98,7 +98,7 @@ core_sql = \
           'shllog'  :"""SELECT id,account_id, ballance_checkout,date_trunc('second', prepaid_traffic_reset) , date_trunc('second', prepaid_traffic_accrued), 
                         date_trunc('second', prepaid_time_reset), date_trunc('second', prepaid_time_accrued), date_trunc('second', balance_blocked), accounttarif_id 
                         FROM billservice_shedulelog;""",
-          'timeaccs' :"""SELECT id, prepaid_time, reset_time FROM billservice_timeaccessservice;""",
+          'timeaccs' :"""SELECT id, prepaid_time, reset_time, rounding, tarification_step FROM billservice_timeaccessservice;""",
           'onetimes' :"""SELECT id, tarif_id, cost, created FROM billservice_onetimeservice;""",
           'accpars'  :"""SELECT id, access_type, access_time_id, max_limit, min_limit, 
                         burst_limit,burst_treshold,burst_time, priority, ipn_for_vpn FROM billservice_accessparameters;""",
