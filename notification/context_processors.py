@@ -3,8 +3,8 @@ import datetime
 from django.core.cache import cache
 from django.conf import settings
 from django.http import HttpResponseRedirect
-from billservice.models import Operator 
-
+from billservice.models import Operator
+from django.contrib.auth.models import AnonymousUser
 
 
 def footer(request):
@@ -14,7 +14,7 @@ def footer(request):
             }
 
 def notices(request):
-    if request.user:
+    if request.user and not isinstance(request.user, AnonymousUser):
         user = request.user
         cache_user = cache.get(user.id)
         if type(cache_user) == u'NoneType':
@@ -39,12 +39,12 @@ def notices(request):
         #        'user': None,
         #        'status': True,
         #        }
-        
+
 def setCurrency(request):
     return {
             'CURRENCY':settings.CURRENCY,
             }
-        
+
 def auth(request):
     """
     Returns context variables required by apps that use Django's authentication
@@ -56,14 +56,13 @@ def auth(request):
     if hasattr(request, 'user'):
         user = request.user
     else:
-        from django.contrib.auth.models import AnonymousUser
         user = AnonymousUser()
     return {
         'user': user,
         'perms': PermWrapper(user),
     }
-    
-    
+
+
 class PermLookupDict(object):
     def __init__(self, user, module_name):
         self.user, self.module_name = user, module_name
@@ -83,7 +82,7 @@ class PermWrapper(object):
 
     def __getitem__(self, module_name):
         return PermLookupDict(self.user, module_name)
-        
+
     def __iter__(self):
         # I am large, I contain multitudes.
         raise TypeError("PermWrapper is not iterable.")
