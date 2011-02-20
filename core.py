@@ -433,12 +433,12 @@ class periodical_service_bill(Thread):
                     if pss_type == PERIOD:
                         cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
                     elif pss_type == ADDON:
-                        print "ADDON CHKDATE OK", chk_date
+                        #print "ADDON CHKDATE OK", chk_date
                         cash_summ = cash_summ * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
                     cur.connection.commit()
                     chk_date += s_delta_ast
-                    if chk_date > period_start: print "ADDON AT START BREAK"; break
+                    if chk_date > period_start: break
             cur.connection.commit()
         if ps.cash_method=="AT_END":
             """
@@ -480,7 +480,7 @@ class periodical_service_bill(Thread):
                 while True:
                     cash_summ = ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
-                    if period_start_ast>period_start: print "period_end_ast>period_start", period_end_ast, period_start; break
+                    if period_start_ast>period_start: break
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     #chk_date = period_end_ast
                     if first_time:
@@ -650,8 +650,8 @@ class TimeAccessBill(Thread):
                                  FROM radius_activesession AS rs
                                  JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<rs.date_start ORDER BY datetime DESC LIMIT 1) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
-                                 WHERE (rs.lt_time<rs.session_time and tarif.time_access_service_id is not null) or (rs.lt_bytes_in<rs.bytes_in and rs.lt_bytes_out<rs.bytes_out and tarif.radius_traffic_transmit_service_id is not null);
-                                 AND rs.interrim_update < %s ORDER BY rs.interrim_update ASC LIMIT 20000;""", (dateAT,dateAT,))
+                                 WHERE (rs.lt_time<rs.session_time and tarif.time_access_service_id is not null) or (rs.lt_bytes_in<rs.bytes_in and rs.lt_bytes_out<rs.bytes_out and tarif.radius_traffic_transmit_service_id is not null)
+                                 AND rs.interrim_update < %s ORDER BY rs.interrim_update ASC LIMIT 20000;""", (dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
                 for row in rows:
@@ -703,12 +703,69 @@ class TimeAccessBill(Thread):
                                         #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
                                         db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
                                         cur.connection.commit()
+                                    break
                         cur.execute("""UPDATE radius_activesession SET lt_time=%s
                                        WHERE account_id=%s AND sessionid=%s
                                     """, (rs.session_time, rs.account_id, unicode(rs.sessionid),))
                         cur.connection.commit()  
                     if acc.radius_traffic_transmit_service_id:  
-                        pass            
+                        radius_traffic = caches.radius_traffic_transmit_service_cache.by_id.get(acc.radius_traffic_transmit_service_id)
+                        lt_bytes_in = rs.lt_bytes_in or 0
+                        lt_bytes_out = rs.lt_bytes_out or 0
+    #                    old_time = old_time[0] if old_time else 0
+                        
+                        #total_time = rs.session_time - old_time
+                        [(0, u"Входящий"),(1, u"Исходящий"),(2, u"Вх.+Исх."),(3, u"Большее направление")]
+                        if radius_traffic.direction==0:
+                            total_bytes=rs.bytes_in-rs.lt_bytes_in
+                        elif radius_traffic.direction==1:
+                            total_bytes=rs.bytes_out-rs.lt_bytes_out
+                        elif radius_traffic.direction==2:
+                            total_bytes=(rs.bytes_out-rs.lt_bytes_out)+(rs.bytes_in-rs.lt_bytes_in)
+                        elif radius_traffic.direction==2:
+                            total_bytes=max(((rs.bytes_out-rs.lt_bytes_out),(rs.bytes_in-rs.lt_bytes_in)))
+                            
+                        
+                        if rs.date_end:
+                            if radius_traffic.rounding==1:
+                                if radius_traffic.tarification_step>0:
+                                    total_bytes = divmod(total_bytes, radius_traffic.tarification_step)[1]*radius_traffic.tarification_step+radius_traffic.tarification_step
+        
+                        cur.execute("""SELECT id, size FROM billservice_accountprepaysradiustrafic WHERE account_tarif_id=%s""", (rs.acctf_id,))
+                        result = cur.fetchone()
+                        cur.connection.commit()
+                        prepaid_id, prepaid = result if result else (0, -1)
+                        if prepaid > 0:
+                            if prepaid >= total_bytes:
+                                total_bytes, prepaid = 0, prepaid - total_bytes
+                            elif total_bytes >= prepaid:
+                                total_bytes, prepaid = total_bytes - prepaid, 0
+                            cur.execute("""UPDATE billservice_accountprepaysradiustrafic SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
+                            cur.connection.commit()
+                        #get the list of time periods and their cost
+                        now = dateAT
+                        for period in caches.radius_traffic_node_cache.by_id.get(rs.traccs_id, []):
+                            if 0: assert isinstance(period, RadiusTrafficNodeData)
+                            #get period nodes and check them
+                            for pnode in caches.timeperiodnode_cache.by_id.get(period.timeperiod_id, []):
+                                if 0: assert isinstance(pnode, TimePeriodNodeData)
+                                if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
+                                    summ = (total_bytes * period.cost) / (1024*1024)
+                                    if summ > 0:
+                                        #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
+                                        #db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
+                                        cur.execute("""INSERT INTO billservice_traffictransaction(
+                                                        account_id, accounttarif_id, summ, 
+                                                        datetime, radiustraffictransmitservice_id)
+                                                        VALUES ( %s, %s, %s, %s, 
+                                                        %s);
+                                                """, (rs.account_id, rs.acctf_id, summ, now, rs.traccs_id))
+                                        cur.connection.commit()
+                                    break
+                        cur.execute("""UPDATE radius_activesession SET lt_bytes_in=%s, lt_bytes_out=%s
+                                       WHERE account_id=%s AND sessionid=%s
+                                    """, (rs.bytes_in, rs.bytes_out, rs.account_id, unicode(rs.sessionid),))
+                        cur.connection.commit()  
                 cur.connection.commit()
                 cur.close()
                 logger.info("TIMEALIVE: Time access thread run time: %s", time.clock() - a)
@@ -1016,9 +1073,9 @@ class settlement_period_service_dog(Thread):
                         if not acc.account_status == 1: continue
                         
                         shedl = caches.shedulelog_cache.by_id.get(acc.account_id)
-                        if not shedl: shedl = ShedulelogData(-1, *(None,)*8)
+                        if not shedl: shedl = ShedulelogData(-1, *(None,)*10)
                         if 0: assert isinstance(shedl, ShedulelogData)
-                        
+
                         time_start, period_end = None, None
                         #now = datetime.datetime.now()
                         now=dateAT
@@ -1079,9 +1136,12 @@ class settlement_period_service_dog(Thread):
                             if acc.cost <= (pstart_balance + acc.ballance + acc.credit):
                                 cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (acc.account_id,))                            
                             cur.connection.commit()
-
+                        
+                        #print repr(acc)
                         reset_traffic = caches.traffictransmitservice_cache.by_id.get(acc.traffic_transmit_service_id, (None, None))[1]                        
+                        radius_traffic = caches.radius_traffic_transmit_service_cache.by_id.get(acc.radius_traffic_transmit_service_id)
                         prepaid_traffic_reset = shedl.prepaid_traffic_reset if shedl.prepaid_time_reset else acc.datetime
+                        prepaid_radius_traffic_reset = shedl.prepaid_radius_traffic_reset if shedl.prepaid_radius_traffic_reset else acc.datetime
                         #if (reset_traffic or acc.traffic_transmit_service_id is None) and (shedl.prepaid_traffic_reset is None or shedl.prepaid_traffic_reset<period_start or acc.acctf_id!= shedl.accounttarif_id):
                         if (reset_traffic and prepaid_traffic_reset<period_start) or not acc.traffic_transmit_service_id or acc.acctf_id != shedl.accounttarif_id:
                             #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
@@ -1090,7 +1150,15 @@ class settlement_period_service_dog(Thread):
                             cur.execute("SELECT shedulelog_tr_reset_fn(%s, %s, %s::timestamp without time zone);", \
                                         (acc.account_id, acc.acctf_id, now))  
                             cur.connection.commit()
-        
+
+                        if (radius_traffic and prepaid_radius_traffic_reset<period_start) or not acc.radius_traffic_transmit_service_id or acc.acctf_id != shedl.accounttarif_id:
+                            #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
+                            #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
+                            """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
+                            cur.execute("SELECT shedulelog_radius_tr_reset_fn(%s, %s, %s::timestamp without time zone);", \
+                                        (acc.account_id, acc.acctf_id, now))  
+                            cur.connection.commit()
+                                    
                         if (shedl.prepaid_traffic_accrued is None or shedl.prepaid_traffic_accrued<period_start) and acc.traffic_transmit_service_id:                          
                             #Начислить новый предоплаченный трафик
                             #TODO:если начисляем первый раз - начислять согласно коэффициенту оставшейся части расчётного периода
@@ -1103,7 +1171,19 @@ class settlement_period_service_dog(Thread):
                                 cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s::timestamp without time zone);", 
                                             (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, now))
                             cur.connection.commit()
-                        
+                        #Radius prepaid
+                        if (shedl.prepaid_radius_traffic_accrued is None or shedl.prepaid_radius_traffic_accrued<period_start) and acc.radius_traffic_transmit_service_id and radius_traffic:                          
+                            #Начислить новый предоплаченный трафик
+                            #TODO:если начисляем первый раз - начислять согласно коэффициенту оставшейся части расчётного периода
+                            delta_coef=1
+                            if vars.USE_COEFF_FOR_PREPAID==True and period_end and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta:
+                                delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)
+                                
+                            cur.execute("SELECT shedulelog_radius_tr_credit_fn(%s, %s, %s, %s, %s, %s, %s::timestamp without time zone);", 
+                                        (acc.account_id, acc.acctf_id, acc.radius_traffic_transmit_service_id, radius_traffic.prepaid_value, radius_traffic.prepaid_direction, delta_coef, now))
+
+                            cur.connection.commit()
+                                                    
                         prepaid_time, reset_time = caches.timeaccessservice_cache.by_id.get(acc.time_access_service_id, (None, 0, None))[1:3]   
                         if (reset_time or acc.time_access_service_id is None) and (shedl.prepaid_time_reset is None or shedl.prepaid_time_reset<period_start or acc.acctf_id!=shedl.accounttarif_id):                        
                             #(Если нужно сбрасывать время или нет услуги доступа по времени) И                        
@@ -1489,17 +1569,17 @@ def SIGHUP_handler(signum, frame):
         
 def SIGUSR1_handler(signum, frame):
     global flags
-    logger.lprint("SIGUSR1 recieved")
+    logger.lprint("SIGUSR1 recieved\n")
     with flags.cacheLock: flags.cacheFlag = True
     
 def graceful_save():
     global cacheThr, threads, suicideCondition, vars
     for key in suicideCondition.iterkeys():
         suicideCondition[key] = True
-    logger.lprint("Core - about to exit gracefully.")
+    logger.lprint("Core - about to exit gracefully.\n")
     time.sleep(20)
     rempid(vars.piddir, vars.name)
-    logger.lprint("Core - exiting gracefully.")
+    logger.lprint("Core - exiting gracefully.\n")
     sys.exit()
     
 def ungraceful_save():
@@ -1507,8 +1587,8 @@ def ungraceful_save():
     for key in suicideCondition.iterkeys():
         suicideCondition[key] = True
     rempid(vars.piddir, vars.name)
-    print "Core: exiting"
-    logger.lprint("Core exiting.")
+    print "Core: exiting\n"
+    logger.lprint("Core exiting.\n")
     sys.exit()
     
 def main():
@@ -1531,13 +1611,13 @@ def main():
     
     while cacheMaster.read is False or flags.allowedUsersCheck is False:        
         if not cacheThr.isAlive():
-            print 'Core: exiting'
+            print 'Core: exiting\n'
             sys.exit()
         time.sleep(10)
         if not cacheMaster.read: 
-            print 'caches still not read, maybe you should check the log'
+            print 'caches still not read, maybe you should check the log\n'
       
-    print 'caches ready'
+    print 'caches ready\n'
     #print repr(cacheMaster.cache)
     for th in threads:	
         suicideCondition[th.__class__.__name__] = False
@@ -1556,7 +1636,7 @@ def main():
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
     
-    print "ebs: core: started"
+    print "ebs: core: started\n"
     savepid(vars.piddir, vars.name)
     stderr_log = open(vars.log_file + '.err', 'ab')
     #redirect_stderr(stderr_log)
@@ -1565,7 +1645,7 @@ def main():
     while True:
         time.sleep(30)
         if not cacheThr.isAlive():
-            print 'Core: exiting'
+            print 'Core: exiting\n'
             sys.exit()
         
 
@@ -1593,7 +1673,7 @@ if __name__ == "__main__":
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
         
-        logger.lprint('core start')
+        logger.lprint('core start\n')
         ssh_paramiko.SSH_BACKEND=vars.SSH_BACKEND
         ssh_paramiko.install_logger(logger)
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
@@ -1612,7 +1692,7 @@ if __name__ == "__main__":
         fMem = pfMemoize()    
         #--------------------------------------------------
         
-        print "ebs: core: configs read, about to start"
+        print "ebs: core: configs read, about to start\n"
         main()
         
     except Exception, ex:

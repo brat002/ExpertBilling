@@ -60,7 +60,7 @@ class CoreCaches(CacheCollection):
         self.subaccount_cache = SubAccountsCache()
         self.radius_traffic_transmit_service_cache = RadiusTrafficTransmitServiceCache()
         self.radius_traffic_node_cache = RadiusTrafficNodeCache()
-        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache, self.addonservice_cache, self.addontarifservice_cache, self.accountaddonservice_cache, self.addonperiodical_cache, self.subaccount_cache, self.radius_traffic_transmit_service_cache]
+        self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache, self.underbilled_accounts_cache, self.addonservice_cache, self.addontarifservice_cache, self.accountaddonservice_cache, self.addonperiodical_cache, self.subaccount_cache, self.radius_traffic_transmit_service_cache, self.radius_traffic_node_cache]
         
         
 class AccountCache(CacheItem):
@@ -97,27 +97,23 @@ class TrafficTransmitServiceCache(SimpleDictCache):
     sql = core_sql['traftrss']
     num = 0
 
-class RadiusTrafficTransmitServiceCache(SimpleDictCache):
+class RadiusTrafficTransmitServiceCache(CacheItem):
     __slots__ = ('by_id',)
     datatype = RadiusTrafficTransmitSData
     sql = core_sql['radiustraftrss']
-    def transformdata(self): pass
-    def reindex(self):
+    def __init__(self):
+        super(RadiusTrafficTransmitServiceCache, self).__init__()
         self.by_id = {}
-        for item in self.data:
-            self.by_id[item[0]] = item
-        
-class RadiusTrafficNodeCache(SimpleDictCache): 
-    __slots__ = ('by_radiustraffic_id',)
-    datatype = TrafficTransmitSData
-    sql = core_sql['radiustrafnodes']
-    
-    datatype = RadiusTrafficNodeData
-    def transformdata(self): pass
+    #def transformdata(self): pass
     def reindex(self):
-        self.by_radiustraffic_id = {}
         for item in self.data:
-            self.by_radiustraffic_id[item[0]] = item
+            self.by_id[item.id] = item
+        
+class RadiusTrafficNodeCache(SimpleDefDictCache): 
+    __slots__ = ()
+    sql = core_sql['radiustrafnodes']
+    datatype = RadiusTrafficNodeData
+    num=0
 
                
 class SettlementPeriodCache(SimpleDictCache):
