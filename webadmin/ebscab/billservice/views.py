@@ -1,14 +1,14 @@
  #-*- coding=UTF-8 -*-
- 
+
 #NEWRPC = True
 #if NEWRPC:
- 
+
 import os, sys
 #print os.path.abspath('../../../')
 sys.path.append(os.path.abspath('../../'))
 
 from rpc2 import rpc_protocol, client_networking
-    
+
 import datetime
 
 CUR_PATH = os.getcwd()
@@ -21,7 +21,7 @@ try:
     os.mkdir(settings.WEBCAB_LOG)
 except:
     pass
-                    
+
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db import connection
 from django.core.cache import cache
@@ -30,10 +30,10 @@ from django.contrib.auth.decorators import login_required
 
 from lib.http import JsonResponse
 
-from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount 
+from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
 from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
-from radius.models import ActiveSession  
+from radius.models import ActiveSession
 from billservice.utility import is_login_user, settlement_period_info
 from nas.models import TrafficClass
 
@@ -52,7 +52,7 @@ def addon_queryset(request, id_begin, field='datetime', field_to=None):
     if form.is_valid():
         if form.cleaned_data['date_from']:
             addon_query[field+'__gte'] = form.cleaned_data['date_from']
-            date_id_dict[id_begin+'_date_from'] = request.GET.get('date_from','') 
+            date_id_dict[id_begin+'_date_from'] = request.GET.get('date_from','')
         else:
             if date_id_dict.has_key(id_begin+'_date_from'):
                 del(date_id_dict[id_begin+'_date_from'])
@@ -63,13 +63,13 @@ def addon_queryset(request, id_begin, field='datetime', field_to=None):
         else:
             if date_id_dict.has_key(id_begin+'_date_to'):
                 del(date_id_dict[id_begin+'_date_to'])
-        request.session['date_id_dict'] = date_id_dict 
+        request.session['date_id_dict'] = date_id_dict
         request.session.modified = True
     if request.GET.has_key('date_from') or request.GET.has_key('date_to'):
         is_range = True
     else:
         is_range = False
-    return is_range, addon_query 
+    return is_range, addon_query
 
 
 @render_to('registration/login.html')
@@ -81,7 +81,7 @@ def login(request):
         if pin:
             if user:
                 message = None
-                try:               
+                try:
                     authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
                     protocol = rpc_protocol.RPCProtocol(authenticator)
                     connection_server = rpc_protocol.BasicClientConnection(protocol)
@@ -96,7 +96,7 @@ def login(request):
                         error_message = u"Отказано в авторизации."
                     else:
                         error_message  = u"Невозможно подключиться к серверу."
-                    
+
                 message_type = connection_server.activate_card(user, pin)
                 ok_message = False
                 if message_type == 1:
@@ -115,25 +115,28 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             try:
+                print request.POST
+                print form.cleaned_data
                 user = Account.objects.get(username=form.cleaned_data['username'])
+                print user
                 if not user.allow_webcab:
                     form = LoginForm()
                     error_message = u'У вас нет прав на вход в веб-кабинет'
                     return {
                             'error_message':error_message,
                             'form':form,
-                            } 
+                            }
                 if user.password == form.cleaned_data['password']:
                     user = authenticate(username=user.username, password=form.cleaned_data['password'])
                     log_in(request, user)
-                    if not cache.get(user.id):
-                        cache.set(user.id, {'count':0,'last_date':datetime.datetime.now(),'blocked':False,}, 86400*365)
+                    if not cache.get(str(user.id)):
+                        cache.set(str(user.id), {'count':0,'last_date':datetime.datetime.now(),'blocked':False,}, 86400*365)
                     else:
                         cache_user = cache.get(user.id)
                         if cache_user['blocked']:
-                            cache.set(user.id, {'count':cache_user['count'],'last_date':cache_user['last_date'],'blocked':cache_user['blocked'],}, 86400*365)
+                            cache.set(str(user.idi), {'count':cache_user['count'],'last_date':cache_user['last_date'],'blocked':cache_user['blocked'],}, 86400*365)
                         else:
-                            cache.set(user.id, {'count':cache_user['count'],'last_date':datetime.datetime.now(),'blocked':cache_user['blocked'],}, 86400*365)    
+                            cache.set(str(user.id), {'count':cache_user['count'],'last_date':datetime.datetime.now(),'blocked':cache_user['blocked'],}, 86400*365)
                     tariff = user.get_account_tariff()
                     if tariff.allow_express_pay:
                         request.session['express_pay']=True
@@ -146,7 +149,7 @@ def login(request):
                             'error_message':error_message,
                             'form':form,
                             }
-            except :
+            except Exception, e:
                 form = LoginForm(initial={'username': form.cleaned_data['username']})
                 error_message = u'Проверьте введенные данные'
                 return {
@@ -164,8 +167,8 @@ def login(request):
         form = LoginForm()
         return {
                 'form':form,
-               }  
-               
+               }
+
 def login_out(request):
     log_out(request)
     return HttpResponseRedirect('/')
@@ -181,13 +184,13 @@ def index(request):
     if len(tariffs) == 0 or len(tariffs) == 1:
         tariff_flag = False
     else:
-        tariff_flag = True 
+        tariff_flag = True
     try:
         ballance = user.ballance - user.credit
         ballance = u'%.2f' % user.ballance
     except:
-        ballance = 0 
-    traffic = TrafficLimit.objects.filter(tarif=tariff_id)      
+        ballance = 0
+    traffic = TrafficLimit.objects.filter(tarif=tariff_id)
     subaccounts = SubAccount.objects.filter(account=user)
     #account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
     account_tariff = AccountTarif.objects.filter(account=user, datetime__lte=datetime.datetime.now()).order_by('-datetime')[0]
@@ -220,7 +223,7 @@ def netflowstream_info(request):
             'net_flow_streams':paginator.get_page_items(),
             'paginator': paginator,
             }
-    
+
 
 @render_to('accounts/get_promise.html')
 @login_required
@@ -232,7 +235,7 @@ def get_promise(request):
     if Transaction.objects.filter(account=user, promise=True, promise_expired=False).count() >= 1:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         error_message = u"У вас есть незакрытые обещанные платежи"
-        return {'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'active_class':'promise-img',}        
+        return {'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'active_class':'promise-img',}
     if request.method == 'POST':
         rf = PromiseForm(request.POST)
         if not rf.is_valid():
@@ -249,19 +252,19 @@ def get_promise(request):
             error_message = u"Сумма обещанного платежа должна быть положительной"
             return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'last_promises': last_promises, 'active_class':'promise-img',}
         cursor = connection.cursor()
-        cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise, end_promise, promise_expired) 
+        cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise, end_promise, promise_expired)
                           VALUES(%s, 'Обещанный платёж', 'MANUAL_TRANSACTION', True, get_tarif(%s), %s, now(), True, '%s', False)""" % (user.id, user.id, sum*(-1), LEFT_PROMISE_DATE))
         cursor.connection.commit()
-        
-        
+
+
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
-        
+
         return {'error_message': u'Обещанный платёж выполнен успешно. Обращаем ваше внимание на то, что повторно воспользоваться услугой обещанного платежа вы сможете после погашения суммы платежа или истечения даты созданного платежа.', 'disable_promise': True, 'last_promises': last_promises, 'active_class':'promise-img',}
     else:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
-        return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}        
+        return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
 
-    
+
 @render_to('accounts/transaction.html')
 @login_required
 def transaction(request):
@@ -276,10 +279,10 @@ def transaction(request):
         for trnsaction in qs:
             summ += trnsaction.summ
         for transactio in transactions:
-            summ_on_page += trnsaction.summ 
+            summ_on_page += trnsaction.summ
     summ = summ*-1
     summ_on_page = summ_on_page*-1
-    rec_count = len(transactions)+1 
+    rec_count = len(transactions)+1
     return {
             'transactions':transactions,
             'paginator': paginator,
@@ -289,7 +292,7 @@ def transaction(request):
             'rec_count':rec_count,
             'active_class':'statistic-img',
             }
-    
+
 @render_to('accounts/vpn_session.html')
 @login_required
 def vpn_session(request):
@@ -318,7 +321,7 @@ def vpn_session(request):
                 bytes_out_on_page += session.bytes_out
     bytes_all_on_page = bytes_in_on_page + bytes_out_on_page
     bytes_all = bytes_in + bytes_out
-    rec_count = len(sessions)+1  
+    rec_count = len(sessions)+1
     return {
             'sessions':paginator.get_page_items(),
             'paginator': paginator,
@@ -333,13 +336,13 @@ def vpn_session(request):
             'is_range':is_range,
             'active_class':'statistic-img',
             }
-    
+
 
 @render_to('accounts/services_info.html')
-@login_required    
+@login_required
 def services_info(request):
     from lib.paginator import SimplePaginator
-    user = request.user  
+    user = request.user
     is_range, addon_query = addon_queryset(request, 'services', 'activated')
     qs = AccountAddonService.objects.filter(account=user, **addon_query).order_by('-activated')
     paginator = SimplePaginator(request, qs, 50, 'page')
@@ -350,12 +353,12 @@ def services_info(request):
         for service in qs:
             service_summ = 0
             for transaction in AddonServiceTransaction.objects.filter(accountaddonservice=service):
-                service_summ += transaction.summ 
+                service_summ += transaction.summ
             summ += service_summ
         for service in services:
             service_summ = 0
             for transaction in AddonServiceTransaction.objects.filter(accountaddonservice=service):
-                service_summ += transaction.summ 
+                service_summ += transaction.summ
             summ_on_page += service_summ
     services = paginator.get_page_items()
     rec_count = len(services)+1
@@ -369,8 +372,8 @@ def services_info(request):
             'rec_count':rec_count,
             'active_class':'statistic-img',
             }
-    
-    
+
+
 @render_to('accounts/change_password.html')
 @login_required
 def password_form(request):
@@ -416,7 +419,7 @@ def change_password(request):
 @render_to('accounts/change_tariff.html')
 @login_required
 def change_tariff_form(request):
-    from datetime import datetime, date 
+    from datetime import datetime, date
     user = request.user
     account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('-datetime')[:1]
     account_tariff = account_tariff_id[0]
@@ -437,13 +440,13 @@ def change_tariff(request):
     """
         settlement_period_info
         1 - дата начала действия тарифа
-        
+
     """
     from datetime import datetime
     if request.method == 'POST':
         rule_id = request.POST.get('id_tariff_id', None)
         if rule_id != None:
-            user = request.user       
+            user = request.user
             account_tariff_id = AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('-datetime')[:1]
             account_tariff = account_tariff_id[0]
             from datetime import datetime
@@ -475,21 +478,21 @@ def change_tariff(request):
             tariff = AccountTarif.objects.create(
                                                     account = user,
                                                     tarif = rule.to_tariff,
-                                                    datetime = data_start_period,  
+                                                    datetime = data_start_period,
                                                 )
             for service in AccountAddonService.objects.filter(account=user, deactivated__isnull=True):
                 service.deactivated = datetime.now()
-                service.save() 
+                service.save()
             if rule.cost:
                 cursor = connection.cursor()
 
-                cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise) 
+                cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise)
                                   VALUES(%s, 'Списание средств за переход на тарифный план %s', 'TP_CHANGE', True, get_tarif(%s), %s, now(), False)""" % (user.id, tariff.tarif.name, user.id, rule.cost))
                 cursor.connection.commit()
             if data_start_active:
                 ok_str = u'Вы успешно сменили тариф, тарифный план будет изменён в следующем расчётном периоде c %s.<br> За переход на данный тарифный план с пользователя будет взыскано %s средств.' %(td[1], rule.cost)
                 return {
-                         'ok_message':ok_str,   
+                         'ok_message':ok_str,
                         }
             else:
                 return {
@@ -542,7 +545,7 @@ def card_acvation(request):
         else:
             return {
                     'redirect':'/',
-                   }   
+                   }
     if request.method == 'POST':
         form = CardForm(request.POST)
         error_message = ''
@@ -571,7 +574,7 @@ def card_acvation(request):
                     error_message = u'Карта успешно активирована.'
                 elif res == 'CARD_ACTIVATION_ERROR':
                     error_message = u'Ошибка активации карты.'
-            except Exception, e: 
+            except Exception, e:
                 print e
             #if int(cache_user['count']) <= settings.ACTIVATION_COUNT:
             #    cache.delete(user.id)
@@ -590,7 +593,7 @@ def card_acvation(request):
             return {
                     'error_message': u"Проверьте заполнение формы",
                     #'form': form,
-                    }            
+                    }
     else:
         #form = CardForm()
         return {
@@ -609,12 +612,12 @@ def account_prepays_traffic(request):
         prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
     except:
         prepaidtraffic = None
-        account_tariff = None  
+        account_tariff = None
     return {
             'prepaidtraffic':prepaidtraffic,
             'account_tariff':account_tariff,
-            }    
-    
+            }
+
 def client(request):
     user = request.user
     # CONNECTION TO RCP SERVER
@@ -643,20 +646,20 @@ def client(request):
     imgs = connection_server.makeChart(*cargs, **ckwargs)
     response = HttpResponse(imgs, content_type='image/png')
     return response
-            
 
-@render_to('accounts/traffic_limit.html') 
-@login_required       
+
+@render_to('accounts/traffic_limit.html')
+@login_required
 def traffic_limit(request):
     user = request.user
     tariff = user.get_account_tariff()
-    traffic = TrafficLimit.objects.filter(tarif=tariff) 
+    traffic = TrafficLimit.objects.filter(tarif=tariff)
     return {
             'trafficlimit':traffic,
             'user':user,
-            } 
-            
-            
+            }
+
+
 @render_to('accounts/statistics.html')
 @login_required
 def statistics(request):
@@ -691,7 +694,7 @@ def statistics(request):
 def addon_service(request):
     user = request.user
     #account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
-    #account_tariff = account_tariff_id[0] 
+    #account_tariff = account_tariff_id[0]
     services = AddonServiceTarif.objects.filter(tarif=user.get_account_tariff())
     user_services = AccountAddonService.objects.filter(account=user, deactivated__isnull=True)
     accountservices = []
@@ -707,8 +710,8 @@ def addon_service(request):
             uservice.wyte = True
         else:
             uservice.wyte = False
-        accountservices.append(uservice)  
-        
+        accountservices.append(uservice)
+
     user_services_id = [x.service.id for x in accountservices if not x.deactivated]
     services = services.exclude(service__id__in=user_services_id).order_by("service__name")
     return_dict = {
@@ -719,17 +722,17 @@ def addon_service(request):
                    }
     if request.session.has_key('service_message'):
         return_dict['service_message'] = request.session['service_message']
-        del(request.session['service_message']) 
-    return return_dict 
-    
+        del(request.session['service_message'])
+    return return_dict
+
 @login_required
 def service_action(request, action, id):
     """
     в случее set id являеться идентификатором добавляемой услуги
-    в случее del id являеться идентификатором accountaddon_service 
+    в случее del id являеться идентификатором accountaddon_service
     """
     user = request.user
-    
+
     try:
         authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
         protocol = rpc_protocol.RPCProtocol(authenticator)
@@ -748,41 +751,41 @@ def service_action(request, action, id):
         else:
             request.session['service_message']  = u"Нет связи с сервером. Обратитесь в службу поддержки"
             return HttpResponseRedirect('/services/')
-        
+
     if action == u'set':
         try:
             account_addon_service = AddonService.objects.get(id=id)
         except:
             request.session['service_message'] = u'Вы не можете подключить данную услугу'
             return HttpResponseRedirect('/services/')
-        result = connection_server.add_addonservice(user.id, id) 
+        result = connection_server.add_addonservice(user.id, id)
         if result == True:
             request.session['service_message'] = u'Услуга подключена'
             return HttpResponseRedirect('/services/')
         elif result == 'ACCOUNT_DOES_NOT_EXIST':
             request.session['service_message'] = u'Указанный пользователь не найден'
-            return HttpResponseRedirect('/services/') 
+            return HttpResponseRedirect('/services/')
         elif result == 'ADDON_SERVICE_DOES_NOT_EXIST':
-            request.session['service_message'] = u'Указанныя подключаемая услуга не найдена'  
-            return HttpResponseRedirect('/services/')   
+            request.session['service_message'] = u'Указанныя подключаемая услуга не найдена'
+            return HttpResponseRedirect('/services/')
         elif result == 'NOT_IN_PERIOD':
-            request.session['service_message'] = u'Активация выбранной услуги в данный момент не доступна'  
-            return HttpResponseRedirect('/services/') 
+            request.session['service_message'] = u'Активация выбранной услуги в данный момент не доступна'
+            return HttpResponseRedirect('/services/')
         elif result == 'ALERADY_HAVE_SPEED_SERVICE':
-            request.session['service_message'] = u'У вас уже подключенны изменяющие скорость услуги'  
-            return HttpResponseRedirect('/services/')  
+            request.session['service_message'] = u'У вас уже подключенны изменяющие скорость услуги'
+            return HttpResponseRedirect('/services/')
         elif result == 'ACCOUNT_BLOCKED':
-            request.session['service_message'] = u'Услуга не может быть подключена. Проверьте Ваш баланс или обратитесь в службу поддержки'  
-            return HttpResponseRedirect('/services/') 
+            request.session['service_message'] = u'Услуга не может быть подключена. Проверьте Ваш баланс или обратитесь в службу поддержки'
+            return HttpResponseRedirect('/services/')
         elif result == 'ADDONSERVICE_TARIF_DOES_NOT_ALLOWED':
-            request.session['service_message'] = u'На вашем тарифном плане активация выбранной услуги невозможна'  
-            return HttpResponseRedirect('/services/')     
+            request.session['service_message'] = u'На вашем тарифном плане активация выбранной услуги невозможна'
+            return HttpResponseRedirect('/services/')
         elif result == 'TOO_MUCH_ACTIVATIONS':
-            request.session['service_message'] = u'Превышенно допустимое количество активаций. Обратитесь в службу поддержки'  
-            return HttpResponseRedirect('/services/') 
+            request.session['service_message'] = u'Превышенно допустимое количество активаций. Обратитесь в службу поддержки'
+            return HttpResponseRedirect('/services/')
         elif result == 'SERVICE_ARE_ALREADY_ACTIVATED':
-            request.session['service_message'] = u'Указанная услуга уже подключена и не может быть активирована дважды.'  
-            return HttpResponseRedirect('/services/') 
+            request.session['service_message'] = u'Указанная услуга уже подключена и не может быть активирована дважды.'
+            return HttpResponseRedirect('/services/')
         else:
             request.session['service_message'] = u'Услугу не возможно подключить'
             return HttpResponseRedirect('/services/')
@@ -793,23 +796,23 @@ def service_action(request, action, id):
             return HttpResponseRedirect('/services/')
         elif result == 'ACCOUNT_DOES_NOT_EXIST':
             request.session['service_message'] = u'Указанный пользователь не найден'
-            return HttpResponseRedirect('/services/') 
+            return HttpResponseRedirect('/services/')
         elif result == 'ADDON_SERVICE_DOES_NOT_EXIST':
-            request.session['service_message'] = u'Указанныя подключаемая услуга не найдена'  
-            return HttpResponseRedirect('/services/')   
+            request.session['service_message'] = u'Указанныя подключаемая услуга не найдена'
+            return HttpResponseRedirect('/services/')
         elif result == 'ACCOUNT_ADDON_SERVICE_DOES_NOT_EXIST':
-            request.session['service_message'] = u'Вы не можите отключить выбранную услугу'  
-            return HttpResponseRedirect('/services/') 
+            request.session['service_message'] = u'Вы не можите отключить выбранную услугу'
+            return HttpResponseRedirect('/services/')
         elif result == 'NO_CANCEL_SUBSCRIPTION':
-            request.session['service_message'] = u'Даннная услуга не может быть отключена. Обратитесь в службу поддержки'  
-            return HttpResponseRedirect('/services/')  
+            request.session['service_message'] = u'Даннная услуга не может быть отключена. Обратитесь в службу поддержки'
+            return HttpResponseRedirect('/services/')
         else:
             request.session['service_message'] = u'Услугу не возможно отключить'
             return HttpResponseRedirect('/services/')
     else:
         request.session['service_message'] = u'Невозможно совершить действие'
         return HttpResponseRedirect('/services/')
-          
+
 @render_to('accounts/periodical_service_history.html')
 @login_required
 def periodical_service_history(request):
@@ -839,7 +842,7 @@ def periodical_service_history(request):
 @render_to('accounts/addon_service_transaction.html')
 @login_required
 def addon_service_transaction(request):
-    from lib.paginator import SimplePaginator 
+    from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'addon_service_transaction', 'created')
     qs = AddonServiceTransaction.objects.filter(account=request.user, **addon_query).order_by('-created')
     paginator = SimplePaginator(request, qs, 100, 'page')
@@ -852,7 +855,7 @@ def addon_service_transaction(request):
         for addon_service in addon_service_transaction:
             summ_on_page += addon_service.summ
     addon_service_transaction = paginator.get_page_items()
-    rec_count = len(addon_service_transaction)+1    
+    rec_count = len(addon_service_transaction)+1
     return {
             'addon_service_transaction':addon_service_transaction,
             'paginator': paginator,
@@ -862,13 +865,13 @@ def addon_service_transaction(request):
             'rec_count':rec_count,
             'active_class':'statistic-img',
             }
-    
+
 @render_to('accounts/traffic_transaction.html')
 @login_required
 def traffic_transaction(request):
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'traffic_transaction', 'created')
-    qs = TrafficTransaction.objects.filter(account=request.user, **addon_query).order_by('-datetime') 
+    qs = TrafficTransaction.objects.filter(account=request.user, **addon_query).order_by('-datetime')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     summ_on_page = 0
@@ -877,7 +880,7 @@ def traffic_transaction(request):
         for traffic_transaction in qs:
             summ += traffic_transaction.summ
         for traffic_transaction in traffic_transaction:
-            summ_on_page += traffic_transaction.summ 
+            summ_on_page += traffic_transaction.summ
     rec_count = len(traffic_transaction)+1
     return {
             'traffic_transaction':traffic_transaction,
@@ -888,7 +891,7 @@ def traffic_transaction(request):
             'rec_count':rec_count,
             'active_class':'statistic-img',
             }
-    
+
 @render_to('accounts/one_time_history.html')
 @login_required
 def one_time_history(request):
@@ -901,7 +904,7 @@ def one_time_history(request):
     one_time_history = paginator.get_page_items()
     if is_range:
         for one_time in qs:
-            summ += one_time.summ 
+            summ += one_time.summ
         for one_time in one_time_history:
             summ_on_page += one_time.summ
     rec_count = len(one_time_history)+1
@@ -913,7 +916,7 @@ def one_time_history(request):
             'summ_on_page':summ_on_page,
             'rec_count':rec_count,
             'active_class':'statistic-img',
-            }    
+            }
 
 @ajax_request
 @login_required
@@ -933,7 +936,7 @@ def news_delete(request):
         return {
                 'message':u'Новость успешно удалена',
                 }
-            
+
 
 @ajax_request
 @login_required
@@ -944,7 +947,7 @@ def jsonaccounts(request):
     res=[]
     for acc in accounts:
         res.append({"taskId":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname})
-    
+
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"data": res}
