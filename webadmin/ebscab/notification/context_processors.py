@@ -16,7 +16,7 @@ def footer(request):
 def notices(request):
     if request.user and not isinstance(request.user, AnonymousUser):
         user = request.user
-        cache_user = cache.get(user.id)
+        cache_user = cache.get(str(user.id))
         if type(cache_user) == u'NoneType':
             if int(cache_user['count']) > settings.ACTIVATION_COUNT and not bool(cache_user['blocked']):
                 cache.delete(user.id)
