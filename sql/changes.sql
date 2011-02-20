@@ -4531,3 +4531,249 @@ $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
     
+--- 19.02.2011 14:03
+ALTER TABLE billservice_shedulelog ADD COLUMN prepaid_radius_traffic_reset timestamp without time zone;
+ALTER TABLE billservice_shedulelog ADD COLUMN prepaid_radius_traffic_accrued timestamp without time zone;
+CREATE TABLE billservice_accountprepaysradiustrafic (
+    id serial NOT NULL PRIMARY KEY,
+    account_tarif_id integer NOT NULL,
+    prepaid_traffic_id integer NOT NULL,
+    size double precision NOT NULL,
+    direction integer NOT NULL,
+    datetime timestamp with time zone NOT NULL
+)
+;
+
+CREATE OR REPLACE FUNCTION shedulelog_radius_tr_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone)
+  RETURNS void AS
+$BODY$
+BEGIN
+        DELETE FROM billservice_accountprepaysradiustrafic WHERE account_tarif_id=accounttarif_id_;
+    UPDATE billservice_shedulelog SET prepaid_radius_traffic_reset=reset_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_radius_traffic_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION shedulelog_radius_tr_reset_fn(integer, integer, timestamp without time zone) OWNER TO postgres;
+
+CREATE OR REPLACE FUNCTION shedulelog_radius_tr_credit_fn(account_id_ integer, accounttarif_id_ integer, trts_id_ integer, size_ numeric, direction_ integer, coeff_ numeric, datetime_ timestamp without time zone)
+  RETURNS void AS
+$BODY$
+DECLARE
+     
+BEGIN
+
+	UPDATE billservice_accountprepaysradiustrafic SET size=size+size_*coeff_, direction=direction_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_;
+	IF NOT FOUND THEN
+	    INSERT INTO billservice_accountprepaysradiustrafic (account_tarif_id, prepaid_traffic_id, size, direction, datetime) VALUES(accounttarif_id_, trts_id_, size_*coeff_, direction_, datetime_);
+	END IF;
+
+	UPDATE billservice_shedulelog SET prepaid_radius_traffic_accrued=datetime_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+	IF NOT FOUND THEN
+		INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_radius_traffic_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+	END IF;
+	RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+
+
+ALTER TABLE billservice_radiustraffic
+   ADD COLUMN reset_prepaid_traffic boolean DEFAULT False;
+ALTER TABLE billservice_radiustraffic
+   ALTER COLUMN created SET DEFAULT now();
+ALTER TABLE billservice_radiustraffic
+   ALTER COLUMN created DROP NOT NULL;
+
+ALTER TABLE billservice_radiustraffic
+   ALTER COLUMN deleted DROP NOT NULL;
+ALTER TABLE billservice_tariff
+   ADD COLUMN radius_traffic_transmit_service_id integer;
+
+ALTER TABLE billservice_timeaccessservice
+   ADD COLUMN rounding integer DEFAULT 0;
+
+ALTER TABLE billservice_timeaccessservice
+   ADD COLUMN tarification_step integer DEFAULT 1;
+
+--- 20.02.2011
+ALTER TABLE billservice_traffictransaction ADD COLUMN radiustraffictransmitservice_id integer;
+CREATE OR REPLACE FUNCTION traftrans_crt_cur_ins(datetx date) RETURNS void
+    AS $$
+DECLARE
+
+    datetx_ text := to_char(datetx, 'YYYYMM01');
+
+
+    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION traftrans_cur_ins (traftrns billservice_traffictransaction) RETURNS void AS ';
+
+    fn_bd_tx1_ text := 'BEGIN 
+                         INSERT INTO traftrans';
+                         
+    fn_bd_tx2_ text := '(traffictransmitservice_id, radiustraffictransmitservice_id, account_id, accounttarif_id, summ, datetime)
+                          VALUES 
+                         (traftrns.traffictransmitservice_id, traftrns.radiustraffictransmitservice_id,traftrns.account_id, traftrns.accounttarif_id, traftrns.summ, traftrns.datetime); RETURN; END;';
+                          
+    fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+
+
+    ch_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION traftrans_cur_datechk(trs_date timestamp without time zone) RETURNS integer AS ';
+
+    ch_fn_bd_tx1_ text := ' DECLARE d_s_ date := DATE ';
+    ch_fn_bd_tx2_ text := '; d_e_ date := (DATE ';
+    ch_fn_bd_tx3_ text := ')::date; BEGIN IF    trs_date < d_s_ THEN RETURN -1; ELSIF trs_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; ';
+
+
+
+    dt_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION traftrans_cur_dt() RETURNS date AS ';
+    
+    onemonth_ text := '1 month';
+    query_ text;
+    
+    prevdate_ date;
+    
+BEGIN    
+
+
+    
+        query_ :=  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
+
+        EXECUTE query_;
+
+
+        query_ :=  ch_fn_tx1_  || quote_literal(ch_fn_bd_tx1_ || quote_literal(datetx_) || ch_fn_bd_tx2_ || quote_literal(datetx_) || '+ interval ' || quote_literal(onemonth_) ||  ch_fn_bd_tx3_) || fn_tx2_;
+
+        EXECUTE query_;
+        
+        prevdate_ := traftrans_cur_dt();
+        
+        PERFORM traftrans_crt_prev_ins(prevdate_);
+        
+        query_ := dt_fn_tx1_ || quote_literal(' BEGIN RETURN  DATE ' || quote_literal(datetx_) || '; END; ') || fn_tx2_;
+        
+        EXECUTE query_;
+
+        
+    RETURN;
+
+END;
+$$
+    LANGUAGE plpgsql;
+    
+
+    
+CREATE OR REPLACE FUNCTION traftrans_crt_prev_ins(datetx date) RETURNS void
+    AS $$
+DECLARE
+
+    datetx_ text := to_char(datetx, 'YYYYMM01');
+
+
+    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION traftrans_prev_ins (traftrns billservice_traffictransaction) RETURNS void AS ';
+
+    fn_bd_tx1_ text := 'BEGIN 
+                         INSERT INTO traftrans';
+                         
+    fn_bd_tx2_ text := '(traffictransmitservice_id, radiustraffictransmitservice_id,account_id, accounttarif_id, summ, datetime)
+                          VALUES 
+                         (traftrns.traffictransmitservice_id, traftrns.radiustraffictransmitservice_id, traftrns.account_id, traftrns.accounttarif_id, traftrns.summ, traftrns.datetime); RETURN; END;';
+                          
+    fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+
+
+    ch_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION traftrans_prev_datechk(trs_date timestamp without time zone) RETURNS integer AS ';
+
+    ch_fn_bd_tx1_ text := ' DECLARE d_s_ date := DATE ';
+    ch_fn_bd_tx2_ text := '; d_e_ date := (DATE ';
+    ch_fn_bd_tx3_ text := ')::date; BEGIN IF    trs_date < d_s_ THEN RETURN -1; ELSIF trs_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; ';
+
+    ch_fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+
+    qts_ text := 'CHK % % %';
+    
+    onemonth_ text := '1 month';
+    query_ text;
+BEGIN    
+
+        EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
+
+
+        query_ :=  ch_fn_tx1_  || quote_literal(ch_fn_bd_tx1_ || quote_literal(datetx_) || ch_fn_bd_tx2_ || quote_literal(datetx_) || '+ interval ' || quote_literal(onemonth_) ||  ch_fn_bd_tx3_) || fn_tx2_;
+        
+        EXECUTE query_;
+        
+    RETURN;
+
+END;
+$$
+    LANGUAGE plpgsql; 
+ 
+
+CREATE OR REPLACE FUNCTION traftrans_inserter(traftrns billservice_traffictransaction) RETURNS void
+    AS 
+$BODY$
+DECLARE
+    datetx_ text := to_char(traftrns.datetime::date, 'YYYYMM01');
+    insq_   text;
+
+    traftrns_traffictransmitservice_id text;  
+    traftrns_radiustraffictransmitservice_id text;
+    traftrns_account_id    text;
+    traftrns_accounttarif_id    text;
+    traftrns_summ    text;
+    traftrns_datetime    text;
+BEGIN
+    
+  IF traftrns.traffictransmitservice_id IS NULL THEN
+	   traftrns_traffictransmitservice_id := 'NULL';
+	ELSE
+	   traftrns_traffictransmitservice_id := traftrns.traffictransmitservice_id::text;
+	END IF;
+
+  IF traftrns.radiustraffictransmitservice_id IS NULL THEN
+	   traftrns_radiustraffictransmitservice_id := 'NULL';
+	ELSE
+	   traftrns_radiustraffictransmitservice_id := traftrns.radiustraffictransmitservice_id::text;
+	END IF;
+
+
+  IF traftrns.account_id IS NULL THEN
+	   traftrns_account_id := 'NULL';
+	ELSE
+	   traftrns_account_id := traftrns.account_id::text;
+	END IF;
+
+    	IF traftrns.accounttarif_id IS NULL THEN
+	   traftrns_accounttarif_id := 'NULL';
+	ELSE
+	   traftrns_accounttarif_id := traftrns.accounttarif_id::text;
+	END IF;
+
+	IF traftrns.summ IS NULL THEN
+	   traftrns_summ := 'NULL';
+	ELSE
+	   traftrns_summ := traftrns.summ::text;
+	END IF;
+
+
+	IF traftrns.datetime IS NULL THEN
+	   traftrns_datetime := 'NULL';
+	ELSE
+	   traftrns_datetime := quote_literal(traftrns.datetime);
+	END IF;
+
+    insq_ := 'INSERT INTO traftrans' || datetx_ || ' (traffictransmitservice_id, radiustraffictransmitservice_id, account_id, accounttarif_id, summ, datetime) VALUES (' || traftrns_traffictransmitservice_id || ',' || traftrns_radiustraffictransmitservice_id || ',' || traftrns_account_id || ',' || traftrns_accounttarif_id || ',' || traftrns_summ || ',' || traftrns_datetime || ');';
+    EXECUTE insq_;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE 'plpgsql' VOLATILE
+  COST 100;
+    
+

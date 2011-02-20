@@ -2506,7 +2506,7 @@ class TarifFrame(QtGui.QDialog):
             if not self.model.isnull('radius_traffic_transmit_service_id'):
                 self.radius_traffic_access_service_checkbox.setChecked(True)
                 radius_traffic_transmit_service = self.connection.get_model(self.model.radius_traffic_transmit_service_id, "billservice_radiustraffic")
-                self.spinBox_radius_traffic_prepaid_volume.setValue(radius_traffic_transmit_service.prepaid_value)
+                self.spinBox_radius_traffic_prepaid_volume.setValue(int(radius_traffic_transmit_service.prepaid_value/(1024*1024)))
                 self.comboBox_radius_traffic_prepaid_direction.setCurrentIndex(self.comboBox_radius_traffic_prepaid_direction.findData(QtCore.QVariant(radius_traffic_transmit_service.prepaid_direction)))
                 self.spinBox_radius_traffic_tarification_step.setValue(radius_traffic_transmit_service.tarification_step)
                 self.comboBox_radius_traffic_direction.setCurrentIndex(self.comboBox_radius_traffic_direction.findData(QtCore.QVariant(radius_traffic_transmit_service.direction)))
@@ -2943,7 +2943,7 @@ class TarifFrame(QtGui.QDialog):
                     radius_traffic_service=Object()
                 #print 1
                 radius_traffic_service.reset_prepaid_traffic = self.checkBox_radius_traffic_reset_prepaidtraffic.checkState()==2
-                radius_traffic_service.prepaid_value = unicode(self.spinBox_radius_traffic_prepaid_volume.value())
+                radius_traffic_service.prepaid_value = unicode(self.spinBox_radius_traffic_prepaid_volume.value()*1024*1024)
                 radius_traffic_service.direction = self.comboBox_radius_traffic_direction.itemData(self.comboBox_radius_traffic_direction.currentIndex()).toInt()[0]
                 radius_traffic_service.prepaid_direction = self.comboBox_radius_traffic_prepaid_direction.itemData(self.comboBox_radius_traffic_prepaid_direction.currentIndex()).toInt()[0]
                 radius_traffic_service.rounding = self.comboBox_radius_traffic_rounding.itemData(self.comboBox_radius_traffic_rounding.currentIndex()).toInt()[0]
