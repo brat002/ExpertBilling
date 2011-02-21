@@ -4776,4 +4776,5 @@ $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
     
+ALTER TABLE billservice_traffictransmitnodes ALTER edge_value TYPE double precision;
 

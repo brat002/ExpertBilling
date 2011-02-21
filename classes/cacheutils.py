@@ -59,7 +59,6 @@ class CacheItem(object):
             except ValueError, verr:
                 raise Exception("%s: Field %s of class %s not found in sql" % (self.__class__.__name__, field, self.datatype.__name__))
     
-    
     def getdata(self, cursor):
         cursor.execute(self.sql, self.vars)
         self.data = cursor.fetchall() 
