@@ -613,7 +613,35 @@ class TimeAccessBill(Thread):
 
     def get_actual_cost(self, date):
         pass
+
+    def get_actual_prices(self, radtrafficnodes):
+        
+        for period in radtrafficnodes:
+            if period.value!=0:
+                return True
+        return False
     
+    def valued_prices(self, value, radtrafficnodes):
+        d = {}
+        
+        for x in radtrafficnodes:
+            d[value]=x
+            
+        keys = d.keys()
+        keys.sort()
+        keys.append(sys.maxint)
+        #d=map(adict.get, keys)
+        res=[]
+        i=0
+        l=len(keys)
+        #перебираем все ноды по объёму. Оставляем только подходящие
+        for x in keys:
+            if value/(1024*1024)>=x and value/(1024*1024)<=keys[i+1]: 
+                res.append(d[x]) 
+            i+=1
+            if l==i: break
+        return res
+        
     def run(self):
         """
         По каждой записи делаем транзакции для пользователя в соотв с его текущим тарифным планов
@@ -624,6 +652,7 @@ class TimeAccessBill(Thread):
         self.connection = get_connection(vars.db_dsn)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
+        accounts_bytes_cache={} # account_id: date_start_date_end, bytes_in, bytes_out
         while True:
             try:
                 if suicideCondition[self.__class__.__name__]:
@@ -654,6 +683,7 @@ class TimeAccessBill(Thread):
                                  AND rs.interrim_update < %s ORDER BY rs.interrim_update ASC LIMIT 20000;""", (dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
+                now = dateAT
                 for row in rows:
                     rs = BillSession(*row)
                     #1. Ищем последнюю запись по которой была произведена оплата
@@ -691,7 +721,7 @@ class TimeAccessBill(Thread):
                             cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
                             cur.connection.commit()
                         #get the list of time periods and their cost
-                        now = dateAT
+                        
                         for period in caches.timeaccessnode_cache.by_id.get(rs.taccs_id, []):
                             if 0: assert isinstance(period, TimeAccessNodeData)
                             #get period nodes and check them
@@ -708,28 +738,75 @@ class TimeAccessBill(Thread):
                                        WHERE account_id=%s AND sessionid=%s
                                     """, (rs.session_time, rs.account_id, unicode(rs.sessionid),))
                         cur.connection.commit()  
+                    #
                     if acc.radius_traffic_transmit_service_id:  
                         radius_traffic = caches.radius_traffic_transmit_service_cache.by_id.get(acc.radius_traffic_transmit_service_id)
                         lt_bytes_in = rs.lt_bytes_in or 0
                         lt_bytes_out = rs.lt_bytes_out or 0
     #                    old_time = old_time[0] if old_time else 0
-                        
+                        bytes_in = 0
+                        bytes_out = 0
+                        total_bytes_value = 0
+                        #проверяем есть ли ноды с указанным value
+                        """
+                        Если есть - получаем данные текущего расчётного периода абонента
+                        Получаем значения байт из кэша accounts_bytes_cache для текущего расчётного периода
+                        если данные найдены - обновляем значения в кэше приращёнными значениями.
+                        Если не найдены - делаем запрос в базу данных и помещаем данные в кэш
+                        """
+                        if self.get_actual_prices(caches.radius_traffic_node_cache.by_id.get(rs.traccs_id, [])) and acc.settlement_period_id:
+                            sp = caches.settlementperiod_cache.by_id.get(acc.settlement_period_id)
+                            if 0: assert isinstance(sp, SettlementPeriodData)
+                            
+                            sp_defstart = acc.datetime if sp.autostart else sp.time_start
+                            sp_start, sp_end, delta = fMem.settlement_period_(sp_defstart, sp.length_in, sp.length, dateAT)
+                            date_start, date_end, bytes_in, bytes_out = accounts_bytes_cache.get(acc.account_id, (None, None, 0,0))
+                            if date_start==sp_start and date_end==sp_end:
+                                # если в кэше есть данные о трафике для абонента за указанный расчётный период - обновляем кэш свежими значениями
+                                bytes_in = bytes_in if bytes_in else 0
+                                bytes_out = bytes_out if bytes_out else 0
+                                bytes_in, bytes_out = bytes_in+rs.bytes_in-rs.lt_bytes_in, bytes_out+rs.bytes_out-rs.lt_bytes_out
+                                accounts_bytes_cache[acc.account_id]['bytes_in']+= rs.bytes_in-rs.lt_bytes_in
+                                accounts_bytes_cache[acc.account_id]['bytes_out']+= rs.bytes_out-rs.lt_bytes_out
+                            else:    
+                                cur.execute("""
+                                    SELECT sum(bytes_in) as bytes_in, sum(bytes_out) as bytes_out FROM radius_activesession 
+                                    WHERE account_id=%s and (date_start>=%s and interrim_update<=%s) or (date_start>=%s and date_end<=%s);                                
+                                    """, (acc.account_id, sp_start, now, sp_start, now))
+                                bytes_in, bytes_out = cur.fetchone()
+                                bytes_in = bytes_in if bytes_in else 0
+                                bytes_out = bytes_out if bytes_out else 0
+                                accounts_bytes_cache[acc.account_id]={'date_start':sp_start, 'date_end':sp_end, 'bytes_in':bytes_in, 'bytes_out':bytes_out}
+                                             
                         #total_time = rs.session_time - old_time
                         [(0, u"Входящий"),(1, u"Исходящий"),(2, u"Вх.+Исх."),(3, u"Большее направление")]
                         if radius_traffic.direction==0:
                             total_bytes=rs.bytes_in-rs.lt_bytes_in
+                            total_bytes_value = bytes_in
                         elif radius_traffic.direction==1:
                             total_bytes=rs.bytes_out-rs.lt_bytes_out
+                            total_bytes_value = bytes_out
                         elif radius_traffic.direction==2:
                             total_bytes=(rs.bytes_out-rs.lt_bytes_out)+(rs.bytes_in-rs.lt_bytes_in)
-                        elif radius_traffic.direction==2:
-                            total_bytes=max(((rs.bytes_out-rs.lt_bytes_out),(rs.bytes_in-rs.lt_bytes_in)))
-                            
+                            total_bytes_value = bytes_in+bytes_out
+                        elif radius_traffic.direction==3:
+                            #Проверка на максимальное направление. Берётся расчётный период из тарифа
+                            if acc.radius_traffic_transmit_service_id:
+                                if bytes_in>=bytes_out:
+                                    total_bytes = (rs.bytes_in-rs.lt_bytes_in)
+                                else:
+                                    total_bytes = (rs.bytes_out-rs.lt_bytes_out)
+                            else:
+                                #Если расчётный период не указан - считаем по отношению к началу сессии
+                                total_bytes = max(((rs.bytes_in-rs.lt_bytes_in), (rs.bytes_out-rs.lt_bytes_out)))
+                            total_bytes_value = max((bytes_in,bytes_out))
                         
+                        #Если сессия окончена 
                         if rs.date_end:
+                            #Если нужно делать округление
                             if radius_traffic.rounding==1:
                                 if radius_traffic.tarification_step>0:
-                                    total_bytes = divmod(total_bytes, radius_traffic.tarification_step)[1]*radius_traffic.tarification_step+radius_traffic.tarification_step
+                                    total_bytes = divmod(total_bytes, radius_traffic.tarification_step*1024)[0]*radius_traffic.tarification_step*1024+radius_traffic.tarification_step*1024
         
                         cur.execute("""SELECT id, size FROM billservice_accountprepaysradiustrafic WHERE account_tarif_id=%s""", (rs.acctf_id,))
                         result = cur.fetchone()
@@ -744,7 +821,7 @@ class TimeAccessBill(Thread):
                             cur.connection.commit()
                         #get the list of time periods and their cost
                         now = dateAT
-                        for period in caches.radius_traffic_node_cache.by_id.get(rs.traccs_id, []):
+                        for period in self.valued_prices(total_bytes_value,caches.radius_traffic_node_cache.by_id.get(rs.traccs_id, [])):
                             if 0: assert isinstance(period, RadiusTrafficNodeData)
                             #get period nodes and check them
                             for pnode in caches.timeperiodnode_cache.by_id.get(period.timeperiod_id, []):

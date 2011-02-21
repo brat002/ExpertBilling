@@ -1459,7 +1459,7 @@ class TarifFrame(QtGui.QDialog):
         columns=[u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ']
         
         makeHeaders(columns, self.trafficcost_tableWidget)
-        self.trafficcost_tableWidget.setColumnHidden(1, True)     
+        self.trafficcost_tableWidget.setColumnHidden(2, True)     
         #self.trafficcost_tableWidget.setColumnHidden(2, True)
 
         self.trafficcost_label.setText(QtGui.QApplication.translate("Dialog", "Цена за МБ трафика", None, QtGui.QApplication.UnicodeUTF8))
@@ -1517,7 +1517,7 @@ class TarifFrame(QtGui.QDialog):
         self.commandLinkButton_add_radius_trafficcost.setDescription(QtGui.QApplication.translate("Dialog", "Добавить цену", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton_del_radius_trafficcost.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton_del_radius_trafficcost.setDescription(QtGui.QApplication.translate("Dialog", "Удалить цену", None, QtGui.QApplication.UnicodeUTF8))
-        columns=['#',u'Объём', u'Период тарификации', u'Цена за МБ.']
+        columns=['#',u'Объём', u'Период тарификации', u'Цена за МБ.(после достижения объёма)']
         makeHeaders(columns, self.tableWidget_radius_traffic_trafficcost)     
         self.groupBox_radius_traffic_tarification_settings.setTitle(QtGui.QApplication.translate("Dialog", "Параметры тарификации", None, QtGui.QApplication.UnicodeUTF8))
         self.label_radius_traffic_direction.setText(QtGui.QApplication.translate("Dialog", "Направление", None, QtGui.QApplication.UnicodeUTF8))
@@ -2709,7 +2709,7 @@ class TarifFrame(QtGui.QDialog):
                         
                         #print node.id
                         self.addrow(self.trafficcost_tableWidget, node.id, i, 0)
-                        self.addrow(self.trafficcost_tableWidget, node.edge_value, i, 1)
+                        self.addrow(self.trafficcost_tableWidget, node.edge_value/(1024*1024), i, 1)
                         self.addrow(self.trafficcost_tableWidget, node.edge_end, i, 2)
                         self.addrow(self.trafficcost_tableWidget, group.name, i, 3, id=node.group_id)
                         self.trafficcost_tableWidget.setItem(i,4, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
@@ -2754,6 +2754,7 @@ class TarifFrame(QtGui.QDialog):
             access_parameters = Object()
             access_parameters.id=self.model.access_parameters_id
             access_parameters = self.connection.get(access_parameters.get("billservice_accessparameters"))
+            self.connection.commit()
             previous_ipn_for_vpn_state = access_parameters.ipn_for_vpn
         else:
             model=Object()
@@ -2763,12 +2764,27 @@ class TarifFrame(QtGui.QDialog):
         if unicode(self.tarif_name_edit.text())=="":
             QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не указали название тарифного плана")
             return
+
         if unicode(self.access_time_edit.currentText())=="":
             QtGui.QMessageBox.warning(self, u"Ошибка", u"Вы не выбрали разрешённый период доступа")
             return
+
         if (unicode(self.access_time_edit.currentText()) == 'IPN') and self.ipn_for_vpn.checkState()==2:
             QtGui.QMessageBox.warning(self, u"Ошибка", u"'Производить IPN действия' может быть выбрано только для VPN планов")
             return
+
+        if self.sp_groupbox.isChecked()==False and (self.prepaid_tableWidget.rowCount()>0 or self.reset_traffic_edit.isChecked()==True):
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"Для начисления и сброса предоплаченного трафика необходимо указать расчётный период")
+            return
+
+        if self.sp_groupbox.isChecked()==False and (self.spinBox_radius_traffic_prepaid_volume.value()!=0 or self.checkBox_radius_traffic_reset_prepaidtraffic.isChecked()==True):
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"Для начисления и сброса предоплаченного RADIUS трафика необходимо указать расчётный период")
+            return
+
+        if self.sp_groupbox.isChecked()==False and (self.reset_time_checkbox.isChecked()==True or self.prepaid_time_edit.value()!=0):
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"Для начисления и сброса предоплаченного времени необходимо указать расчётный период")
+            return
+        
         try:
             
             model.name = unicode(self.tarif_name_edit.text())
@@ -2881,7 +2897,7 @@ class TarifFrame(QtGui.QDialog):
 
             #Доступ по времени
             
-            if self.time_access_service_checkbox.checkState()==2 and self.timeaccess_table.rowCount()>0:
+            if self.time_access_service_checkbox.checkState()==2:
                     
                 if not model.isnull('time_access_service_id'):
                     time_access_service = self.connection.get_model(self.model.time_access_service_id, "billservice_timeaccessservice" )
@@ -2935,7 +2951,7 @@ class TarifFrame(QtGui.QDialog):
                     
                     
             #RADIUS траффик
-            if self.radius_traffic_access_service_checkbox.checkState()==2 and self.tableWidget_radius_traffic_trafficcost.rowCount()>0:
+            if self.radius_traffic_access_service_checkbox.checkState()==2:
                     
                 if not model.isnull('radius_traffic_transmit_service_id'):
                     radius_traffic_service = self.connection.get_model(self.model.radius_traffic_transmit_service_id, "billservice_radiustraffic" )
@@ -3128,7 +3144,7 @@ class TarifFrame(QtGui.QDialog):
                     self.connection.iddelete(id, "billservice_addonservicetarif")
                                 
             #Доступ по трафику 
-            if self.trafficcost_tableWidget.rowCount()>0 and self.transmit_service_checkbox.checkState()==2:
+            if self.transmit_service_checkbox.checkState()==2:
                 if not model.isnull('traffic_transmit_service_id'):
                     traffic_transmit_service = self.connection.get_model(self.model.traffic_transmit_service_id, "billservice_traffictransmitservice")
                 else:
@@ -3156,8 +3172,8 @@ class TarifFrame(QtGui.QDialog):
                     
                     
                     transmit_node.traffic_transmit_service_id = traffic_transmit_service.id
-                    transmit_node.edge_value = unicode(self.trafficcost_tableWidget.item(i,1).text() or 0)
-                    transmit_node.edge_end = unicode(self.trafficcost_tableWidget.item(i,2).text() or 0)
+                    transmit_node.edge_value =float(self.trafficcost_tableWidget.item(i,1).text() or 0)*(1024*1024)
+                    transmit_node.edge_end = float(self.trafficcost_tableWidget.item(i,2).text() or 0)
                     transmit_node.group_id = self.trafficcost_tableWidget.item(i,3).id
                     #transmit_node.in_direction = self.trafficcost_tableWidget.cellWidget(i,4).checkState()==2
                     #transmit_node.out_direction = self.trafficcost_tableWidget.cellWidget(i,5).checkState()==2
@@ -3227,7 +3243,7 @@ class TarifFrame(QtGui.QDialog):
 
 
     
-            elif (self.transmit_service_checkbox.checkState()==0 or self.trafficcost_tableWidget.rowCount()==0) and not model.isnull("traffic_transmit_service_id"):
+            elif (self.transmit_service_checkbox.checkState()==0) and not model.isnull("traffic_transmit_service_id"):
                 tsid = model.traffic_transmit_service_id
                 model.traffic_transmit_service_id=None
                 self.connection.save(model, "billservice_tariff")

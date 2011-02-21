@@ -40,7 +40,7 @@ nfroutine_sql = \
                                     ba.id = act.account_id               
                                 ORDER BY bt.id, ba.id;""",
               'tarif_groups':
-                          """SELECT bt.id AS tarif_id,  ARRAY(SELECT ROW(bttn1.group_id, sort_asc(int_array_aggregate(bttn1.edge_value)))::group_nodes FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id AND (bttn1.edge_value > 0) GROUP BY bttn1.group_id ORDER BY bttn1.group_id) AS gr_nodes 
+                          """SELECT bt.id AS tarif_id,  ARRAY(SELECT ROW(bttn1.group_id, sort_asc(int_array_aggregate(bttn1.edge_value::integer)))::group_nodes FROM billservice_traffictransmitnodes as bttn1 WHERE bttn1.traffic_transmit_service_id = bt.traffic_transmit_service_id AND (bttn1.edge_value > 0) GROUP BY bttn1.group_id ORDER BY bttn1.group_id) AS gr_nodes 
                                 FROM billservice_tariff AS bt 
                                 WHERE EXISTS (SELECT 1 FROM billservice_traffictransmitnodes AS bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id AND bttn2.edge_value > 0)
                                 ORDER BY bt.id;"""}

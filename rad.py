@@ -1349,11 +1349,6 @@ class HandleHotSpotAuth(HandleSBase):
             logger.warning("Unallowed account status for user %s: account_status is false", user_name)
             return self.auth_NA(authobject)       
 
-        if int(acct_card.nas_id)!=int(nas.id):
-            logger.warning("Unallowed NAS for user %s", user_name)
-            return self.auth_NA(authobject)
-
-
         allow_dial = self.caches.period_cache.in_period.get(acct_card.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acct_card.account_status, acct_card.ballance, acct_card.disabled_by_limit, acct_card.balance_blocked,acct_card.tariff_active))
@@ -1497,7 +1492,7 @@ class HandleSAcct(HandleSBase):
         # TODO: Прикрутить корректное определение НАС-а
         nas_by_int_id = False
         nas_name = ''
-        
+        acc = None
         if self.packetobject.has_key('NAS-Identifier'):
             nas_name = self.packetobject['NAS-Identifier'][0]
             nasses = self.caches.nas_cache.by_ip_n_identify.get((self.nasip,nas_name))
@@ -1531,15 +1526,18 @@ class HandleSAcct(HandleSBase):
             subacc = self.caches.subaccount_cache.by_id.get(int(subacc_id))
 
         if subacc:
-            acc = self.caches.account_cache.by_id.get(subacc.account_id)  
-        else:              
-            logger.info('ACCT: Account from subaccount %s not found', (subacc_id,))
+            acc = self.caches.account_cache.by_id.get(subacc.account_id)
+        elif self.access_type=='HotSpot':
+            acc = self.caches.account_cache.by_username.get(self.userName)
+        
+        if not acc:              
+            logger.info('ACCT: Account for subaccount %s not found. HotSpot user not found', (subacc_id,))
             return self.acct_NA()
         
         if acc is None:
             self.cur.connection.commit()
             #self.cur.close()
-            logger.warning("Unknown User or user tarif %s", self.userName)
+            logger.warning("Unknown User %s", self.userName)
             return self.acct_NA()
         if 0: assert isinstance(acc, AccountData)
 
@@ -1606,34 +1604,9 @@ class HandleSAcct(HandleSBase):
                     with queues.sessions_lock:
                         queues.sessions[str(self.packetobject['Acct-Session-Id'][0])] = (nas.id, now)
 
-            if acc.time_access_service_id or acc.radius_traffic_transmit_service_id:
-                self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, date_start,
-                                 caller_id, called_id, framed_ip_address, nas_id, 
-                                 framed_protocol, checkouted_by_time, checkouted_by_trafic) 
-                                 VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s, %s)
-                                 """, (acc.account_id, 
-                                        self.packetobject['Acct-Session-Id'][0], now,
-                                        self.packetobject['Calling-Station-Id'][0], 
-                                        self.packetobject['Called-Station-Id'][0], 
-                                        self.packetobject['Framed-IP-Address'][0],
-                                        self.packetobject['NAS-IP-Address'][0], 
-                                        self.access_type, False, False,))
-
 
         elif self.packetobject['Acct-Status-Type']==['Alive']:
             bytes_in, bytes_out = self.get_bytes()
-            if acc.time_access_service_id or acc.radius_traffic_transmit_service_id:
-                self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, interrim_update,
-                                 caller_id, called_id, framed_ip_address, nas_id, session_time,
-                                 bytes_out, bytes_in, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-                                 VALUES ( %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s);
-                                 """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],
-                                        now, self.packetobject['Calling-Station-Id'][0],
-                                        self.packetobject['Called-Station-Id'][0], 
-                                        self.packetobject['Framed-IP-Address'][0],
-                                        self.packetobject['NAS-IP-Address'][0],
-                                        self.packetobject['Acct-Session-Time'][0],
-                                        bytes_in, bytes_out, self.access_type, False, False,))
 
             if nas_by_int_id:
                 with queues.sessions_lock:
@@ -1652,18 +1625,6 @@ class HandleSAcct(HandleSBase):
 
         elif self.packetobject['Acct-Status-Type']==['Stop']:
             bytes_in, bytes_out=self.get_bytes()
-            if acc.time_access_service_id or acc.radius_traffic_transmit_service_id:
-                self.cur.execute("""INSERT INTO radius_session(account_id, sessionid, interrim_update, date_end,
-                                 caller_id, called_id, framed_ip_address, nas_id, session_time,
-                                    bytes_in, bytes_out, framed_protocol, checkouted_by_time, checkouted_by_trafic)
-                                    VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s);
-                                    """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],
-                                          now, now, self.packetobject['Calling-Station-Id'][0],
-                                          self.packetobject['Called-Station-Id'][0], 
-                                          self.packetobject['Framed-IP-Address'][0], 
-                                          self.packetobject['NAS-IP-Address'][0],
-                                          self.packetobject['Acct-Session-Time'][0],
-                                          bytes_in, bytes_out, self.access_type, False, False,))
 
             if nas_by_int_id:
                 with queues.sessions_lock:
