@@ -144,7 +144,7 @@ class DepickerThread(Thread):
                             self.cur = self.connection.cursor()
                         except:
                             time.sleep(20)
-                time.sleep(10)
+                time.sleep(20)
   
 class groupDequeThread(Thread):
     '''Тред выбирает и отсылает в БД статистику по группам-пользователям'''
@@ -168,6 +168,7 @@ class groupDequeThread(Thread):
                     try: self.connection.close()
                     except: pass
                     break
+                #Записывать данные для профилирования
                 if flags.writeProf: 
                     a = time.clock()
                     
@@ -202,14 +203,14 @@ class groupDequeThread(Thread):
                 octets = 0               
                 
                 #second type groups
-                if   group_type == 2:                        
+                if group_type == 2:                        
                     max_oct = 0
                     #get class octets, calculate with direction method, find maxes
                     for class_, gdict in groupItems.iteritems():                            
                         octs = gop(gdict)
                         classes.append(class_)
                         octlist.append(octs)
-                        if octs > max_oct:
+                        if octs >= max_oct:
                             max_oct = octs
                             max_class = class_                            
                         
@@ -543,7 +544,7 @@ class NetFlowRoutine(Thread):
 
                     #if no line in cache, or the collection date is younger then accounttarif creation date
                     #get an acct record from teh database
-                    if  (acc.acctf_id  != flow.acctf_id) or (not acc.datetime <= stream_date):
+                    if  (acc.acctf_id  != flow.acctf_id) or ( acc.datetime > stream_date):
                         acc = oldAcct.get(flow.acctf_id)
                         if not acc:
                             self.cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.status   
@@ -677,17 +678,7 @@ class NetFlowRoutine(Thread):
                             if summ > 0:
                                 with queues.pickerLock:
                                     queues.picker.add_summ(acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ)
-                                    
-                    #if store_classes:
-                    #    self.cur.execute("""INSERT INTO billservice_netflowstream(
-                    #                   nas_id, account_id, tarif_id, direction,date_start, src_addr, traffic_class_id,
-                    #                   dst_addr, octets, src_port, dst_port, protocol, checkouted, for_checkout)
-                    #                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-                    #               """, (flow.nas_id, flow.account_id, acc.tarif_id, flow.node_direction, stream_date, \
-                    #                     intToIp(flow.src_addr,4), store_classes, intToIp(flow.dst_addr,4), flow.octets, \
-                    #                     flow.src_port, flow.dst_port, flow.protocol, True, False,))
-                    #    self.connection.commit()
-                 
+
                 if flags.writeProf:
                     icount += 1
                     timecount += time.clock() - a
