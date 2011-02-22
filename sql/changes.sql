@@ -2601,15 +2601,8 @@ CREATE TABLE billservice_systemuser_group
 (
   id serial NOT NULL,
   systemuser_id integer NOT NULL,
-  systemgroup_id integer NOT NULL,
-  CONSTRAINT billservice_systemuser_group_pkey PRIMARY KEY (id),
-  CONSTRAINT billservice_systemuser_group_systemgroup_id_fkey FOREIGN KEY (systemgroup_id)
-      REFERENCES billservice_systemgroup (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-  CONSTRAINT billservice_systemuser_group_systemuser_id_fkey FOREIGN KEY (systemuser_id)
-      REFERENCES billservice_systemuser (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-  CONSTRAINT billservice_systemuser_group_systemuser_id_key UNIQUE (systemuser_id, systemgroup_id)
+  systemgroup_id integer NOT NULL
+ 
 )
 WITH (
   OIDS=FALSE

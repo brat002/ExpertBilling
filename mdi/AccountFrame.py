@@ -1459,6 +1459,7 @@ class TarifFrame(QtGui.QDialog):
         columns=[u'#', u'От МБ', u'До МБ', u'Группа', u'Время', u'Цена за МБ']
         
         makeHeaders(columns, self.trafficcost_tableWidget)
+        self.trafficcost_tableWidget.setColumnHidden(1, True)
         self.trafficcost_tableWidget.setColumnHidden(2, True)     
         #self.trafficcost_tableWidget.setColumnHidden(2, True)
 

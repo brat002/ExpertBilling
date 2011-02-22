@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     # Uncomment this for admin:
     ('^admin/(.*)', admin.site.root),
+    #(r'^webmoney/', include('webmoney.urls')),
      #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
      #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
      #(r'helpdesk/', include('helpdesk.urls')),
@@ -27,6 +28,7 @@ urlpatterns += patterns('billservice.views',
      (r'^accounts/logout/$', 'login_out'),
      (r'^traffic/info/$', 'netflowstream_info'),
      (r'^promise/$', 'get_promise'),
+     (r'^payment/$', 'make_payment'),
      (r'^transaction/$', 'transaction'),
      (r'^session/info/$', 'vpn_session'),
      (r'^password/change/$', 'change_password'),
@@ -46,7 +48,12 @@ urlpatterns += patterns('billservice.views',
      (r'^traffic/transaction/info/$', 'traffic_transaction'),
      (r'^one/time/history/info/$', 'one_time_history'),
      (r'^news/delete/$', 'news_delete'),
-     (r'^jsonaccounts$', 'jsonaccounts'),
+)
+
+urlpatterns += patterns('webmoney.views',
+     (r'^webmoney/success/$', 'success'),
+     (r'^webmoney/fail/$',    'fail'),
+     (r'^webmoney/$', 'simple_payment'),
 )
 
 urlpatterns += patterns('service_monitor.views',
@@ -60,3 +67,4 @@ urlpatterns += patterns('statistics.views',
     (r'^statistics/subaccount/$', 'subaccount_stat'),
     (r'^statistics/overall/$', 'overall_stat'),
 )
+

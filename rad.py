@@ -1060,32 +1060,38 @@ class HandleSAuth(HandleSBase):
 class HandlelISGAuth(HandleSAuth):
     
     def handle(self):
-
-        nasses = self.caches.nas_cache.by_ip.get(self.nasip) 
+        global sqlloggerthread
+        self.datetime = datetime.datetime.now()
+        nasses = self.caches.nas_cache.by_ip.get(self.nasip)
         if not nasses:
-            logger.warning("Requested NAS IP (%s) not found in nasses %s", (self.nasip, str(nasses),)) 
+            logger.warning("Requested NAS IP (%s) not found in nasses %s", (self.nasip, str(nasses),))
+            sqlloggerthread.add_message(type="AUTH_NAS_NOT_FOUND", service=self.access_type, cause=u'Сервер доступа с IP %s не найден ' % self.nasip, datetime=self.datetime) 
             return '',None
+        
         #if 0: assert isinstance(nas, NasData)
 
 
         #station_id = self.packetobject.get('Calling-Station-Id', [''])[0]
         station_id = str(self.packetobject['User-Name'][0])
+        user_name = station_id
         #print station_id
         #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
         #print self.caches.account_cache.by_ipn_ip_nas
         logger.warning("Searching lISG account for ip address %s", station_id)
         #acc = self.caches.account_cache.by_ipn_ip_nas.get((station_id, nas.id))
         #subacc = SubAccount()
-        subacc = self.caches.subaccount_cache.by_ipn_ip.get(user_name)
+        subacc = self.caches.subaccount_cache.by_ipn_ip.get(station_id)
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
         if not subacc:
             logger.warning("Subcccount for lISG not found for ip address %s", (station_id,))
+            sqlloggerthread.add_message(type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с логином  ipn ip %s в системе не найден.' % (station_id,), datetime=self.datetime)
             #Не учитывается сервер доступа
             return self.auth_NA(authobject)
         acc = self.caches.account_cache.by_id.get(subacc.account_id)
         
         if not acc:
             logger.warning("Account with username  %s not found", (user_name,))
+            sqlloggerthread.add_message(type="AUTH_ACC_NOT_FOUND", service=self.access_type, cause=u'Аккаунт для субаккаунта с логином %s в системе не найден.' % (subacc.username, ), datetime=self.datetime)
             return self.auth_NA(authobject)
             
         nas_id = subacc.nas_id
@@ -1099,24 +1105,20 @@ class HandlelISGAuth(HandleSAuth):
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
             """
             logger.warning("Account nas(%s) is not in sended nasses and IGNORE_NAS_FOR_VPN is False %s", (repr(nas), nasses,))
+            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
             return self.auth_NA(authobject)
         elif not nas_id:
             """
             Иначе, если указан любой NAS - берём первый из списка совпавших по IP
             """
             nas = nasses[0]
-            
+
+        nas_id = nas.id    
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges)
 
         self.nas_type = nas.type
         self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.DICT)
         
-        if acc is None:
-            logger.warning("Unknown IPN IP %s", station_id)
-            return self.auth_NA(authobject)  
-
-        if 0: assert isinstance(acc, AccountData)
-
         logger.debug("Account data : %s", repr(acc))
 
         process, ok, left = authobject._HandlePacket()
@@ -1128,8 +1130,8 @@ class HandlelISGAuth(HandleSAuth):
                 return authobject, self.replypacket
             else:
                 return self.auth_NA(authobject)
-
-
+ 
+ 
         process, ok, left = authobject._ProcessPacket()
         if not process:
             logger.warning(left, ())
@@ -1138,7 +1140,7 @@ class HandlelISGAuth(HandleSAuth):
                 return authobject, self.replypacket
             else:
                 return self.auth_NA(authobject)
-
+ 
         check_auth, left = authobject.check_auth()
         logger.debug("Auth object : %s" , authobject)
         if not check_auth:
@@ -1148,14 +1150,16 @@ class HandlelISGAuth(HandleSAuth):
         #print common_vpn,access_type,self.access_type
         if (acc.access_type is None) or (acc.access_type != self.access_type):
             logger.warning("Unallowed Access Type for user %s. Access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
+            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_WRONG_ACCESS_TYPE", service=self.access_type, cause=u'Способ доступа %s не совпадает с разрешённым в параметрах тарифного плана %s.' % (self.access_type, acc.access_type), datetime=self.datetime)
             return self.auth_NA(authobject)
 
         acstatus = (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
                     and \
-                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status == 1)))
+                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))
         #acstatus = True
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
+            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_VPN_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
             return self.auth_NA(authobject)     
 
      
@@ -1177,15 +1181,16 @@ class HandlelISGAuth(HandleSAuth):
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
             self.replypacket.AddAttribute('Class', str("%s,%s" % (subacc.id,str(self.session_speed))))
             self.add_values(acc.tarif_id)
-            #sessions_speed[acc.account_id] = self.session_speed
-            #print "Setting Speed For User" , self.speed
+            if vars.SQLLOG_SUCCESS:
+                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
             return authobject, self.replypacket
         else:
+            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tarif_active==False, allow_dial==False), datetime=self.datetime)
             return self.auth_NA(authobject)
              
 #HotSpot_class
 #auth_class
-class HandleHotSpotAuth(HandleSBase):
+class HandleHotSpotAuth(HandleSAuth):
     __slots__ = () + ('access_type', 'secret', 'speed','nas_id', 'nas_type', 'fMem', 'cur')
     def __init__(self,  packetobject, access_type, dbCur):
         #self.nasip = str(packetobject['NAS-IP-Address'][0])
@@ -1203,100 +1208,15 @@ class HandleHotSpotAuth(HandleSBase):
         authobject.set_code(3)
         return authobject, self.packetobject
 
-    def add_values(self, tarif_id):
-        attrs = self.caches.radattrs_cache.by_id.get(tarif_id, [])
-        for attr in attrs:
-            if 0: assert isinstance(attr, RadiusAttrsData)
-            if attr.vendor:
-                self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
-            else:
-                self.replypacket.AddAttribute(attr.attrid, str(attr.value))
-
-    def create_speed(self, nas, tarif_id, account_id, speed=''):
-        result_params=speed
-        if speed=='':
-            defaults = self.caches.defspeed_cache.by_id.get(tarif_id)
-            speeds   = self.caches.speed_cache.by_id.get(tarif_id, [])
-            defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]
-            result=[]
-            min_delta, minimal_period = -1, []
-            now=datetime.datetime.now()
-            for speed in speeds:
-                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
-                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)
-                if res==True and (delta<min_delta or min_delta==-1):
-                    minimal_period=speed
-                    min_delta=delta
-
-            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]
-            for k in xrange(0, 6):
-                s=minimal_period[k]
-                if s=='0/0' or s=='/' or s=='':
-                    res=defaults[k]
-                else:
-                    res=s
-                result.append(res)           
-                
-            correction = self.caches.speedlimit_cache.by_account_id.get(account_id)
-            #Проводим корректировку скорости в соответствии с лимитом
-
-            result = get_corrected_speed(result, correction)
-            accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])                                                 
-            addonservicespeed=[]                            
-            for accservice in accservices:                                 
-                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                if not accservice.deactivated  and service.change_speed:                                                                        
-                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                    break 
-                
-            #Корректируем скорость подключаемой услугой
-            result = get_corrected_speed(result, addonservicespeed)
-            if result==[]: 
-                result = defaults if defaults else ["0","0","0","0","0","0","0","0","8","0","0"] 
-            else:
-                result = get_decimals_speeds(result)
-        else:
-            #a = 
-            #print a, type(a)
-            #flatted = flatten(map(split_speed, a))
-            result = list(chain(*map(split_speed,parse_custom_speed_lst_rad(speed)) ))
-            #print flatted
-
-        speed_sess = "%s%s%s%s%s%s%s%s%s%s%s" % tuple(result)
-        #sessions_speed[account_id] = speed_sess 
-        
-        command_dict={'max_limit_rx': result[0],
-        'max_limit_tx': result[1],
-        'burst_limit_rx': result[2],
-        'burst_limit_tx': result[3],
-        'burst_treshold_rx': result[4],
-        'burst_treshold_tx': result[5],
-        'burst_time_rx': result[6],
-        'burst_time_tx': result[7],
-        'priority': result[8],
-        'min_limit_rx': result[9],
-        'min_limit_tx': result[10]}
-        
-        if nas.speed_value1:
-            result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
-            if result_params and nas.speed_vendor_1:
-                self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),str(result_params))
-            elif result_params and not nas.speed_vendor_1:
-                self.replypacket.AddAttribute(nas.speed_attr_id1,str(result_params))
-
-
-        if nas.speed_value2:
-            result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
-            if result_params and nas.speed_vendor_2:
-                self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
-            elif result_params and not nas.speed_vendor_2:
-                self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
-
-
         
     def handle(self):
+        global sqlloggerthread
+        self.datetime = datetime.datetime.now()
         nasses = self.caches.nas_cache.by_ip.get(self.nasip) 
-        if not nasses: return '',None
+        if not nasses:
+            logger.warning("Requested NAS IP (%s) not found in nasses %s", (self.nasip, str(nasses),))
+            sqlloggerthread.add_message(type="AUTH_NAS_NOT_FOUND", service=self.access_type, cause=u'Сервер доступа с IP %s не найден ' % self.nasip, datetime=self.datetime) 
+            return '',None
         #if 0: assert isinstance(nas, NasData)
         nas = nasses[0]
         #self.nas_id=str(row[0])
@@ -1311,6 +1231,7 @@ class HandleHotSpotAuth(HandleSBase):
         pin = self.cur.fetchone()
 
         if pin == None:
+            sqlloggerthread.add_message(type="CARD_USER_NOT_FOUND", service=self.access_type, cause=u'Карта/пользователь с логином %s не найдены ' % (user_name,), datetime=self.datetime)
             self.cur.close()
             return self.auth_NA(authobject)
         else:
@@ -1322,6 +1243,7 @@ class HandleHotSpotAuth(HandleSBase):
         check_auth, left = authobject.check_auth()
         if not check_auth:
             logger.warning(left, ())
+            sqlloggerthread.add_message(type="AUTH_BAD_PASSWORD", service=self.access_type, cause=u'Ошибка авторизации. Необходимо проверить указанный пароль.', datetime=self.datetime)
             self.cur.close()
             return self.auth_NA(authobject)   
 
@@ -1336,19 +1258,21 @@ class HandleHotSpotAuth(HandleSBase):
         self.cur.connection.commit()
         self.cur.close()
 
-
+        acc = acct_card
         if acct_card is None:
             logger.warning("Unknown User %s", user_name)
+            sqlloggerthread.add_message(type="AUTH_BAD_USER", service=self.access_type, cause=u'Пользователь HotSpot с логином %s не найден или не может быть активирован.' % (user_name,), datetime=self.datetime)
             return self.auth_NA(authobject)
 
         acct_card = CardActivateData(*acct_card)
-
-        acstatus = acct_card.ballance >0 and not acct_card.balance_blocked and not acct_card.disabled_by_limit and acct_card.account_status
+        acc = acct_card
+        acstatus = acct_card.ballance >0 and not acct_card.balance_blocked and not acct_card.disabled_by_limit and acct_card.account_status==1
 
         if not acstatus:
-            logger.warning("Unallowed account status for user %s: account_status is false", user_name)
-            return self.auth_NA(authobject)       
-
+            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
+            sqlloggerthread.add_message(account=acc.account_id, type="AUTH_HOTSPOT_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
+            return self.auth_NA(authobject)     
+        
         allow_dial = self.caches.period_cache.in_period.get(acct_card.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acct_card.account_status, acct_card.ballance, acct_card.disabled_by_limit, acct_card.balance_blocked,acct_card.tariff_active))
@@ -1356,9 +1280,13 @@ class HandleHotSpotAuth(HandleSBase):
             authobject.set_code(packet.AccessAccept)
             #self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
             self.create_speed(nas, acct_card.tarif_id, acct_card.account_id, speed='')
+            self.replypacket.AddAttribute('Class', str("%s,%s" % (0,str(self.session_speed))))
             self.add_values(acct_card.tarif_id)
+            if vars.SQLLOG_SUCCESS:
+                sqlloggerthread.add_message(account=acc.account_id,  type="HOTSPOT_AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)            
             return authobject, self.replypacket
         else:
+            sqlloggerthread.add_message(account=acc.account_id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tarif_active==False, allow_dial==False), datetime=self.datetime)
             return self.auth_NA(authobject)
 
 
@@ -1525,7 +1453,7 @@ class HandleSAcct(HandleSBase):
             logger.info('ACCT: Searching subaccount by id %s', (subacc_id,))
             subacc = self.caches.subaccount_cache.by_id.get(int(subacc_id))
 
-        if subacc:
+        if subacc and self.access_type!='HotSpot':
             acc = self.caches.account_cache.by_id.get(subacc.account_id)
         elif self.access_type=='HotSpot':
             acc = self.caches.account_cache.by_username.get(self.userName)
