@@ -36,7 +36,7 @@ from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession
 from billservice.utility import is_login_user, settlement_period_info
 from nas.models import TrafficClass
-
+from webmoney.views import simple_payment
 from lib.decorators import render_to, ajax_request#, login_required
 
 logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename=settings.WEBCAB_LOG)
@@ -264,6 +264,10 @@ def get_promise(request):
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
 
+@login_required
+@render_to('accounts/make_payment.html')
+def make_payment(request):
+    return simple_payment(request)
 
 @render_to('accounts/transaction.html')
 @login_required
