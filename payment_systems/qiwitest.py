@@ -2,8 +2,8 @@ import urllib, urllib2
 from decimal import Decimal
 from xml_helper import xml2obj
 HOST="http://ishop.qiwi.ru/xml"
-term_id=11468
-term_password='df[vehrf2007'
+term_id=9514444003
+term_password='jft5fba'
 ALARM_SMS = 0
 ALARM_CALL = 0
 params=u"""<?xml version="1.0" encoding="utf-8"?>
@@ -63,10 +63,20 @@ params={'get_balance':u"""<?xml version="1.0" encoding="utf-8"?>
     <extra name="password">%s</extra>
     <terminal-id>%s</terminal-id>
     <bills-list>
-    <bill txn-id="123"/>
+    <bill txn-id="10"/>
     </bills-list>
 </request>
-""" % (term_password, term_id)
+""" % (term_password, term_id),
+'get_invoices':u"""<request>
+	<protocol-version>4.00</protocol-version>
+	<request-type>28</request-type>
+ 	<terminal-id>%s</terminal-id>
+	<extra name="password">%s</extra>
+	<extra name="dir">0</extra>
+    <extra name="from">23.02.2011 00:00:00</extra>
+    <extra name="to">23.02.2011 23:59:59</extra>
+</request>
+""" % (term_id,term_password,),
 }
 
 def make_request(xml):
@@ -87,6 +97,7 @@ def status_code(obj):
 def get_balance():
     xml = make_request(params['get_balance'])
     if not xml: return None
+    #print xml
     o=xml2obj(xml)
     if status_code(o):
         if o.extra[0]['name']=='BALANCE':
@@ -102,16 +113,13 @@ def create_invoice(phone_number,transaction_id, summ=0, comment='', lifetime=48)
     #    if o.extra[0]['name']=='BALANCE':
     #       return o.extra[0].data
 
-    
-#print Decimal(get_balance())
-print create_invoice('9992945489', 12345, 20, 'test')
-
-#element = ET.XML(a)
-
-#for subelement in element:
-#    print subelement.text
-#    print subelement.findAll()
-#print element.findAll('response/result-code')
+def get_invoices():
+    xml = make_request(params['get_invoices'])
+    if not xml: return None
+    o=xml2obj(xml)
+    print o.__dict__
+print get_invoices()
+print get_balance()
 
 """
 <request-type>3</request-type>
