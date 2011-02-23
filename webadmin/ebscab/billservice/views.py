@@ -38,7 +38,8 @@ from billservice.utility import is_login_user, settlement_period_info
 from nas.models import TrafficClass
 from webmoney.views import simple_payment
 from lib.decorators import render_to, ajax_request#, login_required
-
+from paymentgateways.qiwi.models import Invoice as QiwiInvoice
+from paymentgateways.qiwi.forms import QiwiPaymentRequestForm
 logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename=settings.WEBCAB_LOG)
 rpc_protocol.install_logger(logger)
 client_networking.install_logger(logger)
@@ -267,8 +268,41 @@ def get_promise(request):
 @login_required
 @render_to('accounts/make_payment.html')
 def make_payment(request):
-    return simple_payment(request)
+    
+    last_qiwi_invoice = None
+    try:
+        last_qiwi_invoice = QiwiInvoice.objects.all().order_by('-created')[0]
+    except Exception, e:
+        print e
+    if last_qiwi_invoice:
+        qiwi_form = QiwiPaymentRequestForm(initial={'phone':last_qiwi_invoice.phone})
+    else:
+         qiwi_form = QiwiPaymentRequestForm()
+    wm=simple_payment(request)
+    return {'wm_form':wm['form'], 'qiwi_form':qiwi_form}
 
+@login_required
+@render_to('accounts/make_payment.html')
+def qiwi_payment(request):
+    if request.method == 'POST':
+        form = QiwiPaymentRequestForm(request.POST)
+        if form.is_valid():
+            summ = request.POST.get('summ', 0)
+            phone = request.POST.get('phone', '')
+            if summ>1 and phone.isdigit() and len(phone)==10:
+                from paymentgateways.qiwi.qiwiapi import create_invoice
+                invoice = QiwiInvoice()
+                invoice.account = request.user
+                invoice.phone = phone
+                invoice.summ = summ
+                invoice.created = datetime.datetime.now()
+                invoice.save()
+                comment = u"Пополнение счёта %s" % request.user.username
+                status=create_invoice(phone_number=phone,transaction_id=invoice.id, summ=invoice.summ, comment=comment)
+                if status[0]!=0:
+                    invoice.delete()
+                print status
+                
 @render_to('accounts/transaction.html')
 @login_required
 def transaction(request):

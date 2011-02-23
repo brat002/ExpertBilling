@@ -118,7 +118,8 @@ INSTALLED_APPS = (
     'service_monitor',
     'testcases',
     'statistics',
-    'webmoney'
+    'webmoney',
+    'paymentgateways.qiwi'
     #'helpdesk',
 )
 

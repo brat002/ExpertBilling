@@ -1,3 +1,5 @@
+#-*-coding: utf-8 -*-
+
 import urllib, urllib2
 from decimal import Decimal
 from xml_helper import xml2obj
@@ -6,6 +8,11 @@ term_id=11468
 term_password='df[vehrf2007'
 ALARM_SMS = 0
 ALARM_CALL = 0
+proxy_host='10.129.112.2'
+proxy_port=8080
+proxy_username='akuzmitski'
+proxy_password='12qwaszx++'
+
 params=u"""<?xml version="1.0" encoding="utf-8"?>
 <request>
     <protocol-version>4.00</protocol-version>
@@ -69,8 +76,27 @@ params={'get_balance':u"""<?xml version="1.0" encoding="utf-8"?>
 """ % (term_password, term_id)
 }
 
+result_codes={'0':'Успех',
+'13':'Сервер занят, повторите запрос позже',
+'150':'Ошибка авторизации (неверный логин/пароль)',
+'210':'Счет не найден',
+'215':'Счет с таким txn-id уже существует',
+'241':'Сумма слишком мала',
+'242':'Превышена максимальная сумма платежа – 15 000р.',
+'278':'Превышение максимального интервала получения списка счетов',
+'298':'Агента не существует в системе',
+'300':'Неизвестная ошибка',
+'330':'Ошибка шифрования',
+'339':'Не пройден контроль IP-адреса',
+'370':'Превышено максимальное кол-во одновременно выполняемых запросов'}
+
 def make_request(xml):
-    request = urllib2.Request(HOST,xml)
+    
+    proxy = urllib2.ProxyHandler({'http': 'http://%s:%s@%s:%s' % (proxy_username, proxy_password, proxy_host, proxy_port, )})
+    auth = urllib2.HTTPBasicAuthHandler()
+    opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
+    urllib2.install_opener(opener)    
+    request = urllib2.Request(HOST,xml.encode('utf-8'))
     response = urllib2.urlopen(request)
     try:
         return response.read()
@@ -79,26 +105,26 @@ def make_request(xml):
     return
         
 def status_code(obj):
-    if obj.result_code['fatal']!='true':
-        if obj.result_code.data=='0':
-            return True
-    return False
+    if obj.result_code.data=='0':
+        return int(obj.result_code.data), result_codes[obj.result_code.data]
+    return int(obj.result_code.data), result_codes[obj.result_code.data]
         
 def get_balance():
     xml = make_request(params['get_balance'])
     if not xml: return None
     o=xml2obj(xml)
-    if status_code(o):
+    status = status_code(o)
+    if status[0]:
         if o.extra[0]['name']=='BALANCE':
-           return o.extra[0].data
+           return o.extra[0].data, status[1]
 
 def create_invoice(phone_number,transaction_id, summ=0, comment='', lifetime=48):
     xml = make_request(params['create_invoice'] % (phone_number, summ, transaction_id, lifetime, comment,))
     if not xml: return None
     print xml
     o=xml2obj(xml)
-    if status_code(o):
-        print True
+    status = status_code(o)
+    return status[1]
     #    if o.extra[0]['name']=='BALANCE':
     #       return o.extra[0].data
 
