@@ -534,6 +534,9 @@ class Account(models.Model):
     house_bulk = models.CharField(max_length=255)
     entrance = models.CharField(max_length=255)
     room = models.CharField(max_length=255)
+
+    phone_m = models.CharField(max_length=255)
+    phone_h = models.CharField(max_length=255)
     
     #assign_vpn_ip_from_dhcp = models.BooleanField(blank=True, default=False)
     nas = models.ForeignKey(to=Nas, blank=True, verbose_name=u'Сервер доступа')

@@ -6,6 +6,8 @@ class Invoice(models.Model):
     account = models.ForeignKey(Account)
     phone = models.CharField(max_length=15)
     summ = models.DecimalField(decimal_places=10, max_digits=60)
+    password = models.CharField(max_length=512)
+    autoaccept= models.BooleanField(default=False)
     created = models.DateTimeField(blank=True, null=True)
     lifetime = models.IntegerField(blank=True, null=True)
     check_after = models.IntegerField(blank=True, null=True)

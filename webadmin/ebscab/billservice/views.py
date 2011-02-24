@@ -277,32 +277,75 @@ def make_payment(request):
     if last_qiwi_invoice:
         qiwi_form = QiwiPaymentRequestForm(initial={'phone':last_qiwi_invoice.phone})
     else:
-         qiwi_form = QiwiPaymentRequestForm()
+         qiwi_form = QiwiPaymentRequestForm(initial={'phone':request.user.phone_m})
     wm=simple_payment(request)
-    return {'wm_form':wm['form'], 'qiwi_form':qiwi_form}
+    return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'wm_form':wm['form'], 'qiwi_form':qiwi_form}
 
+@ajax_request
 @login_required
-@render_to('accounts/make_payment.html')
 def qiwi_payment(request):
-    if request.method == 'POST':
-        form = QiwiPaymentRequestForm(request.POST)
-        if form.is_valid():
-            summ = request.POST.get('summ', 0)
-            phone = request.POST.get('phone', '')
-            if summ>1 and phone.isdigit() and len(phone)==10:
-                from paymentgateways.qiwi.qiwiapi import create_invoice
-                invoice = QiwiInvoice()
-                invoice.account = request.user
-                invoice.phone = phone
-                invoice.summ = summ
-                invoice.created = datetime.datetime.now()
-                invoice.save()
-                comment = u"Пополнение счёта %s" % request.user.username
-                status=create_invoice(phone_number=phone,transaction_id=invoice.id, summ=invoice.summ, comment=comment)
-                if status[0]!=0:
-                    invoice.delete()
-                print status
+    if request.method != 'POST': return {'status_message':u"Неправильный вызов функции"}
+    form = QiwiPaymentRequestForm(request.POST)
+    if not form.is_valid():return {'status_message':u"Ошибка в заполнении полей"}
+    summ = form.cleaned_data.get('summ', 0)
+    phone = form.cleaned_data.get('phone', '')
+    password = form.cleaned_data.get('password', '')
+    autoaccept = form.cleaned_data.get("autoaccept", False)
+    
+    if autoaccept==True and not (password): return {'status_message':u"Для автоматического зачисления необходимо указать пароль"}
+    print "summ=",type(summ), summ,summ>=1, len(phone)
+    if summ>=1 and len(phone)==10:
+        from paymentgateways.qiwi.qiwiapi import create_invoice, accept_invoice_id, lifetime
+        invoice = QiwiInvoice()
+        invoice.account = request.user
+        invoice.phone = phone
+        invoice.summ = summ
+        invoice.created = datetime.datetime.now()
+        invoice.autoaccept=autoaccept
+        invoice.lifetime = lifetime
+        invoice.save()
+        comment = u"Пополнение счёта %s" % request.user.username
+        status, message=create_invoice(phone_number=phone,transaction_id=invoice.id, summ=invoice.summ, comment=comment)
+        print 'status', type(status)
+        if status!=0:
+            invoice.delete()
+            return {'status_message':u'Произошла ошибка выставления счёта. %s' % message}
+        payment_url=''
+        if not autoaccept:
+            from paymentgateways.qiwi.qiwiapi import term_id
+            if status==0:
+                payment_url="https://w.qiwi.ru/externalorder.action?shop=%s&transaction=%s" % (term_id,invoice.id)
+                message = u'Счёт удачно создан. Пройдите по ссылке для его оплаты.'
                 
+        else:
+            status, message = accept_invoice_id(phone=phone, password=password, transaction_id=invoice.id, date=invoice.created)
+            if status==0:
+                message=u"Платёж успешно выполнен."
+                invoice.accepted=True
+                invoice.date_accepted=datetime.datetime.now()
+                invoice.save()
+                
+                 
+        return {'status_message':message, 'payment_url':payment_url,}
+    else:
+        return {'status_message':u'Сумма<1 или неправильный формат телефонного номера.'}
+
+@ajax_request
+@login_required
+def qiwi_balance(request):
+    if request.method != 'POST': return {'balance':0, 'status_message':u"Неправильный вызов функции"}
+    phone = request.POST.get('phone', None)
+    password = request.POST.get('password', None)
+    if phone and password:
+        from paymentgateways.qiwi.qiwiapi import get_balance
+        balance, message = get_balance(phone=phone, password=password)
+        print balance, message
+        return {'balance':balance, 'status_message':message}
+    else:
+        message = u"Не указан телефон или пароль"
+        return {'balance':0, 'status_message':message}
+    
+    
 @render_to('accounts/transaction.html')
 @login_required
 def transaction(request):
