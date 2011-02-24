@@ -2,6 +2,8 @@ import urllib, urllib2
 from decimal import Decimal
 from xml_helper import xml2obj
 HOST="http://ishop.qiwi.ru/xml"
+from_terminal='11468'
+from_password = 'df[vehrf2007'
 term_id=9514444003
 term_password='jft5fba'
 ALARM_SMS = 0
@@ -74,7 +76,7 @@ params={'get_balance':u"""<?xml version="1.0" encoding="utf-8"?>
 	<extra name="password">%s</extra>
 	<extra name="dir">0</extra>
     <extra name="from">23.02.2011 00:00:00</extra>
-    <extra name="to">23.02.2011 23:59:59</extra>
+    <extra name="to">24.02.2011 23:59:59</extra>
 </request>
 """ % (term_id,term_password,),
 }
@@ -117,9 +119,15 @@ def get_invoices():
     xml = make_request(params['get_invoices'])
     if not xml: return None
     o=xml2obj(xml)
-    print o.__dict__
+    #print o.__dict__
+    
+    for a in o.account_list.account:
+        if a['from'].prv=='11468':
+            print a.id
+        print a.__dict__
+        #print 
 print get_invoices()
-print get_balance()
+#print get_balance()
 
 """
 <request-type>3</request-type>

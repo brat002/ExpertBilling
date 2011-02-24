@@ -4771,3 +4771,68 @@ $BODY$
     
 ALTER TABLE billservice_traffictransmitnodes ALTER edge_value TYPE double precision;
 
+--24.02.2011
+CREATE TABLE qiwi_invoice
+(
+  id serial NOT NULL,
+  txn_id character varying(64),
+  account_id integer NOT NULL,
+  phone character varying(15) NOT NULL,
+  summ numeric NOT NULL,
+  created timestamp without time zone,
+  lifetime integer,
+  check_after integer,
+  accepted boolean DEFAULT false,
+  date_accepted timestamp without time zone,
+  autoaccept boolean DEFAULT false,
+  "password" text DEFAULT ''::text,
+  CONSTRAINT qiwi_invoice_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE qiwi_invoice OWNER TO ebs;
+
+-- Index: qiwi_invoice_account_id
+
+-- DROP INDEX qiwi_invoice_account_id;
+
+CREATE INDEX qiwi_invoice_account_id
+  ON qiwi_invoice
+  USING btree
+  (account_id);
+
+
+CREATE OR REPLACE FUNCTION account_payment_transaction_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+
+IF (TG_OP = 'INSERT') AND NEW.accepted = TRUE THEN
+UPDATE billservice_account SET ballance=ballance+NEW.summ WHERE id=NEW.account_id;
+RETURN NEW;
+ELSIF (TG_OP = 'DELETE') AND OLD.accepted = TRUE THEN
+UPDATE billservice_account SET ballance=ballance-OLD.summ WHERE id=OLD.account_id;
+RETURN OLD;
+ELSIF (TG_OP = 'UPDATE') AND NEW.accepted = TRUE AND OLD.accepted = FALSE THEN
+UPDATE billservice_account SET ballance=ballance+NEW.summ WHERE id=NEW.account_id;
+RETURN NEW;
+ELSIF (TG_OP = 'UPDATE') AND NEW.accepted = FALSE AND OLD.accepted = TRUE THEN
+UPDATE billservice_account SET ballance=ballance-OLD.summ WHERE id=NEW.account_id;
+RETURN NEW;
+ELSIF (TG_OP = 'UPDATE') AND NEW.accepted = TRUE AND OLD.accepted = TRUE THEN
+UPDATE billservice_account SET ballance=ballance-OLD.summ WHERE id=NEW.account_id;
+UPDATE billservice_account SET ballance=ballance+NEW.summ WHERE id=NEW.account_id;
+RETURN NEW;
+END IF;
+RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+CREATE TRIGGER qiwi_trs_trg
+  BEFORE INSERT OR UPDATE OR DELETE
+  ON qiwi_invoice
+  FOR EACH ROW
+  EXECUTE PROCEDURE account_payment_transaction_trg_fn();
