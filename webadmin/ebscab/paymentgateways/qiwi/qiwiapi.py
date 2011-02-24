@@ -117,6 +117,15 @@ result_codes={'-1':u'Произошла ошибка. Проверьте ном�
 '339':'Не пройден контроль IP-адреса',
 '370':'Превышено максимальное кол-во одновременно выполняемых запросов'}
 
+payment_codes={
+'50':u'Выставлен',
+'52':u'Проводится',
+'60':u'Оплачен',
+'150':u'Отменен (ошибка на терминале)',
+'151':u'Отменен (ошибка авторизации: недостаточно средств на балансе, отклонен абонентом при оплате с лицевого счета оператора сотовой связи и т.п.).',
+'160':u'Отменен',
+'161':u'Отменен (Истекло время)',
+}
 def make_request(xml):
     print xml
     proxy = urllib2.ProxyHandler({'http': 'http://%s:%s@%s:%s' % (proxy_username, proxy_password, proxy_host, proxy_port, )})
@@ -135,7 +144,12 @@ def status_code(obj):
     if obj.result_code.data=='0':
         return int(obj.result_code.data), result_codes[obj.result_code.data]
     return int(obj.result_code.data), result_codes[obj.result_code.data]
-        
+
+def payment_code(obj):
+    if obj.status=='50':
+        return int(obj.status), payment_codes[obj.status]
+    return int(obj.status), payment_codes[obj.status]
+
 def get_balance(phone=None, password=None):
     if not (phone and password):
         xml = make_request(params['get_balance']  % (term_password, term_id))
@@ -204,5 +218,9 @@ def process_invoices():
     print xml
     o=xml2obj(xml)
     print o.__dict__
+    if status_code(o)[0]==0:
+        
+        for x in o.bills_list.bill:
+            print payment_code(x)[1]
     
 process_invoices()
