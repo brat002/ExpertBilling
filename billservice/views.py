@@ -31,7 +31,7 @@ from django.contrib.auth.decorators import login_required
 from lib.http import JsonResponse
 
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
-from billservice.forms import LoginForm, PasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
+from billservice.forms import LoginForm, PasswordForm, SimplePasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession
 from billservice.utility import is_login_user, settlement_period_info
@@ -306,7 +306,8 @@ def qiwi_payment(request):
         invoice.save()
         comment = u"Пополнение счёта %s" % request.user.username
         status, message=create_invoice(phone_number=phone,transaction_id=invoice.id, summ=invoice.summ, comment=comment)
-        print 'status', type(status)
+        #print 'status', type(status)
+        payed=False
         if status!=0:
             invoice.delete()
             return {'status_message':u'Произошла ошибка выставления счёта. %s' % message}
@@ -316,7 +317,7 @@ def qiwi_payment(request):
             if status==0:
                 payment_url="https://w.qiwi.ru/externalorder.action?shop=%s&transaction=%s" % (term_id,invoice.id)
                 message = u'Счёт удачно создан. Пройдите по ссылке для его оплаты.'
-                
+                payed=True
         else:
             status, message = accept_invoice_id(phone=phone, password=password, transaction_id=invoice.id, date=invoice.created)
             if status==0:
@@ -324,9 +325,10 @@ def qiwi_payment(request):
                 invoice.accepted=True
                 invoice.date_accepted=datetime.datetime.now()
                 invoice.save()
+                payed=True
                 
                  
-        return {'status_message':message, 'payment_url':payment_url,}
+        return {'status_message':message, 'payment_url':payment_url,'payed':payed, 'invoice_id':invoice.id, 'invoice_summ':float(invoice.summ), 'invoice_date':"%s-%s-%s %s:%s:%s" % (invoice.created.day, invoice.created.month, invoice.created.year,invoice.created.hour, invoice.created.minute, invoice.created.second)}
     else:
         return {'status_message':u'Сумма<1 или неправильный формат телефонного номера.'}
 
@@ -461,6 +463,62 @@ def password_form(request):
     return {
             'form':PasswordForm()
             }
+    
+@render_to('accounts/subaccount_change_password.html')
+@login_required
+def subaccount_password_form(request, subaccount_id):
+    subaccount = SubAccount.objects.get(id=subaccount_id)
+    return {
+            'form':SimplePasswordForm(), "subaccount":subaccount,
+            }    
+
+@ajax_request
+@login_required
+def subaccount_change_password(request):
+    if request.method == 'POST':
+        form = SimplePasswordForm(request.POST)
+        if form.is_valid():
+            try:
+                user = request.user
+                subaccount_id = request.POST.get("subaccount_id", 0)
+                if subaccount_id:
+                    try:
+                        subaccount = SubAccount.objects.get(id=subaccount_id, account=request.user)
+                    except Exception, e:
+                        print e
+                        return {
+                                'error_message': u'Обнаружена попытка взлома.',
+                                }
+                else:
+                    return {
+                            'error_message': u'Обнаружена попытка взлома.',
+                            }                    
+                    
+
+                if form.cleaned_data['new_password']==form.cleaned_data['repeat_password'] and subaccount.password!='':
+                    subaccount.password = form.cleaned_data['new_password']
+                    subaccount.save()
+                    return {
+                            'error_message': u'Пароль успешно изменен',
+                            'ok':'ok',
+                            }
+                else:
+                    return {
+                            'error_message': u'Проверьте пароль',
+                            }
+            except Exception, e:
+                return {
+                        'error_message': u'Возникла ошибка. Обратитесь к администратору.',
+                        }
+        else:
+            return {
+                    'error_message': u'Проверьте введенные данные',
+                    }
+    else:
+        return {
+                'error_message': u'Не предвиденная ошибка',
+                }
+
 
 @ajax_request
 @login_required
