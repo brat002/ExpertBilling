@@ -13,4 +13,5 @@ class Invoice(models.Model):
     check_after = models.IntegerField(blank=True, null=True)
     accepted = models.BooleanField(default=False)
     date_accepted = models.DateTimeField(blank=True, null=True)
+    deleted = models.BooleanField(default=False)
     

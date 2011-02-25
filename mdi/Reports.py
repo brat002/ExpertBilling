@@ -46,8 +46,8 @@ class TransactionsReportEbs(ebsTableWindow):
         self.account = account
         columns=[u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
         initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
-        self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги"]
-        self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction"]
+        self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги", u"Платежи QIWI"]
+        self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction", "qiwi_invoice"]
         super(TransactionsReportEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
@@ -134,7 +134,7 @@ class TransactionsReportEbs(ebsTableWindow):
         self.columns["billservice_timetransaction"] = ["#", u'Аккаунт', u"ФИО", u'Тарифный план', u'Сумма', u'Дата']
         self.columns["billservice_addonservicetransaction"] = ["#", u'Аккаунт', u"ФИО", u'Услуга', u'Тип услуги', u'Сумма', u'Дата']
         self.columns["billservice_transaction"] = [u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
-
+        self.columns["qiwi_invoice"] = [u'#', u'Аккаунт', u"ФИО", u"№ инвойса", u'Создан', u"Автозачисление", u'Оплачен', u"Сумма"]
        
     def ebsPostInit(self, initargs):
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -458,6 +458,56 @@ class TransactionsReportEbs(ebsTableWindow):
             self.addrow(u"Итого", i, 4)
             self.addrow(sum, i, 5)                                 
         self.tableWidget.setColumnHidden(0, False)
+
+        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="qiwi_invoice":
+            #print 111
+            #tr_types = self.connection.get_models("billservice_transactiontype")
+            #t = {}
+            #for x in tr_types:
+            #    t[x.internal_name] = x.name
+                               
+            #print (start_date, end_date,)
+            [u'#', u'Аккаунт', u"ФИО",  u"№ инвойса", u'Создан', u"Автозачисление", u'Оплачен', u"Сумма"]
+            sql = """
+            SELECT qi.id as id, (SELECT username FROM billservice_account WHERE id=qi.account_id) as username,(SELECT fullname FROM billservice_account WHERE id=qi.account_id) as fullname,qi,created as created, qi.autoaccept, qi.date_accepted, qi.summ
+            FROM qiwi_invoice as qi
+            WHERE qi.created>='%s' and qi.created<='%s' %%s ORDER BY created ASC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and qi.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            items = self.connection.sql(sql)
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items)+2)
+            i=0
+            sum = 0
+            allsumm=0
+            for item in items:
+                self.addrow(i, i, 0, id = item.id, date = item.created)
+                self.addrow(item.username, i, 1)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(item.id, i, 3)
+                self.addrow(item.created.strftime(self.strftimeFormat), i, 4)
+                self.addrow(item.autoaccept, i, 5)
+                try:
+                    self.addrow(item.date_accepted.strftime(self.strftimeFormat), i, 6)
+                except:
+                    self.addrow('', i, 6)
+                self.addrow(item.summ, i, 7)
+                i+=1
+                allsumm +=item.summ
+                if item.date_accepted:
+                    sum +=item.summ
+            self.addrow(u"Инвойсов на сумму", i, 6)
+            self.addrow(allsumm, i, 7)
+            self.addrow(u"Оплачено на сумму", i+1, 6)
+            self.addrow(sum, i+1, 7)
+                                             
+        self.tableWidget.setColumnHidden(0, False)
+
         
                 
         try:
@@ -507,7 +557,11 @@ class TransactionsReportEbs(ebsTableWindow):
         elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_timetransaction":
             for id,date in ids:
                 self.connection.command("DELETE FROM billservice_timetransaction WHERE id=%s and datetime='%s'" % (id, date,))
-                self.connection.commit()            
+                self.connection.commit()         
+        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="qiwi_invoice":
+            for id,date in ids:
+                self.connection.command("DELETE FROM qiwi_invoice WHERE id=%s and created='%s'" % (id, date,))
+                self.connection.commit()                            
         self.refresh_table()
      
 class TransactionsReport(QtGui.QMainWindow):

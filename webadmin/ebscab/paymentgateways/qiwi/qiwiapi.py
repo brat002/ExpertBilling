@@ -11,25 +11,13 @@ import sys
 HOST="http://ishop.qiwi.ru/xml"
 term_id=11468
 term_password='df[vehrf2007'
-lifetime = 48
-ALARM_SMS = 0
+lifetime = 48 #В часах
+ALARM_SMS = 0 
 ALARM_CALL = 0
 proxy_host='10.129.112.2'
 proxy_port=8080
 proxy_username='akuzmitski'
 proxy_password='12qwaszx++'
-
-params=u"""<?xml version="1.0" encoding="utf-8"?>
-<request>
-    <protocol-version>4.00</protocol-version>
-    <request-type>33</request-type>
-    <extra name="password">%s</extra>
-    <terminal-id>%s</terminal-id>
-    <bills-list>
-    <bill txn-id="123"/>
-    </bills-list>
-</request>
-""" % (term_password, term_id)
 
 params=u"""<?xml version="1.0" encoding="utf-8"?>
 <request>
@@ -115,7 +103,9 @@ result_codes={'-1':u'Произошла ошибка. Проверьте ном�
 '300':'Неизвестная ошибка',
 '330':'Ошибка шифрования',
 '339':'Не пройден контроль IP-адреса',
-'370':'Превышено максимальное кол-во одновременно выполняемых запросов'}
+'370':'Превышено максимальное кол-во одновременно выполняемых запросов',
+'1000':'Ошибка выполнения запроса.',
+}
 
 payment_codes={
 '50':u'Выставлен',
@@ -127,18 +117,22 @@ payment_codes={
 '161':u'Отменен (Истекло время)',
 }
 def make_request(xml):
-    print xml
-    proxy = urllib2.ProxyHandler({'http': 'http://%s:%s@%s:%s' % (proxy_username, proxy_password, proxy_host, proxy_port, )})
-    auth = urllib2.HTTPBasicAuthHandler()
-    opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
-    urllib2.install_opener(opener)    
+    #print xml
+    if proxy_host:
+        if proxy_username:
+            proxy = urllib2.ProxyHandler({'http': 'http://%s:%s@%s:%s' % (proxy_username, proxy_password, proxy_host, proxy_port, )})
+        else:
+            proxy = urllib2.ProxyHandler({'http': 'http://%s:%s' % (proxy_host, proxy_port, )})
+        auth = urllib2.HTTPBasicAuthHandler()
+        opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
+        urllib2.install_opener(opener)    
     request = urllib2.Request(HOST,xml.encode('utf-8'))
-    response = urllib2.urlopen(request)
     try:
+        response = urllib2.urlopen(request)
         return response.read()
     except Exception, e:
         print e
-    return
+    return """<response><result-code fatal="true">1000</result-code>"""
         
 def status_code(obj):
     if obj.result_code.data=='0':
@@ -158,7 +152,6 @@ def get_balance(phone=None, password=None):
     if not xml: return None
     o=xml2obj(xml)
     status = status_code(o)
-    print o.__dict__
     if status[0]==0:
         if o.extra[0]['name']=='BALANCE':
             return o.extra[0].data, status[1]
@@ -168,14 +161,10 @@ def get_balance(phone=None, password=None):
 def create_invoice(phone_number,transaction_id, summ=0, comment='', lifetime=48):
     xml = make_request(params['create_invoice'] % (phone_number, summ, transaction_id, lifetime, comment,))
     if not xml: return None
-    print xml
     o=xml2obj(xml)
-    print o.__dict__
     status = status_code(o)
-    print status
     return status
-    #    if o.extra[0]['name']=='BALANCE':
-    #       return o.extra[0].data
+
 
 def get_invoice_id(phone, password, transaction_id, date):
     date_start = (date - datetime.timedelta(hours=1)).strftime("%d.%m.%Y")
@@ -208,19 +197,29 @@ def process_invoices():
     os.environ['DJANGO_SETTINGS_MODULE'] = 'ebscab.settings'
    
     from paymentgateways.qiwi.models import Invoice
-    a = Invoice.objects.filter(autoaccept=False, accepted=False)
+    a = Invoice.objects.filter(autoaccept=False, accepted=False, deleted=False)
     pattern='<bill txn-id="%s"/>'
     p=''
     for x in a:
         p+=pattern % x.id
         
     xml=make_request(params['get_invoices_status'] % p)
-    print xml
     o=xml2obj(xml)
-    print o.__dict__
-    if status_code(o)[0]==0:
-        
-        for x in o.bills_list.bill:
-            print payment_code(x)[1]
+    if status_code(o)[0]!=0: return 
+    for x in a:
+        for item in o.bills_list.bill:
+            p_code, p_status = payment_code(item)
+            if p_code==60 and int(item.id)==x.id:
+                x.accepted = True
+                x.date_accepted = datetime.datetime.now()
+                x.save()
+                continue
+        if p_code>100:
+            x.deleted=True
+            x.save()
+            
+                
+if __name__=='__main__':
+    #Если запуск произведён руками 
+    process_invoices()
     
-process_invoices()
