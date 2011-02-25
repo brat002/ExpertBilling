@@ -190,9 +190,9 @@ class check_vpn_access(Thread):
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
                         
 
-                        acstatus = (((not acc.allow_vpn_null and acc.ballance + acc.credit>0) or acc.allow_vpn_null) \
+                        acstatus = (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
                                     and \
-                                    (acc.allow_vpn_null or (not acc.allow_vpn_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.account_status == 1 and acc.tarif_active==True
+                                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.tarif_active==True
                         
                         if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id):
                             #chech whether speed has changed
@@ -574,7 +574,10 @@ class periodical_service_bill(Thread):
                 for addon_ps in caches.addonperiodical_cache.data:
                     if 0: assert isinstance(addon_ps, AddonPeriodicalData)
                     subacc = caches.subaccount_cache.by_id.get(addon_ps.subaccount_id)
-                    acc = caches.account_cache.by_account.get(subacc.account_id)
+                    if subacc:
+                        acc = caches.account_cache.by_account.get(subacc.account_id)
+                    else:
+                        acc = caches.account_cache.by_account.get(addon_ps.account_id)
                     if not acc:
                         logger.warning('%s: Addon Periodical Service: %s Account not found: %s', (self.getName(), addon_ps.ps_id, addon_ps.account_id))
                     try:
