@@ -9,15 +9,15 @@ import sys
 
 
 HOST="http://ishop.qiwi.ru/xml"
-term_id=11468
-term_password='df[vehrf2007'
+term_id=0
+term_password=''
 lifetime = 48 #В часах
 ALARM_SMS = 0 
 ALARM_CALL = 0
-proxy_host='10.129.112.2'
+proxy_host=''
 proxy_port=8080
-proxy_username='akuzmitski'
-proxy_password='12qwaszx++'
+proxy_username=''
+proxy_password=''
 
 params=u"""<?xml version="1.0" encoding="utf-8"?>
 <request>
