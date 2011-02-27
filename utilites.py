@@ -90,22 +90,22 @@ def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(20)
         sock.bind(('0.0.0.0',24000))
-        doc = packet.AcctPacket(code=40, secret=str(nas_secret), dict=dict)
+        doc = packet.AcctPacket(code=40, secret=str(nas.secret), dict=dict)
         doc.AddAttribute('NAS-IP-Address', str(nas.ipaddress))
         doc.AddAttribute('NAS-Identifier', str(nas.identify))
-        if access_type=='lISG':
+        if access_type=='lisg':
             doc.AddAttribute('User-Name', str(subacc.ipn_ip_address))
         else:
             doc.AddAttribute('User-Name', str(subacc.username))
         doc.AddAttribute('Acct-Session-Id', str(session_id))
         if access_type=='hotspot':
-            doc.AddAttribute('Framed-IP-Address', str(subacc.ipn_ip_address))
+            doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
         elif access_type not in ('hotspot', 'lisg'):
             doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
         doc_data=doc.RequestPacket()
-        sock.sendto(doc_data,(str(nas_ip), 1700))
+        sock.sendto(doc_data,(str(nas.ipaddress), 1700))
         (data, addrport) = sock.recvfrom(8192)
-        doc=packet.AcctPacket(secret=nas_secret, dict=dict, packet=data)
+        doc=packet.AcctPacket(secret=nas.secret, dict=dict, packet=data)
         sock.close()
         #for attr in doc.keys():
         #    print attr, doc[attr][0]

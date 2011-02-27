@@ -30,6 +30,7 @@ from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, Gr
 from MessagesFrame import MessageDialog
 from AccountEditFrame import AccountWindow, AddAccountTarif
 from mako.template import Template
+from AccountFilter import AccountFilterDialog
 
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 qtTimeFormat = "YYYY-MM-DD HH:MM:SS"
@@ -282,13 +283,18 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.checkBox_allow_dhcp_with_minus.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_dhcp_with_null.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("SubAccountDialog", "IPN статусы", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setToolTip(QtGui.QApplication.translate("MainWindow", "Состояние записей в Address-листах на указанном сервере доступа. Только для IPN способов доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_ipn_added.setText(QtGui.QApplication.translate("SubAccountDialog", "Добавлен", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_ipn_enabled.setText(QtGui.QApplication.translate("SubAccountDialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_ipn_sleep.setText(QtGui.QApplication.translate("SubAccountDialog", "Не управлять", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_assign_ipn_from_pool.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_assign_ipn_from_pool.setToolTip(QtGui.QApplication.translate("MainWindow", "Выбрать IP-адрес из указанного IPN-пула", None, QtGui.QApplication.UnicodeUTF8))        
         self.toolButton_assign_vpn_from_pool.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_assign_vpn_from_pool.setToolTip(QtGui.QApplication.translate("MainWindow", "Выбрать IP-адрес из указанного VPN-пула", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_password.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_password.setToolTip(QtGui.QApplication.translate("SubAccountDialog", "Сгенерировать пароль", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_login.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_login.setToolTip(QtGui.QApplication.translate("SubAccountDialog", "Сгенерировать логин", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_dhcp.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить выдачу адресов по DHCP", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("SubAccountDialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton.setText(QtGui.QApplication.translate("SubAccountDialog", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
@@ -1400,27 +1406,37 @@ class TarifFrame(QtGui.QDialog):
             self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки нового тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_description_label.setText(QtGui.QApplication.translate("Dialog", "Описание тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_status_edit.setText(QtGui.QApplication.translate("Dialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
+        self.tarif_status_edit.setToolTip(QtGui.QApplication.translate("Dialog", "Статус тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
-        self.sp_groupbox.setTitle(QtGui.QApplication.translate("Dialog", "Фиксированный расчётный период", None, QtGui.QApplication.UnicodeUTF8))
+        self.sp_groupbox.setTitle(QtGui.QApplication.translate("Dialog", "Расчётный период тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
+        self.sp_groupbox.setToolTip(QtGui.QApplication.translate("Dialog", "Расчётный период необходим для начисления/списания предоплаченного времени/трафика \nи доснятия денег до стоимости тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         #self.sp_type_edit.setText(QtGui.QApplication.translate("Dialog", "Начать при активации у пользователя данного тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.sp_name_label.setText(QtGui.QApplication.translate("Dialog", "Расчётный период", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_cost_label.setText(QtGui.QApplication.translate("Dialog", "Стоимость пакета", None, QtGui.QApplication.UnicodeUTF8))
         self.reset_tarif_cost_edit.setText(QtGui.QApplication.translate("Dialog", "Производить доснятие суммы до стоимости тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
-        
+        self.reset_tarif_cost_edit.setToolTip(QtGui.QApplication.translate("Dialog", "Опция позволяет получить от абонента за расчётный период \nсумму денег не менее той, которая указана в стоимости тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.require_tarif_cost_edit.setText(QtGui.QApplication.translate("Dialog", "Требовать наличия всей суммы", None, QtGui.QApplication.UnicodeUTF8))
-        self.ps_null_ballance_checkout_edit.setText(QtGui.QApplication.translate("Dialog", "Производить снятие денег при нулевом балансе пользователя", None, QtGui.QApplication.UnicodeUTF8))
+        self.require_tarif_cost_edit.setToolTip(QtGui.QApplication.translate("Dialog", "Требовать наличия всей суммы в начале расчётного периода.\nЕсли суммы на балансе не хватает - пользователь блокируется.", None, QtGui.QApplication.UnicodeUTF8))
+        #self.ps_null_ballance_checkout_edit.setText(QtGui.QApplication.translate("Dialog", "Производить снятие денег при нулевом балансе пользователя", None, QtGui.QApplication.UnicodeUTF8))
         self.access_type_label.setText(QtGui.QApplication.translate("Dialog", "Способ доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.access_time_label.setText(QtGui.QApplication.translate("Dialog", "Время доступа", None, QtGui.QApplication.UnicodeUTF8))
         
         self.label_systemgroup.setText(QtGui.QApplication.translate("Dialog", "Группа доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.components_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Набор компонентов", None, QtGui.QApplication.UnicodeUTF8))
-        self.transmit_service_checkbox.setText(QtGui.QApplication.translate("Dialog", "Оплата за трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.components_groupBox.setToolTip(QtGui.QApplication.translate("Dialog", "Набор компонентов тарифного плана, которые будут участвовать в тарификации", None, QtGui.QApplication.UnicodeUTF8))
+        self.transmit_service_checkbox.setText(QtGui.QApplication.translate("Dialog", "Оплата за трафик(NetFlow)", None, QtGui.QApplication.UnicodeUTF8))
+        self.transmit_service_checkbox.setToolTip(QtGui.QApplication.translate("Dialog", "Тарификация трафика по NetFlow статистике.\nПозволяет строить правила тарификации в зависимости от классов и групп трафика.", None, QtGui.QApplication.UnicodeUTF8))
         self.ipn_for_vpn.setText(QtGui.QApplication.translate("Dialog", "Производить IPN действия", None, QtGui.QApplication.UnicodeUTF8))
         self.time_access_service_checkbox.setText(QtGui.QApplication.translate("Dialog", "Оплата за время", None, QtGui.QApplication.UnicodeUTF8))
+        self.time_access_service_checkbox.setToolTip(QtGui.QApplication.translate("Dialog", "Оплата за время по протоколу RADIUS", None, QtGui.QApplication.UnicodeUTF8))
         self.onetime_services_checkbox.setText(QtGui.QApplication.translate("Dialog", "Разовые услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.onetime_services_checkbox.setToolTip(QtGui.QApplication.translate("Dialog", "Единоразовые списания \nпри подключении абонента на данный тарифный план.\nСписание будет выполнено каждый раз при его назначении абоненту тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.periodical_services_checkbox.setText(QtGui.QApplication.translate("Dialog", "Периодические услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.periodical_services_checkbox.setToolTip(QtGui.QApplication.translate("Dialog", "Абонентская плата", None, QtGui.QApplication.UnicodeUTF8))
         self.limites_checkbox.setText(QtGui.QApplication.translate("Dialog", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
+        self.limites_checkbox.setToolTip(QtGui.QApplication.translate("Dialog", "Ограничения на объём потребления трафика", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_addon_services.setText(QtGui.QApplication.translate("Dialog", "Подключаемые услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_addon_services.setToolTip(QtGui.QApplication.translate("Dialog", "Тарификация дополнительных услуг и сервисов. ", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_1), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_access_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Настройки скорости по-умолчанию", None, QtGui.QApplication.UnicodeUTF8))
         self.speed_burst_label.setText(QtGui.QApplication.translate("Dialog", "Burst", None, QtGui.QApplication.UnicodeUTF8))
@@ -1539,6 +1555,7 @@ class TarifFrame(QtGui.QDialog):
         self.commandLinkButton_del_radius_timecost.setDescription(QtGui.QApplication.translate("Dialog", "Удалить цену", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_radius_time_prepaid.setTitle(QtGui.QApplication.translate("Dialog", "Предоплаченное время", None, QtGui.QApplication.UnicodeUTF8))
         self.radius_traffic_access_service_checkbox.setText(QtGui.QApplication.translate("Dialog", "RADIUS трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.radius_traffic_access_service_checkbox.setToolTip(QtGui.QApplication.translate("Dialog", "Тарификация трафика по протоколу RADIUS", None, QtGui.QApplication.UnicodeUTF8))
 
         
     def spChangedActions(self, text):
@@ -3294,6 +3311,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         initargs = {"setname":"account_frame", "objname":"AccountEbsMDI", "winsize":(0,0,1100,600), "wintitle":"Пользователи", "tablecolumns":columns, "spltsize":(0,0,391,411), "treeheader":"Тарифы", "tbiconsize":(18,18)}
         self.parent = parent
         self.selected_account = selected_account
+        self.sql = ''
+        self.filter_dialog = None
         self.last_click = QtCore.QTime(0, 0, 0, 0)
         super(AccountsMdiEbs, self).__init__(connection, initargs)
         
@@ -3335,15 +3354,16 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("radiusauth_logInfo", "Логи RADIUS авторизаций", "images/easytag.png", self.radiusauth_log),\
                  ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs),\
                  ("actionBalanceLog", "История изменения баланса", "images/money.png", self.balance_log),\
+                 ("actionAccountFilter", "Поиск аккаунтов", "images/search_accounts.png", self.accountFilter),\
                  
                 ]
                 
 
 
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
-                   self.tableWidget:["editAccountAction", "addAction", "delAction", "transactionAction", "actionEnableSession", "actionDisableSession", "actionAddAccount", "actionDeleteAccount", "messageDialogAction", "radiusauth_logInfo", "actionBalanceLog"], \
-                   self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionRadiusAttrs", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
-                   self.menu       :[ "actionChangeTarif", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", "separator", "rrdTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog"],\
+                   self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction",  "actionAddAccount", "actionEnableSession", "actionDisableSession", "actionDeleteAccount", "messageDialogAction", "radiusauth_logInfo", "actionBalanceLog"], \
+                   self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
+                   self.menu       :[ "actionChangeTarif", "separator", "actionRadiusAttrs", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", "separator", "rrdTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog", "separator"],\
                   }
         self.actionCreator(actList, objDict)
         
@@ -3382,7 +3402,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         child.exec_()
     
     def rrdtraffic_info(self):
-        window = RrdReportMainWindow(connection=self.connection)
+        ids = self.get_selected_accounts()
+        if ids:
+            id=ids[0]
+        window = RrdReportMainWindow(account=id, connection=self.connection)
         self.parent.workspace.addWindow(window)
         window.show()
 
@@ -3398,6 +3421,17 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.parent.workspace.addWindow(window)
         window.show()
                 
+
+    def accountFilter(self):
+        
+        if not self.filter_dialog:
+            self.filter_dialog = AccountFilterDialog(connection=self.connection)
+        
+        if self.filter_dialog.exec_()==1:
+            self.tarif_treeWidget.setCurrentItem(self.filter_item)
+            self.sql=self.filter_dialog.sql
+            self.refresh()
+        
     def addTarif(self):
         #print connection
         tarifframe = TarifFrame(connection=self.connection)
@@ -3676,6 +3710,13 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         tariffs = self.connection.get_tariffs()
         self.connection.commit()
         self.tableWidget.setColumnHidden(0, True)
+        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
+        item.id = -2000
+        item.tarif_type = 'all'
+        item.setText(0, u"Результаты поиска")
+        item.setIcon(0,QtGui.QIcon("images/folder.png"))        
+        self.filter_item = item
+        
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.id = tarif.id
@@ -3692,6 +3733,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         item.setText(0, u"Все аккаунты")
         item.setIcon(0,QtGui.QIcon("images/folder.png"))
         
+
         self.connectTree()
         if curItem != -1:
             self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))
@@ -3722,7 +3764,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             return
         else:
             print "singleclick"        
-
+            
+        
         self.tableWidget.setSortingEnabled(False)
         self.statusBar().showMessage(u"Ожидание ответа")
         self.treeWidget.dropEvent=self.treeWidgetDropEvent
@@ -3732,7 +3775,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         #print item
         if item:
             id=item.id
-            if id==-1000:
+            if id==-1000 or id==-2000:
                 self.addAction.setDisabled(True)
                 self.delAction.setDisabled(True)
                 
@@ -3742,7 +3785,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         else:
             try:
                 id=self.getTarifId()
-                if id==-1000:
+                if id==-1000 or id==-2000:
                     self.addAction.setDisabled(True)
                     self.delAction.setDisabled(True)
                     
@@ -3752,14 +3795,19 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             except:
                 return
         
-        if id==-1000:
-            columns=[u'#', u'Имя пользователя', u'Тарифный план', u'Баланс', u'Кредит', u'Имя',  u'Сервер доступа', u'',  u"Нулевой баланс c", u"Дата создания", u"Комментарий"]
+        if id==-1000 or id==-2000:
+            #self.sql=''
+            columns=[u'#', u'Имя пользователя', u"Договор",u'Тарифный план', u'Баланс', u'Кредит', u'Имя',  u'Сервер доступа', u'',  u"Нулевой баланс c", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
         else:
-            columns=[u'#', u'Имя пользователя',  u'Баланс', u'Кредит', u'Имя', u'Сервер доступа', u'',  u"Нулевой баланс c", u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Имя пользователя',  u"Договор", u'Баланс', u'Кредит', u'Имя', u'Сервер доступа', u'',  u"Нулевой баланс c", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
-            
-        accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
+
+        print "sql=", self.sql            
+        if id==-2000 and self.sql:
+            accounts = self.connection.get_accounts_for_tilter(self.sql)
+        else:
+            accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
         #print accounts
         #print self.getTarifId()
         self.connection.commit()
@@ -3776,47 +3824,48 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         i=0
         for a in accounts:    
             
-            self.addrow(a.id, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
+            self.addrow(i, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
+            self.addrow(a.contract, i,2, enabled=a.status)
             #print "status", a
             disabled_accounts += 1 if a.status<>1 else 0
-            if id==-1000:
-                self.addrow(a.tarif_name, i,2, enabled=a.status)
-                self.addrow(float("%.02f" % float(a.ballance)), i,3, color="red", enabled=a.status)
-                self.addrow(float(a.credit), i,4, enabled=a.status)
-                self.addrow(a.fullname, i,5, enabled=a.status)
-                self.addrow(a.nas_name,i,6, enabled=a.status)
+            if id==-1000 or id==-2000:
+                self.addrow(a.tarif_name, i,3, enabled=a.status)
+                self.addrow(float("%.02f" % float(a.ballance)), i,4, color="red", enabled=a.status)
+                self.addrow(float(a.credit), i,5, enabled=a.status)
+                self.addrow(a.fullname, i,6, enabled=a.status)
+                self.addrow(a.nas_name,i,7, enabled=a.status)
                 #self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
                 #self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
                 #self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
+                #self.addrow(a.suspended, i,10, enabled=a.status)
+                #self.addrow(a.balance_blocked, i,11, enabled=a.status)
+                self.tableWidget.setCellWidget(i,8,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+                #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
+                if a.last_balance_null:
+                    self.addrow(a.last_balance_null.strftime(self.strftimeFormat), i,9, enabled=a.status)
+                self.addrow(a.created.strftime(self.strftimeFormat), i,10, enabled=a.status)
+                self.addrow(a.comment, i,11, enabled=a.status)
+                #self.addrow(a.created, i,11, enabled=a.status)
+            else:
+                #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
+                self.addrow("%.02f" % float(a.ballance), i,3, color="red", enabled=a.status)
+                self.addrow(float(a.credit), i,4, enabled=a.status)
+                self.addrow(a.fullname, i,5, enabled=a.status)
+                self.addrow(a.nas_name,i,6, enabled=a.status)
+                #self.addrow(a.vpn_ip_address, i,6, enabled=a.status)
+                #self.addrow(a.ipn_ip_address, i,7, enabled=a.status)
+                #self.addrow(a.ipn_mac_address, i,8, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
                 self.tableWidget.setCellWidget(i,7,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 if a.last_balance_null:
                     self.addrow(a.last_balance_null.strftime(self.strftimeFormat), i,8, enabled=a.status)
+                
                 self.addrow(a.created.strftime(self.strftimeFormat), i,9, enabled=a.status)
+                
                 self.addrow(a.comment, i,10, enabled=a.status)
-                #self.addrow(a.created, i,11, enabled=a.status)
-            else:
-                #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
-                self.addrow("%.02f" % float(a.ballance), i,2, color="red", enabled=a.status)
-                self.addrow(float(a.credit), i,3, enabled=a.status)
-                self.addrow(a.fullname, i,4, enabled=a.status)
-                self.addrow(a.nas_name,i,5, enabled=a.status)
-                #self.addrow(a.vpn_ip_address, i,6, enabled=a.status)
-                #self.addrow(a.ipn_ip_address, i,7, enabled=a.status)
-                #self.addrow(a.ipn_mac_address, i,8, enabled=a.status)
-                #self.addrow(a.suspended, i,10, enabled=a.status)
-                #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,6,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
-                #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
-                if a.last_balance_null:
-                    self.addrow(a.last_balance_null.strftime(self.strftimeFormat), i,7, enabled=a.status)
-                
-                self.addrow(a.created.strftime(self.strftimeFormat), i,8, enabled=a.status)
-                
-                self.addrow(a.comment, i,9, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
                 
             m_ballance += float(a.ballance)
