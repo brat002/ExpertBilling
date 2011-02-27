@@ -788,6 +788,19 @@ class RPCServer(object):
         
         cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
         return result
+    
+    def get_accounts_for_tilter(self, sql, cur=None, connection=None, add_data = {}):
+        
+        s="""SELECT DISTINCT acc.id, acc.*, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tarif_name
+            FROM billservice_account AS acc
+            LEFT JOIN billservice_subaccount as subacc ON subacc.account_id=acc.id 
+            WHERE get_tarif(acc.id) IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) 
+            AND 
+            %s
+            ORDER BY acc.username ASC;""" % (add_data['USER_ID'][1],sql)
+        cur.execute(s)                    
+        result = map(Object, cur.fetchall())
+        return result    
 
     def get_accounts_for_cachier(self, fullname, city, street, house, bulk, room, username, contract, cur=None, connection=None, add_data = {}):
         

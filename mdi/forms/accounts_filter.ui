@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>796</width>
-    <height>427</height>
+    <height>367</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -406,6 +406,33 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lineEdit_agreement</tabstop>
+  <tabstop>lineEdit_account</tabstop>
+  <tabstop>comboBox_tarif</tabstop>
+  <tabstop>lineEdit_subaccount</tabstop>
+  <tabstop>comboBox_manager</tabstop>
+  <tabstop>comboBox_status</tabstop>
+  <tabstop>comboBox_balance_condition</tabstop>
+  <tabstop>lineEdit_balance</tabstop>
+  <tabstop>comboBox_credit_condition</tabstop>
+  <tabstop>lineEdit_credit</tabstop>
+  <tabstop>comboBox_ur_name</tabstop>
+  <tabstop>comboBox_city</tabstop>
+  <tabstop>comboBox_street</tabstop>
+  <tabstop>comboBox_house</tabstop>
+  <tabstop>comboBox_bulk</tabstop>
+  <tabstop>comboBox_stage</tabstop>
+  <tabstop>lineEdit_room</tabstop>
+  <tabstop>comboBox_nas</tabstop>
+  <tabstop>comboBox_switch</tabstop>
+  <tabstop>lineEdit_port</tabstop>
+  <tabstop>lineEdit_vpn_ip</tabstop>
+  <tabstop>lineEdit_ipn_ip</tabstop>
+  <tabstop>checkBox_ipn_enabled</tabstop>
+  <tabstop>checkBox_ipn_added</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -415,8 +442,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>257</x>
+     <y>357</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -431,8 +458,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>325</x>
+     <y>357</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

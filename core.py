@@ -185,7 +185,9 @@ class check_vpn_access(Thread):
                         nas = caches.nas_cache.by_ip.get(str(rs.nas_id))
                         acc = caches.account_cache.by_account.get(rs.account_id)
                         subacc = caches.subaccount_cache.by_id.get(rs.subaccount_id)
-                        if not nas or not acc : continue
+                        if not nas : continue
+                        #Если не найден аккаунт или субаккаунт
+                        if not (acc and subacc): continue
                         
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
                         
