@@ -4386,7 +4386,22 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 
-
+CREATE TABLE billservice_radiustraffic
+(
+  id serial NOT NULL,
+  direction integer NOT NULL,
+  tarification_step integer NOT NULL,
+  rounding integer NOT NULL,
+  prepaid_direction integer NOT NULL,
+  prepaid_value integer NOT NULL,
+  created timestamp with time zone DEFAULT now(),
+  deleted timestamp with time zone,
+  reset_prepaid_traffic boolean DEFAULT false,
+  CONSTRAINT billservice_radiustraffic_pkey PRIMARY KEY (id)
+)
+WITH (
+  OIDS=FALSE
+);
 
 ALTER TABLE billservice_radiustraffic
    ADD COLUMN reset_prepaid_traffic boolean DEFAULT False;

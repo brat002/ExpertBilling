@@ -1699,7 +1699,7 @@ def main():
         if not cacheMaster.read: 
             print 'caches still not read, maybe you should check the log\n'
       
-    print 'caches ready\n'
+    #print 'caches ready\n'
     #print repr(cacheMaster.cache)
     for th in threads:	
         suicideCondition[th.__class__.__name__] = False
@@ -1718,7 +1718,7 @@ def main():
         signal.signal(signal.SIGUSR1, SIGUSR1_handler)
     except: logger.lprint('NO SIGUSR1!')
     
-    print "ebs: core: started\n"
+    #print "ebs: core: started\n"
     savepid(vars.piddir, vars.name)
     stderr_log = open(vars.log_file + '.err', 'ab')
     #redirect_stderr(stderr_log)
@@ -1774,7 +1774,7 @@ if __name__ == "__main__":
         fMem = pfMemoize()    
         #--------------------------------------------------
         
-        print "ebs: core: configs read, about to start\n"
+        #print "ebs: core: configs read, about to start\n"
         main()
         
     except Exception, ex:
