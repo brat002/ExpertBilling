@@ -11,14 +11,14 @@ from helpers import setFirstActive
 
 class ebsTableWindow(QtGui.QMainWindow):
     sequenceNumber = 1
-    def __init__(self, connection, initargs):
+    def __init__(self, connection, initargs, parent=None):
         #print initargs
         self.setname = initargs["setname"]
         bhdr = HeaderUtil.getBinaryHeader(self.setname)
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
         self.ebsPreInit(initargs)
-        super(ebsTableWindow, self).__init__()
+        super(ebsTableWindow, self).__init__(parent)
         self.setObjectName(initargs["objname"])
         self.connection = connection
         self.resize(QtCore.QSize(QtCore.QRect(*initargs["winsize"]).size()).expandedTo(self.minimumSizeHint()))
@@ -75,15 +75,18 @@ class ebsTableWindow(QtGui.QMainWindow):
     
     def createFindToolbar(self):
         self.toolBar_find = QtGui.QToolBar(self)
-        self.toolBar_find.setMovable(False)
-        self.toolBar_find.setFloatable(False)
+        self.toolBar_find.setMovable(True)
+        self.toolBar_find.setFloatable(True)
+        self.label_search_text = QtGui.QLabel(self)
+        self.label_search_text.setText(u'Поиск:')
         self.lineEdit_search_text = QtGui.QLineEdit(self)
         self.lineEdit_search_text.setMaximumHeight(20)
         self.lineEdit_search_text.setContentsMargins(0,0,0,0)
+        
         self.pushButton_find = QtGui.QToolButton(self)
         self.pushButton_find.setIcon(QtGui.QIcon("images/search.png"))
         self.pushButton_find.setMaximumHeight(20)
-        
+        self.toolBar_find.addWidget(self.label_search_text)
         self.toolBar_find.addWidget(self.lineEdit_search_text)
         self.toolBar_find.addWidget(self.pushButton_find)
 
@@ -94,6 +97,7 @@ class ebsTableWindow(QtGui.QMainWindow):
         self.toolBar_find.addWidget(self.pushButton_export)
         
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar_find)
+        self.insertToolBarBreak(self.toolBar_find)
         
     def export_action(self):
         pass
@@ -103,7 +107,7 @@ class ebsTableWindow(QtGui.QMainWindow):
         for y in xrange(self.tableWidget.rowCount()):
             for x in xrange(self.tableWidget.columnCount()):
                 #print "check"
-                if unicode((self.tableWidget.item(y,x) and self.tableWidget.item(y,x).text()).lower() or '').rfind(unicode(self.lineEdit_search_text.text()).lower())>-1 and unicode(self.lineEdit_search_text.text()).lower():
+                if unicode((self.tableWidget.item(y,x) and self.tableWidget.item(y,x).text()) or '').lower().rfind(unicode(self.lineEdit_search_text.text()).lower())>-1 and unicode(self.lineEdit_search_text.text()).lower():
                     self.tableWidget.scrollToItem(self.tableWidget.item(y,x))
                     self.tableWidget.setItemSelected(self.tableWidget.item(y,x), True)
                     #print "finded!"
@@ -499,13 +503,15 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         self.toolBar_find = QtGui.QToolBar(self)
         self.toolBar_find.setMovable(False)
         self.toolBar_find.setFloatable(False)
+        self.label_search_text = QtGui.QLabel(self)
+        self.label_search_text.setText(u'Поиск:')        
         self.lineEdit_search_text = QtGui.QLineEdit(self)
         self.lineEdit_search_text.setMaximumHeight(20)
         self.lineEdit_search_text.setContentsMargins(0,0,0,0)
         self.pushButton_find = QtGui.QToolButton(self)
         self.pushButton_find.setIcon(QtGui.QIcon("images/search.png"))
         self.pushButton_find.setMaximumHeight(20)
-        
+        self.toolBar_find.addWidget(self.label_search_text)
         self.toolBar_find.addWidget(self.lineEdit_search_text)
         self.toolBar_find.addWidget(self.pushButton_find)
 
@@ -516,6 +522,7 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         self.toolBar_find.addWidget(self.pushButton_export)
         
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar_find)
+        self.insertToolBarBreak(self.toolBar_find)
         
     def tableFind(self):
         self.tableWidget.clearSelection()

@@ -42,13 +42,14 @@ _chartopts = {\
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
 
 class TransactionsReportEbs(ebsTableWindow):
-    def __init__(self, connection ,account=None):
+    def __init__(self, connection,account=None, parent=None, cassa=False):
         self.account = account
+        self.cassa=cassa
         columns=[u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
         initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
         self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги", u"Платежи QIWI"]
         self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction", "qiwi_invoice"]
-        super(TransactionsReportEbs, self).__init__(connection, initargs)
+        super(TransactionsReportEbs, self).__init__(connection, initargs, parent)
         
     def ebsInterInit(self, initargs):
         self.user_edit = QtGui.QComboBox(self)
@@ -144,7 +145,8 @@ class TransactionsReportEbs(ebsTableWindow):
         
         actList=[("actionDeleteTransaction", "Отменить проводку", "images/del.png", self.delete_transaction),]
         objDict = {self.tableWidget:["actionDeleteTransaction", ]}
-        self.actionCreator(actList, objDict)
+        if not self.cassa:
+            self.actionCreator(actList, objDict)
         self.setTableColumns()
         
     def retranslateUI(self, initargs):

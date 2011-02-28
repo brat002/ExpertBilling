@@ -3242,6 +3242,7 @@ BEGIN
 	ELSE
 	   radaccts_subaccount_id := radaccts.subaccount_id::text;
 	END IF;
+
 	IF radaccts.acct_terminate_cause IS NULL THEN
 	   radaccts_acct_terminate_cause := 'NULL';
 	ELSE
@@ -4087,7 +4088,7 @@ DECLARE
     fn_bd_tx2_ text := '(account_id, sessionid, interrim_update, date_start, date_end, 
             caller_id, called_id, nas_id, session_time, framed_protocol, 
             bytes_in, bytes_out, session_status, speed_string, framed_ip_address, 
-            nas_int_id, subaccount_id, acct_terminate_cause)
+            nas_int_id, subaccount_id, acct_terminate_cause,lt_time, lt_bytes_in,lt_bytes_out)
                           VALUES 
                          (radaccts.account_id, radaccts.sessionid, radaccts.interrim_update, radaccts.date_start, radaccts.date_end, 
 			    radaccts.caller_id, radaccts.called_id, radaccts.nas_id, radaccts.session_time, radaccts.framed_protocol, 
@@ -4129,7 +4130,7 @@ DECLARE
     fn_bd_tx2_ text := '(account_id, sessionid, interrim_update, date_start, date_end, 
             caller_id, called_id, nas_id, session_time, framed_protocol, 
             bytes_in, bytes_out, session_status, speed_string, framed_ip_address, 
-            nas_int_id, subaccount_id, acct_terminate_cause)
+            nas_int_id, subaccount_id, acct_terminate_cause,lt_time, lt_bytes_in, lt_bytes_out)
                           VALUES 
                          (radaccts.account_id, radaccts.sessionid, radaccts.interrim_update, radaccts.date_start, radaccts.date_end, 
 			    radaccts.caller_id, radaccts.called_id, radaccts.nas_id, radaccts.session_time, radaccts.framed_protocol, 
@@ -4167,8 +4168,7 @@ $$
     LANGUAGE plpgsql; 
  
 CREATE OR REPLACE FUNCTION radius_activesession_inserter(radaccts radius_activesession) RETURNS void
-    AS 
-$BODY$
+    AS  $BODY$
 DECLARE
     datetx_ text := to_char(trsr.date_start::date, 'YYYYMM01');
     insq_   text;
@@ -4330,11 +4330,11 @@ BEGIN
     insq_ := 'INSERT INTO radaccts' || datetx_ || ' (account_id, sessionid, interrim_update, date_start, date_end, caller_id, called_id, nas_id, session_time, framed_protocol, bytes_in, bytes_out, session_status, speed_string, framed_ip_address, nas_int_id, subaccount_id, acct_terminate_cause,lt_time,lt_bytes_in,lt_bytes_out) VALUES (' || radaccts_account_id || ',' || radaccts_sessionid || ',' || radaccts_interrim_update || ',' || radaccts_date_start || ',' || radaccts_date_end || ',' || radaccts_caller_id || ',' || adaccts_called_id || ',' || radaccts_nas_id || ',' || radaccts_session_time || ',' || radaccts_framed_protocol || ',' || radaccts_bytes_in || ',' || radaccts_bytes_out || ',' || radaccts_session_status || ',' || radaccts_speed_string || ',' || radaccts_framed_ip_address || ',' || radaccts_nas_int_id || ',' || radaccts_subaccount_id || ',' || radaccts_acct_terminate_cause || ',' || radaccts_lt_time || ',' || radaccts_lt_bytes_in || ',' || radaccts_lt_bytes_out ||');';
     EXECUTE insq_;
     RETURN;
-END;
-$BODY$
+END;$BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
     
+
 --- 19.02.2011 14:03
 ALTER TABLE billservice_shedulelog ADD COLUMN prepaid_radius_traffic_reset timestamp without time zone;
 ALTER TABLE billservice_shedulelog ADD COLUMN prepaid_radius_traffic_accrued timestamp without time zone;
@@ -4719,4 +4719,92 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 ALTER FUNCTION card_activate_fn(character varying, character varying, integer, inet) OWNER TO postgres;
+
+CREATE OR REPLACE FUNCTION rad_activesession_crt_cur_ins(datetx date) RETURNS void
+    AS $$
+DECLARE
+    datetx_ text := to_char(datetx, 'YYYYMM01');
+    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION rad_activesession_cur_ins (radaccts radius_activesession) RETURNS void AS ';
+    fn_bd_tx1_ text := 'BEGIN 
+                         INSERT INTO radaccts';
+    fn_bd_tx2_ text := '(account_id, sessionid, interrim_update, date_start, date_end, 
+            caller_id, called_id, nas_id, session_time, framed_protocol, 
+            bytes_in, bytes_out, session_status, speed_string, framed_ip_address, 
+            nas_int_id, subaccount_id, acct_terminate_cause,lt_time, lt_bytes_in,lt_bytes_out)
+                          VALUES 
+                         (radaccts.account_id, radaccts.sessionid, radaccts.interrim_update, radaccts.date_start, radaccts.date_end, 
+			    radaccts.caller_id, radaccts.called_id, radaccts.nas_id, radaccts.session_time, radaccts.framed_protocol, 
+			    radaccts.bytes_in, radaccts.bytes_out, radaccts.session_status, radaccts.speed_string, radaccts.framed_ip_address, 
+			    radaccts.nas_int_id, radaccts.subaccount_id, radaccts.acct_terminate_cause, radaccts.lt_time, radaccts.lt_bytes_in, radaccts.lt_bytes_out); RETURN; END;';
+    fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+    ch_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION rad_activesession_cur_datechk(rad_activesession_date timestamp without time zone) RETURNS integer AS ';
+    ch_fn_bd_tx1_ text := ' DECLARE d_s_ date := DATE ';
+    ch_fn_bd_tx2_ text := '; d_e_ date := (DATE ';
+    ch_fn_bd_tx3_ text := ')::date; BEGIN IF    rad_activesession_date < d_s_ THEN RETURN -1; ELSIF rad_activesession_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; ';
+    dt_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION activesession_cur_dt() RETURNS date AS ';
+    onemonth_ text := '1 month';
+    query_ text;
+    prevdate_ date;
+    
+BEGIN    
+        query_ :=  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
+        EXECUTE query_;
+        query_ :=  ch_fn_tx1_  || quote_literal(ch_fn_bd_tx1_ || quote_literal(datetx_) || ch_fn_bd_tx2_ || quote_literal(datetx_) || '+ interval ' || quote_literal(onemonth_) ||  ch_fn_bd_tx3_) || fn_tx2_;
+        EXECUTE query_;
+        prevdate_ := activesession_cur_dt();
+        PERFORM radius_activesession_crt_prev_ins(prevdate_);
+        query_ := dt_fn_tx1_ || quote_literal(' BEGIN RETURN  DATE ' || quote_literal(datetx_) || '; END; ') || fn_tx2_;
+        EXECUTE query_;
+    RETURN;
+END;
+$$
+    LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION radius_activesession_crt_prev_ins(datetx date) RETURNS void
+    AS $$
+DECLARE
+
+    datetx_ text := to_char(datetx, 'YYYYMM01');
+    fn_tx1_    text := 'CREATE OR REPLACE FUNCTION radius_activesession_prev_ins (radaccts radius_activesession) RETURNS void AS ';
+    fn_bd_tx1_ text := 'BEGIN 
+                         INSERT INTO radaccts';
+    fn_bd_tx2_ text := '(account_id, sessionid, interrim_update, date_start, date_end, 
+            caller_id, called_id, nas_id, session_time, framed_protocol, 
+            bytes_in, bytes_out, session_status, speed_string, framed_ip_address, 
+            nas_int_id, subaccount_id, acct_terminate_cause,lt_time, lt_bytes_in, lt_bytes_out)
+                          VALUES 
+                         (radaccts.account_id, radaccts.sessionid, radaccts.interrim_update, radaccts.date_start, radaccts.date_end, 
+			    radaccts.caller_id, radaccts.called_id, radaccts.nas_id, radaccts.session_time, radaccts.framed_protocol, 
+			    radaccts.bytes_in, radaccts.bytes_out, radaccts.session_status, radaccts.speed_string, radaccts.framed_ip_address, 
+			    radaccts.nas_int_id, radaccts.subaccount_id, radaccts.acct_terminate_cause, radaccts.lt_time, radaccts.lt_bytes_in, radaccts.lt_bytes_out); RETURN; END;';
+                          
+    fn_tx2_    text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+
+
+    ch_fn_tx1_ text := 'CREATE OR REPLACE FUNCTION radius_activesession_prev_datechk(trs_date timestamp without time zone) RETURNS integer AS ';
+
+    ch_fn_bd_tx1_ text := ' DECLARE d_s_ date := DATE ';
+    ch_fn_bd_tx2_ text := '; d_e_ date := (DATE ';
+    ch_fn_bd_tx3_ text := ')::date; BEGIN IF    trs_date < d_s_ THEN RETURN -1; ELSIF trs_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; ';
+
+    ch_fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
+
+    qts_ text := 'CHK % % %';
+    
+    onemonth_ text := '1 month';
+    query_ text;
+BEGIN    
+
+        EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
+
+
+        query_ :=  ch_fn_tx1_  || quote_literal(ch_fn_bd_tx1_ || quote_literal(datetx_) || ch_fn_bd_tx2_ || quote_literal(datetx_) || '+ interval ' || quote_literal(onemonth_) ||  ch_fn_bd_tx3_) || fn_tx2_;
+        
+        EXECUTE query_;
+        
+    RETURN;
+
+END;
+$$
+    LANGUAGE plpgsql; 
 
