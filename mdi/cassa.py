@@ -33,6 +33,7 @@ from helpers import HeaderUtil
 from CustomForms import CardPreviewDialog
 from CustomForms import ConnectDialog, ConnectionWaiting, InfoDialog, TransactionForm
 from AccountFrame import AddAccountTarif
+from Reports import TransactionsReportEbs
 from helpers import dateDelim
 from mako.template import Template
 from ebsWindow import ebsTableWindow
@@ -181,7 +182,7 @@ class CassaEbs(ebsTableWindow):
         self.connect(self.commandLinkButton_prepaid_traffic, QtCore.SIGNAL("clicked()"), self.prepaid_traffic_info)
         self.connect(self.commandLinkButton_change_tarif, QtCore.SIGNAL("clicked()"), self.createAccountTarif)
         self.connect(self.commandLinkButton, QtCore.SIGNAL("clicked()"), self.pay)
-        #self.connect(self.pushButton_change_tariff, QtCore.SIGNAL("clicked()"), self.createAccountTarif)
+        self.connect(self.commandLinkButton_addonservice, QtCore.SIGNAL("clicked()"), self.transactionReport)
         #QtCore.QObject.connect(self.checkBox_promise,QtCore.SIGNAL("stateChanged(int)"),self.promise_actions)
         #QtCore.QObject.connect(self.toolButton_time_now,QtCore.SIGNAL("clicked()"),self.setPayTime)
         #QtCore.QObject.connect(self.toolButton_set_tarif_date,QtCore.SIGNAL("clicked()"),self.setTarifTime)
@@ -240,7 +241,7 @@ class CassaEbs(ebsTableWindow):
         self.commandLinkButton_prepaid_traffic.setDescription(QtGui.QApplication.translate("MainWindow", "Остаток трафика", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton_change_tarif.setText(QtGui.QApplication.translate("MainWindow", "Сменить тариф", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton_change_tarif.setDescription(QtGui.QApplication.translate("MainWindow", "Сменить тарифный план", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_addonservice.setText(QtGui.QApplication.translate("MainWindow", "Подключаемые услуги", None, QtGui.QApplication.UnicodeUTF8))
+        self.commandLinkButton_addonservice.setText(QtGui.QApplication.translate("MainWindow", "Пополнения и списания", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton_addonservice.setDescription(QtGui.QApplication.translate("MainWindow", "Список подключенных услуг", None, QtGui.QApplication.UnicodeUTF8))
         
         
@@ -257,6 +258,14 @@ class CassaEbs(ebsTableWindow):
             child = InfoDialog(connection= self.connection, type="prepaidtraffic", account_id=id)
             child.exec_()
            
+    def transactionReport(self):
+        id = self.getSelectedId()
+        if id:
+            account = self.connection.get_model(id, "billservice_account")
+            child = TransactionsReportEbs(parent=self, connection= self.connection, account=account, cassa=True)
+            child.delete_transaction=lambda s: True
+            child.show()
+        
            
     def promise_actions(self):
         if self.checkBox_promise.isChecked():
