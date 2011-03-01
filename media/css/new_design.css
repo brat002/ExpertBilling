@@ -464,6 +464,10 @@ a.promise-img {
 	background:url('../img/promise.gif') no-repeat -6px 0;
 	width:100%;
 }
+a.payment-img {
+	background:url('../img/make_payment.gif') no-repeat -6px 0;
+	width:100%;
+}
 a.services-img {
 	background:url('../img/addon_services.gif') no-repeat -6px 0;
 	width:100%;
@@ -502,6 +506,10 @@ a.exit-img:Hover {
 }
 a.promise-img:Hover, a.promise-img-active {
 	background:url('../img/promise_on.gif') no-repeat -6px 0;
+	width:100%;
+}
+a.payment-img:Hover, a.promise-img-active {
+	background:url('../img/make_payment_active.gif') no-repeat -6px 0;
 	width:100%;
 }
 a.services-img:Hover, a.services-img-active {
