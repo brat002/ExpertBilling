@@ -1310,6 +1310,7 @@ class HandleSDHCP(HandleSAuth):
 
         self.packetobject = packetobject
         self.secret = ""
+        self.access_type=get_accesstype(packetobject)
         #logger.debugfun('%s', show_packet, (packetobject,))
 
 
