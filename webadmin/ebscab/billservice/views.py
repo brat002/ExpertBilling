@@ -116,10 +116,10 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             try:
-                print request.POST
-                print form.cleaned_data
+                #print request.POST
+                #print form.cleaned_data
                 user = Account.objects.get(username=form.cleaned_data['username'])
-                print user
+                #print user
                 if not user.allow_webcab:
                     form = LoginForm()
                     error_message = u'У вас нет прав на вход в веб-кабинет'
@@ -273,13 +273,19 @@ def make_payment(request):
     try:
         last_qiwi_invoice = QiwiInvoice.objects.all().order_by('-created')[0]
     except Exception, e:
-        print e
+        #print e
+        pass
     if last_qiwi_invoice:
         qiwi_form = QiwiPaymentRequestForm(initial={'phone':last_qiwi_invoice.phone})
     else:
          qiwi_form = QiwiPaymentRequestForm(initial={'phone':request.user.phone_m})
-    wm=simple_payment(request)
-    return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'wm_form':wm['form'], 'qiwi_form':qiwi_form}
+    try:
+        wm=simple_payment(request)
+        return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'wm_form':wm['form'], 'qiwi_form':qiwi_form}
+    except:
+        return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'qiwi_form':qiwi_form}
+    
+    
 
 @ajax_request
 @login_required
