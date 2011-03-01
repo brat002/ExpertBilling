@@ -80,7 +80,7 @@
             type: "POST",
             cache: false,
             url: '/qiwi_payment/',
-            data: { 'phone': phone.value, 'password': password.value, 'summ':summ.value, 'autoaccept': autoaccept.value},
+            data: { 'phone': phone.value, 'password': password.value, 'summ':summ.value, 'autoaccept': autoaccept.checked},
             timeout: 15000,
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
             beforeSend: function(XMLHttpRequest){send_button.style.visibility = 'hidden';qiwi_payment_message.innerHTML='Подождите. Идёт обработка.'},

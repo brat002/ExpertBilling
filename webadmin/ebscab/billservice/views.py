@@ -293,7 +293,7 @@ def qiwi_payment(request):
     autoaccept = form.cleaned_data.get("autoaccept", False)
     
     if autoaccept==True and not (password): return {'status_message':u"Для автоматического зачисления необходимо указать пароль"}
-    print "summ=",type(summ), summ,summ>=1, len(phone)
+    #print "summ=",type(summ), summ,summ>=1, len(phone)
     if summ>=1 and len(phone)==10:
         from paymentgateways.qiwi.qiwiapi import create_invoice, accept_invoice_id, lifetime
         invoice = QiwiInvoice()
@@ -341,7 +341,7 @@ def qiwi_balance(request):
     if phone and password:
         from paymentgateways.qiwi.qiwiapi import get_balance
         balance, message = get_balance(phone=phone, password=password)
-        print balance, message
+        #print balance, message
         return {'balance':balance, 'status_message':message}
     else:
         message = u"Не указан телефон или пароль"
@@ -485,7 +485,7 @@ def subaccount_change_password(request):
                     try:
                         subaccount = SubAccount.objects.get(id=subaccount_id, account=request.user)
                     except Exception, e:
-                        print e
+                        #print e
                         return {
                                 'error_message': u'Обнаружена попытка взлома.',
                                 }
@@ -714,7 +714,8 @@ def card_acvation(request):
                 elif res == 'CARD_ACTIVATION_ERROR':
                     error_message = u'Ошибка активации карты.'
             except Exception, e:
-                print e
+                #print e
+                pass
             #if int(cache_user['count']) <= settings.ACTIVATION_COUNT:
             #    cache.delete(user.id)
             #    count = int(int(cache_user['count']))
