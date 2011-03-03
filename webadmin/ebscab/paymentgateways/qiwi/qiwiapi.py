@@ -1,4 +1,4 @@
-#-*-coding: utf-8 -*-
+﻿#-*-coding: utf-8 -*-
 
 import urllib, urllib2
 from decimal import Decimal
@@ -68,7 +68,8 @@ params={'get_balance':u"""<?xml version="1.0" encoding="utf-8"?>
     </bills-list>
 </request>
 """ % (term_password, term_id),
-'get_invoices':u"""<request>
+'get_invoices':u"""<?xml version="1.0" encoding="utf-8"?>
+<request>
     <protocol-version>4.00</protocol-version>
     <request-type>28</request-type>
      <terminal-id>%s</terminal-id>
@@ -78,7 +79,8 @@ params={'get_balance':u"""<?xml version="1.0" encoding="utf-8"?>
     <extra name="to">%s 23:59:59</extra>
 </request>
 """,
-'accept_payment':u"""<request>
+'accept_payment':u"""<?xml version="1.0" encoding="utf-8"?>
+<request>
     <protocol-version>4.00</protocol-version>
     <request-type>29</request-type>
     <terminal-id>%s</terminal-id>
@@ -117,7 +119,7 @@ payment_codes={
 '161':u'Отменен (Истекло время)',
 }
 def make_request(xml):
-    #print xml
+    print xml
     if proxy_host:
         if proxy_username:
             proxy = urllib2.ProxyHandler({'http': 'http://%s:%s@%s:%s' % (proxy_username, proxy_password, proxy_host, proxy_port, )})
@@ -167,10 +169,11 @@ def create_invoice(phone_number,transaction_id, summ=0, comment='', lifetime=48)
 
 
 def get_invoice_id(phone, password, transaction_id, date):
-    date_start = (date - datetime.timedelta(hours=1)).strftime("%d.%m.%Y")
-    date_end = (date + datetime.timedelta(hours=1)).strftime("%d.%m.%Y")
+    date_start = (date - datetime.timedelta(hours=24)).strftime("%d.%m.%Y")
+    date_end = (date + datetime.timedelta(hours=24)).strftime("%d.%m.%Y")
     xml = make_request(params['get_invoices'] % (phone, password, date_start, date_end))
     if not xml: return None
+    print xml
     o=xml2obj(xml)
     if not o.account_list: return -1
     for a in o.account_list.account:
@@ -222,4 +225,5 @@ def process_invoices():
 if __name__=='__main__':
     #Если запуск произведён руками 
     process_invoices()
+
     
