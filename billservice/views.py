@@ -301,7 +301,10 @@ def qiwi_payment(request):
     if autoaccept==True and not (password): return {'status_message':u"Для автоматического зачисления необходимо указать пароль"}
     #print "summ=",type(summ), summ,summ>=1, len(phone)
     if summ>=1 and len(phone)==10:
-        from paymentgateways.qiwi.qiwiapi import create_invoice, accept_invoice_id, lifetime
+        from paymentgateways.qiwi.qiwiapi import create_invoice, accept_invoice_id, lifetime, get_balance
+        if autoaccept:
+            balance, message = get_balance(phone=phone, password=password)
+            if float(balance)<summ: return {'status_message':u"Сбой автозачисления: баланс вашего кошелька меньше суммы оплаты."}
         invoice = QiwiInvoice()
         invoice.account = request.user
         invoice.phone = phone
@@ -318,7 +321,7 @@ def qiwi_payment(request):
             invoice.delete()
             return {'status_message':u'Произошла ошибка выставления счёта. %s' % message}
         payment_url=''
-        if not autoaccept:
+        if not invoice.autoaccept:
             from paymentgateways.qiwi.qiwiapi import term_id
             if status==0:
                 payment_url="https://w.qiwi.ru/externalorder.action?shop=%s&transaction=%s" % (term_id,invoice.id)

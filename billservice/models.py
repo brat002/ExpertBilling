@@ -688,6 +688,7 @@ class Transaction(models.Model):
     promise=models.BooleanField(default=False) 
     end_promise=models.DateTimeField(auto_now_add=True, default='')
     promise_expired = models.BooleanField(default=False)
+    systemuser=models.ForeignKey(to='SystemUser')
 
 
     class Admin:
