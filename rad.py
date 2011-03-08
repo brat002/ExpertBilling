@@ -766,7 +766,7 @@ class HandleSAuth(HandleSBase):
                     minimal_period=speed
                     min_delta=delta
 
-            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","8","0/0"]
+            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","","0/0"]
             for k in xrange(0, 6):
                 s=minimal_period[k]
                 if s=='0/0' or s=='/' or s=='':

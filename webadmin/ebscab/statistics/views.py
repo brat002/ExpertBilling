@@ -1,27 +1,34 @@
 # -*-coding: utf-8 -*-
 
 from lib.decorators import render_to
+from django.conf import settings
 import commands
-import uuid
+from hashlib import md5
 import time
-SUBACCOUNT_BASE_PATH_DAY='/media/statistics/subaccount/%_day.png'
-SUBACCOUNT_BASE_PATH_MONTH='/media/statistics/subaccount/%_month.png'
-SUBACCOUNT_BASE_PATH_YEAR='/media/statistics/subaccount/%_year.png'
-RRD_PATH='rrdtool'
-RRDDB_PATH='/opt/ebs/rrd_data/'
-GRAPH_PATH='/home/brat002/trunk/webadmin/ebscab/media/'
+WWW_PREFIX='/media/statistics/'
 
-
+RRD_PATH='/usr/bin/rrdtool'
+RRDDB_PATH='/opt/ebs/stats/'
+GRAPH_PATH='/opt/ebs/web/ebscab/media/'
+IMAGE_PATH=settings.MEDIA_ROOT+'/statistics/'
+GRAPH_INTERVALS=((u'Сутки','-1day'),
+                 (u'Неделя','-1week'),
+                 (u'Месяц','-1month'),
+                 (u'Год','-1year'),
+                 )
 """
 Переделать генерацию в соответствии со статьёй
 http://martybugs.net/linux/rrdtool/traffic.cgi
 """
-@render_to("statistics/account_stat.html")
-def generate_graph(path, user, start_date, end_date):
-    rrd=u"""%s graph %s -a PNG -h 125 -t "График загрузки канала пользователем %s" --lazy -l 0 -v bytes/sec --start %s --end %s 'DEF:in=%s.rrd:in:AVERAGE' 'DEF:out=%s.rrd:out:AVERAGE'         "CDEF:out_neg=out,-1,*","AREA:in#32CD32:Incoming", "LINE1:in#336600",    "GPRINT:in:MAX:  Max\\: %5.1lf %%s","GPRINT:in:AVERAGE: Avg\\: %5.1lf %S","GPRINT:in:LAST: Current\\: %5.1lf %Sbytes/sec\\n",        "AREA:out_neg#4169E1:Outgoing",        "LINE1:out_neg#0033CC",        "GPRINT:out:MAX:  Max\\: %5.1lf %S",        "GPRINT:out:AVERAGE: Avg\\: %5.1lf %S",    "GPRINT:out:LAST: Current\\: %5.1lf %Sbytes/sec", "HRULE:0#000000" """ % (RRD_PATH, path, user, start_date, end_date, RRDDB_PATH+'bandwidth_'+user, RRDDB_PATH+'bandwidth_'+user,)
-    print rrd
+#@render_to("statistics/account_stat.html")
+def generate_graph(image_path, rrd_path, username, interval):
+    rrd=unicode(u"""%s graph %s -a PNG -h 125 -t "График загрузки канала пользователем %s" --lazy -l 0 -v bytes/sec -s %s DEF:in=%s.rrd:in:AVERAGE  DEF:out=%s.rrd:out:AVERAGE  CDEF:out_neg=out,-1,/  CDEF:in_calc=in,1,/ AREA:in_calc#32CD32:Incoming   LINE1:in_calc#32CD32    AREA:out_neg#4169E1:Outgoing   LINE1:out_neg#4169E1  HRULE:0#000000 """ % (RRD_PATH, image_path, user, interval, RRDDB_PATH+'bandwidth_'+user, RRDDB_PATH+'bandwidth_'+user,)).encode('utf-8')
+    #print rrd
     status, output = commands.getstatusoutput(rrd)
+    return status, rrd
     
+def get_name(user,interval):
+    return md5(user+interval).hexdigest()+'.png'
     
     
 def account_stat(request):
@@ -31,23 +38,12 @@ def account_stat(request):
 def subaccount_stat(request):
     #DAY
     subaccount = request.GET.get('subaccount')
-    day_path=str(uuid.uuid1())
-    time_end=int(time.time())
-    time_start=int(time_end-86400)
-    generate_graph(GRAPH_PATH+day_path+'.png', subaccount, time_start, time_end)
-    day_rrd=day_path+'.png'
-    #MONTH
-    month_path=str(uuid.uuid1())
-    time_start=int(time_end-86400*30)
-    generate_graph(GRAPH_PATH+month_path+'.png', subaccount, time_start, time_end)
-    month_rrd=month_path+'.png'
-    #YEAR
-    year_path=str(uuid.uuid1())
-    time_start=int(time_end-86400*30*365)
-    generate_graph(GRAPH_PATH+year_path+'.png', subaccount, time_start, time_end)
-    year_rrd=year_path+'.png'
-    
-    return {"day":day_rrd, 'month':month_rrd, 'year':year_rrd}
+    filenames=[]
+    for interval in GRAPH_INTERVALS:
+        filename=get_name(subaccount,interval[1])
+        generate_graph(IMAGE_PATH+'subaccounts/'+filename, subaccount, interval[1])
+        filenames.append(interval[0], filename)
+    return {"filenames":filenames}
 
 
 @render_to("statistics/overall_stat.html")
