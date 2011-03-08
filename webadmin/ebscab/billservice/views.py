@@ -268,23 +268,25 @@ def get_promise(request):
 @login_required
 @render_to('accounts/make_payment.html')
 def make_payment(request):
-    
-    last_qiwi_invoice = None
-    try:
-        last_qiwi_invoice = QiwiInvoice.objects.all().order_by('-created')[0]
-    except Exception, e:
-        #print e
-        pass
-    if last_qiwi_invoice:
-        qiwi_form = QiwiPaymentRequestForm(initial={'phone':last_qiwi_invoice.phone})
-    else:
-         qiwi_form = QiwiPaymentRequestForm(initial={'phone':request.user.phone_m})
-    try:
+    wm_form = None
+    qiwi_form = None
+    if settings.ALLOW_QIWI:
+        last_qiwi_invoice = None
+        try:
+            last_qiwi_invoice = QiwiInvoice.objects.all().order_by('-created')[0]
+        except Exception, e:
+            #print e
+            pass
+        if last_qiwi_invoice:
+            qiwi_form = QiwiPaymentRequestForm(initial={'phone':last_qiwi_invoice.phone})
+        else:
+             qiwi_form = QiwiPaymentRequestForm(initial={'phone':request.user.phone_m})
+    if settings.ALLOW_WEBMONEY:
         wm=simple_payment(request)
-        return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'wm_form':wm['form'], 'qiwi_form':qiwi_form}
-    except:
-        return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'qiwi_form':qiwi_form}
-    
+        wm_form=wm['form']
+
+    return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'wm_form':wm_form, 'qiwi_form':qiwi_form}
+
     
 
 @ajax_request
