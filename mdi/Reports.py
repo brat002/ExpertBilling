@@ -1023,7 +1023,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
         
         
 class NetFlowReportEbs(ebsTabs_n_TablesWindow):
-    def __init__(self, connection):
+    def __init__(self, connection, parent):
         #columns_t0=['#', u'Аккаунт', u'Класс трафика', u'Протокол', u'Источник',  u'Получатель', u'Передано', u'Дата']
         columns_t0=['#', u'Аккаунт', u'Источник', u'Получатель', u'Передано',u'Дата']
         columns_t1=[u'Класс', u'Принято',u'Передано', u'Сумма',''] 

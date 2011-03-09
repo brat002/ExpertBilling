@@ -80,8 +80,8 @@ class AddPoolFrame(QtGui.QDialog):
         self.label_type.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
         self.label_diapason.setText(QtGui.QApplication.translate("Dialog", "Диапазон", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
-        self.lineEdit_start_ip.setValidator(self.ipValidator)
-        self.lineEdit_end_ip.setValidator(self.ipValidator)
+        #self.lineEdit_start_ip.setValidator(self.ipValidator)
+        #self.lineEdit_end_ip.setValidator(self.ipValidator)
 
     def fixtures(self):
         self.comboBox_type.addItem("VPN")
@@ -117,9 +117,14 @@ class AddPoolFrame(QtGui.QDialog):
             return
 
             
-        if self.ipValidator.validate(QtCore.QString(model.start_ip), 0)[0]  != QtGui.QValidator.Acceptable or self.ipValidator.validate(QtCore.QString(model.end_ip), 0)[0]  != QtGui.QValidator.Acceptable :
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте диапазон IP адресов"))
-            return
+        #try:
+        IPy.IP(str(model.start_ip))
+        IPy.IP(str(model.end_ip))
+        #except:
+        #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Некорректный IP адрес."))
+        #    return
+            
+            
         
         if IPy.IP(str(model.end_ip))<=IPy.IP(str(model.start_ip)):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Конечный IP адрес должен быть больше первого и не равен ему"))

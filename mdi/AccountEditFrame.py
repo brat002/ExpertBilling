@@ -32,7 +32,11 @@ from mako.template import Template
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 qtTimeFormat = "YYYY-MM-DD HH:MM:SS"
 import IPy
-
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
+    
 class CashType(object):
     def __init__(self, id, name):
         self.id = id
@@ -55,184 +59,236 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.connection = connection
         self.account = account
         self.model = model
-        self.resize(690, 729)
+        self.resize(662, 549)
         self.gridLayout_2 = QtGui.QGridLayout(self)
-        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
         self.gridLayout_2.addWidget(self.buttonBox, 1, 0, 1, 1)
         self.tabWidget = QtGui.QTabWidget(self)
-        self.tabWidget.setObjectName("tabWidget")
+        self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
         self.tab = QtGui.QWidget()
-        self.tab.setObjectName("tab")
+        self.tab.setObjectName(_fromUtf8("tab"))
         self.gridLayout_3 = QtGui.QGridLayout(self.tab)
-        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
         self.groupBox_link_parameters = QtGui.QGroupBox(self.tab)
-        self.groupBox_link_parameters.setObjectName("groupBox_link_parameters")
+        self.groupBox_link_parameters.setObjectName(_fromUtf8("groupBox_link_parameters"))
         self.gridLayout = QtGui.QGridLayout(self.groupBox_link_parameters)
-        self.gridLayout.setObjectName("gridLayout")
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.label_nas = QtGui.QLabel(self.groupBox_link_parameters)
-        self.label_nas.setObjectName("label_nas")
-        self.gridLayout.addWidget(self.label_nas, 0, 1, 1, 1)
+        self.label_nas.setObjectName(_fromUtf8("label_nas"))
+        self.gridLayout.addWidget(self.label_nas, 0, 0, 1, 1)
         self.comboBox_nas = QtGui.QComboBox(self.groupBox_link_parameters)
-        self.comboBox_nas.setObjectName("comboBox_nas")
-        self.gridLayout.addWidget(self.comboBox_nas, 0, 2, 1, 1)
+        self.comboBox_nas.setObjectName(_fromUtf8("comboBox_nas"))
+        self.gridLayout.addWidget(self.comboBox_nas, 0, 1, 1, 1)
         self.label_link_login = QtGui.QLabel(self.groupBox_link_parameters)
-        self.label_link_login.setObjectName("label_link_login")
-        self.gridLayout.addWidget(self.label_link_login, 1, 1, 1, 1)
+        self.label_link_login.setObjectName(_fromUtf8("label_link_login"))
+        self.gridLayout.addWidget(self.label_link_login, 1, 0, 1, 1)
         self.lineEdit_link_login = QtGui.QLineEdit(self.groupBox_link_parameters)
-        self.lineEdit_link_login.setObjectName("lineEdit_link_login")
-        self.gridLayout.addWidget(self.lineEdit_link_login, 1, 2, 1, 3)
+        self.lineEdit_link_login.setObjectName(_fromUtf8("lineEdit_link_login"))
+        self.gridLayout.addWidget(self.lineEdit_link_login, 1, 1, 1, 4)
         self.label_link_password = QtGui.QLabel(self.groupBox_link_parameters)
-        self.label_link_password.setObjectName("label_link_password")
-        self.gridLayout.addWidget(self.label_link_password, 3, 1, 1, 1)
+        self.label_link_password.setObjectName(_fromUtf8("label_link_password"))
+        self.gridLayout.addWidget(self.label_link_password, 3, 0, 1, 1)
         self.lineEdit_link_password = QtGui.QLineEdit(self.groupBox_link_parameters)
-        self.lineEdit_link_password.setObjectName("lineEdit_link_password")
-        self.gridLayout.addWidget(self.lineEdit_link_password, 3, 2, 1, 3)
+        self.lineEdit_link_password.setObjectName(_fromUtf8("lineEdit_link_password"))
+        self.gridLayout.addWidget(self.lineEdit_link_password, 3, 1, 1, 4)
         self.label_link_vpn_ip_address = QtGui.QLabel(self.groupBox_link_parameters)
-        self.label_link_vpn_ip_address.setObjectName("label_link_vpn_ip_address")
-        self.gridLayout.addWidget(self.label_link_vpn_ip_address, 5, 1, 1, 1)
+        self.label_link_vpn_ip_address.setObjectName(_fromUtf8("label_link_vpn_ip_address"))
+        self.gridLayout.addWidget(self.label_link_vpn_ip_address, 5, 0, 1, 1)
         self.lineEdit_vpn_ip_address = QtGui.QLineEdit(self.groupBox_link_parameters)
-        self.lineEdit_vpn_ip_address.setObjectName("lineEdit_vpn_ip_address")
-        self.gridLayout.addWidget(self.lineEdit_vpn_ip_address, 5, 2, 1, 1)
-        self.comboBox_vpn_pool = QtGui.QComboBox(self.groupBox_link_parameters)
-        self.comboBox_vpn_pool.setObjectName("comboBox_vpn_pool")
-        self.gridLayout.addWidget(self.comboBox_vpn_pool, 5, 3, 1, 2)
+        self.lineEdit_vpn_ip_address.setObjectName(_fromUtf8("lineEdit_vpn_ip_address"))
+        self.gridLayout.addWidget(self.lineEdit_vpn_ip_address, 5, 1, 1, 1)
         self.label_link_vpn = QtGui.QLabel(self.groupBox_link_parameters)
-        self.label_link_vpn.setObjectName("label_link_vpn")
-        self.gridLayout.addWidget(self.label_link_vpn, 7, 1, 1, 1)
+        self.label_link_vpn.setObjectName(_fromUtf8("label_link_vpn"))
+        self.gridLayout.addWidget(self.label_link_vpn, 7, 0, 1, 1)
         self.lineEdit_ipn_ip_address = QtGui.QLineEdit(self.groupBox_link_parameters)
-        self.lineEdit_ipn_ip_address.setObjectName("lineEdit_ipn_ip_address")
-        self.gridLayout.addWidget(self.lineEdit_ipn_ip_address, 7, 2, 1, 1)
-        self.comboBox_ipn_pool = QtGui.QComboBox(self.groupBox_link_parameters)
-        self.comboBox_ipn_pool.setObjectName("comboBox_ipn_pool")
-        self.gridLayout.addWidget(self.comboBox_ipn_pool, 7, 3, 1, 2)
+        self.lineEdit_ipn_ip_address.setObjectName(_fromUtf8("lineEdit_ipn_ip_address"))
+        self.gridLayout.addWidget(self.lineEdit_ipn_ip_address, 7, 1, 1, 1)
         self.label_link_ipn_mac_address = QtGui.QLabel(self.groupBox_link_parameters)
-        self.label_link_ipn_mac_address.setObjectName("label_link_ipn_mac_address")
-        self.gridLayout.addWidget(self.label_link_ipn_mac_address, 8, 1, 1, 1)
+        self.label_link_ipn_mac_address.setObjectName(_fromUtf8("label_link_ipn_mac_address"))
+        self.gridLayout.addWidget(self.label_link_ipn_mac_address, 12, 0, 1, 1)
         self.lineEdit_link_ipn_mac_address = QtGui.QLineEdit(self.groupBox_link_parameters)
-        self.lineEdit_link_ipn_mac_address.setObjectName("lineEdit_link_ipn_mac_address")
-        self.gridLayout.addWidget(self.lineEdit_link_ipn_mac_address, 8, 2, 1, 4)
+        self.lineEdit_link_ipn_mac_address.setObjectName(_fromUtf8("lineEdit_link_ipn_mac_address"))
+        self.gridLayout.addWidget(self.lineEdit_link_ipn_mac_address, 12, 1, 1, 1)
         self.label_link_switch = QtGui.QLabel(self.groupBox_link_parameters)
-        self.label_link_switch.setObjectName("label_link_switch")
-        self.gridLayout.addWidget(self.label_link_switch, 9, 1, 1, 1)
+        self.label_link_switch.setObjectName(_fromUtf8("label_link_switch"))
+        self.gridLayout.addWidget(self.label_link_switch, 13, 0, 1, 1)
         self.comboBox_link_switch_id = QtGui.QComboBox(self.groupBox_link_parameters)
-        self.comboBox_link_switch_id.setObjectName("comboBox_link_switch_id")
-        self.gridLayout.addWidget(self.comboBox_link_switch_id, 9, 2, 1, 4)
-        self.label_link_port = QtGui.QLabel(self.groupBox_link_parameters)
-        self.label_link_port.setObjectName("label_link_port")
-        self.gridLayout.addWidget(self.label_link_port, 10, 1, 1, 1)
-        self.spinBox_link_port = QtGui.QSpinBox(self.groupBox_link_parameters)
-        self.spinBox_link_port.setMaximum(512)
-        self.spinBox_link_port.setObjectName("spinBox_link_port")
-        self.gridLayout.addWidget(self.spinBox_link_port, 10, 2, 1, 4)
+        self.comboBox_link_switch_id.setObjectName(_fromUtf8("comboBox_link_switch_id"))
+        self.gridLayout.addWidget(self.comboBox_link_switch_id, 13, 1, 1, 1)
         self.label_vpn_speed = QtGui.QLabel(self.groupBox_link_parameters)
-        self.label_vpn_speed.setObjectName("label_vpn_speed")
-        self.gridLayout.addWidget(self.label_vpn_speed, 24, 1, 1, 1)
+        self.label_vpn_speed.setObjectName(_fromUtf8("label_vpn_speed"))
+        self.gridLayout.addWidget(self.label_vpn_speed, 16, 0, 1, 1)
         self.lineEdit_vpn_speed = QtGui.QLineEdit(self.groupBox_link_parameters)
-        self.lineEdit_vpn_speed.setObjectName("lineEdit_vpn_speed")
-        self.gridLayout.addWidget(self.lineEdit_vpn_speed, 24, 2, 1, 5)
+        self.lineEdit_vpn_speed.setObjectName(_fromUtf8("lineEdit_vpn_speed"))
+        self.gridLayout.addWidget(self.lineEdit_vpn_speed, 16, 1, 1, 6)
         self.label_ipn_speed = QtGui.QLabel(self.groupBox_link_parameters)
-        self.label_ipn_speed.setObjectName("label_ipn_speed")
-        self.gridLayout.addWidget(self.label_ipn_speed, 25, 1, 1, 1)
+        self.label_ipn_speed.setObjectName(_fromUtf8("label_ipn_speed"))
+        self.gridLayout.addWidget(self.label_ipn_speed, 17, 0, 1, 1)
         self.lineEdit_ipn_speed = QtGui.QLineEdit(self.groupBox_link_parameters)
-        self.lineEdit_ipn_speed.setObjectName("lineEdit_ipn_speed")
-        self.gridLayout.addWidget(self.lineEdit_ipn_speed, 25, 2, 1, 5)
-        self.checkBox_allow_addonservice = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_addonservice.setObjectName("checkBox_allow_addonservice")
-        self.gridLayout.addWidget(self.checkBox_allow_addonservice, 23, 1, 1, 6)
-        self.checkBox_associate_pppoe_ipn_mac = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_associate_pppoe_ipn_mac.setObjectName("checkBox_associate_pppoe_ipn_mac")
-        self.gridLayout.addWidget(self.checkBox_associate_pppoe_ipn_mac, 22, 1, 1, 5)
-        self.checkBox_associate_pptp_ipn_ip = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_associate_pptp_ipn_ip.setObjectName("checkBox_associate_pptp_ipn_ip")
-        self.gridLayout.addWidget(self.checkBox_associate_pptp_ipn_ip, 21, 1, 1, 5)
-        self.checkBox_allow_vpn_with_null = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_vpn_with_null.setObjectName("checkBox_allow_vpn_with_null")
-        self.gridLayout.addWidget(self.checkBox_allow_vpn_with_null, 15, 1, 1, 5)
-        self.checkBox_allow_vpn_with_block = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_vpn_with_block.setObjectName("checkBox_allow_vpn_with_block")
-        self.gridLayout.addWidget(self.checkBox_allow_vpn_with_block, 17, 1, 1, 5)
-        self.checkBox_allow_vpn_with_minus = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_vpn_with_minus.setObjectName("checkBox_allow_vpn_with_minus")
-        self.gridLayout.addWidget(self.checkBox_allow_vpn_with_minus, 16, 1, 1, 5)
-        self.checkBox_allow_dhcp_with_block = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_dhcp_with_block.setObjectName("checkBox_allow_dhcp_with_block")
-        self.gridLayout.addWidget(self.checkBox_allow_dhcp_with_block, 14, 1, 1, 5)
-        self.checkBox_allow_dhcp_with_minus = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_dhcp_with_minus.setObjectName("checkBox_allow_dhcp_with_minus")
-        self.gridLayout.addWidget(self.checkBox_allow_dhcp_with_minus, 13, 1, 1, 5)
-        self.checkBox_allow_dhcp_with_null = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_dhcp_with_null.setObjectName("checkBox_allow_dhcp_with_null")
-        self.gridLayout.addWidget(self.checkBox_allow_dhcp_with_null, 12, 1, 1, 5)
-        
-        self.checkBox_allow_ipn_with_block = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_dhcp_with_block.setObjectName("checkBox_allow_ipn_with_block")
-        self.gridLayout.addWidget(self.checkBox_allow_ipn_with_block, 18, 1, 1, 5)
-        self.checkBox_allow_ipn_with_minus = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_ipn_with_minus.setObjectName("checkBox_allow_ipn_with_minus")
-        self.gridLayout.addWidget(self.checkBox_allow_ipn_with_minus, 19, 1, 1, 5)
-        self.checkBox_allow_ipn_with_null = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_ipn_with_null.setObjectName("checkBox_allow_ipn_with_null")
-        self.gridLayout.addWidget(self.checkBox_allow_ipn_with_null, 20, 1, 1, 5)        
-        
+        self.lineEdit_ipn_speed.setObjectName(_fromUtf8("lineEdit_ipn_speed"))
+        self.gridLayout.addWidget(self.lineEdit_ipn_speed, 17, 1, 1, 6)
         self.groupBox = QtGui.QGroupBox(self.groupBox_link_parameters)
-        self.groupBox.setObjectName("groupBox")
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.horizontalLayout = QtGui.QHBoxLayout(self.groupBox)
-        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.toolButton_ipn_added = QtGui.QToolButton(self.groupBox)
         self.toolButton_ipn_added.setCheckable(True)
         self.toolButton_ipn_added.setArrowType(QtCore.Qt.NoArrow)
-        self.toolButton_ipn_added.setObjectName("toolButton_ipn_added")
+        self.toolButton_ipn_added.setObjectName(_fromUtf8("toolButton_ipn_added"))
         self.horizontalLayout.addWidget(self.toolButton_ipn_added)
         self.toolButton_ipn_enabled = QtGui.QToolButton(self.groupBox)
         self.toolButton_ipn_enabled.setCheckable(True)
-        self.toolButton_ipn_enabled.setObjectName("toolButton_ipn_enabled")
+        self.toolButton_ipn_enabled.setObjectName(_fromUtf8("toolButton_ipn_enabled"))
         self.horizontalLayout.addWidget(self.toolButton_ipn_enabled)
         self.toolButton_ipn_sleep = QtGui.QToolButton(self.groupBox)
         self.toolButton_ipn_sleep.setCheckable(True)
-        self.toolButton_ipn_sleep.setObjectName("toolButton_ipn_sleep")
+        self.toolButton_ipn_sleep.setObjectName(_fromUtf8("toolButton_ipn_sleep"))
         self.horizontalLayout.addWidget(self.toolButton_ipn_sleep)
-        self.gridLayout.addWidget(self.groupBox, 0, 3, 1, 3)
-        self.toolButton_assign_ipn_from_pool = QtGui.QToolButton(self.groupBox_link_parameters)
-        self.toolButton_assign_ipn_from_pool.setObjectName("toolButton_assign_ipn_from_pool")
-        self.gridLayout.addWidget(self.toolButton_assign_ipn_from_pool, 7, 5, 1, 1)
-        self.toolButton_assign_vpn_from_pool = QtGui.QToolButton(self.groupBox_link_parameters)
-        self.toolButton_assign_vpn_from_pool.setObjectName("toolButton_assign_vpn_from_pool")
-        self.gridLayout.addWidget(self.toolButton_assign_vpn_from_pool, 5, 5, 1, 1)
+        self.gridLayout.addWidget(self.groupBox, 0, 2, 1, 4)
         self.toolButton_password = QtGui.QToolButton(self.groupBox_link_parameters)
-        self.toolButton_password.setObjectName("toolButton_password")
+        self.toolButton_password.setObjectName(_fromUtf8("toolButton_password"))
         self.gridLayout.addWidget(self.toolButton_password, 3, 5, 1, 1)
         self.toolButton_login = QtGui.QToolButton(self.groupBox_link_parameters)
-        self.toolButton_login.setObjectName("toolButton_login")
+        self.toolButton_login.setObjectName(_fromUtf8("toolButton_login"))
         self.gridLayout.addWidget(self.toolButton_login, 1, 5, 1, 1)
-        self.checkBox_allow_dhcp = QtGui.QCheckBox(self.groupBox_link_parameters)
-        self.checkBox_allow_dhcp.setObjectName("checkBox_allow_dhcp")
-        self.gridLayout.addWidget(self.checkBox_allow_dhcp, 11, 1, 1, 5)
+        self.comboBox_vpn_pool = QtGui.QComboBox(self.groupBox_link_parameters)
+        self.comboBox_vpn_pool.setMinimumSize(QtCore.QSize(160, 0))
+        self.comboBox_vpn_pool.setObjectName(_fromUtf8("comboBox_vpn_pool"))
+        self.gridLayout.addWidget(self.comboBox_vpn_pool, 5, 2, 1, 3)
+        self.toolButton_assign_vpn_from_pool = QtGui.QToolButton(self.groupBox_link_parameters)
+        self.toolButton_assign_vpn_from_pool.setObjectName(_fromUtf8("toolButton_assign_vpn_from_pool"))
+        self.gridLayout.addWidget(self.toolButton_assign_vpn_from_pool, 5, 5, 1, 1)
+        self.comboBox_ipn_pool = QtGui.QComboBox(self.groupBox_link_parameters)
+        self.comboBox_ipn_pool.setObjectName(_fromUtf8("comboBox_ipn_pool"))
+        self.gridLayout.addWidget(self.comboBox_ipn_pool, 7, 2, 1, 3)
+        self.toolButton_assign_ipn_from_pool = QtGui.QToolButton(self.groupBox_link_parameters)
+        self.toolButton_assign_ipn_from_pool.setObjectName(_fromUtf8("toolButton_assign_ipn_from_pool"))
+        self.gridLayout.addWidget(self.toolButton_assign_ipn_from_pool, 7, 5, 1, 1)
+        self.label_vpn_ipv6_address = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_vpn_ipv6_address.setObjectName(_fromUtf8("label_vpn_ipv6_address"))
+        self.gridLayout.addWidget(self.label_vpn_ipv6_address, 8, 0, 1, 1)
+        self.lineEdit_vpn_ipv6_address = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_vpn_ipv6_address.setObjectName(_fromUtf8("lineEdit_vpn_ipv6_address"))
+        self.gridLayout.addWidget(self.lineEdit_vpn_ipv6_address, 8, 1, 1, 1)
+        self.comboBox_vpn_ipv6_pool = QtGui.QComboBox(self.groupBox_link_parameters)
+        self.comboBox_vpn_ipv6_pool.setMinimumSize(QtCore.QSize(160, 0))
+        self.comboBox_vpn_ipv6_pool.setObjectName(_fromUtf8("comboBox_vpn_ipv6_pool"))
+        self.gridLayout.addWidget(self.comboBox_vpn_ipv6_pool, 8, 2, 1, 3)
+        self.toolButton_assign_vpn_ipv6_from_pool_ = QtGui.QToolButton(self.groupBox_link_parameters)
+        self.toolButton_assign_vpn_ipv6_from_pool_.setObjectName(_fromUtf8("toolButton_assign_vpn_ipv6_from_pool_"))
+        self.gridLayout.addWidget(self.toolButton_assign_vpn_ipv6_from_pool_, 8, 5, 1, 1)
+        self.label_ipn_ipv6_address = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_ipn_ipv6_address.setObjectName(_fromUtf8("label_ipn_ipv6_address"))
+        self.gridLayout.addWidget(self.label_ipn_ipv6_address, 9, 0, 1, 1)
+        self.lineEdit_ipn_ipv6_address = QtGui.QLineEdit(self.groupBox_link_parameters)
+        self.lineEdit_ipn_ipv6_address.setObjectName(_fromUtf8("lineEdit_ipn_ipv6_address"))
+        self.gridLayout.addWidget(self.lineEdit_ipn_ipv6_address, 9, 1, 1, 1)
+        self.comboBox_ipn_ipv6_pool = QtGui.QComboBox(self.groupBox_link_parameters)
+        self.comboBox_ipn_ipv6_pool.setObjectName(_fromUtf8("comboBox_ipn_ipv6_pool"))
+        self.gridLayout.addWidget(self.comboBox_ipn_ipv6_pool, 9, 2, 1, 3)
+        self.toolButton_assign_ipn_ipv6_from_pool = QtGui.QToolButton(self.groupBox_link_parameters)
+        self.toolButton_assign_ipn_ipv6_from_pool.setObjectName(_fromUtf8("toolButton_assign_ipn_ipv6_from_pool"))
+        self.gridLayout.addWidget(self.toolButton_assign_ipn_ipv6_from_pool, 9, 5, 1, 1)
+        self.pushButton_detect_nas = QtGui.QPushButton(self.groupBox_link_parameters)
+        self.pushButton_detect_nas.setObjectName(_fromUtf8("pushButton_detect_nas"))
+        self.gridLayout.addWidget(self.pushButton_detect_nas, 12, 2, 1, 1)
+        self.label_vlan = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_vlan.setObjectName(_fromUtf8("label_vlan"))
+        self.gridLayout.addWidget(self.label_vlan, 14, 2, 1, 1)
+        self.label_link_port = QtGui.QLabel(self.groupBox_link_parameters)
+        self.label_link_port.setObjectName(_fromUtf8("label_link_port"))
+        self.gridLayout.addWidget(self.label_link_port, 14, 0, 1, 1)
+        self.spinBox_link_port = QtGui.QSpinBox(self.groupBox_link_parameters)
+        self.spinBox_link_port.setMaximum(512)
+        self.spinBox_link_port.setObjectName(_fromUtf8("spinBox_link_port"))
+        self.gridLayout.addWidget(self.spinBox_link_port, 14, 1, 1, 1)
+        self.spinBox_vlan = QtGui.QSpinBox(self.groupBox_link_parameters)
+        self.spinBox_vlan.setMaximum(4096)
+        self.spinBox_vlan.setObjectName(_fromUtf8("spinBox_vlan"))
+        self.gridLayout.addWidget(self.spinBox_vlan, 14, 3, 1, 2)
         self.gridLayout_3.addWidget(self.groupBox_link_parameters, 0, 1, 1, 1)
-        self.tabWidget.addTab(self.tab, "")
+        self.tabWidget.addTab(self.tab, _fromUtf8(""))
+        self.tab_3 = QtGui.QWidget()
+        self.tab_3.setObjectName(_fromUtf8("tab_3"))
+        self.gridLayout_6 = QtGui.QGridLayout(self.tab_3)
+        self.gridLayout_6.setObjectName(_fromUtf8("gridLayout_6"))
+        self.groupBox_2 = QtGui.QGroupBox(self.tab_3)
+        self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
+        self.gridLayout_7 = QtGui.QGridLayout(self.groupBox_2)
+        self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
+        self.checkBox_allow_dhcp = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_dhcp.setObjectName(_fromUtf8("checkBox_allow_dhcp"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_dhcp, 0, 0, 1, 1)
+        self.checkBox_allow_dhcp_with_null = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_dhcp_with_null.setObjectName(_fromUtf8("checkBox_allow_dhcp_with_null"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_dhcp_with_null, 1, 0, 1, 1)
+        self.checkBox_allow_dhcp_with_minus = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_dhcp_with_minus.setObjectName(_fromUtf8("checkBox_allow_dhcp_with_minus"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_dhcp_with_minus, 2, 0, 1, 1)
+        self.checkBox_allow_dhcp_with_block = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_dhcp_with_block.setObjectName(_fromUtf8("checkBox_allow_dhcp_with_block"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_dhcp_with_block, 3, 0, 1, 1)
+        self.checkBox_associate_pptp_ipn_ip = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_associate_pptp_ipn_ip.setObjectName(_fromUtf8("checkBox_associate_pptp_ipn_ip"))
+        self.gridLayout_7.addWidget(self.checkBox_associate_pptp_ipn_ip, 13, 0, 1, 1)
+        self.checkBox_associate_pppoe_ipn_mac = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_associate_pppoe_ipn_mac.setObjectName(_fromUtf8("checkBox_associate_pppoe_ipn_mac"))
+        self.gridLayout_7.addWidget(self.checkBox_associate_pppoe_ipn_mac, 14, 0, 1, 1)
+        self.checkBox_allow_addonservice = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_addonservice.setObjectName(_fromUtf8("checkBox_allow_addonservice"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_addonservice, 15, 0, 1, 1)
+        self.checkBox_allow_vpn_with_block = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_vpn_with_block.setObjectName(_fromUtf8("checkBox_allow_vpn_with_block"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_vpn_with_block, 9, 0, 1, 1)
+        self.checkBox_allow_vpn_with_null = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_vpn_with_null.setObjectName(_fromUtf8("checkBox_allow_vpn_with_null"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_vpn_with_null, 8, 0, 1, 1)
+        self.checkBox_allow_vpn_with_minus = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_vpn_with_minus.setObjectName(_fromUtf8("checkBox_allow_vpn_with_minus"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_vpn_with_minus, 7, 0, 1, 1)
+        self.checkBox_allow_ipn_with_minus = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_ipn_with_minus.setObjectName(_fromUtf8("checkBox_allow_ipn_with_minus"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_ipn_with_minus, 12, 0, 1, 1)
+        self.checkBox_allow_ipn_with_null = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_ipn_with_null.setObjectName(_fromUtf8("checkBox_allow_ipn_with_null"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_ipn_with_null, 11, 0, 1, 1)
+        self.checkBox_allow_ipn_with_block = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_ipn_with_block.setObjectName(_fromUtf8("checkBox_allow_ipn_with_block"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_ipn_with_block, 10, 0, 1, 1)
+        self.gridLayout_6.addWidget(self.groupBox_2, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_3, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
-        self.tab_2.setObjectName("tab_2")
+        self.tab_2.setObjectName(_fromUtf8("tab_2"))
         self.gridLayout_5 = QtGui.QGridLayout(self.tab_2)
-        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
         self.frame = QtGui.QFrame(self.tab_2)
         self.frame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtGui.QFrame.Raised)
-        self.frame.setObjectName("frame")
+        self.frame.setObjectName(_fromUtf8("frame"))
         self.gridLayout_4 = QtGui.QGridLayout(self.frame)
-        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
         self.commandLinkButton = QtGui.QCommandLinkButton(self.frame)
-        self.commandLinkButton.setObjectName("commandLinkButton")
+        self.commandLinkButton.setObjectName(_fromUtf8("commandLinkButton"))
         self.gridLayout_4.addWidget(self.commandLinkButton, 0, 0, 1, 1)
         self.gridLayout_5.addWidget(self.frame, 1, 0, 1, 1)
         self.tableWidget = QtGui.QTableWidget(self.tab_2)
-        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget.setObjectName(_fromUtf8("tableWidget"))
+        self.tableWidget.setColumnCount(0)
+        self.tableWidget.setRowCount(0)
         self.gridLayout_5.addWidget(self.tableWidget, 2, 0, 1, 1)
-        self.tabWidget.addTab(self.tab_2, "")
+        self.tabWidget.addTab(self.tab_2, _fromUtf8(""))
         self.gridLayout_2.addWidget(self.tabWidget, 0, 0, 1, 1)
 
+        self.lineEdit_ipn_ipv6_address.setDisabled(True)
+        #self.lineEdit_vpn_ipv6_address.setDisabled(True)
+        self.comboBox_ipn_ipv6_pool.setDisabled(True)
+        #self.comboBox_vpn_ipv6_pool.setDisabled(True)
+        self.toolButton_assign_ipn_ipv6_from_pool.setDisabled(True)
+        #self.toolButton_assign_vpn_ipv6_from_pool_.setDisabled(True)
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
         
@@ -244,16 +300,21 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.connect(self.toolButton_assign_ipn_from_pool,QtCore.SIGNAL("clicked()"),self.get_ipn_from_pool)
         self.connect(self.toolButton_assign_vpn_from_pool,QtCore.SIGNAL("clicked()"),self.get_vpn_from_pool)
         
+        self.connect(self.toolButton_assign_vpn_ipv6_from_pool_,QtCore.SIGNAL("clicked()"),self.get_vpn_ipv6_from_pool)
+        
         self.connect(self.toolButton_login,QtCore.SIGNAL("clicked()"),self.generate_login)
         self.connect(self.toolButton_password,QtCore.SIGNAL("clicked()"),self.generate_password)
 
         self.connect(self.toolButton_ipn_added,QtCore.SIGNAL("clicked()"),self.subaccountAddDel)
         self.connect(self.toolButton_ipn_enabled,QtCore.SIGNAL("clicked()"),self.subaccountEnableDisable)
         
+        self.connect(self.pushButton_detect_nas,QtCore.SIGNAL("clicked()"),self.detectMac)
+        
         self.connect(self.commandLinkButton, QtCore.SIGNAL("clicked()"), self.addAddonService)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editAddonService)
         
         self.connect(self.comboBox_vpn_pool, QtCore.SIGNAL("currentIndexChanged(int)"), self.combobox_vpn_pool_action)
+        self.connect(self.comboBox_vpn_ipv6_pool, QtCore.SIGNAL("currentIndexChanged(int)"), self.combobox_vpn_ipv6_pool_action)
         self.connect(self.comboBox_ipn_pool, QtCore.SIGNAL("currentIndexChanged(int)"), self.combobox_ipn_pool_action)
 
 
@@ -264,41 +325,47 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.label_nas.setText(QtGui.QApplication.translate("SubAccountDialog", "NAS", None, QtGui.QApplication.UnicodeUTF8))
         self.label_link_login.setText(QtGui.QApplication.translate("SubAccountDialog", "Логин", None, QtGui.QApplication.UnicodeUTF8))
         self.label_link_password.setText(QtGui.QApplication.translate("SubAccountDialog", "Пароль", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_link_vpn_ip_address.setText(QtGui.QApplication.translate("SubAccountDialog", "VPN IP", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_link_vpn.setText(QtGui.QApplication.translate("SubAccountDialog", "IPN IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_link_vpn_ip_address.setText(QtGui.QApplication.translate("SubAccountDialog", "VPN IPv4", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_link_vpn.setText(QtGui.QApplication.translate("SubAccountDialog", "IPN IPv4", None, QtGui.QApplication.UnicodeUTF8))
         self.label_link_ipn_mac_address.setText(QtGui.QApplication.translate("SubAccountDialog", "IPN MAC", None, QtGui.QApplication.UnicodeUTF8))
         self.label_link_switch.setText(QtGui.QApplication.translate("SubAccountDialog", "Коммутатор", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_link_port.setText(QtGui.QApplication.translate("SubAccountDialog", "Порт", None, QtGui.QApplication.UnicodeUTF8))
         self.label_vpn_speed.setText(QtGui.QApplication.translate("SubAccountDialog", "VPN скорость", None, QtGui.QApplication.UnicodeUTF8))
         self.label_ipn_speed.setText(QtGui.QApplication.translate("SubAccountDialog", "IPN скорось", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_allow_addonservice.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить активацию подключаемых услуг через веб-кабинет", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_associate_pppoe_ipn_mac.setText(QtGui.QApplication.translate("SubAccountDialog", "Привязать PPPOE авторизацию к IPN MAC", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_associate_pptp_ipn_ip.setText(QtGui.QApplication.translate("SubAccountDialog", "Привязать PPTP авторизацию к IPN IP", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_allow_vpn_with_null.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_allow_vpn_with_block.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_allow_vpn_with_minus.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_allow_dhcp_with_block.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_allow_dhcp_with_minus.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_allow_dhcp_with_null.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
-        
-        self.checkBox_allow_ipn_with_block.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_allow_ipn_with_minus.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_allow_ipn_with_null.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
-
-
         self.groupBox.setTitle(QtGui.QApplication.translate("SubAccountDialog", "IPN статусы", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_ipn_added.setText(QtGui.QApplication.translate("SubAccountDialog", "Добавлен", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_ipn_enabled.setText(QtGui.QApplication.translate("SubAccountDialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_ipn_sleep.setText(QtGui.QApplication.translate("SubAccountDialog", "Не управлять", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton_assign_ipn_from_pool.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton_assign_vpn_from_pool.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_password.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_login.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_allow_dhcp.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить выдачу адресов по DHCP", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_assign_vpn_from_pool.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_assign_ipn_from_pool.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_vpn_ipv6_address.setText(QtGui.QApplication.translate("SubAccountDialog", "VPN IPv6", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_assign_vpn_ipv6_from_pool_.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_ipn_ipv6_address.setText(QtGui.QApplication.translate("SubAccountDialog", "IPN IPv6", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_assign_ipn_ipv6_from_pool.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_detect_nas.setText(QtGui.QApplication.translate("SubAccountDialog", "Определить", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_vlan.setText(QtGui.QApplication.translate("SubAccountDialog", "VLAN", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_link_port.setText(QtGui.QApplication.translate("SubAccountDialog", "Порт", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("SubAccountDialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_2.setTitle(QtGui.QApplication.translate("SubAccountDialog", "Параметры", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_dhcp.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить выдачу адресов по DHCP", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_dhcp_with_null.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_dhcp_with_minus.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_dhcp_with_block.setText(QtGui.QApplication.translate("SubAccountDialog", "Выдавать IP адрес по DHCP при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_associate_pptp_ipn_ip.setText(QtGui.QApplication.translate("SubAccountDialog", "Привязать PPTP авторизацию к IPN IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_associate_pppoe_ipn_mac.setText(QtGui.QApplication.translate("SubAccountDialog", "Привязать PPPOE авторизацию к IPN MAC", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_addonservice.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить активацию подключаемых услуг через веб-кабинет", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_vpn_with_block.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_vpn_with_null.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_vpn_with_minus.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить PPTP/L2TP/PPPOE/lISG авторизацию при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_ipn_with_minus.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_ipn_with_null.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_ipn_with_block.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("SubAccountDialog", "Дополнительные параметры", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton.setText(QtGui.QApplication.translate("SubAccountDialog", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton.setDescription(QtGui.QApplication.translate("SubAccountDialog", "Добавить подключаемую услугу", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("SubAccountDialog", "Подключаемые услуги", None, QtGui.QApplication.UnicodeUTF8))
+
         self.lineEdit_vpn_speed.setToolTip(QtGui.QApplication.translate("MainWindow", "Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] \n"
         " Примеры: \n"
         " 128k  - rx-rate=128000, tx-rate=128000 (no bursts) \n"
@@ -335,7 +402,9 @@ class SubaccountLinkDialog(QtGui.QDialog):
         
         self.ipnRx = QtCore.QRegExp(r"\b(?:0\.0\.0\.0(/0)?)|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.0\.0\.0(?:/[1-8])?)|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){2}0\.0(?:/(?:9|1[0-6]))?)|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?\.){3}0(?:/(?:1[7-9]|2[0-4]))?)|(?:(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/(?:2[5-9]|3[0-2]))?)\b")
         self.ipnValidator = QtGui.QRegExpValidator(self.ipnRx, self)
-        self.macValidator = QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9a-fA-F]{2}[:]){5}[0-9a-fA-F]{2}$"), self)  
+        self.macValidator = QtGui.QRegExpValidator(QtCore.QRegExp(r"([0-9a-fA-F]{2}[:]){5}[0-9a-fA-F]{2}$"), self)
+        
+        self.ipv6Validator = QtGui.QRegExpValidator(QtCore.QRegExp(r"^((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))$"), self)  
 
     def addrow(self, widget, value, x, y, id=None, editable=False, widget_type = None):
         headerItem = QtGui.QTableWidgetItem()
@@ -370,7 +439,15 @@ class SubaccountLinkDialog(QtGui.QDialog):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
         #self.refresh()
         
-
+    def detectMac(self):
+        print "detect"
+        nas_id=self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
+        ipn_ip = unicode(self.lineEdit_ipn_ip_address.text())
+        if nas_id and ipn_ip:
+            mac = self.connection.get_mac_for_ip(nas_id, ipn_ip)
+        if mac:
+            self.lineEdit_link_ipn_mac_address.setText(unicode(mac))
+            
     def subaccountAddDel(self):
         if not self.model: return
         state = True if self.toolButton_ipn_added.isChecked() else False
@@ -408,6 +485,14 @@ class SubaccountLinkDialog(QtGui.QDialog):
 		else:
 			self.lineEdit_ipn_ip_address.setDisabled(False)
 
+    def combobox_vpn_ipv6_pool_action(self):
+        if self.comboBox_vpn_ipv6_pool.itemData(self.comboBox_vpn_ipv6_pool.currentIndex()).toInt()[0]:
+            self.lineEdit_vpn_ipv6_address.setDisabled(True)
+            self.lineEdit_vpn_ipv6_address.setText(u"::")
+        else:
+            self.lineEdit_vpn_ipv6_address.setDisabled(False)
+
+        
     def combobox_vpn_pool_action(self):
 		#print self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
 		if self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]:
@@ -459,23 +544,36 @@ class SubaccountLinkDialog(QtGui.QDialog):
         if self.model:
             if self.model.isnull('vpn_ipinuse_id')==False:
                 pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipinuse_id, return_response=True)[0]
-                #print "vpnipinuse pool_id", pool_id
+            if self.model.isnull('vpn_ipv6_ipinuse_id')==False:
+                ipv6_pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipv6_ipinuse_id, return_response=True)[0]
+
             
         pools = self.connection.get_models("billservice_ippool", where={'type':'0',})
         
         self.connection.commit()
         i=1
         self.comboBox_vpn_pool.clear()
+        self.comboBox_vpn_ipv6_pool.clear()
         self.comboBox_vpn_pool.addItem('---')
+        self.comboBox_vpn_ipv6_pool.addItem('---')
+        self.comboBox_vpn_pool.setItemData(0, QtCore.QVariant(0))
         self.comboBox_vpn_pool.setItemData(0, QtCore.QVariant(0))
         for pool in pools:
             self.comboBox_vpn_pool.addItem(pool.name)
+            self.comboBox_vpn_ipv6_pool.addItem(pool.name)
             self.comboBox_vpn_pool.setItemData(i, QtCore.QVariant(pool.id))
+            self.comboBox_vpn_ipv6_pool.setItemData(i, QtCore.QVariant(pool.id))
             if self.model:
                 if self.model.isnull('vpn_ipinuse_id')==False:
                     if pool.id==pool_id.pool_id:
                         self.comboBox_vpn_pool.setCurrentIndex(i)
                         self.lineEdit_vpn_ip_address.setDisabled(True)
+                if self.model.isnull('vpn_ipv6_ipinuse_id')==False:
+                    if pool.id==ipv6_pool_id.pool_id:
+                        self.comboBox_vpn_ipv6_pool.setCurrentIndex(i)
+                        self.lineEdit_vpn_ipv6_address.setDisabled(True)
+                        
+                
             
             i+=1
 
@@ -510,9 +608,11 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.lineEdit_link_login.setText(unicode(self.model.username))
             self.lineEdit_link_password.setText(unicode(self.model.password))
             self.lineEdit_vpn_ip_address.setText(unicode(self.model.vpn_ip_address))
+            self.lineEdit_vpn_ipv6_address.setText(unicode(self.model.vpn_ipv6_ip_address))
             self.lineEdit_ipn_ip_address.setText(unicode(self.model.ipn_ip_address))
             self.lineEdit_link_ipn_mac_address.setText(unicode(self.model.ipn_mac_address))
             self.spinBox_link_port.setValue(self.model.switch_port if self.model.switch_port else 0)
+            self.spinBox_vlan.setValue(self.model.vlan if self.model.vlan else 0)
             self.checkBox_allow_dhcp.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp==True else QtCore.Qt.Unchecked )
             self.checkBox_allow_dhcp_with_null.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp_with_null==True else QtCore.Qt.Unchecked )
             self.checkBox_allow_dhcp_with_minus.setCheckState(QtCore.Qt.Checked if self.model.allow_dhcp_with_minus==True else QtCore.Qt.Unchecked )
@@ -556,6 +656,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
             model.switch_id = None
         
         model.switch_port = int(self.spinBox_link_port.value() or 0)
+        model.vlan = int(self.spinBox_vlan.value() or 0)
         model.username = unicode(self.lineEdit_link_login.text()) or ""
         model.password = unicode(self.lineEdit_link_password.text()) or ""
         #model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
@@ -592,6 +693,21 @@ class SubaccountLinkDialog(QtGui.QDialog):
 			
         model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
 
+        if self.lineEdit_vpn_ipv6_address.text():
+            if self.ipv6Validator.validate(self.lineEdit_vpn_ipv6_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+                QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте правильность написания IPv6 VPN IP адреса."))
+                self.connection.rollback()
+                return
+            try:
+                vpn_address_account_id = self.connection.get("SELECT id FROM billservice_subaccount WHERE vpn_ipv6_ip_address='%s'" % unicode(self.lineEdit_vpn_ipv6_address.text())).id
+                #print "vpn_address_account_id", vpn_address_account_id
+                if vpn_address_account_id!=model.id and unicode(self.lineEdit_vpn_ipv6_address.text())!='::':
+                    QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе уже существует такой IPv6 VPN IP адрес."))      
+            except Exception, ex:
+                pass
+            
+        model.vpn_ipv6_ip_address = unicode(self.lineEdit_vpn_ipv6_address.text()) or "::"
+        
         #---------------
         if self.lineEdit_link_ipn_mac_address.text().isEmpty()==False:
 			if self.macValidator.validate(self.lineEdit_link_ipn_mac_address.text(), 0)[0]  == QtGui.QValidator.Acceptable:
@@ -624,7 +740,6 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.allow_ipn_with_null = self.checkBox_allow_ipn_with_null.checkState()==QtCore.Qt.Checked
         model.allow_ipn_with_minus = self.checkBox_allow_ipn_with_minus.checkState()==QtCore.Qt.Checked
         model.allow_ipn_with_block = self.checkBox_allow_ipn_with_block.checkState()==QtCore.Qt.Checked
-
 
         model.associate_pppoe_ipn_mac = self.checkBox_associate_pppoe_ipn_mac.checkState()==QtCore.Qt.Checked
         model.associate_pptp_ipn_ip = self.checkBox_associate_pptp_ipn_ip.checkState()==QtCore.Qt.Checked
@@ -701,7 +816,35 @@ class SubaccountLinkDialog(QtGui.QDialog):
 			self.connection.rollback()
 			return 
                 
+         #Операции с vpn ipv6 пулом    
+        try:
+            pool_id = self.comboBox_vpn_ipv6_pool.itemData(self.comboBox_vpn_ipv6_pool.currentIndex()).toInt()[0]
+            if pool_id!=0 and model.vpn_ipv6_ip_address=='::' and model.vpn_ipv6_ip_address=='':
+                QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPV6 VPN пул, но не назначили ip адрес."))
+                self.connection.rollback()
+                return             
+            if  model.__dict__.get('vpn_ipv6_ipinuse_id'):
+                ipninuse_model = self.connection.get_model(model.vpn_ipv6_ipinuse_id, "billservice_ipinuse")
                 
+                if ipninuse_model.id!=pool_id or ipninuse_model.ip!=model.vpn_ipv6_ip_address:
+                    self.connection.iddelete(ipninuse_model.id, "billservice_ipinuse")
+                    model.vpn_ipinuse_id=None
+                    
+            
+            if pool_id!=0:
+                ipninuse_model= Object()
+                ipninuse_model.pool_id=pool_id
+                ipninuse_model.ip=model.vpn_ipv6_ip_address
+                ipninuse_model.datetime='now()'
+                ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
+                model.vpn_ipv6_ipinuse_id=ipninuse_model.id
+                #self.connection.save(model, "billservice_account")
+        except Exception, e:
+            print e
+            QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки IPv6 VPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
+            self.connection.rollback()
+            return 
+               
             
         try:
             self.connection.save(model,"billservice_subaccount")
@@ -731,7 +874,13 @@ class SubaccountLinkDialog(QtGui.QDialog):
             child = IPAddressSelectForm(self.connection, pool_id)
             if child.exec_()==1:
                 self.lineEdit_vpn_ip_address.setText(child.selected_ip)
-
+                
+    def get_vpn_ipv6_from_pool(self):
+        pool_id = self.comboBox_vpn_ipv6_pool.itemData(self.comboBox_vpn_ipv6_pool.currentIndex()).toInt()[0]
+        if pool_id!=0:
+            child = IPAddressSelectForm(self.connection, pool_id)
+            if child.exec_()==1:
+                self.lineEdit_vpn_ipv6_address.setText(child.selected_ip)        
 
 class AddAccountTarif(QtGui.QDialog):
     def __init__(self, connection, account=None, get_info=False, model=None):
@@ -1245,7 +1394,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.checkBox_credit.setText(QtGui.QApplication.translate("MainWindow", "Работать в кредит", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_general), QtGui.QApplication.translate("MainWindow", "Общее", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_nas.setTitle(QtGui.QApplication.translate("MainWindow", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_nas.setText(QtGui.QApplication.translate("MainWindow", "Основной сервера доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_nas.setText(QtGui.QApplication.translate("MainWindow", "Сервер доступа аккаунта", None, QtGui.QApplication.UnicodeUTF8))
         self.label_bank_code.setText(QtGui.QApplication.translate("MainWindow", "Код", None, QtGui.QApplication.UnicodeUTF8))
         self.label_manager.setText(QtGui.QApplication.translate("MainWindow", "Менеджер", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setColumnHidden(0, False)

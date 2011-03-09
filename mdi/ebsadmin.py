@@ -177,6 +177,19 @@ class MainWindow(QtGui.QMainWindow):
         child.show()        
 
     @connlogin
+    def netflowreport(self):
+        self.workspace.windowList()
+        child =  NetFlowReport(parent=self, connection=connection)
+        #child.setIcon( QPixmap("images/icon.ico") )
+
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)        
+        child.show()    
+        
+    @connlogin
     def open(self):
         child = NasEbs(connection=connection)
         for window in self.workspace.windowList():
@@ -390,6 +403,13 @@ class MainWindow(QtGui.QMainWindow):
         #self.dealerAct.setShortcut(self.tr("Ctrl+D"))
         self.dealerAct.setStatusTip(u"Дилеры")
         self.connect(self.dealerAct, QtCore.SIGNAL("triggered()"), self.dealers)
+        
+        self.netflowAct = QtGui.QAction(QtGui.QIcon("images/nfstat.png"),
+                                    u"&NetFlow статистика", self)
+        #self.dealerAct.setShortcut(self.tr("Ctrl+D"))
+        self.netflowAct.setStatusTip(u"NetFlow статистика")
+        self.connect(self.netflowAct, QtCore.SIGNAL("triggered()"), self.netflowreport)
+                
         self.openAct = QtGui.QAction(QtGui.QIcon("images/nas.png"), u"&Серверы доступа", self)
         
         #self.openAct.setShortcut(self.tr("Ctrl+N"))
@@ -611,11 +631,13 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.windowMenu, QtCore.SIGNAL("aboutToShow()"),
                      self.updateWindowMenu)
         self.reportsMenu = self.menuBar().addMenu(u"&Отчёты")
+        
         for menuName, branch in self.reportActs:
             branchMenu = self.reportsMenu.addMenu(self.trUtf8(menuName))
             for leaf in branch:
                 branchMenu.addAction(leaf)
-
+        
+        self.reportsMenu.addAction(self.netflowAct)
         self.menuBar().addSeparator()
 
         self.helpMenu = self.menuBar().addMenu(u"&Справка")
