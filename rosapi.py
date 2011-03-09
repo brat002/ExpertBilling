@@ -167,3 +167,13 @@ def rosClient(nas_ip, nas_login, nas_password):
     apiros = ApiRos(s);
     apiros.login(str(nas_login), str(nas_password))
     return apiros
+
+def make_dict(res):
+    d={}
+    if not res: return d
+    for x in res[0]:
+        r=x.split('=')
+        if len(r)<2: continue
+        d[r[1]]=r[2]
+    return d
+

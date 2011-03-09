@@ -16,7 +16,7 @@ import datetime
 
 class MonitorEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=[u'#', u'Аккаунт', u'IPN IP', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Конец', u'Передано', u'Принято', u'Длительность, с', u'Статус', u'Причина разрыва']
+        columns=[u'#', u'Аккаунт', u'Caller ID', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Конец', u'Передано', u'Принято', u'Длительность, с', u'Статус', u'Причина разрыва']
         initargs = {"setname":"monitor_frame_header", "objname":"MonitorEbsMDI", "winsize":(0,0,1102,593), "wintitle":"Монитор активности", "tablecolumns":columns, "tablesize":(0,0,801,541)}
         super(MonitorEbs, self).__init__(connection, initargs)
         
@@ -172,7 +172,8 @@ class MonitorEbs(ebsTableWindow):
         
     def reset_action(self):
         sessionid = unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).sessionid)
-        self.connection.pod(session=sessionid)
+        id = unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).id)
+        self.connection.pod(session=sessionid, id=id)
         d = Object()
         d.id = int(unicode(self.tableWidget.item(self.tableWidget.currentRow(), 0).id))
         d.sessionid = sessionid

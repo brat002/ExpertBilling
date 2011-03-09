@@ -10,7 +10,7 @@ from helpers import HeaderUtil
 
 from ebsWindow import ebsTableWindow, ebsTabs_n_TablesWindow
 
-poolt_types=['VPN', 'IPN']
+poolt_types=['IPv4 VPN', 'IPv4 IPN', 'IPv6 VPN', 'IPv6 IPN']
 
 class AddPoolFrame(QtGui.QDialog):
     def __init__(self, connection, model=None):
@@ -19,8 +19,7 @@ class AddPoolFrame(QtGui.QDialog):
         #print "model=", model
         self.connection = connection
         self.setObjectName("AddPoolFrame")
-        self.resize(351, 132)
-
+        self.resize(441, 175)
         self.setSizeGripEnabled(False)
         self.gridLayout_2 = QtGui.QGridLayout(self)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -41,29 +40,32 @@ class AddPoolFrame(QtGui.QDialog):
         self.comboBox_type = QtGui.QComboBox(self.groupBox_pool)
         self.comboBox_type.setMinimumSize(QtCore.QSize(71, 0))
         self.comboBox_type.setObjectName("comboBox_type")
-
         self.gridLayout.addWidget(self.comboBox_type, 0, 5, 1, 1)
         self.label_diapason = QtGui.QLabel(self.groupBox_pool)
         self.label_diapason.setObjectName("label_diapason")
         self.gridLayout.addWidget(self.label_diapason, 1, 0, 1, 1)
-        self.lineEdit_start_ip = QtGui.QLineEdit(self.groupBox_pool)
-        self.lineEdit_start_ip.setMaximumSize(QtCore.QSize(16777215, 20))
-        self.lineEdit_start_ip.setObjectName("lineEdit_start_ip")
-        self.gridLayout.addWidget(self.lineEdit_start_ip, 1, 1, 1, 1)
-        self.label_3 = QtGui.QLabel(self.groupBox_pool)
-        self.label_3.setObjectName("label_3")
-        self.gridLayout.addWidget(self.label_3, 1, 2, 1, 1)
         self.lineEdit_end_ip = QtGui.QLineEdit(self.groupBox_pool)
         self.lineEdit_end_ip.setMinimumSize(QtCore.QSize(131, 0))
         self.lineEdit_end_ip.setMaximumSize(QtCore.QSize(16777215, 20))
         self.lineEdit_end_ip.setObjectName("lineEdit_end_ip")
-        self.gridLayout.addWidget(self.lineEdit_end_ip, 1, 3, 1, 3)
+        self.gridLayout.addWidget(self.lineEdit_end_ip, 3, 1, 1, 1)
+        self.lineEdit_start_ip = QtGui.QLineEdit(self.groupBox_pool)
+        self.lineEdit_start_ip.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.lineEdit_start_ip.setObjectName("lineEdit_start_ip")
+        self.gridLayout.addWidget(self.lineEdit_start_ip, 2, 1, 1, 1)
+        self.label_from = QtGui.QLabel(self.groupBox_pool)
+        self.label_from.setObjectName("label_from")
+        self.gridLayout.addWidget(self.label_from, 2, 0, 1, 1)
+        self.label_to = QtGui.QLabel(self.groupBox_pool)
+        self.label_to.setObjectName("label_to")
+        self.gridLayout.addWidget(self.label_to, 3, 0, 1, 1)
         self.gridLayout_2.addWidget(self.groupBox_pool, 0, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.gridLayout_2.addWidget(self.buttonBox, 1, 0, 1, 1)
+        
         self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b")
         self.ipValidator = QtGui.QRegExpValidator(self.ipRx, self)
         
@@ -79,25 +81,32 @@ class AddPoolFrame(QtGui.QDialog):
         self.label_name.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
         self.label_type.setText(QtGui.QApplication.translate("Dialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
         self.label_diapason.setText(QtGui.QApplication.translate("Dialog", "Диапазон", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("Dialog", "-", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_from.setText(QtGui.QApplication.translate("Dialog", "с", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_to.setText(QtGui.QApplication.translate("Dialog", "по", None, QtGui.QApplication.UnicodeUTF8))
+        self.lineEdit_start_ip.setToolTip(QtGui.QApplication.translate("Dialog", "Первый IP адрес из диапазона", None, QtGui.QApplication.UnicodeUTF8))
+        self.lineEdit_end_ip.setToolTip(QtGui.QApplication.translate("Dialog", "Последний IP адрес из диапазона", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_to.setText(QtGui.QApplication.translate("Dialog", "по", None, QtGui.QApplication.UnicodeUTF8))
         #self.lineEdit_start_ip.setValidator(self.ipValidator)
         #self.lineEdit_end_ip.setValidator(self.ipValidator)
 
     def fixtures(self):
-        self.comboBox_type.addItem("VPN")
+        self.comboBox_type.addItem("IPv4 VPN")
         self.comboBox_type.setItemData(0, QtCore.QVariant(0))
-        self.comboBox_type.addItem("IPN")
+        self.comboBox_type.addItem("IPv4 IPN")
         self.comboBox_type.setItemData(1, QtCore.QVariant(1))
+        self.comboBox_type.addItem("IPv6 VPN")
+        self.comboBox_type.setItemData(2, QtCore.QVariant(2))
+        self.comboBox_type.addItem("IPv6 IPN")
+        self.comboBox_type.setItemData(3, QtCore.QVariant(3))
         
         if self.model:
             self.lineEdit_name.setText(self.model.name)
             self.lineEdit_start_ip.setText(self.model.start_ip)
             self.lineEdit_end_ip.setText(self.model.end_ip)
             
-            if self.model.type == 0:
-                self.comboBox_type.setCurrentIndex(0)
-            else:
-                self.comboBox_type.setCurrentIndex(1)
+
+            self.comboBox_type.setCurrentIndex(self.model.type)
+
 
     def accept(self):
         if self.model:
@@ -117,12 +126,13 @@ class AddPoolFrame(QtGui.QDialog):
             return
 
             
-        #try:
-        IPy.IP(str(model.start_ip))
-        IPy.IP(str(model.end_ip))
-        #except:
-        #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Некорректный IP адрес."))
-        #    return
+            
+        try:
+            IPy.IP(str(model.start_ip))
+            IPy.IP(str(model.end_ip))
+        except:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Некорректный IP адрес."))
+            return
             
             
         
