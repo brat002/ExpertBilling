@@ -1044,6 +1044,9 @@ class HandleSAuth(HandleSBase):
             self.replypacket.AddAttribute('Framed-Protocol', 1)
             self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
+            if subacc.vpn_ipv6_ip_address and subacc.vpn_ipv6_ip_address!='::':
+                self.replypacket.AddAttribute('Framed-Interface-Id', str(subacc.vpn_ipv6_ip_address))
+                self.replypacket.AddAttribute('Framed-IPv6-Prefix', '::/128')
             #account_speed_limit_cache
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
             self.replypacket.AddAttribute('Class', str("%s,%s" % (subacc.id,str(self.session_speed))))

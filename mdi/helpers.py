@@ -597,6 +597,7 @@ def get_free_addreses_from_pool(connection, pool_id, count=-1, only_from_pool=Tr
     ipinuse = connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s" % pool.id)
     accounts_ip = connection.sql("SELECT ipn_ip_address, vpn_ip_address FROM billservice_subaccount")
     connection.commit()
+    ipversion = 4 if pool.type<2 else  6
     accounts_used_ip = []
     for accip in accounts_ip:
         accounts_used_ip.append(IPy.IP(accip.ipn_ip_address).int())
@@ -619,7 +620,7 @@ def get_free_addreses_from_pool(connection, pool_id, count=-1, only_from_pool=Tr
     i=0
     while x<=end_pool_ip and i!=1000:
         if x not in ipinuse_list and (len(res)<count or count==-1) and x!=default_ip:
-            res.append(str(IPy.IP(x)))
+            res.append(str(IPy.IP(x, ipversion = ipversion)))
             i+=1
         x+=1
     return res

@@ -40,7 +40,7 @@ from db import delete_transaction, get_default_speed_parameters, get_speed_param
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running, in_period
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
-from rosapi import rosClient, rosExecute
+from rosapi import rosClient, rosExecute, make_dict
 from classes.vars import RpcVars, CoreVars
 from constants import rules
 
@@ -1195,49 +1195,49 @@ class RPCServer(object):
         f.close()
         return content
     
-    def pod(self, session, cur=None, connection=None, add_data = {}):
+    def pod(self, session, id, cur=None, connection=None, add_data = {}):
         #print "Start POD"
         cur.execute("""
                     SELECT sessionid, nas_int_id, account_id, subaccount_id, framed_protocol, framed_ip_address
                     FROM radius_activesession 
-                    WHERE  sessionid='%s'
-                    """ % session)
+                    WHERE  sessionid=%s and id=%s
+                    """ ,( session, id, ))
         
         row = cur.fetchone()
         connection.commit()
         if not row: return
         session = Object(row)
         
-        cur.execute("SELECT * FROM nas_nas WHERE id=%s", session.nas_int_id)
+        cur.execute("SELECT * FROM nas_nas WHERE id=%s", (session.nas_int_id,))
         row = cur.fetchone()
         if not row: return
         nas = Object(row)
         connection.commit()
 
-        cur.execute("SELECT * FROM billservice_account WHERE id=%s", session.account_id)
+        cur.execute("SELECT * FROM billservice_account WHERE id=%s", (session.account_id,))
         row = cur.fetchone()
         if not row: return
         account = Object(row)
         connection.commit()
 
-        cur.execute("SELECT * FROM billservice_subaccount WHERE id=%s", session.subaccount_id)
+        cur.execute("SELECT * FROM billservice_subaccount WHERE id=%s", (session.subaccount_id,))
         row = cur.fetchone()
         if not row: return
         subaccount = Object(row)
         connection.commit()
-
+        #PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='', format_string='')
         res = PoD(dict=dict, 
                   account=account, 
                   subacc=subaccount, 
+                  nas=nas,
                   access_type=session.framed_protocol, 
                   session_id=session.sessionid,
                   vpn_ip_address=session.framed_ip_address,
-                  format_string=nas.reset_action
-                  )
+                  format_string=nas.reset_action)
 
-        log_string = u"""Пользователь %s послал запрос на разрыв сессии %s пользователя %s""" % (add_data['USER_ID'][0], session, str(row['account_name']))
+        #log_string = u"""Пользователь %s послал запрос на разрыв сессии %s пользователя %s""" % (add_data['USER_ID'][0], session, str(row['account_name']))
         
-        cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
+        #cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
         return res
 
     def paymentgateway_transaction(self, account_id, t_sum, txn_date, txn_id, cur=None, connection=None, add_data = {}):

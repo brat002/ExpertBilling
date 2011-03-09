@@ -443,6 +443,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         print "detect"
         nas_id=self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
         ipn_ip = unicode(self.lineEdit_ipn_ip_address.text())
+        mac =''
         if nas_id and ipn_ip:
             mac = self.connection.get_mac_for_ip(nas_id, ipn_ip)
         if mac:
@@ -544,8 +545,6 @@ class SubaccountLinkDialog(QtGui.QDialog):
         if self.model:
             if self.model.isnull('vpn_ipinuse_id')==False:
                 pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipinuse_id, return_response=True)[0]
-            if self.model.isnull('vpn_ipv6_ipinuse_id')==False:
-                ipv6_pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipv6_ipinuse_id, return_response=True)[0]
 
             
         pools = self.connection.get_models("billservice_ippool", where={'type':'0',})
@@ -553,30 +552,41 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.connection.commit()
         i=1
         self.comboBox_vpn_pool.clear()
-        self.comboBox_vpn_ipv6_pool.clear()
         self.comboBox_vpn_pool.addItem('---')
-        self.comboBox_vpn_ipv6_pool.addItem('---')
-        self.comboBox_vpn_pool.setItemData(0, QtCore.QVariant(0))
         self.comboBox_vpn_pool.setItemData(0, QtCore.QVariant(0))
         for pool in pools:
             self.comboBox_vpn_pool.addItem(pool.name)
-            self.comboBox_vpn_ipv6_pool.addItem(pool.name)
             self.comboBox_vpn_pool.setItemData(i, QtCore.QVariant(pool.id))
-            self.comboBox_vpn_ipv6_pool.setItemData(i, QtCore.QVariant(pool.id))
             if self.model:
                 if self.model.isnull('vpn_ipinuse_id')==False:
                     if pool.id==pool_id.pool_id:
                         self.comboBox_vpn_pool.setCurrentIndex(i)
                         self.lineEdit_vpn_ip_address.setDisabled(True)
+            i+=1
+
+        if self.model:
+            if self.model.isnull('vpn_ipv6_ipinuse_id')==False:
+                ipv6_pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipv6_ipinuse_id, return_response=True)[0]
+
+            
+        pools = self.connection.get_models("billservice_ippool", where={'type':'2',})
+        
+        self.connection.commit()
+        i=1
+        self.comboBox_vpn_ipv6_pool.clear()
+        self.comboBox_vpn_ipv6_pool.addItem('---')
+        self.comboBox_vpn_ipv6_pool.setItemData(0, QtCore.QVariant(0))
+        for pool in pools:
+            self.comboBox_vpn_ipv6_pool.addItem(pool.name)
+            self.comboBox_vpn_ipv6_pool.setItemData(i, QtCore.QVariant(pool.id))
+            if self.model:
                 if self.model.isnull('vpn_ipv6_ipinuse_id')==False:
                     if pool.id==ipv6_pool_id.pool_id:
                         self.comboBox_vpn_ipv6_pool.setCurrentIndex(i)
                         self.lineEdit_vpn_ipv6_address.setDisabled(True)
-                        
-                
-            
             i+=1
-
+                        
+                        
         if not self.model: self.groupBox.setDisabled(True)
         if self.model:
             if self.model.isnull('ipn_ipinuse_id')==False:
@@ -1250,7 +1260,30 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_nas.setMaximumSize(QtCore.QSize(16777215, 20))
         self.comboBox_nas.setObjectName("comboBox_nas")
         self.gridLayout_14.addWidget(self.comboBox_nas, 0, 1, 1, 1)
-        self.gridLayout_17.addWidget(self.groupBox_nas, 0, 0, 1, 1)
+        self.gridLayout_17.addWidget(self.groupBox_nas, 0, 0, 1, 2)
+        self.groupBox_accessparameters = QtGui.QGroupBox(self.tab_network_settings)
+        self.groupBox_accessparameters.setObjectName("groupBox_accessparameters")
+        self.gridLayout_16 = QtGui.QGridLayout(self.groupBox_accessparameters)
+        self.gridLayout_16.setObjectName("gridLayout_16")
+        self.checkBox_allow_webcab = QtGui.QCheckBox(self.groupBox_accessparameters)
+        self.checkBox_allow_webcab.setObjectName("checkBox_allow_webcab")
+        self.gridLayout_16.addWidget(self.checkBox_allow_webcab, 0, 0, 1, 1)
+        self.checkBox_allow_expresscards = QtGui.QCheckBox(self.groupBox_accessparameters)
+        self.checkBox_allow_expresscards.setObjectName("checkBox_allow_expresscards")
+        self.gridLayout_16.addWidget(self.checkBox_allow_expresscards, 1, 0, 1, 1)
+        self.checkBox_allow_ipn_with_minus = QtGui.QCheckBox(self.groupBox_accessparameters)
+        self.checkBox_allow_ipn_with_minus.setObjectName("checkBox_allow_ipn_with_minus")
+        self.gridLayout_16.addWidget(self.checkBox_allow_ipn_with_minus, 2, 0, 1, 1)
+        self.checkBox_allow_ipn_with_block = QtGui.QCheckBox(self.groupBox_accessparameters)
+        self.checkBox_allow_ipn_with_block.setObjectName("checkBox_allow_ipn_with_block")
+        self.gridLayout_16.addWidget(self.checkBox_allow_ipn_with_block, 4, 0, 1, 1)
+        self.checkBox_allow_ipn_with_null = QtGui.QCheckBox(self.groupBox_accessparameters)
+        self.checkBox_allow_ipn_with_null.setObjectName("checkBox_allow_ipn_with_null")
+        self.gridLayout_16.addWidget(self.checkBox_allow_ipn_with_null, 3, 0, 1, 1)
+        self.gridLayout_17.addWidget(self.groupBox_accessparameters, 1, 0, 1, 2)
+        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_17.addItem(spacerItem, 2, 0, 1, 1)
+        
 
         self.tabWidget.addTab(self.tab_network_settings, "")
         self.tab_suspended = QtGui.QWidget()
@@ -1398,6 +1431,14 @@ class AccountWindow(QtGui.QMainWindow):
         self.label_bank_code.setText(QtGui.QApplication.translate("MainWindow", "Код", None, QtGui.QApplication.UnicodeUTF8))
         self.label_manager.setText(QtGui.QApplication.translate("MainWindow", "Менеджер", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setColumnHidden(0, False)
+        self.groupBox_nas.setTitle(QtGui.QApplication.translate("MainWindow", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_nas.setText(QtGui.QApplication.translate("MainWindow", "Идентификатор сервера доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_accessparameters.setTitle(QtGui.QApplication.translate("MainWindow", "Параметры доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_webcab.setText(QtGui.QApplication.translate("MainWindow", "Разрешить пользоваться веб-кабинетом", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_expresscards.setText(QtGui.QApplication.translate("MainWindow", "Разрешить активировать карты экспресс-оплаты", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_ipn_with_minus.setText(QtGui.QApplication.translate("MainWindow", "Разрешить IPN доступ при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_ipn_with_block.setText(QtGui.QApplication.translate("MainWindow", "Разрешить IPN доступ, если клиент неактивен, заблокирован или находится в режиме простоя", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_ipn_with_null.setText(QtGui.QApplication.translate("MainWindow", "Разрешить IPN доступ при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
         columns = [u"Название", u"Значение"]
         makeHeaders(columns, self.tableWidget)
         #self.tableWidget.
