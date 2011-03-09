@@ -616,9 +616,11 @@ def get_free_addreses_from_pool(connection, pool_id, count=-1, only_from_pool=Tr
     find = False
     res = []
     x = start_pool_ip
-    while x<=end_pool_ip:
+    i=0
+    while x<=end_pool_ip and i!=1000:
         if x not in ipinuse_list and (len(res)<count or count==-1) and x!=default_ip:
-            res.append(transip("%s" % x))
+            res.append(str(IPy.IP(x)))
+            i+=1
         x+=1
     return res
         
