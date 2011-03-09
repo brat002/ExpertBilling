@@ -54,7 +54,7 @@ def get_new_files(textReportInfo):
         if fl_out[1].count('\n') < DEF_FILE_NUM - 1:
             textReportInfo.got_more_files = False
     if not textReportInfo.files: return
-    last_str = textReportInfo.files[-1]
+    last_str = textReportInfo.files[-2]
     f_date = datetime.datetime.strptime(last_str[last_str.find(NAME_PREF) + len(NAME_PREF):], STRFTEMPLATE)
     textReportInfo.start_dates.append(f_date)
         

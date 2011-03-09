@@ -158,7 +158,7 @@ def rosClient(nas_ip, nas_login, nas_password):
     @param password: Password os system user
     @param commant: command for execution    
     """
-    global s
+    global s, apiros
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((nas_ip, 8728))

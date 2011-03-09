@@ -40,7 +40,7 @@ from db import delete_transaction, get_default_speed_parameters, get_speed_param
 from db import transaction, ps_history, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 from utilites import settlement_period_info, readpids, killpids, savepid, rempid, getpid, check_running, in_period
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
-    
+from rosapi import rosClient, rosExecute
 from classes.vars import RpcVars, CoreVars
 from constants import rules
 
@@ -1172,6 +1172,23 @@ class RPCServer(object):
     def get_allowed_users(self, cur=None, connection=None, add_data = {}):
         return allowedUsers()
     
+    def get_mac_for_ip(self, nas_id, ipn_ip_address, cur=None, connection=None, add_data = {}):
+        cur.execute("SELECT ipaddress, login, password FROM nas_nas WHERE id=%s", (nas_id,))
+        row = cur.fetchone()
+        if not row: return
+        nas = Object(row)
+        connection.commit()
+        apiros = rosClient(nas.ipaddress, nas.login, nas.password)
+        command='/ping =address=%s =count=1' % ipn_ip_address
+        rosExecute(command)
+        command='/ip/arp/print ?address=%s' % ipn_ip_address
+        rosExecute(command)
+        mac = rosExecute(command).get('mac-address', '')
+        del apiros
+        return mac
+
+    
+    
     def get_daily(self, user, add_data = {}):
         f = open("%s.jpg" % user, 'rb')
         content = f.readall()
@@ -1181,34 +1198,44 @@ class RPCServer(object):
     def pod(self, session, cur=None, connection=None, add_data = {}):
         #print "Start POD"
         cur.execute("""
-                    SELECT nas.ipaddress as nas_ip, nas.type as nas_type, nas.name as nas_name, nas.secret as nas_secret, nas.login as nas_login, nas.password as nas_password,
-                    nas.reset_action as reset_action, account.id as account_id, account.username as account_name, account.vpn_ip_address as vpn_ip_address,
-                    account.ipn_ip_address as ipn_ip_address, account.ipn_mac_address as ipn_mac_address, session.framed_protocol as framed_protocol
-                    FROM radius_activesession as session
-                    JOIN billservice_account as account ON account.id=session.account_id
-                    JOIN nas_nas as nas ON nas.id=account.nas_id
-                    WHERE  session.sessionid='%s'
+                    SELECT sessionid, nas_int_id, account_id, subaccount_id, framed_protocol, framed_ip_address
+                    FROM radius_activesession 
+                    WHERE  sessionid='%s'
                     """ % session)
-
+        
         row = cur.fetchone()
         connection.commit()
-        res = PoD(dict=dict,
-            account_id=row['account_id'], 
-            account_name=str(row['account_name']), 
-            account_vpn_ip=row['vpn_ip_address'], 
-            account_ipn_ip=row['ipn_ip_address'], 
-            account_mac_address=row['ipn_mac_address'], 
-            access_type=str(row['framed_protocol']), 
-            nas_ip=row['nas_ip'], 
-            nas_type=row['nas_type'], 
-            nas_name=row['nas_name'], 
-            nas_secret=row['nas_secret'], 
-            nas_login=row['nas_login'], 
-            nas_password=row['nas_password'], 
-            session_id=str(session), 
-            format_string=str(row['reset_action'])
-        )
-        log_string = u"""Пользователь %s послал пакет на разрыв сессии %s пользователя %s""" % (add_data['USER_ID'][0], session, str(row['account_name']))
+        if not row: return
+        session = Object(row)
+        
+        cur.execute("SELECT * FROM nas_nas WHERE id=%s", session.nas_int_id)
+        row = cur.fetchone()
+        if not row: return
+        nas = Object(row)
+        connection.commit()
+
+        cur.execute("SELECT * FROM billservice_account WHERE id=%s", session.account_id)
+        row = cur.fetchone()
+        if not row: return
+        account = Object(row)
+        connection.commit()
+
+        cur.execute("SELECT * FROM billservice_subaccount WHERE id=%s", session.subaccount_id)
+        row = cur.fetchone()
+        if not row: return
+        subaccount = Object(row)
+        connection.commit()
+
+        res = PoD(dict=dict, 
+                  account=account, 
+                  subacc=subaccount, 
+                  access_type=session.framed_protocol, 
+                  session_id=session.sessionid,
+                  vpn_ip_address=session.framed_ip_address,
+                  format_string=nas.reset_action
+                  )
+
+        log_string = u"""Пользователь %s послал запрос на разрыв сессии %s пользователя %s""" % (add_data['USER_ID'][0], session, str(row['account_name']))
         
         cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
         return res
@@ -1234,6 +1261,9 @@ class RPCServer(object):
         if not count:
             raise RollbackException('Rollback error!')
         return {'prv_txn': local_txn_id}
+    
+    
+    
 def reread_pids():
     global vars
     newpids, newpiddate = readpids(vars.piddir, vars.piddate, exclude = [vars.name + '.pid'])

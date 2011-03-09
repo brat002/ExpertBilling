@@ -4808,3 +4808,19 @@ END;
 $$
     LANGUAGE plpgsql; 
 
+--09.03.2011
+ALTER TABLE billservice_subaccount
+   ADD COLUMN vpn_ipv6_ip_address inet DEFAULT '::';
+
+ALTER TABLE billservice_subaccount
+   ADD COLUMN ipn_ipv6_ip_address inet DEFAULT '::';
+ALTER TABLE billservice_subaccount
+   ADD COLUMN vlan integer DEFAULT 0;
+
+ALTER TABLE billservice_subaccount ADD COLUMN vpn_ipv6_ipinuse_id integer;
+
+ALTER TABLE billservice_subaccount
+  ADD CONSTRAINT billservice_subaccount_ipv6_vpnipinuse_fkey FOREIGN KEY (vpn_ipv6_ipinuse_id)
+      REFERENCES billservice_ipinuse (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL;
+      
