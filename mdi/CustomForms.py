@@ -1283,6 +1283,8 @@ class TemplatesWindow(QtGui.QMainWindow):
         
     def addCardTemplate(self):
         self.treeWidget.setCurrentItem(self.first_item)
+        self.lineEdit_name.setText('')
+        self.textBrowser_remplate_body.setText('')
 
     def delCardTemplate(self):
         item = self.treeWidget.currentItem()
@@ -1298,6 +1300,8 @@ class TemplatesWindow(QtGui.QMainWindow):
             type_id = self.treeWidget.currentItem().type_id
             id = self.treeWidget.currentItem().id
         except:
+            self.lineEdit_name.setText('')
+            self.textBrowser_remplate_body.setText('')            
             return
         self.textBrowser_remplate_body.clear()
 
@@ -1422,6 +1426,7 @@ class TemplatesWindow(QtGui.QMainWindow):
     def preview(self):
         id = self.treeWidget.currentItem().type_id
         templ = Template(unicode(self.textBrowser_remplate_body.toPlainText()), input_encoding='utf-8')
+        data=''
         if id==1:
 
             account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
