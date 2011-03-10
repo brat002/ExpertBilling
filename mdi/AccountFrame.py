@@ -3326,7 +3326,13 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.tb.setIcon(QtGui.QIcon("images/documents.png"))
         self.tb.setText(u"Документы")
         self.tb.setPopupMode(QtGui.QToolButton.InstantPopup)
-        self.menu = QtGui.QMenu(self.tb)
+        self.menu = QtGui.QMenu(self.toolBar)
+        
+        self.reports_tb = QtGui.QToolButton(self)
+        self.reports_tb.setIcon(QtGui.QIcon("images/easytag.png"))
+        self.reports_tb.setText(u"Отчёты")
+        self.reports_tb.setPopupMode(QtGui.QToolButton.InstantPopup)
+        self.reports_menu = QtGui.QMenu(self.toolBar)
         
         
         #self.connect(self.thread, QtCore.SIGNAL("refresh()"), self.refreshTree)
@@ -3356,6 +3362,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs),\
                  ("actionBalanceLog", "История изменения баланса", "images/money.png", self.balance_log),\
                  ("actionAccountFilter", "Поиск аккаунтов", "images/search_accounts.png", self.accountFilter),\
+                 ("actionReportPayments", "Платежи за месяц", "images/moneybook.png", self.pass_function),\
                  
                 ]
                 
@@ -3365,6 +3372,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                    self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction",  "actionAddAccount", "actionEnableSession", "actionDisableSession", "actionDeleteAccount", "messageDialogAction", "radiusauth_logInfo", "actionBalanceLog"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
                    self.menu       :[ "actionChangeTarif", "separator", "actionRadiusAttrs", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', "separator", "rrdTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog", "separator"],\
+                   self.reports_menu :["actionReportPayments",],
                   }
         self.actionCreator(actList, objDict)
         
@@ -3377,8 +3385,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
         self.tb.setMenu(self.menu)
+        self.reports_tb.setMenu(self.reports_menu)
         #self.tb.setDisabled(True)
         self.toolBar.addWidget(self.tb)
+        self.toolBar.addWidget(self.reports_tb)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.editRow = self.editTarif
         #self.connectTree()
@@ -3402,6 +3412,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         child = MessageDialog(accounts = ids, connection=self.connection)
         child.exec_()
     
+    def pass_function(self):
+        pass
     def rrdtraffic_info(self):
         ids = self.get_selected_accounts()
         if ids:

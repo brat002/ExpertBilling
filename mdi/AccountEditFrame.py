@@ -259,6 +259,12 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.checkBox_allow_ipn_with_block = QtGui.QCheckBox(self.groupBox_2)
         self.checkBox_allow_ipn_with_block.setObjectName(_fromUtf8("checkBox_allow_ipn_with_block"))
         self.gridLayout_7.addWidget(self.checkBox_allow_ipn_with_block, 10, 0, 1, 1)
+        
+        self.checkBox_allow_mac_update = QtGui.QCheckBox(self.groupBox_2)
+        self.checkBox_allow_mac_update.setObjectName(_fromUtf8("checkBox_allow_mac_update"))
+        self.gridLayout_7.addWidget(self.checkBox_allow_mac_update, 16, 0, 1, 1)
+
+        
         self.gridLayout_6.addWidget(self.groupBox_2, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_3, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
@@ -361,6 +367,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.checkBox_allow_ipn_with_minus.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_ipn_with_null.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_ipn_with_block.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить IPN доступ при наличии блокировок или неактивности", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_allow_mac_update.setText(QtGui.QApplication.translate("SubAccountDialog", "Разрешить пользователю обновлять MAC-адрес через веб-кабинет", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("SubAccountDialog", "Дополнительные параметры", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton.setText(QtGui.QApplication.translate("SubAccountDialog", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
         self.commandLinkButton.setDescription(QtGui.QApplication.translate("SubAccountDialog", "Добавить подключаемую услугу", None, QtGui.QApplication.UnicodeUTF8))
@@ -642,6 +649,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.checkBox_associate_pppoe_ipn_mac.setCheckState(QtCore.Qt.Checked if self.model.associate_pppoe_ipn_mac==True else QtCore.Qt.Unchecked )
             self.checkBox_associate_pptp_ipn_ip.setCheckState(QtCore.Qt.Checked if self.model.associate_pptp_ipn_ip==True else QtCore.Qt.Unchecked )
             self.checkBox_allow_addonservice.setCheckState(QtCore.Qt.Checked if self.model.allow_addonservice==True else QtCore.Qt.Unchecked )
+            self.checkBox_allow_mac_update.setCheckState(QtCore.Qt.Checked if self.model.allow_mac_update==True else QtCore.Qt.Unchecked )
             self.lineEdit_vpn_speed.setText(unicode(self.model.vpn_speed))
             self.lineEdit_ipn_speed.setText(unicode(self.model.ipn_speed))
             self.toolButton_ipn_sleep.setChecked(self.model.ipn_sleep)
@@ -757,6 +765,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.associate_pppoe_ipn_mac = self.checkBox_associate_pppoe_ipn_mac.checkState()==QtCore.Qt.Checked
         model.associate_pptp_ipn_ip = self.checkBox_associate_pptp_ipn_ip.checkState()==QtCore.Qt.Checked
         model.allow_addonservice = self.checkBox_allow_addonservice.checkState()==QtCore.Qt.Checked
+        model.allow_mac_update = self.checkBox_allow_mac_update.checkState()==QtCore.Qt.Checked
         model.vpn_speed=unicode(self.lineEdit_vpn_speed.text()) or ""
         model.ipn_speed=unicode(self.lineEdit_ipn_speed.text()) or ""
         model.ipn_sleep = self.toolButton_ipn_sleep.isChecked()
@@ -1525,7 +1534,7 @@ class AccountWindow(QtGui.QMainWindow):
         makeHeaders(columns, self.tableWidget_accounttarif)
 
 
-        columns=[u'#', u'Название услуги', u'Дата активации', u'Дата окончания', u'Активирована на сервере доступа', u"Временная блокировка"]
+        columns=[u'#', u'Название услуги', u'Субаккаунт', u'Дата активации', u'Дата окончания', u'Активирована на сервере доступа', u"Временная блокировка"]
         self.tableWidget_addonservice = tableFormat(self.tableWidget_addonservice)
         makeHeaders(columns, self.tableWidget_addonservice)
         
@@ -1586,7 +1595,7 @@ class AccountWindow(QtGui.QMainWindow):
             try:
                 data=templ.render_unicode(account=self.model, tarif=tarif, operator=operator, organization = self.organization, bank=self.bank, created=datetime.datetime.now().strftime(strftimeFormat))
             except Exception, e:
-                data=unicode(u"Ошибка ендеринга документа: %s" % e)
+                data=unicode(u"Ошибка рендеринга документа: %s" % e)
             
         else:
             try:
@@ -1902,9 +1911,9 @@ class AccountWindow(QtGui.QMainWindow):
     def accountAddonServiceRefresh(self):
         if self.model:
             sp = self.connection.sql("""
-            SELECT accadd.*, adds.name as addonservice_name, adds.id as addonservice_id FROM billservice_accountaddonservice as accadd
+            SELECT accadd.*, adds.name as addonservice_name, adds.id as addonservice_id, (SELECT username from billservice_subaccount WHERE id=accadd.subaccount_id) as subaccount_username FROM billservice_accountaddonservice as accadd
             JOIN billservice_addonservice as adds ON adds.id=accadd.service_id
-            WHERE account_id=%s and subaccount_id is Null ORDER BY id DESC
+            WHERE account_id=%s ORDER BY id DESC
             """ % self.model.id)
             self.connection.commit()
             self.tableWidget_addonservice.clearContents()
@@ -1913,14 +1922,16 @@ class AccountWindow(QtGui.QMainWindow):
             for a in sp:
                 self.addrow(self.tableWidget_addonservice, a.id, i, 0)
                 self.addrow(self.tableWidget_addonservice, a.addonservice_name, i, 1)
-                self.addrow(self.tableWidget_addonservice, a.activated.strftime(strftimeFormat), i, 2)
+                self.addrow(self.tableWidget_addonservice, a.subaccount_username, i, 2)
+                
+                self.addrow(self.tableWidget_addonservice, a.activated.strftime(strftimeFormat), i, 3)
                 try:
-                    self.addrow(self.tableWidget_addonservice, a.deactivated.strftime(strftimeFormat), i, 3)
+                    self.addrow(self.tableWidget_addonservice, a.deactivated.strftime(strftimeFormat), i, 4)
                 except:
-                    self.addrow(self.tableWidget_addonservice, u"Не закончен", i, 3)
-                self.addrow(self.tableWidget_addonservice, a.action_status, i, 4)
+                    self.addrow(self.tableWidget_addonservice, u"Не закончен", i, 4)
+                self.addrow(self.tableWidget_addonservice, a.action_status, i, 5)
                 try:
-                    self.addrow(self.tableWidget_addonservice, a.temporary_blocked.strftime(strftimeFormat), i, 5)
+                    self.addrow(self.tableWidget_addonservice, a.temporary_blocked.strftime(strftimeFormat), i, 6)
                 except:
                     pass
                 i+=1
@@ -1953,7 +1964,7 @@ class AccountWindow(QtGui.QMainWindow):
                 #except:
                 #    self.addrow(self.tableWidget_subaccounts, u"Не закончен", i, 2)
                 i+=1
-            self.tableWidget_subaccounts.setColumnHidden(0, True)  
+            self.tableWidget_subaccounts.setColumnHidden(0, False)  
     
     def addrow(self, widget, value, x, y, id=None, editable=False, widget_type = None, widget_item=None):
         headerItem = QtGui.QTableWidgetItem()

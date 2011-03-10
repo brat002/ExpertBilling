@@ -4824,9 +4824,17 @@ ALTER TABLE billservice_subaccount
       REFERENCES billservice_ipinuse (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE SET NULL;
       
+--10.03.2010
+ALTER TABLE auth_permission ALTER "name" TYPE character varying(256);
 INSERT INTO billservice_templatetype(id,
             "name")
     VALUES (9, 'Отчёты');
       
 ALTER TABLE billservice_template DROP CONSTRAINT billservice_template_type_id_fkey;
 SELECT setval('public.billservice_template_id_seq', 9, true);
+update billservice_account set   allow_ipn_with_null = false;
+update billservice_account set     allow_ipn_with_minus  = false;
+update billservice_account set     allow_ipn_with_block  = false;
+ALTER TABLE billservice_subaccount
+   ADD COLUMN allow_mac_update boolean DEFAULT False;
+update billservice_subaccount set     allow_mac_update  = false;
