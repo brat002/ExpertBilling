@@ -3,7 +3,7 @@
 from PyQt4 import QtGui, QtCore, QtSql
 from types import InstanceType, StringType, UnicodeType
 #import Pyro.errors
-
+from re import escape
 import datetime
 import os, sys
 sys.path.append(os.path.abspath('../'))
@@ -246,7 +246,7 @@ class SplitterUtil(object):
 def format_update (x,y):
     if y!='Null' and y!='None':
         if type(y)==StringType or type(y)==UnicodeType:
-            y=y.replace("\\", r"\\").replace(r"'", r"\'").replace(r'"', r'\"')
+            y=escape(y)
             #print y
         return "%s='%s'" % (x,y)
     else:
@@ -256,7 +256,7 @@ def format_insert(y):
     if y=='None' or y == 'Null':
         return y
     elif type(y)==StringType or type(y)==UnicodeType:
-        return y.replace("\\", r"\\").replace(r"'", r"\'").replace(r'"', r'\"')
+        return escape(y)
     else:
         return y
         

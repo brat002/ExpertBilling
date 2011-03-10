@@ -4824,3 +4824,9 @@ ALTER TABLE billservice_subaccount
       REFERENCES billservice_ipinuse (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE SET NULL;
       
+INSERT INTO billservice_templatetype(id,
+            "name")
+    VALUES (9, 'Отчёты');
+      
+ALTER TABLE billservice_template DROP CONSTRAINT billservice_template_type_id_fkey;
+SELECT setval('public.billservice_template_id_seq', 9, true);

@@ -13,7 +13,7 @@ def format_update (x,y):
     if y!=u'Null' and y!=u'None':
         if type(y)==StringType or type(y)==UnicodeType:
             #print True
-            y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+            y=escape(y)
             #print 'y', y
         return "%s='%s'" % (x,y)
     else:
