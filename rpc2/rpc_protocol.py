@@ -27,8 +27,9 @@ def format_update (x,y):
         if type(y)==StringType or type(y)==UnicodeType:
             #print True
             #y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
-            y=escape(y)
+            #y=escape(y)
             #print 'y', y
+            y=y
         return "%s='%s'" % (x,y)
     else:
         return "%s=%s" % (x,'Null')
@@ -38,7 +39,8 @@ def format_insert(y):
         return 'Null'
     elif type(y)==StringType or type(y)==UnicodeType:
         #print True
-        return escape(y)
+        #return escape(y)
+        return y
         #return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
     else:
         return y

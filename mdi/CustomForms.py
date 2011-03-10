@@ -24,7 +24,7 @@ class RrdReportMainWindow(QtGui.QMainWindow):
     def __init__(self, account,connection):
         self.account=account
         self.connection=connection
-        print connection.server_ip
+        #print connection.server_ip
         super(RrdReportMainWindow, self).__init__()
         self.setObjectName(_fromUtf8("RrdReportMainWindow"))
         self.resize(800, 600)
@@ -1156,6 +1156,7 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.connection = connection
         self.setObjectName("MainWindow")
         self.resize(995, 730)
+        self.first_item=None
         self.setIconSize(QtCore.QSize(18, 18))
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
@@ -1281,14 +1282,7 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.label_source_code.setText(QtGui.QApplication.translate("MainWindow", "Исходный код шаблона", None, QtGui.QApplication.UnicodeUTF8))
         
     def addCardTemplate(self):
-        #model = Object()
-        #model.type_id = 7
-        #item = QtGui.QTreeWidgetItem(self.treeWidget)
-        #item.model = model
-        #self.lineEdit_name.clear()
-        #self.textBrowser_remplate_body.clear()
-        #self.treeWidget.setCurrentItem(item)
-        pass
+        self.treeWidget.setCurrentItem(self.first_item)
 
     def delCardTemplate(self):
         item = self.treeWidget.currentItem()
@@ -1341,7 +1335,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             
     
     def saveTemplate(self):
-        if self.treeWidget.currentItem() and self.treeWidget.currentItem().type_id:
+        if self.treeWidget.currentItem() and 'type_id' in self.treeWidget.currentItem().__dict__:
             #model = self.treeWidget.currentItem().model
             model = Object()
             #model.type_id = self.treeWidget.currentItem().type_id
@@ -1403,7 +1397,10 @@ class TemplatesWindow(QtGui.QMainWindow):
             
         
         self.connection.commit()
-        #
+        r_item = QtGui.QTreeWidgetItem(self.treeWidget)
+        r_item.id=-1
+        r_item.setText(0, u"--- Новый шаблон ---")
+        self.first_item = r_item
         for tt in tempaltetypes:
             r_item = QtGui.QTreeWidgetItem(self.treeWidget)
             r_item.id=tt.id
@@ -1430,7 +1427,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
             tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
             try:
-                data=templ.render_unicode(account=account, tarif=tarif, created=datetime.datetime.now().strftime(strftimeFormat))
+                data=templ.render_unicode(account=account, tarif=tarif, created=datetime.datetime.now().strftime(strftimeFormat), connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
         if id==2:
@@ -1454,7 +1451,14 @@ class TemplatesWindow(QtGui.QMainWindow):
             except Exception, e:
                 data=u"Error %s" % str(e)
             
-
+        if id==9:
+            account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
+            document=u"Отчёт по остатку средств"
+            try:
+                data=templ.render_unicode(account=account, connection=self.connection)
+            except Exception, e:
+                data=u"Error %s" % str(e)
+            
         if id==6:
             data=u"Preview for this type of documents unavailable. For preview go to Express Cards->Sale Cards->Print Invoice"
         
@@ -2258,26 +2262,50 @@ class InfoDialog(QtGui.QDialog):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Информация", None, QtGui.QApplication.UnicodeUTF8))
         
     def prepaidTrafficCellEdit(self,y,x):
-        if x==3:
-            item = self.tableWidget.item(y,x)
-            try:
-                default_text=float(item.raw_value/1048576)
-            except Exception, e:
-                print e
-                default_text=0
+        if self.type=='radiusprepaidtraffic':
             
-            text = QtGui.QInputDialog.getDouble(self, u"Осталось МБ:", u"Введите количество мегабайт", default_text,0,99999999999,2)      
-           
-            if text[1]:
-                item=QtGui.QTableWidgetItem(unicode(text[0]))
-                item.raw_value=int(text[0])*1048576
-                self.tableWidget.setItem(y,x, item)     
-                id=self.getSelectedId(self.tableWidget)
+            if x==2:
+                item = self.tableWidget.item(y,x)
+                try:
+                    default_text=float(item.raw_value/1048576)
+                except Exception, e:
+                    print e
+                    default_text=0
                 
-                if id>0:
-                    model = self.connection.get_model(id, 'billservice_accountprepaystrafic')
-                    model.size=int(text[0])*1048576
-                    self.connection.save(model, 'billservice_accountprepaystrafic')  
+                text = QtGui.QInputDialog.getDouble(self, u"Осталось МБ:", u"Количество мегабайт", default_text,0,99999999999,2)      
+               
+                if text[1]:
+                    item=QtGui.QTableWidgetItem(unicode(text[0]))
+                    item.raw_value=int(text[0])*1048576
+                    self.tableWidget.setItem(y,x, item)     
+                    id=self.getSelectedId(self.tableWidget)
+                    
+                    if id>0:
+                        model = self.connection.get_model(id, 'billservice_accountprepaysradiustrafic')
+                        model.size=int(text[0])*1048576
+                        self.connection.save(model, 'billservice_accountprepaysradiustrafic')
+        elif self.type=='prepaidtraffic':
+            if x==3:
+                item = self.tableWidget.item(y,x)
+                try:
+                    default_text=float(item.raw_value/1048576)
+                except Exception, e:
+                    print e
+                    default_text=0
+                
+                text = QtGui.QInputDialog.getDouble(self, u"Осталось МБ:", u"Введите количество мегабайт", default_text,0,99999999999,2)      
+               
+                if text[1]:
+                    item=QtGui.QTableWidgetItem(unicode(text[0]))
+                    item.raw_value=int(text[0])*1048576
+                    self.tableWidget.setItem(y,x, item)     
+                    id=self.getSelectedId(self.tableWidget)
+                    
+                    if id>0:
+                        model = self.connection.get_model(id, 'billservice_accountprepaystrafic')
+                        model.size=int(text[0])*1048576
+                        self.connection.save(model, 'billservice_accountprepaystrafic')
+            
             
     def addrow(self, value, x, y, id=None, raw_value=None, color=None, enabled=True, ctext=None, setdata=False):
         headerItem = QtGui.QTableWidgetItem()
@@ -2361,24 +2389,23 @@ class InfoDialog(QtGui.QDialog):
                 self.addrow("%s MB" % int(a.size/1048576.00), i, 3, raw_value=a.size)
                 i+=1
             self.tableWidget.resizeColumnsToContents()    
-        elif self.type=='radius':
-            columns=["#", u"Тип значения", u"Начислено", u"Осталось", ]
+        elif self.type=='radiusprepaidtraffic':
+            columns=["#", u"Направление", u"Осталось", u"Дата начисления", ]
             makeHeaders(columns, self.tableWidget)
             items = self.connection.sql("""
-            SELECT   ppt.id as ppt_id, ppt.size as size, ppt.datetime, pp.size as pp_size, (SELECT name FROM billservice_group WHERE id=pp.group_id) as group_name FROM billservice_accountprepaystrafic as ppt
-            JOIN billservice_prepaidtraffic as pp ON pp.id=ppt.prepaid_traffic_id
-            WHERE account_tarif_id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY datetime DESC LIMIT 1);""" % (self.account_id,)            
+            SELECT apst.id, apst.size, apst.direction, apst.datetime FROM billservice_accountprepaysradiustrafic as apst 
+            JOIN billservice_accounttarif as act ON act.id=apst.account_tarif_id
+            WHERE act.account_id=%s;""" % (self.account_id,)            
             )
-
-            
+            direction_types = [u"Входящий", u"Исходящий", u"Вх.+Исх.", u"Большее направление"]
             self.connection.commit()
             self.tableWidget.setRowCount(len(items))
             i=0
             for a in items:            
-                self.addrow(i, i,0, id=a.ppt_id)
-                self.addrow(a.group_name, i,1)
-                self.addrow("%s MB" % int(a.pp_size/(1048576)), i, 2)
-                self.addrow("%s MB" % int(a.size/1048576.00), i, 3, raw_value=a.size)
+                self.addrow(i, i,0, id=a.id)
+                self.addrow(direction_types[a.direction], i,1)
+                self.addrow("%s MB" % int(a.size/(1048576)), i, 2, raw_value=a.size)
+                self.addrow(a.datetime.strftime(strftimeFormat), i, 3)
                 i+=1
             self.tableWidget.resizeColumnsToContents()    
                

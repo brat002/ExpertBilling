@@ -3350,6 +3350,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("actionSetSuspendedPeriod", "Отключить списание периодических услуг", "", self.suspended_period),\
                  ("actionLimitInfo", "Остаток трафика по лимитам", "", self.limit_info),\
                  ("actionPrepaidTrafficInfo", "Остаток предоплаченного трафика", "", self.prepaidtraffic_info),\
+                 ("actionPrepaidRadiusTrafficInfo", "Остаток RADIUS трафика", "", self.radiusprepaidtraffic_info),\
                  ("rrdTrafficInfo", "График использования канала", "images/bandwidth.png", self.rrdtraffic_info),\
                  ("radiusauth_logInfo", "Логи RADIUS авторизаций", "images/easytag.png", self.radiusauth_log),\
                  ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs),\
@@ -3363,7 +3364,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
                    self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction",  "actionAddAccount", "actionEnableSession", "actionDisableSession", "actionDeleteAccount", "messageDialogAction", "radiusauth_logInfo", "actionBalanceLog"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
-                   self.menu       :[ "actionChangeTarif", "separator", "actionRadiusAttrs", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", "separator", "rrdTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog", "separator"],\
+                   self.menu       :[ "actionChangeTarif", "separator", "actionRadiusAttrs", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', "separator", "rrdTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog", "separator"],\
                   }
         self.actionCreator(actList, objDict)
         
@@ -3473,6 +3474,13 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         if id:
             child = InfoDialog(connection= self.connection, type="prepaidtraffic", account_id=id)
             child.exec_()
+
+    def radiusprepaidtraffic_info(self):
+        id = self.getSelectedId()
+        if id:
+            child = InfoDialog(connection= self.connection, type="radiusprepaidtraffic", account_id=id)
+            child.exec_()
+
         
     def radius_attrs(self):
         id = self.getTarifId()

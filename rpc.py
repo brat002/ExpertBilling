@@ -1188,7 +1188,24 @@ class RPCServer(object):
         return mac
 
     
-    
+    def sp_info(self, settlement_period_id, time_start=None, curdatetime=None, cur=None, connection=None, add_data={}):
+        
+        sp = cur.execute("""SELECT time_start, length, length_in, autostart FROM billservice_settlementperiod WHERE id=%s""", (settlement_period_id, ))
+        row = cur.fetchone()
+        connection.commit()
+        if not row: return
+
+        sp = Object(row)   
+        
+        if not curdatetime:
+            curdatetime = datetime.datetime.now()
+        if sp.autostart and time_start:
+            time_start=time_start
+        elif not sp.autostart or (sp.autostart and not time_start):
+            time_start=sp.time_start
+            
+        return settlement_period_info(time_start, sp.length_in, sp.length, curdatetime)
+        
     def get_daily(self, user, add_data = {}):
         f = open("%s.jpg" % user, 'rb')
         content = f.readall()

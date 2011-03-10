@@ -434,13 +434,14 @@ class SubaccountLinkDialog(QtGui.QDialog):
         if state:
             if not self.connection.accountActions(None, self.model.id, 'enable'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+                self.toolButton_ipn_enabled.setChecked(state)
         else:
              if not self.connection.accountActions(None, self.model.id, 'disable'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+                self.toolButton_ipn_enabled.setChecked(state)
         #self.refresh()
         
     def detectMac(self):
-        print "detect"
         nas_id=self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
         ipn_ip = unicode(self.lineEdit_ipn_ip_address.text())
         mac =''
@@ -455,9 +456,11 @@ class SubaccountLinkDialog(QtGui.QDialog):
         if state==True:
             if not self.connection.accountActions(None, self.model.id,  'create'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+                self.toolButton_ipn_added.setChecked(state)
         else:
             if not self.connection.accountActions(None, self.model.id,  'delete'):
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))            
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+                self.toolButton_ipn_added.setChecked(state)            
 
 
     def addAddonService(self):
@@ -1240,7 +1243,16 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_19.addWidget(self.plainTextEdit_comment, 0, 0, 1, 1)
         self.gridLayout_8.addWidget(self.groupBox, 5, 1, 2, 1)
         self.tabWidget.addTab(self.tab_general, "")
-        
+
+        self.tab_subaccounts = QtGui.QWidget()
+        self.tab_subaccounts.setObjectName("tab_subaccounts")
+        self.gridLayout_51 = QtGui.QGridLayout(self.tab_subaccounts)
+        self.gridLayout_51.setObjectName("gridLayout_51")
+        self.tableWidget_subaccounts = QtGui.QTableWidget(self.tab_subaccounts)
+        self.tableWidget_subaccounts.setObjectName("tableWidget_subaccounts")
+        self.tableWidget_subaccounts = tableFormat(self.tableWidget_subaccounts)
+        self.gridLayout_51.addWidget(self.tableWidget_subaccounts, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_subaccounts, "")        
         #-----
         self.tab_network_settings = QtGui.QWidget()
         self.tab_network_settings.setObjectName("tab_network_settings")
@@ -1295,15 +1307,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_5.addWidget(self.tableWidget_suspended, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_suspended, "")
 #        
-        self.tab_subaccounts = QtGui.QWidget()
-        self.tab_subaccounts.setObjectName("tab_subaccounts")
-        self.gridLayout_51 = QtGui.QGridLayout(self.tab_subaccounts)
-        self.gridLayout_51.setObjectName("gridLayout_51")
-        self.tableWidget_subaccounts = QtGui.QTableWidget(self.tab_subaccounts)
-        self.tableWidget_subaccounts.setObjectName("tableWidget_subaccounts")
-        self.tableWidget_subaccounts = tableFormat(self.tableWidget_subaccounts)
-        self.gridLayout_51.addWidget(self.tableWidget_subaccounts, 0, 0, 1, 1)
-        self.tabWidget.addTab(self.tab_subaccounts, "")        
+
         
 #        
         self.tab_tarifs = QtGui.QWidget()
@@ -1669,6 +1673,13 @@ class AccountWindow(QtGui.QMainWindow):
             self.dateTimeEdit_agreement_date.setDateTime(self.model.created)
             self.dateTimeEdit_agreement_date.setDisabled(True)
 
+            self.checkBox_allow_expresscards.setChecked(self.model.allow_expresscards)
+            self.checkBox_allow_webcab.setChecked(self.model.allow_webcab)
+            
+            self.checkBox_allow_ipn_with_null.setChecked(self.model.allow_ipn_with_null)
+            self.checkBox_allow_ipn_with_minus.setChecked(self.model.allow_ipn_with_minus)
+            self.checkBox_allow_ipn_with_block.setChecked(self.model.allow_ipn_with_block)
+            
             self.comboBox_status.setCurrentIndex(self.model.status-1)
 
             self.lineEdit_username.setText(unicode(self.model.username))
@@ -1764,6 +1775,13 @@ class AccountWindow(QtGui.QMainWindow):
             model.ballance = unicode(self.lineEdit_balance.text()) or 0
             model.credit = unicode(self.lineEdit_credit.text()) or 0
             model.comment = unicode(self.plainTextEdit_comment.toPlainText())
+            
+            model.allow_expresscards = self.checkBox_allow_expresscards.checkState()==QtCore.Qt.Checked
+            model.allow_webcab = self.checkBox_allow_webcab.setChecked()==QtCore.Qt.Checked
+            
+            model.allow_ipn_with_null = self.checkBox_allow_ipn_with_null.setChecked()==QtCore.Qt.Checked
+            model.allow_ipn_with_minus = self.checkBox_allow_ipn_with_minus.setChecked()==QtCore.Qt.Checked
+            model.allow_ipn_with_block = self.checkBox_allow_ipn_with_block.setChecked()==QtCore.Qt.Checked
             
             city_id = self.comboBox_city.itemData(self.comboBox_city.currentIndex()).toInt()[0]
             if city_id:
@@ -1966,19 +1984,19 @@ class AccountWindow(QtGui.QMainWindow):
     def add_action(self):
         if self.tabWidget.currentIndex()==4:
             self.add_accounttarif()
-        elif self.tabWidget.currentIndex()==2:
+        elif self.tabWidget.currentIndex()==3:
             self.add_suspendedperiod()
         elif self.tabWidget.currentIndex()==5:
             self.addAddonService()
-        elif self.tabWidget.currentIndex()==3:
+        elif self.tabWidget.currentIndex()==1:
             self.addSubAccountLink()
     
     def del_action(self):
         if self.tabWidget.currentIndex()==4:
             self.del_accounttarif()
-        elif self.tabWidget.currentIndex()==2:
-            self.del_suspendedperiod()
         elif self.tabWidget.currentIndex()==3:
+            self.del_suspendedperiod()
+        elif self.tabWidget.currentIndex()==1:
             self.delSubAccountLink()
            
     def addSubAccountLink(self):

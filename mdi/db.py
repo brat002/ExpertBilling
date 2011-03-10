@@ -5,14 +5,14 @@ Database wrapper for mikrobill
 #Post
 import  datetime
 import os
-
+from re import escape
 from types import InstanceType, StringType, UnicodeType
 def format_update (x,y):
     #print 'y', y, type(y)
     if y!=u'Null' and y!=u'None':
         if type(y)==StringType or type(y)==UnicodeType:
             #print True
-            y=y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+            y=escape(y)
             #print 'y', y
         return "%s='%s'" % (x,y)
     else:
@@ -23,7 +23,7 @@ def format_insert(y):
         return 'Null'
     elif type(y)==StringType or type(y)==UnicodeType:
         #print True
-        return y.replace('\'', '\\\'').replace('"', '\"').replace("\\","\\\\")
+        return escape(y)
     else:
         return y
     
