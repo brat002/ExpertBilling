@@ -8,8 +8,9 @@ from helpers import tableFormat
 from helpers import tableHeight
 from helpers import sqliteDbAccess, connectDBName , get_free_addreses_from_pool
 from db import Object as Object
-from helpers import dateDelim
+from helpers import dateDelim, settlement_period_info
 from mako.template import Template
+from template_higlight import Highlighter
 
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 import datetime
@@ -28,6 +29,13 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         super(RrdReportMainWindow, self).__init__()
         self.setObjectName(_fromUtf8("RrdReportMainWindow"))
         self.resize(800, 600)
+        
+        self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setObjectName("toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)        
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.gridLayout = QtGui.QGridLayout(self.centralwidget)
@@ -43,13 +51,112 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         self.webView.load(QtCore.QUrl("http://%s/statistics/subaccount/?account=%s" % (connection.server_ip, self.account)))
         self.gridLayout.addWidget(self.webView, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
-
+        self.configureAction = QtGui.QAction(self)
+        self.configureAction.setIcon(QtGui.QIcon("images/configure.png"))
+        self.configureAction.setObjectName("configureAction")
+        self.toolBar.addAction(self.configureAction)
+        
+        self.printAction = QtGui.QAction(self)
+        self.printAction.setIcon(QtGui.QIcon("images/printer.png"))
+        self.printAction.setObjectName("printAction")
+        self.toolBar.addAction(self.printAction)
+        
+        #QtCore.QObject.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
+        QtCore.QObject.connect(self.printAction, QtCore.SIGNAL("triggered()"), self.printDocument)
+        
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
+    
+    def printDocument(self):
+        #document = self.centralWidget()
+        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+        printer.setPageSize(QtGui.QPrinter.A4)
+        dialog = QtGui.QPrintDialog(printer, self)
+        dialog.setWindowTitle(self.tr("Print Document"))
+        if dialog.exec_() != QtGui.QDialog.Accepted:
+            return
+        printer.setFullPage(True)
+        #document.print_(printer)
+        self.webView.print_(printer)
+        
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Отчёт по загрузке канала", None, QtGui.QApplication.UnicodeUTF8))
 
+
+class ReportMainWindow(QtGui.QMainWindow):
+    def __init__(self, template_id, accounts, connection):
+        self.accounts=accounts
+        self.template_id = template_id
+        self.connection=connection
+        #print connection.server_ip
+        super(ReportMainWindow, self).__init__()
+        self.setObjectName(_fromUtf8("ReportMainWindow"))
+        self.resize(800, 600)
+        
+        self.toolBar = QtGui.QToolBar(self)
+        self.toolBar.setObjectName("toolBar")
+        self.toolBar.setMovable(False)
+        self.toolBar.setFloatable(False)
+        self.toolBar.setIconSize(QtCore.QSize(18,18))
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)        
+        self.centralwidget = QtGui.QWidget(self)
+        self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+        self.gridLayout = QtGui.QGridLayout(self.centralwidget)
+        self.gridLayout.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.webView = QtWebKit.QWebView(self)
+        self.gridLayout.addWidget(self.webView, 0, 0, 1, 1)
+        self.setCentralWidget(self.centralwidget)
+        self.configureAction = QtGui.QAction(self)
+        self.configureAction.setIcon(QtGui.QIcon("images/configure.png"))
+        self.configureAction.setObjectName("configureAction")
+        self.toolBar.addAction(self.configureAction)
+        
+        self.printAction = QtGui.QAction(self)
+        self.printAction.setIcon(QtGui.QIcon("images/printer.png"))
+        self.printAction.setObjectName("printAction")
+        self.toolBar.addAction(self.printAction)
+        
+        #QtCore.QObject.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
+        QtCore.QObject.connect(self.printAction, QtCore.SIGNAL("triggered()"), self.printDocument)
+        
+        self.retranslateUi()
+
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.render()
+        
+    def render(self):
+        template = self.connection.get_model(self.template_id, "billservice_template")
+        templ = Template(unicode(template.body), input_encoding='utf-8')
+        data = ''
+        try:
+            data=templ.render_unicode(accounts=self.accounts, connection=self.connection)
+        except Excception, e:
+            data+=str(e)
+
+        file= open('templates/tmp/temp.html', 'wb')
+        file.write(data.encode("utf-8", 'replace'))
+        file.flush()
+
+        self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/tmp/temp.html')))
+        
+            
+    def printDocument(self):
+        #document = self.centralWidget()
+        printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
+        printer.setPageSize(QtGui.QPrinter.A4)
+        dialog = QtGui.QPrintDialog(printer, self)
+        dialog.setWindowTitle(self.tr("Print Document"))
+        if dialog.exec_() != QtGui.QDialog.Accepted:
+            return
+        printer.setFullPage(True)
+        #document.print_(printer)
+        self.webView.print_(printer)
+        
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Отчёт по загрузке канала", None, QtGui.QApplication.UnicodeUTF8))
         
+                
 class CheckBoxDialog(QtGui.QDialog):
     def __init__(self, all_items, selected_items, select_mode='checkbox'):
         super(CheckBoxDialog, self).__init__()
@@ -1206,6 +1313,7 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.textBrowser_remplate_body.setOpenLinks(False)
         self.textBrowser_remplate_body.setObjectName("textBrowser_remplate_body")
         self.verticalLayout.addWidget(self.textBrowser_remplate_body)
+        l=Highlighter(self.textBrowser_remplate_body,"python")
         self.widget1 = QtGui.QWidget(self.splitter)
         self.widget1.setObjectName("widget1")
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.widget1)
@@ -1429,30 +1537,29 @@ class TemplatesWindow(QtGui.QMainWindow):
         data=''
         if id==1:
 
-            account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
-            tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+            account = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0].id
+            #tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
             try:
-                data=templ.render_unicode(account=account, tarif=tarif, created=datetime.datetime.now().strftime(strftimeFormat), connection=self.connection)
+                data=templ.render_unicode(accounts=[account], connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
         if id==2:
-            account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
+            account = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0].id
             organization = self.connection.sql("SELECT * FROM billservice_organization LIMIT 1" )[0]
             bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
-            tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+
             try:
-                data=templ.render_unicode(account=account, tarif=tarif, bank=bank, organization=organization,   created=datetime.datetime.now().strftime(strftimeFormat))
+                data=templ.render_unicode(accounts=[account], bank=bank, organization=organization, connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
 
         if id==5:
             account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
-            tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
             transaction = self.connection.sql("SELECT * FROM billservice_transaction LIMIT 1")[0]
             sum = 10000
             document=u"Банковский перевод №112432"
             try:
-                data=templ.render_unicode(account=account, tarif = tarif, transaction = transaction)
+                data=templ.render_unicode(account=account, transaction = transaction, connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
             
@@ -1473,7 +1580,6 @@ class TemplatesWindow(QtGui.QMainWindow):
         if id ==7:
             try:
                 operator =self.connection.get_operator()[0]
-                
             except Exception, e:
                 print e
                 QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
@@ -1503,7 +1609,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             <body>
             """;
             try:
-                data+=templ.render_unicode(operator = operator, bank=bank, card=card)
+                data+=templ.render_unicode(operator = operator, bank=bank, card=card, connection=connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
             data+="</body></html>"
@@ -2239,32 +2345,55 @@ class InfoDialog(QtGui.QDialog):
         self.connection.commit()
         self.type = type
         self.account_id = account_id
+        self.first_time = True
         self.setObjectName("InfoDialog")
         dateDelim = '.'
         self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
         self.resize(650, 300)
         self.gridLayout = QtGui.QGridLayout(self)
-        self.gridLayout.setObjectName("gridLayout")
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.tableWidget = QtGui.QTableWidget(self)
-        self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget = tableFormat(self.tableWidget)
-        self.gridLayout.addWidget(self.tableWidget, 0, 0, 1, 1)
+        self.tableWidget.setObjectName(_fromUtf8("tableWidget"))
+        self.tableWidget= tableFormat(self.tableWidget)
+        self.gridLayout.addWidget(self.tableWidget, 1, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
-        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout.addWidget(self.buttonBox, 2, 0, 1, 1)
+        self.groupBox = QtGui.QGroupBox(self)
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.dateTimeEdit = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit.setSpecialValueText(_fromUtf8(""))
+        self.dateTimeEdit.setCalendarPopup(True)
+        self.dateTimeEdit.setObjectName(_fromUtf8("dateTimeEdit"))
+        self.gridLayout_2.addWidget(self.dateTimeEdit, 0, 1, 1, 1)
+        self.label = QtGui.QLabel(self.groupBox)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 1)
 
         self.retranslateUi()
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
         if self.type != "limit":
             QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.prepaidTrafficCellEdit)
+        if self.type != 'settlementperiods':
+            self.groupBox.setHidden(True)
+        
+        if self.type == 'settlementperiods':
+            QtCore.QObject.connect(self.dateTimeEdit, QtCore.SIGNAL("dateTimeChanged(const QDateTime&)"), self.refresh)
+            
         QtCore.QMetaObject.connectSlotsByName(self)
         self.refresh()
         
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Информация", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры", None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", "dd.MM.yyyy H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("Dialog", "Начало периодов в опцией автостарт", None, QtGui.QApplication.UnicodeUTF8))
         
     def prepaidTrafficCellEdit(self,y,x):
         if self.type=='radiusprepaidtraffic':
@@ -2312,7 +2441,7 @@ class InfoDialog(QtGui.QDialog):
                         self.connection.save(model, 'billservice_accountprepaystrafic')
             
             
-    def addrow(self, value, x, y, id=None, raw_value=None, color=None, enabled=True, ctext=None, setdata=False):
+    def addrow(self, value, x, y, id=None, raw_value=None, color=None, enabled=True, ctext=None, setdata=False, widget = None):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=''
@@ -2330,7 +2459,10 @@ class InfoDialog(QtGui.QDialog):
             
         if y==1:
             if enabled==True:
-                headerItem.setIcon(QtGui.QIcon("images/user.png"))
+                if self.type=='settlementperiods':
+                    headerItem.setIcon(QtGui.QIcon("images/sp.png"))
+                else:
+                    headerItem.setIcon(QtGui.QIcon("images/user.png"))
             else:
                 headerItem.setIcon(QtGui.QIcon("images/user_inactive.png"))
         if setdata:
@@ -2412,7 +2544,40 @@ class InfoDialog(QtGui.QDialog):
                 self.addrow("%s MB" % int(a.size/(1048576)), i, 2, raw_value=a.size)
                 self.addrow(a.datetime.strftime(strftimeFormat), i, 3)
                 i+=1
-            self.tableWidget.resizeColumnsToContents()    
+            self.tableWidget.resizeColumnsToContents()  
+        elif self.type=='settlementperiods':
+            columns=["#", u"Название периода ", u'Длина', u'Начало', u'Конец' ]
+            makeHeaders(columns, self.tableWidget)
+            
+            account_datetime = self.connection.get("""
+            SELECT datetime FROM billservice_accounttarif
+            WHERE account_id=%s and datetime<now() order BY datetime desc LIMIT 1;""" % (self.account_id,)            
+            )
+            
+            if self.first_time:
+                self.dateTimeEdit.setDateTime(account_datetime.datetime)
+                self.first_time=False
+            items = self.connection.sql("""SELECT * FROM billservice_settlementperiod;""")
+
+            
+            #settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False)
+            
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items))
+            i=0
+            for a in items:
+                if a.autostart:
+                    time_start=self.dateTimeEdit.dateTime().toPyDateTime()
+                else:
+                    time_start = a.time_start
+                start, end, length = settlement_period_info(time_start, repeat_after=a.length_in, repeat_after_seconds=a.length)            
+                self.addrow(i, i,0, id=a.id)
+                self.addrow(a.name, i,1)
+                self.addrow(length, i, 2)
+                self.addrow(start.strftime(strftimeFormat), i, 3)
+                self.addrow(end.strftime(strftimeFormat), i, 4)
+                i+=1
+            self.tableWidget.resizeColumnsToContents()   
                
 
         
