@@ -25,7 +25,7 @@ from Reports import TransactionsReportEbs as TransactionsReport, SimpleReportEbs
 from helpers import tableFormat, check_speed
 from helpers import transaction, makeHeaders
 from helpers import Worker
-from CustomForms import simpleTableImageWidget, tableImageWidget, IPAddressSelectForm, TemplateSelect, RrdReportMainWindow
+from CustomForms import simpleTableImageWidget, tableImageWidget, IPAddressSelectForm, TemplateSelect, RrdReportMainWindow, ReportMainWindow
 from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog, PSCreatedForm, AccountAddonServiceEdit
 from MessagesFrame import MessageDialog
 from AccountEditFrame import AccountWindow, AddAccountTarif
@@ -3357,12 +3357,13 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("actionLimitInfo", "Остаток трафика по лимитам", "", self.limit_info),\
                  ("actionPrepaidTrafficInfo", "Остаток предоплаченного трафика", "", self.prepaidtraffic_info),\
                  ("actionPrepaidRadiusTrafficInfo", "Остаток RADIUS трафика", "", self.radiusprepaidtraffic_info),\
+                 ("actionSettlementPeriodInfo", "Информация по расчётным периодам", "", self.settlementperiod_info),\
                  ("rrdTrafficInfo", "График использования канала", "images/bandwidth.png", self.rrdtraffic_info),\
                  ("radiusauth_logInfo", "Логи RADIUS авторизаций", "images/easytag.png", self.radiusauth_log),\
                  ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs),\
                  ("actionBalanceLog", "История изменения баланса", "images/money.png", self.balance_log),\
                  ("actionAccountFilter", "Поиск аккаунтов", "images/search_accounts.png", self.accountFilter),\
-                 ("actionReportPayments", "Платежи за месяц", "images/moneybook.png", self.pass_function),\
+                 ("actionReports", "Отчёты и документы", "images/moneybook.png", self.reportForm),\
                  
                 ]
                 
@@ -3371,8 +3372,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
                    self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction",  "actionAddAccount", "actionEnableSession", "actionDisableSession", "actionDeleteAccount", "messageDialogAction", "radiusauth_logInfo", "actionBalanceLog"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
-                   self.menu       :[ "actionChangeTarif", "separator", "actionRadiusAttrs", "separator", "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', "separator", "rrdTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog", "separator"],\
-                   self.reports_menu :["actionReportPayments",],
+                   self.menu       :[ "actionChangeTarif", "separator", "actionRadiusAttrs", "separator", 'actionSettlementPeriodInfo', 'separator', "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', "separator", "rrdTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog", "separator"],\
+                   self.reports_menu :["actionReports",],
                   }
         self.actionCreator(actList, objDict)
         
@@ -3412,8 +3413,17 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         child = MessageDialog(accounts = ids, connection=self.connection)
         child.exec_()
     
-    def pass_function(self):
-        pass
+    def reportForm(self):
+        child = TemplateSelect(connection = self.connection)
+        if child.exec_():
+            template_id = child.id
+        else:
+            return
+        accounts = self.get_selected_accounts()
+        window = ReportMainWindow(template_id=template_id, accounts=accounts, connection = self.connection)
+        self.parent.workspace.addWindow(window)
+        window.show()
+    
     def rrdtraffic_info(self):
         ids = self.get_selected_accounts()
         if ids:
@@ -3493,6 +3503,12 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             child = InfoDialog(connection= self.connection, type="radiusprepaidtraffic", account_id=id)
             child.exec_()
 
+    def settlementperiod_info(self):
+        id = self.getSelectedId()
+        if id:
+            child = InfoDialog(connection= self.connection, type="settlementperiods", account_id=id)
+            child.exec_()
+    
         
     def radius_attrs(self):
         id = self.getTarifId()
@@ -3598,7 +3614,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             
     
     def addframe(self):
-        if self.getTarifId()==-1000: return
+        if self.getTarifId() not in [-1000, -2000]: return
         tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
         self.connection.commit()
         #self.connection.flush()

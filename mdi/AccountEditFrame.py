@@ -1452,6 +1452,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.checkBox_allow_ipn_with_minus.setText(QtGui.QApplication.translate("MainWindow", "Разрешить IPN доступ при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_ipn_with_block.setText(QtGui.QApplication.translate("MainWindow", "Разрешить IPN доступ, если клиент неактивен, заблокирован или находится в режиме простоя", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_ipn_with_null.setText(QtGui.QApplication.translate("MainWindow", "Разрешить IPN доступ при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit_agreement_date.setDisplayFormat(QtGui.QApplication.translate("Dialog", "dd.MM.yyyy H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
         columns = [u"Название", u"Значение"]
         makeHeaders(columns, self.tableWidget)
         #self.tableWidget.
@@ -1593,15 +1594,15 @@ class AccountWindow(QtGui.QMainWindow):
         if self.groupBox_urdata.isChecked()==True:
             
             try:
-                data=templ.render_unicode(account=self.model, tarif=tarif, operator=operator, organization = self.organization, bank=self.bank, created=datetime.datetime.now().strftime(strftimeFormat))
+                data=templ.render_unicode(account=self.model, operator=operator, organization = self.organization, bank=self.bank)
             except Exception, e:
                 data=unicode(u"Ошибка рендеринга документа: %s" % e)
             
         else:
             try:
-                data=templ.render_unicode(account=self.model, tarif=tarif, created=datetime.datetime.now().strftime(strftimeFormat))
+                data=templ.render_unicode(accounts=[self.model], operator=operator)
             except Exception, e:
-                data=unicode(u"Ошибка ендеринга документа: %s" % e)
+                data=unicode(u"Ошибка рендеринга документа: %s" % e)
             self.connection.commit()
             file= open('templates/tmp/temp.html', 'wb')
             file.write(data.encode("utf-8", 'replace'))
@@ -1649,7 +1650,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_manager.setItemData(0, QtCore.QVariant(0))
         i=1
         for manager in managers:
-            self.comboBox_manager.addItem(manager.username)
+            self.comboBox_manager.addItem( "%s, %s" % (manager.username,manager.fullname))
             self.comboBox_manager.setItemData(i, QtCore.QVariant(manager.id))
             if self.model:
                 if manager.id==self.model.systemuser_id:
@@ -1786,11 +1787,11 @@ class AccountWindow(QtGui.QMainWindow):
             model.comment = unicode(self.plainTextEdit_comment.toPlainText())
             
             model.allow_expresscards = self.checkBox_allow_expresscards.checkState()==QtCore.Qt.Checked
-            model.allow_webcab = self.checkBox_allow_webcab.setChecked()==QtCore.Qt.Checked
+            model.allow_webcab = self.checkBox_allow_webcab.checkState()==QtCore.Qt.Checked
             
-            model.allow_ipn_with_null = self.checkBox_allow_ipn_with_null.setChecked()==QtCore.Qt.Checked
-            model.allow_ipn_with_minus = self.checkBox_allow_ipn_with_minus.setChecked()==QtCore.Qt.Checked
-            model.allow_ipn_with_block = self.checkBox_allow_ipn_with_block.setChecked()==QtCore.Qt.Checked
+            model.allow_ipn_with_null = self.checkBox_allow_ipn_with_null.checkState()==QtCore.Qt.Checked
+            model.allow_ipn_with_minus = self.checkBox_allow_ipn_with_minus.checkState()==QtCore.Qt.Checked
+            model.allow_ipn_with_block = self.checkBox_allow_ipn_with_block.checkState()==QtCore.Qt.Checked
             
             city_id = self.comboBox_city.itemData(self.comboBox_city.currentIndex()).toInt()[0]
             if city_id:
@@ -1857,6 +1858,8 @@ class AccountWindow(QtGui.QMainWindow):
             self.model = model
             self.fixtures()
             self.emit(QtCore.SIGNAL("refresh()"))
+            self.actionAdd.setDisabled(False)
+            self.actionDel.setDisabled(False)            
         except Exception, e:
             import traceback
             traceback.print_exc()
