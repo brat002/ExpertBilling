@@ -1,0 +1,52 @@
+.input {
+  margin: 5px 0;
+  float: left;
+  clear: both;
+  background: white;
+}
+.input span {
+  position: absolute;
+  padding: 5px;
+  margin-left: 3px;
+  color: #999;
+}
+.input input, .input textarea, .input select {
+  position: relative;
+  margin: 0;
+  border-width: 1px;
+  padding: 6px;
+  background: transparent;
+  font: inherit;
+}
+
+.input-no-background input {
+  position: relative;
+  margin: 0;
+  border-width: 1px;
+  padding: 6px;
+  background: #fff;
+  font: inherit;
+}
+
+.captcha-input {
+  width: 4em;
+  float: left;
+  margin-left: 2px;
+}
+
+img.captcha {
+  float: left;
+  margin-right: 4px;
+} 
+
+/* Hack to remove Safari's extra padding. Remove if you don't care about pixel-perfection. */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    .input input, .input textarea, .input select { padding: 4px; }
+}
+
+#tooltip {
+    padding: 5px 10px;
+    background: #cad7e0;
+    border: 1px solid #b2bdc3;
+    opacity: 0.90;
+}

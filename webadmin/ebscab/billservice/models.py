@@ -2,6 +2,7 @@
 from django.db import models
 from ebscab.nas.models import Nas, TrafficClass, TrafficClass
 from django.contrib.auth.models import User
+
 import datetime, time
 from django.contrib.contenttypes.models import ContentType
 
@@ -897,12 +898,8 @@ class SystemUser(models.Model):
         """Always return True. This is a way to tell if the user has been authenticated in templates.
         """
         return True
-    
-    def get_tickets(self):
-        from helpdesk.models import Ticket
-        ctype = ContentType.objects.get_for_model(self)
-        return Ticket.objects.filter(content_type=ctype, object_id=self.id, archived=False)
-    
+    is_staff = True
+    is_superuser = True    
 
 class Ports(models.Model):
     port = models.IntegerField()

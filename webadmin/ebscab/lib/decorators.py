@@ -1,8 +1,15 @@
- #-*- coding=UTF-8 -*-
+# -*- coding=utf-8 -*-
+
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
 from django.conf import settings
+from django.contrib.auth import REDIRECT_FIELD_NAME
+from functools import update_wrapper, wraps, WRAPPER_ASSIGNMENTS
+
+def available_attrs(fn):
+    return tuple(a for a in WRAPPER_ASSIGNMENTS if hasattr(fn, a))
+
 
 from lib.http import JsonResponse, render_response
 
@@ -35,13 +42,38 @@ def ajax_request(func):
             return response
     return wrapper
 
-def login_required(func):
-    def wrapper(request, *args, **kw):
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect(settings.LOGIN_URL)
-        else:
-            return None
-    return wrapper
+
+def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
+    """
+    Decorator for views that checks that the user passes the given test,
+    redirecting to the log-in page if necessary. The test should be a callable
+    that takes the user object and returns True if the user passes.
+    """
+    if not login_url:
+        from django.conf import settings
+        login_url = settings.LOGIN_URL
+    
+    def decorator(view_func):
+        def _wrapped_view(request, *args, **kwargs):
+            if test_func(request.user):
+                return view_func(request, *args, **kwargs)
+            path = next(request)
+            tup = login_url, redirect_field_name, path
+            return HttpResponseRedirect('%s?%s=%s' % tup)
+        return wraps(view_func, assigned=available_attrs(view_func))(_wrapped_view)
+    return decorator
+
+def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME):
+    """
+    Decorator for views that checks that the user is logged in and not preliminary logged,
+    redirecting to the log-in page if necessary.
+    """
+    actual_decorator = user_passes_test(
+        lambda u: u.is_authenticated(), redirect_field_name=redirect_field_name
+    )
+    if function:
+        return actual_decorator(function)
+    return actual_decorator
 
 def render_xml(func):
     """Decorated function must return a valid xml document in unicode"""
