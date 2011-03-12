@@ -4,6 +4,10 @@
 #if NEWRPC:
 
 import os, sys
+import logging
+
+log = logging.getLogger('billservice.views')
+
 #print os.path.abspath('../../../')
 sys.path.append(os.path.abspath('../../'))
 
@@ -22,6 +26,7 @@ try:
 except:
     pass
 
+from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db import connection
 from django.core.cache import cache
@@ -31,6 +36,9 @@ from django.contrib.auth.decorators import login_required
 from lib.http import JsonResponse
 
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
+
+from billservice.models import SystemUser
+
 from billservice.forms import LoginForm, PasswordForm, SimplePasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession
@@ -116,20 +124,19 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             try:
-                #print request.POST
-                #print form.cleaned_data
-                user = Account.objects.get(username=form.cleaned_data['username'])
-                #print user
-                if not user.allow_webcab:
+                user = authenticate(username=form.cleaned_data['username'], \
+                                    password=form.cleaned_data['password'])
+                if user and isinstance(user.account, Account) and not user.account.allow_webcab:
                     form = LoginForm()
                     error_message = u'У вас нет прав на вход в веб-кабинет'
                     return {
                             'error_message':error_message,
                             'form':form,
                             }
-                if user.password == form.cleaned_data['password']:
-                    user = authenticate(username=user.username, password=form.cleaned_data['password'])
+                elif user: 
                     log_in(request, user)
+                    if isinstance(user.account, SystemUser):
+                        return HttpResponseRedirect(reverse("helpdesk_dashboard"))
                     if not cache.get(str(user.id)):
                         cache.set(str(user.id), {'count':0,'last_date':datetime.datetime.now(),'blocked':False,}, 86400*365)
                     else:
@@ -138,7 +145,7 @@ def login(request):
                             cache.set(str(user.idi), {'count':cache_user['count'],'last_date':cache_user['last_date'],'blocked':cache_user['blocked'],}, 86400*365)
                         else:
                             cache.set(str(user.id), {'count':cache_user['count'],'last_date':datetime.datetime.now(),'blocked':cache_user['blocked'],}, 86400*365)
-                    tariff = user.get_account_tariff()
+                    tariff = user.account.get_account_tariff()
                     if tariff.allow_express_pay:
                         request.session['express_pay']=True
                     request.session.modified = True
@@ -151,6 +158,7 @@ def login(request):
                             'form':form,
                             }
             except Exception, e:
+                log.debug("Login error: %r" % e)
                 form = LoginForm(initial={'username': form.cleaned_data['username']})
                 error_message = u'Проверьте введенные данные'
                 return {
@@ -178,7 +186,7 @@ def login_out(request):
 @render_to('accounts/index.html')
 @login_required
 def index(request):
-    user = request.user
+    user = request.user.account
     tariff_id, tariff_name = user.get_account_tariff_info()
     date = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
     tariffs = AccountTarif.objects.filter(account=user, datetime__lt=date).order_by('-datetime')
@@ -219,7 +227,7 @@ def index(request):
 @login_required
 def netflowstream_info(request):
     from lib.paginator import SimplePaginator
-    paginator = SimplePaginator(request, NetFlowStream.objects.filter(account=request.user).order_by('-date_start'), 500, 'page')
+    paginator = SimplePaginator(request, NetFlowStream.objects.filter(account=request.user.account).order_by('-date_start'), 500, 'page')
     return {
             'net_flow_streams':paginator.get_page_items(),
             'paginator': paginator,
@@ -231,7 +239,7 @@ def netflowstream_info(request):
 def get_promise(request):
     if settings.ALLOW_PROMISE==False:
         return HttpResponseRedirect('/')
-    user = request.user
+    user = request.user.account
     LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = settings.LEFT_PROMISE_DAYS)
     if Transaction.objects.filter(account=user, promise=True, promise_expired=False).count() >= 1:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
@@ -280,7 +288,7 @@ def make_payment(request):
         if last_qiwi_invoice:
             qiwi_form = QiwiPaymentRequestForm(initial={'phone':last_qiwi_invoice.phone})
         else:
-             qiwi_form = QiwiPaymentRequestForm(initial={'phone':request.user.phone_m})
+             qiwi_form = QiwiPaymentRequestForm(initial={'phone':request.user.account.phone_m})
     if settings.ALLOW_WEBMONEY:
         wm=simple_payment(request)
         wm_form=wm['form']
@@ -315,7 +323,7 @@ def qiwi_payment(request):
         invoice.autoaccept=autoaccept
         invoice.lifetime = lifetime
         invoice.save()
-        comment = u"Пополнение счёта %s" % request.user.username
+        comment = u"Пополнение счёта %s" % request.user.account.username
         status, message=create_invoice(phone_number=phone,transaction_id=invoice.id, summ=invoice.summ, comment=comment)
         #print 'status', type(status)
         payed=False
@@ -364,7 +372,7 @@ def qiwi_balance(request):
 def transaction(request):
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'transactions', 'created')
-    qs = Transaction.objects.filter(account=request.user, **addon_query).order_by('-created')
+    qs = Transaction.objects.filter(account=request.user.account, **addon_query).order_by('-created')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     summ_on_page = 0
@@ -391,7 +399,7 @@ def transaction(request):
 @login_required
 def vpn_session(request):
     from lib.paginator import SimplePaginator
-    user = request.user
+    user = request.user.account
     is_range, addon_query = addon_queryset(request, 'active_session', 'date_start', 'date_end')
     qs = ActiveSession.objects.filter(account=user, **addon_query).order_by('-date_start')
     paginator = SimplePaginator(request, qs, 50, 'page')
@@ -436,7 +444,7 @@ def vpn_session(request):
 @login_required
 def services_info(request):
     from lib.paginator import SimplePaginator
-    user = request.user
+    user = request.user.account
     is_range, addon_query = addon_queryset(request, 'services', 'activated')
     qs = AccountAddonService.objects.filter(account=user, **addon_query).order_by('-activated')
     paginator = SimplePaginator(request, qs, 50, 'page')
@@ -490,11 +498,12 @@ def subaccount_change_password(request):
         form = SimplePasswordForm(request.POST)
         if form.is_valid():
             try:
-                user = request.user
+                user = request.user.account
                 subaccount_id = request.POST.get("subaccount_id", 0)
                 if subaccount_id:
                     try:
-                        subaccount = SubAccount.objects.get(id=subaccount_id, account=request.user)
+                        subaccount = \
+                        SubAccount.objects.get(id=subaccount_id, account=request.user.account)
                     except Exception, e:
                         #print e
                         return {
@@ -507,6 +516,7 @@ def subaccount_change_password(request):
                     
 
                 if form.cleaned_data['new_password']==form.cleaned_data['repeat_password'] and subaccount.password!='':
+
                     subaccount.password = form.cleaned_data['new_password']
                     subaccount.save()
                     return {
@@ -538,7 +548,7 @@ def change_password(request):
         form = PasswordForm(request.POST)
         if form.is_valid():
             try:
-                user = request.user
+                user = request.user.account
                 if user.password == form.cleaned_data['old_password'] and form.cleaned_data['new_password']==form.cleaned_data['repeat_password']:
                     user.password = form.cleaned_data['new_password']
                     user.save()
@@ -570,7 +580,7 @@ def change_password(request):
 @login_required
 def change_tariff_form(request):
     from datetime import datetime, date
-    user = request.user
+    user = request.user.account
     account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('-datetime')[:1]
     account_tariff = account_tariff_id[0]
     tariffs = TPChangeRule.objects.filter(ballance_min__lte=(user.ballance+user.credit), from_tariff = account_tariff.tarif)
@@ -596,8 +606,10 @@ def change_tariff(request):
     if request.method == 'POST':
         rule_id = request.POST.get('id_tariff_id', None)
         if rule_id != None:
-            user = request.user
-            account_tariff_id = AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('-datetime')[:1]
+            user = request.user.account
+            account_tariff_id = \
+                AccountTarif.objects.filter(account=user, \
+                            datetime__lt=datetime.now()).order_by('-datetime')[:1]
             account_tariff = account_tariff_id[0]
             from datetime import datetime
             rules_id =[x.id for x in TPChangeRule.objects.filter(ballance_min__lte=(user.ballance+user.credit))]
@@ -673,7 +685,7 @@ def card_acvation(request):
         return {
                 'error_message': u'Вам не доступна услуга активации карт экспресс оплаты!',
                }
-    user = request.user
+    user = request.user.account
     if not user.allow_expresscards:
         return {
                 'error_message': u'Вам не доступна услуга активации карт экспресс оплаты!',
@@ -739,7 +751,7 @@ def card_acvation(request):
 @render_to('accounts/account_prepays_traffic.html')
 @login_required
 def account_prepays_traffic(request):
-    user = request.user
+    user = request.user.account
     try:
         from billservice.models import AccountPrepaysTrafic, PrepaidTraffic
         account_tariff = AccountTarif.objects.get(account=user, datetime__lt=datetime.datetime.now())[:1]
@@ -754,7 +766,7 @@ def account_prepays_traffic(request):
             }
 
 def client(request):
-    user = request.user
+    user = request.user.account
     # CONNECTION TO RCP SERVER
     try:
         authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
@@ -786,7 +798,7 @@ def client(request):
 @render_to('accounts/traffic_limit.html')
 @login_required
 def traffic_limit(request):
-    user = request.user
+    user = request.user.account
     tariff = user.get_account_tariff()
     traffic = TrafficLimit.objects.filter(tarif=tariff)
     return {
@@ -798,7 +810,7 @@ def traffic_limit(request):
 @render_to('accounts/statistics.html')
 @login_required
 def statistics(request):
-    user = request.user
+    user = request.user.account
     transaction = Transaction.objects.filter(account=user).order_by('-created')[:8]
     active_session = ActiveSession.objects.filter(account=user).order_by('-date_start')[:8]
     periodical_service_history = PeriodicalServiceHistory.objects.filter(account=user).order_by('-datetime')[:8]
@@ -827,7 +839,7 @@ def statistics(request):
 @render_to('accounts/addonservice.html')
 @login_required
 def addon_service(request):
-    user = request.user
+    user = request.user.account
     #account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
     #account_tariff = account_tariff_id[0]
     services = AddonServiceTarif.objects.filter(tarif=user.get_account_tariff())
@@ -866,7 +878,7 @@ def service_action(request, action, id):
     в случее set id являеться идентификатором добавляемой услуги
     в случее del id являеться идентификатором accountaddon_service
     """
-    user = request.user
+    user = request.user.account
 
     try:
         authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
@@ -953,7 +965,8 @@ def service_action(request, action, id):
 def periodical_service_history(request):
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'periodical_service_history')
-    qs = PeriodicalServiceHistory.objects.filter(account=request.user, **addon_query).order_by('-datetime')
+    qs = PeriodicalServiceHistory.objects.filter(account=request.user.account, \
+                                       **addon_query).order_by('-datetime')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     summ_on_page = 0
@@ -979,7 +992,8 @@ def periodical_service_history(request):
 def addon_service_transaction(request):
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'addon_service_transaction', 'created')
-    qs = AddonServiceTransaction.objects.filter(account=request.user, **addon_query).order_by('-created')
+    qs = AddonServiceTransaction.objects.filter(account=request.user.account, \
+                                     **addon_query).order_by('-created')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     summ_on_page = 0
@@ -1006,7 +1020,8 @@ def addon_service_transaction(request):
 def traffic_transaction(request):
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'traffic_transaction', 'created')
-    qs = TrafficTransaction.objects.filter(account=request.user, **addon_query).order_by('-datetime')
+    qs = TrafficTransaction.objects.filter(account=request.user.account, \
+                                           **addon_query).order_by('-datetime')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     summ_on_page = 0
@@ -1032,7 +1047,7 @@ def traffic_transaction(request):
 def one_time_history(request):
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'one_time_history')
-    qs = OneTimeServiceHistory.objects.filter(account=request.user, **addon_query).order_by('-datetime')
+    qs = OneTimeServiceHistory.objects.filter(account=request.user.account, **addon_query).order_by('-datetime')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     summ_on_page = 0
@@ -1061,7 +1076,7 @@ def news_delete(request):
         from billservice.models import AccountViewedNews
         news_id = request.POST.get('news_id', '')
         try:
-            news = AccountViewedNews.objects.get(id = news_id, account = request.user)
+            news = AccountViewedNews.objects.get(id = news_id, account = request.user.account)
         except:
             return {
                     'message':message,

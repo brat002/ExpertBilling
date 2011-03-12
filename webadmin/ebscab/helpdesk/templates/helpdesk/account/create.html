@@ -1,0 +1,21 @@
+{% extends 'base_private.html' %}
+{% load form_tags %}
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        #id_title, textarea {
+            width: 100%;
+        }
+    </style>
+{% endblock %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<form name="create-ticket" action="" method="post">
+{% for field in form %}
+{% form_field field block %}
+{% endfor %}
+<div class="submit-row">
+<input class="default" type="submit" name="submit" value="Сохранить" />
+</div>
+</form>
+{% endblock %}

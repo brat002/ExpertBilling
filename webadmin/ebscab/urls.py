@@ -15,17 +15,24 @@ urlpatterns = patterns('',
     #(r'^webmoney/', include('webmoney.urls')),
      #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
      #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
-     #(r'helpdesk/', include('helpdesk.urls')),
-
 )
+
+
+urlpatterns += patterns('helpdesk.views.account',
+    url(r'^helpdesk/$', 'list_tickets', name='helpdesk_account_tickets'), # list user's tickets
+    url(r'^helpdesk/add$', 'create_ticket', name='helpdesk_account_tickets_add'), # create new ticket
+    url(r'^helpdesk/(?P<ticket_id>[\d]+)/$', 'view_ticket', name='helpdesk_account_tickets_view'), #change/post comment,
+)
+
+urlpatterns += patterns('',(r'helpdesk/', include('helpdesk.urls')),)
 
 urlpatterns += patterns('billservice.views',
     # Uncomment this for admin:
      #(r'^$', 'index'),
-     (r'^$', 'index'),
+     url(r'^$', 'index', name='billservice_index'),
      (r'^login/$', 'login'),
      (r'^prepaid/$', 'account_prepays_traffic'),
-     (r'^accounts/logout/$', 'login_out'),
+     url(r'^accounts/logout/$', 'login_out', name="account_logout"),
      (r'^traffic/info/$', 'netflowstream_info'),
      (r'^promise/$', 'get_promise'),
      (r'^payment/$', 'make_payment'),
@@ -45,7 +52,7 @@ urlpatterns += patterns('billservice.views',
      (r'^traffic/limit/$', 'traffic_limit'),
      (r'^statistics/$', 'statistics'),
      (r'^services/$', 'addon_service'),
-     (r'^service/(?P<action>set|del)/(?P<id>\d+)/$', 'service_action'), 
+     (r'^service/(?P<action>set|del)/(?P<id>\d+)/$', 'service_action'),
      (r'^services/info/$', 'services_info'),
      (r'^service/history/info/$', 'periodical_service_history'),
      (r'^addon/services/transaction/info/$', 'addon_service_transaction'),

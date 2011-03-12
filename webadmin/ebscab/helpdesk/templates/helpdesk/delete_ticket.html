@@ -1,0 +1,20 @@
+{% extends "helpdesk/base.html" %}{% load i18n %}
+
+{% block helpdesk_title %}{% trans "Delete Ticket" %}{% endblock %}
+
+{% block helpdesk_body %}
+<h2>{% trans 'Are you sure?' %}</h2>
+
+ 
+<p class="warning">{% blocktrans with ticket.title as ticket_title %}
+This operation will completelly delete the ticket <strong>"{{ ticket_title }}"</strong>
+Are you sure you want to delete the ticket? All traces of the ticket, including followups, attachments, and updates will be irreversably removed.
+{% endblocktrans %}
+</p>
+<div class="submit-row">
+<p class="deletelink-box"><a class="cancel_link" href='../'>{% trans 'No, do not delete it' %}</a></p>
+<form method='post' action='./'>
+<input class="" type='submit' value="{% trans 'Yes - delete it' %}" />
+</form>
+</div>
+{% endblock %}

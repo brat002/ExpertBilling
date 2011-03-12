@@ -1,6 +1,7 @@
-
-# Django settings for ebscab project.
+# -*- coding=utf-8 -*-
 import os, sys
+import logging
+
 DEBUG = True
 DEBUG_SQL=True
 TEMPLATE_DEBUG = DEBUG
@@ -18,32 +19,11 @@ DATABASE_PASSWORD = 'ebspassword'         # Not used with sqlite3.
 DATABASE_HOST = '127.0.0.1'             # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = '5432'             # Set to empty string for default. Not used with sqlite3.
 
-
-
-
-
-# Local time zone for this installation. Choices can be found here:
-# http://www.postgresql.org/docs/8.1/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
-# although not all variations may be possible on all operating systems.
-# If running in a Windows environment this must be set to the same as your
 # system time zone.
 TIME_ZONE = 'Europe/Minsk'
-
-# Language code for this installation. All choices can be found here:
-# http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
-# http://blogs.law.harvard.edu/tech/stories/storyReader$15
 LANGUAGE_CODE = 'ru-Ru'
-#AUTHENTICATION_BACKENDS=(
-#    'django.contrib.auth.backends.ModelBackend',
-#    'ebscab.authbackend.ModelBackend',
-#)
-
-#LOGIN_REDIRECT_URL='/account/'
-
 SITE_ID = 1
 
-# If you set this to False, Django will make some optimizations so as not
-# to load the internationalization machinery.
 USE_I18N = True
 
 # Absolute path to the directory that holds media.
@@ -78,6 +58,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'notification.context_processors.footer',
     'notification.context_processors.notices',
     'notification.context_processors.setCurrency',
+    'lib.context_processors.default_current_view_name',
+    'notify.context_processors.notifications',
 )
 
 
@@ -88,6 +70,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'lib.threadlocals.ThreadLocalsMiddleware',
+    'notify.middleware.NotificationsMiddleware',
 
 )
 
@@ -110,7 +93,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
-    #'helpdesk',
     'radius',
     'nas',
     'billservice',
@@ -119,8 +101,9 @@ INSTALLED_APPS = (
     'testcases',
     'statistics',
     'webmoney',
-    'paymentgateways.qiwi'
-    #'helpdesk',
+    'paymentgateways.qiwi',
+    'helpdesk',
+    'notify'
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -157,8 +140,38 @@ WEBCAB_LOG = os.path.abspath('log/webcab_log')
 CURRENCY = '$'
 
 TEST_RUNNER = 'testcases.test_runner.run_tests'
+PERSONAL_AREA_STAFF_MENU = [
+    ('helpdesk_dashboard', u"Панель"),
+    ('helpdesk_list', u"Поддержка"),
+    ('helpdesk_submit', u"Создать запрос"),
+    ('helpdesk_report_index', u"Статистика"),
+    ('account_logout', u'Выход'),
+]
 
+# load local_settings
 try:
     from settings_local import *
 except:
     pass
+# load host dependent settings
+try:
+    import socket
+    import imp
+    HOST = str(socket.gethostname()).lower()
+    fp, pathname, description = imp.find_module('%s_settings' % HOST)
+    imp.load_module('_host_settings', fp, pathname, description)
+    from _host_settings import *
+except (ImportError, IOError), e:
+    pass
+
+# define logging
+if DEBUG:
+    LEVEL = logging.DEBUG
+else:
+    LEVEL = logging.INFO
+PROJECT_DIR = os.path.dirname(__file__)
+logging.basicConfig(level=LEVEL,
+     format='%(asctime)s %(name)s %(levelname)s %(message)s',
+     filename=os.path.join(PROJECT_DIR, 'django.log'),
+     filemode='a+')
+root = logging.basicConfig()
