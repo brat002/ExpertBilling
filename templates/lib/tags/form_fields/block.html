@@ -2,10 +2,12 @@
      id="{% block wrapper_id %}{% if field.form.prefix %}{{ field.form.prefix }}-{% endif %}form-field-wrapper-{{ field.name }}{% endblock %}">
  {% if field.errors %}<div class="field-errors">{{ field.errors }}</div>{% endif %}
   <div>
-  	
    {% block label %}
    	{% if not no_label %}
-    <label for="id_{% if field.form.prefix %}{{ field.form.prefix }}-{% endif %}{{ field.name }}">{{ field.label|safe }}</label>{% if field.field.required %}<span class="field-required-label">*</span>{% endif %}
+   	{% if not field.is_hidden %}
+    <label for="id_{% if field.form.prefix %}{{ field.form.prefix }}-{% endif %}{{ field.name }}">{{ field.label|safe }}</label>{% if field.field.required %}<span class="field-required-label">*</span>
+    {% endif %}
+	{% endif %}
 	{% endif %}
     <div class="field">
    {% endblock %}
