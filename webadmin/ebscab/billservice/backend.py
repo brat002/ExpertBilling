@@ -40,8 +40,7 @@ class LoginUserBackend(object):
             log.debug("User %s was %s" % (user, created and 'created' or 'found'))
             if created:
                 user.set_password(password)
-                user.first_name = str(account.id)
-                user.last_name = account.__class__.__name__
+                user.first_name = account.fullname
                 user.is_active = True
                 user.email = account.email or ''
                 if isinstance(account, SystemUser):
@@ -57,9 +56,8 @@ class LoginUserBackend(object):
     
     def get_user(self, user_id):
         try:
-            
             user = User.objects.get(pk=user_id)
-            account = get_account(id=user.first_name, username=user.username) 
+            account = get_account(username=user.username) 
             user.account = account
             return user
         except Exception, e:
