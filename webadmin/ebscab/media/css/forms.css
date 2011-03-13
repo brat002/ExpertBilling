@@ -155,7 +155,7 @@ form div.error ul.errorlist li {
 
 /* EXTRA STYLES */
 .help {
- 	background: url(../img/icons/icon-unknown.gif) no-repeat scroll 0 2px;
+ 	background: url(../img/icons/icon-unknown.gif) no-repeat scroll 1px 2px;
 	 font-size: 10px;
 	 padding: 0 0 0 12px;
 	 margin: 0;
