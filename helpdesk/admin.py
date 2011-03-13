@@ -1,7 +1,9 @@
 from django.contrib import admin
+from django.contrib.admin.sites import AdminSite
 from helpdesk.models import Queue, Ticket, FollowUp, PreSetReply, KBCategory
 from helpdesk.models import EscalationExclusion, EmailTemplate, KBItem
 from helpdesk.models import TicketChange, Attachment, IgnoreEmail
+from django.utils.translation import ugettext as _
 
 class QueueAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'email_address')
@@ -24,12 +26,25 @@ class KBItemAdmin(admin.ModelAdmin):
     list_display = ('category', 'title', 'last_updated',)
     list_display_links = ('title',)
 
-admin.site.register(Ticket, TicketAdmin)
-admin.site.register(Queue, QueueAdmin)
-admin.site.register(FollowUp, FollowUpAdmin)
-admin.site.register(PreSetReply)
-admin.site.register(EscalationExclusion)
-admin.site.register(EmailTemplate)
-admin.site.register(KBCategory)
-admin.site.register(KBItem, KBItemAdmin)
-admin.site.register(IgnoreEmail)
+
+class HelpDeskAdminSite(AdminSite):
+    def __init__(self, *args, **kwargs):
+        super(HelpDeskAdminSite, self).__init__(*args, **kwargs)
+        self.root_path = '/helpdesk/admin'
+        self.app_name = 'helpdesk'
+    
+    def index(self, request, extra_context=None):
+        extra_context = {'title':u""}
+        return super(HelpDeskAdminSite, self).index(request, extra_context)
+
+site = HelpDeskAdminSite()
+
+site.register(Ticket, TicketAdmin)
+site.register(Queue, QueueAdmin)
+site.register(FollowUp, FollowUpAdmin)
+site.register(PreSetReply)
+site.register(EscalationExclusion)
+site.register(EmailTemplate)
+site.register(KBCategory)
+site.register(KBItem, KBItemAdmin)
+site.register(IgnoreEmail)

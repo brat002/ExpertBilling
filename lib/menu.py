@@ -34,7 +34,10 @@ class Menu(object):
         self.items.append({
             'name': reverse_conf.view_name, # url name from urls.py
             'verbose_name': verbose_name,
-            'url': reverse(reverse_conf.view_name, args=reverse_conf.args, kwargs=reverse_conf.kwargs),
+            'url': reverse_conf.view_name.startswith("/") \
+                   and reverse_conf.view_name \
+                   or reverse(reverse_conf.view_name, \
+                              args=reverse_conf.args, kwargs=reverse_conf.kwargs),
             'is_current': self.check_current(reverse_conf),
             'attrs': self.flatten_attrs(attrs)
         })

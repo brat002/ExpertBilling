@@ -1,0 +1,7 @@
+{% extends 'admin/base.html' %}
+{% load i18n %}
+{% block branding %}<h1 class="title">{% trans "Управление конфигурацией" %}</h1>{% endblock %}
+{% block userlinks %}
+<strong>{{ user.account.username }}</strong>. / 
+<a href="/helpdesk/dashboard/">{% trans 'Log out' %}</a>
+{% endblock %}

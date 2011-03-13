@@ -1,9 +1,11 @@
 import os
 from django.conf import settings
 from django.conf.urls.defaults import *
-from django.contrib import admin
+#from django.contrib import admin
 
-admin.autodiscover()
+#admin.autodiscover()
+
+from helpdesk import admin as helpdesk_admin
 
 urlpatterns = patterns('',
     # Example:
@@ -11,7 +13,7 @@ urlpatterns = patterns('',
     #(r'^$','ebscab.billing.views.index'),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     # Uncomment this for admin:
-    ('^admin/(.*)', admin.site.root),
+    url('^helpdesk/admin/(.*)', helpdesk_admin.site.root, name='helpdesk_admin'),
     #(r'^webmoney/', include('webmoney.urls')),
      #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
      #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
