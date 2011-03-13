@@ -145,6 +145,7 @@ PERSONAL_AREA_STAFF_MENU = [
     ('helpdesk_list', u"Поддержка"),
     ('helpdesk_submit', u"Создать запрос"),
     ('helpdesk_report_index', u"Статистика"),
+    ('/helpdesk/admin/', u"Настройки"),
     ('account_logout', u'Выход'),
 ]
 

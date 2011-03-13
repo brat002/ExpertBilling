@@ -120,3 +120,63 @@ TCPException: READ FAILED!
 2011-03-09 15:35:46,831 DEBUG    RPC: loaded data: ('activate_pay_card', ('CARD_ACTIVATED',))
 2011-03-09 15:35:46,832 DEBUG    RPC: get_process_data: serialize time: 0.0
 2011-03-09 15:35:46,832 DEBUG    RPC: get_process_data: objectify time: 0.0
+2011-03-13 15:49:32,095 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 15:49:32,111 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 15:49:32,118 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 15:49:48,013 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 15:49:48,017 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 15:49:48,021 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:15:32,251 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:15:32,260 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:15:32,264 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:21:19,105 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:21:19,110 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:21:19,116 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:21:44,222 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:21:44,234 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:21:44,243 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:22:38,749 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:22:38,758 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:22:38,765 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:22:40,616 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:22:40,621 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:22:40,624 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:22:59,467 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:22:59,474 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:22:59,478 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:24:45,268 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:24:45,273 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:24:45,278 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:24:49,403 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:24:49,410 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:24:49,413 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:29:28,726 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:29:28,732 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:29:28,735 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:29:30,584 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:29:30,589 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:29:30,592 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:29:32,841 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:29:32,850 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:29:32,855 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:29:35,490 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:29:35,497 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:29:35,501 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:29:37,420 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:29:37,424 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:29:37,428 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:30:19,792 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:30:19,797 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:30:19,800 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:30:28,130 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:30:28,135 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:30:28,139 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:30:30,089 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:30:30,093 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:30:30,097 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:30:31,457 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:30:31,463 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:30:31,467 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
+2011-03-13 16:47:13,511 DEBUG    get_account with {'username': u'admin', 'id': u'1'}
+2011-03-13 16:47:13,515 DEBUG    An error occured: DoesNotExist('Account matching query does not exist.',)
+2011-03-13 16:47:13,519 DEBUG    Found for model <class 'ebscab.billservice.models.SystemUser'>
