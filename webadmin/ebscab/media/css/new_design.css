@@ -476,7 +476,10 @@ a.statistic-img {
 	background:url('../img/statistic.gif') no-repeat -6px 0;
 	width:100%;
 }
-
+a.helpdesk-img {
+	background:url('../img/helpdesk.gif') no-repeat -6px 0;
+	width:100%;
+}
 
 a.user-img:Hover, a.user-img-active {
 	background:url('../img/user_on.gif') no-repeat center top;
@@ -518,6 +521,10 @@ a.services-img:Hover, a.services-img-active {
 }
 a.statistic-img:Hover, a.statistic-img-active {
 	background:url('../img/statistic_on.gif') no-repeat -6px 0;
+	width:100%;
+}
+a.helpdesk-img:hover, a.helpdesk-img-active {
+	background:url('../img/helpdesk_on.gif') no-repeat -6px 0;
 	width:100%;
 }
 
