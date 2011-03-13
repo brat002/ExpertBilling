@@ -10,9 +10,9 @@ from django.utils.translation import ugettext_lazy as _
 # (view_name, verbose)
 PERSONAL_AREA_MENU = [
     #('account_profile', _(u'Profile')),
-    ('helpdesk_account_tickets', _(u'Support')),
-    ('helpdesk_account_tickets_add', _(u'Add ticket')),
-    ('billservice_index', _(u'View site')),
+    ('helpdesk_account_tickets', u'Список запросов'),
+    ('helpdesk_account_tickets_add', u'Добавить запрос'),
+    ('billservice_index', u'В кабинет'),
     #('account_logout', _(u'Logout')),
 ]
 # check for django-tagging support
@@ -20,8 +20,8 @@ HAS_TAG_SUPPORT = 'tagging' in settings.INSTALLED_APPS
 
 
 try:
-        import tagging
+    import tagging
 except ImportError:
-        HAS_TAG_SUPPORT = False
+    HAS_TAG_SUPPORT = False
         
 
