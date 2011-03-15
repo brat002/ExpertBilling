@@ -17,7 +17,10 @@ import socket
 from reports.bpreportedit import bpReportEdit
 import thread
 import time
-
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
 
 #TODO: заменить сообщение о пустой выборке пустой картинкой
 _xmlpath = "reports/xml"
@@ -790,235 +793,315 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.start_date = datetime.datetime.now()
         self.end_date = datetime.datetime.now()
         
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,381,450).size()).expandedTo(self.minimumSizeHint()))
-
+        self.resize(452, 465)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.tabWidget = QtGui.QTabWidget(self)
-        self.tabWidget.setGeometry(QtCore.QRect(0,8,381,391))
-        self.tabWidget.setObjectName("tabWidget")
+        self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
+        self.tab = QtGui.QWidget()
+        self.tab.setObjectName(_fromUtf8("tab"))
+        self.gridLayout_6 = QtGui.QGridLayout(self.tab)
+        self.gridLayout_6.setObjectName(_fromUtf8("gridLayout_6"))
+        self.groupBox_timeperiod = QtGui.QGroupBox(self.tab)
+        self.groupBox_timeperiod.setObjectName(_fromUtf8("groupBox_timeperiod"))
+        self.gridLayout_4 = QtGui.QGridLayout(self.groupBox_timeperiod)
+        self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
+        self.label_date_start = QtGui.QLabel(self.groupBox_timeperiod)
+        self.label_date_start.setObjectName(_fromUtf8("label_date_start"))
+        self.gridLayout_4.addWidget(self.label_date_start, 0, 0, 1, 1)
+        self.dateTimeEdit_date_start = QtGui.QDateTimeEdit(self.groupBox_timeperiod)
+        self.dateTimeEdit_date_start.setCalendarPopup(True)
+        self.dateTimeEdit_date_start.setObjectName(_fromUtf8("dateTimeEdit_date_start"))
+        self.gridLayout_4.addWidget(self.dateTimeEdit_date_start, 0, 1, 1, 1)
+        self.label_date_end = QtGui.QLabel(self.groupBox_timeperiod)
+        self.label_date_end.setObjectName(_fromUtf8("label_date_end"))
+        self.gridLayout_4.addWidget(self.label_date_end, 1, 0, 1, 1)
+        self.dateTimeEdit_date_end = QtGui.QDateTimeEdit(self.groupBox_timeperiod)
+        self.dateTimeEdit_date_end.setCalendarPopup(True)
+        self.dateTimeEdit_date_end.setObjectName(_fromUtf8("dateTimeEdit_date_end"))
+        self.gridLayout_4.addWidget(self.dateTimeEdit_date_end, 1, 1, 1, 1)
+        self.gridLayout_6.addWidget(self.groupBox_timeperiod, 0, 0, 1, 1)
 
-        self.general_tab = QtGui.QWidget()
-        self.general_tab.setObjectName("general_tab")
-
-        self.nas_label = QtGui.QLabel(self.general_tab)
-        self.nas_label.setGeometry(QtCore.QRect(10,70,86,20))
-        self.nas_label.setObjectName("nas_label")
-
-        self.to_label = QtGui.QLabel(self.general_tab)
-        self.to_label.setGeometry(QtCore.QRect(10,36,82,20))
-        self.to_label.setObjectName("to_label")
-
-        self.nas_comboBox = QtGui.QComboBox(self.general_tab)
-        self.nas_comboBox.setGeometry(QtCore.QRect(100,70,134,20))
-        self.nas_comboBox.setObjectName("nas_comboBox")
-
-        self.to_dateTimeEdit = QtGui.QDateTimeEdit(self.general_tab)
-        self.to_dateTimeEdit.setGeometry(QtCore.QRect(100,36,134,20))
-        self.to_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
-        self.to_dateTimeEdit.setCalendarPopup(True)
-        self.to_dateTimeEdit.setObjectName("to_dateTimeEdit")
-        self.to_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-
-        self.all_users_listWidget = QtGui.QListWidget(self.general_tab)
-        self.all_users_listWidget.setGeometry(QtCore.QRect(10,120,161,192))
-        self.all_users_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        self.all_users_listWidget.setSelectionRectVisible(True)
-        self.all_users_listWidget.setObjectName("all_users_listWidget")
-
-        self.selected_users_listWidget = QtGui.QListWidget(self.general_tab)
-        self.selected_users_listWidget.setGeometry(QtCore.QRect(210,120,161,192))
-        self.selected_users_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        self.selected_users_listWidget.setObjectName("selected_users_listWidget")
-
-        self.from_dateTimeEdit = QtGui.QDateTimeEdit(self.general_tab)
-        self.from_dateTimeEdit.setGeometry(QtCore.QRect(100,10,134,20))
-        self.from_dateTimeEdit.setMinimumDate(QtCore.QDate(2008,1,1))
-        self.from_dateTimeEdit.setCalendarPopup(True)
-        self.from_dateTimeEdit.setObjectName("from_dateTimeEdit")
-        self.from_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-
-        self.from_label = QtGui.QLabel(self.general_tab)
-        self.from_label.setGeometry(QtCore.QRect(10,10,82,20))
-        self.from_label.setObjectName("from_label")
-
-        self.all_users_label = QtGui.QLabel(self.general_tab)
-        self.all_users_label.setGeometry(QtCore.QRect(10,100,161,16))
-        self.all_users_label.setObjectName("all_users_label")
-
-        self.selected_users_label = QtGui.QLabel(self.general_tab)
-        self.selected_users_label.setGeometry(QtCore.QRect(210,100,161,16))
-        self.selected_users_label.setObjectName("selected_users_label")
-
-        self.remove_user_toolButton = QtGui.QToolButton(self.general_tab)
-        self.remove_user_toolButton.setGeometry(QtCore.QRect(181,207,21,20))
-        self.remove_user_toolButton.setObjectName("remove_user_toolButton")
-
-        self.select_user_toolButton = QtGui.QToolButton(self.general_tab)
-        self.select_user_toolButton.setGeometry(QtCore.QRect(181,181,21,20))
-        self.select_user_toolButton.setObjectName("select_user_toolButton")
-
-        self.with_grouping_checkBox = QtGui.QCheckBox(self.general_tab)
-        self.with_grouping_checkBox.setGeometry(QtCore.QRect(10,320,231,19))
-        self.with_grouping_checkBox.setObjectName("with_grouping_checkBox")
-
-        self.order_by_desc = QtGui.QCheckBox(self.general_tab)
-        self.order_by_desc.setGeometry(QtCore.QRect(10,340,231,19))
-        self.order_by_desc.setObjectName("order_by_desc")
-        self.tabWidget.addTab(self.general_tab,"")
-
-        self.classes_tab = QtGui.QWidget()
-        self.classes_tab.setObjectName("classes_tab")
-
-        self.selected_classes_listWidget = QtGui.QListWidget(self.classes_tab)
-        self.selected_classes_listWidget.setGeometry(QtCore.QRect(210,20,161,291))
-        self.selected_classes_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        self.selected_classes_listWidget.setObjectName("selected_classes_listWidget")
-
-        self.all_classes_listWidget = QtGui.QListWidget(self.classes_tab)
-        self.all_classes_listWidget.setGeometry(QtCore.QRect(10,20,161,291))
-        self.all_classes_listWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        self.all_classes_listWidget.setSelectionRectVisible(True)
-        self.all_classes_listWidget.setObjectName("all_classes_listWidget")
-
-        self.all_classes_label = QtGui.QLabel(self.classes_tab)
-        self.all_classes_label.setGeometry(QtCore.QRect(10,0,161,16))
-        self.all_classes_label.setObjectName("all_classes_label")
-
-        self.selected_classes_label = QtGui.QLabel(self.classes_tab)
-        self.selected_classes_label.setGeometry(QtCore.QRect(210,0,161,16))
-        self.selected_classes_label.setObjectName("selected_classes_label")
-
-        self.select_class_toolButton = QtGui.QToolButton(self.classes_tab)
-        self.select_class_toolButton.setGeometry(QtCore.QRect(181,111,21,20))
-        self.select_class_toolButton.setObjectName("select_class_toolButton")
-
-        self.remove_class_toolButton = QtGui.QToolButton(self.classes_tab)
-        self.remove_class_toolButton.setGeometry(QtCore.QRect(181,137,21,20))
-        self.remove_class_toolButton.setObjectName("remove_class_toolButton")
-        self.tabWidget.addTab(self.classes_tab,"")
-
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            self.dateTimeEdit_date_start.setDateTime(settings.value("reportprop_date_start", QtCore.QVariant(QtCore.QDateTime(2011,1,1,0,0))).toDateTime())
+            self.dateTimeEdit_date_end.setDateTime(settings.value("reportprop_date_end", QtCore.QVariant(QtCore.QDateTime(2012,1,1,0,0))).toDateTime())
+        except Exception, ex:
+            print "Transactions settings error: ", ex
+            
+        self.groupBox_accounts = QtGui.QGroupBox(self.tab)
+        self.groupBox_accounts.setObjectName(_fromUtf8("groupBox_accounts"))
+        self.gridLayout_5 = QtGui.QGridLayout(self.groupBox_accounts)
+        self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
+        self.listWidget_accounts_all = QtGui.QListWidget(self.groupBox_accounts)
+        self.listWidget_accounts_all.setObjectName(_fromUtf8("listWidget_accounts_all"))
+        self.gridLayout_5.addWidget(self.listWidget_accounts_all, 1, 0, 4, 1)
+        spacerItem = QtGui.QSpacerItem(20, 69, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_5.addItem(spacerItem, 1, 1, 1, 1)
+        self.listWidget_accounts_selected = QtGui.QListWidget(self.groupBox_accounts)
+        self.listWidget_accounts_selected.setObjectName(_fromUtf8("listWidget_accounts_selected"))
+        self.gridLayout_5.addWidget(self.listWidget_accounts_selected, 1, 2, 4, 1)
+        self.toolButton_to_accounts_selected = QtGui.QToolButton(self.groupBox_accounts)
+        self.toolButton_to_accounts_selected.setObjectName(_fromUtf8("toolButton_to_accounts_selected"))
+        self.gridLayout_5.addWidget(self.toolButton_to_accounts_selected, 2, 1, 1, 1)
+        self.toolButton_from_accounts_selected = QtGui.QToolButton(self.groupBox_accounts)
+        self.toolButton_from_accounts_selected.setObjectName(_fromUtf8("toolButton_from_accounts_selected"))
+        self.gridLayout_5.addWidget(self.toolButton_from_accounts_selected, 3, 1, 1, 1)
+        spacerItem1 = QtGui.QSpacerItem(20, 69, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_5.addItem(spacerItem1, 4, 1, 1, 1)
+        self.label_accounts_all = QtGui.QLabel(self.groupBox_accounts)
+        self.label_accounts_all.setObjectName(_fromUtf8("label_accounts_all"))
+        self.gridLayout_5.addWidget(self.label_accounts_all, 0, 0, 1, 1)
+        self.label_accounts_selected = QtGui.QLabel(self.groupBox_accounts)
+        self.label_accounts_selected.setObjectName(_fromUtf8("label_accounts_selected"))
+        self.gridLayout_5.addWidget(self.label_accounts_selected, 0, 2, 1, 1)
+        self.gridLayout_6.addWidget(self.groupBox_accounts, 1, 0, 1, 1)
+        self.tabWidget.addTab(self.tab, _fromUtf8(""))
+        self.tab_2 = QtGui.QWidget()
+        self.tab_2.setObjectName(_fromUtf8("tab_2"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.tab_2)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.listWidget_groups_all = QtGui.QListWidget(self.tab_2)
+        self.listWidget_groups_all.setObjectName(_fromUtf8("listWidget_groups_all"))
+        self.gridLayout_2.addWidget(self.listWidget_groups_all, 1, 0, 4, 1)
+        self.toolButton_to_groups_selected = QtGui.QToolButton(self.tab_2)
+        self.toolButton_to_groups_selected.setObjectName(_fromUtf8("toolButton_to_groups_selected"))
+        self.gridLayout_2.addWidget(self.toolButton_to_groups_selected, 2, 1, 1, 1)
+        self.listWidget_groups_selected = QtGui.QListWidget(self.tab_2)
+        self.listWidget_groups_selected.setObjectName(_fromUtf8("listWidget_groups_selected"))
+        self.gridLayout_2.addWidget(self.listWidget_groups_selected, 1, 2, 4, 1)
+        self.toolButton_from_groups_selected = QtGui.QToolButton(self.tab_2)
+        self.toolButton_from_groups_selected.setObjectName(_fromUtf8("toolButton_from_groups_selected"))
+        self.gridLayout_2.addWidget(self.toolButton_from_groups_selected, 3, 1, 1, 1)
+        spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_2.addItem(spacerItem2, 1, 1, 1, 1)
+        spacerItem3 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_2.addItem(spacerItem3, 4, 1, 1, 1)
+        self.label_groups_all = QtGui.QLabel(self.tab_2)
+        self.label_groups_all.setObjectName(_fromUtf8("label_groups_all"))
+        self.gridLayout_2.addWidget(self.label_groups_all, 0, 0, 1, 1)
+        self.label_groups_selected = QtGui.QLabel(self.tab_2)
+        self.label_groups_selected.setObjectName(_fromUtf8("label_groups_selected"))
+        self.gridLayout_2.addWidget(self.label_groups_selected, 0, 2, 1, 1)
+        self.tabWidget.addTab(self.tab_2, _fromUtf8(""))
+        self.tab_3 = QtGui.QWidget()
+        self.tab_3.setObjectName(_fromUtf8("tab_3"))
+        self.gridLayout_3 = QtGui.QGridLayout(self.tab_3)
+        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
+        self.listWidget_classes_all = QtGui.QListWidget(self.tab_3)
+        self.listWidget_classes_all.setObjectName(_fromUtf8("listWidget_classes_all"))
+        self.gridLayout_3.addWidget(self.listWidget_classes_all, 1, 0, 4, 1)
+        #self.tab_3.setHidden(True)
+        spacerItem4 = QtGui.QSpacerItem(20, 137, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_3.addItem(spacerItem4, 1, 1, 1, 1)
+        self.listWidget_classes_selected = QtGui.QListWidget(self.tab_3)
+        self.listWidget_classes_selected.setObjectName(_fromUtf8("listWidget_classes_selected"))
+        self.gridLayout_3.addWidget(self.listWidget_classes_selected, 1, 2, 4, 1)
+        self.toolButton_to_classes_selected = QtGui.QToolButton(self.tab_3)
+        self.toolButton_to_classes_selected.setObjectName(_fromUtf8("toolButton_to_classes_selected"))
+        self.gridLayout_3.addWidget(self.toolButton_to_classes_selected, 2, 1, 1, 1)
+        self.toolButton_from_classes_selected = QtGui.QToolButton(self.tab_3)
+        self.toolButton_from_classes_selected.setObjectName(_fromUtf8("toolButton_from_classes_selected"))
+        self.gridLayout_3.addWidget(self.toolButton_from_classes_selected, 3, 1, 1, 1)
+        spacerItem5 = QtGui.QSpacerItem(20, 137, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_3.addItem(spacerItem5, 4, 1, 1, 1)
+        self.label_classes_all = QtGui.QLabel(self.tab_3)
+        self.label_classes_all.setObjectName(_fromUtf8("label_classes_all"))
+        self.gridLayout_3.addWidget(self.label_classes_all, 0, 0, 1, 1)
+        self.label_classes_selected = QtGui.QLabel(self.tab_3)
+        self.label_classes_selected.setObjectName(_fromUtf8("label_classes_selected"))
+        self.gridLayout_3.addWidget(self.label_classes_selected, 0, 2, 1, 1)
+        #self.tabWidget.addTab(self.tab_3, _fromUtf8(""))
+        self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(100,410,171,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
         
+        self.listWidget_accounts_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_accounts_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_classes_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_classes_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_groups_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_groups_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.retranslateUi()
         
         self.tabWidget.setCurrentIndex(0)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
         
-        QtCore.QObject.connect(self.select_user_toolButton, QtCore.SIGNAL("clicked()"),self.addUser)
-        QtCore.QObject.connect(self.remove_user_toolButton, QtCore.SIGNAL("clicked()"),self.delUser)
+        QtCore.QObject.connect(self.toolButton_to_accounts_selected, QtCore.SIGNAL("clicked()"),self.addUser)
+        QtCore.QObject.connect(self.toolButton_from_accounts_selected, QtCore.SIGNAL("clicked()"),self.delUser)
 
-        QtCore.QObject.connect(self.all_users_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.addUser)
-        QtCore.QObject.connect(self.selected_users_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.delUser)        
+        QtCore.QObject.connect(self.listWidget_accounts_all, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.addUser)
+        QtCore.QObject.connect(self.listWidget_accounts_selected, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.delUser)        
         
 
-        QtCore.QObject.connect(self.select_class_toolButton, QtCore.SIGNAL("clicked()"), self.addClass)
-        QtCore.QObject.connect(self.remove_class_toolButton, QtCore.SIGNAL("clicked()"), self.delClass)
+        QtCore.QObject.connect(self.toolButton_to_classes_selected, QtCore.SIGNAL("clicked()"), self.addClass)
+        QtCore.QObject.connect(self.toolButton_from_classes_selected, QtCore.SIGNAL("clicked()"), self.delClass)
         
-        QtCore.QObject.connect(self.all_classes_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addClass)
-        QtCore.QObject.connect(self.selected_classes_listWidget, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delClass)
-
+        QtCore.QObject.connect(self.listWidget_classes_all, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addClass)
+        QtCore.QObject.connect(self.listWidget_classes_selected, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delClass)
+        
+        QtCore.QObject.connect(self.toolButton_to_groups_selected, QtCore.SIGNAL("clicked()"), self.addGroup)
+        QtCore.QObject.connect(self.toolButton_from_groups_selected, QtCore.SIGNAL("clicked()"), self.delGroup)
+        
+        QtCore.QObject.connect(self.listWidget_groups_all, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addGroup)
+        QtCore.QObject.connect(self.listWidget_groups_selected, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delGroup)
+        
+        
+        self.setTabOrder(self.tabWidget, self.dateTimeEdit_date_start)
+        self.setTabOrder(self.dateTimeEdit_date_start, self.dateTimeEdit_date_end)
+        self.setTabOrder(self.dateTimeEdit_date_end, self.listWidget_accounts_all)
+        self.setTabOrder(self.listWidget_accounts_all, self.toolButton_to_accounts_selected)
+        self.setTabOrder(self.toolButton_to_accounts_selected, self.toolButton_from_accounts_selected)
+        self.setTabOrder(self.toolButton_from_accounts_selected, self.listWidget_accounts_selected)
+        self.setTabOrder(self.listWidget_accounts_selected, self.buttonBox)
+        self.setTabOrder(self.buttonBox, self.listWidget_groups_all)
+        self.setTabOrder(self.listWidget_groups_all, self.toolButton_to_groups_selected)
+        self.setTabOrder(self.toolButton_to_groups_selected, self.toolButton_from_groups_selected)
+        self.setTabOrder(self.toolButton_from_groups_selected, self.listWidget_groups_selected)
+        self.setTabOrder(self.listWidget_groups_selected, self.listWidget_classes_all)
+        self.setTabOrder(self.listWidget_classes_all, self.toolButton_to_classes_selected)
+        self.setTabOrder(self.toolButton_to_classes_selected, self.toolButton_from_classes_selected)
+        self.setTabOrder(self.toolButton_from_classes_selected, self.listWidget_classes_selected)
+        
         self.fixtures()
         #QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Настройки отчёта", None, QtGui.QApplication.UnicodeUTF8))
-        self.select_user_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
-        self.remove_user_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
-        self.nas_label.setText(QtGui.QApplication.translate("Dialog", "Сервер доступа:", None, QtGui.QApplication.UnicodeUTF8))
-        self.to_label.setText(QtGui.QApplication.translate("Dialog", "До:", None, QtGui.QApplication.UnicodeUTF8))
-        self.to_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
-        self.from_dateTimeEdit.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
-        self.from_label.setText(QtGui.QApplication.translate("Dialog", "От:", None, QtGui.QApplication.UnicodeUTF8))
-        self.all_users_label.setText(QtGui.QApplication.translate("Dialog", "Доступные пользователи", None, QtGui.QApplication.UnicodeUTF8))
-        self.selected_users_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные пользователи", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.general_tab), QtGui.QApplication.translate("Dialog", "Общие настройки", None, QtGui.QApplication.UnicodeUTF8))
-        self.select_class_toolButton.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
-        self.remove_class_toolButton.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
-        self.all_classes_label.setText(QtGui.QApplication.translate("Dialog", "Доступные классы", None, QtGui.QApplication.UnicodeUTF8))
-        self.selected_classes_label.setText(QtGui.QApplication.translate("Dialog", "Выбранные классы", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.classes_tab), QtGui.QApplication.translate("Dialog", "Классы трафика", None, QtGui.QApplication.UnicodeUTF8))
-        self.with_grouping_checkBox.setText(QtGui.QApplication.translate("Dialog", "С группировкой", None, QtGui.QApplication.UnicodeUTF8))
-        self.order_by_desc.setText(QtGui.QApplication.translate("Dialog", "Выводить в обратном порядке", None, QtGui.QApplication.UnicodeUTF8))
-        #self.with_grouping_checkBox.setCheckState(QtCore.Qt.Checked)
-        #self.order_by_desc.setCheckState(QtCore.Qt.Checked)
+        self.groupBox_timeperiod.setTitle(QtGui.QApplication.translate("Dialog", "Период", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_date_start.setText(QtGui.QApplication.translate("Dialog", "с", None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit_date_start.setDisplayFormat(QtGui.QApplication.translate("Dialog", "dd.MM.yy HH:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_date_end.setText(QtGui.QApplication.translate("Dialog", "по", None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit_date_end.setDisplayFormat(QtGui.QApplication.translate("Dialog", "dd.MM.yy HH:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_accounts.setTitle(QtGui.QApplication.translate("Dialog", "Пользователи", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_to_accounts_selected.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_from_accounts_selected.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_accounts_all.setText(QtGui.QApplication.translate("Dialog", "Все", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_accounts_selected.setText(QtGui.QApplication.translate("Dialog", "Выбранные", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_to_groups_selected.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_from_groups_selected.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_groups_all.setText(QtGui.QApplication.translate("Dialog", "Все", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_groups_selected.setText(QtGui.QApplication.translate("Dialog", "Выбранные", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("Dialog", "Группы", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_to_classes_selected.setText(QtGui.QApplication.translate("Dialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_from_classes_selected.setText(QtGui.QApplication.translate("Dialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_classes_all.setText(QtGui.QApplication.translate("Dialog", "Все", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_classes_selected.setText(QtGui.QApplication.translate("Dialog", "Выбранные", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("Dialog", "Классы", None, QtGui.QApplication.UnicodeUTF8))
+
         
     def fixtures(self):
-        users = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
+        accounts = self.connection.get_models("billservice_account", fields=['id', 'username'], order={'username':'ASC'})
         self.connection.commit()
-        for user in users:
+        for account in accounts:
             item = QtGui.QListWidgetItem()
-            item.setText(user.username)
-            item.id = user.id
-            self.all_users_listWidget.addItem(item)
+            item.setText(account.username)
+            item.id = account.id
+            self.listWidget_accounts_all.addItem(item)
             
         
-        classes = self.connection.sql("SELECT * FROM nas_trafficclass ORDER BY name ASC")
+        groups = self.connection.get_models("billservice_group", fields=['id', 'name'], order={'name':'ASC'})
         self.connection.commit()
-        for clas in classes:
+        for group in groups:
             item = QtGui.QListWidgetItem()
-            item.setText(clas.name)
-            item.id = clas.id
-            self.all_classes_listWidget.addItem(item)
+            item.setText(group.name)
+            item.id = group.id
+            self.listWidget_groups_all.addItem(item)
+
+        #classes = self.connection.get_models("nas_trafficclass", fields=['id', 'name'], order={'name':'ASC'})
+        #self.connection.commit()
+        #for tclass in classes:
+        #    item = QtGui.QListWidgetItem()
+        #    item.setText(tclass.name)
+        #    item.id = tclass.id
+        #    self.listWidget_classes_all.addItem(item)
+
             
-        nasses = self.connection.sql("SELECT * FROM nas_nas")
-        self.connection.commit()
-        self.nas_comboBox.addItem('')
-        for nas in nasses:
-            self.nas_comboBox.addItem(nas.name)
+        #nasses = self.connection.sql("SELECT * FROM nas_nas")
+        #self.connection.commit()
+        #self.nas_comboBox.addItem('')
+        #for nas in nasses:
+        #    self.nas_comboBox.addItem(nas.name)
         
     def addUser(self):
-        selected_items = self.all_users_listWidget.selectedItems()
+        selected_items = self.listWidget_accounts_all.selectedItems()
         
         for item in selected_items:
-            self.all_users_listWidget.takeItem(self.all_users_listWidget.row(item))
-            self.selected_users_listWidget.addItem(item)
+            self.listWidget_accounts_all.takeItem(self.listWidget_accounts_all.row(item))
+            self.listWidget_accounts_selected.addItem(item)
             
-        self.selected_users_listWidget.sortItems()
+        self.listWidget_accounts_selected.sortItems()
         
     def delUser(self):
-        selected_items = self.selected_users_listWidget.selectedItems()
+        selected_items = self.listWidget_accounts_selected.selectedItems()
         
         for item in selected_items:
-            self.selected_users_listWidget.takeItem(self.selected_users_listWidget.row(item))
-            self.all_users_listWidget.addItem(item)
-        self.all_users_listWidget.sortItems()
+            self.listWidget_accounts_selected.takeItem(self.listWidget_accounts_selected.row(item))
+            self.listWidget_accounts_all.addItem(item)
+        self.listWidget_accounts_all.sortItems()
         
     def addClass(self):
-        selected_items = self.all_classes_listWidget.selectedItems()
+        selected_items = self.listWidget_classes_all.selectedItems()
         #print 1
         for item in selected_items:
-            self.all_classes_listWidget.takeItem(self.all_classes_listWidget.row(item))
-            self.selected_classes_listWidget.addItem(item)
-        self.selected_classes_listWidget.sortItems()
+            self.listWidget_classes_all.takeItem(self.listWidget_classes_all.row(item))
+            self.listWidget_classes_selected.addItem(item)
+        self.listWidget_classes_selected.sortItems()
         
     def delClass(self):
-        selected_items = self.selected_classes_listWidget.selectedItems()
+        selected_items = self.listWidget_classes_selected.selectedItems()
         #print 2
         for item in selected_items:
-            self.selected_classes_listWidget.takeItem(self.selected_classes_listWidget.row(item))
-            self.all_classes_listWidget.addItem(item)
-        self.all_classes_listWidget.sortItems()
+            self.listWidget_classes_selected.takeItem(self.listWidget_classes_selected.row(item))
+            self.listWidget_classes_all.addItem(item)
+        self.listWidget_classes_all.sortItems()
         
+    def addGroup(self):
+        selected_items = self.listWidget_groups_all.selectedItems()
+        #print 1
+        for item in selected_items:
+            self.listWidget_groups_all.takeItem(self.listWidget_groups_all.row(item))
+            self.listWidget_groups_selected.addItem(item)
+        self.listWidget_groups_selected.sortItems()
         
+    def delGroup(self):
+        selected_items = self.listWidget_groups_selected.selectedItems()
+        #print 2
+        for item in selected_items:
+            self.listWidget_groups_selected.takeItem(self.listWidget_groups_selected.row(item))
+            self.listWidget_groups_all.addItem(item)
+        self.listWidget_groups_all.sortItems()
+            
     def accept(self):
-        self.users = []
+        self.accounts = []
         self.classes = []
+        self.groups = []
         self.nas = None
-        for x in xrange(0, self.selected_users_listWidget.count()):
-            self.users.append(self.selected_users_listWidget.item(x).id)
+        for x in xrange(0, self.listWidget_accounts_selected.count()):
+            self.accounts.append(self.listWidget_accounts_selected.item(x).id)
             
-        for x in xrange(0, self.selected_classes_listWidget.count()):
-            self.classes.append(self.selected_classes_listWidget.item(x).id)
+        for x in xrange(0, self.listWidget_groups_selected.count()):
+            self.groups.append(self.listWidget_groups_selected.item(x).id)
             
-        if self.nas_comboBox.currentText()!='':
-            self.nas = self.connection.get("SELECT * FROM nas_nas WHERE name='%s'" % unicode(self.nas_comboBox.currentText()))
-            self.connection.commit()
-        self.start_date = self.from_dateTimeEdit.dateTime().toPyDateTime()
-        self.end_date = self.to_dateTimeEdit.dateTime().toPyDateTime()
+        if self.accounts==[] or self.groups==[]:
+            QtGui.QMessageBox.warning(self, u"Внимание!", u"Вы не указали аккаунты или группы")
+            return               
+
+        self.start_date = self.dateTimeEdit_date_start.dateTime().toPyDateTime()
+        self.end_date = self.dateTimeEdit_date_end.dateTime().toPyDateTime()
+        
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("reportprop_date_start", QtCore.QVariant(self.dateTimeEdit_date_start.dateTime()))
+            settings.setValue("reportprop_date_end", QtCore.QVariant(self.dateTimeEdit_date_end.dateTime()))
+        except Exception, ex:
+            print "Transactions settings save error: ", ex
+            
         QtGui.QDialog.accept(self)
         
         
@@ -1026,9 +1109,10 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
     def __init__(self, connection, parent):
         #columns_t0=['#', u'Аккаунт', u'Класс трафика', u'Протокол', u'Источник',  u'Получатель', u'Передано', u'Дата']
         columns_t0=['#', u'Аккаунт', u'Источник', u'Получатель', u'Передано',u'Дата']
-        columns_t1=[u'Класс', u'Принято',u'Передано', u'Сумма',''] 
+        columns_t1=[u'Аккаунт', u'Группа', u'Количество'] 
+        #columns_t2=[u'Аккаунт', u'Класс', u'Входящий', u'Исходящий']
         initargs = {"setname":"netflow_frame_header", "objname":"NetFlowReportEbsMDI", "winsize":(0,0,800,587), "wintitle":"Сетевая статистика"}
-        tabargs= [["tab0", columns_t0, "Детальная статистика"], ["tab1", columns_t1, "Сводная статистика"]]
+        tabargs= [["tab1", columns_t1, "Тарифицированный трафик"], ["tab0", columns_t0, "Детальная статистика"], ]
         self.child = ReportPropertiesDialog(connection = connection)
         self.used = False
         super(NetFlowReportEbs, self).__init__(connection, initargs, tabargs)
@@ -1102,6 +1186,8 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         
         self.tableWidget = self.tab0_tableWidget
         self.tableWidget_summary = self.tab1_tableWidget
+        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.tableWidget_summary.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         
     def retranslateUI(self, initargs, tabargs):
         super(NetFlowReportEbs, self).retranslateUI(initargs, tabargs)
@@ -1137,13 +1223,18 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         return value
         
     def configure(self):
-        if self.child.exec_()!=1:
-            return
-        if self.tabWidget.currentIndex()==0:
+
+        if self.tabWidget.currentIndex()==1:
+            self.child.tabWidget.setTabEnabled(1, False)
+            if self.child.exec_()!=1:
+                return            
             #self.current_page=0
             self.used = True
             self.refresh('start')
-        elif self.tabWidget.currentIndex()==1:
+        elif self.tabWidget.currentIndex()==0:
+            self.child.tabWidget.setTabEnabled(1, True)
+            if self.child.exec_()!=1:
+                return            
             self.refresh_summary()
         
     def addRowSummary(self, value, x, y, color=None, user=False):
@@ -1168,80 +1259,73 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
                 
     def refresh_summary(self):            
         sql_acc = ""
-        if len(self.child.users)>0:
-            sql_acc= """ AND bgs.account_id IN (%s) """ % ','.join(map(str, self.child.users))
-            
-        sql="""SELECT class.name AS name, class.color AS color, 
-                      SUM(bgs.classbytes[bgs.classes#class.id][1]) AS input_summ, SUM(bgs.classbytes[bgs.classes#class.id][2]) AS output_summ 
-                      FROM billservice_globalstat AS bgs
-                      JOIN nas_trafficclass as class ON (bgs.classes#class.id !=0)
-                      WHERE bgs.datetime BETWEEN '%s' AND '%s' %s
-            """ % (self.child.start_date, self.child.end_date, sql_acc)
+        sql_groups = ""
+        users = {}
+        for x in xrange(len(self.child.accounts)):
+                users[self.child.listWidget_accounts_selected.item(x).id] = unicode(self.child.listWidget_accounts_selected.item(x).text())
 
-        if len(self.child.classes)>0:
-            sql+=""" AND class.id IN (%s) """  % ','.join(map(str, self.child.classes))            
+        groups = {}
+        for x in xrange(len(self.child.groups)):
+                groups[self.child.listWidget_groups_selected.item(x).id] = unicode(self.child.listWidget_groups_selected.item(x).text())
+
+
+        if len(self.child.accounts)>0:
+            sql_acc= """ AND gpst.account_id IN (%s) """ % ','.join(map(str, self.child.accounts))
+
+        if len(self.child.groups)>0:
+            sql_groups= """ AND gpst.group_id IN (%s) """ % ','.join(map(str, self.child.groups))
+
+  
+        sql="""SELECT gpst.account_id, gpst.group_id, sum(gpst.bytes) as bytes 
+                      FROM billservice_groupstat AS gpst
+                      WHERE gpst.datetime BETWEEN '%s' AND '%s' %s %s
+            """ % (self.child.start_date, self.child.end_date, sql_acc, sql_groups)
+
                     
-        sql+="GROUP BY class.name,class.color;"
+        sql+="GROUP BY gpst.account_id,gpst.group_id;"
         
         #print sql
-        data = self.connection.sql(sql)
+        items = self.connection.sql(sql)
         self.connection.commit()
         i=0
         self.tableWidget_summary.clearContents()
-        classes_count = len(data)+1
-        self.tableWidget_summary.setRowCount(classes_count)
-        self.tableWidget_summary.setSpan(i,0,0,5)
-        self.addRowSummary(u"Общая статистика по классам", i, 0, color='#ffffff')
+        classes_count = len(items)+1
+        #self.tableWidget_summary.setRowCount(classes_count)
+        #self.tableWidget_summary.setSpan(i,0,0,5)
+        #self.addRowSummary(u"Общая статистика по группам", i, 0, color='#ffffff')
+        #i+=1
+        group_bytes = {}
+        bytes = 0
+        for item in items:
+            self.tableWidget_summary.insertRow(i)
+            self.addRowSummary(users.get(item.account_id), i, 0, user=True)
+            self.addRowSummary(groups.get(item.group_id), i, 1)
+            #self.tableWidget_summary.setSpan(i,0,0,5)
+            self.addRowSummary(humanable_bytes(item.bytes), i, 2)
+            
+            i+=1
+            if not group_bytes.get(item.group_id):
+                group_bytes[item.group_id]=0
+            
+            group_bytes[item.group_id]+= item.bytes
+            bytes+= item.bytes
+            
+        self.tableWidget_summary.insertRow(i)
         i+=1
-        for flow in data:
-            self.addRowSummary(flow.name, i, 0, color=flow.color)
-            self.addRowSummary(humanable_bytes(flow.input_summ), i, 1, color=flow.color)
-            self.addRowSummary(humanable_bytes(flow.output_summ), i, 2, color=flow.color)
-            self.addRowSummary(humanable_bytes(self.summ(flow.output_summ,flow.input_summ)), i, 3, color=flow.color)
-            self.addRowSummary(u'', i, 4, color=flow.color)
-            i+=1
-
-
-        if sql_acc:
-            if len(self.child.users)>0:
-                sql_acc= """ (%s) """ % ','.join(map(str, self.child.users))
-
-            sql="""SELECT account.username AS username , class.name AS name, class.color AS color, 
-                          SUM(bgs.classbytes[bgs.classes#class.id][1]) AS input_summ, SUM(bgs.classbytes[bgs.classes#class.id][2]) AS output_summ 
-                          FROM billservice_globalstat AS bgs 
-                          JOIN billservice_account as account ON bgs.account_id = account.id
-                          JOIN nas_trafficclass as class ON (bgs.classes#class.id !=0) 
-                          WHERE (bgs.datetime BETWEEN '%s' AND '%s') AND (account.id IN %s)             
-               """ % (self.child.start_date, self.child.end_date, sql_acc)
-    
-            if len(self.child.classes)>0:
-                sql+=""" AND class.id in (%s) """  % ','.join(map(str, self.child.classes))              
-                        
-            sql+="GROUP BY account.id, account.username, class.name, class.color ORDER BY account.id,class.name;"
-            
-            
-            data = self.connection.sql(sql)
-            self.connection.commit()
-            #i=0
-            self.tableWidget_summary.setRowCount(classes_count+len(data)+len(self.child.users)+1)
-            oldusername = ''
-            self.tableWidget_summary.setSpan(i,0,0,5)
-            self.addRowSummary(u"Подробно", i, 0, color='#ffffff')
-            i+=1
-            for flow in data:
-                if flow.username!=oldusername:
-                    self.tableWidget_summary.setRowHeight(i,22)
-                    self.tableWidget_summary.setSpan(i,0,0,5)
-                    self.addRowSummary(flow.username, i, 0, color='#ffffff', user=True)
-                    i+=1
-                self.addRowSummary(flow.name, i, 0, color=flow.color)
-                self.addRowSummary(humanable_bytes(flow.input_summ), i, 1, color=flow.color)
-                self.addRowSummary(humanable_bytes(flow.output_summ), i, 2, color=flow.color)
-                self.addRowSummary(humanable_bytes(self.summ(flow.output_summ,flow.input_summ)), i, 3, color=flow.color)
-                self.addRowSummary(u'', i, 4, color=flow.color)
-                oldusername=flow.username
-                i+=1 
         
+        for key in group_bytes:
+            self.tableWidget_summary.insertRow(i)
+            self.tableWidget_summary.setSpan(i,0,0,2)
+            
+            self.addRowSummary(u"Итого по группе %s" % groups.get(key), i, 0)
+            self.addRowSummary(humanable_bytes(group_bytes.get(key)), i, 2)
+            i+=1
+                
+        self.tableWidget_summary.insertRow(i)
+        self.tableWidget_summary.setSpan(i,0,0,2)
+        
+        self.addRowSummary(u"Итого", i, 0, color='#ffffff')
+        self.addRowSummary(humanable_bytes(bytes), i, 2, color='#ffffff')
         HeaderUtil.getHeader(self.setname+"_tab_1", self.tableWidget_summary)
 
                     
@@ -1251,15 +1335,15 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         i = 0
         c = 0
         users = {}
-        for x in xrange(0, self.child.selected_users_listWidget.count()):
-                users[self.child.selected_users_listWidget.item(x).id] = unicode(self.child.selected_users_listWidget.item(x).text())
+        for x in xrange(len(self.child.accounts)):
+                users[self.child.listWidget_accounts_selected.item(x).id] = unicode(self.child.listWidget_accounts_selected.item(x).text())
         if rep_command == 'start':
             
             
             icount = 0
             users_str = ''
             if len(self.child.users) > 0:
-                users_str = ','.join(map(str, self.child.users))                
+                users_str = ','.join(map(str, self.child.accounts))                
             if not users_str:
                 flows = self.connection.text_report(['start', self.child.start_date, self.child.end_date, ['none']])
             else:
