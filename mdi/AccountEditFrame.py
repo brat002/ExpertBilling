@@ -1237,8 +1237,8 @@ class AccountWindow(QtGui.QMainWindow):
         
         self.groupBox_management_info = QtGui.QGroupBox(self.tab_general)
         self.gridLayout_management = QtGui.QGridLayout(self.groupBox_management_info)
-        self.label_manager = QtGui.QLabel(self.groupBox_management_info)
-        self.gridLayout_management.addWidget(self.label_manager,0,0,1,1)
+        #self.label_manager = QtGui.QLabel(self.groupBox_management_info)
+        #self.gridLayout_management.addWidget(self.label_manager,0,0,1,1)
         self.comboBox_manager = QtGui.QComboBox(self.groupBox_management_info)
         self.gridLayout_management.addWidget(self.comboBox_manager,0,1,1,1)
         self.gridLayout_8.addWidget(self.groupBox_management_info, 5, 0, 1, 1)
@@ -1364,13 +1364,23 @@ class AccountWindow(QtGui.QMainWindow):
         self.toolBar.addAction(self.actionAdd)
         self.toolBar.addAction(self.actionDel)
 
-        self.comboBox_city = QtGui.QComboBox(self.tableWidget)
-        self.comboBox_street = QtGui.QComboBox(self.tableWidget)
-        self.comboBox_house = QtGui.QComboBox(self.tableWidget)
+        font = QtGui.QFont()
         
-        self.comboBox_city.setEditable(True)
-        self.comboBox_street.setEditable(True)
-        self.comboBox_house.setEditable(True)
+        font.setPointSize(font.pointSize() - 1);
+        #ui->comboBox->setFont(font);
+        self.comboBox_city = QtGui.QComboBox(self.tableWidget)
+        self.comboBox_city.setFont(font)
+        self.comboBox_city.setFixedHeight(19)
+        self.comboBox_street = QtGui.QComboBox(self.tableWidget)
+        self.comboBox_street.setFont(font)
+        self.comboBox_street.setFixedHeight(19)
+        self.comboBox_house = QtGui.QComboBox(self.tableWidget)
+        self.comboBox_house.setFont(font)
+        self.comboBox_house.setFixedHeight(19)
+        
+        #self.comboBox_city.setEditable(True)
+        #self.comboBox_street.setEditable(True)
+        #self.comboBox_house.setEditable(True)
         
         self.retranslateUi()
         HeaderUtil.nullifySaved(self.tableWidget.objectName())
@@ -1413,7 +1423,7 @@ class AccountWindow(QtGui.QMainWindow):
         
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Профиль аккаунта", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_management_info.setTitle(QtGui.QApplication.translate("MainWindow", "Менеджмент", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_management_info.setTitle(QtGui.QApplication.translate("MainWindow", "Менеджер", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_account_data.setTitle(QtGui.QApplication.translate("MainWindow", "Учётные данные", None, QtGui.QApplication.UnicodeUTF8))
         self.label_username.setText(QtGui.QApplication.translate("MainWindow", "Логин", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_generate_login.setText(QtGui.QApplication.translate("MainWindow", "#", None, QtGui.QApplication.UnicodeUTF8))
@@ -1442,7 +1452,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_nas.setTitle(QtGui.QApplication.translate("MainWindow", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.label_nas.setText(QtGui.QApplication.translate("MainWindow", "Сервер доступа аккаунта", None, QtGui.QApplication.UnicodeUTF8))
         self.label_bank_code.setText(QtGui.QApplication.translate("MainWindow", "Код", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_manager.setText(QtGui.QApplication.translate("MainWindow", "Менеджер", None, QtGui.QApplication.UnicodeUTF8))
+        #self.label_manager.setText(QtGui.QApplication.translate("MainWindow", "Менеджер", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setColumnHidden(0, False)
         self.groupBox_nas.setTitle(QtGui.QApplication.translate("MainWindow", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.label_nas.setText(QtGui.QApplication.translate("MainWindow", "Идентификатор сервера доступа", None, QtGui.QApplication.UnicodeUTF8))
@@ -1550,6 +1560,8 @@ class AccountWindow(QtGui.QMainWindow):
         pass
     def refresh_combo_street(self):
         city_id = self.comboBox_city.itemData(self.comboBox_city.currentIndex()).toInt()[0]
+        if city_id==0:
+            self.comboBox_street.clear()
         if not city_id: return
         streets = self.connection.sql("SELECT id, name FROM billservice_street WHERE city_id=%s ORDER BY name ASC;" % city_id)
         self.connection.commit()
@@ -1594,21 +1606,21 @@ class AccountWindow(QtGui.QMainWindow):
         if self.groupBox_urdata.isChecked()==True:
             
             try:
-                data=templ.render_unicode(account=self.model, operator=operator, organization = self.organization, bank=self.bank)
+                data=templ.render_unicode(accounts=[self.model.id], operator=operator, organization = self.organization, bank=self.bank, connection=self.connection)
             except Exception, e:
                 data=unicode(u"Ошибка рендеринга документа: %s" % e)
             
         else:
             try:
-                data=templ.render_unicode(accounts=[self.model], operator=operator)
+                data=templ.render_unicode(accounts=[self.model.id], operator=operator, connection=self.connection)
             except Exception, e:
                 data=unicode(u"Ошибка рендеринга документа: %s" % e)
-            self.connection.commit()
-            file= open('templates/tmp/temp.html', 'wb')
-            file.write(data.encode("utf-8", 'replace'))
-            file.flush()
-            a=CardPreviewDialog(url="templates/tmp/temp.html")
-            a.exec_()
+        self.connection.commit()            
+        file= open('templates/tmp/temp.html', 'wb')
+        file.write(data.encode("utf-8", 'replace'))
+        file.flush()
+        a=CardPreviewDialog(url="templates/tmp/temp.html")
+        a.exec_()
        
             
   
@@ -1662,7 +1674,8 @@ class AccountWindow(QtGui.QMainWindow):
         cities = self.connection.sql("SELECT id, name FROM billservice_city ORDER BY name ASC;")
         self.connection.commit()
         self.comboBox_city.clear()
-        i=0
+        self.comboBox_city.addItem(u'-Не указан-', QtCore.QVariant(0))
+        i=1
         for city in cities:
             self.comboBox_city.addItem(city.name, QtCore.QVariant(city.id))
             if self.model:
@@ -1673,6 +1686,7 @@ class AccountWindow(QtGui.QMainWindow):
         if not self.model:
             self.actionAdd.setDisabled(True)
             self.actionDel.setDisabled(True)
+            self.toolButton_agreement_print.setDisabled(True)
             self.toolButton_agreement_print.setDisabled(True)
             self.lineEdit_balance.setText(u"0")
             self.lineEdit_credit.setText(u"0")
@@ -1859,7 +1873,8 @@ class AccountWindow(QtGui.QMainWindow):
             self.fixtures()
             self.emit(QtCore.SIGNAL("refresh()"))
             self.actionAdd.setDisabled(False)
-            self.actionDel.setDisabled(False)            
+            self.actionDel.setDisabled(False)      
+            self.toolButton_agreement_print.setDisabled(False)      
         except Exception, e:
             import traceback
             traceback.print_exc()

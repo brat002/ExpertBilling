@@ -1691,7 +1691,89 @@ class SuspendedPeriodForm(QtGui.QDialog):
     def accept(self):
         self.start_date = self.dateTimeEdit_start_date.dateTime().toPyDateTime()
         self.end_date = self.dateTimeEdit_end_date.dateTime().toPyDateTime()
+        settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+        settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
+        event.accept()    
+        QtGui.QDialog.accept(self)
         
+class PeriodForm(QtGui.QDialog):
+    def __init__(self, realm='periodform'):
+        super(PeriodForm, self).__init__()
+        self.setObjectName("SuspendedPeriodForm")
+        self.resize(480, 108)
+        self.start_date = None
+        self.end_date = None
+        self.realm=realm
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName("gridLayout")
+        self.groupBox = QtGui.QGroupBox(self)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.label_start_date = QtGui.QLabel(self.groupBox)
+        self.label_start_date.setObjectName("label_start_date")
+        self.gridLayout_2.addWidget(self.label_start_date, 0, 0, 1, 1)
+        self.dateTimeEdit_start_date = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit_start_date.setMinimumSize(QtCore.QSize(0, 22))
+        self.dateTimeEdit_start_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2008, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.dateTimeEdit_start_date.setCalendarPopup(True)
+        self.dateTimeEdit_start_date.setObjectName("dateTimeEdit_start_date")
+        self.dateTimeEdit_start_date.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        self.gridLayout_2.addWidget(self.dateTimeEdit_start_date, 0, 1, 1, 1)
+        self.label_end_date = QtGui.QLabel(self.groupBox)
+        self.label_end_date.setObjectName("label_end_date")
+        self.gridLayout_2.addWidget(self.label_end_date, 0, 2, 1, 1)
+        self.dateTimeEdit_end_date = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit_end_date.setMinimumSize(QtCore.QSize(0, 22))
+        self.dateTimeEdit_end_date.setButtonSymbols(QtGui.QAbstractSpinBox.UpDownArrows)
+        self.dateTimeEdit_end_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2009, 1, 1), QtCore.QTime(0, 0, 0)))
+        self.dateTimeEdit_end_date.setMinimumDateTime(QtCore.QDateTime(QtCore.QDate(2008, 9, 14), QtCore.QTime(0, 0, 0)))
+        self.dateTimeEdit_end_date.setCalendarPopup(True)
+        self.dateTimeEdit_end_date.setObjectName("dateTimeEdit_end_date")
+        self.dateTimeEdit_end_date.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        self.gridLayout_2.addWidget(self.dateTimeEdit_end_date, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            self.dateTimeEdit_start_date.setDateTime(settings.value("%s_prop_date_start" % self.realm, QtCore.QVariant(QtCore.QDateTime(2011,1,1,0,0))).toDateTime())
+            self.dateTimeEdit_end_date.setDateTime(settings.value("%s_prop_date_end" % self.realm, QtCore.QVariant(QtCore.QDateTime(2012,1,1,0,0))).toDateTime())
+        except Exception, ex:
+            print "123 ", ex
+
+        self.retranslateUi()
+        self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
+        self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.fixtures()
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Выберите период", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Выберите период времени", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_start_date.setText(QtGui.QApplication.translate("Dialog", "Начало", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_end_date.setText(QtGui.QApplication.translate("Dialog", "Окончание", None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit_start_date.setDisplayFormat(QtGui.QApplication.translate("Dialog", "dd.MM.yyyy HH:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit_end_date.setDisplayFormat(QtGui.QApplication.translate("Dialog", "dd.MM.yyyy HH:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+
+    def fixtures(self):
+        pass
+        #if self.model:
+        #    self.dateTimeEdit_start_date.setDateTime(self.model.start_date)
+        #    self.dateTimeEdit_end_date.setDateTime(self.model.end_date)
+        
+    def accept(self):
+        self.start_date = self.dateTimeEdit_start_date.dateTime().toPyDateTime()
+        self.end_date = self.dateTimeEdit_end_date.dateTime().toPyDateTime()
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("%s_prop_date_start" % self.realm, QtCore.QVariant(self.dateTimeEdit_start_date.dateTime()))
+            settings.setValue("%s_prop_date_end" % self.realm, QtCore.QVariant(self.dateTimeEdit_end_date.dateTime()))
+        except Exception, ex:
+            print "settings save error: ", ex
         QtGui.QDialog.accept(self)
         
 class GroupsDialog(QtGui.QDialog):
