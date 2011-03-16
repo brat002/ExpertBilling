@@ -2915,7 +2915,7 @@ class TarifFrame(QtGui.QDialog):
 
             #Доступ по времени
             
-            if self.time_access_service_checkbox.checkState()==2:
+            if self.time_access_service_checkbox.checkState()==2 and (unicode(self.prepaid_time_edit.text()) or self.timeaccess_table.rowCount()>0):
                     
                 if not model.isnull('time_access_service_id'):
                     time_access_service = self.connection.get_model(self.model.time_access_service_id, "billservice_timeaccessservice" )
@@ -3614,7 +3614,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             
     
     def addframe(self):
-        if self.getTarifId() not in [-1000, -2000]: return
+        if self.getTarifId() in [-1000, -2000]: return
         tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
         self.connection.commit()
         #self.connection.flush()
@@ -3833,10 +3833,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         if id==-1000 or id==-2000:
             #self.sql=''
-            columns=[u'#', u'Имя пользователя', u"Договор",u'Тарифный план', u'Баланс', u'Кредит', u'Имя',  u'Сервер доступа', u'',  u"Нулевой баланс c", u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Имя пользователя', u"Договор",u'Тарифный план', u'Баланс', u'Кредит', u'Имя',   u'',  u"Нулевой баланс, дней", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
         else:
-            columns=[u'#', u'Имя пользователя',  u"Договор", u'Баланс', u'Кредит', u'Имя', u'Сервер доступа', u'',  u"Нулевой баланс c", u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Имя пользователя',  u"Договор", u'Баланс', u'Кредит', u'Имя', u'',  u"Нулевой баланс, дней", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
 
         print "sql=", self.sql            
@@ -3856,7 +3856,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         m_ballance = 0
         disabled_accounts = 0
-        
+        now = datetime.datetime.now()
         i=0
         for a in accounts:    
             
@@ -3870,38 +3870,38 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 self.addrow(float("%.02f" % float(a.ballance)), i,4, color="red", enabled=a.status)
                 self.addrow(float(a.credit), i,5, enabled=a.status)
                 self.addrow(a.fullname, i,6, enabled=a.status)
-                self.addrow(a.nas_name,i,7, enabled=a.status)
+                #self.addrow(a.nas_name,i,7, enabled=a.status)
                 #self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
                 #self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
                 #self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,8,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+                self.tableWidget.setCellWidget(i,7,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 if a.last_balance_null:
-                    self.addrow(a.last_balance_null.strftime(self.strftimeFormat), i,9, enabled=a.status)
-                self.addrow(a.created.strftime(self.strftimeFormat), i,10, enabled=a.status)
-                self.addrow(a.comment, i,11, enabled=a.status)
+                    self.addrow((now-a.last_balance_null).days, i,8, enabled=a.status)
+                self.addrow(a.created.strftime(self.strftimeFormat), i,9, enabled=a.status)
+                self.addrow(a.comment, i,10, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
             else:
                 #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
                 self.addrow("%.02f" % float(a.ballance), i,3, color="red", enabled=a.status)
                 self.addrow(float(a.credit), i,4, enabled=a.status)
                 self.addrow(a.fullname, i,5, enabled=a.status)
-                self.addrow(a.nas_name,i,6, enabled=a.status)
+                #self.addrow(a.nas_name,i,6, enabled=a.status)
                 #self.addrow(a.vpn_ip_address, i,6, enabled=a.status)
                 #self.addrow(a.ipn_ip_address, i,7, enabled=a.status)
                 #self.addrow(a.ipn_mac_address, i,8, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,7,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
+                self.tableWidget.setCellWidget(i,6,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 if a.last_balance_null:
-                    self.addrow(a.last_balance_null.strftime(self.strftimeFormat), i,8, enabled=a.status)
+                    self.addrow((now-a.last_balance_null).days, i,7, enabled=a.status)
                 
-                self.addrow(a.created.strftime(self.strftimeFormat), i,9, enabled=a.status)
+                self.addrow(a.created.strftime(self.strftimeFormat), i,8, enabled=a.status)
                 
-                self.addrow(a.comment, i,10, enabled=a.status)
+                self.addrow(a.comment, i,9, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
                 
             m_ballance += float(a.ballance)

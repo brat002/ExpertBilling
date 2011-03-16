@@ -1868,8 +1868,9 @@ class AccountWindow(QtGui.QMainWindow):
             
                     
             #x8021 = self.connection.get
+            
+            self.model = self.connection.get_model(model.id, "billservice_account")
             self.connection.commit()
-            self.model = model
             self.fixtures()
             self.emit(QtCore.SIGNAL("refresh()"))
             self.actionAdd.setDisabled(False)

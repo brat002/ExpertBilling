@@ -27,7 +27,7 @@ nfroutine_sql = \
                'prepays' :"""SELECT prepais.id, prepais.size, prepais.account_tarif_id, prepaidtraffic.group_id, prepaidtraffic.traffic_transmit_service_id 
                                         FROM billservice_accountprepaystrafic as prepais
                                         JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
-                                        WHERE prepais.size>0 AND (ARRAY[prepais.account_tarif_id] && get_cur_acct(%s));""",
+                                        WHERE prepais.size>0 AND prepais.current=True and(ARRAY[prepais.account_tarif_id] && get_cur_acct(%s));""",
                'sclasses':"""SELECT int_array_aggregate(id) FROM nas_trafficclass WHERE store=TRUE;""",
                'group_bytes': 
                           """SELECT ba.id AS account_id, bt.id AS tarif_id, act.id AS acctf_id, act.datetime, ARRAY(SELECT ROW(bgps.group_id, SUM(bgps.bytes))::group_bytes FROM billservice_groupstat AS bgps WHERE (bgps.account_id = act.account_id) AND (bgps.group_id IN (SELECT bttn2.group_id FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id)) AND (bgps.datetime BETWEEN act.datetime AND %s) GROUP BY bgps.group_id ORDER BY bgps.group_id) AS gr_bytes 

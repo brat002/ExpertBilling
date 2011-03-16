@@ -2588,8 +2588,8 @@ class InfoDialog(QtGui.QDialog):
                 self.addrow(i, i,0)
                 self.addrow(a['limit_name'], i,1)
                 self.addrow("%s MB" % (a['limit_size']/1048576), i,2)
-                self.addrow("%s MB" % int(a['size']/1048576), i,3)
-                self.addrow("%s MB" % (int(a['limit_size']-a['size'])/1048576), i,4)
+                self.addrow("%s MB" % int((a['size'] or 0)/1048576), i,3)
+                self.addrow("%s MB" % (int((a['limit_size']-a['size']) or 0)/1048576), i,4)
                 try:
                     self.addrow(a.get('settlement_period_start').strftime(self.strftimeFormat), i,5)
                     self.addrow(a.get('settlement_period_end').strftime(self.strftimeFormat), i,6)
@@ -2614,8 +2614,8 @@ class InfoDialog(QtGui.QDialog):
             for a in items:            
                 self.addrow(i, i,0, id=a.ppt_id)
                 self.addrow(a.group_name, i,1)
-                self.addrow("%s MB" % int(a.pp_size/(1048576)), i, 2)
-                self.addrow("%s MB" % int(a.size/1048576.00), i, 3, raw_value=a.size)
+                self.addrow("%s MB" % int((a.pp_size or 0)/(1048576)), i, 2)
+                self.addrow("%s MB" % int((a.size or 0)/1048576.00), i, 3, raw_value=a.size)
                 i+=1
             self.tableWidget.resizeColumnsToContents()    
         elif self.type=='radiusprepaidtraffic':
@@ -2633,7 +2633,7 @@ class InfoDialog(QtGui.QDialog):
             for a in items:            
                 self.addrow(i, i,0, id=a.id)
                 self.addrow(direction_types[a.direction], i,1)
-                self.addrow("%s MB" % int(a.size/(1048576)), i, 2, raw_value=a.size)
+                self.addrow("%s MB" % int((a.size or 0)/(1048576)), i, 2, raw_value=a.size)
                 self.addrow(a.datetime.strftime(strftimeFormat), i, 3)
                 i+=1
             self.tableWidget.resizeColumnsToContents()  
