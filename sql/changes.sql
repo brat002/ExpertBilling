@@ -4838,3 +4838,168 @@ update billservice_account set     allow_ipn_with_block  = false;
 ALTER TABLE billservice_subaccount
    ADD COLUMN allow_mac_update boolean DEFAULT False;
 update billservice_subaccount set     allow_mac_update  = false;
+
+--16.03.2011
+ALTER TABLE billservice_accountprepaysradiustrafic
+   ADD COLUMN "current" boolean DEFAULT False;
+
+ALTER TABLE billservice_accountprepaystime
+   ADD COLUMN "current" boolean DEFAULT False;
+
+ALTER TABLE billservice_accountprepaystrafic
+   ADD COLUMN "current" boolean;
+
+CREATE OR REPLACE FUNCTION shedulelog_radius_tr_credit_fn(account_id_ integer, accounttarif_id_ integer, trts_id_ integer, size_ numeric, direction_ integer, coeff_ numeric, datetime_ timestamp without time zone)
+  RETURNS void AS
+$BODY$
+DECLARE
+    old_size double precision;
+
+BEGIN
+
+    SELECT INTO old_size (SELECT size FROM billservice_accountprepaysradiustrafic WHERE account_tarif_id=accounttarif_id_ and current=True)::double precision;
+    UPDATE billservice_accountprepaysradiustrafic SET current=False WHERE account_tarif_id=accounttarif_id_ and current=True;
+
+        INSERT INTO billservice_accountprepaysradiustrafic (account_tarif_id, prepaid_traffic_id, size, direction, datetime, current) VALUES(accounttarif_id_, trts_id_, old_size+size_*coeff_, direction_, datetime_,True);
+
+
+    UPDATE billservice_shedulelog SET prepaid_radius_traffic_accrued=datetime_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_radius_traffic_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+    END IF;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION shedulelog_radius_tr_credit_fn(integer, integer, integer, numeric, integer, numeric, timestamp without time zone) OWNER TO postgres;
+
+-- Function: shedulelog_radius_tr_reset_fn(integer, integer, timestamp without time zone)
+
+-- DROP FUNCTION shedulelog_radius_tr_reset_fn(integer, integer, timestamp without time zone);
+
+CREATE OR REPLACE FUNCTION shedulelog_radius_tr_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone)
+  RETURNS void AS
+$BODY$
+BEGIN
+    UPDATE billservice_accountprepaysradiustrafic set size=0 WHERE account_tarif_id=accounttarif_id_;
+    UPDATE billservice_shedulelog SET prepaid_radius_traffic_reset=reset_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_radius_traffic_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION shedulelog_radius_tr_reset_fn(integer, integer, timestamp without time zone) OWNER TO postgres;
+
+-- Function: shedulelog_time_credit_fn(integer, integer, integer, integer, timestamp without time zone)
+
+-- DROP FUNCTION shedulelog_time_credit_fn(integer, integer, integer, integer, timestamp without time zone);
+
+CREATE OR REPLACE FUNCTION shedulelog_time_credit_fn(account_id_ integer, accounttarif_id_ integer, taccs_id_ integer, size_ integer, coeff_ double precision, datetime_ timestamp without time zone)
+  RETURNS void AS
+$BODY$
+DECLARE
+    old_size double precision;
+BEGIN
+    SELECT INTO old_size (SELECT size FROM billservice_accountprepaystime WHERE account_tarif_id=accounttarif_id_ and current=True)::double precision;
+        UPDATE billservice_accountprepaystime SET current=False WHERE account_tarif_id=accounttarif_id_ and current=True; -- AND??
+
+        INSERT INTO billservice_accountprepaystime (account_tarif_id, size, datetime, prepaid_time_service_id, current) VALUES(accounttarif_id_, old_size+size_*coeff_, datetime_, taccs_id_, True);
+
+        UPDATE billservice_shedulelog SET prepaid_time_accrued=datetime_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+        IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+        END IF;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION shedulelog_time_credit_fn(integer, integer, integer, integer, timestamp without time zone) OWNER TO postgres;
+
+
+-- Function: shedulelog_time_reset_fn(integer, integer, timestamp without time zone)
+
+-- DROP FUNCTION shedulelog_time_reset_fn(integer, integer, timestamp without time zone);
+
+CREATE OR REPLACE FUNCTION shedulelog_time_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone)
+  RETURNS void AS
+$BODY$
+BEGIN
+    UPDATE billservice_accountprepaystime set size=0 WHERE account_tarif_id=accounttarif_id_ and current=True;
+    UPDATE billservice_shedulelog SET prepaid_time_reset=reset_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_time_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION shedulelog_time_reset_fn(integer, integer, timestamp without time zone) OWNER TO postgres;
+
+-- Function: shedulelog_tr_reset_fn(integer, integer, timestamp without time zone)
+
+-- DROP FUNCTION shedulelog_tr_reset_fn(integer, integer, timestamp without time zone);
+
+CREATE OR REPLACE FUNCTION shedulelog_tr_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone)
+  RETURNS void AS
+$BODY$
+BEGIN
+    UPDATE billservice_accountprepaystrafic SET size=0 WHERE account_tarif_id=accounttarif_id_ and current=True;
+    UPDATE billservice_shedulelog SET prepaid_traffic_reset=reset_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION shedulelog_tr_reset_fn(integer, integer, timestamp without time zone) OWNER TO postgres;
+
+
+-- Function: shedulelog_tr_credit_fn(integer, integer, integer, numeric, timestamp without time zone)
+
+-- DROP FUNCTION shedulelog_tr_credit_fn(integer, integer, integer, numeric, timestamp without time zone);
+
+CREATE OR REPLACE FUNCTION shedulelog_tr_credit_fn(account_id_ integer, accounttarif_id_ integer, trts_id_ integer, coeff_ numeric, datetime_ timestamp without time zone)
+  RETURNS void AS
+$BODY$
+DECLARE
+        prepaid_tr_id_ int;
+        size_ bigint;
+        count_ int := 0;
+    old_size double precision;
+BEGIN
+
+        FOR prepaid_tr_id_, size_ IN SELECT id, size FROM billservice_prepaidtraffic WHERE traffic_transmit_service_id=trts_id_ LOOP
+        SELECT INTO old_size (SELECT size FROM billservice_accountprepaystrafic WHERE account_tarif_id=accounttarif_id_ AND prepaid_traffic_id=prepaid_tr_id_ and current=True)::double precision;
+                UPDATE billservice_accountprepaystrafic SET current=False WHERE account_tarif_id=accounttarif_id_ AND prepaid_traffic_id=prepaid_tr_id_ and current=True;
+                INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime, current) VALUES(accounttarif_id_, prepaid_tr_id_, old_size+size_*coeff_, datetime_, True);
+        count_ := count_ + 1;
+    END LOOP;
+    IF count_ > 0 THEN
+        UPDATE billservice_shedulelog SET prepaid_traffic_accrued=datetime_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+        IF NOT FOUND THEN
+                INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_accrued) VALUES(account_id_,accounttarif_id_, datetime_);
+        END IF;
+        END IF;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION shedulelog_tr_credit_fn(integer, integer, integer, numeric, timestamp without time zone) OWNER TO postgres;
+
+ALTER TABLE billservice_traffictransmitnodes ALTER edge_value TYPE double precision;
+
+ALTER TABLE billservice_accountprepaysradiustrafic
+   ALTER COLUMN size SET DEFAULT 0;
+ALTER TABLE billservice_accountprepaysradiustrafic
+   ALTER COLUMN size DROP NOT NULL;
+
+   

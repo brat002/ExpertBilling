@@ -22,7 +22,7 @@ def install_logger(lgr):
     
     
 def format_update (x,y):
-    #print 'y', y, type(y)
+
     if y!=u'Null' and y!=u'None':
         if type(y)==StringType or type(y)==UnicodeType:
             #print True
@@ -47,6 +47,7 @@ def format_insert(y):
     
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
+        print result
         for key in result:
             setattr(self, key, result[key])
         """
