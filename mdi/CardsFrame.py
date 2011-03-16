@@ -263,7 +263,7 @@ class SaleCards(QtGui.QDialog):
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         </head>
         <body>
-        """;
+        """; 
         
         try:
             operator =self.connection.get_operator()[0]
@@ -283,8 +283,8 @@ class SaleCards(QtGui.QDialog):
         for card in cards:
             
             templ = Template(t["%s" % card.template_id], input_encoding='utf-8')
-            data+=templ.render_unicode(card=card, operator = operator, bank=bank)
-
+            data+=templ.render_unicode(connection=self.connection, card=card, operator = operator, bank=bank)
+        self.connection.commit()
         
         data+="</body></html>"
         file= open('templates/cards/cards.html', 'wb')
@@ -309,11 +309,11 @@ class SaleCards(QtGui.QDialog):
         templ = Template(unicode(template.body), input_encoding='utf-8')
         
 
-        data=templ.render_unicode(cards=cards, operator=operator, dealer=dealer, created=datetime.datetime.now().strftime(strftimeFormat), 
+        data=templ.render_unicode(connection=self.connection, cards=cards, operator=operator, dealer=dealer, created=datetime.datetime.now().strftime(strftimeFormat), 
                                   cardcount=len(cards), sum_for_pay = unicode(self.lineEdit_for_pay.text()), discount = unicode(self.spinBox_discount.text()),
                                   discount_sum = unicode(self.lineEdit_discount_amount.text()), pay = unicode(self.lineEdit_pay.text()),
                                   paydeffer = (datetime.datetime.now()+datetime.timedelta(days=self.spinBox_paydeffer.value())).strftime(strftimeFormat))
-
+        self.connection.commit()
         file= open('templates/tmp/temp.html', 'wb')
         file.write(data.encode("utf-8", 'replace'))
         file.flush()

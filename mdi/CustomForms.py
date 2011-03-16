@@ -1533,6 +1533,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             
     def preview(self):
         id = self.treeWidget.currentItem().type_id
+        print "type_id", id
         templ = Template(unicode(self.textBrowser_remplate_body.toPlainText()), input_encoding='utf-8')
         data=''
         if id==1:
@@ -1549,17 +1550,17 @@ class TemplatesWindow(QtGui.QMainWindow):
             bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
 
             try:
-                data=templ.render_unicode(accounts=[account], bank=bank, organization=organization, connection=self.connection)
+                data=templ.render_unicode(accounts=(account,), bank=bank, organization=organization, connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
 
         if id==5:
             account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
             transaction = self.connection.sql("SELECT * FROM billservice_transaction LIMIT 1")[0]
-            sum = 10000
+            sum = -10000
             document=u"Банковский перевод №112432"
             try:
-                data=templ.render_unicode(account=account, transaction = transaction, connection=self.connection)
+                data=templ.render_unicode(connection=self.connection, account=account, transaction = transaction)
             except Exception, e:
                 data=u"Error %s" % str(e)
             
@@ -1567,14 +1568,23 @@ class TemplatesWindow(QtGui.QMainWindow):
             account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
             document=u"Отчёт по остатку средств"
             try:
-                data=templ.render_unicode(account=account, connection=self.connection)
+                data=templ.render_unicode(accounts=(account,), connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
+
+        if id==4:
+            account = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0]
+
+            try:
+                data=templ.render_unicode(connection=self.connection, account=account.id)
+                #data=templ.render_unicode(accounts=123, connection=self.connection)
+            except Exception, e:
+                data=u"Error %s" % str(e)                
             
         if id==6:
             data=u"Preview for this type of documents unavailable. For preview go to Express Cards->Sale Cards->Print Invoice"
         
-        if id in (3,4):
+        if id in (3,):
             data=u"Preview for this type of documents unavailable. Please still waiting for next version of ExpertBilling"
                                 
         if id ==7:
@@ -1609,7 +1619,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             <body>
             """;
             try:
-                data+=templ.render_unicode(operator = operator, bank=bank, card=card, connection=connection)
+                data+=templ.render_unicode(operator = operator, bank=bank, card=card, connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
             data+="</body></html>"
@@ -3274,7 +3284,7 @@ class TransactionForm(QtGui.QDialog):
         sum = 10000
         transaction.summ = transaction.summ*(-1)
         #try:
-        data=templ.render_unicode(account=account, tarif=tarif, transaction=transaction, connection=self.connection)
+        data=templ.render_unicode(connection=self.connection, account=account, tarif=tarif, transaction=transaction)
         self.connection.commit()
         #except Exception, e:
         #    print e

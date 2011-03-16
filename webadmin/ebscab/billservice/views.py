@@ -502,8 +502,7 @@ def subaccount_change_password(request):
                 subaccount_id = request.POST.get("subaccount_id", 0)
                 if subaccount_id:
                     try:
-                        subaccount = \
-                        SubAccount.objects.get(id=subaccount_id, account=request.user.account)
+                        subaccount = SubAccount.objects.get(id=subaccount_id, account=request.user.account)
                     except Exception, e:
                         #print e
                         return {
