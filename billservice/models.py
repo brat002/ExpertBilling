@@ -1179,6 +1179,7 @@ class SubAccount(models.Model):
     ipn_ip_address = models.IPAddressField()
     ipn_mac_address = models.CharField(max_length=16)
     vpn_ip_address = models.IPAddressField()
+    allow_mac_update = models.BooleanField(default=False)
     
 class BalanceHistory(models.Model):
     account=models.ForeignKey(Account)
