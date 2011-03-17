@@ -2599,15 +2599,14 @@ class InfoDialog(QtGui.QDialog):
             self.tableWidget.resizeColumnsToContents()
             
         elif self.type=='prepaidtraffic':
-            columns=["#", u"Группа", u"Всего", u"Осталось", ]
+            columns=["#", u"Группа", u"Всего", u"Осталось", u"Дата начисления", u"Активно"]
             makeHeaders(columns, self.tableWidget)
             items = self.connection.sql("""
-            SELECT   ppt.id as ppt_id, ppt.size as size, ppt.datetime, pp.size as pp_size, (SELECT name FROM billservice_group WHERE id=pp.group_id) as group_name FROM billservice_accountprepaystrafic as ppt
+            SELECT   ppt.id as ppt_id, ppt.size as size, ppt.datetime, pp.size as pp_size, (SELECT name FROM billservice_group WHERE id=pp.group_id) as group_name, ppt.datetime as datetime, ppt.current FROM billservice_accountprepaystrafic as ppt
             JOIN billservice_prepaidtraffic as pp ON pp.id=ppt.prepaid_traffic_id
-            WHERE account_tarif_id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY datetime DESC LIMIT 1);""" % (self.account_id,)            
+            WHERE account_tarif_id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY datetime DESC LIMIT 1) ORDER BY ppt.datetime DESC;""" % (self.account_id,)            
             )
 
-            
             self.connection.commit()
             self.tableWidget.setRowCount(len(items))
             i=0
@@ -2616,15 +2615,17 @@ class InfoDialog(QtGui.QDialog):
                 self.addrow(a.group_name, i,1)
                 self.addrow("%s MB" % int((a.pp_size or 0)/(1048576)), i, 2)
                 self.addrow("%s MB" % int((a.size or 0)/1048576.00), i, 3, raw_value=a.size)
+                self.addrow(a.datetime.strftime(strftimeFormat), i,4)
+                self.addrow(a.current, i,5)
                 i+=1
             self.tableWidget.resizeColumnsToContents()    
         elif self.type=='radiusprepaidtraffic':
-            columns=["#", u"Направление", u"Осталось", u"Дата начисления", ]
+            columns=["#", u"Направление", u"Осталось", u"Дата начисления", u"Активно"]
             makeHeaders(columns, self.tableWidget)
             items = self.connection.sql("""
-            SELECT apst.id, apst.size, apst.direction, apst.datetime FROM billservice_accountprepaysradiustrafic as apst 
+            SELECT apst.id, apst.size, apst.direction, apst.datetime, apst.current FROM billservice_accountprepaysradiustrafic as apst 
             JOIN billservice_accounttarif as act ON act.id=apst.account_tarif_id
-            WHERE act.account_id=%s;""" % (self.account_id,)            
+            WHERE act.account_id=%s ORDER BY apst.datetime DESC;""" % (self.account_id,)            
             )
             direction_types = [u"Входящий", u"Исходящий", u"Вх.+Исх.", u"Большее направление"]
             self.connection.commit()
@@ -2635,6 +2636,26 @@ class InfoDialog(QtGui.QDialog):
                 self.addrow(direction_types[a.direction], i,1)
                 self.addrow("%s MB" % int((a.size or 0)/(1048576)), i, 2, raw_value=a.size)
                 self.addrow(a.datetime.strftime(strftimeFormat), i, 3)
+                self.addrow(a.current, i, 4)
+                i+=1
+            self.tableWidget.resizeColumnsToContents()  
+        elif self.type=='radiusprepaidtime':
+            columns=["#", u"Осталось", u"Дата начисления", u"Активно"]
+            makeHeaders(columns, self.tableWidget)
+            items = self.connection.sql("""
+            SELECT apst.id, apst.size, apst.datetime, apst.current FROM billservice_accountprepaystime as apst 
+            JOIN billservice_accounttarif as act ON act.id=apst.account_tarif_id
+            WHERE act.account_id=%s ORDER BY apst.datetime DESC;""" % (self.account_id,)            
+            )
+            #direction_types = [u"Входящий", u"Исходящий", u"Вх.+Исх.", u"Большее направление"]
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(items))
+            i=0
+            for a in items:            
+                self.addrow(i, i,0, id=a.id)
+                self.addrow(u"%s мин." % int((a.size or 0)/(60)), i, 1, raw_value=a.size)
+                self.addrow(a.datetime.strftime(strftimeFormat), i, 2)
+                self.addrow(a.current, i, 3)
                 i+=1
             self.tableWidget.resizeColumnsToContents()  
         elif self.type=='settlementperiods':

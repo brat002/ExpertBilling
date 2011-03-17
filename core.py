@@ -1222,10 +1222,13 @@ class settlement_period_service_dog(Thread):
                         #print repr(acc)
                         reset_traffic = caches.traffictransmitservice_cache.by_id.get(acc.traffic_transmit_service_id, (None, None))[1]                        
                         radius_traffic = caches.radius_traffic_transmit_service_cache.by_id.get(acc.radius_traffic_transmit_service_id)
-                        prepaid_traffic_reset = shedl.prepaid_traffic_reset if shedl.prepaid_time_reset else acc.datetime
+                        prepaid_traffic_reset = shedl.prepaid_traffic_reset if shedl.prepaid_traffic_reset else acc.datetime
                         prepaid_radius_traffic_reset = shedl.prepaid_radius_traffic_reset if shedl.prepaid_radius_traffic_reset else acc.datetime
                         #if (reset_traffic or acc.traffic_transmit_service_id is None) and (shedl.prepaid_traffic_reset is None or shedl.prepaid_traffic_reset<period_start or acc.acctf_id!= shedl.accounttarif_id):
-                        if (reset_traffic and prepaid_traffic_reset<period_start) or not acc.traffic_transmit_service_id or acc.acctf_id != shedl.accounttarif_id:
+                        need_traffic_reset=(reset_traffic and prepaid_traffic_reset<period_start) or not acc.traffic_transmit_service_id or acc.acctf_id != shedl.accounttarif_id
+                        need_radius_traffic_reset=(radius_traffic and prepaid_radius_traffic_reset<period_start) or not acc.radius_traffic_transmit_service_id or acc.acctf_id != shedl.accounttarif_id
+
+                        if need_traffic_reset:
                             #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
                             #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
                             """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
@@ -1233,13 +1236,6 @@ class settlement_period_service_dog(Thread):
                                         (acc.account_id, acc.acctf_id, now))  
                             cur.connection.commit()
 
-                        if (radius_traffic and prepaid_radius_traffic_reset<period_start) or not acc.radius_traffic_transmit_service_id or acc.acctf_id != shedl.accounttarif_id:
-                            #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
-                            #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
-                            """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
-                            cur.execute("SELECT shedulelog_radius_tr_reset_fn(%s, %s, %s::timestamp without time zone);", \
-                                        (acc.account_id, acc.acctf_id, now))  
-                            cur.connection.commit()
                                     
                         if (shedl.prepaid_traffic_accrued is None or shedl.prepaid_traffic_accrued<period_start) and acc.traffic_transmit_service_id:                          
                             #Начислить новый предоплаченный трафик
@@ -1248,9 +1244,18 @@ class settlement_period_service_dog(Thread):
                             if period_end and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta and vars.USE_COEFF_FOR_PREPAID==True:
                                 delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)
                                 
-                            cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s, %s::timestamp without time zone);", 
-                                    (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, delta_coef, now))
+                            cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s, %s, %s::timestamp without time zone);", 
+                                    (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, need_traffic_reset, delta_coef, now))
                             cur.connection.commit()
+
+                        if need_radius_traffic_reset:
+                            #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
+                            #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
+                            """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
+                            cur.execute("SELECT shedulelog_radius_tr_reset_fn(%s, %s, %s::timestamp without time zone);", \
+                                        (acc.account_id, acc.acctf_id, now))  
+                            cur.connection.commit()
+
                         #Radius prepaid
                         if (shedl.prepaid_radius_traffic_accrued is None or shedl.prepaid_radius_traffic_accrued<period_start) and acc.radius_traffic_transmit_service_id and radius_traffic:                          
                             #Начислить новый предоплаченный трафик
@@ -1259,24 +1264,26 @@ class settlement_period_service_dog(Thread):
                             if vars.USE_COEFF_FOR_PREPAID==True and period_end and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta:
                                 delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)
                                 
-                            cur.execute("SELECT shedulelog_radius_tr_credit_fn(%s, %s, %s, %s, %s, %s, %s::timestamp without time zone);", 
-                                        (acc.account_id, acc.acctf_id, acc.radius_traffic_transmit_service_id, radius_traffic.prepaid_value, radius_traffic.prepaid_direction, delta_coef, now))
+                            cur.execute("SELECT shedulelog_radius_tr_credit_fn(%s, %s, %s, %s, %s, %s, %s, %s::timestamp without time zone);", 
+                                        (acc.account_id, acc.acctf_id, acc.radius_traffic_transmit_service_id, need_radius_traffic_reset, radius_traffic.prepaid_value, radius_traffic.prepaid_direction, delta_coef, now))
 
                             cur.connection.commit()
                                                     
-                        prepaid_time, reset_time = caches.timeaccessservice_cache.by_id.get(acc.time_access_service_id, (None, 0, None))[1:3]   
-                        if (reset_time or acc.time_access_service_id is None) and (shedl.prepaid_time_reset is None or shedl.prepaid_time_reset<period_start or acc.acctf_id!=shedl.accounttarif_id):                        
+                        prepaid_time, reset_time = caches.timeaccessservice_cache.by_id.get(acc.time_access_service_id, (None, 0, None))[1:3]
+                        need_time_reset = (reset_time or acc.time_access_service_id is None) and (shedl.prepaid_time_reset is None or shedl.prepaid_time_reset<period_start or acc.acctf_id!=shedl.accounttarif_id)   
+                        if need_time_reset:
                             #(Если нужно сбрасывать время или нет услуги доступа по времени) И                        
                             #(Никогда не сбрасывали время или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)                          
                             cur.execute("SELECT shedulelog_time_reset_fn(%s, %s, %s::timestamp without time zone);", 
                                         (acc.account_id, acc.acctf_id, now))                            
                             cur.connection.commit()        
+
                         if (shedl.prepaid_time_accrued is None or shedl.prepaid_time_accrued<period_start) and acc.time_access_service_id:
                             delta_coef=1
                             if period_end and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta  and vars.USE_COEFF_FOR_PREPAID==True:
                                 delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)     
-                            cur.execute("SELECT shedulelog_time_credit_fn(%s, %s, %s, %s, %s, %s::timestamp without time zone);", 
-                                        (acc.account_id, acc.acctf_id, acc.time_access_service_id, prepaid_time, delta_coef, now))   
+                            cur.execute("SELECT shedulelog_time_credit_fn(%s, %s, %s, %s, %s, %s, %s::timestamp without time zone);", 
+                                        (acc.account_id, acc.acctf_id, acc.time_access_service_id,need_time_reset, prepaid_time, delta_coef, now))   
                             cur.connection.commit()
                         
                         if account_balance > 0:
