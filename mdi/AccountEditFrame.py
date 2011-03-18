@@ -715,7 +715,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
 
         if self.lineEdit_vpn_ipv6_address.text():
-            if self.ipv6Validator.validate(self.lineEdit_vpn_ipv6_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
+            if self.lineEdit_vpn_ipv6_address.text()!='::' and self.ipv6Validator.validate(self.lineEdit_vpn_ipv6_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
                 QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте правильность написания IPv6 VPN IP адреса."))
                 self.connection.rollback()
                 return

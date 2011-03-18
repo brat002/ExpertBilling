@@ -19,6 +19,10 @@ from helpers import connlogin
 import threading
 # import Pyro
 #===============================================================================
+import psyco
+psyco.log()
+psyco.profile()
+psyco.full()
 
 from rpc2 import rpc_protocol, client_networking
 

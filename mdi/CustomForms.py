@@ -131,7 +131,7 @@ class ReportMainWindow(QtGui.QMainWindow):
         data = ''
         try:
             data=templ.render_unicode(accounts=self.accounts, connection=self.connection)
-        except Excception, e:
+        except Exception, e:
             data+=str(e)
 
         file= open('templates/tmp/temp.html', 'wb')
@@ -2603,7 +2603,7 @@ class InfoDialog(QtGui.QDialog):
             makeHeaders(columns, self.tableWidget)
             items = self.connection.sql("""
             SELECT   ppt.id as ppt_id, ppt.size as size, ppt.datetime, pp.size as pp_size, (SELECT name FROM billservice_group WHERE id=pp.group_id) as group_name, ppt.datetime as datetime, ppt.current FROM billservice_accountprepaystrafic as ppt
-            JOIN billservice_prepaidtraffic as pp ON pp.id=ppt.prepaid_traffic_id
+            LEFT JOIN billservice_prepaidtraffic as pp ON pp.id=ppt.prepaid_traffic_id
             WHERE account_tarif_id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s and datetime<now() ORDER BY datetime DESC LIMIT 1) ORDER BY ppt.datetime DESC;""" % (self.account_id,)            
             )
 
