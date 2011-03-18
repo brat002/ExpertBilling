@@ -4854,10 +4854,10 @@ ALTER TABLE billservice_accountprepaysradiustrafic
    ADD COLUMN reseted boolean DEFAULT False;
 
 ALTER TABLE billservice_accountprepaystime
-   ADD COLUMN "reseted" boolean DEFAULT False;
+   ADD COLUMN reseted boolean DEFAULT False;
 
 ALTER TABLE billservice_accountprepaystrafic
-   ADD COLUMN "reseted" boolean DEFAULT False;
+   ADD COLUMN reseted boolean DEFAULT False;
 
 
 CREATE OR REPLACE FUNCTION shedulelog_radius_tr_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone)

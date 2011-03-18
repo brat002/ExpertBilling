@@ -1479,7 +1479,7 @@ class ipn_service(Thread):
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_disable_action)    
                                 
                                 if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,))                            
-                                acc = acc._replace(ipn_enabled=sended)
+                                subacc = subacc._replace(ipn_enabled=sended)
                             self.connection.commit()
         
                             #Приступаем к генерации настроек скорости
