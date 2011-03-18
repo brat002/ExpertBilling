@@ -135,7 +135,7 @@ LEFT_PROMISE_DAYS = 7
 ALLOW_WEBMONEY = False
 ALLOW_QIWI = True
 WEBCAB_LOG = '/opt/ebs/web/ebscab/log/webcab_log'
-WEBCAB_LOG = os.path.abspath('log/webcab_log')
+#WEBCAB_LOG = os.path.abspath('log/webcab_log')
 
 CURRENCY = '$'
 
@@ -173,6 +173,6 @@ else:
 PROJECT_DIR = os.path.dirname(__file__)
 logging.basicConfig(level=LEVEL,
      format='%(asctime)s %(name)s %(levelname)s %(message)s',
-     filename=os.path.join(PROJECT_DIR, 'django.log'),
+     filename=os.path.join(PROJECT_DIR, 'log/django.log'),
      filemode='a+')
 root = logging.basicConfig()

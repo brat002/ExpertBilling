@@ -97,7 +97,7 @@ class TimePeriodNode(models.Model):
     name = models.CharField(max_length=255, verbose_name=u'Название периода', default='', blank=True)
     time_start = models.DateTimeField(verbose_name=u'Дата и время начала периода', default='', blank=True)
     length = models.IntegerField(verbose_name=u'Период в секундах', default=0, blank=True)
-    repeat_after = models.CharField(max_length=255, choices=PERIOD_CHOISES, verbose_name=u'Повторять через промежуток', default='MONTH', blank=True)
+    repeat_after = models.CharField(max_length=255, choices=PERIOD_CHOISES, verbose_name=u'Повторять через', default='MONTH', blank=True)
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -199,8 +199,8 @@ class PeriodicalServiceHistory(models.Model):
 
 
     class Meta:
-        verbose_name = u"История проводок по пер. услугам"
-        verbose_name_plural = u"История проводок по пер. услугам"
+        verbose_name = u"История по пер. услугам"
+        verbose_name_plural = u"История по пер. услугам"
 
 class OneTimeService(models.Model):
     """
@@ -238,7 +238,7 @@ class TimeAccessService(models.Model):
     """
     #name              = models.CharField(max_length=255, verbose_name=u'Название услуги', unuque=True)
     prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время', default=0, blank=True)
-    reset_time        = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченное время', blank=True, default=False)
+    reset_time        = models.BooleanField(verbose_name=u'Сбрасывать  предоплаченное время', blank=True, default=False)
     rounding = models.IntegerField()
     tarification_step = models.IntegerField()
     
@@ -260,7 +260,7 @@ class TimeAccessNode(models.Model):
     """
     time_access_service = models.ForeignKey(to=TimeAccessService, related_name="time_access_nodes")
     time_period         = models.ForeignKey(to=TimePeriod, verbose_name=u'Промежуток')
-    cost                = models.FloatField(verbose_name=u'Стоимость за минуту в указанном промежутке', default=0)
+    cost                = models.FloatField(verbose_name=u'Стоимость за минуту', default=0)
 
     def __unicode__(self):
         return u"%s %s" % (self.time_period, self.cost)
@@ -346,7 +346,7 @@ class PrepaidTraffic(models.Model):
 
 class TrafficTransmitService(models.Model):
     #name              = models.CharField(max_length=255, default='', blank=True)
-    reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать в конце периода предоплаченный трафик', blank=True, default=False)
+    reset_traffic     = models.BooleanField(verbose_name=u'Сбрасывать предоплаченный трафик', blank=True, default=False)
     #Не реализовано в GUI
     cash_method       = models.CharField(verbose_name=u"Списывать за класс трафика", max_length=32,choices=CHOISE_METHODS, blank=True, default=u'SUMM', editable=False)
     #Не реализовано в GUI
@@ -407,8 +407,8 @@ class AccountPrepaysTrafic(models.Model):
         pass
 
     class Meta:
-        verbose_name = u"Предоплаченый трафик пользователя"
-        verbose_name_plural = u"Предоплаченный трафик пользователя"
+        verbose_name = u"Предоплаченый трафик"
+        verbose_name_plural = u"Предоплаченный трафик"
 
 class AccountPrepaysRadiusTrafic(models.Model):
     """
@@ -432,8 +432,8 @@ class AccountPrepaysRadiusTrafic(models.Model):
         pass
 
     class Meta:
-        verbose_name = u"Предоплаченый radius трафик пользователя"
-        verbose_name_plural = u"Предоплаченный radius трафик пользователя"
+        verbose_name = u"Предоплаченый radius трафик "
+        verbose_name_plural = u"Предоплаченный radius трафик"
 
 
 
@@ -459,7 +459,7 @@ class TrafficLimit(models.Model):
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
     group             = models.ForeignKey("Group")
-    mode              = models.BooleanField(default=False, blank=True, verbose_name=u'За последнюю длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
+    mode              = models.BooleanField(default=False, blank=True, verbose_name=u'За длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
     #action            = models.IntegerField()
     
     def __unicode__(self):

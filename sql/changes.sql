@@ -5025,4 +5025,12 @@ ALTER TABLE billservice_accountprepaysradiustrafic
 ALTER TABLE billservice_accountprepaysradiustrafic
    ALTER COLUMN size DROP NOT NULL;
 
-   
+ALTER TABLE billservice_balancehistory
+  DROP CONSTRAINT billservice_balancehistory_account_id_fkey;
+  
+DROP TABLE auth_group_permissions;
+DROP TABLE auth_message;
+DROP TABLE auth_user_user_permissions;
+DROP TABLE auth_user_groups;
+DROP TABLE auth_permission;
+DROP TABLE auth_group;
