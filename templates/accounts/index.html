@@ -116,18 +116,14 @@
 	<tr>
 		<td class="account_information main_table_left_border user_info" id="account_information">
 			<div class="user_block">
-				<div class="f-right">
-					
+				<div class="f-left">
 					<div><span class="bold">Тарифный план :</span> {{ tariff }}</div>
 					{% if next_tariff %}
-						<div><span class="bold">Следующий тарифный план :</span>{{ next_tariff.tarif.name }}</div>
+						<div><span class="bold">Следующий тарифный план :</span>{{ next_tariff.tarif.name }} c {{ next_tariff.datetime}}</div>
 					{% endif %}
-				</div>
-				
-				<div class="f-left">
 					<div><span class="bold">ФИО :</span> {{user.fullname}}</div>
 					{% if user.city or user.postcode or user.region or user.street or user.house or user.house_bulk or user.entrance or user.room %}
-						<div><span class="bold">Ваш Адрес :</span> {{ user.postcode }} {%if user.city %}г. {{ user.city }}{% endif %} {% if user.region %}обл. {{ user.region }}{% endif %} {% if user.street %}ул. {{ user.street }}{% endif %} {% if user.house %}д. {{ user.house }}{% endif %} {% if user.house_bulk %}корп. {{ user.house_bulk }}{% endif %} {% if user.room  %}кв. {{ user.room }}{% endif %}</div>
+						<div><span class="bold">Ваш Адрес :</span> {{ user.postcode }} {%if user.city %} {{ user.city }}{% endif %} {% if user.street %}ул. {{ user.street }}{% endif %} {% if user.house %} {{ user.house }}{% endif %} {% if user.house_bulk %}корп. {{ user.house_bulk }}{% endif %} {% if user.room  %}кв. {{ user.room }}{% endif %}</div>
 					{% endif %}
 					{% if user.email %}
 						<div><span class="bold">E-mail : {{ user.email }}</div>
@@ -142,12 +138,12 @@
 	
     <!--- Субаккаунты - загаловки --->
     <tr>
-        <td class="blue_caption white s-11 bold">ВАШИ АККАУНТЫ<a id="traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('subaccounts')">&nbsp;</a></td>
+        <td class="blue_caption white s-11 bold">ВАШИ СУБАККАУНТЫ<a id="subaccounts_a" class="close" href="javascript:return 0;" onclick="runEffect('subaccounts')">&nbsp;</a></td>
     </tr>
     <!--- Субаккаунты - данные --->
     <tr>
         {% spaceless %}
-        <td class="right_border bottom_border main_table_left_border" valign="top" id="traffic">
+        <td class="right_border bottom_border main_table_left_border" valign="top" id="subaccounts">
                 {% if subaccounts %}
                     <table class="wide extra_table trafficlimit_margin" cellpadding="0" cellspacing="0">
                         <tr>
@@ -175,7 +171,7 @@
 	
 	<!--- остаток трафика по лимитам - загаловки --->
 	<tr>
-		<td class="blue_caption white s-11 bold">ОСТАТОК ТРАФИКА ПО ЛИМИТАМ<a id="traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic')">&nbsp;</a></td>
+		<td class="blue_caption white s-11 bold">ОСТАТКИ ТРАФИКА ПО ЛИМИТАМ<a id="traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic')">&nbsp;</a></td>
 	</tr>
 	<!--- остаток трафика по лимитам - данные --->
 	<tr>
@@ -207,29 +203,54 @@
 	
 	<!--- Остаток предоплаченного трафика/остаток трафика по лимитам - загаловки --->
 	<tr>
-		<td class="blue_caption white s-11 bold">ОСТАТОК ПРЕДОПЛАЧЕННОГО ТРАФИКА<a id="prepaid_traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('prepaid_traffic')">&nbsp;</a></td>
+		<td class="blue_caption white s-11 bold">ПРЕДОПЛАЧЕННЫЕ ЕДИНИЦЫ<a id="prepaid_traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('prepaid_traffic')">&nbsp;</a></td>
 	</tr>
 	<!--- Остаток предоплаченного трафика --->
 	<tr>
 		<td class="" valign="top" id="prepaid_traffic">
-			{% if prepaidtraffic %}
+			{% if account_prepays_traffic or prepaydtime or prepaydradiustraffic%}
+				{% if account_prepays_traffic%}
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th>Тип трафика</th>
-						<th>Количество</th>
+						<th>Направление</th>
+						<th>Остаток</th>
 					</tr>
-					{% for traffic in prepaidtraffic %}
-						{% for class in traffic.group.trafficclass.all %}
+					{% for traffic in account_prepays_traffic %}
 							<tr>
-								<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ class.name }}{% if forloop.last %}<div class="prepaid_table_bottom_left"></div>{% endif %}</td>
-								<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_size traffic account_tariff %}{% if forloop.last %}<div class="prepaid_table_bottom_right"></div>{% endif %}</td>
+								<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ traffic.prepaid_traffic.group.name }}{% if forloop.last %}<div class="prepaid_table_bottom_left"></div>{% endif %}</td>
+								<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_format traffic.size %}{% if forloop.last %}<div class="prepaid_table_bottom_right"></div>{% endif %}</td>
 							</tr>
-						{% endfor %}
+
 					{% endfor %}
 					<tr>
 						<td colspan="2" class="no_border">&nbsp;</td>
 					</tr>
 				</table>
+				{% endif %}
+				{% if prepaydradiustraffic or prepaydtime %}
+				<table class="wide extra_table" cellpadding="0" cellspacing="0">
+					<tr>
+						<th>Предоплаченное значение</th>
+						<th>Остаток</th>
+						<th>Время начисления</th>
+					</tr>
+
+						<tr>
+							<td class="coll_bg">Предоплаченное время</td>
+							<td class="left_border coll_bg">{{ prepaydtime.size }} сек.</td>
+							<td class="left_border coll_bg">{{ prepaydtime.datetime }}</td>
+						</tr>
+						<tr>
+							<td class="no_border">Предоплаченный трафик<div class="prepaid_table_bottom_left"></div></td>
+							<td class="left_border no_border">{% traffic_format prepaydradiustraffic.size %}<div class="prepaid_table_bottom_right"></div></td>
+							<td class="left_border no_border">{{prepaydradiustraffic.datetime}}<div class="prepaid_table_bottom_right"></div></td>
+						</tr>
+					<tr>
+						<td colspan="2" class="no_border">&nbsp;</td>
+					</tr>
+				</table>
+				{% endif %}
+				
 			{% else %}
 				 <div class="padding_bottom"></div>
 			{% endif %}

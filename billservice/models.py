@@ -397,6 +397,8 @@ class AccountPrepaysTrafic(models.Model):
     prepaid_traffic = models.ForeignKey(to=PrepaidTraffic)
     size = models.FloatField(blank=True, default=0)
     datetime = models.DateTimeField(auto_now_add=True, default='')
+    current=models.BooleanField(default=False)
+    reseted=models.BooleanField(default=False)
 
     def __unicode__(self):
         return u"%s" % (self.prepaid_traffic)
@@ -419,6 +421,9 @@ class AccountPrepaysRadiusTrafic(models.Model):
     size = models.FloatField(blank=True, default=0)
     direction = models.IntegerField()
     datetime = models.DateTimeField(auto_now_add=True, default='')
+    current=models.BooleanField(default=False)
+    reseted=models.BooleanField(default=False)
+
 
     def __unicode__(self):
         return u"%s" % (self.prepaid_traffic)
@@ -438,6 +443,8 @@ class AccountPrepaysTime(models.Model):
     prepaid_time_service = models.ForeignKey(to=TimeAccessService)
     size = models.IntegerField(default=0, blank=True)
     datetime = models.DateTimeField(auto_now_add=True, default='')
+    current=models.BooleanField(default=False)
+    reseted=models.BooleanField(default=False)
 
     class Admin:
         pass
@@ -527,11 +534,13 @@ class Account(models.Model):
     #passport_date = models.DateField()
     
     address = models.TextField(verbose_name=u'Домашний адрес', blank=True, default='')
-    city = models.CharField(max_length=255)
+    city = models.ForeignKey("City", null=True)
+    street = models.ForeignKey("Street", null=True)
+    house = models.ForeignKey("House", null=True)
     postcode = models.CharField(max_length=255, blank=True, null=True)
     region = models.CharField(max_length=255)
     street = models.CharField(max_length=255)
-    house = models.CharField(max_length=255)
+    #house = models.CharField(max_length=255)
     house_bulk = models.CharField(max_length=255)
     entrance = models.CharField(max_length=255)
     room = models.CharField(max_length=255)
@@ -1189,13 +1198,19 @@ class BalanceHistory(models.Model):
 class City(models.Model):
     name = models.CharField(max_length=320)
 
+    def __unicode__(self):
+        return u"%s" % self.name
 class Street(models.Model):
     name = models.CharField(max_length=320)
     city= models.ForeignKey(City)
+    def __unicode__(self):
+        return u"%s" % self.name
 
 class House(models.Model):
     name = models.CharField(max_length=320)
     street = models.ForeignKey(Street)
+    def __unicode__(self):
+        return u"%s" % self.name
     
 class RadiusTraffic(models.Model):
     direction = models.IntegerField()
