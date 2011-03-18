@@ -84,6 +84,7 @@ def addon_queryset(request, id_begin, field='datetime', field_to=None):
 @render_to('registration/login.html')
 def login(request):
     error_message = True
+    
     if request.method == 'POST':
         pin = request.POST.get('pin')
         user = request.POST.get('user')
@@ -186,6 +187,10 @@ def login_out(request):
 @render_to('accounts/index.html')
 @login_required
 def index(request):
+    
+    if isinstance(request.user.account, SystemUser):
+        return HttpResponseRedirect(reverse("helpdesk_dashboard"))
+    
     user = request.user.account
     tariff_id, tariff_name = user.get_account_tariff_info()
     date = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
