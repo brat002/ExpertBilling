@@ -37,7 +37,7 @@ from lib.http import JsonResponse
 
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
 
-from billservice.models import SystemUser
+from billservice.models import SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime
 
 from billservice.forms import LoginForm, PasswordForm, SimplePasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
@@ -195,6 +195,7 @@ def index(request):
     tariff_id, tariff_name = user.get_account_tariff_info()
     date = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
     tariffs = AccountTarif.objects.filter(account=user, datetime__lt=date).order_by('-datetime')
+    
     if len(tariffs) == 0 or len(tariffs) == 1:
         tariff_flag = False
     else:
@@ -208,8 +209,19 @@ def index(request):
     subaccounts = SubAccount.objects.filter(account=user)
     #account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
     account_tariff = AccountTarif.objects.filter(account=user, datetime__lte=datetime.datetime.now()).order_by('-datetime')[0]
-    account_prepays_trafic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff)
-    prepaidtraffic = PrepaidTraffic.objects.filter(id__in=[ i.prepaid_traffic.id for i in account_prepays_trafic])
+    account_prepays_traffic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff, current=True)
+
+    prepaydtime = None
+    try:
+        prepaydtime = AccountPrepaysTime.objects.get(account_tarif=account_tariff, current=True)
+    except:
+        pass
+    prepaydradiustraffic=None
+    try:
+        prepaydradiustraffic = AccountPrepaysRadiusTrafic.objects.get(account_tarif=account_tariff, current=True)
+    except:
+        pass
+
     try:
         next_tariff = AccountTarif.objects.filter(account=user, datetime__gte=datetime.datetime.now()).order_by('-datetime')[0]
     except:
@@ -221,11 +233,14 @@ def index(request):
             'tariffs':tariffs,
             #'status': bool(user.blocked),
             'tariff_flag':tariff_flag,
+            'prepaydtime':prepaydtime,
+            'prepaydradiustraffic':prepaydradiustraffic,
             'trafficlimit':traffic,
-            'prepaidtraffic':prepaidtraffic,
+            'account_prepays_traffic':account_prepays_traffic,
             'active_class':'user-img',
             'next_tariff':next_tariff,
             'subaccounts':subaccounts,
+            'user':request.user.account
             }
 
 @render_to('accounts/netflowstream_info.html')

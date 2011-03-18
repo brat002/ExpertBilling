@@ -4967,6 +4967,23 @@ ALTER FUNCTION shedulelog_tr_reset_fn(integer, integer, timestamp without time z
 
 -- DROP FUNCTION shedulelog_tr_credit_fn(integer, integer, integer, numeric, timestamp without time zone);
 
+CREATE OR REPLACE FUNCTION shedulelog_tr_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone)
+  RETURNS void AS
+$BODY$
+BEGIN
+    UPDATE billservice_accountprepaystrafic SET reseted=False WHERE account_tarif_id=accounttarif_id_ and current=True and reseted=False;
+    UPDATE billservice_shedulelog SET prepaid_traffic_reset=reset_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
+    IF NOT FOUND THEN
+        INSERT INTO billservice_shedulelog(account_id, accounttarif_id, prepaid_traffic_reset) VALUES(account_id_,accounttarif_id_, reset_);
+    END IF;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION shedulelog_tr_reset_fn(integer, integer, timestamp without time zone) OWNER TO postgres;
+
+
 CREATE OR REPLACE FUNCTION shedulelog_tr_credit_fn(account_id_ integer, accounttarif_id_ integer, trts_id_ integer, need_traffic_reset boolean,  coeff_ numeric, datetime_ timestamp without time zone)
   RETURNS void AS
 $BODY$
@@ -4985,7 +5002,7 @@ BEGIN
         INSERT INTO billservice_accountprepaystrafic (account_tarif_id, prepaid_traffic_id, size, datetime, current) VALUES(accounttarif_id_, prepaid_tr_id_, old_size+(size_*coeff_)::bigint, datetime_, True);
         count_ := count_ + 1;
     END LOOP;
-	UPDATE billservice_accountprepaystrafic as preptr SET current=False WHERE current=True and preptr.account_tarif_id in (SELECT id FROM billservice_accounttarif WHERE account_id=(SELECT account_id FROM billservice_accounttarif WHERE id=accounttarif_id_));    
+	UPDATE billservice_accountprepaystrafic as preptr SET current=False WHERE datetime<datetime_ and current=True and preptr.account_tarif_id in (SELECT id FROM billservice_accounttarif WHERE account_id=(SELECT account_id FROM billservice_accounttarif WHERE id=accounttarif_id_));    
     IF count_ > 0 THEN
         UPDATE billservice_shedulelog SET prepaid_traffic_accrued=datetime_, accounttarif_id=accounttarif_id_ WHERE account_id=account_id_;
         IF NOT FOUND THEN
