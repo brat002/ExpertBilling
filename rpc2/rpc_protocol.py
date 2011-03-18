@@ -47,7 +47,7 @@ def format_insert(y):
     
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
-        print result
+        #print result
         for key in result:
             setattr(self, key, result[key])
         """
