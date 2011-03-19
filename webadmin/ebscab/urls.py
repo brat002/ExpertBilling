@@ -26,7 +26,7 @@ urlpatterns += patterns('helpdesk.views.account',
     url(r'^helpdesk/(?P<ticket_id>[\d]+)/$', 'view_ticket', name='helpdesk_account_tickets_view'), #change/post comment,
 )
 
-urlpatterns += patterns('',(r'helpdesk/', include('helpdesk.urls')),)
+urlpatterns += patterns('',(r'helpdesk/management/', include('helpdesk.urls')),)
 
 urlpatterns += patterns('billservice.views',
     # Uncomment this for admin:
