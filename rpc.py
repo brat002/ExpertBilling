@@ -422,26 +422,34 @@ class RPCServer(object):
         if login and pin:
             try:
                 return_status = 0
-                cur.execute("SELECT * FROM billservice_card WHERE login=%s and pin=%s and sold is not Null and disabled=False FOR UPDATE;",  (login, pin, ))
+                cur.execute("SELECT * FROM billservice_card WHERE type=2 and login=%s and pin=%s and sold is not Null and disabled=False FOR UPDATE;",  (login, pin, ))
                 card = cur.fetchone()
                 if not card: 
                     return_status =  status_bad_userpassword                
                 elif card['activated'] or card['start_date']>now or card['end_date']<now: 
                     return_status =  status_card_was_activated
                 if not return_status:                
-                    cur.execute("SELECT * FROM billservice_ippool WHERE id=(SELECT pool_id FROM billservice_ipinuse WHERE id=%s);", (card['ipinuse_id'],))
-                    pool = cur.fetchone()
+                    #cur.execute("SELECT * FROM billservice_ippool WHERE id=(SELECT pool_id FROM billservice_ipinuse WHERE id=%s);", (card['ipinuse_id'],))
+                    #pool = cur.fetchone()
                     
                     # 0 -VPN, 1 - IPN
-                    if pool['type']==1:
-                        cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
-                        VALUES(%s, %s, %s, %s, False, 1, now(), False, True, True, False, False, False, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
-                    else:
-                        cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, vpn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
-                        VALUES(%s, %s, %s, %s, False, 1, now(), False, True, True, False, False, False, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
+                    #if pool['type']==1:
+                    #    cur.execute("""INSERT INTO billservice_account(username, "password", nas_id, ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
+                    #    VALUES(%s, %s, %s, %s, False, 1, now(), False, True, True, False, False, False, False) RETURNING id;""", (login, pin, card['nas_id'], card['ip'], ))
+                    
+                    cur.execute("""INSERT INTO billservice_account(username, "password",  ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards)
+                    VALUES(%s, %s, False, 1, now(), False, True, True) RETURNING id;""", (login, pin, ))
                         
                     account_id = cur.fetchone()['id']
-            
+                    
+                    cur.execute(""" 
+                    INSERT INTO billservice_subaccount(
+                             account_id, username, "password", vpn_ip_address, 
+                            vpn_ipinuse_id, nas_id, 
+                            allow_addonservice)
+                    VALUES (%s, %s, %s, %s, %s, %s
+                            True);                    
+                    """, (account_id, login, pin, card['ip'], card['ipinuse_id'],  card['nas_id']))
                     cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s, %s, %s);", (account_id, card['tarif_id'], now))
                     
                     cur.execute(u"""
@@ -492,7 +500,7 @@ class RPCServer(object):
         try:
             if serial and pin and card_id and account_id:
                 return_value = ''
-                cur.execute("SELECT * FROM billservice_card WHERE id=%s and series=%s and pin=%s and disabled=False FOR UPDATE;",  (card_id, serial, pin ))
+                cur.execute("SELECT * FROM billservice_card WHERE type=0 and id=%s and series=%s and pin=%s and disabled=False FOR UPDATE;",  (card_id, serial, pin ))
                 card = cur.fetchone()
                 if not card:
                     return_value =  "CARD_NOT_FOUND"                

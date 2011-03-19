@@ -75,9 +75,9 @@ class AddressEbs(ebsTableWindow):
         self.city_ce.setEnabled(True)
         self.street_ce.setEnabled(True)
         self.house_ce.setEnabled(True)
-        self.listWidget_city.setGraphicsEffect(self.city_ce)
-        self.listWidget_street.setGraphicsEffect(self.street_ce)
-        self.listWidget_house.setGraphicsEffect(self.house_ce)
+        #self.listWidget_city.setGraphicsEffect(self.city_ce)
+        #self.listWidget_street.setGraphicsEffect(self.street_ce)
+        #self.listWidget_house.setGraphicsEffect(self.house_ce)
         self.listWidget_city.setFocus()
         
     def ebsPostInit(self, initargs):
@@ -303,8 +303,8 @@ class AddressEbs(ebsTableWindow):
     def refresh_street(self):
         self.listWidget_street.clear()
         self.listWidget_house.clear()
-        ce = QtGui.QGraphicsColorizeEffect()
-        self.listWidget_city.setGraphicsEffect(ce)
+        #ce = QtGui.QGraphicsColorizeEffect()
+        #self.listWidget_city.setGraphicsEffect(ce)
         #ce.setEnabled(False)
         
         try:
