@@ -1038,7 +1038,7 @@ def addon_service_transaction(request):
 @login_required
 def traffic_transaction(request):
     from lib.paginator import SimplePaginator
-    is_range, addon_query = addon_queryset(request, 'traffic_transaction', 'created')
+    is_range, addon_query = addon_queryset(request, 'traffic_transaction', 'datetime')
     qs = TrafficTransaction.objects.filter(account=request.user.account, \
                                            **addon_query).order_by('-datetime')
     paginator = SimplePaginator(request, qs, 100, 'page')
