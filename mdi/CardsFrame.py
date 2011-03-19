@@ -16,6 +16,7 @@ from helpers import write_cards, get_type
 
 import os, datetime
 from randgen import GenPasswd2
+from random import randint
 import string
 from mako.template import Template
 from mako.lookup import TemplateLookup
@@ -228,6 +229,7 @@ class SaleCards(QtGui.QDialog):
                 f.write("<pin>%s</pin>" % card.pin)
                 f.write("<login>%s</login>" % card.login)
                 f.write("<template>%s</template>" % card.template_id)
+                f.write("<nas>%s</nas>" % card.nas_id)
                 f.write("<ip>%s</ip>" % card.ip)
                 f.write("<date_start>%s</date_start>" % card.start_date)
                 f.write("<date_end>%s</date_end>" % card.end_date)
@@ -479,7 +481,7 @@ class AddCards(QtGui.QDialog):
         self.connection.commit()
         self.op_model   = Object()
         self.bank_model = Object()
-        self.resize(572, 406)
+        self.resize(573, 467)
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
         self.buttonBox = QtGui.QDialogButtonBox(self)
@@ -487,7 +489,7 @@ class AddCards(QtGui.QDialog):
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
-        self.tabWidget = QtGui.QTabWidget()
+        self.tabWidget = QtGui.QTabWidget(self)
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtGui.QWidget()
         self.tab.setObjectName("tab")
@@ -504,18 +506,14 @@ class AddCards(QtGui.QDialog):
         self.radioButton_prepaid = QtGui.QRadioButton(self.params_groupBox)
         self.radioButton_prepaid.setChecked(False)
         self.radioButton_prepaid.setObjectName("radioButton_prepaid")
-        self.gridLayout_3.addWidget(self.radioButton_prepaid, 1, 0, 1, 5)
-        self.radioButton_hotspot = QtGui.QRadioButton(self.params_groupBox)
-        self.radioButton_hotspot.setChecked(False)
-        self.radioButton_hotspot.setObjectName("radioButton_prepaid")
-        self.gridLayout_3.addWidget(self.radioButton_hotspot, 2, 0, 1, 5)
+        self.gridLayout_3.addWidget(self.radioButton_prepaid, 1, 0, 1, 6)
         self.series_label = QtGui.QLabel(self.params_groupBox)
         self.series_label.setObjectName("series_label")
         self.gridLayout_3.addWidget(self.series_label, 3, 0, 1, 1)
         self.series_spinBox = QtGui.QSpinBox(self.params_groupBox)
         self.series_spinBox.setMaximum(999999999)
         self.series_spinBox.setObjectName("series_spinBox")
-        self.gridLayout_3.addWidget(self.series_spinBox, 3, 1, 1, 3)
+        self.gridLayout_3.addWidget(self.series_spinBox, 3, 1, 1, 4)
         self.nominal_label = QtGui.QLabel(self.params_groupBox)
         self.nominal_label.setObjectName("nominal_label")
         self.gridLayout_3.addWidget(self.nominal_label, 4, 0, 1, 1)
@@ -525,7 +523,7 @@ class AddCards(QtGui.QDialog):
         self.spinBox_nominal.setAccelerated(True)
         self.spinBox_nominal.setMaximum(999999999)
         self.spinBox_nominal.setObjectName("spinBox_nominal")
-        self.gridLayout_3.addWidget(self.spinBox_nominal, 4, 1, 1, 3)
+        self.gridLayout_3.addWidget(self.spinBox_nominal, 4, 1, 1, 4)
         self.count_label = QtGui.QLabel(self.params_groupBox)
         self.count_label.setObjectName("count_label")
         self.gridLayout_3.addWidget(self.count_label, 5, 0, 1, 1)
@@ -535,57 +533,67 @@ class AddCards(QtGui.QDialog):
         self.count_spinBox.setAccelerated(True)
         self.count_spinBox.setMaximum(999999999)
         self.count_spinBox.setObjectName("count_spinBox")
-        self.gridLayout_3.addWidget(self.count_spinBox, 5, 1, 1, 3)
+        self.gridLayout_3.addWidget(self.count_spinBox, 5, 1, 1, 4)
         self.label_tarif = QtGui.QLabel(self.params_groupBox)
         self.label_tarif.setObjectName("label_tarif")
         self.gridLayout_3.addWidget(self.label_tarif, 6, 0, 1, 1)
         self.comboBox_tarif = QtGui.QComboBox(self.params_groupBox)
         self.comboBox_tarif.setObjectName("comboBox_tarif")
-        self.gridLayout_3.addWidget(self.comboBox_tarif, 6, 1, 1, 3)
+        self.gridLayout_3.addWidget(self.comboBox_tarif, 6, 1, 1, 4)
         self.label_nas = QtGui.QLabel(self.params_groupBox)
         self.label_nas.setObjectName("label_nas")
         self.gridLayout_3.addWidget(self.label_nas, 7, 0, 1, 1)
         self.comboBox_nas = QtGui.QComboBox(self.params_groupBox)
         self.comboBox_nas.setObjectName("comboBox_nas")
-        self.gridLayout_3.addWidget(self.comboBox_nas, 7, 1, 1, 3)
+        self.gridLayout_3.addWidget(self.comboBox_nas, 7, 1, 1, 4)
         self.label_ippool = QtGui.QLabel(self.params_groupBox)
         self.label_ippool.setObjectName("label_ippool")
         self.gridLayout_3.addWidget(self.label_ippool, 8, 0, 1, 1)
         self.comboBox_ippool = QtGui.QComboBox(self.params_groupBox)
         self.comboBox_ippool.setObjectName("comboBox_ippool")
-        self.gridLayout_3.addWidget(self.comboBox_ippool, 8, 1, 1, 3)
+        self.gridLayout_3.addWidget(self.comboBox_ippool, 8, 1, 1, 4)
         self.label_login = QtGui.QLabel(self.params_groupBox)
         self.label_login.setObjectName("label_login")
         self.gridLayout_3.addWidget(self.label_login, 9, 0, 1, 1)
-        self.spinBox_login = QtGui.QSpinBox(self.params_groupBox)
-        self.spinBox_login.setProperty("text", QtCore.QVariant(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8)))
-        self.spinBox_login.setMaximum(32)
-        self.spinBox_login.setObjectName("spinBox_login")
-        self.gridLayout_3.addWidget(self.spinBox_login, 9, 1, 1, 3)
+        self.spinBox_login_from = QtGui.QSpinBox(self.params_groupBox)
+        self.spinBox_login_from.setMaximum(32)
+        self.spinBox_login_from.setObjectName("spinBox_login_from")
+        self.gridLayout_3.addWidget(self.spinBox_login_from, 9, 2, 1, 1)
         self.l_checkBox_login = QtGui.QCheckBox(self.params_groupBox)
         self.l_checkBox_login.setChecked(True)
         self.l_checkBox_login.setObjectName("l_checkBox_login")
-        self.gridLayout_3.addWidget(self.l_checkBox_login, 10, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.l_checkBox_login, 10, 1, 1, 2)
         self.numbers_checkBox_login = QtGui.QCheckBox(self.params_groupBox)
         self.numbers_checkBox_login.setChecked(True)
         self.numbers_checkBox_login.setObjectName("numbers_checkBox_login")
-        self.gridLayout_3.addWidget(self.numbers_checkBox_login, 10, 2, 1, 1)
+        self.gridLayout_3.addWidget(self.numbers_checkBox_login, 10, 3, 1, 2)
         self.pin_label = QtGui.QLabel(self.params_groupBox)
         self.pin_label.setObjectName("pin_label")
         self.gridLayout_3.addWidget(self.pin_label, 11, 0, 1, 1)
         self.pin_spinBox = QtGui.QSpinBox(self.params_groupBox)
-        self.pin_spinBox.setProperty("text", QtCore.QVariant(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8)))
         self.pin_spinBox.setMaximum(32)
         self.pin_spinBox.setObjectName("pin_spinBox")
-        self.gridLayout_3.addWidget(self.pin_spinBox, 11, 1, 1, 3)
+        self.gridLayout_3.addWidget(self.pin_spinBox, 11, 1, 1, 4)
         self.l_checkBox_pin = QtGui.QCheckBox(self.params_groupBox)
         self.l_checkBox_pin.setChecked(True)
         self.l_checkBox_pin.setObjectName("l_checkBox_pin")
-        self.gridLayout_3.addWidget(self.l_checkBox_pin, 12, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.l_checkBox_pin, 12, 1, 1, 2)
         self.numbers_checkBox_pin = QtGui.QCheckBox(self.params_groupBox)
         self.numbers_checkBox_pin.setChecked(True)
         self.numbers_checkBox_pin.setObjectName("numbers_checkBox_pin")
-        self.gridLayout_3.addWidget(self.numbers_checkBox_pin, 12, 2, 1, 1)
+        self.gridLayout_3.addWidget(self.numbers_checkBox_pin, 12, 3, 1, 1)
+        self.radioButton_hotspot = QtGui.QRadioButton(self.params_groupBox)
+        self.radioButton_hotspot.setObjectName("radioButton_hotspot")
+        self.gridLayout_3.addWidget(self.radioButton_hotspot, 2, 0, 1, 1)
+        self.label_login_from = QtGui.QLabel(self.params_groupBox)
+        self.label_login_from.setObjectName("label_login_from")
+        self.gridLayout_3.addWidget(self.label_login_from, 9, 1, 1, 1)
+        self.label_login_to = QtGui.QLabel(self.params_groupBox)
+        self.label_login_to.setObjectName("label_login_to")
+        self.gridLayout_3.addWidget(self.label_login_to, 9, 3, 1, 1)
+        self.spinBox_login_to = QtGui.QSpinBox(self.params_groupBox)
+        self.spinBox_login_to.setObjectName("spinBox_login_to")
+        self.gridLayout_3.addWidget(self.spinBox_login_to, 9, 4, 1, 1)
         self.gridLayout_2.addWidget(self.params_groupBox, 0, 0, 3, 1)
         self.period_groupBox = QtGui.QGroupBox(self.tab)
         self.period_groupBox.setObjectName("period_groupBox")
@@ -595,6 +603,7 @@ class AddCards(QtGui.QDialog):
         self.start_label.setObjectName("start_label")
         self.gridLayout_4.addWidget(self.start_label, 0, 0, 1, 1)
         self.start_dateTimeEdit = QtGui.QDateTimeEdit(self.period_groupBox)
+        self.start_dateTimeEdit.setDateTime(QtCore.QDateTime(QtCore.QDate(2011, 1, 1), QtCore.QTime(0, 0, 0)))
         self.start_dateTimeEdit.setCalendarPopup(True)
         self.start_dateTimeEdit.setObjectName("start_dateTimeEdit")
         self.gridLayout_4.addWidget(self.start_dateTimeEdit, 0, 1, 1, 1)
@@ -602,6 +611,7 @@ class AddCards(QtGui.QDialog):
         self.end_label.setObjectName("end_label")
         self.gridLayout_4.addWidget(self.end_label, 1, 0, 1, 1)
         self.end_dateTimeEdit = QtGui.QDateTimeEdit(self.period_groupBox)
+        self.end_dateTimeEdit.setDateTime(QtCore.QDateTime(QtCore.QDate(2012, 1, 1), QtCore.QTime(0, 0, 0)))
         self.end_dateTimeEdit.setCalendarPopup(True)
         self.end_dateTimeEdit.setObjectName("end_dateTimeEdit")
         self.gridLayout_4.addWidget(self.end_dateTimeEdit, 1, 1, 1, 1)
@@ -652,21 +662,25 @@ class AddCards(QtGui.QDialog):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Параметры серии", None, QtGui.QApplication.UnicodeUTF8))
         self.params_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Параметры генерации карточки", None, QtGui.QApplication.UnicodeUTF8))
-        self.count_label.setText(QtGui.QApplication.translate("Dialog", "Количество", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_access.setText(QtGui.QApplication.translate("Dialog", "Карты доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_prepaid.setText(QtGui.QApplication.translate("Dialog", "Карты предоплаты", None, QtGui.QApplication.UnicodeUTF8))
         self.series_label.setText(QtGui.QApplication.translate("Dialog", "Серия", None, QtGui.QApplication.UnicodeUTF8))
         self.nominal_label.setText(QtGui.QApplication.translate("Dialog", "Номинал", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_prepaid.setText(QtGui.QApplication.translate("Dialog", "Карты предоплаты", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_hotspot.setText(QtGui.QApplication.translate("Dialog", "HotSpot", None, QtGui.QApplication.UnicodeUTF8))
+        self.count_label.setText(QtGui.QApplication.translate("Dialog", "Количество", None, QtGui.QApplication.UnicodeUTF8))
         self.label_tarif.setText(QtGui.QApplication.translate("Dialog", "Тарифный план", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_login.setText(QtGui.QApplication.translate("Dialog", "Длина логина", None, QtGui.QApplication.UnicodeUTF8))
         self.label_nas.setText(QtGui.QApplication.translate("Dialog", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
-        self.pin_label.setText(QtGui.QApplication.translate("Dialog", "Длина пина", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_ippool.setText(QtGui.QApplication.translate("Dialog", "IP пул", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_login.setText(QtGui.QApplication.translate("Dialog", "Длина логина", None, QtGui.QApplication.UnicodeUTF8))
+        self.spinBox_login_from.setProperty("text", QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
         self.l_checkBox_login.setText(QtGui.QApplication.translate("Dialog", "a-Z", None, QtGui.QApplication.UnicodeUTF8))
         self.numbers_checkBox_login.setText(QtGui.QApplication.translate("Dialog", "0-9", None, QtGui.QApplication.UnicodeUTF8))
+        self.pin_label.setText(QtGui.QApplication.translate("Dialog", "Длина пина", None, QtGui.QApplication.UnicodeUTF8))
+        self.pin_spinBox.setProperty("text", QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
         self.l_checkBox_pin.setText(QtGui.QApplication.translate("Dialog", "a-Z", None, QtGui.QApplication.UnicodeUTF8))
         self.numbers_checkBox_pin.setText(QtGui.QApplication.translate("Dialog", "0-9", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton_access.setText(QtGui.QApplication.translate("Dialog", "Карты доступа", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_ippool.setText(QtGui.QApplication.translate("Dialog", "IP пул", None, QtGui.QApplication.UnicodeUTF8))
+        self.radioButton_hotspot.setText(QtGui.QApplication.translate("Dialog", "HotSpot карты", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_login_from.setText(QtGui.QApplication.translate("Dialog", "от", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_login_to.setText(QtGui.QApplication.translate("Dialog", "до", None, QtGui.QApplication.UnicodeUTF8))
         self.period_groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Период действия", None, QtGui.QApplication.UnicodeUTF8))
         self.start_label.setText(QtGui.QApplication.translate("Dialog", "Начало", None, QtGui.QApplication.UnicodeUTF8))
         self.end_label.setText(QtGui.QApplication.translate("Dialog", "Конец", None, QtGui.QApplication.UnicodeUTF8))
@@ -677,14 +691,15 @@ class AddCards(QtGui.QDialog):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;\">При создании карт доступа, убедитесь что в выбранном пуле присутствует достаточное количество свободных IP адресов.</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt;\">При создании карт доступа, убедитесь что в выбранном пуле присутствует достаточное количество свободных IP адресов.</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("Dialog", "Параметры", None, QtGui.QApplication.UnicodeUTF8))
 
 
     def check_card_type(self):
         if self.radioButton_access.isChecked()==True:
             self.comboBox_tarif.setDisabled(False)
-            self.spinBox_login.setDisabled(False)
+            self.spinBox_login_from.setDisabled(False)
+            self.spinBox_login_to.setDisabled(False)
             self.comboBox_ippool.setDisabled(False)
             self.comboBox_nas.setDisabled(False)
             self.l_checkBox_login.setDisabled(False)
@@ -692,7 +707,8 @@ class AddCards(QtGui.QDialog):
         
         if self.radioButton_prepaid.isChecked()==True:
             self.comboBox_tarif.setDisabled(True)
-            self.spinBox_login.setDisabled(True)
+            self.spinBox_login_from.setDisabled(True)
+            self.spinBox_login_to.setDisabled(True)
             self.comboBox_ippool.setDisabled(True)
             self.comboBox_nas.setDisabled(True)
             self.l_checkBox_login.setDisabled(True)
@@ -700,7 +716,8 @@ class AddCards(QtGui.QDialog):
 
         if self.radioButton_hotspot.isChecked()==True:
             self.comboBox_tarif.setDisabled(False)
-            #self.spinBox_login.setDisabled(True)
+            self.spinBox_login_from.setDisabled(False)
+            self.spinBox_login_to.setDisabled(False)
             self.comboBox_ippool.setDisabled(True)
             self.comboBox_nas.setDisabled(True)
             self.l_checkBox_login.setDisabled(False)
@@ -727,7 +744,12 @@ class AddCards(QtGui.QDialog):
         
         if self.pin_spinBox.text().toInt()[0]==0:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана длина PIN-кода"))
-            return        
+            return     
+        
+        if self.spinBox_login_to.value()<self.spinBox_login_from.value() or self.spinBox_login_from.value()==0 or self.spinBox_login_to.value()==self.spinBox_login_from.value():
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность указания длины логина"))
+            return     
+            
 
 ######################33
         
@@ -756,16 +778,18 @@ class AddCards(QtGui.QDialog):
             pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
             ips = get_free_addreses_from_pool(self.connection, self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0], self.count_spinBox.text().toInt()[0])
             
-        for x in xrange(0, self.count_spinBox.value()):
+        cards_count=self.count_spinBox.value()
+        i=0
+        while i<cards_count:
             model = Object()
             #print x
             #model.card_group_id = self.group
             model.series = unicode(self.series_spinBox.text())
             model.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
             if self.radioButton_access.isChecked()==True:
-                model.login = "%s-%s" % (model.series, GenPasswd2(length=self.spinBox_login.text().toInt()[0]-1,chars=login_mask))
+                model.login = "%s%s" % (model.series, GenPasswd2(length=randint(self.spinBox_login_from.value(), self.spinBox_login_to.value())-1,chars=login_mask))
                 model.tarif_id = tarif_id
-                model.ip = ips[x]
+                model.ip = ips[i]
                 model.nas_id = nas_id
                 ipinuse_model = Object()
                 ipinuse_model.ip = model.ip
@@ -774,19 +798,24 @@ class AddCards(QtGui.QDialog):
                 ipinuse_model.id = self.connection.save(ipinuse_model, "billservice_ipinuse")
                 model.ipinuse_id = ipinuse_model.id
             if self.radioButton_hotspot.isChecked():
-                model.login = "%s-%s" % (model.series, GenPasswd2(length=self.spinBox_login.text().toInt()[0]-1,chars=login_mask))
+                model.login = "%s%s" % (model.series, GenPasswd2(length=randint(self.spinBox_login_from.value(), self.spinBox_login_to.value())-1,chars=login_mask))
                 model.tarif_id = tarif_id
                 
-            model.nominal = unicode(self.spinBox_nominal.text())
+            model.nominal = unicode(self.spinBox_nominal.value())
             model.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
             model.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
             model.template_id = template_id
             
             model.created = dnow
 
-            self.connection.save(model,"billservice_card")
-            self.connection.commit()
-            
+            try:
+                self.connection.save(model,"billservice_card")
+                self.connection.commit()
+                i+=1
+            except:
+                print "found dublicates"
+                
+        
         #except Exception, ex:
         #    self.connection.rollback()
         #    print ex
@@ -808,7 +837,7 @@ class AddCards(QtGui.QDialog):
         
 
             
-        tarifs = self.connection.get_models("billservice_tariff")
+        tarifs = self.connection.get_models("billservice_tariff", where={'deleted':False,})
         self.connection.commit()
         self.comboBox_tarif.clear()
         i=0
