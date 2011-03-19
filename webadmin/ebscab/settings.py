@@ -71,6 +71,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.transaction.TransactionMiddleware',
     'lib.threadlocals.ThreadLocalsMiddleware',
     'notify.middleware.NotificationsMiddleware',
+    'billservice.middleware.UrlFilter'
 
 )
 
