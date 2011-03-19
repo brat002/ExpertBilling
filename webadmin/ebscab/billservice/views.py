@@ -1114,8 +1114,8 @@ def jsonaccounts(request):
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
-    for acc in accounts:
-        res.append({"taskId":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname})
+    #for acc in accounts:
+    #    res.append({"taskId":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname})
 
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
