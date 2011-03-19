@@ -1,25 +1,66 @@
-import sys, os, time, string, platform
+import sys, os, time, string
 
-p_name = platform.uname()[0]
-    
-    
-CDPYVersion = 0x401
+cdPyVer = 0x500
 
-ver = sys.version[:3]
-
-import pychartdir25
-dll = pychartdir25
+cdSysVer = sys.version[:3]
+if cdSysVer == "1.5" :
+	import pychartdir15
+	cdDll = pychartdir15
+elif cdSysVer == "1.6" :
+	import pychartdir16
+	cdDll = pychartdir16
+elif cdSysVer == "2.0" :
+	import pychartdir20
+	cdDll = pychartdir20
+elif cdSysVer == "2.1" :
+	import pychartdir21
+	cdDll = pychartdir21
+elif cdSysVer == "2.2" :
+	import pychartdir22
+	cdDll = pychartdir22
+elif cdSysVer == "2.3" :
+	import pychartdir23
+	cdDll = pychartdir23
+elif cdSysVer == "2.4" :
+	import pychartdir24
+	cdDll = pychartdir24
+elif cdSysVer == "2.5" :
+	import pychartdir25
+	cdDll = pychartdir25
+elif cdSysVer == "2.6" :
+	import pychartdir26
+	cdDll = pychartdir26
+elif cdSysVer == "2.7" :
+	import pychartdir27
+	cdDll = pychartdir27
+elif cdSysVer == "3.0" :
+	import pychartdir30
+	cdDll = pychartdir30
+elif cdSysVer == "3.1" :
+	import pychartdir31
+	cdDll = pychartdir31
 
 #main DLL interface
-_r = dll.callMethod
+_r = cdDll.callMethod
+_apply = cdDll.applyMethod
 
 #version checking
-dllVersion = (_r("getVersion") >> 16) & 0xffff
-if dllVersion != CDPYVersion :
-	raise ImportError('Version mismatch - "pychartdir.py" is of version %s.%s, but "chartdir.dll/libchartdir.so" is of version %s.%s' % ((CDPYVersion >> 8) & 0xff, CDPYVersion & 0xff, (dllVersion >> 8) & 0xff, dllVersion & 0xff))
+cdDllVer = (_r("getVersion") >> 16) & 0xffff
+if cdDllVer != cdPyVer :
+	raise ImportError('Version mismatch - "pychartdir.py" is of version %s.%s, but "chartdir.dll/libchartdir.so" is of version %s.%s' % ((cdPyVer >> 8) & 0xff, cdPyVer & 0xff, (cdDllVer >> 8) & 0xff, cdDllVer & 0xff))
+
+#Python 3.0 compatibility
+_isV3 = cdSysVer >= "3.0"
+if _isV3 :
+	string.replace = lambda a, b, c: a.replace(b, c)
+	string.join = lambda a, b = "": b.join(a)
+	string.split = lambda a, b, c = 0x7fffffff : a.split(b, c)
+	string.strip = lambda a, b = None : a.strip(b)
+	
+cdHasKey = _isV3 and (lambda a, b: b in a) or (lambda a, b: a.has_key(b))
 
 def cdFindSubClass(classNames, c) :
-	if classNames.has_key(c.__name__) :
+	if classNames.get(c.__name__) != None:
 		return c
 	for s in c.__bases__ :
 		ret = cdFindSubClass(classNames, s)
@@ -54,7 +95,7 @@ class MethodWrapper :
 				raise TypeError("Wrong number of arguments; expecting at least %d but received %d" %(defaultArgs[1] - len(defaultArgs) + 2, len(args)))
 			if len(args) < defaultArgs[1] :
 				args = args + defaultArgs[len(defaultArgs) - defaultArgs[1] + len(args):]
-		ret = apply(_r, (classObj.__name__ + "." + self.id, self.obj.this) + args)
+		ret = _apply(_r, (classObj.__name__ + "." + self.id, self.obj.this) + args)
 		if defaultArgs != None and len(defaultArgs) > 0 and defaultArgs[0] != None :
 			return defaultArgs[0](ret)
 		else :
@@ -83,7 +124,7 @@ def decodePtr(p) :
 		return p.this
 	else :
 		return p
-
+		
 #///////////////////////////////////////////////////////////////////////////////////
 #//	constants
 #///////////////////////////////////////////////////////////////////////////////////
@@ -104,13 +145,13 @@ TopRight2 = 11
 BottomLeft2 = 12
 BottomRight2 = 13
 	
-Transparent = 0xff000000L
-Palette = 0xffff0000L
-BackgroundColor = 0xffff0000L 
-LineColor = 0xffff0001L
-TextColor = 0xffff0002L
-DataColor = 0xffff0008L
-SameAsMainColor = 0xffff0007L
+Transparent = -16777216
+Palette = -65536
+BackgroundColor = -65536 
+LineColor = -65535
+TextColor = -65534
+DataColor = -65528
+SameAsMainColor = -65529
 
 HLOCDefault = 0
 HLOCOpenClose = 1
@@ -123,6 +164,12 @@ ArrowPointer2 = 3
 LinePointer = 4
 PencilPointer = 5
 
+SmoothShading = 0
+TriangularShading = 1
+RectangularShading = 2
+TriangularFrame = 3
+RectangularFrame = 4
+	
 ChartBackZ = 0x100
 ChartFrontZ = 0xffff
 PlotAreaZ = 0x1000
@@ -139,11 +186,13 @@ XAxisAtOrigin = 1
 YAxisAtOrigin = 2
 XYAxisAtOrigin = 3
 	
-NoValue = +1.7e308
-LogTick = 1.6E+308
+NoValue = 1.7e308
+LogTick = 1.6e308
+LinearTick = 1.5e308
+TickInc = 1.0e200
 MinorTickOnly = -1.7e308
 MicroTickOnly = -1.6e308
-TouchBar = -1.7E-100
+TouchBar = -1.7e-100
 AutoGrid = -2
 
 NoAntiAlias = 0
@@ -177,6 +226,8 @@ GIF = 1
 JPG = 2
 WMP = 3
 BMP = 4
+SVG = 5
+SVGZ = 6
 
 Overlay = 0
 Stack = 1
@@ -215,14 +266,14 @@ whiteOnBlackPalette = [
 transparentPalette = [ 
 	0xffffff, 0x000000, 0x000000, 0x808080, 
 	0x808080, 0x808080, 0x808080, 0x808080,
-	0x80ff0000L, 0x8000ff00L, 0x800000ffL, 0x80ffff00L, 
-	0x80ff00ffL, 0x8066ffffL, 0x80ffcc33L, 0x80ccccccL, 
-	0x809966ffL, 0x80339966L, 0x80999900L, 0x80cc3300L,
-	0x8099ccccL, 0x80006600L, 0x80660066L, 0x80cc9999L,
-	0x80ff9966L, 0x8099ff99L, 0x809999ffL, 0x80cc6600L,
-	0x8033cc33L, 0x80cc99ffL, 0x80ff6666L, 0x8099cc66L,
-	0x80009999L, 0x80cc3333L, 0x809933ffL, 0x80ff0000L,
-	0x800000ffL, 0x8000ff00L, 0x80ffcc99L, 0x80999999L,
+	-2130771968, -2147418368, -2147483393, -2130706688, 
+	-2130771713, -2140733441, -2130719693, -2134061876,
+	-2137430273, -2144102042, -2137417472, -2134101248,
+	-2137404212, -2147457536, -2140798874, -2134074983,
+	-2130732698, -2137391207, -2137417217, -2134088192,
+	-2144089037, -2134074881, -2130745754, -2137404314,
+	-2147444327, -2134101197, -2137443329, -2130771968,
+	-2147483393, -2147418368, -2130719591, -2137417319,
 	-1
 ]
 
@@ -250,6 +301,9 @@ LeftTriangleShape = 5
 InvertedTriangleShape = 6
 CircleShape = 7
 CircleShapeNoShading = 10
+GlassSphereShape = 15
+GlassSphere2Shape = 16
+SolidSphereShape = 17
 
 def cdBound(a, b, c) :
 	if b < a :
@@ -286,9 +340,25 @@ def goldColor(angle = 90) :
 	return metalColor(0xffee44, angle)
 def silverColor(angle = 90) :
 	return metalColor(0xdddddd, angle)
+def brushedMetalColor(c, texture = 2, angle = 90) :
+	return metalColor(c, angle) | ((texture & 0x3) << 18)
+def brushedSilverColor(texture = 2, angle = 90) :
+	return brushedMetalColor(0xdddddd, texture, angle)
+def brushedGoldColor(texture = 2, angle = 90) :
+	return brushedMetalColor(0xffee44, texture, angle)
 
 SideLayout = 0
 CircleLayout = 1
+
+DefaultShading = 0
+FlatShading = 1
+LocalGradientShading = 2
+GlobalGradientShading = 3
+ConcaveShading = 4
+RoundedEdgeNoGlareShading = 5
+RoundedEdgeShading = 6
+RadialShading = 7
+RingShading = 8
 
 NormalLegend = 0
 ReverseLegend = 1
@@ -297,8 +367,23 @@ NoLegend = 2
 PixelScale = 0
 XAxisScale = 1
 YAxisScale = 2
+EndPoints = 3
 AngularAxisScale = XAxisScale
 RadialAxisScale = YAxisScale
+
+MonotonicNone = 0 
+MonotonicX = 1
+MonotonicY = 2
+MonotonicXY = 3
+MonotonicAuto = 4
+
+ConstrainedLinearRegression = 0
+LinearRegression = 1
+ExponentialRegression = -1
+LogarithmicRegression = -2
+
+def PolynomialRegression(n) :
+	return n
 
 StartOfHourFilterTag = 1
 StartOfDayFilterTag = 2
@@ -337,6 +422,10 @@ def glassEffect(glareSize = NormalGlare, glareDirection = Top, raisedEffect = 5)
 	return _r("glassEffect", glareSize, glareDirection, raisedEffect)
 def softLighting(direction = Top, raisedEffect = 4) :
 	return _r("softLighting", direction, raisedEffect)
+def barLighting(startBrightness = 0.75, endBrightness = 1.5) :
+	return _r("barLighting", startBrightness, endBrightness)
+def cylinderEffect(orientation = Center, ambientIntensity = 0.5, diffuseIntensity = 0.5, specularIntensity = 0.75, shininess = 8) :
+	return _r("cylinderEffect", orientation, ambientIntensity, diffuseIntensity, specularIntensity, shininess)
 
 AggregateSum = 0
 AggregateAvg = 1
@@ -395,7 +484,9 @@ class DrawArea(AutoMethod) :
 		"shearTransform":(None, 5, 0, 0xffffff, LinearFilter, 1),
 		"waveTransform":(None, 8, 0, 0, 0, 0xffffff, LinearFilter, 1),
 		"outJPG":(None, 2, 80),
+		"outSVG":(None, 2, ""),
 		"outJPG2":(None, 1, 80),
+		"outSVG2":(None, 1, ""),
 		"setAntiAlias":(None, 2, 1, AutoAntiAlias),
 		"dashLineColor":(None, 2, DashLine),
 		"patternColor2":(None, 3, 0, 0),
@@ -454,7 +545,7 @@ class Box(AutoMethod) :
 		"setBackground":(None, 3, -1, 0),
 		"getImageCoor":(None, 2, 0, 0),
 		"setRoundedCorners":(None, 4, 10, -1, -1, -1)
-		}
+	}
 
 class TextBox(Box) :
 	defaultArgs = {
@@ -466,6 +557,21 @@ class TextBox(Box) :
 	
 class Line(AutoMethod) : 
 	pass
+	
+class CDMLTable(AutoMethod) :
+	defaultArgs = {
+		"setPos":(None, 3, TopLeft),
+		"insertCol":(TextBox, 1),
+		"appendCol":(TextBox, 0),
+		"insertRow":(TextBox, 1),
+		"appendRow":(TextBox, 0),
+		"setText":(TextBox, 3),
+		"setCell":(TextBox, 5),
+		"getCell":(TextBox, 2),
+		"getColStyle":(TextBox, 1),
+		"getRowStyle":(TextBox, 1),
+		"getStyle":(TextBox, 0),
+	}
 
 #///////////////////////////////////////////////////////////////////////////////////
 #//	bindings to basechart.h
@@ -476,6 +582,7 @@ class LegendBox(TextBox) :
 		"setKeySpacing":(None, 2, -1),
 		"setKeyBorder":(None, 2, 0),
 		"setReverse":(None, 1, 1),
+		"setLineStyleKey":(None, 1, 1),
 		"getHTMLImageMap":(None, 5, "", "", 0, 0)		
 	}
 	def addKey(self, text, color, lineWidth = 0, drawarea = None) :
@@ -495,15 +602,18 @@ class BaseChart(AutoMethod) :
 	defaultArgs = {
 		"setBackground":(None, 3, -1, 0),
 		"setBgImage":(None, 2, Center),
+		"setDropShadow":(None, 4, 0xaaaaaa, 5, 0x7fffffff, 5),
 		"setAntiAlias":(None, 2, 1, AutoAntiAlias),
 		"addTitle2":(TextBox, 7, "", 12, TextColor, Transparent, Transparent),
 		"addTitle":(TextBox, 6, "", 12, TextColor, Transparent, Transparent),
 		"addLegend":(LegendBox, 5, 1, "", 10),
 		"addLegend2":(LegendBox, 5, 1, "", 10),
 		"getLegend":(LegendBox, 0),
+		"layoutLegend":(LegendBox, 0),
 		"getDrawArea":(DrawArea, 0),
 		"addText":(TextBox, 9, "", 8, TextColor, TopLeft, 0, 0),
 		"addLine":(Line, 6, LineColor, 1),
+		"addTable":(CDMLTable, 5),
 		"dashLineColor":(None, 2, DashLine),
 		"patternColor2":(None, 3, 0, 0),
 		"gradientColor2":(None, 5, 90, 1, 0, 0),
@@ -536,7 +646,7 @@ class BaseChart(AutoMethod) :
 			return _r("BaseChart.gradientColor", self.this, startX, startY, endX, endY, startColor, endColor)
 	def makeTmpFile(self, path, imageFormat = PNG, lifeTime = 600) :
 		path = normalizePath(path)
-		filename = tmpFile2(path, lifeTime, "." + {JPG:"jpg", GIF:"gif", BMP:"bmp", WMP:"wbmp"}.get(imageFormat, "png"))
+		filename = tmpFile2(path, lifeTime, "." + {JPG:"jpg", GIF:"gif", BMP:"bmp", WMP:"wbmp", SVG:"svg", SVGZ:"svgz"}.get(imageFormat, "png"))
 		if self.makeChart(path + "/" + filename) :
 			return filename
 		else :
@@ -563,6 +673,7 @@ class Sector(AutoMethod) :
 		"setLabelLayout":(None, 2, -1),
 		"setJoinLine":(None, 2, 1),
 		"setColor":(None, 3, -1, -1),
+		"setStyle":(None, 3, -1, -1),
 		"getImageCoor":(None, 2, 0, 0),
 		"getLabelCoor":(None, 2, 0, 0)
 		}
@@ -570,13 +681,14 @@ class Sector(AutoMethod) :
 class PieChart(BaseChart) :
 	defaultArgs = {
 		"setStartAngle":(None, 2, 1),
-		"setExplode":(None, 2, -1),
+		"setExplode":(None, 2, -1, -1),
 		"setExplodeGroup":(None, 3, -1),
 		"setLabelStyle":(TextBox, 3, "", 8, TextColor),
 		"setLabelPos":(None, 2, -1),
 		"setLabelLayout":(None, 4, -1, -1, -1),
 		"setJoinLine":(None, 2, 1),
 		"setLineColor":(None, 2, -1),
+		"setSectorStyle":(None, 3, -1, -1),
 		"setData":(None, 2, None),
 		"sector":(Sector, 1),
 		"set3D2":(None, 3, -1, 0)
@@ -585,6 +697,8 @@ class PieChart(BaseChart) :
 		self.this = _r("PieChart.create", width, height, bgColor, edgeColor, raisedEffect)
 	def set3D(self, depth = -1, angle = -1, shadowMode = 0) :
 		_r(encodeIfArray("PieChart.set3D", depth), self.this, depth, angle, shadowMode)
+	def getSector(self, sectorNo) :
+		return self.sector(sectorNo)
 
 #///////////////////////////////////////////////////////////////////////////////////
 #//	bindings to axis.h
@@ -601,12 +715,13 @@ class Axis(AutoMethod) :
 		"setColors":(None, 4, TextColor, -1, -1),
 		"setTickWidth":(None, 2, -1),
 		"setTickColor":(None, 2, -1),
-		"setPos":(None, 3, Center),
 		"setMargin":(None, 2, 0),
 		"setAutoScale":(None, 3, 0.1, 0.1, 0.8),
 		"setTickDensity":(None, 2, -1),
 		"setReverse":(None, 1, 1),
 		"setLabels2":(TextBox, 2, ""),
+		"makeLabelTable":(CDMLTable, 0),
+		"getLabelTable":(CDMLTable, 0),
 		"setLinearScale3":(None, 1, ""),
 		"setDateScale3":(None, 1, ""),
 		"addMark":(Mark, 5, "", "", 8),
@@ -680,6 +795,15 @@ class Axis(AutoMethod) :
 			self.setMultiFormat2(filter1, format1, filter2, 1)
 		else :
 			_r("Axis.setMultiFormat", self.this, filter1, format1, filter2, format2, labelSpan, promoteFirst)
+
+class ColorAxis(Axis) :
+	defaultArgs = {
+		"setColorGradient":(None, 4, 1, None, -1, -1),
+		"setCompactAxis":(None, 1, 1),
+		"setAxisBorder":(None, 2, 0),
+		"setBoundingBox":(None, 3, Transparent, 0),
+		"setRoundedCorners":(None, 4, 10, -1, -1, -1)
+	}
 
 class AngularAxis(AutoMethod) :
 	defaultArgs = {
@@ -788,6 +912,10 @@ class Layer(AutoMethod) :
 			return _r("Layer.yZoneColor", self.this, threshold, belowColor, aboveColor, yAxis)
 	def alignLayer(self, layer, dataSet) :
 		_r("Layer.alignLayer", self.this, layer.this, dataSet)
+	def moveFront(self, layer = None) :
+		_r("Layer.moveFront", self.this, decodePtr(layer))
+	def moveBack(self, layer = None) :
+		_r("Layer.moveFront", self.this, decodePtr(layer))
 
 #///////////////////////////////////////////////////////////////////////////////////
 #//	bindings to barlayer.h
@@ -867,13 +995,25 @@ class BoxWhiskerLayer(BaseBoxLayer) :
 class VectorLayer(Layer) :
 	defaultArgs = {
 		"setVector":(None, 3, PixelScale),
-		"setIconSize":(None, 2, 0)
+		"setIconSize":(None, 2, 0),
+		"setVectorMargin":(None, 2, NoValue)
 	}	
 	def setArrowHead(self, width, height = 0) :
 		if argIsArray(width) :
 			self.setArrowHead2(width)
 		else :
 			_r("VectorLayer.setArrowHead", self.this, width, height)
+
+#///////////////////////////////////////////////////////////////////////////////////
+#//	bindings to contourlayer.h
+#///////////////////////////////////////////////////////////////////////////////////
+class ContourLayer(Layer) :
+	defaultArgs = {
+		"setContourColor":(None, 2, -1),
+		"setContourWidth":(None, 2, -1),
+		"setColorAxis":(ColorAxis, 5),
+		"colorAxis":(ColorAxis, 0)
+	}	
 
 #///////////////////////////////////////////////////////////////////////////////////
 #//	bindings to xychart.h
@@ -887,6 +1027,10 @@ class PlotArea(AutoMethod) :
 		"setGridColor":(None, 4, Transparent, -1, -1),
 		"setGridWidth":(None, 4, -1, -1, -1)
 	}
+	def setGridAxis(self, xAxis, yAxis) :
+		_r("PlotArea.setGridAxis", self.this, decodePtr(xAxis), decodePtr(yAxis))
+	def moveGridBefore(self, layer = None) :
+		_r("PlotArea.moveGridBefore", self.this, decodePtr(layer))
 
 class XYChart(BaseChart) :
 	defaultArgs = {
@@ -900,6 +1044,7 @@ class XYChart(BaseChart) :
 		"addAxis":(Axis, 2),
 		"swapXY":(None, 1, 1),
 		"setPlotArea":(PlotArea, 9, Transparent, -1, -1, 0xc0c0c0, Transparent),
+		"getPlotArea":(PlotArea, 0),
 		"setClipping":(None, 1, 0),
 		"addBarLayer2":(BarLayer, 2, Side, 0),
 		"addBarLayer3":(BarLayer, 4, None, None, 0),
@@ -917,8 +1062,10 @@ class XYChart(BaseChart) :
 		"addStepLineLayer":(StepLineLayer, 3, None, -1, ""),
 		"addInterLineLayer":(InterLineLayer, 4, -1),
 		"addVectorLayer":(VectorLayer, 7, PixelScale, -1, ""),
+		"addContourLayer":(ContourLayer, 3),
 		"setAxisAtOrigin":(None, 2, XYAxisAtOrigin, 0),
-		"setTrimData":(None, 2, 0x7fffffff)
+		"setTrimData":(None, 2, 0x7fffffff),
+		"packPlotArea":(None, 6, 0, 0)
 	}
 	def __init__(self, width, height, bgColor = BackgroundColor, edgeColor = Transparent, raisedEffect = 0) :
 		self.this = _r("XYChart.create", width, height, bgColor, edgeColor, raisedEffect)
@@ -948,6 +1095,29 @@ class XYChart(BaseChart) :
 		return _r("XYChart.getYCoor", self.this, value, decodePtr(yAxis))
 	def yZoneColor(self, threshold, belowColor, aboveColor, yAxis = None) :
 		return _r("XYChart.yZoneColor", self.this, threshold, belowColor, aboveColor, decodePtr(yAxis))
+
+#///////////////////////////////////////////////////////////////////////////////////
+#//	bindings to surfacechart.h
+#///////////////////////////////////////////////////////////////////////////////////
+class SurfaceChart(BaseChart) :
+	defaultArgs = {
+		"setViewAngle":(None, 3, 0, 0),	
+		"setInterpolation":(None, 3, -1, 1),	
+		"setShadingMode":(None, 2, 1),	
+		"setSurfaceAxisGrid":(None, 4, -1, -1, -1),
+		"setSurfaceDataGrid":(None, 2, -1),
+		"setContourColor":(None, 2, -1),
+		"xAxis":(Axis, 0),	
+		"yAxis":(Axis, 0),
+		"zAxis":(Axis, 0),	
+		"setColorAxis":(ColorAxis, 5),	
+		"colorAxis":(ColorAxis, 0),
+		"setWallColor":(None, 4, -1, -1, -1),
+		"setWallThickness":(None, 3, -1, -1),
+		"setWallGrid":(None, 6, -1, -1, -1, -1, -1)
+	}
+	def __init__(self, width, height, bgColor = BackgroundColor, edgeColor = Transparent, raisedEffect = 0) :
+		self.this = _r("SurfaceChart.create", width, height, bgColor, edgeColor, raisedEffect)
 
 #///////////////////////////////////////////////////////////////////////////////////
 #//	bindings to polarchart.h
@@ -1002,7 +1172,8 @@ class PolarSplineAreaLayer(PolarAreaLayer) :
 class PolarVectorLayer(PolarLayer) :
 	defaultArgs = {
 		"setVector":(None, 3, PixelScale),
-		"setIconSize":(None, 2, 0)
+		"setIconSize":(None, 2, 0),
+		"setVectorMargin":(None, 2, NoValue)
 	}	
 	def setArrowHead(self, width, height = 0) :
 		if argIsArray(width) :
@@ -1027,6 +1198,36 @@ class PolarChart(BaseChart) :
 	}
 	def __init__(self, width, height, bgColor = BackgroundColor, edgeColor = Transparent, raisedEffect = 0) :
 		self.this = _r("PolarChart.create", width, height, bgColor, edgeColor, raisedEffect)
+
+#///////////////////////////////////////////////////////////////////////////////////
+#//	bindings to pyramidchart.h
+#///////////////////////////////////////////////////////////////////////////////////
+class PyramidLayer(AutoMethod) :
+	defaultArgs = {
+		"setCenterLabel":(TextBox, 4, "{skip}", "{skip}", -1, -1),
+		"setRightLabel":(TextBox, 4, "{skip}", "{skip}", -1, -1),
+		"setLeftLabel":(TextBox, 4, "{skip}", "{skip}", -1, -1),
+		"setJoinLine":(None, 2, -1),
+		"setJoinLineGap":(None, 3, -0x7fffffff, -0x7fffffff),
+		"setLayerBorder":(None, 2, -1)
+	}	
+	
+class PyramidChart(BaseChart) :
+	defaultArgs = {
+		"setFunnelSize":(None, 6, 0.2, 0.3),
+		"setData":(None, 2, None),
+		"setCenterLabel":(TextBox, 4, "{skip}", "{skip}", -1, -1),
+		"setRightLabel":(TextBox, 4, "{skip}", "{skip}", -1, -1),
+		"setLeftLabel":(TextBox, 4, "{skip}", "{skip}", -1, -1),
+		"setViewAngle":(None, 3, 0, 0),
+		"setLighting":(None, 4, 0.5, 0.5, 1, 8),
+		"setJoinLine":(None, 2, -1),
+		"setJoinLineGap":(None, 3, -0x7fffffff, -0x7fffffff),
+		"setLayerBorder":(None, 2, -1),
+		"getLayer":(PyramidLayer, 1)
+	}
+	def __init__(self, width, height, bgColor = BackgroundColor, edgeColor = Transparent, raisedEffect = 0) :
+		self.this = _r("PyramidChart.create", width, height, bgColor, edgeColor, raisedEffect)
 
 #///////////////////////////////////////////////////////////////////////////////////
 #//	bindings to meters.h
@@ -1119,7 +1320,7 @@ def getChartYMD(t) :
 	return _r("getChartYMD", t)
 	
 def getChartWeekDay(t) :
-	return (long(t) / 86400 + 1) % 7
+	return int((t / 86400 + 1) % 7)
 
 #///////////////////////////////////////////////////////////////////////////////////
 #//	bindings to rantable.h
@@ -1145,7 +1346,10 @@ class RanTable(AutoMethod) :
 class FinanceSimulator(AutoMethod):
 	this = None
 	def __init__(self, seed, startTime, endTime, resolution) :
-		self.this = _r("FinanceSimulator.create", seed, startTime, endTime, resolution)
+		if type(seed) == type("") :
+			self.this = _r("FinanceSimulator.create2", seed, startTime, endTime, resolution)
+		else :
+			self.this = _r("FinanceSimulator.create", seed, startTime, endTime, resolution)
 	def __del__(self) :
 		if self.this != None :
 			_r("FinanceSimulator.destroy", self.this)
@@ -1155,7 +1359,7 @@ class FinanceSimulator(AutoMethod):
 #///////////////////////////////////////////////////////////////////////////////////
 class ArrayMathMethodWrapper(MethodWrapper) :
 	def __call__(self, *args) :
-		ret = apply(MethodWrapper.__call__, (self,) + args)
+		ret = _apply(MethodWrapper.__call__, (self,) + args)
 		if ret == self.obj.this :
 			return self.obj
 		else :
@@ -1272,18 +1476,19 @@ def tmpFile2(path, lifeTime, ext) :
 				fields[0:2] = ['/' + fields[1]]
 			for i in range(0, len(fields)) :
 				try :
-					os.mkdir(string.join(fields[:i + 1], "/"), 0777)
+					os.mkdir(string.join(fields[:i + 1], "/"), 511)
 				except :
 					pass	
 				
 	#create unique file name
 	seqNo = 0
 	while seqNo < 100 :
-		if os.environ.has_key("UNIQUE_ID") :
+		if os.environ.get("UNIQUE_ID") != None :
 			filename = "cd__%s%s_%s%s" % (os.environ["UNIQUE_ID"], time.time(), seqNo, ext)
 		else :
 			filename = "cd__%s%s%s%s_%s%s" % (os.environ.get("REMOTE_ADDR", ""), 
 				os.environ.get("REMOTE_PORT", ""), os.getpid(), time.time(), seqNo, ext)
+		filename = string.replace(filename, ":", "_")
 		if not os.path.exists(path + "/" + filename) :
 			break
 		seqNo = seqNo + 1
@@ -1301,8 +1506,11 @@ def binaryPrint(s) :
 	except :
 	    pass
 	#use stdout instead of print because print will add an extra new line character at the end
-	sys.stdout.write(s)
-
+	if _isV3 :
+		sys.stdout.flush()
+		sys.stdout.buffer.write(s)
+	else :
+		sys.stdout.write(s)
 
 #///////////////////////////////////////////////////////////////////////////////////
 #//	WebChartViewer implementation
@@ -1325,9 +1533,12 @@ class WebChartViewer :
 	def __init__(self, request, id) :
 		self.this = _r("WebChartViewer.create")
 		self.putAttrS(":id", id)
+		if request != None :
+			if not hasattr(request, "has_key") :
+				request.has_key = lambda a, b = request: a in b
+			if id != None and request.has_key(id + self._s) :
+				self.putAttrS(":state", request[id + self._s].value)
 		self.request = request
-		if request != None and id != None and request.has_key(id + self._s) :
-			self.putAttrS(":state", request[id + self._s].value)
 	def __del__(self) :
 		if self.this != None :
 			_r("WebChartViewer.destroy", self.this)
@@ -1364,8 +1575,10 @@ class WebChartViewer :
 		ext = ".map"
 		if compress :
 			b = _r("WebChartViewer.compressMap", self.this, b, 4)
-			if b != None and len(b) > 2 and b[0:2] == "\x1f\x8b" :
+			if b != None and len(b) > 2 and ((_isV3 and b[0] == 0x1f and b[1] == 0x8b) or ((not _isV3) and b[0:2] == "\x1f\x8b")) :
 				ext = ".map.gz"
+		elif _isV3 :
+			b = b.encode("utf_8")
 
 		path = normalizePath(path)
 		filename = tmpFile2(path, timeout, ext)
@@ -1378,7 +1591,8 @@ class WebChartViewer :
 	def renderHTML(self, extraAttrs = None) :
 		return _r("WebChartViewer.renderHTML", self.this, os.environ.get("SCRIPT_NAME", ""), os.environ.get("QUERY_STRING", ""), extraAttrs)	
 	def partialUpdateChart(self, msg = None, timeout = 0) :
-		return "Content-type: text/html; charset=utf-8\n\n" + _r("WebChartViewer.partialUpdateChart", self.this, msg, timeout)	
+		ret = "Content-type: text/html; charset=utf-8\n\n" + _r("WebChartViewer.partialUpdateChart", self.this, msg, timeout)	
+		return _isV3 and ret.encode("utf_8") or ret
 		
 	def isPartialUpdateRequest(self) :
 		return self.request != None and self.request.has_key(self._p)
