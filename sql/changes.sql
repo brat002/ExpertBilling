@@ -5034,3 +5034,44 @@ DROP TABLE auth_user_user_permissions;
 DROP TABLE auth_user_groups;
 DROP TABLE auth_permission;
 DROP TABLE auth_group;
+
+--19.03.2011
+ALTER TABLE billservice_card ADD CONSTRAINT billservice_card_login_pin_series_unique UNIQUE ("login", pin, series);
+
+ALTER TABLE billservice_card
+  DROP CONSTRAINT billservice_card_tarif_fkey;
+  
+ALTER TABLE billservice_card
+  ADD CONSTRAINT billservice_card_tarif_fkey FOREIGN KEY (tarif_id)
+      REFERENCES billservice_tariff (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
+
+      ALTER TABLE billservice_card
+DROP CONSTRAINT billservice_card_nas_fkey;
+  
+ALTER TABLE billservice_card
+  ADD CONSTRAINT billservice_card_nas_fkey FOREIGN KEY (nas_id)
+      REFERENCES nas_nas (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE billservice_card
+  DROP CONSTRAINT billservice_card_template_fkey;
+  
+ALTER TABLE billservice_card
+  ADD CONSTRAINT billservice_card_template_fkey FOREIGN KEY (template_id)
+      REFERENCES billservice_template (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
+
+      ALTER TABLE billservice_card
+DROP CONSTRAINT billservice_card_account_fkey;
+
+ALTER TABLE billservice_card
+  ADD CONSTRAINT billservice_card_account_fkey FOREIGN KEY (account_id)
+      REFERENCES billservice_account (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
+      
+ALTER TABLE billservice_card
+  DROP CONSTRAINT billservice_card_ipinuse_fkey;
+ALTER TABLE billservice_card
+  ADD CONSTRAINT billservice_card_ipinuse_fkey FOREIGN KEY (ipinuse_id)
+      REFERENCES billservice_ipinuse (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
