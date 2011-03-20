@@ -733,7 +733,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         except Exception, ex:
             print ex
         self.treeWidget.clear()
-        classes=self.connection.sql(" SELECT * FROM nas_trafficclass ORDER BY weight ASC;")
+        classes=self.connection.sql(" SELECT id,name,color,passthrough FROM nas_trafficclass ORDER BY weight ASC;")
         self.connection.commit()
         for clas in classes:
             item = QtGui.QTreeWidgetItem(self.treeWidget)

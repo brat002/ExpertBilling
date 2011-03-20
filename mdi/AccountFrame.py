@@ -3571,7 +3571,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 child = ComboBoxDialog(items = tarifs, title = u"Выберите тарифный план, куда нужно перенести пользователей")
                 
                 if child.exec_()==1:
-                    tarif = self.connection.get("SELECT * FROM billservice_tariff WHERE name='%s'" % unicode(child.comboBox.currentText()))
+                    tarif = self.connection.get("SELECT id FROM billservice_tariff WHERE name='%s'" % unicode(child.comboBox.currentText()))
     
                     try:    
                         for account in accounts:

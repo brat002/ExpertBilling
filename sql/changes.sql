@@ -2912,8 +2912,7 @@ $BODY$
   COST 100;
 ALTER FUNCTION shedulelog_tr_credit_fn(integer, integer, integer, numeric, timestamp without time zone) OWNER TO postgres;
 
-ALTER TABLE billservice_account
-   ADD COLUMN last_balance_null timestamp without time zone;
+ALTER TABLE billservice_account ADD COLUMN last_balance_null timestamp without time zone;
 CREATE OR REPLACE FUNCTION last_balance_null_trg_fn()
   RETURNS trigger AS
 $BODY$
@@ -5161,3 +5160,4 @@ $BODY$
   COST 100;
 ALTER FUNCTION card_activate_fn(character varying, character varying, integer, inet) OWNER TO postgres;
 
+ALTER TABLE billservice_account ADD COLUMN last_balance_null timestamp without time zone;
