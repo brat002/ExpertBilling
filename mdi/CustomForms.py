@@ -22,9 +22,10 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 class RrdReportMainWindow(QtGui.QMainWindow):
-    def __init__(self, account,connection):
+    def __init__(self, account, type='account',connection=None):
         self.account=account
         self.connection=connection
+        self.type=type
         #print connection.server_ip
         super(RrdReportMainWindow, self).__init__()
         self.setObjectName(_fromUtf8("RrdReportMainWindow"))
@@ -48,7 +49,8 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         #sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
         #self.webView.setSizePolicy(sizePolicy)        
         #self.webView.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath("templates/tmp/temp.html")))
-        self.webView.load(QtCore.QUrl("http://%s/statistics/subaccount/?account=%s" % (connection.server_ip, self.account)))
+        
+        
         self.gridLayout.addWidget(self.webView, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
         self.configureAction = QtGui.QAction(self)
@@ -66,7 +68,12 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
-    
+        self.load_stat()
+        
+    def load_stat(self):
+        if self.type=='account':
+            self.webView.load(QtCore.QUrl("http://%s/statistics/subaccount/?account_id=%s" % (self.connection.server_ip, self.account)))
+            
     def printDocument(self):
         #document = self.centralWidget()
         printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)

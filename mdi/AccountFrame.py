@@ -3359,7 +3359,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("actionPrepaidRadiusTrafficInfo", "Остаток предоплаченного RADIUS трафика", "", self.radiusprepaidtraffic_info),\
                  ("actionPrepaidRadiusTimeInfo", "Остаток предоплаченного RADIUS времени ", "", self.radiusprepaidtime_info),\
                  ("actionSettlementPeriodInfo", "Информация по расчётным периодам", "", self.settlementperiod_info),\
-                 ("rrdTrafficInfo", "График использования канала", "images/bandwidth.png", self.rrdtraffic_info),\
+                 ("rrdAccountTrafficInfo", "График использования канала аккаунтом", "images/bandwidth.png", self.rrdtraffic_info),\
                  ("radiusauth_logInfo", "Логи RADIUS авторизаций", "images/easytag.png", self.radiusauth_log),\
                  ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs),\
                  ("actionBalanceLog", "История изменения баланса", "images/money.png", self.balance_log),\
@@ -3373,7 +3373,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
                    self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction",  "actionAddAccount", "actionEnableSession", "actionDisableSession", "actionDeleteAccount", "messageDialogAction", "radiusauth_logInfo", "actionBalanceLog"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
-                   self.menu       :[ "actionChangeTarif", "separator", "actionRadiusAttrs", "separator", 'actionSettlementPeriodInfo', 'separator', "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', 'actionPrepaidRadiusTimeInfo', "separator", "rrdTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog", "separator"],\
+                   self.menu       :[ "actionChangeTarif", "separator", "actionRadiusAttrs", "separator", 'actionSettlementPeriodInfo', 'separator', "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', 'actionPrepaidRadiusTimeInfo', "separator", "rrdAccountTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog", "separator"],\
                    self.reports_menu :["actionReports",],
                   }
         self.actionCreator(actList, objDict)
@@ -3429,7 +3429,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         ids = self.get_selected_accounts()
         if ids:
             id=ids[0]
-        window = RrdReportMainWindow(account=id, connection=self.connection)
+        window = RrdReportMainWindow(account=id, type='account', connection=self.connection)
         self.parent.workspace.addWindow(window)
         window.show()
 
