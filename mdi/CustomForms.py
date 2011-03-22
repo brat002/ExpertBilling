@@ -11,6 +11,7 @@ from db import Object as Object
 from helpers import dateDelim, settlement_period_info
 from mako.template import Template
 from template_higlight import Highlighter
+import time
 
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 import datetime
@@ -27,6 +28,7 @@ class RRDPropertiesDialog(QtGui.QDialog):
         self.connection=connection
         self.report_type=report_type
         self.item_ids=[]
+        self.request_params = ''
         self.setObjectName(_fromUtf8("self"))
         self.resize(557, 507)
         self.gridLayout_3 = QtGui.QGridLayout(self)
@@ -227,9 +229,9 @@ class RRDPropertiesDialog(QtGui.QDialog):
         except Exception, ex:
             print "Transactions settings save error: ", ex
         
-        
-        for item in self.listWidget_selected.selectedItems():
-            self.item_ids.append(item.id)
+        self.item_ids=[]
+        for i in xrange(0, self.listWidget_selected.count()):
+            self.item_ids.append(str(self.listWidget_selected.item(i).id))
             
         day = self.checkBox_day.isChecked()    
         week = self.checkBox_week.isChecked()
@@ -238,6 +240,12 @@ class RRDPropertiesDialog(QtGui.QDialog):
         
         date_start=self.dateTimeEdit_from_period.dateTime().toPyDateTime()
         date_end=self.dateTimeEdit_to_period.dateTime().toPyDateTime()
+        
+        #print self.item_ids
+        if self.radioButton_for_last.isChecked():
+            self.request_params='?items=%s&day=%s&week=%s&month=%s&year=%s' % (','.join(self.item_ids),day,week,month,year)
+        else:
+            self.request_params='?items=%s&from=%s&to=%s' % (','.join(self.item_ids),time.mktime(date_start.timetuple()),time.mktime(date_end.timetuple()))
         QtGui.QDialog.accept(self)        
         
 class RrdReportMainWindow(QtGui.QMainWindow):
@@ -245,6 +253,8 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         self.item_id=item_id
         self.connection=connection
         self.type=type
+        self.request_params=''
+        self.child=RRDPropertiesDialog(connection=self.connection, report_type=self.type)
         #print connection.server_ip
         super(RrdReportMainWindow, self).__init__()
         self.setObjectName(_fromUtf8("RrdReportMainWindow"))
@@ -305,6 +315,11 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         elif self.type=='nas':
             self.webView.load(QtCore.QUrl("http://%s/statistics/nas_stat/?nas_id=%s" % (self.connection.server_ip, self.item_id)))
             self.configureAction.setDisabled(True)
+        elif self.type=='accounts' and self.request_params:
+            print self.request_params
+            self.webView.load(QtCore.QUrl("http://%s/statistics/subaccount_filter/%s" % (self.connection.server_ip, self.request_params)))
+        elif self.type=='nasses' and self.request_params:
+            self.webView.load(QtCore.QUrl("http://%s/statistics/nasses_stat/%s" % (self.connection.server_ip, self.request_params)))
 
             
             
@@ -321,12 +336,11 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         self.webView.print_(printer)
         
     def configure(self):
-        child=RRDPropertiesDialog(connection=self.connection, report_type=self.type)
-        
-        if child.exec_():
-            if self.type=='accounts':
-                
-            
+
+        if self.child.exec_()==1:
+            print self.request_params
+            self.request_params = self.child.request_params
+            self.load_stat()
             
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Отчёт по загрузке канала", None, QtGui.QApplication.UnicodeUTF8))
