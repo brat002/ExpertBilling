@@ -53,7 +53,7 @@ from ClassFrame import ClassChildEbs as ClassChild
 from MonitorFrame import MonitorEbs as MonitorFrame
 from PoolFrame import PoolEbs as PoolFrame
 from SystemUser import SystemEbs
-from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog
+from CustomForms import ConnectDialog, ConnectionWaiting, OperatorDialog, RrdReportMainWindow
 from Reports import NetFlowReportEbs as NetFlowReport, StatReport , LogViewWindow, SimpleReportEbs
 from CardsFrame import CardsChildEbs as CardsChild
 from DealerFrame import DealerMdiEbs as DealerMdiChild
@@ -195,7 +195,7 @@ class MainWindow(QtGui.QMainWindow):
         
     @connlogin
     def open(self):
-        child = NasEbs(connection=connection)
+        child = NasEbs(connection=connection,parent=self)
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
@@ -294,6 +294,26 @@ class MainWindow(QtGui.QMainWindow):
     @connlogin
     def logview(self):
         child = LogViewWindow(connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        child.show()
+
+    @connlogin
+    def rrdAccountReport(self):
+        child = RrdReportMainWindow(connection=connection, type='accounts')
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        child.show()
+
+    @connlogin
+    def rrdNassesReport(self):
+        child = RrdReportMainWindow(connection=connection, type='nasses')
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
@@ -486,8 +506,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.sessionsMonAct = QtGui.QAction(QtGui.QIcon("images/monitor.png"),
                                       u"Монитор сессий", self)
-        
-        #self.sessionsMonAct.setShortcut(self.tr("Ctrl+M"))
         self.sessionsMonAct.setStatusTip(u"Монитор сессий")
 
         self.connect(self.sessionsMonAct, QtCore.SIGNAL("triggered()"), self.paste)
@@ -525,6 +543,20 @@ class MainWindow(QtGui.QMainWindow):
         self.logViewAct = QtGui.QAction(QtGui.QIcon("images/logs.png"), u"Просмотр логов", self)
         #self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.logViewAct, QtCore.SIGNAL("triggered()"), self.logview)       
+        
+        self.rrdAccountsAct = QtGui.QAction(QtGui.QIcon("images/accounts.png"),
+                                      u"Загрузка VPN аккаунтами", self)
+        self.rrdAccountsAct.setStatusTip(u"Загрузка VPN аккаунтами")
+
+        self.connect(self.rrdAccountsAct, QtCore.SIGNAL("triggered()"), self.rrdAccountReport)
+
+
+        self.rrdNassesAct = QtGui.QAction(QtGui.QIcon("images/nas.png"),
+                                      u"Загрузка VPN серверов доступа", self)
+        self.rrdNassesAct.setStatusTip(u"Загрузка VPN аккаунтами")
+
+        self.connect(self.rrdNassesAct, QtCore.SIGNAL("triggered()"), self.rrdNassesReport)
+
         
         
         self.reportActs = []
@@ -665,6 +697,8 @@ class MainWindow(QtGui.QMainWindow):
                 branchMenu.addAction(leaf)
         
         self.reportsMenu.addAction(self.netflowAct)
+        self.reportsMenu.addAction(self.rrdAccountsAct)
+        self.reportsMenu.addAction(self.rrdNassesAct)
         self.menuBar().addSeparator()
 
         self.helpMenu = self.menuBar().addMenu(u"&Справка")

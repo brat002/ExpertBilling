@@ -3371,7 +3371,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
 
 
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
-                   self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction",  "actionAddAccount", "actionEnableSession", "actionDisableSession", "actionDeleteAccount", "messageDialogAction", "radiusauth_logInfo", "actionBalanceLog"], \
+                   self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction",  "actionAddAccount", "actionEnableSession", "actionDisableSession", "actionDeleteAccount", "messageDialogAction", "rrdAccountTrafficInfo","radiusauth_logInfo", "actionBalanceLog"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
                    self.menu       :[ "actionChangeTarif", "separator", "actionRadiusAttrs", "separator", 'actionSettlementPeriodInfo', 'separator', "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', 'actionPrepaidRadiusTimeInfo', "separator", "rrdAccountTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog", "separator"],\
                    self.reports_menu :["actionReports",],
@@ -3429,7 +3429,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         ids = self.get_selected_accounts()
         if ids:
             id=ids[0]
-        window = RrdReportMainWindow(account=id, type='account', connection=self.connection)
+        window = RrdReportMainWindow(item_id=id, type='account', connection=self.connection)
         self.parent.workspace.addWindow(window)
         window.show()
 

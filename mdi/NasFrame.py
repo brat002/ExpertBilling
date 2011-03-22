@@ -7,7 +7,7 @@ from helpers import tableFormat
 from db import Object as Object
 from helpers import makeHeaders
 from helpers import HeaderUtil
-
+from CustomForms import RrdReportMainWindow
 from ebsWindow import ebsTableWindow
 
 NAS_LIST=(
@@ -648,9 +648,10 @@ class AddNasFrame(QtGui.QDialog):
 
 
 class NasEbs(ebsTableWindow):
-    def __init__(self, connection):
+    def __init__(self, connection, parent):
         columns=[u"id", u"Имя", u"Identify", u"Тип", u"IP"]
         initargs = {"setname":"nas_frame_header", "objname":"NasEbsMDI", "winsize":(0,0,400,400), "wintitle":"Серверы доступа", "tablecolumns":columns}
+        self.parent=parent
         super(NasEbs, self).__init__(connection, initargs)
         
     def ebsInterInit(self, initargs):
@@ -670,8 +671,8 @@ class NasEbs(ebsTableWindow):
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
-        actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete), ("configureAction", "Конфигурировать", "images/configure.png", self.configure)]
-        objDict = {self.tableWidget:["editAction", "addAction", "delAction", "configureAction"], self.toolBar:["addAction", "delAction", "configureAction"]}
+        actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete), ("configureAction", "Конфигурировать", "images/configure.png", self.configure),("rrdNasTrafficInfo", "График загрузки сервера доступа", "images/bandwidth.png", self.rrdtraffic_info),]
+        objDict = {self.tableWidget:["editAction", "addAction", "delAction", 'rrdReportAction',"configureAction"], self.toolBar:["addAction", "delAction", "rrdNasTrafficInfo","configureAction"]}
         self.actionCreator(actList, objDict)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.delNodeLocalAction()
@@ -683,7 +684,13 @@ class NasEbs(ebsTableWindow):
 
         
 
-    
+    def rrdtraffic_info(self):
+        id = self.getSelectedId()
+        if id:
+            window = RrdReportMainWindow(item_id=id, type='nas', connection=self.connection)
+            self.parent.workspace.addWindow(window)
+            window.show()
+            
     def addframe(self):
         model=None
         addf = AddNasFrame(connection=self.connection, model=model)
@@ -781,5 +788,5 @@ class NasEbs(ebsTableWindow):
     
 
     def delNodeLocalAction(self):
-        super(NasEbs, self).delNodeLocalAction([self.delAction, self.configureAction])
+        super(NasEbs, self).delNodeLocalAction([self.delAction, self.configureAction,self.rrdNasTrafficInfo])
         

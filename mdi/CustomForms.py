@@ -21,9 +21,228 @@ try:
 except AttributeError:
     _fromUtf8 = lambda s: s
 
+class RRDPropertiesDialog(QtGui.QDialog):
+    def __init__(self, connection, report_type):
+        super(RRDPropertiesDialog, self).__init__()
+        self.connection=connection
+        self.report_type=report_type
+        self.item_ids=[]
+        self.setObjectName(_fromUtf8("self"))
+        self.resize(557, 507)
+        self.gridLayout_3 = QtGui.QGridLayout(self)
+        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
+        self.groupBox_period = QtGui.QGroupBox(self)
+        self.groupBox_period.setObjectName(_fromUtf8("groupBox_period"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_period)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.label_last = QtGui.QLabel(self.groupBox_period)
+        self.label_last.setObjectName(_fromUtf8("label_last"))
+        self.gridLayout_2.addWidget(self.label_last, 0, 0, 1, 1)
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.checkBox_day = QtGui.QCheckBox(self.groupBox_period)
+        self.checkBox_day.setObjectName(_fromUtf8("checkBox_day"))
+        self.horizontalLayout.addWidget(self.checkBox_day)
+        self.checkBox_week = QtGui.QCheckBox(self.groupBox_period)
+        self.checkBox_week.setObjectName(_fromUtf8("checkBox_week"))
+        self.horizontalLayout.addWidget(self.checkBox_week)
+        self.checkBox_month = QtGui.QCheckBox(self.groupBox_period)
+        self.checkBox_month.setObjectName(_fromUtf8("checkBox_month"))
+        self.horizontalLayout.addWidget(self.checkBox_month)
+        self.checkBox_year = QtGui.QCheckBox(self.groupBox_period)
+        self.checkBox_year.setObjectName(_fromUtf8("checkBox_year"))
+        self.horizontalLayout.addWidget(self.checkBox_year)
+        self.gridLayout_2.addLayout(self.horizontalLayout, 0, 3, 1, 3)
+        self.label_or = QtGui.QLabel(self.groupBox_period)
+        self.label_or.setObjectName(_fromUtf8("label_or"))
+        self.gridLayout_2.addWidget(self.label_or, 1, 3, 1, 1)
+        self.dateTimeEdit_from_period = QtGui.QDateTimeEdit(self.groupBox_period)
+        self.dateTimeEdit_from_period.setCalendarPopup(True)
+        self.dateTimeEdit_from_period.setObjectName(_fromUtf8("dateTimeEdit_from_period"))
+        self.gridLayout_2.addWidget(self.dateTimeEdit_from_period, 2, 3, 1, 1)
+        self.label_to = QtGui.QLabel(self.groupBox_period)
+        self.label_to.setObjectName(_fromUtf8("label_to"))
+        self.gridLayout_2.addWidget(self.label_to, 2, 4, 1, 1)
+        self.dateTimeEdit_to_period = QtGui.QDateTimeEdit(self.groupBox_period)
+        self.dateTimeEdit_to_period.setCalendarPopup(True)
+        self.dateTimeEdit_to_period.setObjectName(_fromUtf8("dateTimeEdit_to_period"))
+        self.gridLayout_2.addWidget(self.dateTimeEdit_to_period, 2, 5, 1, 1)
+        self.label_from_period = QtGui.QLabel(self.groupBox_period)
+        self.label_from_period.setLayoutDirection(QtCore.Qt.RightToLeft)
+        self.label_from_period.setObjectName(_fromUtf8("label_from_period"))
+        self.gridLayout_2.addWidget(self.label_from_period, 2, 2, 1, 1)
+        self.radioButton_for_period = QtGui.QRadioButton(self.groupBox_period)
+        self.radioButton_for_period.setText(_fromUtf8(""))
+        self.radioButton_for_period.setObjectName(_fromUtf8("radioButton_for_period"))
+        self.gridLayout_2.addWidget(self.radioButton_for_period, 2, 1, 1, 1)
+        self.radioButton_for_last = QtGui.QRadioButton(self.groupBox_period)
+        self.radioButton_for_last.setText(_fromUtf8(""))
+        self.radioButton_for_last.setChecked(True)
+        self.radioButton_for_last.setObjectName(_fromUtf8("radioButton_for_last"))
+        self.gridLayout_2.addWidget(self.radioButton_for_last, 0, 1, 1, 1)
+        self.label_period = QtGui.QLabel(self.groupBox_period)
+        self.label_period.setObjectName(_fromUtf8("label_period"))
+        self.gridLayout_2.addWidget(self.label_period, 2, 0, 1, 1)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout_2.addItem(spacerItem, 2, 6, 1, 1)
+        self.gridLayout_3.addWidget(self.groupBox_period, 0, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout_3.addWidget(self.buttonBox, 2, 0, 1, 1)
+        self.groupBox_select = QtGui.QGroupBox(self)
+        self.groupBox_select.setObjectName(_fromUtf8("groupBox_select"))
+        self.gridLayout = QtGui.QGridLayout(self.groupBox_select)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.label_select_all = QtGui.QLabel(self.groupBox_select)
+        self.label_select_all.setObjectName(_fromUtf8("label_select_all"))
+        self.verticalLayout.addWidget(self.label_select_all)
+        self.listWidget_all = QtGui.QListWidget(self.groupBox_select)
+        self.listWidget_all.setObjectName(_fromUtf8("listWidget_all"))
+        self.listWidget_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.verticalLayout.addWidget(self.listWidget_all)
+        self.gridLayout.addLayout(self.verticalLayout, 0, 0, 4, 1)
+        spacerItem1 = QtGui.QSpacerItem(20, 117, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout.addItem(spacerItem1, 0, 1, 1, 1)
+        self.verticalLayout_2 = QtGui.QVBoxLayout()
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.label_select_selected = QtGui.QLabel(self.groupBox_select)
+        self.label_select_selected.setObjectName(_fromUtf8("label_select_selected"))
+        self.verticalLayout_2.addWidget(self.label_select_selected)
+        self.listWidget_selected = QtGui.QListWidget(self.groupBox_select)
+        self.listWidget_selected.setObjectName(_fromUtf8("listWidget_selected"))
+        self.listWidget_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.verticalLayout_2.addWidget(self.listWidget_selected)
+        self.gridLayout.addLayout(self.verticalLayout_2, 0, 2, 4, 1)
+        self.toolButton_to_selected = QtGui.QToolButton(self.groupBox_select)
+        self.toolButton_to_selected.setObjectName(_fromUtf8("toolButton_to_selected"))
+        self.gridLayout.addWidget(self.toolButton_to_selected, 1, 1, 1, 1)
+        self.toolButton_from_selected = QtGui.QToolButton(self.groupBox_select)
+        self.toolButton_from_selected.setObjectName(_fromUtf8("toolButton_from_selected"))
+        self.gridLayout.addWidget(self.toolButton_from_selected, 2, 1, 1, 1)
+        spacerItem2 = QtGui.QSpacerItem(20, 116, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout.addItem(spacerItem2, 3, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.groupBox_select, 1, 0, 1, 1)
+
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            self.dateTimeEdit_from_period.setDateTime(settings.value("rrdreportprop_date_start", QtCore.QVariant(QtCore.QDateTime(2011,1,1,0,0))).toDateTime())
+            self.dateTimeEdit_to_period.setDateTime(settings.value("rrdreportprop_date_end", QtCore.QVariant(QtCore.QDateTime(2012,1,1,0,0))).toDateTime())
+        except Exception, ex:
+            print "Transactions settings error: ", ex
+ 
+        self.fixtures()
+        self.retranslateUi()
+        self.periodLogic()
+        QtCore.QObject.connect(self.toolButton_to_selected, QtCore.SIGNAL("clicked()"),self.addItem)
+        QtCore.QObject.connect(self.toolButton_from_selected, QtCore.SIGNAL("clicked()"),self.delItem)
+
+        QtCore.QObject.connect(self.listWidget_all, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.addItem)
+        QtCore.QObject.connect(self.listWidget_selected, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.delItem)        
+
+        QtCore.QObject.connect(self.radioButton_for_last, QtCore.SIGNAL("clicked()"),self.periodLogic)
+        QtCore.QObject.connect(self.radioButton_for_period, QtCore.SIGNAL("clicked()"),self.periodLogic)
+
+        
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        
+        
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("RRDPropertiesDialog", "Настройка отчёта", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_period.setTitle(QtGui.QApplication.translate("RRDPropertiesDialog", "Период", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_last.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "За последний", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_day.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "День", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_week.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "Неделя", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_month.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "Месяц", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_year.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "Год", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_or.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "или", None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit_from_period.setDisplayFormat(QtGui.QApplication.translate("RRDPropertiesDialog", "dd.MM.yy HH:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_to.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "по", None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit_to_period.setDisplayFormat(QtGui.QApplication.translate("RRDPropertiesDialog", "dd.MM.yy HH:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_from_period.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "с", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_period.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "За промежуток", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_select.setTitle(QtGui.QApplication.translate("RRDPropertiesDialog", "Выбор", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_select_all.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "Все", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_select_selected.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "Выбранные", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_to_selected.setText(QtGui.QApplication.translate("RRDPropertiesDialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_from_selected.setText(QtGui.QApplication.translate("RRDPropertiesDialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        
+    def fixtures(self):
+        if self.report_type=='accounts':
+            accounts = self.connection.get_models("billservice_account", fields=['id', 'username'], order={'username':'ASC'})
+            self.connection.commit()
+            for account in accounts:
+                item = QtGui.QListWidgetItem()
+                item.setText(account.username)
+                item.id = account.id
+                self.listWidget_all.addItem(item)
+        elif self.report_type=='nasses':
+            items = self.connection.get_models("nas_nas", fields=['id', 'name'], order={'name':'ASC'})
+            self.connection.commit()
+            for item in items:
+                litem = QtGui.QListWidgetItem()
+                litem.setText(item.name)
+                litem.id = item.id
+                self.listWidget_all.addItem(litem)
+
+    def addItem(self):
+        selected_items = self.listWidget_all.selectedItems()
+        
+        for item in selected_items:
+            self.listWidget_all.takeItem(self.listWidget_all.row(item))
+            self.listWidget_selected.addItem(item)
+            
+        self.listWidget_selected.sortItems()
+        
+    def delItem(self):
+        selected_items = self.listWidget_selected.selectedItems()
+        
+        for item in selected_items:
+            self.listWidget_selected.takeItem(self.listWidget_selected.row(item))
+            self.listWidget_all.addItem(item)
+        self.listWidget_all.sortItems()
+        
+    def periodLogic(self):
+        
+        if self.radioButton_for_last.isChecked():
+            self.dateTimeEdit_from_period.setDisabled(True)
+            self.dateTimeEdit_to_period.setDisabled(True)
+        else:
+            self.dateTimeEdit_from_period.setDisabled(False)
+            self.dateTimeEdit_to_period.setDisabled(False)
+                        
+    def accept(self):
+        
+        
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("rrdreportprop_date_start", QtCore.QVariant(self.dateTimeEdit_from_period.dateTime()))
+            settings.setValue("rrdreportprop_date_end", QtCore.QVariant(self.dateTimeEdit_to_period.dateTime()))
+        except Exception, ex:
+            print "Transactions settings save error: ", ex
+        
+        
+        for item in self.listWidget_selected.selectedItems():
+            self.item_ids.append(item.id)
+            
+        day = self.checkBox_day.isChecked()    
+        week = self.checkBox_week.isChecked()
+        month = self.checkBox_month.isChecked()
+        year = self.checkBox_year.isChecked()
+        
+        date_start=self.dateTimeEdit_from_period.dateTime().toPyDateTime()
+        date_end=self.dateTimeEdit_to_period.dateTime().toPyDateTime()
+        QtGui.QDialog.accept(self)        
+        
 class RrdReportMainWindow(QtGui.QMainWindow):
-    def __init__(self, account, type='account',connection=None):
-        self.account=account
+    def __init__(self, item_id=None, type='account',connection=None):
+        self.item_id=item_id
         self.connection=connection
         self.type=type
         #print connection.server_ip
@@ -53,17 +272,26 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         
         self.gridLayout.addWidget(self.webView, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
+        
         self.configureAction = QtGui.QAction(self)
         self.configureAction.setIcon(QtGui.QIcon("images/configure.png"))
         self.configureAction.setObjectName("configureAction")
         self.toolBar.addAction(self.configureAction)
+      
+        self.reloadAction = QtGui.QAction(self)
+        self.reloadAction.setIcon(QtGui.QIcon("images/reload.png"))
+        self.reloadAction.setObjectName("reloadAction")
+        self.toolBar.addAction(self.reloadAction)
+        
         
         self.printAction = QtGui.QAction(self)
         self.printAction.setIcon(QtGui.QIcon("images/printer.png"))
         self.printAction.setObjectName("printAction")
         self.toolBar.addAction(self.printAction)
         
-        #QtCore.QObject.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
+        
+        QtCore.QObject.connect(self.configureAction, QtCore.SIGNAL("triggered()"), self.configure)
+        QtCore.QObject.connect(self.reloadAction, QtCore.SIGNAL("triggered()"), self.load_stat)
         QtCore.QObject.connect(self.printAction, QtCore.SIGNAL("triggered()"), self.printDocument)
         
         self.retranslateUi()
@@ -72,7 +300,13 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         
     def load_stat(self):
         if self.type=='account':
-            self.webView.load(QtCore.QUrl("http://%s/statistics/subaccount/?account_id=%s" % (self.connection.server_ip, self.account)))
+            self.webView.load(QtCore.QUrl("http://%s/statistics/subaccount/?account_id=%s" % (self.connection.server_ip, self.item_id)))
+            self.configureAction.setDisabled(True)
+        elif self.type=='nas':
+            self.webView.load(QtCore.QUrl("http://%s/statistics/nas_stat/?nas_id=%s" % (self.connection.server_ip, self.item_id)))
+            self.configureAction.setDisabled(True)
+
+            
             
     def printDocument(self):
         #document = self.centralWidget()
@@ -86,6 +320,14 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         #document.print_(printer)
         self.webView.print_(printer)
         
+    def configure(self):
+        child=RRDPropertiesDialog(connection=self.connection, report_type=self.type)
+        
+        if child.exec_():
+            if self.type=='accounts':
+                
+            
+            
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Отчёт по загрузке канала", None, QtGui.QApplication.UnicodeUTF8))
 
