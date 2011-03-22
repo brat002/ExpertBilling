@@ -308,6 +308,7 @@ class SettlementPeriodEbs(ebsTableWindow):
         self.tableWidget.setItem(x,y,headerItem)
 
     def refresh(self):
+        self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
         periods = self.connection.get_models("billservice_settlementperiod")
         self.connection.commit()
@@ -328,6 +329,7 @@ class SettlementPeriodEbs(ebsTableWindow):
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader(self.setname, self.tableWidget)
         self.tableWidget.setSortingEnabled(True)
+        self.statusBar().showMessage(u"Готово")
             
     def delNodeLocalAction(self):
         super(SettlementPeriodEbs, self).delNodeLocalAction([self.delAction])

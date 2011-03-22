@@ -1182,7 +1182,7 @@ class Log(models.Model):
     created = models.DateTimeField()
     
 class SubAccount(models.Model):
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, related_name='subaccounts')
     username = models.CharField(max_length=512)
     password = models.CharField(max_length=512)
     ipn_ip_address = models.IPAddressField()

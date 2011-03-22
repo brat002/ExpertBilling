@@ -230,7 +230,7 @@ class PoolEbs(ebsTableWindow):
 
 
     def refresh(self):
-
+        self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.clearContents()
         pools = self.connection.sql("SELECT ippool.*, (SELECT count(*) FROM billservice_ipinuse as ipinuse WHERE ipinuse.pool_id=ippool.id) as count_used FROM billservice_ippool as ippool ORDER BY ippool.name ASC")
         self.connection.commit()
@@ -252,7 +252,7 @@ class PoolEbs(ebsTableWindow):
         #self.delNodeLocalAction()
         #self.tableWidget.resizeColumnsToContents()
         #self.tableWidget.setSortingEnabled(True)
-    
+        self.statusBar().showMessage(u"Готово")
 
     def delNodeLocalAction(self):
         super(PoolEbs, self).delNodeLocalAction([self.delAction])

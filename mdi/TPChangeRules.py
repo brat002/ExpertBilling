@@ -337,6 +337,7 @@ class TPRulesEbs(ebsTableWindow):
         self.tableWidget.setItem(x,y,headerItem)
 
     def refresh(self):
+        self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
         rules = self.connection.sql(" SELECT tpch.*,(SELECT name FROM billservice_tariff WHERE id=tpch.from_tariff_id and deleted IS NOT TRUE ) as from_tariff_name, (SELECT name FROM billservice_tariff WHERE id=tpch.to_tariff_id and deleted IS NOT TRUE ) as to_tariff_name, (SELECT name FROM billservice_settlementperiod WHERE id=tpch.settlement_period_id) as settlement_period_name FROM billservice_tpchangerule as tpch ORDER BY tpch.from_tariff_id")
         self.connection.commit()
@@ -361,6 +362,7 @@ class TPRulesEbs(ebsTableWindow):
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader(self.setname, self.tableWidget)
         self.tableWidget.setSortingEnabled(True)
+        self.statusBar().showMessage(u"Готово")
             
     def delNodeLocalAction(self):
         super(TPRulesEbs, self).delNodeLocalAction([self.delAction])

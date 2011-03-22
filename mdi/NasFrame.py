@@ -761,6 +761,7 @@ class NasEbs(ebsTableWindow):
 
 
     def refresh(self):
+        self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.clearContents()
         nasses = self.connection.get_models(table="nas_nas")
         self.connection.commit()
@@ -776,7 +777,7 @@ class NasEbs(ebsTableWindow):
         self.tableWidget.setColumnHidden(0, True)
 
         HeaderUtil.getHeader(self.setname, self.tableWidget)
-
+        self.statusBar().showMessage(u"Готово")
     
 
     def delNodeLocalAction(self):
