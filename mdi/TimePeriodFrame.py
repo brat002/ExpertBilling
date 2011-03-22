@@ -470,6 +470,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).id)
     def refreshTable(self, widget=None):
+        self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
         if not widget:
             period_id=self.getTimeperiodId()
@@ -495,7 +496,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
         #self.tableWidget.resizeColumnsToContents()
         HeaderUtil.getHeader(self.setname, self.tableWidget)
         self.tableWidget.setSortingEnabled(False)
-
+        self.statusBar().showMessage(u"Готово")
 
 
 

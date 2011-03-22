@@ -311,11 +311,17 @@ class MainWindow(QtGui.QMainWindow):
         self.workspace.addWindow(child)
         child.show()
     
-    @connlogin
+    #@connlogin
     def about(self):
-        QtGui.QMessageBox.about(self, u"О программе",
-                                u"Expert Billing Client<br>Интерфейс конфигурирования.<br>Версия 0.2")
-
+        QtGui.QDesktopServices().openUrl(QtCore.QUrl('http://wiki.expertbilling.ru/')) 
+        #QtGui.QMessageBox.about(self, u"О программе",
+        #                        u"Expert Billing Client<br>Интерфейс конфигурирования.<br>Версия 0.2")
+    #@connlogin
+    def to_forum(self):
+        QtGui.QDesktopServices().openUrl(QtCore.QUrl('http://forum.expertbilling.ru/')) 
+        #QtGui.QMessageBox.about(self, u"О программе",
+        #     
+        
     @connlogin
     def aboutOperator(self):
         child = OperatorDialog(connection=connection)
@@ -354,8 +360,8 @@ class MainWindow(QtGui.QMainWindow):
     def updateMenus(self):
         hasMdiChild = (self.activeMdiChild() is not None)
         #self.saveAct.setEnabled(hasMdiChild)
-        #self.saveAsAct.setEnabled(hasMdiChild)
-        self.pasteAct.setEnabled(True)
+        #self.sysadmAct.setEnabled(hasMdiChild)
+        #self.pasteAct.setEnabled(True)
         self.closeAct.setEnabled(hasMdiChild)
         self.closeAllAct.setEnabled(hasMdiChild)
         self.tileAct.setEnabled(hasMdiChild)
@@ -402,7 +408,7 @@ class MainWindow(QtGui.QMainWindow):
         self.newAct.setStatusTip(u"Пользователи и тарифы")
         self.connect(self.newAct, QtCore.SIGNAL("triggered()"), self.newFile)
 
-        self.dealerAct = QtGui.QAction(QtGui.QIcon("images/handshake.png"),
+        self.dealerAct = QtGui.QAction(QtGui.QIcon("images/dealer.png"),
                                     u"&Дилеры", self)
         #self.dealerAct.setShortcut(self.tr("Ctrl+D"))
         self.dealerAct.setStatusTip(u"Дилеры")
@@ -414,17 +420,17 @@ class MainWindow(QtGui.QMainWindow):
         self.netflowAct.setStatusTip(u"NetFlow статистика")
         self.connect(self.netflowAct, QtCore.SIGNAL("triggered()"), self.netflowreport)
                 
-        self.openAct = QtGui.QAction(QtGui.QIcon("images/nas.png"), u"&Серверы доступа", self)
+        self.nasAct = QtGui.QAction(QtGui.QIcon("images/nas.png"), u"&Серверы доступа", self)
         
-        #self.openAct.setShortcut(self.tr("Ctrl+N"))
-        self.openAct.setStatusTip(u'Серверы доступа')
-        self.connect(self.openAct, QtCore.SIGNAL("triggered()"), self.open)
+        #self.nasAct.setShortcut(self.tr("Ctrl+N"))
+        self.nasAct.setStatusTip(u'Серверы доступа')
+        self.connect(self.nasAct, QtCore.SIGNAL("triggered()"), self.open)
         
        
 
-        self.saveAct = QtGui.QAction(QtGui.QIcon("images/sp.png"), u'Расчётные периоды', self)
-        self.saveAct.setStatusTip(u"Расчётные периоды")
-        self.connect(self.saveAct, QtCore.SIGNAL("triggered()"), self.save)
+        self.settlementPeriodAct = QtGui.QAction(QtGui.QIcon("images/sp.png"), u'Расчётные периоды', self)
+        self.settlementPeriodAct.setStatusTip(u"Расчётные периоды")
+        self.connect(self.settlementPeriodAct, QtCore.SIGNAL("triggered()"), self.save)
 
 
 
@@ -433,16 +439,16 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.adminLogViewAct, QtCore.SIGNAL("triggered()"), self.adminsLogViewWindow)
         
 
-        self.addressViewAct = QtGui.QAction(QtGui.QIcon("images/add.png"), u'Адреса', self)
+        self.addressViewAct = QtGui.QAction(QtGui.QIcon("images/house.png"), u'Адреса домов', self)
         self.addressViewAct.setStatusTip(u"Адреса")
         self.connect(self.addressViewAct, QtCore.SIGNAL("triggered()"), self.addressview)
         
                 
-        self.saveAsAct = QtGui.QAction(QtGui.QIcon("images/system_administrators.png"),u'Администраторы и работники', self)
-        self.saveAsAct.setStatusTip(u"Администраторы и работники")
-        self.connect(self.saveAsAct, QtCore.SIGNAL("triggered()"), self.saveAs)
+        self.sysadmAct = QtGui.QAction(QtGui.QIcon("images/system_administrators.png"),u'Администраторы и работники', self)
+        self.sysadmAct.setStatusTip(u"Администраторы и работники")
+        self.connect(self.sysadmAct, QtCore.SIGNAL("triggered()"), self.saveAs)
 
-        self.poolAct = QtGui.QAction(u'IP пулы', self)
+        self.poolAct = QtGui.QAction(QtGui.QIcon("images/ipv4.png"),u'IP пулы', self)
         self.poolAct.setStatusTip(u"Пулы IP адресов")
         self.connect(self.poolAct, QtCore.SIGNAL("triggered()"), self.pool)
 
@@ -453,16 +459,16 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.exitAct, QtCore.SIGNAL("triggered()"), self.close)
         
         
-        self.cutAct = QtGui.QAction(QtGui.QIcon("images/tp.png"),
+        self.timePeriodAct = QtGui.QAction(QtGui.QIcon("images/tp.png"),
                                     u'Периоды тарификации', self)
 
-        self.cutAct.setStatusTip(u"Периоды тарификации")
-        self.connect(self.cutAct, QtCore.SIGNAL("triggered()"), self.cut)
+        self.timePeriodAct.setStatusTip(u"Периоды тарификации")
+        self.connect(self.timePeriodAct, QtCore.SIGNAL("triggered()"), self.cut)
 
-        self.messagesAct = QtGui.QAction(QtGui.QIcon("images/mesages.png"),
-                                    u'Сообщения', self)
+        self.messagesAct = QtGui.QAction(QtGui.QIcon("images/messages.png"),
+                                    u'Сообщения абонентам', self)
 
-        self.messagesAct.setStatusTip(u"Сообщенияи")
+        self.messagesAct.setStatusTip(u"Сообщениия")
         self.connect(self.messagesAct, QtCore.SIGNAL("triggered()"), self.messages)
 
 
@@ -472,19 +478,19 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.sqlDialogAct, QtCore.SIGNAL("triggered()"), self.sqlDialog)
 
 
-        self.copyAct = QtGui.QAction(QtGui.QIcon("images/tc.png"),
+        self.tclassesAct = QtGui.QAction(QtGui.QIcon("images/tc.png"),
                                      u"Классы трафика", self)
-        #self.copyAct.setShortcut(self.tr("Ctrl+C"))
-        self.copyAct.setStatusTip(u"Классы трафика")
-        self.connect(self.copyAct, QtCore.SIGNAL("triggered()"), self.copy)
+        #self.tclassesAct.setShortcut(self.tr("Ctrl+C"))
+        self.tclassesAct.setStatusTip(u"Классы трафика")
+        self.connect(self.tclassesAct, QtCore.SIGNAL("triggered()"), self.copy)
 
-        self.pasteAct = QtGui.QAction(QtGui.QIcon("images/monitor.png"),
+        self.sessionsMonAct = QtGui.QAction(QtGui.QIcon("images/monitor.png"),
                                       u"Монитор сессий", self)
         
-        #self.pasteAct.setShortcut(self.tr("Ctrl+M"))
-        self.pasteAct.setStatusTip(u"Монитор сессий")
+        #self.sessionsMonAct.setShortcut(self.tr("Ctrl+M"))
+        self.sessionsMonAct.setStatusTip(u"Монитор сессий")
 
-        self.connect(self.pasteAct, QtCore.SIGNAL("triggered()"), self.paste)
+        self.connect(self.sessionsMonAct, QtCore.SIGNAL("triggered()"), self.paste)
 
         self.cardsAct = QtGui.QAction(QtGui.QIcon("images/cards.png"),
                                       u"Карточная система", self)
@@ -508,11 +514,11 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.templatesAct, QtCore.SIGNAL("triggered()"), self.templates)
 
 
-        self.tpchangeAct = QtGui.QAction(QtGui.QIcon("images/tarif_change.png"),u"Правила смены ТП", self)
+        self.tpchangeAct = QtGui.QAction(QtGui.QIcon("images/tarif_change.png"),u"Правила смены тарифов", self)
         #self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.tpchangeAct, QtCore.SIGNAL("triggered()"), self.tpchangerules)
 
-        self.addonserviceAct = QtGui.QAction(u"Подключаемые услуги", self)
+        self.addonserviceAct = QtGui.QAction(QtGui.QIcon("images/turboicon.png"),u"Подключаемые услуги", self)
         #self.reloginAct.setStatusTip(self.tr("Reconnect"))
         self.connect(self.addonserviceAct, QtCore.SIGNAL("triggered()"), self.addonservice)
  
@@ -577,11 +583,15 @@ class MainWindow(QtGui.QMainWindow):
         self.separatorAct = QtGui.QAction(self)
         self.separatorAct.setSeparator(True)
 
-        self.aboutAct = QtGui.QAction(self.tr("&About"), self)
-        self.aboutAct.setStatusTip(self.tr("Show the application's About box"))
+        self.aboutAct = QtGui.QAction(u"&Документация", self)
+        self.aboutAct.setStatusTip(u"Перейти на страницу документации")
         self.connect(self.aboutAct, QtCore.SIGNAL("triggered()"), self.about)
+      
+        self.forumAct = QtGui.QAction(u"&Форум проекта", self)
+        self.forumAct.setStatusTip(u"Перейти на форум")
+        self.connect(self.forumAct, QtCore.SIGNAL("triggered()"), self.to_forum)
         
-        self.aboutOperAct = QtGui.QAction(self.tr("About &Operator"), self)
+        self.aboutOperAct = QtGui.QAction(u"Информация о провайдере", self)
         self.aboutOperAct.setStatusTip(self.tr("Show the operator info"))
         self.connect(self.aboutOperAct, QtCore.SIGNAL("triggered()"), self.aboutOperator)
 
@@ -593,44 +603,57 @@ class MainWindow(QtGui.QMainWindow):
 
 
     def createMenus(self):
-        self.fileMenu = self.menuBar().addMenu(u"&Главное меню")
-        self.fileMenu.addAction(self.newAct)
-        self.fileMenu.addAction(self.openAct)
-        self.fileMenu.addAction(self.saveAct)
+        self.mainMenu = self.menuBar().addMenu(u"&Главное меню")
+        self.mainMenu.addAction(self.newAct)
+        
+        #self.mainMenu.addAction(self.settlementPeriodAct)
         
         #self.editMenu = self.menuBar().addMenu(self.tr("&Edit"))
-        self.fileMenu.addAction(self.cutAct)
-        self.fileMenu.addAction(self.copyAct)
-        self.fileMenu.addAction(self.pasteAct)
+        #self.mainMenu.addAction(self.timePeriodAct)
+        self.mainMenu.addSeparator()
+        self.mainMenu.addAction(self.tpchangeAct)
         
-        self.fileMenu.addAction(self.poolAct)
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.addressViewAct)
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.saveAsAct)
-        self.fileMenu.addAction(self.dealerAct)
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.templatesAct)
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.reloginAct)
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.sqlDialogAct)
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.tpchangeAct)
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.addonserviceAct)
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.messagesAct)
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.logViewAct)
+        self.mainMenu.addAction(self.sessionsMonAct)
         
-        self.fileMenu.addSeparator()
-        
-        self.fileMenu.addAction(self.adminLogViewAct)
-        
-        self.fileMenu.addSeparator()
-        self.fileMenu.addAction(self.exitAct)
+        #self.mainMenu.addAction(self.poolAct)
+        self.mainMenu.addSeparator()
+        #self.mainMenu.addAction(self.addressViewAct)
+        #self.mainMenu.addSeparator()
+        #self.mainMenu.addAction(self.sysadmAct)
+        self.mainMenu.addAction(self.dealerAct)
+        self.mainMenu.addSeparator()
+        #self.mainMenu.addAction(self.templatesAct)
 
+        #self.mainMenu.addSeparator()
+        #self.mainMenu.addAction(self.addonserviceAct)
+        self.mainMenu.addSeparator()
+        self.mainMenu.addAction(self.messagesAct)
+        self.mainMenu.addSeparator()
+        self.mainMenu.addAction(self.logViewAct)
+        
+        self.mainMenu.addSeparator()
+        
+        self.mainMenu.addAction(self.adminLogViewAct)
+        self.mainMenu.addSeparator()
+        self.mainMenu.addAction(self.sqlDialogAct)
+        self.mainMenu.addSeparator()
+        self.mainMenu.addAction(self.reloginAct)
+        self.mainMenu.addSeparator()
+        self.mainMenu.addAction(self.exitAct)
+
+        self.settingsMenu = self.menuBar().addMenu(u"&Справочники")
+        self.settingsMenu.addAction(self.nasAct)
+        self.settingsMenu.addAction(self.addonserviceAct)
+        self.settingsMenu.addAction(self.settlementPeriodAct)
+        self.settingsMenu.addAction(self.timePeriodAct)
+        self.settingsMenu.addAction(self.tclassesAct)
+        self.settingsMenu.addAction(self.poolAct)
+        self.settingsMenu.addAction(self.addressViewAct)
+        self.settingsMenu.addAction(self.sysadmAct)
+        self.settingsMenu.addAction(self.templatesAct)
+        self.settingsMenu.addAction(self.aboutOperAct)
+        
+        
         self.windowMenu = self.menuBar().addMenu(u"&Окна")
         self.connect(self.windowMenu, QtCore.SIGNAL("aboutToShow()"),
                      self.updateWindowMenu)
@@ -646,8 +669,9 @@ class MainWindow(QtGui.QMainWindow):
 
         self.helpMenu = self.menuBar().addMenu(u"&Справка")
         
-        self.helpMenu.addAction(self.aboutOperAct)
+        #self.helpMenu.addAction(self.aboutOperAct)
         self.helpMenu.addAction(self.aboutAct)
+        self.helpMenu.addAction(self.forumAct)
         #self.helpMenu.addAction(self.aboutQtAct)
 
     @connlogin
@@ -662,17 +686,18 @@ class MainWindow(QtGui.QMainWindow):
         self.fileToolBar = QtGui.QToolBar(self)
         self.fileToolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.fileToolBar.addAction(self.newAct)
-        self.fileToolBar.addAction(self.openAct)
-        self.fileToolBar.addAction(self.saveAct)
+        self.fileToolBar.addAction(self.nasAct)
+        #self.fileToolBar.addAction(self.openAct)
+        #self.fileToolBar.addAction(self.settlementPeriodAct)
         self.fileToolBar.setMovable(False)
         self.fileToolBar.setFloatable(False)
 
         self.fileToolBar.setAllowedAreas(QtCore.Qt.TopToolBarArea)
-        self.fileToolBar.setIconSize(QtCore.QSize(18,18))
+        self.fileToolBar.setIconSize(QtCore.QSize(24,24))
 
-        self.fileToolBar.addAction(self.cutAct)
-        self.fileToolBar.addAction(self.copyAct)
-        self.fileToolBar.addAction(self.pasteAct)
+        self.fileToolBar.addAction(self.timePeriodAct)
+        self.fileToolBar.addAction(self.tclassesAct)
+        self.fileToolBar.addAction(self.sessionsMonAct)
         self.fileToolBar.addAction(self.cardsAct)
         self.fileToolBar.addAction(self.radiuslogReportAct)
 

@@ -691,6 +691,7 @@ class AddonServiceEbs(ebsTableWindow):
 
 
     def refresh(self):
+        self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.clearContents()
         self.statusBar().showMessage(u"Ожидание ответа")
         addonservices = self.connection.get_models("billservice_addonservice")
@@ -714,6 +715,7 @@ class AddonServiceEbs(ebsTableWindow):
         #self.delNodeLocalAction()
         #self.tableWidget.resizeColumnsToContents()
         #self.tableWidget.setSortingEnabled(True)
+        self.statusBar().showMessage(u"Готово")
     
 
     def delNodeLocalAction(self):

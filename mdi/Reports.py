@@ -2347,6 +2347,7 @@ class SimpleReportEbs(ebsTableWindow):
         self.tableWidget.setItem(x,y,headerItem)
              
     def radius_auth_fixtures(self):
+        self.statusBar().showMessage(u"Ожидание ответа")
         self.tableWidget.clearContents()
         account_id = self.comboBox_account.itemData(self.comboBox_account.currentIndex()).toInt()[0]
         acc_str = ''
@@ -2380,8 +2381,10 @@ class SimpleReportEbs(ebsTableWindow):
             settings.setValue("%strans_date_end" % self.report_type, QtCore.QVariant(self.dateTimeEdit_date_end.dateTime()))
         except Exception, ex:
             print "Transactions settings save error: ", ex
+        self.statusBar().showMessage(u"Готово")
             
     def balance_log_fixtures(self):
+        self.statusBar().showMessage(u"Ожидание ответа")
         self.tableWidget.clearContents()
         account_id = self.comboBox_account.itemData(self.comboBox_account.currentIndex()).toInt()[0]
         acc_str = ''
@@ -2411,6 +2414,7 @@ class SimpleReportEbs(ebsTableWindow):
         except Exception, ex:
             print "Transactions settings save error: ", ex
             
+        self.statusBar().showMessage(u"Готово")
     def fixtures(self):            
         accounts = self.connection.sql("SELECT id, username FROM billservice_account ORDER BY username ASC")
         self.connection.commit()

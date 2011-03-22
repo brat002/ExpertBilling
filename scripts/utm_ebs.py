@@ -3,10 +3,11 @@ import datetime
 import psycopg2
 import psycopg2.extras
 
+#utm_tarif_id:ebs_tarif_id
 tarifs={'1':'23','2':'23','4':'23','5':'23','6':'23','7':'23','8':'27','9':'22','10':'19','11': '17','12':'23','13':'22','14': '22','15': '19','16':'17','21':'23','22': '22','23':'19','24':'17','25':'18','26':'20','27':'27','28':'6','29':'7','30':'8','31':'25'}
 
 
-db=MySQLdb.connect(host="localhost",user="root", passwd="02111984",db="utm")
+db=MySQLdb.connect(host="localhost",user="root", passwd="",db="utm")
 
 start_date = datetime.datetime(year=2011, month=1, day=1, hour=0, minute=0, second=0)
 m_cursor=db.cursor()
@@ -30,7 +31,7 @@ p_cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     
 nas_id=4
 status=2
-transfer_accounts=False
+transfer_accounts=True
 transfer_ballances=True
 for x in m_cursor.fetchall():
 

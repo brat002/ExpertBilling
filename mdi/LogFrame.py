@@ -295,7 +295,7 @@ class LogViewEbs(ebsTableWindow):
             
     def refresh(self):
         #self.tableWidget.setSortingEnabled(False)
-        
+        self.statusBar().showMessage(u"Идёт получение данных")
         systemuser_id = self.comboBox_systemuser.itemData(self.comboBox_systemuser.currentIndex()).toInt()[0]
         start_date = self.date_start.dateTime().toPyDateTime()
         end_date = self.date_end.dateTime().toPyDateTime()
@@ -328,7 +328,8 @@ class LogViewEbs(ebsTableWindow):
             settings.setValue("logview_date_end", QtCore.QVariant(self.date_end.dateTime()))
         except Exception, ex:
             print "Transactions settings save error: ", ex
-            
+        self.statusBar().showMessage(u"Готово")
+        
     def delNodeLocalAction(self):
         #super(LogViewEbs, self).delNodeLocalAction([self.delAction])
         pass

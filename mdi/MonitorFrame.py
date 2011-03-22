@@ -101,7 +101,11 @@ class MonitorEbs(ebsTableWindow):
         QtCore.QObject.connect(self.pushbutton, QtCore.SIGNAL("clicked()"), self.fixtures)        
         QtCore.QObject.connect(self.checkBoxAutoRefresh, QtCore.SIGNAL("stateChanged(int)"), self.autorefresh_state)
         self.connect(self.thread, QtCore.SIGNAL("refresh()"), self.fixtures)
+        self.connect(self, QtCore.SIGNAL("refresh()"), self.fixtures)
+        self.refresh_users()
         QtCore.QObject.connect(self.userCombobox, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.fixtures)
+
+        
     
     def ebsPostInit(self, initargs):
         actList=[("actionResetSession", "Сбросить сессию", "images/del.png", self.reset_action)]
@@ -110,6 +114,7 @@ class MonitorEbs(ebsTableWindow):
         self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "По", None, QtGui.QApplication.UnicodeUTF8))
         self.actionCreator(actList, objDict)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.emit(QtCore.SIGNAL("refresh()"))
         
     def retranslateUI(self, initargs):
         super(MonitorEbs, self).retranslateUI(initargs)
@@ -183,6 +188,8 @@ class MonitorEbs(ebsTableWindow):
         self.fixtures()
         
     def fixtures(self, user=None):
+        print 'tratata'
+        self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setRowCount(0)
         self.tableWidget.clearContents()
         self.tableWidget.setSortingEnabled(False)
@@ -262,7 +269,9 @@ class MonitorEbs(ebsTableWindow):
                 self.userCombobox.addItem(unicode(user.username))
                 
     def refresh(self):
-        self.fixtures()
-        self.refresh_users()
+        pass
+        #self.fixtures()
+        #self.emit(QtCore.SIGNAL("refresh()"))
+        
         
        

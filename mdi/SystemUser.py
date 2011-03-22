@@ -547,7 +547,7 @@ class SystemEbs(ebsTableWindow):
 
         
     def refresh(self):
-        #s
+        self.statusBar().showMessage(u"Идёт получение данных")
         #self.tableWidget.setSortingEnabled(False)
         users = self.connection.get_models("billservice_systemuser")
         self.connection.commit()
@@ -575,6 +575,7 @@ class SystemEbs(ebsTableWindow):
         self.tableWidget.setColumnHidden(0, True)
         HeaderUtil.getHeader(self.setname, self.tableWidget)
         self.tableWidget.resizeRowsToContents()
+        self.statusBar().showMessage(u"Готово")
         #self.tableWidget.setSortingEnabled(True)
     
         

@@ -3343,7 +3343,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("delTarifAction", "Удалить тариф", "images/folder_delete.png", self.delTarif), \
                  ("transactionAction", "Пополнить счёт", "images/pay.png", self.makeTransation), \
                  ("transactionReportAction", "Платежи и списания", "images/moneybook.png", self.transactionReport), \
-                 ("messageDialogAction", "Сообщения", "images/mesages.png", self.messageDialogForm), \
+                 ("messageDialogAction", "Сообщения", "images/messages.png", self.messageDialogForm), \
                  
                  ("actionEnableSession", "Включить на сервере доступа", "images/add.png", self.accountEnable), \
                  ("actionDisableSession", "Отключить на сервере доступа", "images/del.png", self.accountDisable), \
@@ -3840,10 +3840,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         if id==-1000 or id==-2000:
             #self.sql=''
-            columns=[u'#', u'Имя пользователя', u"Договор",u'Тарифный план', u'Баланс', u'Кредит', u'Имя',   u'',  u"Последний нулевой баланс, дней", u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Имя пользователя', u"Договор",u'Тарифный план', u'Баланс', u'Кредит', u'Имя',   u'',  u"<=0 баланс, дней назад", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
         else:
-            columns=[u'#', u'Имя пользователя',  u"Договор", u'Баланс', u'Кредит', u'Имя', u'',  u"Последний нулевой баланс, дней", u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Имя пользователя',  u"Договор", u'Баланс', u'Кредит', u'Имя', u'',  u"<=0 баланс, дней назад", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
 
         print "sql=", self.sql            

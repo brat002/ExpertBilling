@@ -29,6 +29,8 @@ class ebsTableWindow(QtGui.QMainWindow):
         else:
             self.tableWidget = QtGui.QTableWidget(self)
             self.setCentralWidget(self.tableWidget)
+        self.statusbar = QtGui.QStatusBar(self)
+        self.setStatusBar(self.statusbar)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
         self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)

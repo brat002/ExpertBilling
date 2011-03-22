@@ -68,6 +68,7 @@ class AddressEbs(ebsTableWindow):
         self.horizontalLayout.addLayout(self.gridLayout_3)
         self.gridLayout_4.addLayout(self.horizontalLayout, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
+        
         #self.city_ce = QtGui.QGraphicsColorizeEffect()
         #self.street_ce = QtGui.QGraphicsColorizeEffect()
         #self.house_ce = QtGui.QGraphicsColorizeEffect()
@@ -95,6 +96,7 @@ class AddressEbs(ebsTableWindow):
         self.connect(self.listWidget_city, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.city_clicked)
         self.connect(self.listWidget_street, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.street_clicked)
         self.connect(self.listWidget_house, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.house_clicked)
+        self.toolBar_find.setHidden(True)
         
     def retranslateUI(self, initargs):
         super(AddressEbs, self).retranslateUI(initargs)
