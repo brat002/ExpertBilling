@@ -242,11 +242,18 @@ class RRDPropertiesDialog(QtGui.QDialog):
         date_end=self.dateTimeEdit_to_period.dateTime().toPyDateTime()
         #dt = 
     
-        #print self.item_ids
-        if self.radioButton_for_last.isChecked():
-            self.request_params='/statistics/subaccount_filter/?items=%s&day=%s&week=%s&month=%s&year=%s' % (','.join(self.item_ids),day,week,month,year)
-        else:
-            self.request_params='/statistics/subaccount_period_filter/?items=%s&from=%s&to=%s' % (','.join(self.item_ids),time.mktime(date_start.timetuple()),time.mktime(date_end.timetuple()))
+        if self.report_type=='accounts':
+            if self.radioButton_for_last.isChecked():
+                self.request_params='/statistics/subaccount_filter/?items=%s&day=%s&week=%s&month=%s&year=%s' % (','.join(self.item_ids),day,week,month,year)
+            else:
+                self.request_params='/statistics/subaccount_period_filter/?items=%s&from=%s&to=%s' % (','.join(self.item_ids),time.mktime(date_start.timetuple()),time.mktime(date_end.timetuple()))
+        elif self.report_type=='nasses':
+            if self.radioButton_for_last.isChecked():
+                self.request_params='/statistics/nasses_filter/?items=%s&day=%s&week=%s&month=%s&year=%s' % (','.join(self.item_ids),day,week,month,year)
+            else:
+                self.request_params='/statistics/nasses_period_filter/?items=%s&from=%s&to=%s' % (','.join(self.item_ids),time.mktime(date_start.timetuple()),time.mktime(date_end.timetuple()))
+            
+        
         QtGui.QDialog.accept(self)  
               
         
@@ -312,17 +319,22 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         
     def load_stat(self):
         if self.type=='account':
+            #self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
             self.webView.load(QtCore.QUrl("http://%s/statistics/subaccount/?account_id=%s" % (self.connection.server_ip, self.item_id)))
             self.configureAction.setDisabled(True)
         elif self.type=='nas':
+            #self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
             self.webView.load(QtCore.QUrl("http://%s/statistics/nas_stat/?nas_id=%s" % (self.connection.server_ip, self.item_id)))
             self.configureAction.setDisabled(True)
         elif self.type=='accounts' and self.request_params:
-            print self.request_params
+            #print self.request_params
+            #self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
             self.webView.load(QtCore.QUrl("http://%s%s" % (self.connection.server_ip, self.request_params)))
         elif self.type=='nasses' and self.request_params:
+            #self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
             self.webView.load(QtCore.QUrl("http://%s%s" % (self.connection.server_ip, self.request_params)))
 
+        #self.reloadAction.setEnabled(True)
             
             
     def printDocument(self):
@@ -340,9 +352,13 @@ class RrdReportMainWindow(QtGui.QMainWindow):
     def configure(self):
 
         if self.child.exec_()==1:
-            print self.request_params
+            #print self.request_params
             self.request_params = self.child.request_params
+            self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
+            self.reloadAction.setDisabled(True)
             self.load_stat()
+            self.reloadAction.setDisabled(False)
+            
             
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Отчёт по загрузке канала", None, QtGui.QApplication.UnicodeUTF8))
