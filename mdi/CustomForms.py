@@ -240,13 +240,15 @@ class RRDPropertiesDialog(QtGui.QDialog):
         
         date_start=self.dateTimeEdit_from_period.dateTime().toPyDateTime()
         date_end=self.dateTimeEdit_to_period.dateTime().toPyDateTime()
-        
+        #dt = 
+    
         #print self.item_ids
         if self.radioButton_for_last.isChecked():
-            self.request_params='?items=%s&day=%s&week=%s&month=%s&year=%s' % (','.join(self.item_ids),day,week,month,year)
+            self.request_params='/statistics/subaccount_filter/?items=%s&day=%s&week=%s&month=%s&year=%s' % (','.join(self.item_ids),day,week,month,year)
         else:
-            self.request_params='?items=%s&from=%s&to=%s' % (','.join(self.item_ids),time.mktime(date_start.timetuple()),time.mktime(date_end.timetuple()))
-        QtGui.QDialog.accept(self)        
+            self.request_params='/statistics/subaccount_period_filter/?items=%s&from=%s&to=%s' % (','.join(self.item_ids),time.mktime(date_start.timetuple()),time.mktime(date_end.timetuple()))
+        QtGui.QDialog.accept(self)  
+              
         
 class RrdReportMainWindow(QtGui.QMainWindow):
     def __init__(self, item_id=None, type='account',connection=None):
@@ -317,9 +319,9 @@ class RrdReportMainWindow(QtGui.QMainWindow):
             self.configureAction.setDisabled(True)
         elif self.type=='accounts' and self.request_params:
             print self.request_params
-            self.webView.load(QtCore.QUrl("http://%s/statistics/subaccount_filter/%s" % (self.connection.server_ip, self.request_params)))
+            self.webView.load(QtCore.QUrl("http://%s%s" % (self.connection.server_ip, self.request_params)))
         elif self.type=='nasses' and self.request_params:
-            self.webView.load(QtCore.QUrl("http://%s/statistics/nasses_stat/%s" % (self.connection.server_ip, self.request_params)))
+            self.webView.load(QtCore.QUrl("http://%s%s" % (self.connection.server_ip, self.request_params)))
 
             
             
