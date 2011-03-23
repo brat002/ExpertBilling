@@ -1,10 +1,12 @@
 # -*-coding: utf-8 -*-
-
+from django.shortcuts import get_object_or_404
 from billservice.models import Account,SubAccount
 from nas.models import Nas
 from lib.decorators import render_to
 from django.conf import settings
 import commands
+from hashlib import md5
+import time, datetime
 WWW_PREFIX='/media/statistics/'
 
 RRDTOOL_PATH='/usr/bin/rrdtool'
@@ -21,16 +23,25 @@ GRAPH_INTERVALS=((u'Сутки','-1day'),
 http://martybugs.net/linux/rrdtool/traffic.cgi
 """
 #@render_to("statistics/account_stat.html")
-def generate_graph(image_path, subaccount, interval):
+def generate_graph(image_path, subaccount, interval=None, from_date=None, to_date=None):
     #rrd=unicode(u"""%s graph %s -a PNG -h 125 -t "График загрузки канала субаккаунтом %s за %s (байты)" --lazy -l 0 -v bytes/sec -s %s DEF:in=%s.rrd:in:AVERAGE  DEF:out=%s.rrd:out:AVERAGE  CDEF:out_neg=out,-1,/  CDEF:in_calc=in,1,/ AREA:in_calc#32CD32:Incoming   LINE1:in_calc#32CD32    AREA:out_neg#4169E1:Outgoing   LINE1:out_neg#4169E1  HRULE:0#000000 """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], interval[1], RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
-    rrd=unicode(u"""%s graph %s -a PNG -h 125 -w 500 -t "График загрузки канала субаккаунтом %s за %s (байты)" --lazy -l 0 -v Байты/сек -s %s DEF:in=%s.rrd:in:AVERAGE  DEF:out=%s.rrd:out:AVERAGE  CDEF:out_neg=out,1,/  CDEF:in_calc=in,1,/ LINE2:in_calc#4169E1 AREA:in_calc#4169E1AA:Incomming   GPRINT:in_calc:MAX:"Max in\\:%%5.1lf%%s" GPRINT:in_calc:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in_calc:LAST:" Current\\: %%5.1lf %%S\\n" LINE2:out_neg#FA0502  AREA:out_neg#FA0502AA:Outgoing GPRINT:out_neg:MAX:"Max out\\:%%4.1lf%%s" GPRINT:out_neg:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out_neg:LAST:" Current\\: %%5.1lf %%S\\n" """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], interval[1], RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
+    if interval[1]:    
+        rrd=unicode(u"""%s graph %s -a PNG -h 125 -w 500 -t "График загрузки канала субаккаунтом %s за %s (байты)" --lazy -l 0 -v Байты/сек -s %s DEF:in=%s.rrd:in:AVERAGE  DEF:out=%s.rrd:out:AVERAGE  CDEF:out_neg=out,1,/  CDEF:in_calc=in,1,/ LINE2:in_calc#4169E1 AREA:in_calc#4169E1AA:Incomming   GPRINT:in_calc:MAX:"Max in\\:%%5.1lf%%s" GPRINT:in_calc:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in_calc:LAST:" Current\\: %%5.1lf %%S\\n" LINE2:out_neg#FA0502  AREA:out_neg#FA0502AA:Outgoing GPRINT:out_neg:MAX:"Max out\\:%%4.1lf%%s" GPRINT:out_neg:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out_neg:LAST:" Current\\: %%5.1lf %%S\\n" """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], interval[1], RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
+    else:
+        rrd=unicode(u"""%s graph %s -a PNG -h 125 -w 500 -t "График загрузки канала субаккаунтом %s за %s (байты)" --lazy -l 0 -v Байты/сек -s %s -e %s DEF:in=%s.rrd:in:AVERAGE  DEF:out=%s.rrd:out:AVERAGE  CDEF:out_neg=out,1,/  CDEF:in_calc=in,1,/ LINE2:in_calc#4169E1 AREA:in_calc#4169E1AA:Incomming   GPRINT:in_calc:MAX:"Max in\\:%%5.1lf%%s" GPRINT:in_calc:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in_calc:LAST:" Current\\: %%5.1lf %%S\\n" LINE2:out_neg#FA0502  AREA:out_neg#FA0502AA:Outgoing GPRINT:out_neg:MAX:"Max out\\:%%4.1lf%%s" GPRINT:out_neg:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out_neg:LAST:" Current\\: %%5.1lf %%S\\n" """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], from_date, to_date, RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
+        
     #print rrd
     status, output = commands.getstatusoutput(rrd)
     return status, rrd, output
 
 #@render_to("statistics/account_stat.html")
-def generate_packets_graph(image_path, subaccount, interval):
-    rrd=unicode(u"""%s graph %s -a PNG -h 125 -w 500 -t "График загрузки канала субаккаунтом %s за %s (пакеты)" --lazy -l 0 -v Пакеты/сек -s %s DEF:packets_in=%s.rrd:packets_in:AVERAGE  DEF:packets_out=%s.rrd:packets_out:AVERAGE  CDEF:out=packets_out,1,/  CDEF:in=packets_in,1,/ LINE2:in#4169E1 AREA:in#4169E1AA:Incomming   GPRINT:in:MAX:"Max in\\:%%5.1lf%%s" GPRINT:in:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in:LAST:" Current\\: %%5.1lf %%S\\n" LINE2:out#FA0502  AREA:out#FA0502AA:Outgoing GPRINT:out:MAX:"Max out\\:%%5.1lf%%s" GPRINT:out:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out:LAST:" Current\\: %%5.1lf %%S\\n"  """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], interval[1], RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
+def generate_packets_graph(image_path, subaccount, interval=None, from_date=None, to_date=None):
+
+    if interval[1]:    
+        rrd=unicode(u"""%s graph %s -a PNG -h 125 -w 500 -t "График загрузки канала субаккаунтом %s за %s (пакеты)" --lazy -l 0 -v Пакеты/сек -s %s DEF:packets_in=%s.rrd:packets_in:AVERAGE  DEF:packets_out=%s.rrd:packets_out:AVERAGE  CDEF:out=packets_out,1,/  CDEF:in=packets_in,1,/ LINE2:in#4169E1 AREA:in#4169E1AA:Incomming   GPRINT:in:MAX:"Max in\\:%%5.1lf%%s" GPRINT:in:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in:LAST:" Current\\: %%5.1lf %%S\\n" LINE2:out#FA0502  AREA:out#FA0502AA:Outgoing GPRINT:out:MAX:"Max out\\:%%5.1lf%%s" GPRINT:out:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out:LAST:" Current\\: %%5.1lf %%S\\n"  """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], interval[1], RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
+    else:
+        rrd=unicode(u"""%s graph %s -a PNG -h 125 -w 500 -t "График загрузки канала субаккаунтом %s за %s (пакеты)" --lazy -l 0 -v Пакеты/сек -s %s -e %s  DEF:packets_in=%s.rrd:packets_in:AVERAGE  DEF:packets_out=%s.rrd:packets_out:AVERAGE  CDEF:out=packets_out,1,/  CDEF:in=packets_in,1,/ LINE2:in#4169E1 AREA:in#4169E1AA:Incomming   GPRINT:in:MAX:"Max in\\:%%5.1lf%%s" GPRINT:in:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in:LAST:" Current\\: %%5.1lf %%S\\n" LINE2:out#FA0502  AREA:out#FA0502AA:Outgoing GPRINT:out:MAX:"Max out\\:%%5.1lf%%s" GPRINT:out:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out:LAST:" Current\\: %%5.1lf %%S\\n"  """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], from_date, to_date, RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
+    
     #print rrd
     status, output = commands.getstatusoutput(rrd)
     return status, rrd, output
@@ -92,6 +103,61 @@ def subaccounts_stat(request):
             filenames.append((interval[0], bytes_filename, packets_filename))
 #            print a,b,c
     return {'account':account,"filenames":filenames, 'c':'%s%s%s' % (a,b,c)}
+
+@render_to("statistics/subaccount_stat.html")
+def subaccounts_filter_stat(request):
+    #DAY
+    items = request.GET.get('items','').split(',')
+
+    periods=[]
+    if request.GET.get('day','')=='True':
+        periods.append((u'Сутки','-1day'),)
+    if request.GET.get('week','')=='True':
+        periods.append((u'Неделя','-1week'))
+    if request.GET.get('month','')=='True':
+        periods.append((u'Месяц''-1month'))
+    if request.GET.get('year','')=='True':
+        periods.append((u'Год','-1year'))
+    #print 123
+    accounts= Account.objects.filter(id__in=items)
+    filenames=[]
+    
+    for account in accounts:
+        for subaccount in SubAccount.objects.filter(account=account,username__isnull=False):
+            for interval in periods:
+            
+                bytes_filename=get_bytes_name(subaccount.id,interval[1])
+                packets_filename=get_packets_name(subaccount.id,interval[1])
+                a,b,c=generate_graph(IMAGE_PATH+'subaccounts/'+bytes_filename,  subaccount, interval)
+                a,b,c=generate_packets_graph(IMAGE_PATH+'subaccounts/'+packets_filename, subaccount, interval)
+                filenames.append((interval[0], bytes_filename, packets_filename))
+   #            print a,b,c
+    return {'account':account,"filenames":filenames}
+
+@render_to("statistics/subaccount_stat.html")
+def subaccounts_period_stat(request):
+    #DAY
+    items = request.GET.get('items','').split(',')
+
+    a = float(request.GET.get('from', 1213092131))
+    b = float(request.GET.get('to', 1213092132))
+    period = unicode("%s-%s" % (datetime.datetime.fromtimestamp(a).strftime('%d.%m.%y %H.%M:%s'),datetime.datetime.fromtimestamp(b).strftime('%d.%m.%y %H.%M:%s')))
+    #to_date = datetime.datetime.fromtimestamp(b)    
+    
+    accounts= Account.objects.filter(id__in=items)
+    filenames=[]
+    
+    for account in accounts:
+        for subaccount in SubAccount.objects.filter(account=account,username__isnull=False):
+        #    for interval in periods:
+            
+            bytes_filename=get_bytes_name(subaccount.id,'period')
+            packets_filename=get_packets_name(subaccount.id,'period')
+            a,b,c=generate_graph(IMAGE_PATH+'subaccounts/'+bytes_filename,  subaccount, [period,''], a, b)
+            a,b,c=generate_packets_graph(IMAGE_PATH+'subaccounts/'+packets_filename, subaccount, [period, ''], a, b)
+            filenames.append((None, bytes_filename, packets_filename))
+   #        print a,b,c
+    return {'account':account,"filenames":filenames}
 
 
 @render_to("statistics/subaccount_stat.html")
