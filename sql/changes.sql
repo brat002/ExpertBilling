@@ -89,7 +89,7 @@ ALTER TABLE billservice_transaction
 
 ALTER TABLE psh20090401
    ALTER COLUMN transaction_id SET DEFAULT False;
--- !!! 
+
 ALTER TABLE billservice_transaction
   DROP CONSTRAINT billservice_transaction_tarif_id_fkey;
 ALTER TABLE billservice_transaction
@@ -150,7 +150,7 @@ CREATE TRIGGER trans_acctf_ins_trg
     FOR EACH ROW
     EXECUTE PROCEDURE trans_acctf_ins_trg_fn();
 
---ALTER TABLE billservice_periodicalservicehistory DROP COLUMN transaction_id;
+
 ALTER TABLE billservice_periodicalservicehistory ADD COLUMN summ double precision;
 ALTER TABLE billservice_periodicalservicehistory ADD COLUMN account_id int;
 ALTER TABLE billservice_periodicalservicehistory ADD COLUMN type_id character varying;
@@ -375,14 +375,8 @@ ALTER TABLE billservice_onetimeservicehistory ADD COLUMN summ double precision;
 ALTER TABLE billservice_onetimeservicehistory ADD COLUMN account_id int;
 ALTER TABLE billservice_onetimeservicehistory ADD CONSTRAINT billservice_onetimeservicehistory_account_id_fkey FOREIGN KEY (account_id) REFERENCES billservice_account(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE billservice_onetimeservicehistory ADD CONSTRAINT billservice_onetimeservicehistory_onetimeservice_id_fkey FOREIGN KEY (onetimeservice_id) REFERENCES billservice_onetimeservice(id) ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED;
---ALTER TABLE billservice_onetimeservicehistory DROP COLUMN transaction_id;
+
 CREATE TRIGGER acc_otsh_trg AFTER INSERT OR DELETE OR UPDATE ON billservice_onetimeservicehistory FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn();  
-
-
---ALTER TABLE billservice_traffictransaction RENAME COLUMN sum TO summ;
-  
-  
------------------------------------------------  
   
 CREATE TABLE billservice_traffictransaction
 (
@@ -525,7 +519,7 @@ ALTER TABLE billservice_bankdata
 ALTER TABLE billservice_operator
    ALTER COLUMN bank_id DROP NOT NULL;
 
--- 15.04.2009 
+--15.04.2009 
 INSERT INTO billservice_template (id, name, type_id, body) VALUES (4, 'Акт выполненных работ', 4, 'Акт выполненных работ');
 INSERT INTO billservice_template (id, name, type_id, body) VALUES (5, 'Счет фактура', 3, 'Счет фактура');
 INSERT INTO billservice_template (id, name, type_id, body) VALUES (6, 'Договор на подключение юр. лиц', 2, '<html>
@@ -696,7 +690,7 @@ INSERT INTO billservice_template (id, name, type_id, body) VALUES (9, 'Шабл�
 ');
 
 
---23-04-2009----------------------------------------------
+--23.04.2009
 CREATE OR REPLACE FUNCTION speedlimit_ins_fn(splimit_id_ int, account_id_ int) RETURNS void
     AS $$ 
 BEGIN
@@ -764,7 +758,7 @@ $$
     LANGUAGE plpgsql;
 
 
---23-04-2009----------------------------------------------
+--23.04.2009
 CREATE OR REPLACE FUNCTION speedlimit_ins_fn(splimit_id_ int, account_id_ int) RETURNS void
     AS $$ 
 BEGIN
@@ -866,7 +860,7 @@ $$
 CREATE OR REPLACE FUNCTION shedulelog_time_credit_fn(account_id_ int, accounttarif_id_ int, taccs_id_ int, size_ int, datetime_ timestamp without time zone) RETURNS void
     AS $$ 
 BEGIN	
-	UPDATE billservice_accountprepaystime SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_; -- AND??
+	UPDATE billservice_accountprepaystime SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_; 
 	IF NOT FOUND THEN
 		INSERT INTO billservice_accountprepaystime (account_tarif_id, size, datetime, prepaid_time_service_id) VALUES(accounttarif_id_, size_, datetime_, taccs_id_);
     END IF;
@@ -891,7 +885,7 @@ END;
 $$
     LANGUAGE plpgsql;
 
--- 13.05.2009 
+--13.05.2009 
 
 ALTER TABLE billservice_tariff
    ADD COLUMN require_tarif_cost boolean;
@@ -899,7 +893,7 @@ ALTER TABLE billservice_tariff
 ALTER TABLE billservice_tariff
    ALTER COLUMN require_tarif_cost SET DEFAULT False;
    
--- 15.05.2009
+--15.05.2009
 CREATE OR REPLACE FUNCTION return_allowed() RETURNS bigint     AS 
 $$
 BEGIN    
@@ -941,7 +935,7 @@ END;
 $$    
 LANGUAGE plpgsql;
 
--- 18.05.2009
+--18.05.2009
 ALTER TABLE billservice_groupstat ALTER bytes TYPE bigint;
 ALTER TABLE billservice_groupstat ALTER classbytes TYPE bigint[];
 DROP FUNCTION group_type1_fn(integer, integer, integer, timestamp without time zone, integer[], integer[], integer);
@@ -972,7 +966,6 @@ DECLARE
     maxclass_ int;
     nbytes bigint;
     nclass int;
-    --jlen int;
 BEGIN
     INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (group_id_, account_id_, octets_, datetime_, classes_, classbytes_ , max_class_);
 EXCEPTION WHEN unique_violation THEN
@@ -980,7 +973,6 @@ EXCEPTION WHEN unique_violation THEN
     ilen := icount(classes_);
     max_ := 0;
     maxclass_ := NULL;
-    --jlen := icount(old_classes_);
     FOR i IN 1..ilen LOOP
         nclass := classes_[i];
         nbytes := classbytes_[i];
@@ -1007,7 +999,7 @@ $BODY$
   COST 100;
   
   
--- 19.05.2009
+--19.05.2009
 
 
 CREATE TABLE billservice_tpchangerule
@@ -1033,36 +1025,22 @@ CREATE TABLE billservice_tpchangerule
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_tpchangerule OWNER TO ebs;
 
--- Index: billservice_tpchangerule_from_tariff_id
-
--- DROP INDEX billservice_tpchangerule_from_tariff_id;
 
 CREATE INDEX billservice_tpchangerule_from_tariff_id
   ON billservice_tpchangerule
   USING btree
   (from_tariff_id);
 
--- Index: billservice_tpchangerule_settlement_period_id_index
-
--- DROP INDEX billservice_tpchangerule_settlement_period_id_index;
 
 CREATE INDEX billservice_tpchangerule_settlement_period_id_index
   ON billservice_tpchangerule
   USING btree
   (settlement_period_id);
 
--- Index: billservice_tpchangerule_tariff_tariff
-
--- DROP INDEX billservice_tpchangerule_tariff_tariff;
-
 CREATE UNIQUE INDEX billservice_tpchangerule_tariff_tariff
   ON billservice_tpchangerule
   USING btree
   (from_tariff_id, to_tariff_id);
-
--- Index: billservice_tpchangerule_to_tariff_id
-
--- DROP INDEX billservice_tpchangerule_to_tariff_id;
 
 CREATE INDEX billservice_tpchangerule_to_tariff_id
   ON billservice_tpchangerule
@@ -1240,7 +1218,7 @@ $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
   
--- 23.05.2009
+--23.05.2009
 
 ALTER TABLE billservice_onetimeservicehistory ALTER account_id DROP NOT NULL;
 ALTER TABLE billservice_onetimeservicehistory ALTER onetimeservice_id DROP NOT NULL;
@@ -1257,7 +1235,7 @@ ALTER TABLE billservice_traffictransaction ALTER traffictransmitservice_id DROP 
 ALTER TABLE billservice_transaction ALTER account_id DROP NOT NULL;
 ALTER TABLE billservice_transaction ALTER systemuser_id DROP NOT NULL;
   
--- 01.06.2009
+--01.06.2009
 
 CREATE OR REPLACE FUNCTION shedulelog_blocked_fn(account_id_ integer, accounttarif_id_ integer, blocked_ timestamp without time zone, cost_ decimal)
   RETURNS void AS
@@ -1351,7 +1329,7 @@ $$
 CREATE OR REPLACE FUNCTION shedulelog_time_credit_fn(account_id_ int, accounttarif_id_ int, taccs_id_ int, size_ int, datetime_ timestamp without time zone) RETURNS void
     AS $$ 
 BEGIN	
-	UPDATE billservice_accountprepaystime SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_; -- AND??
+	UPDATE billservice_accountprepaystime SET size=size+size_, datetime=datetime_ WHERE account_tarif_id=accounttarif_id_; 
 	IF NOT FOUND THEN
 		INSERT INTO billservice_accountprepaystime (account_tarif_id, size, datetime, prepaid_time_service_id) VALUES(accounttarif_id_, size_, datetime_, taccs_id_);
     END IF;
@@ -1364,7 +1342,7 @@ END;
 $$
     LANGUAGE plpgsql;
     
---02.06.2009 14:26
+--02.06.2009
 CREATE TABLE billservice_radiusattrs
 (
   id serial NOT NULL,
@@ -1380,9 +1358,6 @@ CREATE TABLE billservice_radiusattrs
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_radiusattrs OWNER TO ebs;
 
--- Index: billservice_radiusattrs_tarif_id
-
--- DROP INDEX billservice_radiusattrs_tarif_id;
 
 CREATE INDEX billservice_radiusattrs_tarif_id
   ON billservice_radiusattrs
@@ -1394,7 +1369,7 @@ ALTER TABLE billservice_radiusattrs
 ALTER TABLE billservice_radiusattrs
    ALTER COLUMN vendor DROP NOT NULL;
 
--- 16.06.2009 17:06
+--16.06.2009
 
 CREATE OR REPLACE FUNCTION card_activate_fn(login_ character varying, pin_ character varying, nas_id_ integer, account_ip_ inet)
   RETURNS record AS
@@ -1464,7 +1439,7 @@ $BODY$
   COST 100;
 ALTER FUNCTION card_activate_fn(character varying, character varying, integer, inet) OWNER TO ebs;
 
--- 16.06.2009 18.51
+
 ALTER TABLE radius_session ADD COLUMN transaction_id bigint;
 
 
@@ -1499,7 +1474,7 @@ END;
 $$
     LANGUAGE plpgsql;
 
--- 03.07.2009 21:43
+--03.07.2009
 
 CREATE OR REPLACE FUNCTION psh_crt_pdb(datetx date)
   RETURNS integer AS
@@ -1562,7 +1537,7 @@ $BODY$
   COST 100;
 ALTER FUNCTION psh_crt_pdb(date) OWNER TO ebs;
 
--- 15.07.2009
+--15.07.2009
 
 DROP RULE on_tariff_delete_rule ON billservice_tariff;
 
@@ -1574,30 +1549,24 @@ CREATE OR REPLACE FUNCTION clear_tariff_services_trg_fn()
 $BODY$
 BEGIN
 	
-	IF OLD.traffic_transmit_service_id NOTNULL THEN
-	    DELETE FROM billservice_traffictransmitservice WHERE id=OLD.traffic_transmit_service_id;
-	END IF;
-	
-	IF OLD.time_access_service_id NOTNULL THEN
-	    DELETE FROM billservice_timeaccessservice WHERE id=OLD.time_access_service_id;   
-	RETURN OLD;
-	END IF;
-	
-	 IF OLD.access_parameters_id NOTNULL THEN
-            DELETE FROM billservice_accessparameters WHERE id=OLD.access_parameters_id;
-        END IF;
+IF OLD.traffic_transmit_service_id NOTNULL THEN
+    DELETE FROM billservice_traffictransmitservice WHERE id=OLD.traffic_transmit_service_id;
+END IF;
+
+IF OLD.time_access_service_id NOTNULL THEN
+    DELETE FROM billservice_timeaccessservice WHERE id=OLD.time_access_service_id;   
+RETURN OLD;
+END IF;
+
+ IF OLD.access_parameters_id NOTNULL THEN
+    DELETE FROM billservice_accessparameters WHERE id=OLD.access_parameters_id;
+END IF;
 RETURN OLD;
 END;
 $BODY$
   LANGUAGE 'plpgsql' VOLATILE
   COST 100;
-  
---CREATE TRIGGER clear_tariff_services_trg
--- BEFORE DELETE
---  ON billservice_tariff
---  FOR EACH ROW
---  EXECUTE PROCEDURE clear_tariff_services_trg_fn();
-  
+   
     
 CREATE OR REPLACE FUNCTION set_deleted_trg_fn()
   RETURNS trigger AS
@@ -1627,11 +1596,9 @@ ALTER TABLE billservice_shedulelog
       REFERENCES billservice_accounttarif (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
       
-----28.07.2009 14:14
+--28.07.2009
 ALTER TABLE billservice_account
    ADD COLUMN associate_pptp_ipn_ip boolean;
-
---UPDATE billservice_account SET associate_pptp_ipn_ip=FALSE;
 ALTER TABLE billservice_account
    ALTER COLUMN associate_pptp_ipn_ip SET NOT NULL;
    
@@ -1641,7 +1608,6 @@ ALTER TABLE billservice_account
 ALTER TABLE billservice_account
    ADD COLUMN associate_pppoe_mac boolean;
 
---UPDATE billservice_account SET associate_pppoe_mac=FALSE;
 ALTER TABLE billservice_account
    ALTER COLUMN associate_pppoe_mac SET NOT NULL;
    
@@ -1661,13 +1627,13 @@ ALTER TABLE billservice_suspendedperiod
    ALTER COLUMN end_date DROP NOT NULL;
 
 
--- 31.07.2009 18:00
+--31.07.2009
 ALTER TABLE billservice_suspendedperiod ALTER start_date TYPE timestamp without time zone;
 
 ALTER TABLE billservice_suspendedperiod ALTER end_date TYPE timestamp without time zone;
 
 
--- 07.08.2009 14:20
+--07.08.2009
 ALTER TABLE radius_activesession ADD COLUMN nas_int_id integer;
 
 ALTER TABLE billservice_account   ADD COLUMN contactperson_phone character varying;
@@ -1691,11 +1657,9 @@ CONSTRAINT billservice_x8021_nas_id_fkey FOREIGN KEY (nas_id)
     REFERENCES nas_nas (id) MATCH SIMPLE      
     ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED)WITH (OIDS=FALSE);ALTER TABLE billservice_x8021 OWNER TO ebs;
     
--- Index: billservice_x8021_account_id-- 
---DROP INDEX billservice_x8021_account_id;
+
 CREATE INDEX billservice_x8021_account_id  ON billservice_x8021  USING btree  (account_id);
--- Index: billservice_x8021_nas_id-- 
---
+
 DROP INDEX billservice_x8021_nas_id;
 
 CREATE INDEX billservice_x8021_nas_id  ON billservice_x8021  USING btree  (nas_id);  
@@ -1712,7 +1676,7 @@ ALTER TABLE billservice_speedlimit ALTER COLUMN speed_units SET DEFAULT 'Kbps'::
 ALTER TABLE billservice_speedlimit ALTER COLUMN change_speed_type SET STORAGE EXTENDED;ALTER TABLE billservice_speedlimit ALTER COLUMN change_speed_type SET DEFAULT 'add'::character varying;
 
 
--- 11.08.2009 15:47
+--11.08.2009
 
 ALTER TABLE billservice_accounttarif ADD COLUMN periodical_billed boolean DEFAULT FALSE;
 
@@ -1773,36 +1737,23 @@ CREATE TABLE billservice_addonservice
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_addonservice OWNER TO ebs;
 
--- Index: billservice_addonservice_nas_id
-
--- DROP INDEX billservice_addonservice_nas_id;
-
 CREATE INDEX billservice_addonservice_nas_id
   ON billservice_addonservice
   USING btree
   (nas_id);
 
--- Index: billservice_addonservice_sp_period_id
-
--- DROP INDEX billservice_addonservice_sp_period_id;
 
 CREATE INDEX billservice_addonservice_sp_period_id
   ON billservice_addonservice
   USING btree
   (sp_period_id);
 
--- Index: billservice_addonservice_timeperiod_id
-
--- DROP INDEX billservice_addonservice_timeperiod_id;
 
 CREATE INDEX billservice_addonservice_timeperiod_id
   ON billservice_addonservice
   USING btree
   (timeperiod_id);
 
--- Index: billservice_addonservice_wyte_period_id
-
--- DROP INDEX billservice_addonservice_wyte_period_id;
 
 CREATE INDEX billservice_addonservice_wyte_period_id
   ON billservice_addonservice
@@ -1832,27 +1783,18 @@ CREATE TABLE billservice_addonservicetarif
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_addonservicetarif OWNER TO ebs;
 
--- Index: billservice_addonservicetarif_activation_count_period_id
-
--- DROP INDEX billservice_addonservicetarif_activation_count_period_id;
 
 CREATE INDEX billservice_addonservicetarif_activation_count_period_id
   ON billservice_addonservicetarif
   USING btree
   (activation_count_period_id);
 
--- Index: billservice_addonservicetarif_service_id
-
--- DROP INDEX billservice_addonservicetarif_service_id;
 
 CREATE INDEX billservice_addonservicetarif_service_id
   ON billservice_addonservicetarif
   USING btree
   (service_id);
 
--- Index: billservice_addonservicetarif_tarif_id
-
--- DROP INDEX billservice_addonservicetarif_tarif_id;
 
 CREATE INDEX billservice_addonservicetarif_tarif_id
   ON billservice_addonservicetarif
@@ -1883,18 +1825,10 @@ CREATE TABLE billservice_accountaddonservice
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_accountaddonservice OWNER TO ebs;
 
--- Index: billservice_accountaddonservice_account_id
-
--- DROP INDEX billservice_accountaddonservice_account_id;
-
 CREATE INDEX billservice_accountaddonservice_account_id
   ON billservice_accountaddonservice
   USING btree
   (account_id);
-
--- Index: billservice_accountaddonservice_service_id
-
--- DROP INDEX billservice_accountaddonservice_service_id;
 
 CREATE INDEX billservice_accountaddonservice_service_id
   ON billservice_accountaddonservice
@@ -1903,7 +1837,7 @@ CREATE INDEX billservice_accountaddonservice_service_id
 
 
 
----16.08.2009 16:22
+--16.08.2009
 CREATE OR REPLACE FUNCTION check_allowed_users_trg_fn() RETURNS trigger    AS
 $$
 DECLARE counted_num_ bigint;
@@ -1959,55 +1893,35 @@ CREATE TABLE billservice_addonservicetransaction
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_addonservicetransaction OWNER TO ebs;
 
--- Index: billservice_addonservicetransaction_account_id
-
--- DROP INDEX billservice_addonservicetransaction_account_id;
-
 CREATE INDEX billservice_addonservicetransaction_account_id
   ON billservice_addonservicetransaction
   USING btree
   (account_id);
 
--- Index: billservice_addonservicetransaction_accountaddonservice_id
-
--- DROP INDEX billservice_addonservicetransaction_accountaddonservice_id;
 
 CREATE INDEX billservice_addonservicetransaction_accountaddonservice_id
   ON billservice_addonservicetransaction
   USING btree
   (accountaddonservice_id);
 
--- Index: billservice_addonservicetransaction_accounttarif_id
-
--- DROP INDEX billservice_addonservicetransaction_accounttarif_id;
 
 CREATE INDEX billservice_addonservicetransaction_accounttarif_id
   ON billservice_addonservicetransaction
   USING btree
   (accounttarif_id);
 
--- Index: billservice_addonservicetransaction_service_id
-
--- DROP INDEX billservice_addonservicetransaction_service_id;
 
 CREATE INDEX billservice_addonservicetransaction_service_id
   ON billservice_addonservicetransaction
   USING btree
   (service_id);
 
--- Index: fki_billservice_addonservicetransaction_type_id_fkey
-
--- DROP INDEX fki_billservice_addonservicetransaction_type_id_fkey;
 
 CREATE INDEX fki_billservice_addonservicetransaction_type_id_fkey
   ON billservice_addonservicetransaction
   USING btree
   (type_id);
 
-
--- Trigger: adds_trans_trg on billservice_addonservicetransaction
-
--- DROP TRIGGER adds_trans_trg ON billservice_addonservicetransaction;
 
 CREATE TRIGGER adds_trans_trg
   AFTER INSERT OR UPDATE OR DELETE
@@ -2119,7 +2033,7 @@ ALTER TABLE billservice_addonservice
 ALTER TABLE billservice_addonservice
    ALTER COLUMN "comment" SET DEFAULT '';
 
--- 27.08.2009 23:02
+--27.08.2009
 
 
 ALTER TABLE billservice_account
@@ -2220,7 +2134,7 @@ CREATE TRIGGER suspended_period_check_trg
   EXECUTE PROCEDURE suspended_period_check_trg_fn();
   
   
--- 09.09.2009
+--09.09.2009
 
 SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 19, true);
 
@@ -2274,7 +2188,7 @@ $$
 
 ALTER FUNCTION public.gpst_crt_prev_ins(datetx date) OWNER TO ebs;
  
--- 09.09.2009 14:40 
+--09.09.2009
 
  SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 21, true);
  
@@ -2300,7 +2214,7 @@ ALTER TABLE nas_nas
 ALTER TABLE nas_nas
    ALTER COLUMN speed_value2 SET DEFAULT '';
 
--- 23.09.09 10:00
+--23.09.2009
 
 ALTER TABLE billservice_systemuser ADD COLUMN text_password character varying(255);
 ALTER TABLE billservice_systemuser ALTER COLUMN text_password SET STORAGE EXTENDED;
@@ -2321,7 +2235,7 @@ CREATE TABLE billservice_news
 )
 WITH (OIDS=FALSE);
 
--- 14.10.09 10:00
+--14.10.2009
 CREATE OR REPLACE FUNCTION card_activate_fn(login_ character varying, pin_ character varying, nas_id_ integer, account_ip_ inet)
   RETURNS record AS
 $BODY$
@@ -2392,19 +2306,8 @@ $BODY$
   COST 100;
 ALTER FUNCTION card_activate_fn(character varying, character varying, integer, inet) OWNER TO ebs;
 
---23.010.2010 14:14
-ALTER TABLE billservice_organization
-   ADD COLUMN kpp text;
-ALTER TABLE billservice_organization
-   ALTER COLUMN kpp SET DEFAULT '';
 
-
-ALTER TABLE billservice_organization
-   ADD COLUMN kor_s text;
-ALTER TABLE billservice_organization
-   ALTER COLUMN kor_s SET DEFAULT '';
-
--- 03.11.2009 23:50
+--03.11.2009
 
 CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, account_id_ integer, type_id_ character varying, summ_ numeric, created_ timestamp without time zone, ps_condition_type_ integer)
   RETURNS void AS
@@ -2426,7 +2329,7 @@ $BODY$
 ALTER FUNCTION periodicaltr_fn(integer, integer, integer, character varying, numeric, timestamp without time zone, integer) OWNER TO postgres;
   
   
---09.11.2009 15:18
+--09.11.2009
 DROP TABLE billservice_news;
 
 CREATE TABLE billservice_news
@@ -2461,18 +2364,12 @@ CREATE TABLE billservice_accountviewednews
 WITH (OIDS=FALSE);
 ALTER TABLE billservice_accountviewednews OWNER TO ebs;
 
--- Index: billservice_accountviewednews_account_id
 
--- DROP INDEX billservice_accountviewednews_account_id;
 
 CREATE INDEX billservice_accountviewednews_account_id
   ON billservice_accountviewednews
   USING btree
   (account_id);
-
--- Index: billservice_accountviewednews_news_id
-
--- DROP INDEX billservice_accountviewednews_news_id;
 
 CREATE INDEX billservice_accountviewednews_news_id
   ON billservice_accountviewednews
@@ -2540,7 +2437,7 @@ ALTER TABLE billservice_addonservicetransaction
       ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
       
 
---24.11.2009 16:07
+--24.11.2009
 
 ALTER TABLE billservice_tpchangerule
    ADD COLUMN on_next_sp boolean;
@@ -2561,15 +2458,15 @@ INSERT INTO billservice_documenttype (id, name) VALUES (8, 'Информацио
 
 INSERT INTO billservice_template (name, type_id, body) VALUES ('Информационное письмо', 8, '---------------------------------------------------
  Это сообщение сгенерировано биллинговой системой!
----------------------------------------------------
+ ---------------------------------------------------
 
 Здравствуйте, ${account.username}.
 Уведомляем, что актуальный баланс Вашего лицевого счета составляет ${"%.2f" % account.ballance} руб. Размер кредита ${account.credit}.
 Пожалуйста, пополните баланс во избежание блокировки.
----
+ ---
 ${operator.organization}');
 
--- 08.12.2009 18:01
+--08.12.2009
 
 ALTER TABLE billservice_traffictransmitnodes ALTER edge_value TYPE int; 
 
@@ -2584,7 +2481,7 @@ CREATE TYPE group_nodes AS (
 );  
 
 
--- 11.12.2009 17:50
+--11.12.2009
 
 
 CREATE TABLE billservice_systemgroup
@@ -2621,7 +2518,7 @@ ALTER TABLE billservice_tariff
       REFERENCES billservice_systemgroup (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY IMMEDIATE;
 
--- 16.12.2009 15:00
+--16.12.2009
 CREATE OR REPLACE FUNCTION transaction_block_sum(account_id_ integer, start_date_ timestamp without time zone, end_date_ timestamp without time zone)
   RETURNS decimal AS
 $BODY$ 
@@ -2648,11 +2545,11 @@ $BODY$
   COST 100;
   
   
---06.01.2010 18:08
+--06.01.2010
 ALTER TABLE billservice_account
    ADD COLUMN contract text DEFAULT '';
    
--- 29.01.2010 21:33
+--29.01.2010
 
 ALTER TABLE billservice_ipinuse ALTER ip TYPE inet USING ip::inet;
 
@@ -2693,10 +2590,6 @@ CREATE TRIGGER return_ipinuse_to_pool_trg
    FOR EACH ROW
    EXECUTE PROCEDURE return_ipinuse_to_pool_trg_fn();
    
-   
--- Column: email
-
--- ALTER TABLE billservice_systemuser DROP COLUMN email;
 
 ALTER TABLE billservice_systemuser ADD COLUMN email text;
 ALTER TABLE billservice_systemuser ALTER COLUMN email SET STORAGE EXTENDED;
@@ -2716,23 +2609,29 @@ ALTER TABLE billservice_onetimeservice
    
 --16.02.2010
 
---SELECT baf1.id, baf1.datetime from billservice_accounttarif baf1 JOIN billservice_accounttarif baf2 ON baf1.account_id=baf2.account_id AND baf1.id != baf2.id AND (date_trunc('minute', baf1.datetime + interval '2 min') - interval '1 min' * (date_part('min', baf1.datetime + interval '2 min')::int % 5))=(date_trunc('minute', baf2.datetime + interval '2 min') - interval '1 min' * (date_part('min', baf2.datetime + interval '2 min')::int % 5)) GROUP BY baf1.id, baf1.datetime order by baf1.id;
-
---UPDATE billservice_accounttarif SET datetime = datetime + interval '2 minutes';
---UPDATE billservice_accounttarif SET datetime=date_trunc('minute', datetime) - interval '1 min' * (date_part('min', datetime)::int % 5);
 
 UPDATE billservice_accounttarif SET datetime=date_trunc('second', datetime);
 
 UPDATE billservice_accountaddonservice SET activated=date_trunc('second', activated);
 UPDATE billservice_accountaddonservice SET deactivated=date_trunc('second', deactivated);
 
--- 12.03.2010
-
+--12.03.2010
 INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Оплата через платежные системы', 'PAYMENTGATEWAY_BILL');
---- 23.11.2010
+--23.10.2010
+ALTER TABLE billservice_organization
+   ADD COLUMN kpp text;
+ALTER TABLE billservice_organization
+   ALTER COLUMN kpp SET DEFAULT '';
+
+
+ALTER TABLE billservice_organization
+   ADD COLUMN kor_s text;
+ALTER TABLE billservice_organization
+   ALTER COLUMN kor_s SET DEFAULT '';
+--23.11.2010
 alter table billservice_accountipnspeed alter column speed type text;
 
---- 05.12.2010
+--05.12.2010
 UPDATE billservice_template SET body='
 <html>
  <head>
@@ -2764,7 +2663,7 @@ UPDATE billservice_template SET body='
 '
 WHERE type_id=5;
 
---04.01.2011 1.4!!!
+--04.01.2011
 
 ALTER TABLE nas_nas ADD COLUMN subacc_add_action text;
 ALTER TABLE nas_nas ALTER COLUMN subacc_add_action SET DEFAULT ''::text;
@@ -2879,10 +2778,6 @@ ALTER TABLE billservice_subaccount
     REFERENCES billservice_ipinuse (id) MATCH SIMPLE
     ON UPDATE NO ACTION ON DELETE SET NULL;
                             
--- Function: shedulelog_tr_credit_fn(integer, integer, integer, timestamp without time zone)
-
--- DROP FUNCTION shedulelog_tr_credit_fn(integer, integer, integer, timestamp without time zone);
-
 CREATE OR REPLACE FUNCTION shedulelog_tr_credit_fn(account_id_ integer, accounttarif_id_ integer, trts_id_ integer, coeff_ numeric, datetime_ timestamp without time zone)
   RETURNS void AS
 $BODY$
@@ -3004,14 +2899,14 @@ DECLARE
     prevdate_ date;
     
 BEGIN    
-        query_ :=  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
-        EXECUTE query_;
-        query_ :=  ch_fn_tx1_  || quote_literal(ch_fn_bd_tx1_ || quote_literal(datetx_) || ch_fn_bd_tx2_ || quote_literal(datetx_) || '+ interval ' || quote_literal(onemonth_) ||  ch_fn_bd_tx3_) || fn_tx2_;
-        EXECUTE query_;
-        prevdate_ := activesession_cur_dt();
-        PERFORM radius_activesession_crt_prev_ins(prevdate_);
-        query_ := dt_fn_tx1_ || quote_literal(' BEGIN RETURN  DATE ' || quote_literal(datetx_) || '; END; ') || fn_tx2_;
-        EXECUTE query_;
+	query_ :=  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
+	EXECUTE query_;
+	query_ :=  ch_fn_tx1_  || quote_literal(ch_fn_bd_tx1_ || quote_literal(datetx_) || ch_fn_bd_tx2_ || quote_literal(datetx_) || '+ interval ' || quote_literal(onemonth_) ||  ch_fn_bd_tx3_) || fn_tx2_;
+	EXECUTE query_;
+	prevdate_ := activesession_cur_dt();
+	PERFORM radius_activesession_crt_prev_ins(prevdate_);
+	query_ := dt_fn_tx1_ || quote_literal(' BEGIN RETURN  DATE ' || quote_literal(datetx_) || '; END; ') || fn_tx2_;
+	EXECUTE query_;
     RETURN;
 END;
 $$
@@ -3963,9 +3858,6 @@ WITH (
 );
 ALTER TABLE billservice_street OWNER TO ebs;
 
--- Index: billservice_street_city_id
-
--- DROP INDEX billservice_street_city_id;
 
 CREATE INDEX billservice_street_city_id
   ON billservice_street
@@ -3984,9 +3876,6 @@ WITH (
 );
 ALTER TABLE billservice_house OWNER TO ebs;
 
--- Index: billservice_house_street_id
-
--- DROP INDEX billservice_house_street_id;
 
 CREATE INDEX billservice_house_street_id
   ON billservice_house
@@ -4023,7 +3912,8 @@ ALTER TABLE billservice_account
 ALTER TABLE billservice_periodicalservice ADD COLUMN deactivated timestamp without time zone;
 ALTER TABLE billservice_periodicalservice ADD COLUMN deleted boolean;
 ALTER TABLE billservice_periodicalservice ALTER COLUMN deleted SET DEFAULT false;
---- 13.02.2011 15:47
+
+--13.02.2011
 CREATE TABLE billservice_templatetype
 (
   id serial NOT NULL,
@@ -4058,7 +3948,7 @@ ALTER TABLE billservice_account ALTER COLUMN allow_ipn_with_minus SET DEFAULT fa
 ALTER TABLE billservice_account ADD COLUMN allow_ipn_with_block boolean;
 ALTER TABLE billservice_account ALTER COLUMN allow_ipn_with_block SET DEFAULT false;
 
----17.02.2011
+--17.02.2011
 ALTER TABLE billservice_tariff ADD COLUMN radius_traffic_transmit_service_id integer;
 ALTER TABLE billservice_timeaccessservice
    ADD COLUMN rounding integer DEFAULT 0;
@@ -4076,7 +3966,7 @@ ALTER TABLE radius_activesession
 ALTER TABLE radius_activesession
    ADD COLUMN lt_bytes_out numeric DEFAULT 0;
    
---17.02.2011 23:38
+--17.02.2011
 CREATE OR REPLACE FUNCTION rad_activesession_crt_cur_ins(datetx date) RETURNS void
     AS $$
 DECLARE
@@ -4334,7 +4224,7 @@ END;$BODY$
   COST 100;
     
 
---- 19.02.2011 14:03
+--19.02.2011
 ALTER TABLE billservice_shedulelog ADD COLUMN prepaid_radius_traffic_reset timestamp without time zone;
 ALTER TABLE billservice_shedulelog ADD COLUMN prepaid_radius_traffic_accrued timestamp without time zone;
 CREATE TABLE billservice_accountprepaysradiustrafic (
@@ -4441,7 +4331,7 @@ ALTER TABLE billservice_timeaccessservice
 ALTER TABLE billservice_timeaccessservice
    ADD COLUMN tarification_step integer DEFAULT 1;
 
---- 20.02.2011
+--20.02.2011
 ALTER TABLE billservice_traffictransaction ADD COLUMN radiustraffictransmitservice_id integer;
 CREATE OR REPLACE FUNCTION traftrans_crt_cur_ins(datetx date) RETURNS void
     AS $$
@@ -4598,9 +4488,6 @@ WITH (
 );
 ALTER TABLE qiwi_invoice OWNER TO ebs;
 
--- Index: qiwi_invoice_account_id
-
--- DROP INDEX qiwi_invoice_account_id;
 
 CREATE INDEX qiwi_invoice_account_id
   ON qiwi_invoice
@@ -4642,10 +4529,6 @@ CREATE TRIGGER qiwi_trs_trg
   FOR EACH ROW
   EXECUTE PROCEDURE account_payment_transaction_trg_fn();
   
-  
--- Function: card_activate_fn(character varying, character varying, integer, inet)
-
--- DROP FUNCTION card_activate_fn(character varying, character varying, integer, inet);
 
 CREATE OR REPLACE FUNCTION card_activate_fn(login_ character varying, pin_ character varying, nas_id_ integer, account_ip_ inet)
   RETURNS record AS
@@ -4670,7 +4553,7 @@ BEGIN
 
     -- Если карта уже продана, но ещё не активирвоана
     ELSIF card_data_.activated_by_id IS NULL and card_data_.sold is not NULL and card_data_.pin=pin_ THEN
--- Создаём пользователя
+    -- Создаём пользователя
         INSERT INTO billservice_account(username, "password", ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
         VALUES(login_, pin_, account_ip_, False, 1, now(), False, True, True, False, False, False, False) RETURNING id INTO account_id_;
     INSERT INTO billservice_subaccount(
@@ -4962,10 +4845,6 @@ $BODY$
 ALTER FUNCTION shedulelog_tr_reset_fn(integer, integer, timestamp without time zone) OWNER TO postgres;
 
 
--- Function: shedulelog_tr_credit_fn(integer, integer, integer, numeric, timestamp without time zone)
-
--- DROP FUNCTION shedulelog_tr_credit_fn(integer, integer, integer, numeric, timestamp without time zone);
-
 CREATE OR REPLACE FUNCTION shedulelog_tr_reset_fn(account_id_ integer, accounttarif_id_ integer, reset_ timestamp without time zone)
   RETURNS void AS
 $BODY$
@@ -5013,7 +4892,7 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
---------------------------------------------------------------------------------------------
+
 
 ALTER FUNCTION shedulelog_tr_credit_fn(integer, integer, integer, boolean, numeric, timestamp without time zone) OWNER TO postgres;
 
@@ -5084,9 +4963,6 @@ update billservice_card set type=2 WHERE login is not null and nas_id is not nul
 ALTER TABLE billservice_card
    ALTER COLUMN "type" SET NOT NULL;
 
--- Function: card_activate_fn(character varying, character varying, integer, inet)
-
--- DROP FUNCTION card_activate_fn(character varying, character varying, integer, inet);
 
 CREATE OR REPLACE FUNCTION card_activate_fn(login_ character varying, pin_ character varying, nas_id_ integer, account_ip_ inet)
   RETURNS record AS
@@ -5111,7 +4987,7 @@ BEGIN
 
     -- Если карта уже продана, но ещё не активирвоана
     ELSIF card_data_.activated_by_id IS NULL and card_data_.sold is not NULL and card_data_.pin=pin_ THEN
--- Создаём пользователя
+    -- Создаём пользователя
         INSERT INTO billservice_account(username, "password", ipn_ip_address, ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
         VALUES(login_, pin_, account_ip_, False, 1, now(), False, True, True, False, False, False, False) RETURNING id INTO account_id_;
     INSERT INTO billservice_subaccount(
@@ -5161,3 +5037,4 @@ $BODY$
 ALTER FUNCTION card_activate_fn(character varying, character varying, integer, inet) OWNER TO postgres;
 
 ALTER TABLE billservice_account ADD COLUMN last_balance_null timestamp without time zone;
+
