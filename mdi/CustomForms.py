@@ -331,6 +331,7 @@ class RrdReportMainWindow(QtGui.QMainWindow):
             #self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
             self.webView.load(QtCore.QUrl("http://%s%s" % (self.connection.server_ip, self.request_params)))
         elif self.type=='nasses' and self.request_params:
+            print self.request_params
             #self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
             self.webView.load(QtCore.QUrl("http://%s%s" % (self.connection.server_ip, self.request_params)))
 
@@ -354,7 +355,7 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         if self.child.exec_()==1:
             #print self.request_params
             self.request_params = self.child.request_params
-            self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
+            #self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
             self.reloadAction.setDisabled(True)
             self.load_stat()
             self.reloadAction.setDisabled(False)
