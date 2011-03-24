@@ -59,7 +59,10 @@ urlpatterns += patterns('statistics.views',
     (r'^statistics/account/$', 'account_stat'),
     (r'^statistics/subaccount/$', 'subaccounts_stat'),
     (r'^statistics/subaccount_filter/$', 'subaccounts_filter_stat'),
+    (r'^statistics/nasses_filter/$', 'nasses_filter_stat'),    
+    (r'^statistics/subaccount_period_filter/$', 'subaccounts_period_stat'),    
     (r'^statistics/overall/$', 'overall_stat'),
     (r'^statistics/nasses_stat/$', 'nasses_stat'),    
+    (r'^statistics/nasses_period_filter/$', 'nasses_period_stat'),        
     (r'^statistics/nas_stat/$', 'nas_stat'),        
 )
