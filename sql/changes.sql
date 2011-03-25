@@ -55,6 +55,7 @@ CREATE TRIGGER clear_tariff_services_trg
   EXECUTE PROCEDURE clear_tariff_services_trg_fn();
 
 --7.04.2009
+
 ALTER TABLE billservice_systemuser
    ADD COLUMN "role" integer;
 ALTER TABLE billservice_systemuser
@@ -65,30 +66,15 @@ UPDATE billservice_systemuser SET role = 0 WHERE id>0;
 --08.04.2009
 ALTER TABLE radius_activesession
    ALTER COLUMN interrim_update DROP DEFAULT;
-ALTER TABLE billservice_transaction
-   ADD COLUMN systemuser_id integer;
    
-ALTER TABLE billservice_transaction ADD CONSTRAINT billservice_systemuser_fkey FOREIGN KEY (systemuser_id) REFERENCES billservice_systemuser (id)
-   ON UPDATE NO ACTION ON DELETE SET NULL
-   DEFERRABLE;
-CREATE INDEX fki_billservice_systemuser_fkey ON billservice_transaction(systemuser_id);
 
-ALTER TABLE billservice_transaction
-   ADD COLUMN promise boolean;
-ALTER TABLE billservice_transaction
-   ALTER COLUMN promise SET DEFAULT False;
-   
-ALTER TABLE billservice_transaction
-   ADD COLUMN end_promise timestamp without time zone;
+CREATE INDEX fki_billservice_systemuser_fkey ON billservice_transaction(systemuser_id);
 
 
 ALTER TABLE billservice_transaction
    ADD COLUMN promise_expired boolean;
 ALTER TABLE billservice_transaction
    ALTER COLUMN promise_expired SET DEFAULT False;
-
-ALTER TABLE psh20090401
-   ALTER COLUMN transaction_id SET DEFAULT False;
 
 ALTER TABLE billservice_transaction
   DROP CONSTRAINT billservice_transaction_tarif_id_fkey;
@@ -99,12 +85,11 @@ ALTER TABLE billservice_transaction
       
 SELECT pg_catalog.setval('billservice_transactiontype_id_seq', 21, true);
 INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Операция проведена кассиром', 'CASSA_TRANSACTION');
-INSERT INTO billservice_transactiontype("name", internal_name) VALUES ('Платёжная система ОСМП', 'OSMP_BILL');    
+  
 
 
 --14.04.2009
 
-ALTER TABLE billservice_transaction ADD COLUMN accounttarif_id int;
 UPDATE billservice_transaction AS bt SET accounttarif_id = (SELECT ba.id FROM billservice_accounttarif AS ba WHERE ba.account_id = bt.account_id AND ba.datetime < bt.created ORDER BY ba.datetime DESC LIMIT 1);
 
 CREATE OR REPLACE FUNCTION trans_acctf_ins_trg_fn() RETURNS trigger
@@ -118,7 +103,7 @@ END;
 $$
     LANGUAGE plpgsql;
     
-    
+DROP FUNCTION transaction_sum(account_id_ int, acctf_id_ int, start_date_ timestamp without time zone, end_date_ timestamp without time zone);
 CREATE OR REPLACE FUNCTION transaction_sum(account_id_ int, acctf_id_ int, start_date_ timestamp without time zone, end_date_ timestamp without time zone) RETURNS double precision
     AS $$ 
 DECLARE
@@ -131,7 +116,7 @@ BEGIN
 END;
 $$
     LANGUAGE plpgsql;
-    
+DROP FUNCTION transaction_block_sum(account_id_ int, start_date_ timestamp without time zone, end_date_ timestamp without time zone);    
 CREATE OR REPLACE FUNCTION transaction_block_sum(account_id_ int, start_date_ timestamp without time zone, end_date_ timestamp without time zone) RETURNS double precision
     AS $$ 
 DECLARE
@@ -1227,7 +1212,6 @@ ALTER TABLE billservice_periodicalservicehistory ALTER account_id DROP NOT NULL;
 ALTER TABLE billservice_periodicalservicehistory ALTER service_id DROP NOT NULL;
 
 ALTER TABLE billservice_timetransaction ALTER account_id DROP NOT NULL;
-ALTER TABLE billservice_timetransaction ALTER session_id DROP NOT NULL;
 
 ALTER TABLE billservice_traffictransaction ALTER account_id DROP NOT NULL;
 ALTER TABLE billservice_traffictransaction ALTER traffictransmitservice_id DROP NOT NULL;
@@ -3520,7 +3504,7 @@ $BODY$ BEGIN RETURN  DATE '19700102'; END; $BODY$
   COST 100;
 
 DELETE FROM billservice_transaction;
-ALTER TABLE billservice_transaction DROP TRIGGER trs_del_trg;
+DROP TRIGGER IF EXISTS trs_del_trg ON billservice_transaction;
 
 DROP TRIGGER acc_tftrans_trg ON billservice_traffictransaction;
 
@@ -3770,8 +3754,6 @@ ALTER TABLE billservice_systemuser
 ALTER TABLE billservice_systemuser
    ADD COLUMN home_phone text DEFAULT '';
 
-ALTER TABLE billservice_systemuser
-   ADD COLUMN mobile_phone text DEFAULT '';
 
 ALTER TABLE billservice_systemuser
    ADD COLUMN mobile_phone text DEFAULT '';
@@ -4313,8 +4295,7 @@ ALTER TABLE billservice_radiustrafficnode OWNER TO ebs;
 
 
 
-ALTER TABLE billservice_radiustraffic
-   ADD COLUMN reset_prepaid_traffic boolean DEFAULT False;
+
 ALTER TABLE billservice_radiustraffic
    ALTER COLUMN created SET DEFAULT now();
 ALTER TABLE billservice_radiustraffic
