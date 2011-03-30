@@ -2576,7 +2576,7 @@ class TarifFrame(QtGui.QDialog):
                         self.addrow(self.periodical_tableWidget, node.deactivated.strftime(strftimeFormat),i, 7)
                     except:
                         self.addrow(self.periodical_tableWidget, '',i, 7)
-                        self.periodical_tableWidget.item(i, 7).deactivated = node.deactivated
+                    self.periodical_tableWidget.item(i, 7).deactivated = node.deactivated
                     #print "node created", node.created
                     i+=1                   
             self.periodical_tableWidget.setColumnHidden(0, True)
