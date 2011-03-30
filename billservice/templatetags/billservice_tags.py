@@ -29,7 +29,7 @@ def writen_of_traffic(session, user):
         sum += transaction.summ
     return {'sum':sum}
 
-@register.inclusion_tag('accounts/tags/traffic_format.html')    
+@register.inclusion_tag('accounts/tags/traffic_format.html')
 def traffic_format(value, second_value=None):
     try:
         if second_value != None:
@@ -39,22 +39,19 @@ def traffic_format(value, second_value=None):
         #res = a/1024
         if a>1024 and a<(1024*1024):
             return {
-                    'size': u"%.5s KB" % unicode(a/(1024))
+                    'size': u"%.2f KB" % float(a/float(1024))
                     }
-        elif a>=(1024*1024) and a<=(1024*1024*1024):
+        elif a>=(1024*1024):
             return {
-                    'size': u"%.5s МB" % unicode(a/(1024*1024))
-                    }
-        elif a>(1024*1024*1024):
-            return {
-                    'size': u"%.5s GB" % unicode(a/(1024*1024*1024))
+                    'size': u"%.2f МB" % float(a/float(1024*1024))
                     }
         elif a<1024:
             return {
-                    'size': u"%s B" % unicode(int(a))
-                    } 
+                    'size': u"%f B" % float(a)
+                    }
     except Exception, e:
         print e
+
         
 @register.inclusion_tag('accounts/tags/traffic_size.html')
 def traffic_size(traffic, account_tarif):
