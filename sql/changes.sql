@@ -4649,24 +4649,16 @@ DECLARE
     ch_fn_bd_tx1_ text := ' DECLARE d_s_ date := DATE ';
     ch_fn_bd_tx2_ text := '; d_e_ date := (DATE ';
     ch_fn_bd_tx3_ text := ')::date; BEGIN IF    trs_date < d_s_ THEN RETURN -1; ELSIF trs_date < d_e_ THEN RETURN 0; ELSE RETURN 1; END IF; END; ';
-
     ch_fn_tx2_ text := ' LANGUAGE plpgsql VOLATILE COST 100;';
-
     qts_ text := 'CHK % % %';
-    
     onemonth_ text := '1 month';
     query_ text;
 BEGIN    
-
         EXECUTE  fn_tx1_  || quote_literal(fn_bd_tx1_ || datetx_ || fn_bd_tx2_) || fn_tx2_;
-
-
         query_ :=  ch_fn_tx1_  || quote_literal(ch_fn_bd_tx1_ || quote_literal(datetx_) || ch_fn_bd_tx2_ || quote_literal(datetx_) || '+ interval ' || quote_literal(onemonth_) ||  ch_fn_bd_tx3_) || fn_tx2_;
-        
+       
         EXECUTE query_;
-        
     RETURN;
-
 END;
 $$
     LANGUAGE plpgsql; 

@@ -261,14 +261,14 @@ def import_dump():
         allow_continue("We get error when importing initial dump. %s" % output)
         
         
-def fromchanges():
+def fromchanges(changes_start=False):
     
     to_db=[]
-    changes_start=False
+    
     changes_date = datetime.datetime.now()-datetime.timedelta(days=-1000)
     for line in open(DIST_PATH+'/sql/changes.sql'):
         if line.startswith('--') and not changes_start:
-            print line
+            #print line
             try:
                 changes_date = datetime.datetime.strptime(line.strip(), "--%d.%m.%Y")
             except Exception, e:
@@ -277,6 +277,8 @@ def fromchanges():
             
         if changes_date>=installation_date:
             changes_start=True
+        
+        if changes_start==True:
             to_db.append(line)
              
     #print '\n'.join(to_db)   
@@ -300,7 +302,7 @@ if __name__=='__main__':
     if 'install' in sys.argv:
         import_dump()
 
-        fromchanges()
+        fromchanges(changes_start=True)
         upgrade_db()
     if  'upgrade' in sys.argv:
     #print installation_date
