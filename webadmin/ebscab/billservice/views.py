@@ -19,12 +19,7 @@ CUR_PATH = os.getcwd()
 ROLE = 2
 
 from django.conf import settings
-
 import isdlogger
-try:
-    os.mkdir(settings.WEBCAB_LOG)
-except:
-    pass
 
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect, HttpResponse
@@ -84,7 +79,7 @@ def addon_queryset(request, id_begin, field='datetime', field_to=None):
 @render_to('registration/login.html')
 def login(request):
     error_message = True
-    
+
     if request.method == 'POST':
         pin = request.POST.get('pin')
         user = request.POST.get('user')
@@ -134,7 +129,7 @@ def login(request):
                             'error_message':error_message,
                             'form':form,
                             }
-                elif user: 
+                elif user:
                     log_in(request, user)
                     if isinstance(user.account, SystemUser):
                         return HttpResponseRedirect(reverse("helpdesk_dashboard"))
@@ -187,15 +182,15 @@ def login_out(request):
 @render_to('accounts/index.html')
 @login_required
 def index(request):
-    
+
     if isinstance(request.user.account, SystemUser):
         return HttpResponseRedirect(reverse("helpdesk_dashboard"))
-    
+
     user = request.user.account
     tariff_id, tariff_name = user.get_account_tariff_info()
     date = datetime.date(datetime.datetime.now().year, datetime.datetime.now().month, datetime.datetime.now().day)
     tariffs = AccountTarif.objects.filter(account=user, datetime__lt=date).order_by('-datetime')
-    
+
     if len(tariffs) == 0 or len(tariffs) == 1:
         tariff_flag = False
     else:
@@ -315,7 +310,7 @@ def make_payment(request):
 
     return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'wm_form':wm_form, 'qiwi_form':qiwi_form}
 
-    
+
 
 @ajax_request
 @login_required
@@ -327,7 +322,7 @@ def qiwi_payment(request):
     phone = form.cleaned_data.get('phone', '')
     password = form.cleaned_data.get('password', '')
     autoaccept = form.cleaned_data.get("autoaccept", False)
-    
+
     if autoaccept==True and not (password): return {'status_message':u"Для автоматического зачисления необходимо указать пароль"}
     #print "summ=",type(summ), summ,summ>=1, len(phone)
     if summ>=1 and len(phone)==10:
@@ -365,8 +360,8 @@ def qiwi_payment(request):
                 invoice.date_accepted=datetime.datetime.now()
                 invoice.save()
                 payed=True
-                
-                 
+
+
         return {'status_message':message, 'payment_url':payment_url,'payed':payed, 'invoice_id':invoice.id, 'invoice_summ':float(invoice.summ), 'invoice_date':"%s-%s-%s %s:%s:%s" % (invoice.created.day, invoice.created.month, invoice.created.year,invoice.created.hour, invoice.created.minute, invoice.created.second)}
     else:
         return {'status_message':u'Сумма<1 или неправильный формат телефонного номера.'}
@@ -385,8 +380,8 @@ def qiwi_balance(request):
     else:
         message = u"Не указан телефон или пароль"
         return {'balance':0, 'status_message':message}
-    
-    
+
+
 @render_to('accounts/transaction.html')
 @login_required
 def transaction(request):
@@ -502,14 +497,14 @@ def password_form(request):
     return {
             'form':PasswordForm()
             }
-    
+
 @render_to('accounts/subaccount_change_password.html')
 @login_required
 def subaccount_password_form(request, subaccount_id):
     subaccount = SubAccount.objects.get(id=subaccount_id)
     return {
             'form':SimplePasswordForm(), "subaccount":subaccount,
-            }    
+            }
 
 @ajax_request
 @login_required
@@ -531,8 +526,8 @@ def subaccount_change_password(request):
                 else:
                     return {
                             'error_message': u'Обнаружена попытка взлома.',
-                            }                    
-                    
+                            }
+
 
                 if form.cleaned_data['new_password']==form.cleaned_data['repeat_password'] and subaccount.password!='':
 
