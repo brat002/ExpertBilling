@@ -2551,7 +2551,7 @@ class TarifFrame(QtGui.QDialog):
             periodical_services = self.connection.sql("""SELECT periodicalservice.*, settlementperiod.name as settlement_period_name
             FROM billservice_periodicalservice as periodicalservice
             LEFT JOIN billservice_settlementperiod as settlementperiod ON settlementperiod.id = periodicalservice.settlement_period_id
-            WHERE periodicalservice.tarif_id = %d   
+            WHERE periodicalservice.tarif_id = %d   and periodicalservice.deleted=False
             """ % self.model.id)
             if len(periodical_services)>0:
                 self.periodical_services_checkbox.setChecked(True)

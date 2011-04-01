@@ -765,14 +765,15 @@ class TimeAccessBill(Thread):
                             
                             sp_defstart = acc.datetime if sp.autostart else sp.time_start
                             sp_start, sp_end, delta = fMem.settlement_period_(sp_defstart, sp.length_in, sp.length, dateAT)
-                            date_start, date_end, bytes_in, bytes_out = accounts_bytes_cache.get(acc.account_id, (None, None, 0,0))
+                            date_start, date_end, bytes_in, bytes_out = accounts_bytes_cache.get(acc.acctf_id, (None, None, 0,0))
                             if date_start==sp_start and date_end==sp_end:
                                 # если в кэше есть данные о трафике для абонента за указанный расчётный период - обновляем кэш свежими значениями
                                 bytes_in = bytes_in if bytes_in else 0
                                 bytes_out = bytes_out if bytes_out else 0
                                 bytes_in, bytes_out = bytes_in+rs.bytes_in-rs.lt_bytes_in, bytes_out+rs.bytes_out-rs.lt_bytes_out
-                                accounts_bytes_cache[acc.account_id]['bytes_in']+= rs.bytes_in-rs.lt_bytes_in
-                                accounts_bytes_cache[acc.account_id]['bytes_out']+= rs.bytes_out-rs.lt_bytes_out
+                                accounts_bytes_cache[acc.acctf_id] = (date_start, date_end, bytes_in, bytes_out)
+                                #accounts_bytes_cache[acc.acctf_id]['bytes_in']+= rs.bytes_in-rs.lt_bytes_in
+                                #accounts_bytes_cache[acc.acctf_id]['bytes_out']+= rs.bytes_out-rs.lt_bytes_out
                             else:    
                                 cur.execute("""
                                     SELECT sum(bytes_in) as bytes_in, sum(bytes_out) as bytes_out FROM radius_activesession 
@@ -781,7 +782,7 @@ class TimeAccessBill(Thread):
                                 bytes_in, bytes_out = cur.fetchone()
                                 bytes_in = bytes_in if bytes_in else 0
                                 bytes_out = bytes_out if bytes_out else 0
-                                accounts_bytes_cache[acc.account_id]={'date_start':sp_start, 'date_end':sp_end, 'bytes_in':bytes_in, 'bytes_out':bytes_out}
+                                accounts_bytes_cache[acc.acctf_id]=(sp_start, sp_end, bytes_in, bytes_out)
                                              
                         #total_time = rs.session_time - old_time
                         [(0, u"Входящий"),(1, u"Исходящий"),(2, u"Вх.+Исх."),(3, u"Большее направление")]
