@@ -14,14 +14,14 @@ urlpatterns = patterns('',
     ('^admin/(.*)', admin.site.root),
      #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
      #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
-     #(r'helpdesk/', include('helpdesk.urls')),
+     (r'helpdesk/', include('helpdesk.urls')),
 
 )
 
 urlpatterns += patterns('billservice.views',
     # Uncomment this for admin:
      #(r'^$', 'index'),
-     (r'^$', 'index'),
+     url(r'^$', 'index', name='billservice_index'),
      (r'^login/$', 'login'),
      (r'^prepaid/$', 'account_prepays_traffic'),
      (r'^accounts/logout/$', 'login_out'),
@@ -39,7 +39,7 @@ urlpatterns += patterns('billservice.views',
      (r'^traffic/limit/$', 'traffic_limit'),
      (r'^statistics/$', 'statistics'),
      (r'^services/$', 'addon_service'),
-     (r'^service/(?P<action>set|del)/(?P<id>\d+)/$', 'service_action'), 
+     (r'^service/(?P<action>set|del)/(?P<id>\d+)/$', 'service_action'),
      (r'^services/info/$', 'services_info'),
      (r'^service/history/info/$', 'periodical_service_history'),
      (r'^addon/services/transaction/info/$', 'addon_service_transaction'),
@@ -48,7 +48,11 @@ urlpatterns += patterns('billservice.views',
      (r'^news/delete/$', 'news_delete'),
      #(r'^jsonaccounts$', 'jsonaccounts'),
 )
-
+urlpatterns = urlpatterns + patterns('helpdesk.views.account',
+    url(r'^account/helpdesk/$', 'list_tickets', name='helpdesk_account_tickets'), # list user's tickets
+    url(r'^account/helpdesk/add$', 'create_ticket', name='helpdesk_account_tickets_add'), # create new ticket
+    url(r'^account/helpdesk/(?P<ticket_id>[\d]+)/$', 'view_ticket', name='helpdesk_account_tickets_view'), #change/post comment,
+)
 urlpatterns += patterns('service_monitor.views',
                         #(?P<id>\d+)
     (r'^service_data/$', 'service_data'),
@@ -59,10 +63,10 @@ urlpatterns += patterns('statistics.views',
     (r'^statistics/account/$', 'account_stat'),
     (r'^statistics/subaccount/$', 'subaccounts_stat'),
     (r'^statistics/subaccount_filter/$', 'subaccounts_filter_stat'),
-    (r'^statistics/nasses_filter/$', 'nasses_filter_stat'),    
-    (r'^statistics/subaccount_period_filter/$', 'subaccounts_period_stat'),    
+    (r'^statistics/nasses_filter/$', 'nasses_filter_stat'),
+    (r'^statistics/subaccount_period_filter/$', 'subaccounts_period_stat'),
     (r'^statistics/overall/$', 'overall_stat'),
-    (r'^statistics/nasses_stat/$', 'nasses_stat'),    
-    (r'^statistics/nasses_period_filter/$', 'nasses_period_stat'),        
-    (r'^statistics/nas_stat/$', 'nas_stat'),        
+    (r'^statistics/nasses_stat/$', 'nasses_stat'),
+    (r'^statistics/nasses_period_filter/$', 'nasses_period_stat'),
+    (r'^statistics/nas_stat/$', 'nas_stat'),
 )
