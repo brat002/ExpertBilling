@@ -60,6 +60,7 @@ la_list = [u"Заблокировать пользователя", u"Измен�
 ps_conditions = [CashType(0, u"При любом балансе"), CashType(1,u"При положительном и нулевом балансе"), CashType(2,u"При отрицательном балансе"), CashType(3,u"При положительнои балансе")]
 ps_list = [u"При любом балансе", u"При положительном и нулевом балансе", u"При отрицательном балансе", u"При положительнои балансе"]
 round_types = [CashType(0, u"Не округлять"),CashType(1, u"В большую сторону")]
+addonservice_activation_types = [CashType(0, u"Аккаунт"),CashType(1, u"Субаккаунт")]
 direction_types = [CashType(0, u"Входящий"),CashType(1, u"Исходящий"),CashType(2, u"Вх.+Исх."),CashType(3, u"Большее направление")]
 class SubaccountLinkDialog(QtGui.QDialog):
     def __init__(self, connection, account, model = None):
@@ -1522,7 +1523,7 @@ class TarifFrame(QtGui.QDialog):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), QtGui.QApplication.translate("Dialog", "Лимиты", None, QtGui.QApplication.UnicodeUTF8))
         
 
-        columns=[u'#', u'Название', u'Количество активаций', u'За период времени']
+        columns=[u'#', u'Название', u"Доступно для", u'Количество активаций', u'За период времени']
         
         makeHeaders(columns, self.tableWidget_addonservices)
         
@@ -2320,6 +2321,18 @@ class TarifFrame(QtGui.QDialog):
         if x==2:
             item = self.tableWidget_addonservices.item(y,x)
             try:
+                default_text = item.id
+            except:
+                default_text=u""
+            child = ComboBoxDialog(items=addonservice_activation_types, selected_item = default_text )
+
+            if child.exec_()==1:
+                self.addrow(self.tableWidget_addonservices, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)  
+
+
+        if x==3:
+            item = self.tableWidget_addonservices.item(y,x)
+            try:
                 default_text=float(item.text())
             except:
                 default_text=0
@@ -2329,7 +2342,7 @@ class TarifFrame(QtGui.QDialog):
             #self.tableWidget_addonservices.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
             self.addrow(self.tableWidget_addonservices, text[0], y, x, id=unicode(text[0]))
             
-        if x==3:
+        if x==4:
             item = self.tableWidget_addonservices.item(y,x)
             try:
                 default_text = item.id
@@ -2660,8 +2673,9 @@ class TarifFrame(QtGui.QDialog):
                     
                     self.addrow(self.tableWidget_addonservices, node.id,i, 0)
                     self.addrow(self.tableWidget_addonservices, node.addonservice_name,i, 1, id=node.addonservice_id)
-                    self.addrow(self.tableWidget_addonservices, node.activation_count if node.activation_count!=0  else 'unlimited',i, 2, id = node.activation_count)
-                    self.addrow(self.tableWidget_addonservices, node.settlement_period_name,i, 3, id= node.settlementperiod_id)
+                    self.addrow(self.tableWidget_addonservices, addonservice_activation_types[node.type].name,i, 2, id=node.type)
+                    self.addrow(self.tableWidget_addonservices, node.activation_count if node.activation_count!=0  else 'unlimited',i, 3, id = node.activation_count)
+                    self.addrow(self.tableWidget_addonservices, node.settlement_period_name,i, 4, id= node.settlementperiod_id)
                     
                     i+=1
                     self.tableWidget_addonservices.resizeColumnsToContents()
@@ -3131,7 +3145,7 @@ class TarifFrame(QtGui.QDialog):
                 for i in xrange(0, self.tableWidget_addonservices.rowCount()):
                     id = self.getIdFromtable(self.tableWidget_addonservices, i)
                     
-                    if self.tableWidget_addonservices.item(i, 1)==None and (self.tableWidget_addonservices.item(i, 3)!=None and self.tableWidget_addonservices.item(i, 2) in [None, 0]):
+                    if self.tableWidget_addonservices.item(i, 1)==None and (self.tableWidget_addonservices.item(i, 4)!=None and self.tableWidget_addonservices.item(i, 2) in [None, ]):
                         QtGui.QMessageBox.warning(self, u"Ошибка", u"Неверно указаны настройки подключаемых услуг")
                         self.connection.rollback()
                         return
@@ -3142,12 +3156,13 @@ class TarifFrame(QtGui.QDialog):
                     
                     addon_service.tarif_id = model.id
                     addon_service.service_id=unicode(self.tableWidget_addonservices.item(i, 1).id)
-                    if self.tableWidget_addonservices.item(i, 2):
-                        addon_service.activation_count = unicode(self.tableWidget_addonservices.item(i, 2).id)
+                    addon_service.type=unicode(self.tableWidget_addonservices.item(i, 2).id)
+                    if self.tableWidget_addonservices.item(i, 3):
+                        addon_service.activation_count = unicode(self.tableWidget_addonservices.item(i, 3).id)
                     else:
                         addon_service.activation_count = 0
-                    if self.tableWidget_addonservices.item(i, 3):
-                        addon_service.activation_count_period_id = unicode(self.tableWidget_addonservices.item(i, 3).id)
+                    if self.tableWidget_addonservices.item(i, 4):
+                        addon_service.activation_count_period_id = unicode(self.tableWidget_addonservices.item(i, 4).id)
                     else:
                         addon_service.activation_count_period_id = None
 
