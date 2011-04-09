@@ -334,6 +334,8 @@ def nfPacketHandle(data, addrport, flowCache):
         acc_data_src = None
         acc_data_dst = None
         nas_id = None
+        nasses_list=[nasitem.id for nasitem in nasses]
+        
         for nasitem in nasses:
             logger.debug("Checking flow for nas_id=: %s", (nasitem.id, ))
             if not acc_data_src:
@@ -369,12 +371,18 @@ def nfPacketHandle(data, addrport, flowCache):
         #Проверка на IPN сеть
         if not acc_data_src and caches.account_cache.ipn_range:
             for src_ip, src_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
-                if (acc_nas_id == nas_id or acc_nas_id is None) and (flow.src_addr & src_mask) == src_ip:
+                if flow.src_addr==src_ip:
+                    pass
+                if (acc_nas_id in nasses_list or acc_nas_id is None) and (flow.src_addr & src_mask) == src_ip:
                     acc_data_src = account_data
+                    nas_id=acc_nas_id
+                    break
         if not acc_data_dst and caches.account_cache.ipn_range:
             for dst_ip, dst_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
-                if (acc_nas_id == nas_id  or acc_nas_id is None) and (flow.dst_addr & dst_mask) == dst_ip:
+                if (acc_nas_id in nasses_list  or acc_nas_id is None) and (flow.dst_addr & dst_mask) == dst_ip:
                     acc_data_dst = account_data
+                    nas_id=acc_nas_id
+                    break
         logger.debug("IPN Account for flow src(%s) dst(%s)", (acc_data_src, acc_data_dst, ))
         local = bool(acc_data_src and acc_data_dst)
         if local:
@@ -386,13 +394,13 @@ def nfPacketHandle(data, addrport, flowCache):
             flow.nas_id = nas_id
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
             flow.padding = local
-            if vars.WRITE_FLOW:
-                flow.datetime = time.time()
-                ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
-                for acc_flow in acc_acct_tf:
-                    flow.account_id = acc_flow[0]
-                    queues.flowSynchroBox.appendData(ips + flow.getBaseSlice())
-                queues.flowSynchroBox.checkData()
+#            if vars.WRITE_FLOW:
+#                flow.datetime = time.time()
+#                ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
+#                for acc_flow in acc_acct_tf:
+#                    flow.account_id = acc_flow[0]
+#                    queues.flowSynchroBox.appendData(ips + flow.getBaseSlice())
+#                queues.flowSynchroBox.checkData()
             flow.account_id = acc_acct_tf
             flow.node_direction = None
             if vars.CHECK_CLASSES:
@@ -529,6 +537,7 @@ class FlowDequeThread(Thread):
 
                 fcnt = 0
                 flst = []
+                nfwrite_list=[]
                 for key in keylist:
                     #src_addr, dst_addr, src_port
                     dhkey   = (key[0] + key[1] + key[3]) % vars.CACHE_DICTS
@@ -578,12 +587,16 @@ class FlowDequeThread(Thread):
                             #found passthrough=false
                             if not passthr:
                                 self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
+                                nfwrite_list.append(flow)
                                 break                   
                         #traversed all the nodes
                         else:
                             if classLst:
                                 self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
-                            else: continue
+                                nfwrite_list.append(flow)
+                            else: 
+                                nfwrite_list.append(flow)
+                                continue
                             
                         #construct a list
                         flst.append(tuple(flow)); fcnt += 1                    
@@ -602,6 +615,11 @@ class FlowDequeThread(Thread):
                         queues.databaseQueue.append(flpack)
                     flst = []
                 del keylist
+                if vars.WRITE_FLOW:
+                    for flow in nfwrite_list:
+                        ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
+                        queues.flowSynchroBox.appendData(ips + flow.getBaseSlice())
+                    queues.flowSynchroBox.checkData()
             except Exception, ex:
                     logger.error("fdqThread exception: %s \n %s", (repr(ex), traceback.format_exc()))
             
