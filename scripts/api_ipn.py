@@ -1,4 +1,4 @@
-#!c:/python26/python.exe
+#!/usr/bin/env python
 
 import sys, time, binascii, socket, select, md5
 #from hashlib import md5
@@ -186,17 +186,33 @@ def get_id(d):
     else:
         return 0
 
-def add_subaccount(accountid,subaccount_id, subaccount_ip, comment):
+def add_subaccount(accountid,subaccount_id, subaccount_ip, subaccount_mac,comment):
     global nas_ip, nas_login, nas_password
+
+    command = '/ip/firewall/filter/print ?comment=startrule-DONTREMOVE'
+    res=rosExecute(command)
+    print res
+    place_before=get_id(res)
+    
+    if not place_before:
+        command = '/ip/firewall/filter/add =chain=forward =comment=startrule-DONTREMOVE =action=passthrough'
+        res=rosExecute(command)
+        print res
+        command = '/ip/firewall/filter/print ?comment=startrule-DONTREMOVE'
+        res=rosExecute(command)
+        print res
+        place_before=get_id(res)
+        
+                  
     command = '/ip/firewall/filter/print ?src-address=%s ?comment=%s' % (subaccount_ip, comment)
     res=rosExecute(command)
     print res
     id=get_id(res)
     print "id=", id
     if not id:
-        command='/ip/firewall/filter/add =src-address=%s =place-before=1 src-mac-address=%s  =comment=%s =disabled=yes' % (subaccount_ip, comment)
+        command='/ip/firewall/filter/add =chain=forward =src-address=%s =place-before=%s =src-mac-address=%s =comment=%s =disabled=yes' % (subaccount_ip, place_before, subaccount_mac, comment)
         rosExecute(command)
-        command='/ip/firewall/filter/add =dst-address=%s =place-before=1 =comment=%s =disabled=yes' % (subaccount_ip, comment)
+        command='/ip/firewall/filter/add =chain=forward =dst-address=%s =place-before=%s =comment=%s =disabled=yes' % (subaccount_ip, place_before, comment)
         rosExecute(command)
 
     
@@ -222,7 +238,7 @@ def add_subaccount(accountid,subaccount_id, subaccount_ip, comment):
     subaccount_ip = "%s/32" % subaccount_ip
     if str(subaccount_ip) not in addr_list:
         #add subaccount_ip
-        print "not in addr_list"
+        print "not in firewall"
         addr_list.append(str(subaccount_ip))
         addresses = ','.join(addr_list)
         print "addresses", addresses
@@ -230,39 +246,59 @@ def add_subaccount(accountid,subaccount_id, subaccount_ip, comment):
         print rosExecute(command)
     
 
-def enable_subaccount(subaccount_ip, comment):
+def enable_subaccount(subaccount_ip, subaccount_mac,comment):
     global nas_ip, nas_login, nas_password
     #address = sys.argv[2]
     #comment = sys.argv[3]
-    command = '/ip/firewall/address-list/print ?address=%s ?comment=%s' % (subaccount_ip, comment)
+    command = '/ip/firewall/filter/print ?src-address=%s ?src-mac-address=%s ?comment=%s' % (subaccount_ip, subaccount_mac, comment)
     res=rosExecute(command)
     id=get_id(res)
     if id:
-        command='/ip/firewall/address-list/set =.id=%s =disabled=no' % (id, )
+        command='/ip/firewall/filter/set =.id=%s =disabled=no' % (id, )
         rosExecute(command)
 
+    command = '/ip/firewall/filter/print ?dst-address=%s ?comment=%s' % (subaccount_ip, comment)
+    res=rosExecute(command)
+    id=get_id(res)
+    if id:
+        command='/ip/firewall/filter/set =.id=%s =disabled=no' % (id, )
+        rosExecute(command)
 
-def disable_subaccount(subaccount_ip, comment):
+def disable_subaccount(subaccount_ip, subaccount_mac, comment):
     global nas_ip, nas_login, nas_password
 
-    command = '/ip/firewall/address-list/print ?address=%s ?comment=%s' % (subaccount_ip, comment)
+    command = '/ip/firewall/filter/print ?src-address=%s ?src-mac-address=%s ?comment=%s' % (subaccount_ip, subaccount_mac, comment)
     res=rosExecute(command)
     id=get_id(res)
     if id:
-        command='/ip/firewall/address-list/set =.id=%s =disabled=yes' % (id, )
+        command='/ip/firewall/filter/set =.id=%s =disabled=yes' % (id, )
         rosExecute(command)
 
+    command = '/ip/firewall/filter/print ?dst-address=%s ?comment=%s' % (subaccount_ip, comment)
+    res=rosExecute(command)
+    id=get_id(res)
+    if id:
+        command='/ip/firewall/filter/set =.id=%s =disabled=yes' % (id, )
+        rosExecute(command)
 
-def del_subaccount(accountid, subaccount_ip, comment):
+def del_subaccount(accountid, subaccount_ip, subaccount_mac, comment):
     global nas_ip, nas_login, nas_password
     #address = sys.argv[2]
     #comment = sys.argv[3]
-    command = '/ip/firewall/address-list/print ?address=%s ?comment=%s' % (subaccount_ip, comment)
+    command = '/ip/firewall/filter/print ?src-address=%s ?src-mac-address=%s ?comment=%s' % (subaccount_ip, subaccount_mac, comment)
     res=rosExecute(command)
     id=get_id(res)
     if id:
-        command='/ip/firewall/address-list/remove =.id=%s' % (id, )
+        command='/ip/firewall/filter/remove =.id=%s' % (id, )
         rosExecute(command)
+
+    command = '/ip/firewall/filter/print ?dst-address=%s ?comment=%s' % (subaccount_ip, comment)
+    res=rosExecute(command)
+    id=get_id(res)
+    if id:
+        command='/ip/firewall/filter/remove =.id=%s' % (id, )
+        rosExecute(command)
+
 
     command = '/queue/simple/print ?name=acc_%s' % accountid
     res = rosExecute(command)
@@ -303,16 +339,6 @@ def set_ipn_speed_subaccount(accountid, speed_settings):
     rosExecute(command)
 
 
-def reset_vpn_session(access_type, username):
-    global nas_ip, nas_login, nas_password
-    command='/interface/%s-server/print ?user=%s' % (access_type, username)
-    res=rosClient(nas_ip, nas_login, nas_password, command)
-    id=get_id(res)
-    if id:
-        command='/interface/%s-server/remove =.id=%s' % (access_type, id)
-        res=rosClient(nas_ip, nas_login, nas_password, command)
-        return True
-    return False
 
 def main():
     global nas_ip, nas_login, nas_password, apiros, s
@@ -325,32 +351,33 @@ def main():
         accountid = sys.argv[5]
         subaccount_id = sys.argv[6]
         subaccount_ip = sys.argv[7]
-        comment = sys.argv[8]
-        add_subaccount(accountid,subaccount_id, subaccount_ip, comment)
+        subaccount_mac = sys.argv[8]
+        comment = sys.argv[9]
+        
+        add_subaccount(accountid,subaccount_id, subaccount_ip, subaccount_mac, comment)
         
     elif action == 'enable':
-        subaccount_ip = sys.argv[5]  
-        comment = sys.argv[6]      
-        enable_subaccount(subaccount_ip, comment)
+        subaccount_ip = sys.argv[5]
+        subaccount_mac = sys.argv[6]    
+        comment = sys.argv[7]      
+        enable_subaccount(subaccount_ip, subaccount_mac, comment)
     elif action == 'disable':
         subaccount_ip = sys.argv[5]  
-        comment = sys.argv[6]  
-        disable_subaccount(subaccount_ip, comment)
+        subaccount_mac = sys.argv[6]
+        comment = sys.argv[7]  
+        disable_subaccount(subaccount_ip, subaccount_mac, comment)
     elif action == 'delete':
         accountid = sys.argv[5]
         subaccount_ip = sys.argv[6]
-        comment = sys.argv[7]        
-        del_subaccount(accountid, subaccount_ip, comment)
-    elif action == 'reset':
-        access_type = sys.argv[5]
-        username = sys.argv[6]
-        reset_vpn_session(access_type, username)
+        subaccount_mac = sys.argv[7]
+        comment = sys.argv[8]        
+        del_subaccount(accountid, subaccount_ip, subaccount_mac, comment)
     elif action == 'set_speed':
         accountid = sys.argv[5]
         speed_settings = sys.argv[6]
         set_ipn_speed_subaccount(accountid, speed_settings)
     s.close()
-    
+
     
 
 if __name__=='__main__':

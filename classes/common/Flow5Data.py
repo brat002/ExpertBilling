@@ -74,7 +74,7 @@ class Flow5Data(list):
         return tuple(self)
     
     def getBaseSlice(self):
-        return self.__getslice__(3,22)
+        return self.__getslice__(3,29)
     
     def getAddrSlice(self):
         return self.__getslice__(0,3)

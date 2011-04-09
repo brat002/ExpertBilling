@@ -174,7 +174,7 @@ class NfVars(Vars):
         if config.has_option(name, 'sock_timeout'): self.SOCK_TIMEOUT = config.getint(name, 'sock_timeout')
         if config.has_option(name, 'aggrtime'):     self.AGGR_TIME = config.getint(name, 'aggrtime')
         if config.has_option(name, 'aggrnum'):      self.AGGR_NUM = config.getint(name, 'aggrnum')
-        if config.has_option(name, 'checkclasses'): self.CHECK_CLASSES = config.getint(name, 'checkclasses')
+        if config.has_option(name, 'check_classes'): self.CHECK_CLASSES = config.getint(name, 'check_classes')
         if config.has_option(name, 'file_pack'):    self.FILE_PACK = config.getint(name, 'file_pack')
         if config.has_option(name, 'packet_pack'):  self.PACKET_PACK = config.getint(name, 'packet_pack')
         if config.has_option(name, 'prefix'):       self.PREFIX = config.get(name, 'prefix')

@@ -71,6 +71,7 @@ class AccountCache(CacheItem):
         self.ipn_range = []
         for acct in self.data:
             for addr in acct[1]:
+                if not addr: continue
                 vpn_ip, ipn_ip, nas_id = addr.split("|")
                 account_object = self.datatype._make((acct[0], acct[2], acct[3]))
                 

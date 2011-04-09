@@ -1364,18 +1364,18 @@ class AccountWindow(QtGui.QMainWindow):
         self.toolBar.addAction(self.actionAdd)
         self.toolBar.addAction(self.actionDel)
 
-        font = QtGui.QFont()
+        #font = QtGui.QFont()
         
-        font.setPointSize(font.pointSize() - 1);
+        #font.setPointSize(font.pointSize() - 1);
         #ui->comboBox->setFont(font);
         self.comboBox_city = QtGui.QComboBox(self.tableWidget)
-        self.comboBox_city.setFont(font)
+        #self.comboBox_city.setFont(font)
         self.comboBox_city.setFixedHeight(19)
         self.comboBox_street = QtGui.QComboBox(self.tableWidget)
-        self.comboBox_street.setFont(font)
+        #self.comboBox_street.setFont(font)
         self.comboBox_street.setFixedHeight(19)
         self.comboBox_house = QtGui.QComboBox(self.tableWidget)
-        self.comboBox_house.setFont(font)
+        #self.comboBox_house.setFont(font)
         self.comboBox_house.setFixedHeight(19)
         
         #self.comboBox_city.setEditable(True)
