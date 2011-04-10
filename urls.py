@@ -2,6 +2,7 @@ import os
 from django.conf import settings
 from django.conf.urls.defaults import *
 from django.contrib import admin
+from helpdesk import admin as helpdesk_admin
 
 admin.autodiscover()
 
@@ -9,12 +10,13 @@ urlpatterns = patterns('',
     # Example:
     # (r'^ebscab/', include('ebscab.foo.urls')),
     #(r'^$','ebscab.billing.views.index'),
+    url('^helpdesk/admin/(.*)', helpdesk_admin.site.root, name='helpdesk_admin'),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     # Uncomment this for admin:
     ('^admin/(.*)', admin.site.root),
-     #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
-     #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
-     (r'helpdesk/', include('helpdesk.urls')),
+    #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
+    #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
+    (r'helpdesk/', include('helpdesk.urls')),
 
 )
 
@@ -24,7 +26,7 @@ urlpatterns += patterns('billservice.views',
      url(r'^$', 'index', name='billservice_index'),
      (r'^login/$', 'login'),
      (r'^prepaid/$', 'account_prepays_traffic'),
-     (r'^accounts/logout/$', 'login_out'),
+     url(r'^accounts/logout/$', 'login_out', name='account_logout'),
      (r'^traffic/info/$', 'netflowstream_info'),
      (r'^promise/$', 'get_promise'),
      (r'^transaction/$', 'transaction'),
@@ -70,3 +72,4 @@ urlpatterns += patterns('statistics.views',
     (r'^statistics/nasses_period_filter/$', 'nasses_period_stat'),
     (r'^statistics/nas_stat/$', 'nas_stat'),
 )
+

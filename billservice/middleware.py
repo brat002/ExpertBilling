@@ -3,12 +3,12 @@ from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 
 ADMIN_URLS = (
-'/helpdesk/management/',
-'/helpdesk/admin/',
+'/helpdesk/',
 '/media/',
 '/static/',
 '/admin_media',
 'admin-media',
+'/accounts/logout'
 )
 
 class UrlFilter(object):
@@ -22,3 +22,4 @@ class UrlFilter(object):
         except AttributeError:
             # assumed that user is Anonimous
             pass
+
