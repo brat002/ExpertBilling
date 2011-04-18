@@ -1772,8 +1772,8 @@ class TarifFrame(QtGui.QDialog):
         
         if id!=-1:
             #self.connection.iddelete(id, "billservice_periodicalservice")
-            self.connection.sql("UPDATE billservice_periodicalservice SET deleted=True, deactivated=now() WHERE id=%s" % id)
-            
+            self.connection.sql("UPDATE billservice_periodicalservice SET deleted=True, deactivated=now() WHERE id=%s" % id, return_response=False)
+
         self.periodical_tableWidget.removeRow(current_row)
 
          
@@ -2566,6 +2566,7 @@ class TarifFrame(QtGui.QDialog):
             LEFT JOIN billservice_settlementperiod as settlementperiod ON settlementperiod.id = periodicalservice.settlement_period_id
             WHERE periodicalservice.tarif_id = %d   and periodicalservice.deleted=False
             """ % self.model.id)
+            #print "len(periodical_services)", len(periodical_services)
             if len(periodical_services)>0:
                 self.periodical_services_checkbox.setChecked(True)
                 nodes = periodical_services

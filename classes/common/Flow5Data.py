@@ -21,8 +21,7 @@ class Flow5Data(list):
         self.dst_as = _ff[16]
         self.src_netmask_length = _ff[17]
         self.dst_netmask_length = _ff[18]
-        [19]- 
-        #added_later
+        [19]- #added_later
         [20] - account_id
         [21] - CURRENT_TIMESTAMP
         [22] - nas_traficclass_id
