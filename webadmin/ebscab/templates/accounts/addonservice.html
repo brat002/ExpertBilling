@@ -7,12 +7,12 @@
 	<h2 align="center" id="error_message">{{ service_message }}</h2>
 {% endif %}
 
-{% if services or user_services%}
-    {% if services %}
+{% if addontarif_services or account_services%}
+    {% if addontarif_services %}
 	<table class="wide statistic_table" cellpadding="0" cellspacing="0">
 		<tr>
 			<th class="white bold s-11 blue_caption">
-				<div class="f-left">СПИСОК ДОСТУПНЫХ УСЛУГ</div>
+				<div class="f-left">СПИСОК ПОДКЛЮЧАЕМЫХ</div>
 			</th>
 		</tr>
 		<tr>
@@ -28,7 +28,7 @@
 						<th>Минимальный период</th>
 						<th>Подключить/Отключить</th>
 					</tr>
-					{% for service in services %}
+					{% for service in addontarif_services %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.name }}&nbsp;</td>
                             <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.comment }}&nbsp;</td>
@@ -37,7 +37,7 @@
                             <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.timeperiod}}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{{ service.service.wyte_cost|floatformat:2  }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.wyte_period.name|slice:"1:" }}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center"><a href="/service/set/{{ service.service.id }}/">Подключить</a>&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %} tariff_activate" align="center">{% if service.service.id not in account_services_id %}<a href="/service/set/{{ service.service.id }}/">Подключить</a>{% else %}<a href="/service/del/{{ user_service.id }}/">Отключить</a>{% endif %}&nbsp;</td>
 						</tr>
 					{% endfor %}
 				</table>

@@ -1131,10 +1131,12 @@ class AddonServiceTarif(models.Model):
     service = models.ForeignKey(AddonService)    
     activation_count = models.IntegerField()    
     activation_count_period = models.ForeignKey(SettlementPeriod)    
+    type=models.IntegerField(default=0)# 0-Account, 1-Subaccount
     
 class AccountAddonService(models.Model):    
     service = models.ForeignKey(AddonService)    
-    account = models.ForeignKey(Account)    
+    account = models.ForeignKey(Account)   
+    subaccount = models.ForeignKey('SubAccount',null=True) 
     activated = models.DateTimeField()    
     deactivated = models.DateTimeField()    
     action_status = models.BooleanField()    

@@ -933,7 +933,7 @@ class RPCServer(object):
         pass
 
     
-    def add_addonservice(self, account_id, service_id, ignore_locks = False, activation_date = None, cur=None, connection=None, add_data = {}):
+    def add_addonservice(self, account_id, service_id, subaccount_id=None, ignore_locks = False, activation_date = None, cur=None, connection=None, add_data = {}):
         #Получаем параметры абонента
         sql = "SELECT id, ballance, balance_blocked, disabled_by_limit, status, get_tarif(id) as tarif_id,(SELECT datetime FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1) as accounttarif_date FROM billservice_account as acc WHERE id=%s" %account_id
         cur.execute(sql)

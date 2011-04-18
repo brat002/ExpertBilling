@@ -102,7 +102,7 @@ class NfVars(Vars):
                  'FLOW_MAIL_WARNING', 'FLOW_MAIL_SUBJECT', 'FLOW_MAIL_USE_TLS', \
                  'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', 'FLOW_MAIL_HOST_PASSWORD', \
                  'FLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM',\
-                 'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', 'FLOW_INTERVAL', 'FLOW_WHEN')
+                 'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', 'FLOW_INTERVAL', 'FLOW_WHEN', 'SKIP_INDEX_CHECK')
     def __init__(self):
         super(NfVars, self).__init__()
         self.name = 'nf'
@@ -147,6 +147,7 @@ class NfVars(Vars):
         self.FLOW_PREFIX = 'netflow'
         self.FLOW_WHEN = 'M'
         self.FLOW_INTERVAL = 5
+        self.SKIP_INDEX_CHECK = False
         self.types.update({'addr': ('HOST', 'PORT'), 'nfraddr': ('NFR_HOST', 'NFR_PORT', 'SOCK_TIMEOUT'),\
                            'cachedicts': ('CACHE_DICTS',), 'filepack': ('FILE_PACK',), 'checkclasses': ('CHECK_CLASSES',), 'prefix': ('PREFIX',), 'aggr':('AGGR_TIME', 'AGGR_NUM'),\
                            'savedir': ('SAVE_DIR',), 'readdir': ('READ_DIR',), 'dumpdir': ('DUMP_DIR',)})
@@ -183,6 +184,8 @@ class NfVars(Vars):
         if config.has_option(name, 'save_dir'):         self.SAVE_DIR = config.get(name, 'save_dir')
         if config.has_option(name, 'max_datagram_len'): self.MAX_DATAGRAM_LEN = config.getint(name, 'max_datagram_len')
         if config.has_option(name, 'nf_time_mod'): self.NF_TIME_MOD = config.getint(name, 'nf_time_mod')
+        if config.has_option(name, 'skip_index_check'): self.SKIP_INDEX_CHECK = config.getboolean(name, 'skip_index_check')
+        
         flow_opts = ['%bWRITE_FLOW', 'FLOW_DIR', '%iFLOW_TIME', '%iFLOW_COUNT', 'FLOW_MAIL_WARNING', \
                      'FLOW_MAIL_SUBJECT', '%bFLOW_MAIL_USE_TLS', 'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', \
                      'FLOW_MAIL_HOST_PASSWORD', '%iFLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM', \

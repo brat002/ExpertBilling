@@ -518,6 +518,7 @@ class NetFlowRoutine(Thread):
                     with queues.nfQueueLock:
                         if len(queues.nfIncomingQueue) > 0:
                             fpacket, addr = queues.nfIncomingQueue.popleft()
+                            
                 #flows = loads(fpacket)
                 if not fpacket: time.sleep(random.randint(1,10) / 10.0); continue
                 '''
@@ -529,6 +530,7 @@ class NetFlowRoutine(Thread):
                 '''
                 try:
                     flows = loads(fpacket)
+                    #
                 except Exception, ex:
                     logger.info("Packet consumer: peer: %s Bad packet (marshalling problems):%s ; ",(addr, repr(ex)))
                     continue
@@ -536,9 +538,12 @@ class NetFlowRoutine(Thread):
                 #iterate through them
                 for pflow in flows:
                     flow = Flow5Data(False, *pflow)
+                    logger.debug("Packet for processing: %s ; ",(repr(flow),))
                     #get account id and get a record from cache based on it
                     acc = caches.account_cache.by_account.get(flow.account_id)
-                    if not acc: continue
+                    if not acc: 
+                        logger.info("Account for packet not found: %s ",(repr(flow)))
+                        continue
                     if 0: assert isinstance(acc, AccountData)
                     stream_date = datetime.datetime.fromtimestamp(flow.datetime)
 
@@ -554,7 +559,9 @@ class NetFlowRoutine(Thread):
                                              """, (flow.account_id,))
                             acc = self.cur.fetchone()
                             self.connection.commit()
-                            if not acc: continue
+                            if not acc: 
+                                logger.info("Account for packet %s by date %s not found: %s ",(str(flow),str(stream_date),))
+                                continue
                             acc = AccountData(*acc)
                             oldAcct[flow.acctf_id] = acc                           
                     
@@ -623,7 +630,9 @@ class NetFlowRoutine(Thread):
                             traffic_cost = 0
                             summ = 0
                             if octets > 0:
-                                if group_id in group_edge:
+                                #if group_id in group_edge:
+                                if False:
+                                    logger.warning("Group id in group_edge")
                                     account_bytes = None
                                     try:
                                         sys.setcheckinterval(sys.maxint)    
@@ -1055,10 +1064,10 @@ if __name__ == "__main__":
 
     try:
         import psyco
-        psyco.log()
+        #psyco.log()
         psyco.full(memory=100)
-        psyco.profile(0.05, memory=100)
-        psyco.profile(0.2)
+        #psyco.profile(0.05, memory=100)
+        #psyco.profile(0.2)
 
         flags = NfrFlags()
         vars  = NfrVars()

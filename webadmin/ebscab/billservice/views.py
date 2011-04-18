@@ -856,10 +856,12 @@ def addon_service(request):
     user = request.user.account
     #account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
     #account_tariff = account_tariff_id[0]
-    services = AddonServiceTarif.objects.filter(tarif=user.get_account_tariff())
-    user_services = AccountAddonService.objects.filter(account=user, deactivated__isnull=True)
+    addontarif_services = AddonServiceTarif.objects.filter(tarif=user.get_account_tariff(), type=0).order_by("service__name")
+    
+    #s_ids = [x.service_id for x in addontarif_services]
+    account_services = AccountAddonService.objects.filter(account=user, subaccount__isnull=True, deactivated__isnull=True)
     accountservices = []
-    for uservice in user_services:
+    for uservice in account_services:
         if uservice.service.wyte_period_id:
             delta = settlement_period_info(uservice.activated, uservice.service.wyte_period.length_in, uservice.service.wyte_period.length)[2]
             if uservice.activated + datetime.timedelta(seconds = delta)>datetime.datetime.now():
@@ -874,10 +876,26 @@ def addon_service(request):
         accountservices.append(uservice)
 
     user_services_id = [x.service.id for x in accountservices if not x.deactivated]
-    services = services.exclude(service__id__in=user_services_id).order_by("service__name")
+    for adds in addontarif_services:
+        accs = AccountAddonService.objects.filter(service=adds.service,account=user, subaccount__isnull=True, deactivated__isnull=True)
+        
+        for uservice in accs:
+            if uservice.service.wyte_period_id:
+                delta = settlement_period_info(uservice.activated, uservice.service.wyte_period.length_in, uservice.service.wyte_period.length)[2]
+                if uservice.activated + datetime.timedelta(seconds = delta)>datetime.datetime.now():
+                    uservice.wyte = True
+                    uservice.end_wyte_date = uservice.activated + datetime.timedelta(seconds = delta)
+                else:
+                    uservice.wyte = False
+            elif uservice.service.wyte_cost:
+                uservice.wyte = True
+            else:
+                uservice.wyte = False
+    #account_services = addontarif_services.exclude(service__id__in=user_services_id).order_by("service__name")
     return_dict = {
-                   'services':services,
-                   'user_services':user_services,
+                   'addontarif_services':addontarif_services,
+                   'account_services_id':user_services_id,
+                   'account_services':account_services,
                    'user':user,
                    'active_class':'services-img',
                    }
@@ -919,7 +937,7 @@ def service_action(request, action, id):
         except:
             request.session['service_message'] = u'Вы не можете подключить данную услугу'
             return HttpResponseRedirect('/services/')
-        result = connection_server.add_addonservice(user.id, id)
+        result = connection_server.add_addonservice(account_id=user.id, service_id=id)
         if result == True:
             request.session['service_message'] = u'Услуга подключена'
             return HttpResponseRedirect('/services/')

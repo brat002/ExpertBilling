@@ -1031,6 +1031,7 @@ class addon_service(Thread):
                         acc = caches.account_cache.by_account.get(subacc.account_id)
                     else:
                         acc = caches.account_cache.by_account.get(accountaddonservice.account_id)
+                    if not (subacc or acc): continue
                     #Проверка на требование отключения услуги
                     if service.service_type=='onetime':
                         
