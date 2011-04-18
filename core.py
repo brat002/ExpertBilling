@@ -222,13 +222,7 @@ class check_vpn_access(Thread):
                             speed = get_decimals_speeds(speed)
                             newspeed = ''.join([unicode(spi) for spi in speed])
 
-                            if rs.speed_string != newspeed:
-                                #coa_result=change_speed(vars.DICT, rs.account_id, str(acc.username), str(acc.vpn_ip_address), str(acc.ipn_ip_address), 
-                                #                        str(acc.ipn_mac_address), str(nas.ipaddress),nas.type, str(nas.name),
-                                #                        str(nas.login), str(nas.password), nas_secret=str(nas.secret),
-                                #                        session_id=str(rs.sessionid), access_type=str(rs.access_type),format_string=str(nas.vpn_speed_action),
-                                #                        speed=speed[:6])                           
-                                
+                            if rs.speed_string != newspeed:                         
                                 logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
                                 coa_result = change_speed(vars.DICT, acc, subacc, nas, 
                                                     access_type=str(rs.access_type),
