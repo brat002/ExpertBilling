@@ -329,7 +329,7 @@ def nfPacketHandle(data, addrport, flowCache):
         if 0: assert isinstance(flow, Flow5Data)
         logger.debug("New flow arrived. src_ip=%s dst_ip=%s: ", (IPy.intToIp(flow.src_addr, 4),IPy.intToIp(flow.dst_addr, 4)))
         #look for account for ip address
-        if vars.SKIP_INDEX_CHECK and (flow.out_index == 0 or flow.in_index == flow.out_index):
+        if vars.SKIP_INDEX_CHECK==False and (flow.out_index == 0 or flow.in_index == flow.out_index):
             logger.debug("flow int index==flow out index %s==%s or out index==0", (flow.in_index,flow.out_index,))
             continue
         acc_data_src = None
