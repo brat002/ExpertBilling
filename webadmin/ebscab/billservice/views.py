@@ -876,6 +876,7 @@ def addon_service(request):
         accountservices.append(uservice)
 
     user_services_id = [x.service.id for x in accountservices if not x.deactivated]
+    addon_srvcs=[]
     for adds in addontarif_services:
         accs = AccountAddonService.objects.filter(service=adds.service,account=user, subaccount__isnull=True, deactivated__isnull=True)
         
@@ -891,9 +892,11 @@ def addon_service(request):
                 uservice.wyte = True
             else:
                 uservice.wyte = False
+        addon_srvcs.append((adds,accs))
     #account_services = addontarif_services.exclude(service__id__in=user_services_id).order_by("service__name")
     return_dict = {
                    'addontarif_services':addontarif_services,
+                   'addon_srvcs':addon_srvcs,
                    'account_services_id':user_services_id,
                    'account_services':account_services,
                    'user':user,
