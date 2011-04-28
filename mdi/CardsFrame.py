@@ -863,7 +863,7 @@ class AddCards(QtGui.QDialog):
 
             
         tarifs = self.connection.get_models("billservice_tariff", where={'deleted':False,})
-        tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff as tariff WHERE deleted=False and access_parameters_id not in (SELECT id FROM billservice_accessparameters WHERE access_type in ('IPN','lISG','HotSpot','DHCP'))")
+        tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff as tariff WHERE deleted=False and access_parameters_id not in (SELECT id FROM billservice_accessparameters WHERE access_type in ('IPN','lISG','DHCP'))")
         self.connection.commit()
         self.comboBox_tarif.clear()
         i=0

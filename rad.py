@@ -1289,10 +1289,12 @@ class HandleHotSpotAuth(HandleSAuth):
             authobject.set_code(packet.AccessAccept)
             #self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
             if subacc:
+
                 if subacc.vpn_ip_address not in ['', '0.0.0.0', '0.0.0.0/0']:
                     self.replypacket.AddAttribute('Framed-IP-Address', subacc.vpn_ip_address)
                 else:
-                    self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)            
+                    self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)  
+                              
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             self.create_speed(nas, None, acct_card.tarif_id, acct_card.account_id, speed='')
             self.replypacket.AddAttribute('Class', str("%s,%s" % (subacc.id,str(self.session_speed))))
