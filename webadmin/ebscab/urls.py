@@ -29,6 +29,9 @@ urlpatterns += patterns('billservice.views',
      url(r'^accounts/logout/$', 'login_out', name='account_logout'),
      (r'^traffic/info/$', 'netflowstream_info'),
      (r'^promise/$', 'get_promise'),
+     (r'^payment/$', 'make_payment'),
+     (r'^qiwi_payment/$', 'qiwi_payment'),
+     (r'^qiwi_payment/balance/$', 'qiwi_balance'),     
      (r'^transaction/$', 'transaction'),
      (r'^session/info/$', 'vpn_session'),
      (r'^password/change/$', 'change_password'),
@@ -48,6 +51,9 @@ urlpatterns += patterns('billservice.views',
      (r'^traffic/transaction/info/$', 'traffic_transaction'),
      (r'^one/time/history/info/$', 'one_time_history'),
      (r'^news/delete/$', 'news_delete'),
+     (r'^subaccount/password/form/(?P<subaccount_id>\d+)/$', 'subaccount_password_form'),
+     (r'^subaccount/password/change/$', 'subaccount_change_password'),
+     (r'^service/(?P<action>set|del)/(?P<id>\d+)/$', 'service_action'),     
      #(r'^jsonaccounts$', 'jsonaccounts'),
 )
 urlpatterns = urlpatterns + patterns('helpdesk.views.account',
@@ -73,3 +79,7 @@ urlpatterns += patterns('statistics.views',
     (r'^statistics/nas_stat/$', 'nas_stat'),
 )
 
+urlpatterns += patterns('cassa.views',
+                        #(?P<id>\d+)
+    (r'^cassa/$', 'index'),
+)
