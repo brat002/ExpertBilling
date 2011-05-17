@@ -3393,7 +3393,7 @@ BEGIN
 	IF trsr.created IS NULL THEN
 	   ttrn_created := 'NULL';
 	ELSE
-	ttrn_created := quote_literal(trsr.created);
+		ttrn_created := quote_literal(trsr.created);
 	END IF;
 	IF trsr.systemuser_id IS NULL THEN
 	   ttrn_systemuser_id := 'NULL';
@@ -3420,7 +3420,7 @@ BEGIN
 	ELSE
 	   ttrn_accounttarif_id := trsr.accounttarif_id::text;
 	END IF;
-    insq_ := 'INSERT INTO trs' || datetx_ || ' (bill, account_id, type_id, approved, tarif_id, summ, description, created, systemuser_id, promise, end_promise, promise_expired, accounttarif_id) VALUES (' || ttrn_bill || ',' || ttrn_account_id || ',' || ttrn_type_id || ',' || ttrn_approved || ',' || ttrn_tarif_id || ',' || ttrn_summ || ',' || ttrn_description || ',' || trsr.created || ',' || ttrn_systemuser_id || ',' || ttrn_promise || ',' || ttrn_end_promise || ',' || ttrn_promise_expired || ',' || ttrn_accounttarif_id || ');';
+    insq_ := 'INSERT INTO trs' || datetx_ || ' (bill, account_id, type_id, approved, tarif_id, summ, description, created, systemuser_id, promise, end_promise, promise_expired, accounttarif_id) VALUES (' || ttrn_bill || ',' || ttrn_account_id || ',' || ttrn_type_id || ',' || ttrn_approved || ',' || ttrn_tarif_id || ',' || ttrn_summ || ',' || ttrn_description || ',' || ttrn_created || ',' || ttrn_systemuser_id || ',' || ttrn_promise || ',' || ttrn_end_promise || ',' || ttrn_promise_expired || ',' || ttrn_accounttarif_id || ');';
     EXECUTE insq_;
     RETURN;
 END;
