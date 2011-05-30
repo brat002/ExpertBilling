@@ -1459,23 +1459,22 @@ class ipn_service(Thread):
                                 sended = cred(acc, {}, '', nas, format_string=nas.user_enable_action)
                                 recreate_speed = True                        
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
-                                acc = acc._replace(ipn_status=sended)
-                            elif subacc and (not subacc.ipn_enabled) and ( (account_ballance>0 or (account_ballance==0 and acc.allow_ipn_with_null==True) or (account_ballance<0 and acc.allow_ipn_with_minus==True) ) and period and acc.account_status == 1 and ((not acc.disabled_by_limit and not acc.balance_blocked) or acc.allow_ipn_with_block==True)) and acc.tarif_active and not legacy:
-                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id))
+                                acc = acc._replace(ipn_status=True)
+                            elif subacc and subacc.ipn_enabled==False and ( (account_ballance>0 or (account_ballance==0 and acc.allow_ipn_with_null==True) or (account_ballance<0 and acc.allow_ipn_with_minus==True) ) and period and acc.account_status == 1 and ((not acc.disabled_by_limit and not acc.balance_blocked) or acc.allow_ipn_with_block==True)) and acc.tarif_active and not legacy:
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_enable_action)
-                                subacc = subacc._replace(ipn_enabled=sended)
+                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id))
+                                subacc = subacc._replace(ipn_enabled=True)
                             elif legacy and acc.ipn_status and (((acc.disabled_by_limit or acc.balance_blocked) and acc.allow_ipn_with_block==False) or ((account_ballance<0 and acc.allow_ipn_with_minus==False) or (account_ballance==0 and acc.allow_ipn_with_null==False)) or period is False or acc.account_status != 1 or not acc.tarif_active):
                                 #шлём команду на отключение пользователя,account_ipn_status=False
                                 #sended = cred(acc, subacc, access_type, nas, format_string=nas.user_disable_action)
                                 sended = cred(acc, {}, '', nas, format_string=nas.user_disable_action)    
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.account_id,))
-                                acc = acc._replace(ipn_status=sended)
+                                acc = acc._replace(ipn_status=False)
                             elif not legacy and subacc.ipn_enabled and subacc and (((acc.disabled_by_limit or acc.balance_blocked) and acc.allow_ipn_with_block==False) or ((account_ballance<0 and acc.allow_ipn_with_minus==False) or (account_ballance==0 and acc.allow_ipn_with_null==False)) or period is False or acc.account_status != 1 or not acc.tarif_active):
                                 #шлём команду на отключение пользователя,account_ipn_status=False
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_disable_action)    
-                                
-                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,))                            
-                                subacc = subacc._replace(ipn_enabled=sended)
+                                if sended is True: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,))                            
+                                subacc = subacc._replace(ipn_enabled=False)
                             self.connection.commit()
         
                             #Приступаем к генерации настроек скорости
