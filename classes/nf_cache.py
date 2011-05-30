@@ -72,7 +72,10 @@ class AccountCache(CacheItem):
         for acct in self.data:
             for addr in acct[1]:
                 if not addr: continue
-                vpn_ip, ipn_ip, nas_id = addr.split("|")
+                try:
+                    vpn_ip, ipn_ip, nas_id = addr.split("|")
+                except:
+                    continue
                 account_object = self.datatype._make((acct[0], acct[2], acct[3]))
                 
                 if type(nas_id)==str and nas_id not in ['None', '', None]:
