@@ -1470,7 +1470,7 @@ class ipn_service(Thread):
                                 sended = cred(acc, {}, '', nas, format_string=nas.user_disable_action)    
                                 if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.account_id,))
                                 acc = acc._replace(ipn_status=False)
-                            elif not legacy and subacc.ipn_enabled and subacc and (((acc.disabled_by_limit or acc.balance_blocked) and acc.allow_ipn_with_block==False) or ((account_ballance<0 and acc.allow_ipn_with_minus==False) or (account_ballance==0 and acc.allow_ipn_with_null==False)) or period is False or acc.account_status != 1 or not acc.tarif_active):
+                            elif not legacy and subacc.ipn_enabled is not False and subacc and (((acc.disabled_by_limit or acc.balance_blocked) and acc.allow_ipn_with_block==False) or ((account_ballance<0 and acc.allow_ipn_with_minus==False) or (account_ballance==0 and acc.allow_ipn_with_null==False)) or period is False or acc.account_status != 1 or not acc.tarif_active):
                                 #шлём команду на отключение пользователя,account_ipn_status=False
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_disable_action)    
                                 if sended is True: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,))                            

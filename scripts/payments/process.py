@@ -31,7 +31,7 @@ transaction_pattern=u"""
 INSERT INTO billservice_transaction(
             account_id, type_id, approved, summ,  
             created)
-    VALUES (%(ACC)s, '%(PAYMENT_TYPE)s', True, %(SUM)s,  '%(DATETIME)s');
+    VALUES ((SELECT id FROM billservice_account WHERE contract='%(ACC)s'), '%(PAYMENT_TYPE)s', True, %(SUM)s,  '%(DATETIME)s');
 
 """
 curdir='/opt/ebs/data/scripts/payments/'
@@ -59,6 +59,7 @@ def make_dict(lst, fields_list, datetime_fmt, encoding='utf-8', time_fmt='', ):
         #result_dict[dt_field].second=f_time.tm_sec
         
     return result_dict
+
 if __name__=='__main__':
     payment_system = sys.argv[1]
     if config.has_section(payment_system):
