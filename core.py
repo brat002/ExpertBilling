@@ -1475,7 +1475,7 @@ class ipn_service(Thread):
                                 sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_disable_action)    
                                 if sended is True: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,))                            
                                 subacc = subacc._replace(ipn_enabled=False)
-                            self.connection.commit()
+                            cur.connection.commit()
         
                             #Приступаем к генерации настроек скорости
                             #Получаем настройки скорости по лимитам, если пользователь превысил какой-нибудь лимит.
