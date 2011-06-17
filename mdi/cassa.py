@@ -46,7 +46,7 @@ client_networking.install_logger(logger)
 
 class CassaEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns = [u'#', u'Договор #', u"Username", u'ФИО', u'Тарифный план', u'Баланс', u'Кредит', u'Улица', u'д.', u'корп.', u'кв.']
+        columns = [u'#', u'Договор #', u"Username", u'ФИО', u'Тарифный план', u'Баланс', u'Кредит', u'Улица', u'д.', u'корп.', u'кв.', u"Дата подключения"]
         initargs = {"setname":"cassa_period", "objname":"CassaEbsMDI", "winsize":(0,0,1024, 642), "wintitle":"Интерфейс кассира", "tablecolumns":columns, "centralwidget":True}
         super(CassaEbs, self).__init__(connection, initargs)
         self.printer = None
@@ -361,6 +361,7 @@ class CassaEbs(ebsTableWindow):
             self.addrow(account.house, i, 8, enabled=account.status)
             self.addrow(account.house_bulk, i, 9, enabled=account.status)
             self.addrow(account.room, i, 10, enabled=account.status)
+            self.addrow(account.created.strftime(strftimeFormat), i, 11, enabled=account.status)
 
             i+=1
   

@@ -13,7 +13,7 @@
             Order deny,allow
             Allow from all
         </Directory>
-
+		WSGIApplicationGroup %{GLOBAL}
         WSGIScriptAlias / /opt/ebs/web/django.wsgi
 
         ErrorLog /opt/ebs/web/error.log
