@@ -25,6 +25,7 @@ import threading
 #psyco.full()
 
 from rpc2 import rpc_protocol, client_networking
+from dateutil.relativedelta import relativedelta
 
 DEFAULT_PORT = 7771
 LOG_LEVEL    = 0

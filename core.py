@@ -692,27 +692,31 @@ class TimeAccessBill(Thread):
                     # рассчитав соотв снятия.
                     #2.2 Если снятия не было-снять столько, на сколько насидел пользователь
                     #rs_id,  account_id, session_id, session_time, interrim_update, ps_id, tarif_id, accountt_tarif_id = row
-                    
+                    logger.debug("RADCOTHREAD: Checking session: %s", repr(rs))
                     acc = caches.account_cache.by_account.get(rs.account_id)
                     #if acc.radius_traffic_transmit_service_id:continue
                     if acc.time_access_service_id:
+                        logger.debug("RADCOTHREAD: Time tarification session: %s", rs.sessionid)
                         old_time = rs.lt_time or 0
+                        logger.debug("RADCOTHREAD: Old session time: %s %s", (rs.sessionid, old_time))
     #                    old_time = old_time[0] if old_time else 0
                         
                         total_time = rs.session_time - old_time
-                        
+                        logger.debug("RADCOTHREAD: Tarification time for session: %s %s", (rs.sessionid, total_time))
                         if rs.date_end:
                             taccs_service = caches.timeaccessservice_cache.by_id.get(time_access_service_id)
-                            
+                            logger.debug("RADCOTHREAD: Tarification time of end session : %s", (rs.sessionid, ))
                             if taccs_service.rounding:
+                                logger.debug("RADCOTHREAD: Rounding session time : %s", (rs.sessionid, ))
                                 if taccs_service.tarification_step>0:
                                     total_time = divmod(total_time, taccs_service.tarification_step)[1]*taccs_service.tarification_step+taccs_service.tarification_step
-        
+                        logger.debug("RADCOTHREAD: Searching for prepaid time for session : %s", (rs.sessionid, ))
                         cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s and prepaid_time_service_id=%s and current=True""", (rs.acctf_id,time_access_service_id,))
                         result = cur.fetchone()
                         cur.connection.commit()
                         prepaid_id, prepaid = result if result else (0, -1)
                         if prepaid > 0:
+                            logger.debug("RADCOTHREAD: Prepaid time for session : %s %s", (rs.sessionid, prepaid))
                             if prepaid >= total_time:
                                 total_time, prepaid = 0, prepaid - total_time
                             elif total_time >= prepaid:
@@ -720,28 +724,34 @@ class TimeAccessBill(Thread):
                             cur.execute("""UPDATE billservice_accountprepaystime SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
                             cur.connection.commit()
                         #get the list of time periods and their cost
-                        
+                        logger.debug("RADCOTHREAD: Searching for time tarification node for session : %s", (rs.sessionid, ))
                         for period in caches.timeaccessnode_cache.by_id.get(rs.taccs_id, []):
                             if 0: assert isinstance(period, TimeAccessNodeData)
                             #get period nodes and check them
                             for pnode in caches.timeperiodnode_cache.by_id.get(period.time_period_id, []):
                                 if 0: assert isinstance(pnode, TimePeriodNodeData)
                                 if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
-                                    summ = (total_time * period.cost) / 60
+                                    logger.debug("RADCOTHREAD: Time tarification node for session %s was found", (rs.sessionid, ))
+                                    summ = (total_time * period.cost) / float(60)
+                                    logger.debug("RADCOTHREAD: Summ for checkout for session %s %s", (rs.sessionid, summ))
                                     if summ > 0:
                                         #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
                                         db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
                                         cur.connection.commit()
+                                        logger.debug("RADCOTHREAD: Time for session %s was checkouted", (rs.sessionid, ))
                                     break
                         cur.execute("""UPDATE radius_activesession SET lt_time=%s
                                        WHERE account_id=%s AND sessionid=%s
                                     """, (rs.session_time, rs.account_id, unicode(rs.sessionid),))
+                        logger.debug("RADCOTHREAD: Session %s was checkouted (Time)", (rs.sessionid, ))
                         cur.connection.commit()  
                     #
                     if acc.radius_traffic_transmit_service_id:  
+                        logger.debug("RADCOTHREAD: Traffic tarification session: %s", rs.sessionid)
                         radius_traffic = caches.radius_traffic_transmit_service_cache.by_id.get(acc.radius_traffic_transmit_service_id)
                         lt_bytes_in = rs.lt_bytes_in or 0
                         lt_bytes_out = rs.lt_bytes_out or 0
+                        logger.debug("RADCOTHREAD: Last bytes in/out for session: %s (%s/%s)", (rs.sessionid, lt_bytes_in,lt_bytes_out))
     #                    old_time = old_time[0] if old_time else 0
                         bytes_in = 0
                         bytes_out = 0
@@ -761,10 +771,12 @@ class TimeAccessBill(Thread):
                             sp_start, sp_end, delta = fMem.settlement_period_(sp_defstart, sp.length_in, sp.length, dateAT)
                             date_start, date_end, bytes_in, bytes_out = accounts_bytes_cache.get(acc.acctf_id, (None, None, 0,0))
                             if date_start==sp_start and date_end==sp_end:
+                                
                                 # если в кэше есть данные о трафике для абонента за указанный расчётный период - обновляем кэш свежими значениями
                                 bytes_in = bytes_in if bytes_in else 0
                                 bytes_out = bytes_out if bytes_out else 0
                                 bytes_in, bytes_out = bytes_in+rs.bytes_in-rs.lt_bytes_in, bytes_out+rs.bytes_out-rs.lt_bytes_out
+                                logger.debug("RADCOTHREAD: Append traffic bytes to cached values for account %s for session %s (%s/%s)", (rs.account_id, rs.sessionid, bytes_in,bytes_out))
                                 accounts_bytes_cache[acc.acctf_id] = (date_start, date_end, bytes_in, bytes_out)
                                 #accounts_bytes_cache[acc.acctf_id]['bytes_in']+= rs.bytes_in-rs.lt_bytes_in
                                 #accounts_bytes_cache[acc.acctf_id]['bytes_out']+= rs.bytes_out-rs.lt_bytes_out
@@ -776,7 +788,9 @@ class TimeAccessBill(Thread):
                                 bytes_in, bytes_out = cur.fetchone()
                                 bytes_in = bytes_in if bytes_in else 0
                                 bytes_out = bytes_out if bytes_out else 0
+                                logger.debug("RADCOTHREAD: Selecting bytes info from DB for account %s for session %s (%s/%s)", (rs.account_id, rs.sessionid, bytes_in,bytes_out))
                                 accounts_bytes_cache[acc.acctf_id]=(sp_start, sp_end, bytes_in, bytes_out)
+                                
                                              
                         #total_time = rs.session_time - old_time
                         [(0, u"Входящий"),(1, u"Исходящий"),(2, u"Вх.+Исх."),(3, u"Большее направление")]
@@ -801,24 +815,30 @@ class TimeAccessBill(Thread):
                                 total_bytes = max(((rs.bytes_in-rs.lt_bytes_in), (rs.bytes_out-rs.lt_bytes_out)))
                             total_bytes_value = max((bytes_in,bytes_out))
                         
+                        logger.debug("RADCOTHREAD: Bytes for tarification for session %s %s", ( rs.sessionid, total_bytes))
                         #Если сессия окончена 
                         if rs.date_end:
                             #Если нужно делать округление
+                            logger.debug("RADCOTHREAD: Tarification traffic of end session : %s", (rs.sessionid, ))
                             if radius_traffic.rounding==1:
+                                logger.debug("RADCOTHREAD: Need traffic rounding of end session : %s", (rs.sessionid, ))
                                 if radius_traffic.tarification_step>0:
                                     total_bytes = divmod(total_bytes, radius_traffic.tarification_step*1024)[0]*radius_traffic.tarification_step*1024+radius_traffic.tarification_step*1024
-        
+                                    logger.debug("RADCOTHREAD: Bytes for tarification for session %s after rounding %s", ( rs.sessionid, total_bytes))
+                        logger.debug("RADCOTHREAD: Searching for prepaid traffic for session : %s", (rs.sessionid, ))
                         cur.execute("""SELECT id, size FROM billservice_accountprepaysradiustrafic WHERE account_tarif_id=%s and prepaid_traffic_id=%s and current=True""", (rs.acctf_id,acc.radius_traffic_transmit_service_id))
                         result = cur.fetchone()
                         cur.connection.commit()
                         prepaid_id, prepaid = result if result else (0, -1)
                         if prepaid > 0:
+                            logger.debug("RADCOTHREAD: Prepaid traffic for session %s was found ", (rs.sessionid, prepaid))
                             if prepaid >= total_bytes:
                                 total_bytes, prepaid = 0, prepaid - total_bytes
                             elif total_bytes >= prepaid:
                                 total_bytes, prepaid = total_bytes - prepaid, 0
                             cur.execute("""UPDATE billservice_accountprepaysradiustrafic SET size=%s WHERE id=%s""", (prepaid, prepaid_id,))
                             cur.connection.commit()
+                            logger.debug("RADCOTHREAD: Bytes for tarification for session %s %s ", (rs.sessionid, total_bytes))
                         #get the list of time periods and their cost
                         now = dateAT
                         for period in self.valued_prices(total_bytes_value,caches.radius_traffic_node_cache.by_id.get(rs.traccs_id, [])):
@@ -827,7 +847,9 @@ class TimeAccessBill(Thread):
                             for pnode in caches.timeperiodnode_cache.by_id.get(period.timeperiod_id, []):
                                 if 0: assert isinstance(pnode, TimePeriodNodeData)
                                 if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
+                                    logger.debug("RADCOTHREAD: Traffic tarification node for session %s was found", (rs.sessionid, ))
                                     summ = (total_bytes * period.cost) / (1024*1024)
+                                    logger.debug("RADCOTHREAD: Summ for checkout for session %s %s", (rs.sessionid, summ))
                                     if summ > 0:
                                         #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
                                         #db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
@@ -843,6 +865,7 @@ class TimeAccessBill(Thread):
                                        WHERE account_id=%s AND sessionid=%s
                                     """, (rs.bytes_in, rs.bytes_out, rs.account_id, unicode(rs.sessionid),))
                         cur.connection.commit()  
+                        logger.debug("RADCOTHREAD: Session %s was checkouted (Traffic)", (rs.sessionid, ))
                 cur.connection.commit()
                 cur.close()
                 logger.info("TIMEALIVE: Time access thread run time: %s", time.clock() - a)
