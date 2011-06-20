@@ -1847,10 +1847,11 @@ class TemplatesWindow(QtGui.QMainWindow):
                 data=u"Error %s" % str(e)
             
         if id==9:
-            account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
+            accounts = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )
             document=u"Отчёт по остатку средств"
+            #print [x.id for x in accounts]
             try:
-                data=templ.render_unicode(accounts=(account,), connection=self.connection)
+                data=templ.render_unicode(accounts=[x.id for x in accounts], connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
 

@@ -3437,6 +3437,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         else:
             return
         accounts = self.get_selected_accounts()
+        #print accounts
         window = ReportMainWindow(template_id=template_id, accounts=accounts, connection = self.connection)
         self.parent.workspace.addWindow(window)
         window.show()
