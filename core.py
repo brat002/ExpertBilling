@@ -602,7 +602,7 @@ class periodical_service_bill(Thread):
             gc.collect()
             time.sleep(abs(vars.PERIODICAL_SLEEP-(time.clock()-a_)) + random.randint(0,5))
             
-class TimeAccessBill(Thread):
+class RadiusAccessBill(Thread):
     """
     Услуга применима только для VPN доступа, когда точно известна дата авторизации
     и дата отключения пользователя
@@ -678,13 +678,14 @@ class TimeAccessBill(Thread):
                                  FROM radius_activesession AS rs
                                  JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<rs.date_start ORDER BY datetime DESC LIMIT 1) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
-                                 WHERE (rs.lt_time<rs.session_time and tarif.time_access_service_id is not null) or (rs.lt_bytes_in<rs.bytes_in and rs.lt_bytes_out<rs.bytes_out and tarif.radius_traffic_transmit_service_id is not null)
+                                 WHERE ((rs.lt_time<rs.session_time and tarif.time_access_service_id is not null) or (rs.lt_bytes_in<rs.bytes_in and rs.lt_bytes_out<rs.bytes_out and tarif.radius_traffic_transmit_service_id is not null))
                                  AND rs.interrim_update < %s ORDER BY rs.interrim_update ASC LIMIT 20000;""", (dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
                 now = dateAT
                 for row in rows:
                     rs = BillSession(*row)
+                    checkouted=False
                     #1. Ищем последнюю запись по которой была произведена оплата
                     #2. Получаем данные из услуги "Доступ по времени" из текущего ТП пользователя
                     #TODO:2. Проверяем сколько стоил трафик в начале сессии и не было ли смены периода.
@@ -743,6 +744,7 @@ class TimeAccessBill(Thread):
                         cur.execute("""UPDATE radius_activesession SET lt_time=%s
                                        WHERE account_id=%s AND sessionid=%s
                                     """, (rs.session_time, rs.account_id, unicode(rs.sessionid),))
+                        checkouted=True
                         logger.debug("RADCOTHREAD: Session %s was checkouted (Time)", (rs.sessionid, ))
                         cur.connection.commit()  
                     #
@@ -861,11 +863,15 @@ class TimeAccessBill(Thread):
                                                 """, (rs.account_id, rs.acctf_id, summ, now, rs.traccs_id))
                                         cur.connection.commit()
                                     break
-                        cur.execute("""UPDATE radius_activesession SET lt_bytes_in=%s, lt_bytes_out=%s
-                                       WHERE account_id=%s AND sessionid=%s
-                                    """, (rs.bytes_in, rs.bytes_out, rs.account_id, unicode(rs.sessionid),))
-                        cur.connection.commit()  
-                        logger.debug("RADCOTHREAD: Session %s was checkouted (Traffic)", (rs.sessionid, ))
+                            cur.execute("""UPDATE radius_activesession SET lt_bytes_in=%s, lt_bytes_out=%s
+                                           WHERE account_id=%s AND sessionid=%s
+                                        """, (rs.bytes_in, rs.bytes_out, rs.account_id, unicode(rs.sessionid),))
+                            cur.connection.commit()  
+                            checkouted=True
+                            logger.debug("RADCOTHREAD: Session %s was checkouted (Traffic)", (rs.sessionid, ))
+                    if checkouted==False:
+                        logger.debug("RADCOTHREAD: Session %s was not tarificated", (rs.sessionid, ))
+                                
                 cur.connection.commit()
                 cur.close()
                 logger.info("TIMEALIVE: Time access thread run time: %s", time.clock() - a)
@@ -1699,7 +1705,7 @@ def main():
     
     threads = []
     thrnames = [(check_vpn_access, 'Core VPN Thread'), (periodical_service_bill, 'Core Period. Bill Thread'), \
-                (TimeAccessBill, 'Core Time Access Thread'), (limit_checker, 'Core Limit Thread'),\
+                (RadiusAccessBill, 'Core Radius Access Thread'), (limit_checker, 'Core Limit Thread'),\
                 (settlement_period_service_dog, 'Core Settlement Per. Thread'), (ipn_service, 'Core IPN Thread'),(addon_service, 'Addon Service Thread'),]
 
 
