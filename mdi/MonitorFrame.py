@@ -7,18 +7,21 @@ from helpers import tableFormat
 from db import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
+from helpers import connlogin
 from helpers import HeaderUtil
 from helpers import humanable_bytes
 from helpers import Worker
 from helpers import prntime
+from AccountEditFrame import AccountWindow
 import time
 import datetime
 
 class MonitorEbs(ebsTableWindow):
-    def __init__(self, connection):
-        columns=[u'#', u'Аккаунт', u'Caller ID', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Конец', u'Передано', u'Принято', u'Длительность, с', u'Статус', u'Причина разрыва']
+    def __init__(self, connection, parent):
+        columns=[u'#', u'Аккаунт',u"Субаккаунт", u'Caller ID', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Конец', u'Передано', u'Принято', u'Длительность, с', u'Статус', u'Причина разрыва']
         initargs = {"setname":"monitor_frame_header", "objname":"MonitorEbsMDI", "winsize":(0,0,1102,593), "wintitle":"Монитор активности", "tablecolumns":columns, "tablesize":(0,0,801,541)}
         super(MonitorEbs, self).__init__(connection, initargs)
+        self.parent=parent
         
     def ebsPreInit(self, initargs):
         self.thread = Worker()
@@ -110,8 +113,10 @@ class MonitorEbs(ebsTableWindow):
     def ebsPostInit(self, initargs):
         actList=[("actionResetSession", "Сбросить сессию", "images/del.png", self.reset_action)]
         objDict = {self.tableWidget:["actionResetSession"]}
+        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.date_start_label.setText(QtGui.QApplication.translate("Dialog", "С", None, QtGui.QApplication.UnicodeUTF8))
         self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "По", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.actionCreator(actList, objDict)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.emit(QtCore.SIGNAL("refresh()"))
@@ -142,7 +147,7 @@ class MonitorEbs(ebsTableWindow):
             
         event.accept()
 
-    def addrow(self, widget, value, x, y, color=False, id=None, sessionid=None):
+    def addrow(self, widget, value, x, y, color=False, id=None, sessionid=None, account_id=None):
         
         item_type = QtGui.QTableWidgetItem()
         if value==None:
@@ -157,7 +162,9 @@ class MonitorEbs(ebsTableWindow):
             widget.setItem(x, y, item_type)
         if y==1:
             item_type.setIcon(QtGui.QIcon("images/user.png"))
-        
+        if y==0:
+            item_type.account_id=account_id
+            
         if id:
             item_type.id = id
             
@@ -197,7 +204,7 @@ class MonitorEbs(ebsTableWindow):
         date_end = self.date_end.dateTime().toPyDateTime()
         self.statusBar().showMessage(u"Ожидание ответа")
         if self.allTimeCheckbox.checkState()==2:
-            sql="""SELECT session.*,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession as session
+            sql="""SELECT session.*,billservice_account.username as username, (SELECT username FROM billservice_subaccount WHERE id=session.subaccount_id) as subaccount_username, nas_nas.name as nas_name  FROM radius_activesession as session
             
                   JOIN billservice_account ON billservice_account.id=session.account_id
                   JOIN nas_nas ON nas_nas.id = session.nas_int_id 
@@ -205,7 +212,7 @@ class MonitorEbs(ebsTableWindow):
                   ORDER BY session.id DESC 
                  """ % (date_start, date_end)
         elif self.allTimeCheckbox.checkState()==0:
-            sql="""SELECT session.*,billservice_account.username as username, nas_nas.name as nas_name  FROM radius_activesession as session
+            sql="""SELECT session.*,billservice_account.username as username, (SELECT username FROM billservice_subaccount WHERE id=session.subaccount_id) as subaccount_username, nas_nas.name as nas_name  FROM radius_activesession as session
                   JOIN billservice_account ON billservice_account.id=session.account_id
                   JOIN nas_nas ON nas_nas.id = session.nas_int_id
                   WHERE session.session_status='ACTIVE' and date_start>='%s' and date_start<='%s' %%s
@@ -232,19 +239,20 @@ class MonitorEbs(ebsTableWindow):
             else:
                 date_end = session.date_end.strftime(self.strftimeFormat)
             #print session.id
-            self.addrow(self.tableWidget, session.sessionid, i, 0, id=session.id, sessionid = session.sessionid)
+            self.addrow(self.tableWidget, session.sessionid, i, 0, id=session.id, sessionid = session.sessionid, account_id=session.account_id)
             self.addrow(self.tableWidget, session.username, i, 1)
-            self.addrow(self.tableWidget, session.caller_id, i, 2)
-            self.addrow(self.tableWidget, session.framed_ip_address, i, 3)
-            self.addrow(self.tableWidget, session.nas_name, i, 4)
-            self.addrow(self.tableWidget, session.framed_protocol, i, 5)
-            self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 6)
-            self.addrow(self.tableWidget, date_end, i, 7)
-            self.addrow(self.tableWidget, humanable_bytes(session.bytes_out), i, 8)
-            self.addrow(self.tableWidget, humanable_bytes(session.bytes_in), i, 9)
-            self.addrow(self.tableWidget, prntime(session.session_time), i, 10)
-            self.addrow(self.tableWidget, session.session_status, i, 11, color=True)
-            self.addrow(self.tableWidget, session.acct_terminate_cause, i, 12)
+            self.addrow(self.tableWidget, session.subaccount_username, i, 2)
+            self.addrow(self.tableWidget, session.caller_id, i, 3)
+            self.addrow(self.tableWidget, session.framed_ip_address, i, 4)
+            self.addrow(self.tableWidget, session.nas_name, i, 5)
+            self.addrow(self.tableWidget, session.framed_protocol, i, 6)
+            self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 7)
+            self.addrow(self.tableWidget, date_end, i, 8)
+            self.addrow(self.tableWidget, humanable_bytes(session.bytes_out), i, 9)
+            self.addrow(self.tableWidget, humanable_bytes(session.bytes_in), i, 10)
+            self.addrow(self.tableWidget, prntime(session.session_time), i, 11)
+            self.addrow(self.tableWidget, session.session_status, i, 12, color=True)
+            self.addrow(self.tableWidget, session.acct_terminate_cause, i, 13)
             sess_time += session.session_time if session.session_time else 0
             i+=1
         if self.firsttime and sessions and HeaderUtil.getBinaryHeader("monitor_frame_header").isEmpty():
@@ -274,4 +282,31 @@ class MonitorEbs(ebsTableWindow):
         #self.emit(QtCore.SIGNAL("refresh()"))
         
         
-       
+    @connlogin
+    def editframe(self, *args, **kwargs):
+        #print self.tableWidget.item(self.tableWidget.currentRow(), 0).text()
+        id=self.getSelectedId()
+        #print id
+        if id == 0:
+            return
+        try:
+            model = self.connection.get_model(id ,"billservice_account")
+        except Exception, e:
+            print e
+            return
+        #print 'model', model
+
+        
+
+        #addf = AddAccountFrame(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
+        child = AccountWindow(connection=self.connection,tarif_id=None, ttype=None, model=model)
+        
+        self.parent.workspace.addWindow(child)
+        self.connect(child, QtCore.SIGNAL("refresh()"), self.refresh)
+        child.show()
+        return
+    
+    def getSelectedId(self):
+        return self.tableWidget.item(self.tableWidget.currentRow(), 0).account_id   
+    
+    

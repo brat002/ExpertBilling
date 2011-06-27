@@ -1828,7 +1828,7 @@ class AccountWindow(QtGui.QMainWindow):
                 accounttarif = Object()
                 accounttarif.account_id=model.id
                 accounttarif.tarif_id=self.tarif_id
-                accounttarif.datetime = "now()"
+                accounttarif.datetime = model.created
                 self.connection.save(accounttarif,"billservice_accounttarif")
 
             if self.groupBox_urdata.isChecked():

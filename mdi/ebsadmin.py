@@ -262,7 +262,7 @@ class MainWindow(QtGui.QMainWindow):
 
     @connlogin
     def paste(self):
-        child = MonitorFrame(connection=connection)
+        child = MonitorFrame(connection=connection, parent=self)
         for window in self.workspace.windowList():
             if child.objectName()==window.objectName():
                 self.workspace.setActiveWindow(window)
