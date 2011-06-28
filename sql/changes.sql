@@ -5009,5 +5009,5 @@ $BODY$
   COST 100;
 ALTER FUNCTION card_activate_fn(character varying, character varying, integer, inet) OWNER TO postgres;
 
-ALTER TABLE billservice_account ADD COLUMN last_balance_null timestamp without time zone;
+ALTER TABLE billservice_account ALTER last_balance_null TYPE timestamp without time zone;
 
