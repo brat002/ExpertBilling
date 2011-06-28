@@ -679,7 +679,7 @@ class RadiusAccessBill(Thread):
                                  JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<rs.date_start ORDER BY datetime DESC LIMIT 1) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
                                  WHERE ((rs.lt_time<rs.session_time and tarif.time_access_service_id is not null) or (rs.lt_bytes_in<rs.bytes_in and rs.lt_bytes_out<rs.bytes_out and tarif.radius_traffic_transmit_service_id is not null))
-                                 AND rs.interrim_update < %s ORDER BY rs.interrim_update ASC LIMIT 20000;""", (dateAT,))
+                                  ORDER BY rs.interrim_update ASC LIMIT 20000;""")
                 rows=cur.fetchall()
                 cur.connection.commit()
                 now = dateAT
