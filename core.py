@@ -64,7 +64,7 @@ ZERO_SUM = 0
 SECOND = datetime.timedelta(seconds=1)
 PERIOD = 1
 ADDON  = 2
-
+MEGABYTE=Decimal(1048576)
 
 def comparator(d, s):
     for key in s:
@@ -849,9 +849,9 @@ class RadiusAccessBill(Thread):
                             for pnode in caches.timeperiodnode_cache.by_id.get(period.timeperiod_id, []):
                                 if 0: assert isinstance(pnode, TimePeriodNodeData)
                                 if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
-                                    logger.debug("RADCOTHREAD: Traffic tarification node for session %s was found", (rs.sessionid, ))
-                                    summ = (total_bytes * period.cost) / (1024*1024)
-                                    logger.debug("RADCOTHREAD: Summ for checkout for session %s %s", (rs.sessionid, summ))
+                                    logger.debug("RADCOTHREAD: Traffic tarification node for session %s was found. Cost=%s, total_bytes=%s", (rs.sessionid, period.cost, Decimal(total_bytes)))
+                                    summ = (Decimal(total_bytes) * period.cost) / MEGABYTE
+                                    logger.debug("RADCOTHREAD: Summ for checkout for session %s = %s", (rs.sessionid, summ))
                                     if summ > 0:
                                         #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
                                         #db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
