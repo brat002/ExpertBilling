@@ -64,6 +64,7 @@ from AddonServiceFrame import AddonServiceEbs
 from MessagesFrame import MessagesEbs
 from LogFrame import LogViewEbs
 from AddressFrame import AddressEbs
+from Reports import TransactionsReportEbs as TransactionsReport
 
 _reportsdict = [['Статистика по группам',[['report3_users.xml', ['groups'], 'Общий трафик']]],\
                 ['Глобальная статистика',[['report3_users.xml', ['gstat_globals'], 'Общий трафик'],['report3_users.xml', ['gstat_multi'], 'Трафик с выбором классов'], ['report3_pie.xml', ['pie_gmulti'], 'Пирог']]],\
@@ -279,8 +280,14 @@ class MainWindow(QtGui.QMainWindow):
                 return
         self.workspace.addWindow(child)
         child.show()
+    
+    @connlogin
+    def transactionReport(self):
 
-
+        child = TransactionsReport(connection=connection)
+        self.workspace.addWindow(child)
+        child.show()
+        
     @connlogin
     def adminsLogViewWindow(self):
         child = LogViewEbs(connection=connection)
@@ -459,7 +466,10 @@ class MainWindow(QtGui.QMainWindow):
         self.adminLogViewAct.setStatusTip(u"Лог действий")
         self.connect(self.adminLogViewAct, QtCore.SIGNAL("triggered()"), self.adminsLogViewWindow)
         
-
+        self.transactionReportAct = QtGui.QAction(QtGui.QIcon("images/moneybook.png"), u'Платежи и списания', self)
+        self.transactionReportAct.setStatusTip(u"Платежи и списания")
+        self.connect(self.transactionReportAct, QtCore.SIGNAL("triggered()"), self.transactionReport)
+        
         self.addressViewAct = QtGui.QAction(QtGui.QIcon("images/house.png"), u'Адреса домов', self)
         self.addressViewAct.setStatusTip(u"Адреса")
         self.connect(self.addressViewAct, QtCore.SIGNAL("triggered()"), self.addressview)
@@ -721,6 +731,7 @@ class MainWindow(QtGui.QMainWindow):
         self.fileToolBar = QtGui.QToolBar(self)
         self.fileToolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.fileToolBar.addAction(self.newAct)
+        self.fileToolBar.addAction(self.transactionReportAct)
         self.fileToolBar.addAction(self.nasAct)
         #self.fileToolBar.addAction(self.openAct)
         #self.fileToolBar.addAction(self.settlementPeriodAct)

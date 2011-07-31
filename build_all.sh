@@ -52,7 +52,7 @@ python freezer/freezer_rec.py --nloc=chartprovider.pychartdir26,chartprovider.py
 cp license.lic builds/$1/license.lic
 cp license.lic.old license.lic
 cp ebs_config.ini builds/$1/ebs_config.ini 
-cp upgrade.py builds/$1/upgrade.py
+#cp upgrade.py builds/$1/upgrade.py
 cp ebs_config_runtime.ini builds/$1/ebs_config_runtime.ini 
 cp -rf modules builds/$1
 mkdir builds/$1/nf_dump
@@ -100,6 +100,6 @@ if [ $SUDO_USER ]; then
 fi
 
 cd builds/$1/
-tar -czvf ../$1.tar.gz .
+tar -czvf ../$1.tar.gz . ../../upgrade.py
 cd ../../
 

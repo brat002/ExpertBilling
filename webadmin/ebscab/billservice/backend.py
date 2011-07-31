@@ -32,6 +32,7 @@ def check_password(obj, row_password):
         return str(obj.password) == str(_hash) and obj.role in [0,3] #if password is correct and user role admin or member of support team
 
 class LoginUserBackend(object):
+    
     def authenticate(self, username=None, password=None):
         log.debug("auth called with args: %r"%locals())
         account = get_account(username=username)

@@ -11,8 +11,9 @@ import ConfigParser
 import datetime
 import psycopg2
 import psycopg2.extras
+import tarfile
 
-DIST_PATH=os.path.abspath('.')
+DIST_PATH='/tmp/ebs_upgrade/'
 SQL_UPGRADE_PATH = DIST_PATH+'/sql/upgrade/' 
 BILLING_PATH = '/opt/ebs/data'
 WEBCAB_PATH = '/opt/ebs/web/'
@@ -90,7 +91,27 @@ def make_archive(name,path):
 def get_last_sql():
     pass
 
+def create_folders():
+    if not os.path.exists(DIST_PATH): os.mkdir(DIST_PATH)
+    if not os.path.exists('/opt/ebs/stats'): os.mkdir('/opt/ebs/stats')
+    if not os.path.exists('/opt/ebs/web'): os.mkdir('/opt/ebs/web')
+    
+    
+def unpack_archive(archive_name):
+    try:
+        tar=tarfile.open(archive_name)
+    except Exception, e:
+        print "Fatal error, Can not read archive %s" % str(e)
+        sys.exit()
+    tar.extractall(path=os.mkdir)
+    tar.close()
+        
+def cleanup():
+    shutil.rmtree(DIST_PATH)
+    
 def pre_upgrade():
+    #unpack files to temp folder
+
     status, output = make_archive('%sdata_%s' % (BACKUP_DIR,curdate), BILLING_PATH)
     if status!=0:
         print "Can not create 'data' backup %s" % output
@@ -100,6 +121,8 @@ def pre_upgrade():
     if status!=0:
         print "Can not create 'webcab' backup %s" % output
         allow_continue()
+        
+
     
 
 def files_for_copy():
@@ -130,7 +153,8 @@ def backup_db():
     if status!=0:
         print "We have error on database backup operation. %s" % output
         allow_continue()
-    print "Backup database completed."
+    else:
+        print "Backup database completed."
     print "*"*80
         
 def upgrade_db():
@@ -300,21 +324,35 @@ if __name__=='__main__':
     installation_date = modification_date(BILLING_PATH+'/license.lic')
     
     if 'install' in sys.argv:
+        if not len(sys.argv)==3:  
+            print "*"*80
+            print 'Please define archive path and name (example: upgrade.py install /opt/12345678901234567890.tar.gz)'
+            sys.exit()        
+        create_folders()
+        unpack_archive(sys.argv[2])
         import_dump()
-
         fromchanges(changes_start=True)
         upgrade_db()
     if  'upgrade' in sys.argv:
     #print installation_date
+        if not len(sys.argv)==3:  
+            print "*"*80
+            print 'Please define archive path and name (example: upgrade.py upgrade /opt/12345678901234567890.tar.gz)'
+            sys.exit()
+            
+        unpack_archive(sys.argv[2])
         stop_processes()
+        
         pre_upgrade()
         files=files_for_copy()
-        if not files:
+        if files:
+            copy_files(files)
+        else:
             print '*'*80
-            print 'No files copy needed'
-            allow_continue('Do you want to upgrade EBS database?')
+            print 'Files copying dont need'
+        allow_continue('Do you want to upgrade EBS database?')
     
-        copy_files(files)  
+          
         backup_db()
         fromchanges()
         upgrade_db()
