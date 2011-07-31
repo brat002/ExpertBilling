@@ -28,7 +28,7 @@ exclude_files=(
 curdate = datetime.datetime.now().strftime('%d-%m-%y_%H_%M_%S')
 config = ConfigParser.ConfigParser()
 config.read(BILLING_PATH+"/ebs_config.ini") 
-
+"""
 try:
     conn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s' port='%s'" % (config.get('db', 'name'), config.get('db', 'username'),config.get('db', 'host'),config.get('db', 'password'), config.get('db', 'port')));
     cur=conn.cursor()
@@ -37,7 +37,7 @@ except Exception, e:
     print e
     print "Please, enter correct database parameters in %s/ebs_config.ini" % BILLING_PATH
     sys.exit()
-        
+"""        
 def modification_date(filename):
     t = os.path.getctime(filename)
     return datetime.datetime.fromtimestamp(t)
@@ -109,6 +109,17 @@ def unpack_archive(archive_name):
 def cleanup():
     shutil.rmtree(DIST_PATH)
     
+def dbconnect():
+    global dbhost,dbname,dbuser,dbpassword, conn
+    try:
+        conn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s' port='%s'" % (dbname, dbuser,dbhost,dbpassword, 5432));
+        cur=conn.cursor()
+    except Exception, e:
+        print "I am unable to connect to the database"
+        print e
+        print "Please, enter correct database parameters"
+        sys.exit()
+            
 def pre_upgrade():
     #unpack files to temp folder
 
@@ -274,18 +285,28 @@ def upgrade_from_13():
     print '*'*80
     print "Migration completed"
     
+def prompt_db_access():
+    global dbhost,dbname,dbuser,dbpassword
+    dbhost = raw_input("Enter database host: ")
+    dbname = raw_input("Enter database name: ")
+    dbuser = raw_input("Enter database user: ")
+    dbpassword = raw_input("Enter database password: ")
+    
+
     
 def import_dump():
+    global dbhost,dbname,dbuser,dbpassword
     print "*"*80
     print "Importing main database dump.Enter database password for user %s" % config.get('db', 'username')
     print "*"*80
-    status, output = commands.getstatusoutput('psql -W -h %s -p %s -U %s %s -f %s' % (config.get('db', 'host'),config.get('db', 'port'),config.get('db', 'username'), config.get('db', 'name'), DIST_PATH+'/sql/ebs_dump.sql'))
+    status, output = commands.getstatusoutput('psql -W -h %s -p %s -U %s %s -f %s' % (dbhost,5432,dbuser, dbname, DIST_PATH+'/sql/ebs_dump.sql'))
     
     if status!=0:
         allow_continue("We get error when importing initial dump. %s" % output)
         
         
 def fromchanges(changes_start=False):
+    global conn
     
     to_db=[]
     
@@ -321,7 +342,9 @@ def fromchanges(changes_start=False):
     conn.commit()
 
 if __name__=='__main__':
-    installation_date = modification_date(BILLING_PATH+'/license.lic')
+    
+    prompt_db_access()
+    dbconnect()
     
     if 'install' in sys.argv:
         if not len(sys.argv)==3:  
@@ -334,7 +357,8 @@ if __name__=='__main__':
         fromchanges(changes_start=True)
         upgrade_db()
     if  'upgrade' in sys.argv:
-    #print installation_date
+        installation_date = modification_date(BILLING_PATH+'/license.lic')
+        #print installation_date
         if not len(sys.argv)==3:  
             print "*"*80
             print 'Please define archive path and name (example: upgrade.py upgrade /opt/12345678901234567890.tar.gz)'
