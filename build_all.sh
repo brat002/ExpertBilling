@@ -75,7 +75,8 @@ cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/sql
 cp sql/ebs_dump.sql builds/$1/sql/
 cp sql/changes.sql builds/$1/sql/
-cp -r sql/upgrade builds/$1/sql/
+#cp -r sql/upgrade builds/$1/sql/
+svn export sql/upgrade builds/$1/sql/
 cp -r mail/ builds/$1/modules/
 cp sendmail.py builds/$1/
 
