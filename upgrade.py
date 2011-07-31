@@ -13,12 +13,13 @@ import psycopg2
 import psycopg2.extras
 import tarfile
 
-DIST_PATH='/tmp/ebs_upgrade/'
+DIST_PATH='/tmp/ebs_upgrade'
 SQL_UPGRADE_PATH = DIST_PATH+'/sql/upgrade/' 
 BILLING_PATH = '/opt/ebs/data'
 WEBCAB_PATH = '/opt/ebs/web/'
 BACKUP_DIR = '/opt/ebs/backups/'
-LAST_SQL = '/opt/ebs/data/sql/last_sql.dont_remove' 
+LAST_SQL = '/opt/ebs/data/sql/last_sql.dont_remove'
+FIRST_TIME_LAST_SQL='/tmp/ebs_upgrade/sql/last_sql.dont_remove' 
 exclude_files=(
 '/opt/ebs/data/ebs_config.ini',
 '/opt/ebs/data/ebs_config_runtime.ini',
@@ -43,11 +44,13 @@ def modification_date(filename):
     return datetime.datetime.fromtimestamp(t)
 
 def md5gen(file_path):
-    f = open(file_path,'rb')
-    
-    data=f.read()
-    f.close()
-    return md5(data).digest()
+    if os.path.exists(file_path):
+        f = open(file_path,'rb')
+        data=f.read()
+        f.close()
+        return md5(data).digest()
+    else:
+        return 
 
 def stop_processes():
     print '*'*80
@@ -81,6 +84,7 @@ def allow_continue(phrase=''):
         else:
             output = raw_input("\n%s. Continue? (y/n)" % phrase)
         if output in ['n', 'N', 'No', 'Not']:
+            cleanup()
             sys.exit()
         elif output in ['y', 'Y', 'Yes']:
             a=False
@@ -92,6 +96,8 @@ def get_last_sql():
     pass
 
 def create_folders():
+    if not os.path.exists('/opt/ebs'): os.mkdir('/opt/ebs/')
+    if not os.path.exists('/opt/ebs/data'): os.mkdir('/opt/ebs/data')
     if not os.path.exists(DIST_PATH): os.mkdir(DIST_PATH)
     if not os.path.exists('/opt/ebs/stats'): os.mkdir('/opt/ebs/stats')
     if not os.path.exists('/opt/ebs/web'): os.mkdir('/opt/ebs/web')
@@ -110,9 +116,10 @@ def cleanup():
     shutil.rmtree(DIST_PATH)
     
 def dbconnect():
-    global dbhost,dbname,dbuser,dbpassword, conn
+    global dbhost,dbname,dbuser,dbpassword, conn, cur
     try:
         conn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s' port='%s'" % (dbname, dbuser,dbhost,dbpassword, 5432));
+        conn.set_client_encoding('UTF8')
         cur=conn.cursor()
     except Exception, e:
         print "I am unable to connect to the database"
@@ -169,6 +176,7 @@ def backup_db():
     print "*"*80
         
 def upgrade_db():
+    global cur, conn
     print "upgrading DB"
     first_time=False
     if not os.path.exists(LAST_SQL):
@@ -214,7 +222,11 @@ def upgrade_db():
             not_write=True
             
         if not not_write:
-            f = open(LAST_SQL, 'w')
+            if first_time==True:
+                
+                f = open(FIRST_TIME_LAST_SQL, 'w')
+            else:
+                f = open(LAST_SQL, 'w')
             f.write('%s' % id)
             f.close()
         conn.commit()
@@ -223,8 +235,9 @@ def upgrade_db():
 def copy_files(files):
     files_copied=[]
     for src, dst in files:
+        print src,'->>', dst
         try:
-            shutil.copy(src, dst)
+            shutil.copytree(src, dst)
             files_copied.append((src,dst))
         except IOError,e:
             print "I/O Exception %s" % str(e)
@@ -234,6 +247,7 @@ def post_upgrade():
     pass
 
 def upgrade_from_13():
+    global conn, cur
     print "*"*80
     print "Migrating accounts from 1.3 to 1.4"
     print "*"*80
@@ -287,10 +301,10 @@ def upgrade_from_13():
     
 def prompt_db_access():
     global dbhost,dbname,dbuser,dbpassword
-    dbhost = raw_input("Enter database host: ")
-    dbname = raw_input("Enter database name: ")
-    dbuser = raw_input("Enter database user: ")
-    dbpassword = raw_input("Enter database password: ")
+    dbhost = raw_input("Enter database host[127.0.0.1]: ") or '127.0.0.1'
+    dbname = raw_input("Enter database name[ebs]: ") or 'ebs'
+    dbuser = raw_input("Enter database user[ebs]: ") or 'ebs'
+    dbpassword = raw_input("Enter database password[ebspassword]: ") or 'ebspassword'
     
 
     
@@ -304,14 +318,23 @@ def import_dump():
     if status!=0:
         allow_continue("We get error when importing initial dump. %s" % output)
         
-        
+def import_initial_changes():       
+    global dbhost,dbname,dbuser,dbpassword
+    print "*"*80
+    print "Importing changes dump.Enter database password for user %s" % dbuser
+    print "*"*80
+    status, output = commands.getstatusoutput('psql -W -h %s -p %s -U %s %s -f %s' % (dbhost,5432,dbuser, dbname, DIST_PATH+'/sql/changes.sql'))
+    
+    if status!=0:
+        allow_continue("We get error when importing initial dump. %s" % output)     
 def fromchanges(changes_start=False):
-    global conn
+    global conn, cur
     
     to_db=[]
     
     changes_date = datetime.datetime.now()-datetime.timedelta(days=-1000)
     for line in open(DIST_PATH+'/sql/changes.sql'):
+        #print line
         if line.startswith('--') and not changes_start:
             #print line
             try:
@@ -324,6 +347,8 @@ def fromchanges(changes_start=False):
             changes_start=True
         
         if changes_start==True:
+            #print "changes_start==True"
+            print line
             to_db.append(line)
              
     #print '\n'.join(to_db)   
@@ -354,8 +379,13 @@ if __name__=='__main__':
         create_folders()
         unpack_archive(sys.argv[2])
         import_dump()
-        fromchanges(changes_start=True)
+        import_initial_changes()
+        #fromchanges(changes_start=True)
         upgrade_db()
+        files=files_for_copy()
+        if files:
+            copy_files(files)
+                    
     if  'upgrade' in sys.argv:
         installation_date = modification_date(BILLING_PATH+'/license.lic')
         #print installation_date
@@ -388,5 +418,5 @@ if __name__=='__main__':
         backup_db()
         upgrade_db()
         upgrade_from_13()
-    
+    cleanup()
     #start_processes()
