@@ -47,11 +47,12 @@ for bld in $simple_build; do
 	python freezer/freezer_rec.py  -i $5 $karg $reskey $bld.py > builds/$1.$bld.buildlog;
 done
 
-python freezer/freezer_rec.py --nloc=chartprovider.pychartdir25 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $5 $karg $reskey rpc.py > builds/$1.rpc.buildlog;
+python freezer/freezer_rec.py --nloc=chartprovider.pychartdir26,chartprovider.pychartdir25,chartprovider.pychartdir27 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $5 $karg $reskey rpc.py > builds/$1.rpc.buildlog;
 
 cp license.lic builds/$1/license.lic
 cp license.lic.old license.lic
 cp ebs_config.ini builds/$1/ebs_config.ini 
+cp upgrade.py builds/$1/upgrade.py
 cp ebs_config_runtime.ini builds/$1/ebs_config_runtime.ini 
 cp -rf modules builds/$1
 mkdir builds/$1/nf_dump
@@ -64,6 +65,8 @@ cp -rf fonts builds/$1/fonts
 cp -rf scripts builds/$1/scripts
 rm -rf builds/$1/modules/chartprovider
 cp chartprovider/pychartdir.pyc chartprovider/pychartdir25.pyd chartprovider/pychartdir25.so chartprovider/libchartdir.so builds/$1/modules
+cp chartprovider/pychartdir.pyc chartprovider/pychartdir26.pyd chartprovider/pychartdir26.so builds/$1/modules
+cp chartprovider/pychartdir.pyc chartprovider/pychartdir27.pyd chartprovider/pychartdir27.so builds/$1/modules
 mkdir builds/$1/ebscab
 svn export --username dolphinik --password planeta svn://127.0.0.1/mikrobill/trunk/webadmin/ebscab ebscab/ --force
 cp webadmin/django.wsgi builds/$1/ebscab/
@@ -72,6 +75,7 @@ cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/sql
 cp sql/ebs_dump.sql builds/$1/sql/
 cp sql/changes.sql builds/$1/sql/
+cp -r sql/upgrade builds/$1/sql/
 cp -r mail/ builds/$1/modules/
 cp sendmail.py builds/$1/
 
