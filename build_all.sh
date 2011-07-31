@@ -100,6 +100,8 @@ if [ $SUDO_USER ]; then
 fi
 
 cd builds/$1/
-tar -czvf ../$1.tar.gz . ../../upgrade.py
-cd ../../
+tar -czvf ../ebs-`svnversion ../../`.tar.gz .
+cd ../ 
+tar -czvf $1.tar.gz ebs-`svnversion ../../`.tar.gz ../upgrade.py
+cd ../
 
