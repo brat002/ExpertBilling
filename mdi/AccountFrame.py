@@ -3686,7 +3686,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         ids = self.get_selected_accounts()
         if not ids:return
-        if QtGui.QMessageBox.question(self, u"Удалить аккаунты?" , u"Вы уверены, что хотите удалить пользователей из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
+        if QtGui.QMessageBox.question(self, u"Удалить аккаунты?" , u"Вы уверены, что хотите удалить выбранных пользователей из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.No:
             return
 
         for id in ids:
