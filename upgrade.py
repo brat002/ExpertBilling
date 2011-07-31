@@ -103,7 +103,7 @@ def unpack_archive(archive_name):
     except Exception, e:
         print "Fatal error, Can not read archive %s" % str(e)
         sys.exit()
-    tar.extractall(path=os.mkdir)
+    tar.extractall(path=DIST_PATH)
     tar.close()
         
 def cleanup():
@@ -297,7 +297,7 @@ def prompt_db_access():
 def import_dump():
     global dbhost,dbname,dbuser,dbpassword
     print "*"*80
-    print "Importing main database dump.Enter database password for user %s" % config.get('db', 'username')
+    print "Importing main database dump.Enter database password for user %s" % dbuser
     print "*"*80
     status, output = commands.getstatusoutput('psql -W -h %s -p %s -U %s %s -f %s' % (dbhost,5432,dbuser, dbname, DIST_PATH+'/sql/ebs_dump.sql'))
     
@@ -320,7 +320,7 @@ def fromchanges(changes_start=False):
                 print e
                 continue
             
-        if changes_date>=installation_date:
+        if installation_date and changes_date>=installation_date:
             changes_start=True
         
         if changes_start==True:
@@ -345,7 +345,7 @@ if __name__=='__main__':
     
     prompt_db_access()
     dbconnect()
-    
+    installation_date=None
     if 'install' in sys.argv:
         if not len(sys.argv)==3:  
             print "*"*80
