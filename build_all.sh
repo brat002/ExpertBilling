@@ -102,6 +102,6 @@ fi
 cd builds/$1/
 tar -czvf ../ebs-`svnversion ../../`.tar.gz .
 cd ../ 
-tar -czvf $1.tar.gz ebs-`svnversion ../../`.tar.gz ../upgrade.py
+tar -czvf $1.tar.gz ebs-`svnversion ../`.tar.gz ../upgrade.py
 cd ../
 
