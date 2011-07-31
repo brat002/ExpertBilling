@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>796</width>
-    <height>367</height>
+    <width>637</width>
+    <height>543</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,14 +27,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_subaccount">
-        <property name="text">
-         <string>Имя субаккаунта</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
+      <item row="10" column="0">
        <widget class="QLabel" name="label_balance">
         <property name="text">
          <string>Баланс</string>
@@ -44,61 +37,7 @@
       <item row="0" column="1" colspan="2">
        <widget class="QLineEdit" name="lineEdit_agreement"/>
       </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QLineEdit" name="lineEdit_subaccount"/>
-      </item>
-      <item row="0" column="3">
-       <widget class="QLabel" name="label_account">
-        <property name="text">
-         <string>Имя аккаунта</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QLabel" name="label_manager">
-        <property name="text">
-         <string>Менеджер</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="6">
-       <widget class="QLabel" name="label_tarif">
-        <property name="text">
-         <string>Тариф</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="8">
-       <widget class="QComboBox" name="comboBox_tarif">
-        <property name="minimumSize">
-         <size>
-          <width>180</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-        <property name="maxVisibleItems">
-         <number>30</number>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="6">
-       <widget class="QLabel" name="label_status">
-        <property name="text">
-         <string>Статус</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="8">
-       <widget class="QComboBox" name="comboBox_status">
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
+      <item row="10" column="1">
        <widget class="QComboBox" name="comboBox_balance_condition">
         <item>
          <property name="text">
@@ -132,17 +71,101 @@
         </item>
        </widget>
       </item>
-      <item row="2" column="2">
+      <item row="10" column="2">
        <widget class="QLineEdit" name="lineEdit_balance"/>
       </item>
-      <item row="2" column="3">
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_ur_name">
+        <property name="text">
+         <string>Юрлицо</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1" colspan="2">
+       <widget class="QComboBox" name="comboBox_ur_name">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+        <property name="frame">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="1" colspan="2">
+       <widget class="QComboBox" name="comboBox_status">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0">
+       <widget class="QLabel" name="label_status">
+        <property name="text">
+         <string>Статус</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QLineEdit" name="lineEdit_account"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_account">
+        <property name="text">
+         <string>Имя аккаунта</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>ФИО</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1" colspan="2">
+       <widget class="QLineEdit" name="lineEdit"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_subaccount">
+        <property name="text">
+         <string>Имя субаккаунта</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2">
+       <widget class="QLineEdit" name="lineEdit_subaccount"/>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_tarif">
+        <property name="text">
+         <string>Тариф</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1" colspan="2">
+       <widget class="QComboBox" name="comboBox_tarif">
+        <property name="minimumSize">
+         <size>
+          <width>180</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+        <property name="maxVisibleItems">
+         <number>30</number>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
        <widget class="QLabel" name="label_credit">
         <property name="text">
          <string>Кредит</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="4">
+      <item row="11" column="1">
        <widget class="QComboBox" name="comboBox_credit_condition">
         <item>
          <property name="text">
@@ -176,10 +199,17 @@
         </item>
        </widget>
       </item>
-      <item row="2" column="5">
+      <item row="11" column="2">
        <widget class="QLineEdit" name="lineEdit_credit"/>
       </item>
-      <item row="1" column="4" colspan="2">
+      <item row="13" column="0">
+       <widget class="QLabel" name="label_manager">
+        <property name="text">
+         <string>Менеджер</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="1" colspan="2">
        <widget class="QComboBox" name="comboBox_manager">
         <property name="editable">
          <bool>true</bool>
@@ -199,26 +229,6 @@
           <string>Третий</string>
          </property>
         </item>
-       </widget>
-      </item>
-      <item row="0" column="4" colspan="2">
-       <widget class="QLineEdit" name="lineEdit_account"/>
-      </item>
-      <item row="2" column="6">
-       <widget class="QLabel" name="label_ur_name">
-        <property name="text">
-         <string>Юрлицо</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="8">
-       <widget class="QComboBox" name="comboBox_ur_name">
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-        <property name="frame">
-         <bool>true</bool>
-        </property>
        </widget>
       </item>
      </layout>
@@ -350,7 +360,7 @@
       <item row="3" column="0">
        <widget class="QLabel" name="label_vpn_ip">
         <property name="text">
-         <string>VPN IP</string>
+         <string>VPN IPv4</string>
         </property>
        </widget>
       </item>
@@ -360,7 +370,7 @@
       <item row="4" column="0">
        <widget class="QLabel" name="label_ipn_ip">
         <property name="text">
-         <string>IPN IP</string>
+         <string>IPN IPv4</string>
         </property>
        </widget>
       </item>
@@ -409,15 +419,16 @@
  <tabstops>
   <tabstop>lineEdit_agreement</tabstop>
   <tabstop>lineEdit_account</tabstop>
-  <tabstop>comboBox_tarif</tabstop>
   <tabstop>lineEdit_subaccount</tabstop>
-  <tabstop>comboBox_manager</tabstop>
-  <tabstop>comboBox_status</tabstop>
+  <tabstop>lineEdit</tabstop>
+  <tabstop>comboBox_ur_name</tabstop>
+  <tabstop>comboBox_tarif</tabstop>
   <tabstop>comboBox_balance_condition</tabstop>
   <tabstop>lineEdit_balance</tabstop>
   <tabstop>comboBox_credit_condition</tabstop>
   <tabstop>lineEdit_credit</tabstop>
-  <tabstop>comboBox_ur_name</tabstop>
+  <tabstop>comboBox_status</tabstop>
+  <tabstop>comboBox_manager</tabstop>
   <tabstop>comboBox_city</tabstop>
   <tabstop>comboBox_street</tabstop>
   <tabstop>comboBox_house</tabstop>
