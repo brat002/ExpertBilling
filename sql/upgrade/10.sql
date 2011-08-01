@@ -1,4 +1,4 @@
-DROP TABLE auth_group;
+DROP TABLE  IF EXISTS  auth_group;
 CREATE TABLE auth_group
 (
   id serial NOT NULL,
@@ -11,7 +11,7 @@ WITH (
 );
 ALTER TABLE auth_group OWNER TO ebs;
 
-DROP TABLE django_content_type;
+DROP TABLE  IF EXISTS  django_content_type;
 
 CREATE TABLE django_content_type
 (
@@ -26,7 +26,7 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE django_content_type OWNER TO ebs;
-DROP TABLE auth_user;
+DROP TABLE  IF EXISTS  auth_user;
 
 CREATE TABLE auth_user
 (
@@ -49,7 +49,7 @@ WITH (
 );
 ALTER TABLE auth_user OWNER TO ebs;
 
-DROP TABLE auth_permission;
+DROP TABLE  IF EXISTS  auth_permission;
 
 CREATE TABLE auth_permission
 (
@@ -68,7 +68,7 @@ WITH (
 );
 ALTER TABLE auth_permission OWNER TO ebs;
 
-DROP TABLE auth_group_permissions;
+DROP TABLE  IF EXISTS  auth_group_permissions;
 
 CREATE TABLE auth_group_permissions
 (
@@ -89,7 +89,7 @@ WITH (
 );
 ALTER TABLE auth_group_permissions OWNER TO ebs;
 
-DROP TABLE auth_message;
+DROP TABLE  IF EXISTS  auth_message;
 
 CREATE TABLE auth_message
 (
@@ -106,7 +106,7 @@ WITH (
 );
 ALTER TABLE auth_message OWNER TO ebs;
 
-DROP TABLE auth_permission;
+DROP TABLE  IF EXISTS  auth_permission;
 
 CREATE TABLE auth_permission
 (
@@ -125,7 +125,7 @@ WITH (
 );
 ALTER TABLE auth_permission OWNER TO ebs;
 
-DROP TABLE django_admin_log;
+DROP TABLE  IF EXISTS  django_admin_log;
 
 CREATE TABLE django_admin_log
 (
@@ -169,7 +169,7 @@ CREATE INDEX django_admin_log_user_id
   USING btree
   (user_id);
   
-DROP TABLE django_session;
+DROP TABLE  IF EXISTS  django_session;
 
 CREATE TABLE django_session
 (
@@ -184,7 +184,7 @@ WITH (
 ALTER TABLE django_session OWNER TO ebs;
 
 
-DROP TABLE django_site;
+DROP TABLE  IF EXISTS  django_site;
 
 CREATE TABLE django_site
 (
