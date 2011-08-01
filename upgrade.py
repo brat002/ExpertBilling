@@ -20,7 +20,7 @@ WEBCAB_PATH = '/opt/ebs/web/'
 BACKUP_DIR = '/opt/ebs/backups/'
 LAST_SQL = '/opt/ebs/data/sql/last_sql.dont_remove'
 FIRST_TIME_LAST_SQL='/tmp/ebs_upgrade/sql/last_sql.dont_remove' 
-exclude_files=(
+exclude_files_upgrade=(
 '/opt/ebs/data/ebs_config.ini',
 '/opt/ebs/data/ebs_config_runtime.ini',
 '/opt/ebs/web/ebscab/settings.py',
@@ -143,7 +143,7 @@ def pre_upgrade():
 
     
 
-def files_for_copy():
+def files_for_copy(first_time=False):
     to_copy=[]
     for root,dirs,files in os.walk(DIST_PATH):
      
@@ -151,7 +151,7 @@ def files_for_copy():
             to_file = "%s/%s" % (root.replace(DIST_PATH,BILLING_PATH), f)
             from_file = '%s/%s' % (root,f) 
             #print to_file, from_file
-            if to_file in exclude_files:continue
+            if to_file in exclude_files and first_time==False:continue
             if os.path.exists(to_file):
                 if md5gen(from_file)!=md5gen(to_file):
                     #print "%s copy to %s" % (('%s/%s' % (root,f)),"%s/%s" % (root.replace(DIST_PATH,BILLING_PATH), f))
@@ -388,7 +388,7 @@ if __name__=='__main__':
         import_initial_changes()
         #fromchanges(changes_start=True)
         upgrade_db()
-        files=files_for_copy()
+        files=files_for_copy(first_time=True)
         if files:
             copy_files(files)
                     
