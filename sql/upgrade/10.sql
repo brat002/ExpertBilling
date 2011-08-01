@@ -140,10 +140,10 @@ CREATE TABLE django_admin_log
   CONSTRAINT django_admin_log_pkey PRIMARY KEY (id),
   CONSTRAINT django_admin_log_content_type_id_fkey FOREIGN KEY (content_type_id)
       REFERENCES django_content_type (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE  DEFERRABLE INITIALLY IMMEDIATE,
+      ON UPDATE NO ACTION ON DELETE CASCADE  DEFERRABLE INITIALLY IMMEDIATE,
   CONSTRAINT django_admin_log_user_id_fkey FOREIGN KEY (user_id)
       REFERENCES auth_user (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE  DEFERRABLE INITIALLY IMMEDIATE,
+      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
   CONSTRAINT django_admin_log_action_flag_check CHECK (action_flag >= 0)
 )
 WITH (
@@ -197,6 +197,106 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE django_site OWNER TO ebs;
+
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (1, 'permission', 'auth', 'permission');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (2, 'group', 'auth', 'group');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (3, 'user', 'auth', 'user');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (4, 'message', 'auth', 'message');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (5, 'content type', 'contenttypes', 'contenttype');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (6, 'session', 'sessions', 'session');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (7, 'site', 'sites', 'site');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (8, 'log entry', 'admin', 'logentry');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (9, 'session', 'radius', 'session');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (10, 'active session', 'radius', 'activesession');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (11, 'Сервер доступа', 'nas', 'nas');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (12, 'Класс трафика', 'nas', 'trafficclass');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (13, 'Направление трафика', 'nas', 'trafficnode');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (14, 'Нода временного периода', 'billservice', 'timeperiodnode');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (15, 'Временной период', 'billservice', 'timeperiod');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (16, 'Расчётный период', 'billservice', 'settlementperiod');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (17, 'Периодическая услуга', 'billservice', 'periodicalservice');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (18, 'История проводок по пер. услугам', 'billservice', 'periodicalservicehistory');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (19, 'Разовый платеж', 'billservice', 'onetimeservice');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (20, 'Доступ с учётом времени', 'billservice', 'timeaccessservice');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (21, 'Период доступа', 'billservice', 'timeaccessnode');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (22, 'Параметры доступа', 'billservice', 'accessparameters');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (23, 'настройка скорости', 'billservice', 'timespeed');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (24, 'Предоплаченный трафик', 'billservice', 'prepaidtraffic');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (25, 'Доступ с учётом трафика', 'billservice', 'traffictransmitservice');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (26, 'цена за направление', 'billservice', 'traffictransmitnodes');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (27, 'Предоплаченый трафик пользователя', 'billservice', 'accountprepaystrafic');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (28, 'Предоплаченное время пользователя', 'billservice', 'accountprepaystime');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (29, 'лимит трафика', 'billservice', 'trafficlimit');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (30, 'Тариф', 'billservice', 'tariff');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (31, 'Аккаунт', 'billservice', 'account');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (32, 'тип проводки', 'billservice', 'transactiontype');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (33, 'Проводка', 'billservice', 'transaction');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (34, 'привязка', 'billservice', 'accounttarif');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (35, 'скорости IPN клиентов', 'billservice', 'accountipnspeed');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (37, 'NetFlow статистика', 'billservice', 'netflowstream');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (38, 'Периодическая операция', 'billservice', 'shedulelog');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (39, 'one time service history', 'billservice', 'onetimeservicehistory');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (40, 'system user', 'billservice', 'systemuser');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (41, 'ports', 'billservice', 'ports');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (47, 'sale card', 'billservice', 'salecard');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (43, 'card', 'billservice', 'card');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (44, 'operator', 'billservice', 'operator');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (45, 'bank data', 'billservice', 'bankdata');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (46, 'dealer', 'billservice', 'dealer');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (48, 'dealer pay', 'billservice', 'dealerpay');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (49, 'organization', 'billservice', 'organization');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (50, 'document type', 'billservice', 'documenttype');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (51, 'template', 'billservice', 'template');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (52, 'document', 'billservice', 'document');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (53, 'suspended period', 'billservice', 'suspendedperiod');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (54, 'group', 'billservice', 'group');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (55, 'group stat', 'billservice', 'groupstat');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (56, 'speed limit', 'billservice', 'speedlimit');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (57, 'account speed limit', 'billservice', 'accountspeedlimit');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (58, 'ip pool', 'billservice', 'ippool');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (59, 'ip in use', 'billservice', 'ipinuse');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (61, 'ticket', 'helpdesk', 'ticket');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (62, 'queue', 'helpdesk', 'queue');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (63, 'auth log', 'radius', 'authlog');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (64, 'system group', 'billservice', 'systemgroup');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (65, 'traffic transaction', 'billservice', 'traffictransaction');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (66, 'tp change rule', 'billservice', 'tpchangerule');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (67, 'radius attrs', 'billservice', 'radiusattrs');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (68, 'x8021', 'billservice', 'x8021');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (69, 'addon service', 'billservice', 'addonservice');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (70, 'addon service tarif', 'billservice', 'addonservicetarif');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (71, 'account addon service', 'billservice', 'accountaddonservice');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (72, 'addon service transaction', 'billservice', 'addonservicetransaction');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (73, 'account attributes', 'billservice', 'accountattributes');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (74, 'account attributes data', 'billservice', 'accountattributesdata');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (75, 'news', 'billservice', 'news');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (76, 'account viewed news', 'billservice', 'accountviewednews');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (77, 'log', 'billservice', 'log');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (78, 'sub account', 'billservice', 'subaccount');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (79, 'balance history', 'billservice', 'balancehistory');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (80, 'city', 'billservice', 'city');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (81, 'street', 'billservice', 'street');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (82, 'house', 'billservice', 'house');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (83, 'template type', 'billservice', 'templatetype');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (84, 'Предоплаченый radius трафик пользователя', 'billservice', 'accountprepaysradiustrafic');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (85, 'radius traffic', 'billservice', 'radiustraffic');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (86, 'radius traffic node', 'billservice', 'radiustrafficnode');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (87, 'purse', 'webmoney', 'purse');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (88, 'invoice', 'webmoney', 'invoice');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (89, 'payment', 'webmoney', 'payment');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (90, 'invoice', 'qiwi', 'invoice');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (91, 'follow up', 'helpdesk', 'followup');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (92, 'ticket change', 'helpdesk', 'ticketchange');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (93, 'attachment', 'helpdesk', 'attachment');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (94, 'pre set reply', 'helpdesk', 'presetreply');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (95, 'escalation exclusion', 'helpdesk', 'escalationexclusion');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (96, 'email template', 'helpdesk', 'emailtemplate');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (97, 'knowledge base category', 'helpdesk', 'kbcategory');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (98, 'knowledge base item', 'helpdesk', 'kbitem');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (99, 'saved search', 'helpdesk', 'savedsearch');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (100, 'User Settings', 'helpdesk', 'usersettings');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (101, 'ignored email', 'helpdesk', 'ignoreemail');
+INSERT INTO django_content_type (id, name, app_label, model) VALUES (102, 'ticket CC', 'helpdesk', 'ticketcc');
 
 INSERT INTO auth_permission (id, name, content_type_id, codename) VALUES (1, 'Can add permission', 1, 'add_permission');
 INSERT INTO auth_permission (id, name, content_type_id, codename) VALUES (2, 'Can change permission', 1, 'change_permission');
