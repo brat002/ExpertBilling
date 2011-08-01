@@ -233,11 +233,17 @@ def upgrade_db():
 
 
 def copy_files(files):
+    def ensure_dir(f):
+        d = os.path.dirname(f)
+        if not os.path.exists(d):
+            os.makedirs(d)
+        
     files_copied=[]
     for src, dst in files:
         print src,'->>', dst
         try:
-            shutil.copytree(src, dst)
+            ensure_dir(dst)
+            shutil.copy(src, dst)
             files_copied.append((src,dst))
         except IOError,e:
             print "I/O Exception %s" % str(e)
