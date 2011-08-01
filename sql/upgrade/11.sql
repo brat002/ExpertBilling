@@ -1,3 +1,5 @@
+DROP TABLE  IF EXISTS helpdesk_queue;
+
 CREATE TABLE "helpdesk_queue" (
     "id" serial NOT NULL PRIMARY KEY,
     "title" varchar(100) NOT NULL,
@@ -20,6 +22,8 @@ CREATE TABLE "helpdesk_queue" (
     "email_box_last_check" timestamp with time zone
 )
 ;
+DROP TABLE IF EXISTS helpdesk_ticket;
+
 CREATE TABLE "helpdesk_ticket" (
     "id" serial NOT NULL PRIMARY KEY,
     "title" varchar(200) NOT NULL,
@@ -37,6 +41,7 @@ CREATE TABLE "helpdesk_ticket" (
     "last_escalation" timestamp with time zone
 )
 ;
+DROP TABLE IF EXISTS helpdesk_followup;
 CREATE TABLE "helpdesk_followup" (
     "id" serial NOT NULL PRIMARY KEY,
     "ticket_id" integer NOT NULL REFERENCES "helpdesk_ticket" ("id") DEFERRABLE INITIALLY DEFERRED,
@@ -48,6 +53,8 @@ CREATE TABLE "helpdesk_followup" (
     "new_status" integer
 )
 ;
+DROP TABLE IF EXISTS helpdesk_ticketchange;
+
 CREATE TABLE "helpdesk_ticketchange" (
     "id" serial NOT NULL PRIMARY KEY,
     "followup_id" integer NOT NULL REFERENCES "helpdesk_followup" ("id") DEFERRABLE INITIALLY DEFERRED,
@@ -56,6 +63,7 @@ CREATE TABLE "helpdesk_ticketchange" (
     "new_value" text
 )
 ;
+DROP TABLE IF EXISTS helpdesk_attachment;
 CREATE TABLE "helpdesk_attachment" (
     "id" serial NOT NULL PRIMARY KEY,
     "followup_id" integer NOT NULL REFERENCES "helpdesk_followup" ("id") DEFERRABLE INITIALLY DEFERRED,
@@ -65,18 +73,21 @@ CREATE TABLE "helpdesk_attachment" (
     "size" integer NOT NULL
 )
 ;
+DROP TABLE IF EXISTS helpdesk_presetreply;
 CREATE TABLE "helpdesk_presetreply" (
     "id" serial NOT NULL PRIMARY KEY,
     "name" varchar(100) NOT NULL,
     "body" text NOT NULL
 )
 ;
+DROP TABLE IF EXISTS helpdesk_escalationexclusion;
 CREATE TABLE "helpdesk_escalationexclusion" (
     "id" serial NOT NULL PRIMARY KEY,
     "name" varchar(100) NOT NULL,
     "date" date NOT NULL
 )
 ;
+DROP TABLE IF EXISTS helpdesk_emailtemplate;
 CREATE TABLE "helpdesk_emailtemplate" (
     "id" serial NOT NULL PRIMARY KEY,
     "template_name" varchar(100) NOT NULL UNIQUE,
@@ -86,6 +97,7 @@ CREATE TABLE "helpdesk_emailtemplate" (
     "html" text NOT NULL
 )
 ;
+DROP TABLE IF EXISTS helpdesk_kbcategory;
 CREATE TABLE "helpdesk_kbcategory" (
     "id" serial NOT NULL PRIMARY KEY,
     "title" varchar(100) NOT NULL,
@@ -93,6 +105,7 @@ CREATE TABLE "helpdesk_kbcategory" (
     "description" text NOT NULL
 )
 ;
+DROP TABLE IF EXISTS helpdesk_kbitem;
 CREATE TABLE "helpdesk_kbitem" (
     "id" serial NOT NULL PRIMARY KEY,
     "category_id" integer NOT NULL REFERENCES "helpdesk_kbcategory" ("id") DEFERRABLE INITIALLY DEFERRED,
@@ -104,6 +117,7 @@ CREATE TABLE "helpdesk_kbitem" (
     "last_updated" timestamp with time zone NOT NULL
 )
 ;
+DROP TABLE IF EXISTS helpdesk_savedsearch;
 CREATE TABLE "helpdesk_savedsearch" (
     "id" serial NOT NULL PRIMARY KEY,
     "user_id" integer NOT NULL REFERENCES "auth_user" ("id") DEFERRABLE INITIALLY DEFERRED,
@@ -112,12 +126,14 @@ CREATE TABLE "helpdesk_savedsearch" (
     "query" text NOT NULL
 )
 ;
+DROP TABLE IF EXISTS helpdesk_usersettings;
 CREATE TABLE "helpdesk_usersettings" (
     "id" serial NOT NULL PRIMARY KEY,
     "user_id" integer NOT NULL UNIQUE REFERENCES "auth_user" ("id") DEFERRABLE INITIALLY DEFERRED,
     "settings_pickled" text
 )
 ;
+DROP TABLE IF EXISTS helpdesk_ignoreemail;
 CREATE TABLE "helpdesk_ignoreemail" (
     "id" serial NOT NULL PRIMARY KEY,
     "name" varchar(100) NOT NULL,
@@ -126,6 +142,7 @@ CREATE TABLE "helpdesk_ignoreemail" (
     "keep_in_mailbox" boolean NOT NULL
 )
 ;
+DROP TABLE IF EXISTS helpdesk_ticketcc;
 CREATE TABLE "helpdesk_ticketcc" (
     "id" serial NOT NULL PRIMARY KEY,
     "ticket_id" integer NOT NULL REFERENCES "helpdesk_ticket" ("id") DEFERRABLE INITIALLY DEFERRED,
@@ -135,6 +152,7 @@ CREATE TABLE "helpdesk_ticketcc" (
     "can_update" boolean NOT NULL
 )
 ;
+DROP TABLE IF EXISTS helpdesk_presetreply_queues;
 CREATE TABLE "helpdesk_presetreply_queues" (
     "id" serial NOT NULL PRIMARY KEY,
     "presetreply_id" integer NOT NULL REFERENCES "helpdesk_presetreply" ("id") DEFERRABLE INITIALLY DEFERRED,
@@ -142,6 +160,7 @@ CREATE TABLE "helpdesk_presetreply_queues" (
     UNIQUE ("presetreply_id", "queue_id")
 )
 ;
+DROP TABLE IF EXISTS helpdesk_escalationexclusion_queues;
 CREATE TABLE "helpdesk_escalationexclusion_queues" (
     "id" serial NOT NULL PRIMARY KEY,
     "escalationexclusion_id" integer NOT NULL REFERENCES "helpdesk_escalationexclusion" ("id") DEFERRABLE INITIALLY DEFERRED,
@@ -149,6 +168,7 @@ CREATE TABLE "helpdesk_escalationexclusion_queues" (
     UNIQUE ("escalationexclusion_id", "queue_id")
 )
 ;
+DROP TABLE IF EXISTS helpdesk_ignoreemail_queues;
 CREATE TABLE "helpdesk_ignoreemail_queues" (
     "id" serial NOT NULL PRIMARY KEY,
     "ignoreemail_id" integer NOT NULL REFERENCES "helpdesk_ignoreemail" ("id") DEFERRABLE INITIALLY DEFERRED,

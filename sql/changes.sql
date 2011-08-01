@@ -2314,7 +2314,7 @@ ALTER FUNCTION periodicaltr_fn(integer, integer, integer, character varying, num
   
   
 --09.11.2009
-DROP TABLE billservice_news;
+DROP TABLE IF EXISTS billservice_news;
 
 CREATE TABLE billservice_news
 (
@@ -4879,12 +4879,12 @@ ALTER TABLE billservice_accountprepaysradiustrafic
 ALTER TABLE billservice_balancehistory
   DROP CONSTRAINT billservice_balancehistory_account_id_fkey;
   
-DROP TABLE auth_group_permissions;
-DROP TABLE auth_message;
-DROP TABLE auth_user_user_permissions;
-DROP TABLE auth_user_groups;
-DROP TABLE auth_permission;
-DROP TABLE auth_group;
+DROP TABLE IF EXISTS auth_group_permissions;
+DROP TABLE IF EXISTS auth_message;
+DROP TABLE IF EXISTS auth_user_user_permissions;
+DROP TABLE IF EXISTS auth_user_groups;
+DROP TABLE IF EXISTS auth_permission;
+DROP TABLE IF EXISTS auth_group;
 
 --19.03.2011
 ALTER TABLE billservice_card ADD CONSTRAINT billservice_card_login_pin_series_unique UNIQUE ("login", pin, series);
