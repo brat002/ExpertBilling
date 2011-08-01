@@ -1,4 +1,4 @@
-DROP TABLE  IF EXISTS  auth_group;
+DROP TABLE IF EXISTS  auth_group CASCADE;
 CREATE TABLE auth_group
 (
   id serial NOT NULL,
@@ -11,7 +11,7 @@ WITH (
 );
 ALTER TABLE auth_group OWNER TO ebs;
 
-DROP TABLE  IF EXISTS  django_content_type;
+DROP TABLE   IF EXISTS  django_content_type CASCADE;
 
 CREATE TABLE django_content_type
 (
@@ -26,7 +26,7 @@ WITH (
   OIDS=FALSE
 );
 ALTER TABLE django_content_type OWNER TO ebs;
-DROP TABLE  IF EXISTS  auth_user;
+DROP TABLE   IF EXISTS  auth_user CASCADE;
 
 CREATE TABLE auth_user
 (
@@ -49,7 +49,7 @@ WITH (
 );
 ALTER TABLE auth_user OWNER TO ebs;
 
-DROP TABLE  IF EXISTS  auth_permission;
+DROP TABLE   IF EXISTS  auth_permission CASCADE;
 
 CREATE TABLE auth_permission
 (
@@ -68,7 +68,7 @@ WITH (
 );
 ALTER TABLE auth_permission OWNER TO ebs;
 
-DROP TABLE  IF EXISTS  auth_group_permissions;
+DROP TABLE   IF EXISTS  auth_group_permissions CASCADE;
 
 CREATE TABLE auth_group_permissions
 (
@@ -89,7 +89,7 @@ WITH (
 );
 ALTER TABLE auth_group_permissions OWNER TO ebs;
 
-DROP TABLE  IF EXISTS  auth_message;
+DROP TABLE   IF EXISTS  auth_message CASCADE;
 
 CREATE TABLE auth_message
 (
@@ -106,7 +106,7 @@ WITH (
 );
 ALTER TABLE auth_message OWNER TO ebs;
 
-DROP TABLE  IF EXISTS  auth_permission;
+DROP TABLE   IF EXISTS  auth_permission CASCADE;
 
 CREATE TABLE auth_permission
 (
@@ -125,7 +125,7 @@ WITH (
 );
 ALTER TABLE auth_permission OWNER TO ebs;
 
-DROP TABLE  IF EXISTS  django_admin_log;
+DROP  TABLE   IF EXISTS  django_admin_log CASCADE;
 
 CREATE TABLE django_admin_log
 (
@@ -140,10 +140,10 @@ CREATE TABLE django_admin_log
   CONSTRAINT django_admin_log_pkey PRIMARY KEY (id),
   CONSTRAINT django_admin_log_content_type_id_fkey FOREIGN KEY (content_type_id)
       REFERENCES django_content_type (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
+      ON UPDATE NO ACTION ON DELETE  DEFERRABLE INITIALLY IMMEDIATE,
   CONSTRAINT django_admin_log_user_id_fkey FOREIGN KEY (user_id)
       REFERENCES auth_user (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY IMMEDIATE,
+      ON UPDATE NO ACTION ON DELETE  DEFERRABLE INITIALLY IMMEDIATE,
   CONSTRAINT django_admin_log_action_flag_check CHECK (action_flag >= 0)
 )
 WITH (
@@ -169,7 +169,7 @@ CREATE INDEX django_admin_log_user_id
   USING btree
   (user_id);
   
-DROP TABLE  IF EXISTS  django_session;
+DROP TABLE   IF EXISTS  django_session CASCADE;
 
 CREATE TABLE django_session
 (
@@ -184,7 +184,7 @@ WITH (
 ALTER TABLE django_session OWNER TO ebs;
 
 
-DROP TABLE  IF EXISTS  django_site;
+DROP TABLE   IF EXISTS  django_site CASCADE;
 
 CREATE TABLE django_site
 (
