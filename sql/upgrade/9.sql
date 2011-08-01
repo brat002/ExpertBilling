@@ -1,6 +1,3 @@
-ALTER TABLE billservice_subaccount ADD COLUMN vlan integer;
-ALTER TABLE billservice_subaccount ALTER COLUMN vlan SET DEFAULT 0;
-
 ALTER TABLE billservice_subaccount ADD COLUMN vpn_ipv6_ip_address inet;
 ALTER TABLE billservice_subaccount ALTER COLUMN vpn_ipv6_ip_address SET DEFAULT '::'::inet;
 
