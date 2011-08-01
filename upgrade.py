@@ -151,7 +151,7 @@ def files_for_copy(first_time=False):
             to_file = "%s/%s" % (root.replace(DIST_PATH,BILLING_PATH), f)
             from_file = '%s/%s' % (root,f) 
             #print to_file, from_file
-            if to_file in exclude_files and first_time==False:continue
+            if to_file in exclude_files_upgrade and first_time==False:continue
             if os.path.exists(to_file):
                 if md5gen(from_file)!=md5gen(to_file):
                     #print "%s copy to %s" % (('%s/%s' % (root,f)),"%s/%s" % (root.replace(DIST_PATH,BILLING_PATH), f))
