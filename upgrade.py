@@ -249,6 +249,33 @@ def copy_files(files):
             print "I/O Exception %s" % str(e)
             allow_continue()
 
+def setup_init():
+    print "*"*80  
+    print "Copying init scripts to /etc/init.d/"
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_core')
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_rad')
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_nf')
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_nfroutine')
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_rpc')
+    print "*"*80  
+    status, output = commands.getstatusoutput('update-rc.d ebs_nfroutine defaults')
+    status, output = commands.getstatusoutput('update-rc.d ebs_nf defaults')
+    status, output = commands.getstatusoutput('update-rc.d ebs_rad defaults')
+    status, output = commands.getstatusoutput('update-rc.d ebs_core defaults')
+    status, output = commands.getstatusoutput('update-rc.d ebs_rpc defaults')
+    if status!=0:
+        print "We have error on init scripts setup. %s" % output
+        allow_continue()
+    else:
+        print "Init scripts setup was succefull."
+    print "*"*80    
+    
+def setup_config():
+    print "*"*80 
+    print "Write database parameters to config file "
+    print "*"*80
+    config.read(BILLING_PATH+"/ebs_config.ini") 
+    
 def post_upgrade():
     pass
 
@@ -392,6 +419,14 @@ if __name__=='__main__':
         if files:
             copy_files(files)
                     
+        setup_init()
+        start_processes()
+        print "*"*80
+        print "   CONGRATULATIONS!!! Your ExpertBilling copy was sucefully installed!"
+        print "   Please, read manual, refer to forum.expertbilling.ru and wiki.expertbilling.ru for detail information about system"
+        print "   Contacts: ICQ: 162460666, e-mail: brat002@gmail.com"
+        print "*"*80
+        
     if  'upgrade' in sys.argv:
         installation_date = modification_date(BILLING_PATH+'/license.lic')
         #print installation_date
