@@ -48,7 +48,7 @@ def make_dict(lst, fields_list, datetime_fmt, encoding='utf-8', time_fmt='', ):
             result_dict[field]=d
         else:
             if encoding!='utf-8':
-                result_dict[field]=str(lst[i].decode(encoding, 'utf-8')).strip()
+                result_dict[field]=str(lst[i]).strip()
             else:
                 result_dict[field]=str(lst[i]).strip()
 
@@ -64,6 +64,15 @@ def make_dict(lst, fields_list, datetime_fmt, encoding='utf-8', time_fmt='', ):
 
     return result_dict
 
+def check_dublicates(cur, param_dict):
+    cur.execute("""SELECT id FROM billservice_transaction 
+    WHERE account_id=%(ACC_ID)s and type_id='%(PAYMENT_TYPE)s' and approved=True and summ=(-1)*%(SUM)s and
+            created='%(DATETIME)s'
+            """ % param_dict)
+    
+    if cur.fetchone():
+        return True
+    return False
 if __name__=='__main__':
     payment_system = sys.argv[1]
     if config.has_section(payment_system):
@@ -104,6 +113,9 @@ if __name__=='__main__':
                        buffer.append(line)
                        continue
                     res_dict['ACC_ID']=acc_id
+                    if check_dublicates(cur, res_dict)==True:
+                        continue
+
                     s=transaction_pattern % res_dict
                     print "INSERT\n"
                     print "*"*10
@@ -126,7 +138,5 @@ if __name__=='__main__':
             shutil.move(curdir+folder_in+file, curdir+folder_out+file)
 
         #    process_file(payment_system)
-
-
 cur.close()
 connection.close()

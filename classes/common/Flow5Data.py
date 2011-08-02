@@ -77,6 +77,7 @@ class Flow5Data(list):
     
     def getAddrSlice(self):
         return self.__getslice__(0,3)
+    
     src_addr = property(itemgetter(0), lambda self_, value_: setitem(self_, 0, value_))
     dst_addr = property(itemgetter(1), lambda self_, value_: setitem(self_, 1, value_))
     next_hop = property(itemgetter(2), lambda self_, value_: setitem(self_, 2, value_))
