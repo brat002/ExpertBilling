@@ -60,24 +60,27 @@ mkdir builds/$1/log
 mkdir builds/$1/pid
 mkdir builds/$1/temp
 mkdir builds/$1/init.d
-cp -rf dicts builds/$1/dicts
-cp -rf fonts builds/$1/fonts
-cp -rf scripts builds/$1/scripts
+#cp -rf dicts builds/$1/dicts
+#cp -rf fonts builds/$1/fonts
+#cp -rf scripts builds/$1/scripts
 rm -rf builds/$1/modules/chartprovider
 cp chartprovider/pychartdir.pyc chartprovider/pychartdir25.pyd chartprovider/pychartdir25.so chartprovider/libchartdir.so builds/$1/modules
 cp chartprovider/pychartdir.pyc chartprovider/pychartdir26.pyd chartprovider/pychartdir26.so builds/$1/modules
 cp chartprovider/pychartdir.pyc chartprovider/pychartdir27.pyd chartprovider/pychartdir27.so builds/$1/modules
 mkdir builds/$1/ebscab
-svn export --username dolphinik --password planeta svn://127.0.0.1/mikrobill/trunk/webadmin/ebscab ebscab/ --force
+svn export webadmin/ebscab builds/$1/ebscab/ --force
 cp webadmin/django.wsgi builds/$1/ebscab/
 cp webadmin/default builds/$1/ebscab/
-cp -r ebscab/ builds/$1/ebscab/
+#cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/sql
 cp sql/ebs_dump.sql builds/$1/sql/
 cp sql/changes.sql builds/$1/sql/
 #cp -r sql/upgrade builds/$1/sql/
 svn export sql/upgrade/ builds/$1/sql/upgrade/
-cp -r mail/ builds/$1/modules/
+svn export dicts/ builds/$1/dicts/
+svn export fonts/ builds/$1/fonts/
+svn export scripts/ builds/$1/scripts/
+svn export mail/ builds/$1/modules/mail/
 cp sendmail.py builds/$1/
 
 for bldd in $total_build; do
