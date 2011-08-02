@@ -45,7 +45,7 @@ except Exception, e:
 
      
 def modification_date(filename):
-    t = os.path.getctime(filename)
+    t = os.path.getmtime(filename)
     return datetime.datetime.fromtimestamp(t)
 
 def md5gen(file_path):
@@ -454,7 +454,7 @@ if __name__=='__main__':
             
         if  'upgrade' in sys.argv:
             installation_date = modification_date(BILLING_PATH+'/license.lic')
-            #print installation_date
+            print installation_date
             if not len(sys.argv)==3:  
                 print "*"*80
                 print 'Please define archive path and name (example: upgrade.py upgrade /opt/12345678901234567890.tar.gz)'
