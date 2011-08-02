@@ -18,8 +18,8 @@ SQL_UPGRADE_PATH = DIST_PATH+'/sql/upgrade/'
 BILLING_PATH = '/opt/ebs/data'
 WEBCAB_PATH = '/opt/ebs/web/'
 BACKUP_DIR = '/opt/ebs/backups/'
-LAST_SQL = '/opt/ebs/data/sql/last_sql.dont_remove'
-FIRST_TIME_LAST_SQL='/tmp/ebs_upgrade/sql/last_sql.dont_remove' 
+LAST_SQL = '/opt/ebs/data/etc/install.ini'
+FIRST_TIME_LAST_SQL='/tmp/ebs_upgrade/etc/install.ini' 
 exclude_files_upgrade=(
 '/opt/ebs/data/ebs_config.ini',
 '/opt/ebs/data/ebs_config_runtime.ini',
@@ -29,6 +29,7 @@ exclude_files_upgrade=(
 curdate = datetime.datetime.now().strftime('%d-%m-%y_%H_%M_%S')
 config = ConfigParser.ConfigParser()
 config.read(BILLING_PATH+"/ebs_config.ini") 
+install_config = ConfigParser.ConfigParser()
 """
 try:
     conn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s' port='%s'" % (config.get('db', 'name'), config.get('db', 'username'),config.get('db', 'host'),config.get('db', 'password'), config.get('db', 'port')));
@@ -186,20 +187,12 @@ def upgrade_db():
         first_time=True
         las_sql_id=0
     
-
-    if not first_time:
-        f = open(LAST_SQL, 'r')
-        last = f.read()
-        f.close()
-    
-        try:
-            las_sql_id = int(last.strip())
-        except Exception, e:
-            print e
-            print "Last SQL id in file %s have incorrect format" % LAST_SQL 
-            sys.exit()
+    if first_time==True:
+        install_config.read(FIRST_TIME_LAST_SQL) 
     else:
-        las_sql_id=0
+        install_config.read(LAST_SQL) 
+        last_sql_id=install_config.getint('sql', 'last_id')
+                
         
     available_files=[int(x.replace(".sql", '')) for x in os.listdir(SQL_UPGRADE_PATH)]
     
@@ -225,13 +218,10 @@ def upgrade_db():
             not_write=True
             
         if not not_write:
-            if first_time==True:
-                
-                f = open(FIRST_TIME_LAST_SQL, 'w')
-            else:
-                f = open(LAST_SQL, 'w')
-            f.write('%s' % id)
-            f.close()
+
+            install_config.set('sql','last_id',id)
+            #f.write('%s' % id)
+            #f.close()
         conn.commit()
 
 
@@ -272,10 +262,16 @@ def setup_init():
     print "*"*80    
     
 def setup_config():
+    global dbhost,dbname,dbuser,dbpassword
     print "*"*80 
     print "Write database parameters to config file "
     print "*"*80
     config.read(BILLING_PATH+"/ebs_config.ini") 
+    config.set('db', 'name', dbname)
+    config.set('db', 'username', dbuser)
+    config.set('db', 'password', dbpassword)
+    config.set('db', 'host', dbhost)
+    
     
 def post_upgrade():
     pass
