@@ -104,6 +104,7 @@ def get_last_sql():
 
 def create_folders():
     if not os.path.exists('/opt/ebs'): os.mkdir('/opt/ebs/')
+    if not os.path.exists('/opt/ebs/backups'): os.mkdir('/opt/ebs/backups')
     if not os.path.exists('/opt/ebs/data'): os.mkdir('/opt/ebs/data')
     if not os.path.exists(DIST_PATH): os.mkdir(DIST_PATH)
     if not os.path.exists('/opt/ebs/stats'): os.mkdir('/opt/ebs/stats')
@@ -174,14 +175,10 @@ def files_for_copy(first_time=False):
     return to_copy
       
 def backup_db():
-    """
-    child = pexpect.spawn('scp foo myname@host.example.com:.')
-    child.expect ('Password:')
-    child.sendline (mypassword)
-    """
+    global dbhost,dbname,dbuser,dbpassword
     print "*"*80  
-    print "Please, enter password for DB user %s.\nYou can see right password in file /opt/ebs/data/ebs_config.ini" % (config.get('db', 'username'),)
-    status, output = commands.getstatusoutput('pg_dump -W -h %s -p %s -U %s -F p -b -S ebs --disable-triggers -f %s %s' % (config.get('db', 'host'),config.get('db', 'port'),config.get('db', 'username'),"%s%s_db.sql" % (BACKUP_DIR, curdate), config.get('db', 'name')))
+    print "Please, enter password for DB user %s.\nYou can see right password in file /opt/ebs/data/ebs_config.ini" % (dbuser,)
+    status, output = commands.getstatusoutput('pg_dump -W -h %s -p %s -U %s -F p -b -S ebs --disable-triggers -f %s %s' % (dbhost,5432,dbuser,"%s%s_db.sql" % (BACKUP_DIR, curdate), dbname))
     if status!=0:
         print "We have error on database backup operation. %s" % output
         allow_continue()
@@ -395,7 +392,7 @@ def fromchanges(changes_start=False):
             except Exception, e:
                 print e
                 continue
-            
+        print installation_date, changes_date    
         if installation_date and changes_date>=installation_date:
             changes_start=True
         
@@ -426,16 +423,17 @@ if __name__=='__main__':
                               version='0.1',
                               usage= 'python %prog <install|upgrade|migrate> path_to_ebs_archive ')
     options, arguments = p.parse_args()
-    if len(arguments) == 3:
+    #if len(arguments) == 3:
+    if True:
         prompt_db_access()
         dbconnect()
         installation_date=None
+        create_folders()
         if 'install' in sys.argv:
             if not len(sys.argv)==3:  
                 print "*"*80
                 print 'Please define archive path and name (example: upgrade.py install /opt/12345678901234567890.tar.gz)'
                 sys.exit()        
-            create_folders()
             unpack_archive(sys.argv[2])
             import_dump()
             import_initial_changes()
@@ -467,6 +465,11 @@ if __name__=='__main__':
             
             
             pre_upgrade()
+            
+            backup_db()
+            fromchanges()
+            upgrade_db()
+                        
             files=files_for_copy()
             if files:
                 copy_files(files)
@@ -476,9 +479,7 @@ if __name__=='__main__':
             #allow_continue('Do you want to upgrade EBS database?')
         
               
-            backup_db()
-            fromchanges()
-            upgrade_db()
+
     
         
         
