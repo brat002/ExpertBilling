@@ -236,17 +236,14 @@ def upgrade_db():
 
 
 def copy_files(files):
-    def ensure_dir(f):
-        d = os.path.dirname(f)
-        if not os.path.exists(d):
-            os.makedirs(d)
-        
     files_copied=[]
     for src, dst in files:
         print src,'->>', dst
         try:
-            ensure_dir(dst)
-            if not os.path.isdir(dst):
+            
+            if src==None:
+                os.makedirs(dst)
+            else:
                 shutil.copy(src, dst)
             files_copied.append((src,dst))
         except IOError,e:
