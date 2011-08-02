@@ -188,7 +188,8 @@ def upgrade_db():
         las_sql_id=0
     
     if first_time==True:
-        install_config.read(FIRST_TIME_LAST_SQL) 
+        install_config.read(FIRST_TIME_LAST_SQL)
+        install_config.add_section('sql') 
     else:
         install_config.read(LAST_SQL) 
         last_sql_id=install_config.getint('sql', 'last_id')
@@ -223,6 +224,17 @@ def upgrade_db():
             #f.write('%s' % id)
             #f.close()
         conn.commit()
+        
+    if first_time==True:
+        with open(FIRST_TIME_LAST_SQL, 'wb') as configfile:
+            install_config.write(configfile)
+    else:
+        with open(LAST_SQL, 'wb') as configfile:
+            install_config.write(configfile)
+                
+
+
+
 
 
 def copy_files(files):
@@ -271,7 +283,9 @@ def setup_config():
     config.set('db', 'username', dbuser)
     config.set('db', 'password', dbpassword)
     config.set('db', 'host', dbhost)
-    
+    #config.write(BILLING_PATH+"/ebs_config.ini")
+    with open(BILLING_PATH+"/ebs_config.ini", 'wb') as configfile:
+        config.write(configfile)
     
 def post_upgrade():
     pass
