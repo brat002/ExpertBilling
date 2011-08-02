@@ -61,6 +61,7 @@ mkdir builds/$1/etc
 mkdir builds/$1/pid
 mkdir builds/$1/temp
 mkdir builds/$1/init.d
+mkdir builds/$1/ebscab/
 #cp -rf dicts builds/$1/dicts
 #cp -rf fonts builds/$1/fonts
 #cp -rf scripts builds/$1/scripts
@@ -69,7 +70,7 @@ cp chartprovider/pychartdir.pyc chartprovider/pychartdir25.pyd chartprovider/pyc
 cp chartprovider/pychartdir.pyc chartprovider/pychartdir26.pyd chartprovider/pychartdir26.so builds/$1/modules
 cp chartprovider/pychartdir.pyc chartprovider/pychartdir27.pyd chartprovider/pychartdir27.so builds/$1/modules
 mkdir builds/$1/ebscab
-svn export webadmin/ebscab builds/$1/ebscab/ --force
+svn export webadmin/ebscab builds/$1/ebscab/ebscab/ --force
 cp webadmin/django.wsgi builds/$1/ebscab/
 cp webadmin/default builds/$1/ebscab/
 #cp -r ebscab/ builds/$1/ebscab/
@@ -83,6 +84,7 @@ svn export fonts/ builds/$1/fonts/
 svn export scripts/ builds/$1/scripts/
 svn export mail/ builds/$1/modules/mail/
 cp sendmail.py builds/$1/
+cp install.txt builds/$1/
 
 for bldd in $total_build; do
 	cp $bldd builds/$1
