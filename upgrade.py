@@ -146,7 +146,10 @@ def pre_upgrade():
 def files_for_copy(first_time=False):
     to_copy=[]
     for root,dirs,files in os.walk(DIST_PATH):
-     
+        for d in dirs:
+            to_dir = os.path.join(root.replace(DIST_PATH,BILLING_PATH), d)
+            if not os.path.exists(to_dir):
+                to_copy.append((None, to_dir))
         for f in files:
             to_file = "%s/%s" % (root.replace(DIST_PATH,BILLING_PATH), f)
             from_file = '%s/%s' % (root,f) 
@@ -243,7 +246,8 @@ def copy_files(files):
         print src,'->>', dst
         try:
             ensure_dir(dst)
-            shutil.copy(src, dst)
+            if not os.path.isdir(dst):
+                shutil.copy(src, dst)
             files_copied.append((src,dst))
         except IOError,e:
             print "I/O Exception %s" % str(e)
