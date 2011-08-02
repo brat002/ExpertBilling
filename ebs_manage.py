@@ -12,6 +12,8 @@ import datetime
 import psycopg2
 import psycopg2.extras
 import tarfile
+import pexpect
+import optparse
 
 DIST_PATH='/tmp/ebs_upgrade'
 SQL_UPGRADE_PATH = DIST_PATH+'/sql/upgrade/' 
@@ -39,7 +41,9 @@ except Exception, e:
     print e
     print "Please, enter correct database parameters in %s/ebs_config.ini" % BILLING_PATH
     sys.exit()
-"""        
+"""  
+
+     
 def modification_date(filename):
     t = os.path.getctime(filename)
     return datetime.datetime.fromtimestamp(t)
@@ -66,12 +70,14 @@ def stop_processes():
 
 def start_processes():
     print '*'*80
-    print 'Starting billing processes'
-    commands.getstatusoutput('/etc/init.d/ebs_core start')
-    commands.getstatusoutput('/etc/init.d/ebs_nf start')
-    commands.getstatusoutput('/etc/init.d/ebs_rad start')
-    commands.getstatusoutput('/etc/init.d/ebs_rpc start')
-    commands.getstatusoutput('/etc/init.d/ebs_nfroutine start')
+    print 'Please, start manually billing processess and see logs in /opt/ebs/data/log/'
+    print """
+    '/etc/init.d/ebs_core start
+    '/etc/init.d/ebs_nf start
+    '/etc/init.d/ebs_rad start
+    '/etc/init.d/ebs_rpc start
+    '/etc/init.d/ebs_nfroutine start
+    """
     print '*'*80
     print 'Running complete'
 
@@ -168,7 +174,11 @@ def files_for_copy(first_time=False):
     return to_copy
       
 def backup_db():
-
+    """
+    child = pexpect.spawn('scp foo myname@host.example.com:.')
+    child.expect ('Password:')
+    child.sendline (mypassword)
+    """
     print "*"*80  
     print "Please, enter password for DB user %s.\nYou can see right password in file /opt/ebs/data/ebs_config.ini" % (config.get('db', 'username'),)
     status, output = commands.getstatusoutput('pg_dump -W -h %s -p %s -U %s -F p -b -S ebs --disable-triggers -f %s %s' % (config.get('db', 'host'),config.get('db', 'port'),config.get('db', 'username'),"%s%s_db.sql" % (BACKUP_DIR, curdate), config.get('db', 'name')))
@@ -189,7 +199,8 @@ def upgrade_db():
     
     if first_time==True:
         install_config.read(FIRST_TIME_LAST_SQL)
-        install_config.add_section('sql') 
+        if not install_config.has_section('sql'):
+            install_config.add_section('sql') 
     else:
         install_config.read(LAST_SQL) 
         last_sql_id=install_config.getint('sql', 'last_id')
@@ -219,10 +230,8 @@ def upgrade_db():
             not_write=True
             
         if not not_write:
-
             install_config.set('sql','last_id',id)
-            #f.write('%s' % id)
-            #f.close()
+            
         conn.commit()
         
     if first_time==True:
@@ -345,10 +354,10 @@ def upgrade_from_13():
     
 def prompt_db_access():
     global dbhost,dbname,dbuser,dbpassword
-    dbhost = raw_input("Enter database host[127.0.0.1]: ") or '127.0.0.1'
-    dbname = raw_input("Enter database name[ebs]: ") or 'ebs'
-    dbuser = raw_input("Enter database user[ebs]: ") or 'ebs'
-    dbpassword = raw_input("Enter database password[ebspassword]: ") or 'ebspassword'
+    dbhost = raw_input("Enter database host [127.0.0.1]: ") or '127.0.0.1'
+    dbname = raw_input("Enter database name [ebs]: ") or 'ebs'
+    dbuser = raw_input("Enter database user [ebs]: ") or 'ebs'
+    dbpassword = raw_input("Enter database password [ebspassword]: ") or 'ebspassword'
     
 
     
@@ -411,64 +420,75 @@ def fromchanges(changes_start=False):
     conn.commit()
 
 if __name__=='__main__':
-    
-    prompt_db_access()
-    dbconnect()
-    installation_date=None
-    if 'install' in sys.argv:
-        if not len(sys.argv)==3:  
+    p = optparse.OptionParser()
+    p = optparse.OptionParser(description='ExpertBilling manage utility',
+                              prog='ebs_manage.py',
+                              version='0.1',
+                              usage= 'python %prog <install|upgrade|migrate> path_to_ebs_archive ')
+    options, arguments = p.parse_args()
+    if len(arguments) == 3:
+        prompt_db_access()
+        dbconnect()
+        installation_date=None
+        if 'install' in sys.argv:
+            if not len(sys.argv)==3:  
+                print "*"*80
+                print 'Please define archive path and name (example: upgrade.py install /opt/12345678901234567890.tar.gz)'
+                sys.exit()        
+            create_folders()
+            unpack_archive(sys.argv[2])
+            import_dump()
+            import_initial_changes()
+            #fromchanges(changes_start=True)
+            upgrade_db()
+            files=files_for_copy(first_time=True)
+            if files:
+                copy_files(files)
+                        
+            setup_init()
+            setup_config()
+            start_processes()
             print "*"*80
-            print 'Please define archive path and name (example: upgrade.py install /opt/12345678901234567890.tar.gz)'
-            sys.exit()        
-        create_folders()
-        unpack_archive(sys.argv[2])
-        import_dump()
-        import_initial_changes()
-        #fromchanges(changes_start=True)
-        upgrade_db()
-        files=files_for_copy(first_time=True)
-        if files:
-            copy_files(files)
-                    
-        setup_init()
-        start_processes()
-        print "*"*80
-        print "   CONGRATULATIONS!!! Your ExpertBilling copy was sucefully installed!"
-        print "   Please, read manual, refer to forum.expertbilling.ru and wiki.expertbilling.ru for detail information about system"
-        print "   Contacts: ICQ: 162460666, e-mail: brat002@gmail.com"
-        print "*"*80
-        
-    if  'upgrade' in sys.argv:
-        installation_date = modification_date(BILLING_PATH+'/license.lic')
-        #print installation_date
-        if not len(sys.argv)==3:  
+            print "   CONGRATULATIONS!!! Your ExpertBilling copy was sucefully installed!"
+            print "   Please, read manual, refer to forum.expertbilling.ru and wiki.expertbilling.ru for detail information about system"
+            print "   Contacts: ICQ: 162460666, e-mail: brat002@gmail.com"
             print "*"*80
-            print 'Please define archive path and name (example: upgrade.py upgrade /opt/12345678901234567890.tar.gz)'
-            sys.exit()
             
-        unpack_archive(sys.argv[2])
-        stop_processes()
+        if  'upgrade' in sys.argv:
+            installation_date = modification_date(BILLING_PATH+'/license.lic')
+            #print installation_date
+            if not len(sys.argv)==3:  
+                print "*"*80
+                print 'Please define archive path and name (example: upgrade.py upgrade /opt/12345678901234567890.tar.gz)'
+                sys.exit()
+            
+            stop_processes()    
+            unpack_archive(sys.argv[2])
+            
+            
+            pre_upgrade()
+            files=files_for_copy()
+            if files:
+                copy_files(files)
+            else:
+                print '*'*80
+                print 'Files copying dont need'
+            #allow_continue('Do you want to upgrade EBS database?')
         
-        pre_upgrade()
-        files=files_for_copy()
-        if files:
-            copy_files(files)
-        else:
-            print '*'*80
-            print 'Files copying dont need'
-        allow_continue('Do you want to upgrade EBS database?')
+              
+            backup_db()
+            fromchanges()
+            upgrade_db()
     
-          
-        backup_db()
-        fromchanges()
-        upgrade_db()
+        
+        
+        if 'migrate' in sys.argv:
+            allow_continue('Do you want to migrate your accounts database from 1.3 to 1.4 EBS version?')
+            backup_db()
+            upgrade_db()
+            upgrade_from_13()
+        cleanup()
+        #start_processes()
+    else:
+        p.print_help()
 
-    
-    
-    if 'migrate' in sys.argv:
-        allow_continue('Do you want to migrate your accounts database from 1.3 to 1.4 EBS version?')
-        backup_db()
-        upgrade_db()
-        upgrade_from_13()
-    cleanup()
-    #start_processes()
