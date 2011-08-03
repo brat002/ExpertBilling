@@ -71,9 +71,10 @@ cp chartprovider/pychartdir.pyc chartprovider/pychartdir26.pyd chartprovider/pyc
 cp chartprovider/pychartdir.pyc chartprovider/pychartdir27.pyd chartprovider/pychartdir27.so builds/$1/modules
 mkdir builds/$1/ebscab
 svn export webadmin/ebscab builds/$1/ebscab/ebscab/ --force
+svn export soft/django builds/$1/ebscab/django/ --force
 cp webadmin/django.wsgi builds/$1/ebscab/
 cp webadmin/default builds/$1/ebscab/
-svn export soft builds/$1/soft/
+svn export soft/billing builds/$1/soft/
 #cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/sql
 cp sql/ebs_dump.sql builds/$1/sql/
