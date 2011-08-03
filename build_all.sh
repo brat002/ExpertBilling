@@ -73,6 +73,7 @@ mkdir builds/$1/ebscab
 svn export webadmin/ebscab builds/$1/ebscab/ebscab/ --force
 cp webadmin/django.wsgi builds/$1/ebscab/
 cp webadmin/default builds/$1/ebscab/
+svn export soft builds/$1/soft/
 #cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/sql
 cp sql/ebs_dump.sql builds/$1/sql/
@@ -109,6 +110,7 @@ fi
 cd builds/$1/
 tar -czvf ../ebs-`svnversion ../../`.tar.gz .
 cd ../ 
-tar -czvf $1.tar.gz ebs-`svnversion ../`.tar.gz ../upgrade.py
+chmod +x ebs_manage.py
+tar -czvf $1.tar.gz ebs-`svnversion ../`.tar.gz ../ebs_manage.py
 cd ../
 

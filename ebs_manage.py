@@ -278,6 +278,11 @@ def setup_init():
     else:
         print "Init scripts setup was succefull."
     print "*"*80    
+
+
+    print "Copying manage script(billing) to /usr/sbin/"
+    shutil.copy(os.path.join(DIST_PATH,'soft/billing'), '/usr/sbin/')
+    print "*"*80  
     
 def setup_config():
     global dbhost,dbname,dbuser,dbpassword
@@ -289,10 +294,13 @@ def setup_config():
     config.set('db', 'username', dbuser)
     config.set('db', 'password', dbpassword)
     config.set('db', 'host', dbhost)
+    config.set('db', 'port', 5432)
     #config.write(BILLING_PATH+"/ebs_config.ini")
     with open(BILLING_PATH+"/ebs_config.ini", 'wb') as configfile:
         config.write(configfile)
     
+def setup_webcab():
+    shutil.copy(os.path.join(DIST_PATH,'soft/billing'), '/usr/sbin/')
 def post_upgrade():
     pass
 

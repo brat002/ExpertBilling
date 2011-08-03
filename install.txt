@@ -15,7 +15,7 @@ psql ebs -f /usr/share/postgresql/8.4/contrib/int_aggregate.sql
 psql ebs -f /usr/share/postgresql/8.4/contrib/_int.sql
 exit
 
-#Запустите утилиту установки биллинга
+#Запустите утилиту установки биллинга и вводите требуемые значения для доступа к БД.
 python ebs_manage.py install имя распакованного архива с биллингом(вид ebs-*****.tar.gz)
 
 #Инструкцию по установке веб-кабинете вы можете найти в wiki.expertbilling.ru
