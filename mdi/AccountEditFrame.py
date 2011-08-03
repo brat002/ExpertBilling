@@ -15,7 +15,7 @@ from helpers import HeaderUtil, SplitterUtil, transip
 from types import BooleanType
 import copy
 
-from randgen import nameGen, GenPasswd2
+from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
 import datetime, time, calendar
 from time import mktime
 from CustomForms import RadiusAttrsDialog, CheckBoxDialog, ComboBoxDialog, SpeedEditDialog , TransactionForm
@@ -1622,8 +1622,8 @@ class AccountWindow(QtGui.QMainWindow):
         a=CardPreviewDialog(url="templates/tmp/temp.html")
         a.exec_()
        
-            
-  
+
+
     def generate_login(self):
         self.lineEdit_username.setText(nameGen())
 
@@ -1825,11 +1825,12 @@ class AccountWindow(QtGui.QMainWindow):
             else:
                 #print 123
                 model.id=self.connection.save(model, "billservice_account")
-                accounttarif = Object()
-                accounttarif.account_id=model.id
-                accounttarif.tarif_id=self.tarif_id
-                accounttarif.datetime = model.created
-                self.connection.save(accounttarif,"billservice_accounttarif")
+                if self.tarif_id!=-3000:
+                    accounttarif = Object()
+                    accounttarif.account_id=model.id
+                    accounttarif.tarif_id=self.tarif_id
+                    accounttarif.datetime = model.created
+                    self.connection.save(accounttarif,"billservice_accounttarif")
 
             if self.groupBox_urdata.isChecked():
                 if unicode(self.lineEdit_organization.text())=="" or unicode(self.lineEdit_bank.text())=="":

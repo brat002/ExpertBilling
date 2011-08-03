@@ -3643,10 +3643,14 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.connection.commit()
         #self.connection.flush()
         id = self.getTarifId()
-        ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
-        JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
-        WHERE tarif.id=%s""" % id).ipn_for_vpn
-        self.connection.commit()
+        if self.getTarifId()!=-3000:
+            ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
+            JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
+            WHERE tarif.id=%s""" % id).ipn_for_vpn
+            self.connection.commit()
+        else:
+            ipn_for_vpn=False
+            
         #child = AddAccountFrame(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn)
         child = AccountWindow(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn)
         self.parent.workspace.addWindow(child)
@@ -3711,10 +3715,12 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             return
         #print 'model', model
 
-        
-        ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
-        JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
-        WHERE tarif.id=get_tarif(%s)""" % model.id).ipn_for_vpn
+        if self.getTarifId()!=-3000:
+            ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
+            JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
+            WHERE tarif.id=get_tarif(%s)""" % model.id).ipn_for_vpn
+        else:
+            ipn_for_vpn=False
         tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
         #addf = AddAccountFrame(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
         child = AccountWindow(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)

@@ -4,25 +4,13 @@
 import sys, traceback, os
 sys.path.append(os.path.abspath('../'))
 from PyQt4 import QtCore, QtGui
-#sys.stdout=sys.stderr=None
-#import socket
-#socket.setdefaulttimeout(None)
 from helpers import Object as Object
 from helpers import connlogin
+import ConfigParser
 #===============================================================================
-# import Pyro.core
-# import Pyro.util
-# import Pyro.protocol
-# import Pyro.constants
-# import Pyro.errors
-# import Pyro.configuration
 import threading
-# import Pyro
 #===============================================================================
-#import psyco
-#psyco.log()
-#psyco.profile()
-#psyco.full()
+
 
 from rpc2 import rpc_protocol, client_networking
 from dateutil.relativedelta import relativedelta
@@ -883,10 +871,12 @@ if __name__ == "__main__":
         
         splash.finish(mainwindow) 
         mainwindow.show()
-        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.4.2003-dev #%s - %s" % (username, server_ip))  
+        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.4.$revision$-dev #%s - %s" % (username, server_ip))  
         #app.setStyle("cleanlooks")
         mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
-        app.setStyleSheet(open("./skins/style.qss","r").read())
+        app.setStyleSheet(open("skins/style.qss","r").read())
+
+   
         sys.exit(app.exec_())
         connection.commit()
     except Exception, ex:
