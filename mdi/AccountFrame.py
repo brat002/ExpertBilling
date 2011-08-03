@@ -3774,7 +3774,14 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         item.id = -2000
         item.tarif_type = 'all'
         item.setText(0, u"Результаты поиска")
-        item.setIcon(0,QtGui.QIcon("images/folder.png"))        
+        item.setIcon(0,QtGui.QIcon("images/kfind.png"))        
+
+        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
+        item.id = -3000
+        item.tarif_type = 'all'
+        item.setText(0, u"Без тарифа")
+        item.setIcon(0,QtGui.QIcon("images/new_users.png"))   
+        
         self.filter_item = item
         
         for tarif in tariffs:
