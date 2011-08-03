@@ -868,10 +868,12 @@ if __name__ == "__main__":
     try:
         global mainwindow
         mainwindow = MainWindow()
-        
+        with open("version",'r') as vf:
+            version=vf.read()
+            
         splash.finish(mainwindow) 
         mainwindow.show()
-        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.4.$revision$-dev #%s - %s" % (username, server_ip))  
+        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.4.%s-dev #%s - %s" % (version,username, server_ip))  
         #app.setStyle("cleanlooks")
         mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
         app.setStyleSheet(open("skins/style.qss","r").read())

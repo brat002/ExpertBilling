@@ -14697,18 +14697,6 @@ COPY billservice_systemuser (id, username, password, last_ip, last_login, descri
 
 
 --
--- TOC entry 3047 (class 0 OID 4630677)
--- Dependencies: 1939
--- Data for Name: billservice_tariff; Type: TABLE DATA; Schema: public; Owner: ebs
---
-
-COPY billservice_tariff (id, name, description, access_parameters_id, time_access_service_id, traffic_transmit_service_id, cost, reset_tarif_cost, settlement_period_id, ps_null_ballance_checkout, active, deleted, allow_express_pay, require_tarif_cost) FROM stdin;
-4	test1		4	\N	\N	0	f	\N	f	t	t	t	f
-2	Test		2	\N	\N	0	f	\N	f	t	t	t	f
-\.
-
-
---
 -- TOC entry 3089 (class 0 OID 4631054)
 -- Dependencies: 2024
 -- Data for Name: billservice_template; Type: TABLE DATA; Schema: public; Owner: ebs
