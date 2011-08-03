@@ -5,7 +5,7 @@
 import random
 import re
 import sys
-
+import ConfigParser
 # This should be done using gettext for i18n, but I can't be bothered to figure
 # out how to do it properly, so I'm using replacement strings for now.
 stringUndefinedNonTerminal = "Undefined non-terminal \"%(undefinedNonTerminal)s\" in rule \"%(rule)s\"."
@@ -162,6 +162,9 @@ def verifyGrammar(nameGrammar):
 # the dictionary data type.  I love python ;-)
 
 def nameGen():
+    ebsadmin_config = ConfigParser.ConfigParser()
+    ebsadmin_config.read("ebsadmin.ini") 
+        
     nameGrammar=fooGrammar
     nameStr = random.choice(nameGrammar["name"])
     matchNonTerminal = reNonTerminal.search(nameStr)
@@ -175,8 +178,29 @@ def nameGen():
 import string
 
 def GenPasswd():
-    chars = string.letters + string.digits
-    for i in range(8):
+    ebsadmin_config = ConfigParser.ConfigParser()
+    ebsadmin_config.read("ebsadmin.ini") 
+    chars = ''
+    if ebsadmin_config.getboolean("credentials", 'password_contain_letters'):
+        chars += string.letters
+    if ebsadmin_config.getboolean("credentials", 'password_contain_digits'):
+        chars += string.digits
+    newpasswd=''
+    for i in range(ebsadmin_config.getint("credentials", 'password_length')):
+        newpasswd = newpasswd + random.choice(chars)
+    return newpasswd
+
+
+def GenUsername():
+    ebsadmin_config = ConfigParser.ConfigParser()
+    ebsadmin_config.read("ebsadmin.ini") 
+    chars = ''
+    if ebsadmin_config.getboolean("credentials", 'login_contain_letters'):
+        chars += string.letters
+    if ebsadmin_config.getboolean("credentials", 'login_contain_digits'):
+        chars += string.digits
+    newpasswd=''
+    for i in range(ebsadmin_config.getint("credentials", 'login_length')):
         newpasswd = newpasswd + random.choice(chars)
     return newpasswd
 
