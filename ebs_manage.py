@@ -300,7 +300,12 @@ def setup_config():
         config.write(configfile)
     
 def setup_webcab():
-    shutil.copy(os.path.join(DIST_PATH,'soft/billing'), '/usr/sbin/')
+    shutil.copytree(os.path.join(DIST_PATH,'ebscab/'), '/opt/ebs/web/')
+    shutil.copy(os.path.join(DIST_PATH,'ebscab/default'), '/etc/apache2/sites-available/')
+    print "Please, set correct database access parameters and your timezone in /opt/ebs/web/ebscab/settings.py, restart apache and enjoy!."
+    print "*"*80    
+ 
+    
 def post_upgrade():
     pass
 
@@ -484,7 +489,8 @@ if __name__=='__main__':
             else:
                 print '*'*80
                 print 'Files copying dont need'
-            #allow_continue('Do you want to upgrade EBS database?')
+            allow_continue('Do you want to setup EBS webcab?')
+            setup_webcab()
         
               
 
