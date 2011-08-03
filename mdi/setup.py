@@ -2,11 +2,12 @@ from distutils.core import setup
 import py2exe
 import glob, sys, os
 import comments
-status,output=commands.getstatusoutput("svnversion")
+import datetime
+dt = datetime.strptime(datetime.datetime.now(), "%d/%m/%y %H:%M")
 sys.path.append(os.path.abspath('../'))
-f=open('ebsadmin.py','r')
-ebsadmin_content=r.read()
-ebsadmin_content=ebsadmin_content.replace("$revision$",)
+f=open('version','w')
+f.write(dt)
+f.close()
 dllList =('mfc90.dll','msvcp90.dll','qtnetwork.pyd','qtxmlpatterns4.dll','qtsvg4.dll','libpq.dll')
 origIsSystemDLL = py2exe.build_exe.isSystemDLL
 def isSystemDLL(pathname):
