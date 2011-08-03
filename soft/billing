@@ -1,0 +1,41 @@
+#!/bin/sh
+
+case "$1" in
+start)
+        
+        echo "Starting ebs processes"
+	/etc/init.d/ebs_nfroutine start
+	/etc/init.d/ebs_nf start
+	/etc/init.d/ebs_rad start
+	/etc/init.d/ebs_core start
+	/etc/init.d/ebs_rpc start
+		;;
+stop)
+        echo "Stopping ebs core"
+	/etc/init.d/ebs_nfroutine stop
+	/etc/init.d/ebs_nf stop
+	/etc/init.d/ebs_rad stop
+	/etc/init.d/ebs_core stop
+	/etc/init.d/ebs_rpc stop
+        ;;
+force-stop)
+        echo "Stopping ebs core"
+	killall -9 nfroutine
+	killall -9 nf 
+	killall -9 rad 
+	killall -9 core 
+	killall -9 rpc 
+        ;;
+restart)
+        echo "Restarting ebs core"
+    $0 stop
+    $0 start
+        ;;
+
+*)
+        echo "Usage: `basename $0` {start|stop|force-stop}" >&2
+        exit 64
+        ;;
+esac
+
+
