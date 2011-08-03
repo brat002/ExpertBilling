@@ -111,7 +111,7 @@ fi
 cd builds/$1/
 tar -czvf ../ebs-`svnversion ../../`.tar.gz .
 cd ../ 
-chmod +x ebs_manage.py
+chmod +x ../ebs_manage.py
 tar -czvf $1.tar.gz ebs-`svnversion ../`.tar.gz ../ebs_manage.py
 cd ../
 
