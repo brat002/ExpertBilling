@@ -886,7 +886,7 @@ if __name__ == "__main__":
         mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.4.2003-dev #%s - %s" % (username, server_ip))  
         #app.setStyle("cleanlooks")
         mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
-        app.setStyleSheet(open("./style.qss","r").read())
+        app.setStyleSheet(open("./skins/style.qss","r").read())
         sys.exit(app.exec_())
         connection.commit()
     except Exception, ex:
