@@ -274,10 +274,10 @@ def setup_init():
     print "*"*80  
     print "Copying init scripts to /etc/init.d/"
     shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_core')
-    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_rad')
-    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_nf')
-    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_nfroutine')
-    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_rpc')
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_rad'), '/etc/init.d/ebs_rad')
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_nf'), '/etc/init.d/ebs_nf')
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_nfroutine'), '/etc/init.d/ebs_nfroutine')
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_rpc'), '/etc/init.d/ebs_rpc')
     print "*"*80  
     status, output = commands.getstatusoutput('update-rc.d ebs_nfroutine defaults')
     status, output = commands.getstatusoutput('update-rc.d ebs_nf defaults')
@@ -318,6 +318,13 @@ def setup_webcab():
     output=commands.getoutput('cp -r %s %s' % (os.path.join(BILLING_PATH,'ebscab/*'), '/opt/ebs/web/'))
     print output
     shutil.copy(os.path.join(DIST_PATH,'ebscab/default'), '/etc/apache2/sites-available/')
+    output=commands.getoutput('echo > %s' % ('/opt/ebs/web/ebscab/log/django.log'))
+    output=commands.getoutput('chmod 0777 %s' % ('/opt/ebs/web/ebscab/log/django.log'))
+ 
+    output=commands.getoutput('echo > %s' % ('/opt/ebs/web/ebscab/log/webcab_log'))
+    output=commands.getoutput('chmod 0777 %s' % ('/opt/ebs/web/ebscab/log/webcab_log'))
+       
+     
     print "Please, set correct database access parameters and your timezone in /opt/ebs/web/ebscab/settings.py, restart apache and enjoy!."
     print "*"*80    
  

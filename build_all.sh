@@ -72,6 +72,10 @@ cp chartprovider/pychartdir.pyc chartprovider/pychartdir26.pyd chartprovider/pyc
 cp chartprovider/pychartdir.pyc chartprovider/pychartdir27.pyd chartprovider/pychartdir27.so builds/$1/modules
 mkdir builds/$1/ebscab
 svn export webadmin/ebscab builds/$1/ebscab/ebscab/ --force
+echo >builds/$1/ebscab/ebscab/log/django.log
+chmod 0777 builds/$1/ebscab/ebscab/log/django.log
+echo >builds/$1/ebscab/ebscab/log/webcab_log
+chmod 0777 builds/$1/ebscab/ebscab/log/webcab_log
 svn export soft/django builds/$1/ebscab/django/ --force
 cp webadmin/django.wsgi builds/$1/ebscab/
 cp webadmin/default builds/$1/ebscab/
