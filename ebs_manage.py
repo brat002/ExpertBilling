@@ -315,7 +315,7 @@ def setup_config():
 def setup_webcab():
     print "Webcab install"
     #shutil.copytree(BILLING_PATH+'/ebscab/', '/opt/ebs/web/')
-    output=commands.getoutput('cp -r %s %s' % (os.path.join(BILLING_PATH,'ebscab/'), '/opt/ebs/web/'))
+    output=commands.getoutput('cp -r %s %s' % (os.path.join(BILLING_PATH,'ebscab/*'), '/opt/ebs/web/'))
     print output
     shutil.copy(os.path.join(DIST_PATH,'ebscab/default'), '/etc/apache2/sites-available/')
     print "Please, set correct database access parameters and your timezone in /opt/ebs/web/ebscab/settings.py, restart apache and enjoy!."
