@@ -2440,7 +2440,7 @@ class TarifFrame(QtGui.QDialog):
             self.tarif_status_edit.setCheckState(self.model.active == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.checkBoxAllowExpressPay.setChecked(bool(self.model.allow_express_pay))
             self.tarif_name_edit.setText(self.model.name)
-            self.tarif_cost_edit.setText(unicode(self.model.cost or 0))
+            self.tarif_cost_edit.setText(unicode(self.model.cost))
             self.tarif_description_edit.setText(self.model.description)
             self.reset_tarif_cost_edit.setCheckState(self.model.reset_tarif_cost == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             #self.ps_null_ballance_checkout_edit.setCheckState(self.model.ps_null_ballance_checkout == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )

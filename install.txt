@@ -9,8 +9,8 @@ mkdir /opt/ebs/data/
 apt-get install postgresql-8.4 postgresql-contrib-8.4
 
 su postgres
-createuser -P –s ebs
-createdb –O ebs ebs
+createuser -P -s ebs
+createdb -O ebs ebs
 psql ebs -f /usr/share/postgresql/8.4/contrib/int_aggregate.sql
 psql ebs -f /usr/share/postgresql/8.4/contrib/_int.sql
 exit
