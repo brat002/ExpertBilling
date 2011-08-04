@@ -62,6 +62,7 @@ mkdir builds/$1/pid
 mkdir builds/$1/temp
 mkdir builds/$1/init.d
 mkdir builds/$1/ebscab/
+mkdir builds/$1/soft/
 #cp -rf dicts builds/$1/dicts
 #cp -rf fonts builds/$1/fonts
 #cp -rf scripts builds/$1/scripts
