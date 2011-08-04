@@ -121,7 +121,10 @@ def unpack_archive(archive_name):
     tar.close()
         
 def cleanup():
-    shutil.rmtree(DIST_PATH)
+    try:
+        shutil.rmtree(DIST_PATH)
+    except:
+        pass
     
 def dbconnect():
     global dbhost,dbname,dbuser,dbpassword, conn, cur
@@ -186,6 +189,15 @@ def backup_db():
         print "Backup database completed."
     print "*"*80
         
+
+def auto_backup_db():
+   
+    print "*"*80  
+    print "Backuping database from config /opt/ebs/data/ebs_config.ini" 
+    status, output = commands.getstatusoutput('su ebs -c "pg_dump -W -h %s -p %s -U %s -F p -b -S ebs --disable-triggers -f %s %s"' % (config.get('db', 'host'),config.getint('db', 'port'),config.get('db', 'username'),"%s%s_db.sql" % (BACKUP_DIR, curdate), config.get('db', 'name')))
+    print "Backup database completed.See %s" % BACKUP_DIR
+    print "*"*80
+    
 def upgrade_db():
     global cur, conn
     print "upgrading DB"
@@ -296,11 +308,15 @@ def setup_config():
     config.set('db', 'host', dbhost)
     config.set('db', 'port', 5432)
     #config.write(BILLING_PATH+"/ebs_config.ini")
-    with open(BILLING_PATH+"/ebs_config.ini", 'wb') as configfile:
+    with open(os.path.join(BILLING_PATH+"/ebs_config.ini_new"), 'wb') as configfile:
         config.write(configfile)
+    shutil.move(BILLING_PATH+'/ebs_config.ini_new', BILLING_PATH+'/ebs_config.ini')
     
 def setup_webcab():
-    shutil.copytree(os.path.join(DIST_PATH,'ebscab/'), '/opt/ebs/web/')
+    print "Webcab install"
+    #shutil.copytree(BILLING_PATH+'/ebscab/', '/opt/ebs/web/')
+    output=commands.getoutput('cp -r %s %s' % (os.path.join(BILLING_PATH,'ebscab/'), '/opt/ebs/web/'))
+    print output
     shutil.copy(os.path.join(DIST_PATH,'ebscab/default'), '/etc/apache2/sites-available/')
     print "Please, set correct database access parameters and your timezone in /opt/ebs/web/ebscab/settings.py, restart apache and enjoy!."
     print "*"*80    
@@ -366,7 +382,7 @@ def prompt_db_access():
     global dbhost,dbname,dbuser,dbpassword
     dbhost = raw_input("Enter database host [127.0.0.1]: ") or '127.0.0.1'
     dbname = raw_input("Enter database name [ebs]: ") or 'ebs'
-    dbuser = raw_input("Enter database user [ebs]: ") or 'ebs'
+    dbuser = raw_input("Enter database user (strongly recommended default)[ebs]: ") or 'ebs'
     dbpassword = raw_input("Enter database password [ebspassword]: ") or 'ebspassword'
     
 
@@ -429,6 +445,9 @@ def fromchanges(changes_start=False):
     print 'First stage DB upgrading was completed'
     conn.commit()
 
+def create_user():
+    commands.getoutput('adduser --system --no-create-home --disabled-password ebs')
+    
 if __name__=='__main__':
     p = optparse.OptionParser()
     p = optparse.OptionParser(description='ExpertBilling manage utility',
@@ -446,7 +465,8 @@ if __name__=='__main__':
             if not len(sys.argv)==3:  
                 print "*"*80
                 print 'Please define archive path and name (example: upgrade.py install /opt/12345678901234567890.tar.gz)'
-                sys.exit()        
+                sys.exit()    
+            create_user()    
             unpack_archive(sys.argv[2])
             import_dump()
             import_initial_changes()
@@ -459,6 +479,7 @@ if __name__=='__main__':
             setup_init()
             setup_config()
             start_processes()
+            setup_webcab()
             print "*"*80
             print "   CONGRATULATIONS!!! Your ExpertBilling copy was sucefully installed!"
             print "   Please, read manual, refer to forum.expertbilling.ru and wiki.expertbilling.ru for detail information about system"
@@ -490,18 +511,17 @@ if __name__=='__main__':
                 print '*'*80
                 print 'Files copying dont need'
             allow_continue('Do you want to setup EBS webcab?')
-            setup_webcab()
-        
-              
+            
 
-    
-        
-        
         if 'migrate' in sys.argv:
             allow_continue('Do you want to migrate your accounts database from 1.3 to 1.4 EBS version?')
             backup_db()
             upgrade_db()
             upgrade_from_13()
+            
+        if 'backupdb' in sys.argv:
+            #allow_continue('Do you want to migrate your accounts database from 1.3 to 1.4 EBS version?')
+            auto_backup_db()     
         cleanup()
         #start_processes()
     else:
