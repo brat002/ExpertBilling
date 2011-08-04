@@ -1409,7 +1409,7 @@ class TarifFrame(QtGui.QDialog):
         self.tarif_status_edit.setText(QtGui.QApplication.translate("Dialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_status_edit.setToolTip(QtGui.QApplication.translate("Dialog", "Статус тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.tarif_name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
-        self.sp_groupbox.setTitle(QtGui.QApplication.translate("Dialog", "Расчётный период тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
+        self.sp_groupbox.setTitle(QtGui.QApplication.translate("Dialog", "Пакетный тарифный план", None, QtGui.QApplication.UnicodeUTF8))
         self.sp_groupbox.setToolTip(QtGui.QApplication.translate("Dialog", "Расчётный период необходим для начисления/списания предоплаченного времени/трафика \nи доснятия денег до стоимости тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         #self.sp_type_edit.setText(QtGui.QApplication.translate("Dialog", "Начать при активации у пользователя данного тарифного плана", None, QtGui.QApplication.UnicodeUTF8))
         self.sp_name_label.setText(QtGui.QApplication.translate("Dialog", "Расчётный период", None, QtGui.QApplication.UnicodeUTF8))
@@ -2382,7 +2382,7 @@ class TarifFrame(QtGui.QDialog):
             self.sp_name_edit.addItem(sp.name)
             
         #print settlement_period.name
-
+        self.tarif_cost_edit.setText(unicode('0'))
 
 
 
