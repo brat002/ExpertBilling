@@ -12,7 +12,7 @@ from helpers import dateDelim, settlement_period_info
 from mako.template import Template
 from template_higlight import Highlighter
 import time
-
+from customwidget import CustomDateTimeWidget
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 import datetime
 from decimal import Decimal
@@ -58,14 +58,14 @@ class RRDPropertiesDialog(QtGui.QDialog):
         self.label_or = QtGui.QLabel(self.groupBox_period)
         self.label_or.setObjectName(_fromUtf8("label_or"))
         self.gridLayout_2.addWidget(self.label_or, 1, 3, 1, 1)
-        self.dateTimeEdit_from_period = QtGui.QDateTimeEdit(self.groupBox_period)
+        self.dateTimeEdit_from_period = CustomDateTimeWidget()
         self.dateTimeEdit_from_period.setCalendarPopup(True)
         self.dateTimeEdit_from_period.setObjectName(_fromUtf8("dateTimeEdit_from_period"))
         self.gridLayout_2.addWidget(self.dateTimeEdit_from_period, 2, 3, 1, 1)
         self.label_to = QtGui.QLabel(self.groupBox_period)
         self.label_to.setObjectName(_fromUtf8("label_to"))
         self.gridLayout_2.addWidget(self.label_to, 2, 4, 1, 1)
-        self.dateTimeEdit_to_period = QtGui.QDateTimeEdit(self.groupBox_period)
+        self.dateTimeEdit_to_period = CustomDateTimeWidget()
         self.dateTimeEdit_to_period.setCalendarPopup(True)
         self.dateTimeEdit_to_period.setObjectName(_fromUtf8("dateTimeEdit_to_period"))
         self.gridLayout_2.addWidget(self.dateTimeEdit_to_period, 2, 5, 1, 1)
@@ -238,8 +238,8 @@ class RRDPropertiesDialog(QtGui.QDialog):
         month = self.checkBox_month.isChecked()
         year = self.checkBox_year.isChecked()
         
-        date_start=self.dateTimeEdit_from_period.dateTime().toPyDateTime()
-        date_end=self.dateTimeEdit_to_period.dateTime().toPyDateTime()
+        date_start=self.dateTimeEdit_from_period.currentDate()
+        date_end=self.dateTimeEdit_to_period.currentDate()
         #dt = 
     
         if self.report_type=='accounts':
@@ -704,7 +704,7 @@ class TransactionForm(QtGui.QDialog):
         self.label_paymend_date = QtGui.QLabel(self.groupBox)
         self.label_paymend_date.setObjectName("label_paymend_date")
         self.gridLayout.addWidget(self.label_paymend_date, 3, 0, 1, 1)
-        self.dateTimeEdit_paymend_date = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit_paymend_date = CustomDateTimeWidget()
         self.dateTimeEdit_paymend_date.setFrame(True)
         self.dateTimeEdit_paymend_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2009, 1, 1), QtCore.QTime(0, 0, 0)))
         self.dateTimeEdit_paymend_date.setCalendarPopup(True)
@@ -719,7 +719,7 @@ class TransactionForm(QtGui.QDialog):
         self.label_end_promise = QtGui.QLabel(self.groupBox)
         self.label_end_promise.setObjectName("label_end_promise")
         self.gridLayout.addWidget(self.label_end_promise, 5, 0, 1, 1)
-        self.dateTimeEdit_end_promise = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit_end_promise = CustomDateTimeWidget()
         self.dateTimeEdit_end_promise.setCalendarPopup(True)
         self.dateTimeEdit_end_promise.setObjectName("dateTimeEdit_end_promise")
         self.gridLayout.addWidget(self.dateTimeEdit_end_promise, 5, 1, 1, 1)
@@ -799,11 +799,11 @@ class TransactionForm(QtGui.QDialog):
         transaction.summ=self.result
         transaction.bill=unicode(self.payed_document_edit.text())
         transaction.systemuser_id = self.systemuser_id
-        transaction.created = self.dateTimeEdit_paymend_date.dateTime().toPyDateTime()
+        transaction.created = self.dateTimeEdit_paymend_date.currentDate()
         
         transaction.promise = self.checkBox_temporary_blocked_promise.isChecked()
         if self.checkBox_temporary_blocked_promise.isChecked() and not self.checkBox_temporary_blocked_promise_infinite.isChecked():
-            transaction.end_promise = self.dateTimeEdit_end_promise.dateTime().toPyDateTime()
+            transaction.end_promise = self.dateTimeEdit_end_promise.currentDate()
 
             
         try:
@@ -1365,7 +1365,7 @@ class CardPreviewDialog(QtGui.QDialog):
         self.commandLinkButton_print = QtGui.QCommandLinkButton(self)
         self.commandLinkButton_print.setMinimumSize(QtCore.QSize(0, 40))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("images/printer.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("images/document-print.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.commandLinkButton_print.setIcon(icon)
         self.commandLinkButton_print.setObjectName("commandLinkButton_print")
         self.verticalLayout.addWidget(self.commandLinkButton_print)
@@ -1938,7 +1938,7 @@ class SuspendedPeriodForm(QtGui.QDialog):
         self.label_start_date = QtGui.QLabel(self.groupBox)
         self.label_start_date.setObjectName("label_start_date")
         self.gridLayout_2.addWidget(self.label_start_date, 0, 0, 1, 1)
-        self.dateTimeEdit_start_date = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit_start_date = CustomDateTimeWidget()
         self.dateTimeEdit_start_date.setMinimumSize(QtCore.QSize(0, 22))
         self.dateTimeEdit_start_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2008, 1, 1), QtCore.QTime(0, 0, 0)))
         self.dateTimeEdit_start_date.setCalendarPopup(True)
@@ -1948,7 +1948,7 @@ class SuspendedPeriodForm(QtGui.QDialog):
         self.label_end_date = QtGui.QLabel(self.groupBox)
         self.label_end_date.setObjectName("label_end_date")
         self.gridLayout_2.addWidget(self.label_end_date, 0, 2, 1, 1)
-        self.dateTimeEdit_end_date = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit_end_date = CustomDateTimeWidget()
         self.dateTimeEdit_end_date.setMinimumSize(QtCore.QSize(0, 22))
         self.dateTimeEdit_end_date.setButtonSymbols(QtGui.QAbstractSpinBox.UpDownArrows)
         self.dateTimeEdit_end_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2009, 1, 1), QtCore.QTime(0, 0, 0)))
@@ -1982,8 +1982,8 @@ class SuspendedPeriodForm(QtGui.QDialog):
             self.dateTimeEdit_end_date.setDateTime(self.model.end_date)
         
     def accept(self):
-        self.start_date = self.dateTimeEdit_start_date.dateTime().toPyDateTime()
-        self.end_date = self.dateTimeEdit_end_date.dateTime().toPyDateTime()
+        self.start_date = self.dateTimeEdit_start_date.currentDate()
+        self.end_date = self.dateTimeEdit_end_date.currentDate()
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
         event.accept()    
@@ -2006,7 +2006,7 @@ class PeriodForm(QtGui.QDialog):
         self.label_start_date = QtGui.QLabel(self.groupBox)
         self.label_start_date.setObjectName("label_start_date")
         self.gridLayout_2.addWidget(self.label_start_date, 0, 0, 1, 1)
-        self.dateTimeEdit_start_date = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit_start_date = CustomDateTimeWidget()
         self.dateTimeEdit_start_date.setMinimumSize(QtCore.QSize(0, 22))
         self.dateTimeEdit_start_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2008, 1, 1), QtCore.QTime(0, 0, 0)))
         self.dateTimeEdit_start_date.setCalendarPopup(True)
@@ -2016,7 +2016,7 @@ class PeriodForm(QtGui.QDialog):
         self.label_end_date = QtGui.QLabel(self.groupBox)
         self.label_end_date.setObjectName("label_end_date")
         self.gridLayout_2.addWidget(self.label_end_date, 0, 2, 1, 1)
-        self.dateTimeEdit_end_date = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit_end_date = CustomDateTimeWidget()
         self.dateTimeEdit_end_date.setMinimumSize(QtCore.QSize(0, 22))
         self.dateTimeEdit_end_date.setButtonSymbols(QtGui.QAbstractSpinBox.UpDownArrows)
         self.dateTimeEdit_end_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2009, 1, 1), QtCore.QTime(0, 0, 0)))
@@ -2059,8 +2059,8 @@ class PeriodForm(QtGui.QDialog):
         #    self.dateTimeEdit_end_date.setDateTime(self.model.end_date)
         
     def accept(self):
-        self.start_date = self.dateTimeEdit_start_date.dateTime().toPyDateTime()
-        self.end_date = self.dateTimeEdit_end_date.dateTime().toPyDateTime()
+        self.start_date = self.dateTimeEdit_start_date.currentDate()
+        self.end_date = self.dateTimeEdit_end_date.currentDate()
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             settings.setValue("%s_prop_date_start" % self.realm, QtCore.QVariant(self.dateTimeEdit_start_date.dateTime()))
@@ -2740,8 +2740,8 @@ class InfoDialog(QtGui.QDialog):
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
-        self.dateTimeEdit = QtGui.QDateTimeEdit(self.groupBox)
-        self.dateTimeEdit.setSpecialValueText(_fromUtf8(""))
+        self.dateTimeEdit = CustomDateTimeWidget()
+        #self.dateTimeEdit.setSpecialValueText(_fromUtf8(""))
         self.dateTimeEdit.setCalendarPopup(True)
         self.dateTimeEdit.setObjectName(_fromUtf8("dateTimeEdit"))
         self.gridLayout_2.addWidget(self.dateTimeEdit, 0, 1, 1, 1)
@@ -2963,7 +2963,7 @@ class InfoDialog(QtGui.QDialog):
             i=0
             for a in items:
                 if a.autostart:
-                    time_start=self.dateTimeEdit.dateTime().toPyDateTime()
+                    time_start=self.dateTimeEdit.currentDate()
                 else:
                     time_start = a.time_start
                 start, end, length = settlement_period_info(time_start, repeat_after=a.length_in, repeat_after_seconds=a.length)            
@@ -3123,7 +3123,7 @@ class PSCreatedForm(QtGui.QDialog):
         self.resize(266, 95)
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
-        self.dateTimeEdit = QtGui.QDateTimeEdit(self)
+        self.dateTimeEdit = CustomDateTimeWidget()
         self.dateTimeEdit.setCalendarPopup(True)
         self.dateTimeEdit.setObjectName("dateTimeEdit")
         self.gridLayout.addWidget(self.dateTimeEdit, 0, 0, 1, 1)
@@ -3176,7 +3176,7 @@ class PSCreatedForm(QtGui.QDialog):
         if self.checkBox_as_start_ps.checkState() == QtCore.Qt.Checked:
             self.date = None
         else:
-            self.date = self.dateTimeEdit.dateTime().toPyDateTime()
+            self.date = self.dateTimeEdit.currentDate()
         QtGui.QDialog.accept(self)
         
         
@@ -3204,7 +3204,7 @@ class AccountAddonServiceEdit(QtGui.QDialog):
         self.label_activation = QtGui.QLabel(self.groupBox)
         self.label_activation.setObjectName("label_activation")
         self.gridLayout.addWidget(self.label_activation, 1, 0, 1, 1)
-        self.dateTimeEdit_activation = QtGui.QDateTimeEdit(self.groupBox)
+        self.dateTimeEdit_activation = CustomDateTimeWidget()
         self.dateTimeEdit_activation.setCalendarPopup(True)
         self.dateTimeEdit_activation.setObjectName("dateTimeEdit_activation")
         self.gridLayout.addWidget(self.dateTimeEdit_activation, 1, 1, 1, 2)
@@ -3220,7 +3220,7 @@ class AccountAddonServiceEdit(QtGui.QDialog):
         self.label_deactivation = QtGui.QLabel(self.groupBox_2)
         self.label_deactivation.setObjectName("label_deactivation")
         self.gridLayout_3.addWidget(self.label_deactivation, 0, 0, 1, 1)
-        self.dateTimeEdit_deactivation = QtGui.QDateTimeEdit(self.groupBox_2)
+        self.dateTimeEdit_deactivation = CustomDateTimeWidget()
         self.dateTimeEdit_deactivation.setMinimumSize(QtCore.QSize(230, 0))
         self.dateTimeEdit_deactivation.setCalendarPopup(True)
         self.dateTimeEdit_deactivation.setObjectName("dateTimeEdit_deactivation")
@@ -3299,7 +3299,7 @@ class AccountAddonServiceEdit(QtGui.QDialog):
             model.account_id = self.subaccount_model.account_id
             
         model.service_id = self.comboBox_service.itemData(self.comboBox_service.currentIndex()).toInt()[0]
-        date = self.dateTimeEdit_activation.dateTime().toPyDateTime()
+        date = self.dateTimeEdit_activation.currentDate()
         date = datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
         model.activated = date
         if self.model:
@@ -3312,10 +3312,10 @@ class AccountAddonServiceEdit(QtGui.QDialog):
             
         
         if self.groupBox_2.isChecked()==True:
-            if self.dateTimeEdit_deactivation.dateTime().toPyDateTime()<model.activated:
+            if self.dateTimeEdit_deactivation.currentDate()<model.activated:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Дата окончания действия услуги не должна быть меньше даты начала действия"))
                 return
-            date = self.dateTimeEdit_deactivation.dateTime().toPyDateTime()
+            date = self.dateTimeEdit_deactivation.currentDate()
             date = datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
             model.deactivated = date
             
@@ -3446,7 +3446,7 @@ class TransactionForm(QtGui.QDialog):
         self.label_paymend_date.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.label_paymend_date.setObjectName("label_paymend_date")
         self.gridLayout_6.addWidget(self.label_paymend_date, 7, 0, 1, 1)
-        self.dateTimeEdit_paymend_date = QtGui.QDateTimeEdit(self.groupBox_payment)
+        self.dateTimeEdit_paymend_date = CustomDateTimeWidget()
         self.dateTimeEdit_paymend_date.setFrame(True)
         self.dateTimeEdit_paymend_date.setDateTime(QtCore.QDateTime(QtCore.QDate(2009, 1, 1), QtCore.QTime(0, 0, 0)))
         self.dateTimeEdit_paymend_date.setCalendarPopup(True)
@@ -3463,7 +3463,7 @@ class TransactionForm(QtGui.QDialog):
         self.label_end_promise.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.label_end_promise.setObjectName("label_end_promise")
         self.gridLayout_6.addWidget(self.label_end_promise, 9, 0, 1, 1)
-        self.dateTimeEdit_end_promise = QtGui.QDateTimeEdit(self.groupBox_payment)
+        self.dateTimeEdit_end_promise = CustomDateTimeWidget()
         self.dateTimeEdit_end_promise.setCalendarPopup(True)
         self.dateTimeEdit_end_promise.setObjectName("dateTimeEdit_end_promise")
         self.gridLayout_6.addWidget(self.dateTimeEdit_end_promise, 9, 1, 1, 2)
@@ -3550,11 +3550,11 @@ class TransactionForm(QtGui.QDialog):
         transaction.summ=self.result
         transaction.bill=unicode(self.payed_document_edit.text())
         transaction.systemuser_id = self.systemuser_id
-        transaction.created = self.dateTimeEdit_paymend_date.dateTime().toPyDateTime()
+        transaction.created = self.dateTimeEdit_paymend_date.currentDate()
         
         transaction.promise = self.checkBox_promise.isChecked()
         if self.checkBox_promise.isChecked() and not self.checkBox_promise_infinite.isChecked():
-            transaction.end_promise = self.dateTimeEdit_end_promise.dateTime().toPyDateTime()
+            transaction.end_promise = self.dateTimeEdit_end_promise.currentDate()
 
 
         try:

@@ -465,8 +465,8 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         
         self.firsttime = True
         
-        self.refreshTree()
-        self.refresh_()
+        #self.refreshTree()
+        #self.refresh_()
         
         try:
             setFirstActive(self.treeWidget)
