@@ -15,6 +15,7 @@ from helpers import prntime
 from AccountEditFrame import AccountWindow
 import time
 import datetime
+from customwidget import CustomDateTimeWidget
 
 class MonitorEbs(ebsTableWindow):
     def __init__(self, connection, parent):
@@ -59,19 +60,19 @@ class MonitorEbs(ebsTableWindow):
         
         dt_now = datetime.datetime.now()
         
-        self.date_start = QtGui.QDateTimeEdit(self)
-        self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
-        self.date_start.setCalendarPopup(True)
+        self.date_start = CustomDateTimeWidget()
+        #self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
+        #self.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
-        self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
-        self.date_end = QtGui.QDateTimeEdit(self)
-        self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
+        self.date_end = CustomDateTimeWidget()
+        #self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
         self.date_end.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
-        self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.date_end.setCalendarPopup(True)
+        #self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        #self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
-        self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -200,8 +201,8 @@ class MonitorEbs(ebsTableWindow):
         self.tableWidget.setRowCount(0)
         self.tableWidget.clearContents()
         self.tableWidget.setSortingEnabled(False)
-        date_start = self.date_start.dateTime().toPyDateTime()
-        date_end = self.date_end.dateTime().toPyDateTime()
+        date_start = self.date_start.currentDate()
+        date_end = self.date_end.currentDate()
         self.statusBar().showMessage(u"Ожидание ответа")
         if self.allTimeCheckbox.checkState()==2:
             sql="""SELECT session.*,billservice_account.username as username, (SELECT username FROM billservice_subaccount WHERE id=session.subaccount_id) as subaccount_username, nas_nas.name as nas_name  FROM radius_activesession as session

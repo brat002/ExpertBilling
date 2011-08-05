@@ -13,7 +13,13 @@ from ebsWindow import ebsTable_n_TreeWindow
 from time import mktime
 from helpers import dateDelim
 import datetime, calendar
+from customwidget import CustomDateTimeWidget
 
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
+    
 class TimePeriodSelect(QtGui.QDialog):
     def __init__(self, connection, exclude):
         super(TimePeriodSelect, self).__init__()
@@ -102,63 +108,46 @@ class AddTimePeriod(QtGui.QDialog):
         self.nodemodel=nodemodel
         
         self.setObjectName("Dialog")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,278,198).size()).expandedTo(self.minimumSizeHint()))
+        #self.resize(QtCore.QSize(QtCore.QRect(0,0,278,198).size()).expandedTo(self.minimumSizeHint()))
 
-        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,278,198).size()))
-        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,278,198).size()))
-
-        self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(110,160,161,32))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
-
+        self.resize(397, 195)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(10,10,197,16))
-        self.label.setObjectName("label")
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 3)
+        self.label_2 = QtGui.QLabel(self)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.gridLayout.addWidget(self.label_2, 1, 0, 1, 1)
+        self.name_edit = QtGui.QLineEdit(self)
+        self.name_edit.setObjectName(_fromUtf8("name_edit"))
+        self.gridLayout.addWidget(self.name_edit, 1, 2, 1, 1)
+        self.start_label = QtGui.QLabel(self)
+        self.start_label.setObjectName(_fromUtf8("start_label"))
+        self.gridLayout.addWidget(self.start_label, 2, 0, 1, 1)
+        self.start_date_edit = CustomDateTimeWidget()
+        #self.start_date_edit.setCalendarPopup(True)
+        self.start_date_edit.setObjectName(_fromUtf8("start_date_edit"))
+        self.gridLayout.addWidget(self.start_date_edit, 2, 2, 1, 1)
+        self.end_label = QtGui.QLabel(self)
+        self.end_label.setObjectName(_fromUtf8("end_label"))
+        self.gridLayout.addWidget(self.end_label, 3, 0, 1, 1)
+        self.end_date_edit = CustomDateTimeWidget()
+        #self.end_date_edit.setCalendarPopup(True)
+        self.end_date_edit.setObjectName(_fromUtf8("end_date_edit"))
+        self.gridLayout.addWidget(self.end_date_edit, 3, 2, 1, 1)
+        self.repeat_label = QtGui.QLabel(self)
+        self.repeat_label.setObjectName(_fromUtf8("repeat_label"))
+        self.gridLayout.addWidget(self.repeat_label, 4, 0, 1, 2)
+        self.repeat_edit = QtGui.QComboBox(self)
+        self.repeat_edit.setObjectName(_fromUtf8("repeat_edit"))
+        self.gridLayout.addWidget(self.repeat_edit, 4, 2, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout.addWidget(self.buttonBox, 5, 1, 1, 2)
 
-        self.widget = QtGui.QWidget(self)
-        self.widget.setGeometry(QtCore.QRect(10,30,261,131))
-        self.widget.setObjectName("widget")
-
-        self.gridlayout = QtGui.QGridLayout(self.widget)
-        self.gridlayout.setObjectName("gridlayout")
-
-        self.label_2 = QtGui.QLabel(self.widget)
-        self.label_2.setObjectName("label_2")
-        self.gridlayout.addWidget(self.label_2,0,0,1,1)
-
-        self.name_edit = QtGui.QLineEdit(self.widget)
-        self.name_edit.setObjectName("name_edit")
-        self.gridlayout.addWidget(self.name_edit,0,1,1,1)
-
-        self.start_label = QtGui.QLabel(self.widget)
-        self.start_label.setObjectName("start_label")
-        self.gridlayout.addWidget(self.start_label,1,0,1,1)
-
-        self.start_date_edit = QtGui.QDateTimeEdit(self.widget)
-        self.start_date_edit.setCalendarPopup(True)
-        self.start_date_edit.setObjectName("start_date_edit")
-        self.start_date_edit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-        self.gridlayout.addWidget(self.start_date_edit,1,1,1,1)
-
-        self.end_label = QtGui.QLabel(self.widget)
-        self.end_label.setObjectName("end_label")
-        self.gridlayout.addWidget(self.end_label,2,0,1,1)
-
-        self.end_date_edit = QtGui.QDateTimeEdit(self.widget)
-        self.end_date_edit.setCalendarPopup(True)
-        self.end_date_edit.setObjectName("end_date_edit")
-        self.end_date_edit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-        self.gridlayout.addWidget(self.end_date_edit,2,1,1,1)
-
-        self.repeat_label = QtGui.QLabel(self.widget)
-        self.repeat_label.setObjectName("repeat_label")
-        self.gridlayout.addWidget(self.repeat_label,3,0,1,1)
-
-        self.repeat_edit = QtGui.QComboBox(self.widget)
-        self.repeat_edit.setObjectName("repeat_edit")
-        self.gridlayout.addWidget(self.repeat_edit,3,1,1,1)
 
         self.retranslateUi()
         self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
@@ -193,9 +182,9 @@ class AddTimePeriod(QtGui.QDialog):
         try:
             
             model.name=unicode(self.name_edit.text())
-            model.time_start=self.start_date_edit.dateTime().toPyDateTime()
+            model.time_start=self.start_date_edit.currentDate()
     
-            model.length=self.start_date_edit.dateTime().secsTo(self.end_date_edit.dateTime())
+            model.length=(self.end_date_edit.currentDate()-self.start_date_edit.currentDate()).seconds+(self.end_date_edit.currentDate()-self.start_date_edit.currentDate()).days*86400
             #print model.length
             
             model.repeat_after=unicode(self.repeat_edit.currentText())

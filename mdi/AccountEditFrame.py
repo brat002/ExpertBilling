@@ -14,7 +14,7 @@ from helpers import tableHeight
 from helpers import HeaderUtil, SplitterUtil, transip
 from types import BooleanType
 import copy
-
+from customwidget import CustomDateTimeWidget
 from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
 import datetime, time, calendar
 from time import mktime
@@ -313,6 +313,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
 
         self.connect(self.toolButton_ipn_added,QtCore.SIGNAL("clicked()"),self.subaccountAddDel)
         self.connect(self.toolButton_ipn_enabled,QtCore.SIGNAL("clicked()"),self.subaccountEnableDisable)
+        self.connect(self.toolButton_ipn_sleep,QtCore.SIGNAL("clicked()"),self.subAccountIpnSleep)
         
         self.connect(self.pushButton_detect_nas,QtCore.SIGNAL("clicked()"),self.detectMac)
         
@@ -338,9 +339,9 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.label_vpn_speed.setText(QtGui.QApplication.translate("SubAccountDialog", "VPN скорость", None, QtGui.QApplication.UnicodeUTF8))
         self.label_ipn_speed.setText(QtGui.QApplication.translate("SubAccountDialog", "IPN скорось", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("SubAccountDialog", "IPN статусы", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton_ipn_added.setText(QtGui.QApplication.translate("SubAccountDialog", "Добавлен", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton_ipn_enabled.setText(QtGui.QApplication.translate("SubAccountDialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
-        self.toolButton_ipn_sleep.setText(QtGui.QApplication.translate("SubAccountDialog", "Не управлять", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_ipn_added.setText(QtGui.QApplication.translate("SubAccountDialog", "Не добавлен", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_ipn_enabled.setText(QtGui.QApplication.translate("SubAccountDialog", "Не активен", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_ipn_sleep.setText(QtGui.QApplication.translate("SubAccountDialog", "Управлять доступом", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_password.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_login.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
         self.toolButton_assign_vpn_from_pool.setText(QtGui.QApplication.translate("SubAccountDialog", "...", None, QtGui.QApplication.UnicodeUTF8))
@@ -434,19 +435,32 @@ class SubaccountLinkDialog(QtGui.QDialog):
             return int(table.item(table.currentRow(), 0).text())
         except:
             return -1
-              
+        
+    def subAccountIpnSleep(self):
+        if self.toolButton_ipn_sleep.isChecked()==True:
+            self.toolButton_ipn_sleep.setText(unicode(u"Не управлять доступом"))
+        else:
+            self.toolButton_ipn_sleep.setText(unicode(u"Управлять доступом"))
+            
     def subaccountEnableDisable(self):
         if not self.model: return
         state = True if self.toolButton_ipn_enabled.isChecked() else False
         if state:
             if not self.connection.accountActions(None, self.model.id, 'enable'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
-                self.toolButton_ipn_enabled.setChecked(state)
+                self.toolButton_ipn_enabled.setChecked(QtCore.Qt.Unchecked)
+                self.toolButton_ipn_enabled.setText(unicode(u"Не активен"))
+            else:
+                self.toolButton_ipn_enabled.setText(unicode(u"Активен"))
         else:
              if not self.connection.accountActions(None, self.model.id, 'disable'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
-                self.toolButton_ipn_enabled.setChecked(state)
-        #self.refresh()
+                self.toolButton_ipn_enabled.setChecked(QtCore.Qt.Checked)
+                self.toolButton_ipn_enabled.setText(unicode(u"Активен"))
+                #self.toolButton_ipn_enabled.set
+             else:
+                self.toolButton_ipn_enabled.setText(unicode(u"Не активен"))    
+        #self.checkActions()
         
     def detectMac(self):
         nas_id=self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
@@ -463,12 +477,19 @@ class SubaccountLinkDialog(QtGui.QDialog):
         if state==True:
             if not self.connection.accountActions(None, self.model.id,  'create'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
-                self.toolButton_ipn_added.setChecked(state)
+                self.toolButton_ipn_added.setChecked(QtCore.Qt.Unchecked)
+                self.toolButton_ipn_added.setText(unicode(u"Не добавлен"))
+            else:
+                self.toolButton_ipn_added.setText(unicode(u"Добавлен"))
         else:
             if not self.connection.accountActions(None, self.model.id,  'delete'):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
-                self.toolButton_ipn_added.setChecked(state)            
+                self.toolButton_ipn_added.setChecked(QtCore.Qt.Checked)
+                self.toolButton_ipn_added.setText(unicode(u"Добавлен"))             
+            else:
+                self.toolButton_ipn_added.setText(unicode(u"Не добавлен"))
 
+        #self.checkActions()
 
     def addAddonService(self):
         i=self.getSelectedId(self.tableWidget)
@@ -652,10 +673,20 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.checkBox_allow_mac_update.setCheckState(QtCore.Qt.Checked if self.model.allow_mac_update==True else QtCore.Qt.Unchecked )
             self.lineEdit_vpn_speed.setText(unicode(self.model.vpn_speed))
             self.lineEdit_ipn_speed.setText(unicode(self.model.ipn_speed))
-            self.toolButton_ipn_sleep.setChecked(self.model.ipn_sleep)
-            self.toolButton_ipn_added.setChecked(self.model.ipn_added)
-            self.toolButton_ipn_enabled.setChecked(self.model.ipn_enabled)
+            self.checkActions()
             
+    def checkActions(self):
+        if self.model.ipn_sleep:
+            self.toolButton_ipn_sleep.setChecked(self.model.ipn_sleep)
+            self.toolButton_ipn_sleep.setText(unicode(u"Не управлять"))
+        
+        if self.model.ipn_added:
+            self.toolButton_ipn_added.setChecked(self.model.ipn_added)
+            self.toolButton_ipn_added.setText(unicode(u"Добавлен"))
+        
+        if self.model.ipn_enabled:
+            self.toolButton_ipn_enabled.setChecked(self.model.ipn_enabled)
+            self.toolButton_ipn_enabled.setText(unicode(u"Активен"))         
             
             #self.combobox_vpn_pool_action()
             #self.combobox_ipn_pool_action()
@@ -682,7 +713,22 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.password = unicode(self.lineEdit_link_password.text()) or ""
         #model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
         #model.ipn_ip_address = unicode(self.lineEdit_ipn_ip_address.text()) or "0.0.0.0"
-        #------------------
+
+
+        if self.lineEdit_link_login.text():
+            try:
+                subaccount_id = self.connection.get("SELECT id FROM billservice_subaccount WHERE username='%s'" % unicode(self.lineEdit_link_login.text())).id
+                if not self.model and subaccount_id:
+                    QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе уже существует такой username."))
+                    self.connection.rollback()
+                    return  
+                if subaccount_id!=model.id:
+                    QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе уже существует такой username."))
+                    self.connection.rollback()
+                    return                
+            except Exception, ex:
+                pass
+            
         if self.lineEdit_ipn_ip_address.text():
 			if self.ipnValidator.validate(self.lineEdit_ipn_ip_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
 				QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте правильность написания IPN IP адреса."))
@@ -733,7 +779,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         if self.lineEdit_link_ipn_mac_address.text().isEmpty()==False:
 			if self.macValidator.validate(self.lineEdit_link_ipn_mac_address.text(), 0)[0]  == QtGui.QValidator.Acceptable:
 				try:
-					id = self.connection.get("SELECT id FROM billservice_account WHERE ipn_mac_address='%s'" % unicode(self.lineEdit_ipn_mac_address.text()).upper()).id
+					id = self.connection.get("SELECT id FROM billservice_subaccount WHERE ipn_mac_address='%s'" % unicode(self.lineEdit_ipn_mac_address.text()).upper()).id
 					if id!=model.id :
 						QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
 						#self.connection.rollback()
@@ -913,49 +959,27 @@ class AddAccountTarif(QtGui.QDialog):
         self.connection = connection
         self.connection.commit()
 
-        self.setObjectName("Dialog")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,299,182).size()).expandedTo(self.minimumSizeHint()))
-        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,299,182).size()))
-        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,299,182).size()))
-                            
+        self.resize(460, 109)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.label_tarif = QtGui.QLabel(self)
+        self.label_tarif.setObjectName(_fromUtf8("label_tarif"))
+        self.gridLayout.addWidget(self.label_tarif, 0, 0, 1, 1)
+        self.comboBox_tarif = QtGui.QComboBox(self)
+        self.comboBox_tarif.setObjectName(_fromUtf8("comboBox_tarif"))
+        self.gridLayout.addWidget(self.comboBox_tarif, 0, 1, 1, 2)
+        self.label_start = QtGui.QLabel(self)
+        self.label_start.setObjectName(_fromUtf8("label_start"))
+        self.gridLayout.addWidget(self.label_start, 1, 0, 1, 1)
+        self.dateTimeEdit_start = CustomDateTimeWidget()
+        self.dateTimeEdit_start.setObjectName(_fromUtf8("dateTimeEdit_start"))
+        self.gridLayout.addWidget(self.dateTimeEdit_start, 1, 1, 1, 2)
         self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(130,140,161,32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout.addWidget(self.buttonBox, 2, 1, 1, 2)
 
-        self.hint_label = QtGui.QLabel(self)
-        self.hint_label.setGeometry(QtCore.QRect(10,10,371,31))
-        self.hint_label.setObjectName("hint_label")
-
-        self.widget = QtGui.QWidget(self)
-        self.widget.setGeometry(QtCore.QRect(10,40,281,101))
-        self.widget.setObjectName("widget")
-
-        self.gridlayout = QtGui.QGridLayout(self.widget)
-        self.gridlayout.setObjectName("gridlayout")
-
-        self.tarif_label = QtGui.QLabel(self.widget)
-        self.tarif_label.setObjectName("tarif_label")
-        self.gridlayout.addWidget(self.tarif_label,0,0,1,1)
-
-        self.tarif_edit = QtGui.QComboBox(self.widget)
-        self.tarif_edit.setMaxVisibleItems(10)
-        self.tarif_edit.setObjectName("tarif_edit")
-        self.gridlayout.addWidget(self.tarif_edit,0,1,1,1)
-
-        self.date_label = QtGui.QLabel(self.widget)
-        self.date_label.setObjectName("date_label")
-        self.gridlayout.addWidget(self.date_label,1,0,1,1)
-
-        self.date_edit = QtGui.QDateTimeEdit(self.widget)
-        self.date_edit.setFrame(True)
-        self.date_edit.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.date_edit.setMinimumDate(QtCore.QDate(2008,1,1))
-        self.date_edit.setCalendarPopup(True)
-        self.date_edit.setObjectName("date_edit")
-        self.date_edit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-        self.gridlayout.addWidget(self.date_edit,1,1,1,1)
 
 
         self.retranslateUi()
@@ -965,7 +989,7 @@ class AddAccountTarif(QtGui.QDialog):
 
     def accept(self):
         if self.get_info==False:
-            date=self.date_edit.dateTime().toPyDateTime()
+            date=self.dateTimeEdit_start.currentDate()
             #print repr(date)
             #print str(self.date_edit.dateTime().toString())
             date = datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
@@ -975,7 +999,7 @@ class AddAccountTarif(QtGui.QDialog):
             else:
                 model = Object()
                 model.account_id = self.account.id
-                model.tarif_id =self.tarif_edit.itemData(self.tarif_edit.currentIndex()).toInt()[0]
+                model.tarif_id =self.comboBox_tarif.itemData(self.comboBox_tarif.currentIndex()).toInt()[0]
                 model.datetime = date
                 
                 #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
@@ -989,29 +1013,24 @@ class AddAccountTarif(QtGui.QDialog):
 
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Редактирование плана", None, QtGui.QApplication.UnicodeUTF8))
-        self.hint_label.setText(QtGui.QApplication.translate("Dialog", "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-        "p, li { white-space: pre-wrap; }\n"
-        "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">Выберите тарифный план и время, </span></p>\n"
-        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;\">когда должен быть осуществлён переход</p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
-        self.tarif_label.setText(QtGui.QApplication.translate("Dialog", "Тарифный план", None, QtGui.QApplication.UnicodeUTF8))
-        self.date_label.setText(QtGui.QApplication.translate("Dialog", "Дата и время", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Смена тарифного плана", None, QtGui.QApplication.UnicodeUTF8))   
+        self.label_tarif.setText(QtGui.QApplication.translate("AddAccountTarif", "Укажите новый тарифный план", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_start.setText(QtGui.QApplication.translate("AddAccountTarif", "Дата начала", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
         tarifs=self.connection.sql("SELECT id, name FROM billservice_tariff WHERE deleted IS NOT TRUE ORDER BY name;")
         self.connection.commit()
         for tarif in tarifs:
-            self.tarif_edit.addItem(tarif.name, QtCore.QVariant(tarif.id))
+            self.comboBox_tarif.addItem(tarif.name, QtCore.QVariant(tarif.id))
         now=datetime.datetime.now()
         #print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
         if self.model:
-            self.tarif_edit.setCurrentIndex(self.tarif_edit.findData(self.model.tarif_id))
+            self.comboBox_tarif.setCurrentIndex(self.comboBox_tarif.findData(self.model.tarif_id))
 
             now = QtCore.QDateTime()
 
             now.setTime_t((mktime(self.model.datetime.timetuple())))
-        self.date_edit.setDateTime(now)
+        self.dateTimeEdit_start.setDateTime(now)
 
     def reject(self):
         self.connection.rollback()
@@ -1092,12 +1111,12 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_4.addWidget(self.lineEdit_agreement_num, 1, 2, 1, 1)
         self.toolButton_agreement_print = QtGui.QToolButton(self.groupBox_agreement)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("images/printer.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("images/document-print.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.toolButton_agreement_print.setIcon(icon)
         self.toolButton_agreement_print.setObjectName("toolButton_agreement_print")
         self.gridLayout_4.addWidget(self.toolButton_agreement_print, 1, 3, 1, 1)
-        self.dateTimeEdit_agreement_date = QtGui.QDateTimeEdit(self.groupBox_agreement)
-        self.dateTimeEdit_agreement_date.setCalendarPopup(True)
+        self.dateTimeEdit_agreement_date = CustomDateTimeWidget()#QtGui.QDateTimeEdit(self.groupBox_agreement)
+        #self.dateTimeEdit_agreement_date.setCalendarPopup(True)
         self.dateTimeEdit_agreement_date.setObjectName("dateTimeEdit_agreement_date")
         self.gridLayout_4.addWidget(self.dateTimeEdit_agreement_date, 0, 2, 1, 1)
         self.gridLayout_8.addWidget(self.groupBox_agreement, 0, 1, 1, 1)
@@ -1687,15 +1706,17 @@ class AccountWindow(QtGui.QMainWindow):
             self.actionAdd.setDisabled(True)
             self.actionDel.setDisabled(True)
             self.toolButton_agreement_print.setDisabled(True)
-            self.toolButton_agreement_print.setDisabled(True)
+            #self.toolButton_agreement_print.setDisabled(True)
             self.lineEdit_balance.setText(u"0")
             self.lineEdit_credit.setText(u"0")
 
-        self.dateTimeEdit_agreement_date.setDateTime(datetime.datetime.now())
+            self.dateTimeEdit_agreement_date.setDateTime(datetime.datetime.now())
+            
         if self.model:
             self.lineEdit_agreement_num.setText(unicode(self.model.contract))
             self.dateTimeEdit_agreement_date.setDateTime(self.model.created)
-            self.dateTimeEdit_agreement_date.setDisabled(True)
+            if self.tarif_id!=-3000:            
+                self.dateTimeEdit_agreement_date.setDisabled(True)
 
             self.checkBox_allow_expresscards.setChecked(self.model.allow_expresscards)
             self.checkBox_allow_webcab.setChecked(self.model.allow_webcab)
@@ -1762,6 +1783,8 @@ class AccountWindow(QtGui.QMainWindow):
             
             if self.model:
                 model=self.model
+                if self.tarif_id==-3000:
+                    model.created = self.dateTimeEdit_agreement_date.currentDate()
             else:
                 #print 'New account'
                 if self.connection.get("SELECT count(*) as count FROM billservice_account WHERE username='%s'" % unicode(self.lineEdit_username.text())).count > 0:
@@ -1770,7 +1793,7 @@ class AccountWindow(QtGui.QMainWindow):
                     return
 
                 model=Object()
-                model.created = self.dateTimeEdit_agreement_date.dateTime().toPyDateTime()
+                model.created = self.dateTimeEdit_agreement_date.currentDate()
                 #model.user_id=1
                 model.ipn_status = False
                 model.ipn_added = False

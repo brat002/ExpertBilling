@@ -13,7 +13,7 @@ import datetime, calendar
 from helpers import transaction, get_free_addreses_from_pool
 from helpers import HeaderUtil, SplitterUtil
 from helpers import write_cards, get_type
-
+from customwidget import CustomDateTimeWidget
 import os, datetime
 from randgen import GenPasswd2
 from random import randint
@@ -607,7 +607,7 @@ class AddCards(QtGui.QDialog):
         self.start_label = QtGui.QLabel(self.period_groupBox)
         self.start_label.setObjectName("start_label")
         self.gridLayout_4.addWidget(self.start_label, 0, 0, 1, 1)
-        self.start_dateTimeEdit = QtGui.QDateTimeEdit(self.period_groupBox)
+        self.start_dateTimeEdit = CustomDateTimeWidget()
         self.start_dateTimeEdit.setDateTime(QtCore.QDateTime(QtCore.QDate(2011, 1, 1), QtCore.QTime(0, 0, 0)))
         self.start_dateTimeEdit.setCalendarPopup(True)
         self.start_dateTimeEdit.setObjectName("start_dateTimeEdit")
@@ -615,7 +615,7 @@ class AddCards(QtGui.QDialog):
         self.end_label = QtGui.QLabel(self.period_groupBox)
         self.end_label.setObjectName("end_label")
         self.gridLayout_4.addWidget(self.end_label, 1, 0, 1, 1)
-        self.end_dateTimeEdit = QtGui.QDateTimeEdit(self.period_groupBox)
+        self.end_dateTimeEdit = CustomDateTimeWidget()
         self.end_dateTimeEdit.setDateTime(QtCore.QDateTime(QtCore.QDate(2012, 1, 1), QtCore.QTime(0, 0, 0)))
         self.end_dateTimeEdit.setCalendarPopup(True)
         self.end_dateTimeEdit.setObjectName("end_dateTimeEdit")
@@ -826,8 +826,8 @@ class AddCards(QtGui.QDialog):
                 model.type = 3
                 
             model.nominal = unicode(self.spinBox_nominal.value())
-            model.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
-            model.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
+            model.start_date = self.start_dateTimeEdit.currentDate()
+            model.end_date = self.end_dateTimeEdit.currentDate()
             model.template_id = template_id
             
             model.created = dnow
@@ -932,8 +932,8 @@ class AddCards(QtGui.QDialog):
         card.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
         card.login = GenPasswd2(length=self.spinBox_login.text().toInt()[0],chars=login_mask)
         card.nominal = unicode(self.spinBox_nominal.text())
-        card.start_date = self.start_dateTimeEdit.dateTime().toPyDateTime()
-        card.end_date = self.end_dateTimeEdit.dateTime().toPyDateTime()
+        card.start_date = self.start_dateTimeEdit.currentDate()
+        card.end_date = self.end_dateTimeEdit.currentDate()
         card.series = unicode(self.series_spinBox.value())
         card.tarif = unicode(self.comboBox_tarif.currentText())
         #operator=self.op_model.__dict__
@@ -993,13 +993,13 @@ class CardsChildEbs(ebsTableWindow):
         self.comboBox_nominal.setGeometry(QtCore.QRect(0,0,60,20))
         self.comboBox_nominal.setEditable(True)
         
-        self.date_start = QtGui.QDateTimeEdit()
+        self.date_start = CustomDateTimeWidget()
         self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
         self.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
         self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
  
-        self.date_end = QtGui.QDateTimeEdit()
+        self.date_end = CustomDateTimeWidget()
         self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
         self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         self.date_end.setCalendarPopup(True)
@@ -1191,8 +1191,8 @@ class CardsChildEbs(ebsTableWindow):
         self.statusBar().showMessage(u"Ожидание ответа")
         sql = """SELECT * FROM billservice_card"""
         if self.checkBox_filter.checkState()==2:
-            start_date = self.date_start.dateTime().toPyDateTime()
-            end_date = self.date_end.dateTime().toPyDateTime()
+            start_date = self.date_start.currentDate()
+            end_date = self.date_end.currentDate()
             sql+=" WHERE id>0"
             if unicode(self.comboBox_nominal.currentText())!="":
                 sql+=" AND nominal = '%s'" % unicode(self.comboBox_nominal.currentText())
@@ -1254,8 +1254,8 @@ class CardsChildEbs(ebsTableWindow):
         self.delNodeLocalAction()
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            settings.setValue("cards_date_start", QtCore.QVariant(self.date_start.dateTime()))
-            settings.setValue("cards_date_end", QtCore.QVariant(self.date_end.dateTime()))
+            settings.setValue("cards_date_start", QtCore.QVariant(self.date_start.currentDate()))
+            settings.setValue("cards_date_end", QtCore.QVariant(self.date_end.currentDate()))
         except Exception, ex:
             print "Cards settings save error: ", ex
 

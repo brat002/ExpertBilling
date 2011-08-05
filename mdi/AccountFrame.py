@@ -3420,6 +3420,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.treeWidget.setAcceptDrops(True)
         self.treeWidget.setDragEnabled(True)
         self.treeWidget.setDragDropMode(QtGui.QAbstractItemView.InternalMove)
+        self.refreshTree()
+        self.refresh()
         
     def retranslateUI(self, initargs):
         super(AccountsMdiEbs, self).retranslateUI(initargs)
@@ -3495,7 +3497,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         child=AddAccountTarif(connection=self.connection, account=None, get_info = True)
         if child.exec_()==1:
             tarif_id = child.tarif_edit.itemData(child.tarif_edit.currentIndex()).toInt()[0]
-            date = child.date_edit.dateTime().toPyDateTime()
+            date = child.date_edit.currentDate()
         if not tarif_id: return
         if not self.connection.change_tarif(ids, tarif_id, date):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Во время выполнения операции произошла ошибка."))
@@ -3628,7 +3630,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #self.refresh()
         
     def editTarif(self, *args, **kwargs):
-        model = self.connection.get_model(self.getTarifId(), "billservice_tariff" )
+        if tarif_id<0: return
+        model = self.connection.get_model(tarif_id, "billservice_tariff" )
         
         tarifframe = TarifFrame(connection=self.connection, model=model)
         #self.parent.workspace.addWindow(tarifframe)
@@ -3781,14 +3784,15 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         item.tarif_type = 'all'
         item.setText(0, u"Результаты поиска")
         item.setIcon(0,QtGui.QIcon("images/kfind.png"))        
-
+        self.filter_item = item
+        
         item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
         item.id = -3000
         item.tarif_type = 'all'
         item.setText(0, u"Без тарифа")
         item.setIcon(0,QtGui.QIcon("images/new_users.png"))   
         
-        self.filter_item = item
+        
         
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
@@ -3870,10 +3874,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         if id==-1000 or id==-2000:
             #self.sql=''
-            columns=[u'#', u'Имя пользователя', u"Договор",u'Тарифный план', u'Баланс', u'Кредит', u'Имя',   u'',  u"<=0 баланс, дней назад", u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Имя пользователя', u"Договор",u'Тарифный план', u'Баланс', u'Кредит', u'ФИО',   u'',  u"<=0 баланс, дней назад", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
         else:
-            columns=[u'#', u'Имя пользователя',  u"Договор", u'Баланс', u'Кредит', u'Имя', u'',  u"<=0 баланс, дней назад", u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Имя пользователя',  u"Договор", u'Баланс', u'Кредит', u'ФИО', u'',  u"<=0 баланс, дней назад", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
 
         print "sql=", self.sql            

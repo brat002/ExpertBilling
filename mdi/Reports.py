@@ -17,6 +17,7 @@ import socket
 from reports.bpreportedit import bpReportEdit
 import thread
 import time
+from customwidget import CustomDateTimeWidget
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -61,19 +62,19 @@ class TransactionsReportEbs(ebsTableWindow):
         
         dt_now = datetime.datetime.now()
         
-        self.date_start = QtGui.QDateTimeEdit(self)
-        self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
-        self.date_start.setCalendarPopup(True)
+        self.date_start = CustomDateTimeWidget()
+        #self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
+        #self.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
-        self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
-        self.date_end = QtGui.QDateTimeEdit(self)
-        self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
+        self.date_end = CustomDateTimeWidget()
+        #self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
         self.date_end.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
-        self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.date_end.setCalendarPopup(True)
+        #self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        #self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
-        self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -219,8 +220,8 @@ class TransactionsReportEbs(ebsTableWindow):
         self.tableWidget.setSortingEnabled(False)
         self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % unicode(self.user_edit.currentText()))
         self.tableWidget.clearContents()
-        start_date = self.date_start.dateTime().toPyDateTime()
-        end_date = self.date_end.dateTime().toPyDateTime()
+        start_date = self.date_start.currentDate()
+        end_date = self.date_end.currentDate()
 
         account_id = self.user_edit.itemData(self.user_edit.currentIndex()).toInt()[0]
 
@@ -595,19 +596,19 @@ class TransactionsReport(QtGui.QMainWindow):
         
         
         
-        self.date_start = QtGui.QDateTimeEdit(self)
+        self.date_start = CustomDateTimeWidget()
         self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
-        self.date_start.setCalendarPopup(True)
+        #self.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
-        self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
 
-        self.date_end = QtGui.QDateTimeEdit(self)
+        self.date_end = CustomDateTimeWidget()
         self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
-        self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.date_end.setCalendarPopup(True)
+        #self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        #self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
-        self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -717,8 +718,8 @@ class TransactionsReport(QtGui.QMainWindow):
         self.tableWidget.setSortingEnabled(False)
         self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % unicode(self.user_edit.currentText()))
         self.tableWidget.clearContents()
-        start_date = self.date_start.dateTime().toPyDateTime()
-        end_date = self.date_end.dateTime().toPyDateTime()
+        start_date = self.date_start.currentDate()
+        end_date = self.date_end.currentDate()
         
         if self.system_transactions_checkbox.checkState()==2:
             transactions = self.connection.sql("""SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name FROM billservice_transaction as transaction
@@ -809,15 +810,15 @@ class ReportPropertiesDialog(QtGui.QDialog):
         self.label_date_start = QtGui.QLabel(self.groupBox_timeperiod)
         self.label_date_start.setObjectName(_fromUtf8("label_date_start"))
         self.gridLayout_4.addWidget(self.label_date_start, 0, 0, 1, 1)
-        self.dateTimeEdit_date_start = QtGui.QDateTimeEdit(self.groupBox_timeperiod)
-        self.dateTimeEdit_date_start.setCalendarPopup(True)
+        self.dateTimeEdit_date_start = CustomDateTimeWidget()
+        #self.dateTimeEdit_date_start.setCalendarPopup(True)
         self.dateTimeEdit_date_start.setObjectName(_fromUtf8("dateTimeEdit_date_start"))
         self.gridLayout_4.addWidget(self.dateTimeEdit_date_start, 0, 1, 1, 1)
         self.label_date_end = QtGui.QLabel(self.groupBox_timeperiod)
         self.label_date_end.setObjectName(_fromUtf8("label_date_end"))
         self.gridLayout_4.addWidget(self.label_date_end, 1, 0, 1, 1)
-        self.dateTimeEdit_date_end = QtGui.QDateTimeEdit(self.groupBox_timeperiod)
-        self.dateTimeEdit_date_end.setCalendarPopup(True)
+        self.dateTimeEdit_date_end = CustomDateTimeWidget()
+        #self.dateTimeEdit_date_end.setCalendarPopup(True)
         self.dateTimeEdit_date_end.setObjectName(_fromUtf8("dateTimeEdit_date_end"))
         self.gridLayout_4.addWidget(self.dateTimeEdit_date_end, 1, 1, 1, 1)
         self.gridLayout_6.addWidget(self.groupBox_timeperiod, 0, 0, 1, 1)
@@ -1092,8 +1093,8 @@ class ReportPropertiesDialog(QtGui.QDialog):
             QtGui.QMessageBox.warning(self, u"Внимание!", u"Вы не указали аккаунты или группы")
             return               
 
-        self.start_date = self.dateTimeEdit_date_start.dateTime().toPyDateTime()
-        self.end_date = self.dateTimeEdit_date_end.dateTime().toPyDateTime()
+        self.start_date = self.dateTimeEdit_date_start.currentDate()
+        self.end_date = self.dateTimeEdit_date_end.currentDate()
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -1536,21 +1537,21 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.to_label = QtGui.QLabel(self.inter_groupBox)
         self.to_label.setObjectName("to_label")
         self.gridLayout_2.addWidget(self.to_label, 1, 0, 1, 1)
-        self.from_dateTimeEdit = QtGui.QDateTimeEdit(self.inter_groupBox)
-        self.from_dateTimeEdit.setMinimumDate(QtCore.QDate(2008, 1, 1))
-        self.from_dateTimeEdit.setCalendarPopup(True)
-        self.from_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
-        self.from_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        self.from_dateTimeEdit = CustomDateTimeWidget()
+        #self.from_dateTimeEdit.setMinimumDate(QtCore.QDate(2008, 1, 1))
+        #self.from_dateTimeEdit.setCalendarPopup(True)
+        #self.from_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
+        #self.from_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         dt_now = datetime.datetime.now()
         self.from_dateTimeEdit.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
         self.from_dateTimeEdit.setObjectName("from_dateTimeEdit")
         self.gridLayout_2.addWidget(self.from_dateTimeEdit, 0, 1, 1, 1)
-        self.to_dateTimeEdit = QtGui.QDateTimeEdit(self.inter_groupBox)
-        self.to_dateTimeEdit.setMinimumDate(QtCore.QDate(2008, 1, 1))
-        self.to_dateTimeEdit.setCalendarPopup(True)
-        self.to_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
+        self.to_dateTimeEdit = CustomDateTimeWidget()
+        #self.to_dateTimeEdit.setMinimumDate(QtCore.QDate(2008, 1, 1))
+        #self.to_dateTimeEdit.setCalendarPopup(True)
+        #self.to_dateTimeEdit.setDisplayFormat(self.datetimeFormat)
         self.to_dateTimeEdit.setObjectName("to_dateTimeEdit")
-        self.to_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.to_dateTimeEdit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         self.gridLayout_2.addWidget(self.to_dateTimeEdit, 1, 1, 1, 1)
         self.gridLayout.addWidget(self.inter_groupBox, 0, 0, 1, 2)
 
@@ -2099,8 +2100,8 @@ class ReportOptionsDialog(QtGui.QDialog):
         except Exception, ex:
             print "Chart reports settings save error: ", ex
             
-        self.start_date = self.from_dateTimeEdit.dateTime().toPyDateTime()
-        self.end_date   = self.to_dateTimeEdit.dateTime().toPyDateTime()
+        self.start_date = self.from_dateTimeEdit.currentDate()
+        self.end_date   = self.to_dateTimeEdit.currentDate()
 
         QtGui.QDialog.accept(self)
         
@@ -2222,19 +2223,19 @@ class SimpleReportEbs(ebsTableWindow):
         
         dt_now = datetime.datetime.now()
         
-        self.dateTimeEdit_date_start = QtGui.QDateTimeEdit(self)
+        self.dateTimeEdit_date_start = CustomDateTimeWidget()
         self.dateTimeEdit_date_start.setGeometry(QtCore.QRect(420,9,161,20))
-        self.dateTimeEdit_date_start.setCalendarPopup(True)
+        #self.dateTimeEdit_date_start.setCalendarPopup(True)
         self.dateTimeEdit_date_start.setObjectName("dateTimeEdit_date_start")
-        self.dateTimeEdit_date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.dateTimeEdit_date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
-        self.dateTimeEdit_date_end = QtGui.QDateTimeEdit(self)
+        self.dateTimeEdit_date_end = CustomDateTimeWidget()
         self.dateTimeEdit_date_end.setGeometry(QtCore.QRect(420,42,161,20))
         self.dateTimeEdit_date_end.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
-        self.dateTimeEdit_date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.dateTimeEdit_date_end.setCalendarPopup(True)
+        #self.dateTimeEdit_date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        #self.dateTimeEdit_date_end.setCalendarPopup(True)
         self.dateTimeEdit_date_end.setObjectName("dateTimeEdit_date_end")
-        self.dateTimeEdit_date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.dateTimeEdit_date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -2340,21 +2341,26 @@ class SimpleReportEbs(ebsTableWindow):
             headerItem.setBackgroundColor(QtGui.QColor("red"))
         elif y==5 and value=='AUTH_OK':
             headerItem.setBackgroundColor(QtGui.QColor("lightgreen"))
-        headerItem.setText(unicode(value))
+            
+        
+        headerItem.setText(unicode(value))        
+ 
+            
         if id:
             headerItem.id = id
             headerItem.date = date
         self.tableWidget.setItem(x,y,headerItem)
              
     def radius_auth_fixtures(self):
+        self.tableWidget.setSortingEnabled(False)
         self.statusBar().showMessage(u"Ожидание ответа")
         self.tableWidget.clearContents()
         account_id = self.comboBox_account.itemData(self.comboBox_account.currentIndex()).toInt()[0]
         acc_str = ''
         if account_id:
             acc_str = " and account_id=%s" % account_id
-        start_date = self.dateTimeEdit_date_start.dateTime().toPyDateTime()
-        end_date = self.dateTimeEdit_date_end.dateTime().toPyDateTime()
+        start_date = self.dateTimeEdit_date_start.currentDate()
+        end_date = self.dateTimeEdit_date_end.currentDate()
         items = self.connection.sql("""SELECT ra.id as id, ra.account_id as account_id,(SELECT username FROM billservice_account WHERE id=ra.account_id) as account_username,
         ra.type as type, ra.service as service, (SELECT username FROM billservice_subaccount WHERE id=ra.subaccount_id) as subaccount_username, (SELECT name FROM nas_nas WHERE id=ra.nas_id) as nas_name, ra.cause as cause, ra.datetime as datetime FROM radius_authlog as ra 
         WHERE datetime between '%s' and '%s' %s
@@ -2381,17 +2387,19 @@ class SimpleReportEbs(ebsTableWindow):
             settings.setValue("%strans_date_end" % self.report_type, QtCore.QVariant(self.dateTimeEdit_date_end.dateTime()))
         except Exception, ex:
             print "Transactions settings save error: ", ex
+        self.tableWidget.setSortingEnabled(True)
         self.statusBar().showMessage(u"Готово")
             
     def balance_log_fixtures(self):
+        self.tableWidget.setSortingEnabled(False)
         self.statusBar().showMessage(u"Ожидание ответа")
         self.tableWidget.clearContents()
         account_id = self.comboBox_account.itemData(self.comboBox_account.currentIndex()).toInt()[0]
         acc_str = ''
         if account_id:
             acc_str = " and account_id=%s" % account_id
-        start_date = self.dateTimeEdit_date_start.dateTime().toPyDateTime()
-        end_date = self.dateTimeEdit_date_end.dateTime().toPyDateTime()
+        start_date = self.dateTimeEdit_date_start.currentDate()
+        end_date = self.dateTimeEdit_date_end.currentDate()
         items = self.connection.sql("""SELECT bah.id,(SELECT username FROM billservice_account WHERE id=bah.account_id) as account_username, bah.balance as balance, bah.datetime as datetime FROM billservice_balancehistory as bah 
         WHERE datetime between '%s' and '%s' %s
         ORDER BY datetime DESC""" % (start_date, end_date, acc_str))
@@ -2403,7 +2411,7 @@ class SimpleReportEbs(ebsTableWindow):
         for item in items:
             self.addrow(i, i, 0, id=item.id, )
             self.addrow(item.account_username, i, 1)
-            self.addrow(item.balance, i, 2)
+            self.addrow(item.balance, float(i), 2)
             self.addrow(item.datetime.strftime(self.strftimeFormat), i, 3)
             i+=1
 
@@ -2413,6 +2421,7 @@ class SimpleReportEbs(ebsTableWindow):
             settings.setValue("%strans_date_end" % self.report_type, QtCore.QVariant(self.dateTimeEdit_date_end.dateTime()))
         except Exception, ex:
             print "Transactions settings save error: ", ex
+        self.tableWidget.setSortingEnabled(True)
             
         self.statusBar().showMessage(u"Готово")
     def fixtures(self):            

@@ -9,6 +9,7 @@ from db import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
+from customwidget import CustomDateTimeWidget
 
 class MessageDialog(QtGui.QDialog):
     def __init__(self, accounts=[], model=None,connection=None):
@@ -162,19 +163,19 @@ class LogViewEbs(ebsTableWindow):
         self.systemusers = {}
         dt_now = datetime.datetime.now()
         
-        self.date_start = QtGui.QDateTimeEdit(self)
-        self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
-        self.date_start.setCalendarPopup(True)
+        self.date_start = CustomDateTimeWidget()
+        #self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
+        s#elf.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
-        self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
-        self.date_end = QtGui.QDateTimeEdit(self)
-        self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
+        self.date_end = CustomDateTimeWidget()
+        #self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
         self.date_end.setDate(QtCore.QDate(dt_now.year, dt_now.month, dt_now.day))
-        self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.date_end.setCalendarPopup(True)
+        #self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        #self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
-        self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -297,8 +298,8 @@ class LogViewEbs(ebsTableWindow):
         #self.tableWidget.setSortingEnabled(False)
         self.statusBar().showMessage(u"Идёт получение данных")
         systemuser_id = self.comboBox_systemuser.itemData(self.comboBox_systemuser.currentIndex()).toInt()[0]
-        start_date = self.date_start.dateTime().toPyDateTime()
-        end_date = self.date_end.dateTime().toPyDateTime()
+        start_date = self.date_start.currentDate()
+        end_date = self.date_end.currentDate()
         messages = self.connection.get_log_messages(systemuser_id=systemuser_id, start_date=start_date, end_date=end_date)
         #print self.connection
         self.connection.commit()

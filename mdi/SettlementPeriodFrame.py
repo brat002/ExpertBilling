@@ -9,7 +9,13 @@ from db import Object as Object
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
+from customwidget import CustomDateTimeWidget
 
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
+    
 class AddSettlementPeriod(QtGui.QDialog):
     def __init__(self, connection,model=None):
         super(AddSettlementPeriod, self).__init__()
@@ -17,57 +23,42 @@ class AddSettlementPeriod(QtGui.QDialog):
         self.connection=connection
         self.connection.commit()
 
-        self.setObjectName("Dialog")
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,410,156).size()).expandedTo(self.minimumSizeHint()))
-        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,410,156).size()))
-        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,410,156).size()))
-        
-        self.start_label = QtGui.QLabel(self)
-        self.start_label.setGeometry(QtCore.QRect(12,67,73,20))
-        self.start_label.setObjectName("start_label")
-
-        self.autostart_checkbox = QtGui.QCheckBox(self)
-        self.autostart_checkbox.setGeometry(QtCore.QRect(12,43,390,18))
-        self.autostart_checkbox.setObjectName("autostart_checkbox")
-
-        self.datetime_edit = QtGui.QDateTimeEdit(self)
-        self.datetime_edit.setGeometry(QtCore.QRect(91,67,130,20))
-        self.datetime_edit.setFrame(True)
-        self.datetime_edit.setCurrentSection(QtGui.QDateTimeEdit.DaySection)
-        self.datetime_edit.setCalendarPopup(True)
-        self.datetime_edit.setObjectName("datetime_edit")
-        self.datetime_edit.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-
-        self.length_seconds_edit = QtGui.QLineEdit(self)
-        self.length_seconds_edit.setGeometry(QtCore.QRect(227,93,133,20))
-        self.length_seconds_edit.setObjectName("length_seconds_edit")
-
-
-        self.length_label = QtGui.QLabel(self)
-        self.length_label.setGeometry(QtCore.QRect(12,93,73,20))
-        self.length_label.setObjectName("length_label")
-
-        self.length_edit = QtGui.QComboBox(self)
-        self.length_edit.setGeometry(QtCore.QRect(91,93,130,20))
-        self.length_edit.setObjectName("length_edit")
-
-        self.seconds_label = QtGui.QLabel(self)
-        self.seconds_label.setGeometry(QtCore.QRect(366,93,36,20))
-        self.seconds_label.setObjectName("seconds_label")
-
-        self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(20,120,375,25))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
-
+        self.resize(464, 168)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.name_label = QtGui.QLabel(self)
-        self.name_label.setGeometry(QtCore.QRect(12,10,73,20))
-        self.name_label.setObjectName("name_label")
-
+        self.name_label.setObjectName(_fromUtf8("name_label"))
+        self.gridLayout.addWidget(self.name_label, 0, 0, 1, 1)
         self.name_edit = QtGui.QLineEdit(self)
-        self.name_edit.setGeometry(QtCore.QRect(91,10,311,20))
-        self.name_edit.setObjectName("name_edit")
+        self.name_edit.setObjectName(_fromUtf8("name_edit"))
+        self.gridLayout.addWidget(self.name_edit, 0, 1, 1, 3)
+        self.autostart_checkbox = QtGui.QCheckBox(self)
+        self.autostart_checkbox.setObjectName(_fromUtf8("autostart_checkbox"))
+        self.gridLayout.addWidget(self.autostart_checkbox, 1, 0, 1, 4)
+        self.start_label = QtGui.QLabel(self)
+        self.start_label.setObjectName(_fromUtf8("start_label"))
+        self.gridLayout.addWidget(self.start_label, 2, 0, 1, 1)
+        self.datetime_edit = CustomDateTimeWidget()
+        self.datetime_edit.setObjectName(_fromUtf8("datetime_edit"))
+        self.gridLayout.addWidget(self.datetime_edit, 2, 1, 1, 2)
+        self.length_label = QtGui.QLabel(self)
+        self.length_label.setObjectName(_fromUtf8("length_label"))
+        self.gridLayout.addWidget(self.length_label, 3, 0, 1, 1)
+        self.length_edit = QtGui.QComboBox(self)
+        self.length_edit.setObjectName(_fromUtf8("length_edit"))
+        self.gridLayout.addWidget(self.length_edit, 3, 1, 1, 1)
+        self.length_seconds_edit = QtGui.QLineEdit(self)
+        self.length_seconds_edit.setObjectName(_fromUtf8("length_seconds_edit"))
+        self.gridLayout.addWidget(self.length_seconds_edit, 3, 2, 1, 1)
+        self.seconds_label = QtGui.QLabel(self)
+        self.seconds_label.setObjectName(_fromUtf8("seconds_label"))
+        self.gridLayout.addWidget(self.seconds_label, 3, 3, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout.addWidget(self.buttonBox, 4, 0, 1, 4)
+        
         self.start_label.setBuddy(self.datetime_edit)
         self.length_label.setBuddy(self.length_edit)
         self.seconds_label.setBuddy(self.length_seconds_edit)
@@ -176,7 +167,7 @@ class AddSettlementPeriod(QtGui.QDialog):
 
         model.autostart = self.autostart_checkbox.checkState() == 2
 
-        model.time_start=self.datetime_edit.dateTime().toPyDateTime()
+        model.time_start=self.datetime_edit.currentDate()
 
         try:
             self.connection.save(model,"billservice_settlementperiod")
