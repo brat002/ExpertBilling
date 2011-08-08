@@ -184,6 +184,6 @@ rad_sql = \
                         FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                         WHERE accountspeedlimit.speedlimit_id=speedlimit.id;""",
          'attrs'    :"""SELECT vendor, attrid, value, tarif_id FROM billservice_radiusattrs;""",
-         'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice, allow_ipn_with_null, allow_ipn_with_minus, allow_ipn_with_block, vlan, vpn_ipv6_ip_address FROM billservice_subaccount;""",
+         'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice, allow_ipn_with_null, allow_ipn_with_minus, allow_ipn_with_block, vlan, vpn_ipv6_ip_address,ipv4_ipn_pool_id,ipv4_vpn_pool_id FROM billservice_subaccount;""",
 
 }

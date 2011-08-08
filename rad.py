@@ -1020,23 +1020,25 @@ class HandleSAuth(HandleSBase):
                     logger.error("Couldn't check session dublicates for user %s account=%s because %s", (str(user_name), acc.account_id, repr(ex)))
                     return self.auth_NA(authobject) 
             
-            '''
-            framed_ip_address = None
-            if acc.vpn_ip_address == '0.0.0.0' and acc.vpn_ipinuse_id:
-                
-                vars.cursor_lock.acquire()
-                try:
-                    vars.cursor.execute('SELECT get_free_ip_from_pool(%s);', (acc.vpn_ipinuse_id,))
-                    framed_ip_address = vars.cursor.fetchone()
-                except Exception, ex:
-                    vars.cursor_lock.release()
-                    logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), acc.account_id, acc.vpn_ipinuse_id, repr(ex)))
-                    return self.auth_NA(authobject) 
-                else:
-                    vars.cursor_lock.release()
-            else:
-                framed_ip_address = acc.vpn_ip_address
-            '''
+            
+            #===================================================================
+            # framed_ip_address = None
+            # if acc.vpn_ip_address == '0.0.0.0' and acc.ipv4_vpn_pool_id and acc.vpn_ipinuse_id is None:
+            #    
+            #    vars.cursor_lock.acquire()
+            #    try:
+            #        vars.cursor.execute('SELECT get_free_ip_from_pool(%s);', (acc.ipv4_vpn_pool_id,))
+            #        framed_ip_address = vars.cursor.fetchone()
+            #    except Exception, ex:
+            #        vars.cursor_lock.release()
+            #        logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), acc.account_id, acc.vpn_ipinuse_id, repr(ex)))
+            #        return self.auth_NA(authobject) 
+            #    else:
+            #        vars.cursor_lock.release()
+            # else:
+            #    framed_ip_address = acc.vpn_ip_address
+            #===================================================================
+            
             authobject.set_code(2)
             self.replypacket.username = str(username) #Нельзя юникод
             self.replypacket.password = str(password) #Нельзя юникод
