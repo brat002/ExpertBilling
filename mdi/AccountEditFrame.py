@@ -589,7 +589,11 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.comboBox_vpn_pool.addItem(pool.name)
             self.comboBox_vpn_pool.setItemData(i, QtCore.QVariant(pool.id))
             if self.model:
-                if self.model.isnull('vpn_ipinuse_id')==False:
+                if self.model.ipv4_vpn_pool_id:
+                    if pool.id==self.model.ipv4_vpn_pool_id:
+                        self.comboBox_vpn_pool.setCurrentIndex(i)
+                        self.lineEdit_vpn_ip_address.setDisabled(True)  
+                elif self.model.isnull('vpn_ipinuse_id')==False:
                     if pool.id==pool_id.pool_id:
                         self.comboBox_vpn_pool.setCurrentIndex(i)
                         self.lineEdit_vpn_ip_address.setDisabled(True)
@@ -828,61 +832,63 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.speed=''
 		 #Операции с пулом    
         try:
-			pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
-			if pool_id!=0 and model.ipn_ip_address==u'0.0.0.0':
-				QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPN пул, но не назначили ip адрес."))
-				self.connection.rollback()
-				return 
-			if  model.__dict__.get('ipn_ipinuse_id'):
-				ipninuse_model = self.connection.get_model(model.ipn_ipinuse_id, "billservice_ipinuse")
-				
-				if ipninuse_model.id!=pool_id or ipninuse_model.ip!=model.ipn_ip_address:
-					self.connection.iddelete(ipninuse_model.id, "billservice_ipinuse")
-					model.ipn_ipinuse_id=None
-					
-			
-			if pool_id!=0:
-				ipninuse_model= Object()
-				ipninuse_model.pool_id=pool_id
-				ipninuse_model.ip=model.ipn_ip_address
-				ipninuse_model.datetime='now()'
-				ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
-				model.ipn_ipinuse_id=ipninuse_model.id
-				#self.connection.save(model, "billservice_account")
+        	pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
+        	if pool_id!=0 and model.ipn_ip_address==u'0.0.0.0':
+        		QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPN пул, но не назначили ip адрес."))
+        		self.connection.rollback()
+        		return 
+        	if  model.__dict__.get('ipn_ipinuse_id'):
+        		ipninuse_model = self.connection.get_model(model.ipn_ipinuse_id, "billservice_ipinuse")
+                if ipninuse_model.pool_id != pool_id or ipninuse_model.ip!=model.ipn_ip_address:
+                    ipinuse_model.disabled="now()"
+                    self.connection.save(ipninuse_model, "billservice_ipinuse")
+                    model.ipn_ipinuse_id=None
+        	
+        	if pool_id!=0:
+        		ipninuse_model= Object()
+        		ipninuse_model.pool_id=pool_id
+        		ipninuse_model.ip=model.ipn_ip_address
+        		ipninuse_model.datetime='now()'
+        		ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
+        		model.ipn_ipinuse_id=ipninuse_model.id
+        		#self.connection.save(model, "billservice_account")
         except Exception, e:
-			print e
-			QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки IPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
-			self.connection.rollback()
-			return 
+        	print e
+        	QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки IPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
+        	self.connection.rollback()
+        	return 
 
 		 #Операции с пулом    
         try:
-			pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
-			if pool_id!=0 and model.vpn_ip_address==u'0.0.0.0':
-				QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали VPN пул, но не назначили ip адрес."))
-				self.connection.rollback()
-				return 			
-			if  model.__dict__.get('vpn_ipinuse_id'):
-				ipninuse_model = self.connection.get_model(model.vpn_ipinuse_id, "billservice_ipinuse")
-				
-				if ipninuse_model.id!=pool_id or ipninuse_model.ip!=model.vpn_ip_address:
-					self.connection.iddelete(ipninuse_model.id, "billservice_ipinuse")
-					model.vpn_ipinuse_id=None
-					
-			
-			if pool_id!=0:
-				ipninuse_model= Object()
-				ipninuse_model.pool_id=pool_id
-				ipninuse_model.ip=model.vpn_ip_address
-				ipninuse_model.datetime='now()'
-				ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
-				model.vpn_ipinuse_id=ipninuse_model.id
-				#self.connection.save(model, "billservice_account")
+        	pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
+        	#===================================================================
+        	# if pool_id!=0 and model.vpn_ip_address==u'0.0.0.0':
+        	#	QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали VPN пул, но не назначили ip адрес."))
+        	#	self.connection.rollback()
+        	#	return 			
+        	#===================================================================
+        	if  model.__dict__.get('vpn_ipinuse_id'):
+        		ipninuse_model = self.connection.get_model(model.vpn_ipinuse_id, "billservice_ipinuse")
+        		
+                if ipninuse_model.pool_id!=pool_id or ipninuse_model.ip!=model.vpn_ip_address:
+                    ipninuse_model.disabled='now()'
+                    self.connection.save(ipninuse_model, "billservice_ipinuse")
+                    model.vpn_ipinuse_id=None
+        			
+        	
+        	if pool_id!=0:
+        		ipninuse_model= Object()
+        		ipninuse_model.pool_id=pool_id
+        		ipninuse_model.ip=model.vpn_ip_address
+        		ipninuse_model.datetime='now()'
+        		ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
+        		model.vpn_ipinuse_id=ipninuse_model.id
+        		#self.connection.save(model, "billservice_account")
         except Exception, e:
-			print e
-			QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки VPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
-			self.connection.rollback()
-			return 
+        	print e
+        	QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки VPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
+        	self.connection.rollback()
+        	return 
                 
          #Операции с vpn ipv6 пулом    
         try:

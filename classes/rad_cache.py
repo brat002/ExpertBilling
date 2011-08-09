@@ -10,6 +10,7 @@ from rad_class.SpeedlimitData import SpeedlimitData
 from rad_class.RadiusAttrsData import RadiusAttrsData
 from rad_class.SubAccountsData import SubAccountsData
 from core_cache import TimePeriodAccessCache as PeriodCache
+from rad_class.IpPoolData import IpPoolData
 from common.AddonServiceData import AddonServiceData
 #from common.AddonServiceTarifData import AddonServiceTarifData
 from common.AccountAddonServiceData import AccountAddonServiceData
@@ -17,7 +18,7 @@ from common.AccountAddonServiceData import AccountAddonServiceData
 from core_cache import AddonServiceCache, AddonServiceTarifCache, AccessParametersCache
 
 class RadCaches(CacheCollection):
-    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache', 'subaccount_cache')
+    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache', 'subaccount_cache','ippool_cache')
     
     def __init__(self, date, fMem):
         super(RadCaches, self).__init__(date)
@@ -31,7 +32,8 @@ class RadCaches(CacheCollection):
         self.addonservice_cache = AddonServiceCache()
         self.accountaddonservice_cache = AccountAddonServiceCache()
         self.subaccount_cache = SubAccountsCache()
-        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache, self.subaccount_cache]
+        self.ippool_cache = IpPoolCache()
+        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache, self.subaccount_cache, self.ippool_cache]
 
 
 class AccountCache(CacheItem):
@@ -122,6 +124,13 @@ class AddonServiceCache(SimpleDictCache):
     datatype = AddonServiceData
     sql = core_sql['addon_service']
     
+class IpPoolCache(SimpleDictCache):
+    '''By id'''
+    __slots__ = ()
+    datatype = IpPoolData
+    sql = rad_sql['ippool']
+    
+        
 class AccountAddonServiceCache(CacheItem):
     __slots__ = ('by_id', 'by_account', 'by_subaccount', 'by_service')
     
