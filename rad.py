@@ -748,6 +748,23 @@ class HandleSAuth(HandleSBase):
                 self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
             else:
                 self.replypacket.AddAttribute(attr.attrid, str(attr.value))
+    
+    def find_free_ip(self,id):
+        def next(id):
+            pool= self.caches.ippool_cache.get(id)
+            if not pool: return None
+            return pool.next_pool_id
+        
+        processed_pools=[]
+        while True:
+            id=next(id)
+            if not id: return None,None   
+            if id in processed_pools: logger.error("Recursion in ippools was found");  return id,None
+            
+            processed_pools.append(id)
+            vars.cursor.execute('SELECT get_free_ip_from_pool(%s);', (id,))
+            framed_ip_address = vars.cursor.fetchone()
+            if framed_ip_address: return id, framed_ip_address
 
     def create_speed(self, nas, subacc_id, tarif_id, account_id, speed=''):
         if not (nas.speed_value1 or nas.speed_value2): return
@@ -1021,24 +1038,41 @@ class HandleSAuth(HandleSBase):
                     return self.auth_NA(authobject) 
             
             
-            #===================================================================
-            # framed_ip_address = None
-            # if acc.vpn_ip_address == '0.0.0.0' and acc.ipv4_vpn_pool_id and acc.vpn_ipinuse_id is None:
-            #    
-            #    vars.cursor_lock.acquire()
-            #    try:
-            #        vars.cursor.execute('SELECT get_free_ip_from_pool(%s);', (acc.ipv4_vpn_pool_id,))
-            #        framed_ip_address = vars.cursor.fetchone()
-            #    except Exception, ex:
-            #        vars.cursor_lock.release()
-            #        logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), acc.account_id, acc.vpn_ipinuse_id, repr(ex)))
-            #        return self.auth_NA(authobject) 
-            #    else:
-            #        vars.cursor_lock.release()
-            # else:
-            #    framed_ip_address = acc.vpn_ip_address
-            #===================================================================
-            
+            framed_ip_address = None
+            ipinuse_id=''
+            if acc.vpn_ip_address in ('0.0.0.0','') and acc.ipv4_vpn_pool_id:
+               
+               with vars.cursor_lock:
+                   try:
+                       pool_id=acc.ipv4_vpn_pool_id
+                       vars.cursor.execute('SELECT get_free_ip_from_pool(%s);', (acc.ipv4_vpn_pool_id,))
+                       framed_ip_address = vars.cursor.fetchone()
+                       if not framed_ip_address:
+                           pool_id, framed_ip_address = self.find_free_ip(pool_id)
+                       
+                       
+    
+                       if not framed_ip_address:
+                            logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, acc.ipv4_vpn_pool_id))
+                            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
+                            #vars.cursor_lock.release()
+                            return self.auth_NA(authobject)
+                       
+                       vars.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip) VALUES(%s,%s) RETURNING id;",(pool_id, framed_ip_address))
+                       ipinuse_id=vars.cursor.fetchone()[0]
+                       #vars.cursor.connection.commit()   
+                       #vars.cursor_lock.release()
+                                
+                   except Exception, ex:
+                       #vars.cursor_lock.release()
+                       logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, acc.ipv4_vpn_pool_id, repr(ex)))
+                       sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
+                       return self.auth_NA(authobject) 
+                   #else:
+                   #    vars.cursor_lock.release()
+            else:
+               framed_ip_address = acc.vpn_ip_address
+
             authobject.set_code(2)
             self.replypacket.username = str(username) #Нельзя юникод
             self.replypacket.password = str(password) #Нельзя юникод
@@ -1051,7 +1085,7 @@ class HandleSAuth(HandleSBase):
                 self.replypacket.AddAttribute('Framed-IPv6-Prefix', '::/128')
             #account_speed_limit_cache
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
-            self.replypacket.AddAttribute('Class', str("%s,%s" % (subacc.id,str(self.session_speed))))
+            self.replypacket.AddAttribute('Class', str("%s,%s,%s" % (subacc.id,ipinuse_id,str(self.session_speed))))
             self.add_values(acc.tarif_id)
             #print "Setting Speed For User" , self.speed
             if vars.SQLLOG_SUCCESS:
@@ -1452,7 +1486,7 @@ class HandleSAcct(HandleSBase):
             return None
         
         
-        subacc_id, session_speed = self.packetobject.get('Class', ",")[0].split(",")
+        subacc_id, ipinuse_id, session_speed = self.packetobject.get('Class', ",")[0].split(",")
         #if 0: assert isinstance(nas, NasData)
         logger.info('ACCT: Extracting subacc_id, speed from cookie: subacc=%s speed=%s', (subacc_id, session_speed,))
         self.replypacket.secret=str(nasses[0].secret)  
@@ -1584,6 +1618,7 @@ class HandleSAcct(HandleSBase):
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
                              """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0], acc.account_id, self.access_type,))
 
+            self.cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s", (ipinuse_id,))
                
         return self.replypacket
 
