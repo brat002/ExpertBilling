@@ -659,7 +659,7 @@ def get_free_addreses_from_pool(connection, pool_id, count=-1, only_from_pool=Tr
     if default_ip:
         default_ip = IPy.IP(default_ip).int()
     pool = connection.sql("SELECT * FROM billservice_ippool WHERE id=%s" % (pool_id))[0]
-    ipinuse = connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s" % pool.id)
+    ipinuse = connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s and disabled is Null" % pool.id)
     accounts_ip = connection.sql("SELECT ipn_ip_address, vpn_ip_address FROM billservice_subaccount")
     connection.commit()
     ipversion = 4 if pool.type<2 else  6

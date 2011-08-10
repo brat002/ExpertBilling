@@ -155,24 +155,11 @@ class check_vpn_access(Thread):
                 if 0: assert isinstance(caches, CoreCaches)             
                    
                 cur = self.connection.cursor()
-                #close frozen sessions
-                #now = datetime.datetime.now()
                 now = dateAT
-                #cur.execute("""UPDATE radius_activesession 
-                #               SET session_time=extract(epoch FROM date_end-date_start), date_end=interrim_update, session_status='NACK' 
-                #               WHERE ((now()-interrim_update>=interval '00:10:00') or (now()-date_start>=interval '00:10:00' and interrim_update IS Null)) AND date_end IS Null;
-                #               """)
-#===============================================================================
-#                cur.execute("""UPDATE radius_activesession 
-#                               SET session_time=extract(epoch FROM date_end-date_start), date_end=now(), session_status='NACK' 
-#                               WHERE now()-date_start>=interval '00:15:00' and interrim_update IS Null and session_status='ACTIVE' AND date_end IS Null;
-#                               UPDATE radius_activesession SET session_status='ACK' WHERE date_end IS Null AND session_status='ACTIVE');""")
-#===============================================================================
+
                 cur.connection.commit()
-                #cur.execute("""DELETE FROM radius_activesession WHERE session_time = 0;""")
-                #cur.connection.commit()
                 cur.execute("""SELECT rs.id,rs.account_id, rs.subaccount_id, rs.sessionid,rs.framed_ip_address, rs.speed_string,
-                                    lower(rs.framed_protocol) AS access_type,rs.nas_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start
+                                    lower(rs.framed_protocol) AS access_type,rs.nas_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start,rs.ipinuse_id
                                     FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", (dateAT, dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
@@ -247,6 +234,9 @@ class check_vpn_access(Thread):
                         if result is not None:
                             cur.execute("""UPDATE radius_activesession SET session_status=%s, acct_terminate_cause='BILLING_POD_REQUEST' WHERE sessionid=%s;
                                         """, (disconnect_result, rs.sessionid,))
+                            if rs.ipinuse_id and disconnect_result=='ACK':
+                                cur.execute("""UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s;
+                                        """, ( rs.ipinuse_id,))                                
                             cur.connection.commit()  
                         
                         from_start = (dateAT-rs.date_start).seconds+(dateAT-rs.date_start).days*86400
@@ -259,7 +249,7 @@ class check_vpn_access(Thread):
                     except Exception, ex:
                         logger.error("%s: row exec exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                         if isinstance(ex, vars.db_errors): raise ex
-                    
+                cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE dynamic=True and disabled is Null and (ip::text not in (SELECT DISTINCT framed_ip_address FROM radius_activesession WHERE session_status='ACTIVE' or session_status='NACK'))")    
                 cur.connection.commit()   
                 cur.close()
                 logger.info("VPNALIVE: VPN thread run time: %s", time.clock() - a)

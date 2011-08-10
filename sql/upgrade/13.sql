@@ -5,3 +5,6 @@ ALTER TABLE billservice_subaccount
    ADD COLUMN ipv4_vpn_pool_id integer;
 
 
+ALTER TABLE billservice_ipinuse
+  DROP CONSTRAINT pool_ip_unique;
+
