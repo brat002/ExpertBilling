@@ -730,7 +730,7 @@ class MainWindow(QtGui.QMainWindow):
         self.fileToolBar.setFloatable(False)
 
         self.fileToolBar.setAllowedAreas(QtCore.Qt.TopToolBarArea)
-        self.fileToolBar.setIconSize(QtCore.QSize(24,24))
+        self.fileToolBar.setIconSize(QtCore.QSize(16,16))
 
         #self.fileToolBar.addAction(self.timePeriodAct)
         #self.fileToolBar.addAction(self.tclassesAct)

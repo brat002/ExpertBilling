@@ -1058,7 +1058,7 @@ class HandleSAuth(HandleSBase):
                             #vars.cursor_lock.release()
                             return self.auth_NA(authobject)
                        
-                       vars.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip) VALUES(%s,%s) RETURNING id;",(pool_id, framed_ip_address))
+                       vars.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,dynamic) VALUES(%s,%s,True) RETURNING id;",(pool_id, framed_ip_address))
                        ipinuse_id=vars.cursor.fetchone()[0]
                        #vars.cursor.connection.commit()   
                        #vars.cursor_lock.release()
@@ -1568,13 +1568,13 @@ class HandleSAcct(HandleSBase):
             if allow_write:
                 self.cur.execute("""INSERT INTO radius_activesession(account_id, subaccount_id, sessionid, date_start,
                                  caller_id, called_id, framed_ip_address, nas_id, 
-                                 framed_protocol, session_status, nas_int_id, speed_string)
-                                 VALUES (%s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s);
+                                 framed_protocol, session_status, nas_int_id, speed_string,nas_port_id,ipinuse_id)
+                                 VALUES (%s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s,%s, %s);
                                  """, (acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now,
                                         self.packetobject['Calling-Station-Id'][0], 
                                         self.packetobject['Called-Station-Id'][0], 
                                         self.packetobject.get('Framed-IP-Address',[''])[0],
-                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id, session_speed if not sessions_speed.get(acc.account_id, "") else sessions_speed.get(acc.account_id, "")))
+                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id, session_speed if not sessions_speed.get(acc.account_id, "") else sessions_speed.get(acc.account_id, ""),self.packetobject['Nas-Port-Id'][0] if self.packetobject.get('Nas-Port-Id') else '' ,ipinuse_id if ipinuse_id else None ))
                 try:
                     #???? Locks, anyone??
                     del sessions_speed[acc.account_id]

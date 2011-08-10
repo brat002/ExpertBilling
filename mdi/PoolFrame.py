@@ -247,7 +247,7 @@ class PoolEbs(ebsTableWindow):
     def refresh(self):
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.clearContents()
-        pools = self.connection.sql("SELECT ippool.*, (SELECT count(*) FROM billservice_ipinuse as ipinuse WHERE ipinuse.pool_id=ippool.id) as count_used FROM billservice_ippool as ippool ORDER BY ippool.name ASC")
+        pools = self.connection.sql("SELECT ippool.*, (SELECT count(*) FROM billservice_ipinuse as ipinuse WHERE ipinuse.pool_id=ippool.id and ipinuse.disabled is Null) as count_used FROM billservice_ippool as ippool ORDER BY ippool.name ASC")
         self.connection.commit()
         self.tableWidget.setRowCount(len(pools))
         i=0

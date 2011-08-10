@@ -832,13 +832,13 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.speed=''
 		 #Операции с пулом    
         try:
-        	pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
-        	if pool_id!=0 and model.ipn_ip_address==u'0.0.0.0':
+            pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
+            if pool_id!=0 and model.ipn_ip_address==u'0.0.0.0':
         		QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPN пул, но не назначили ip адрес."))
         		self.connection.rollback()
         		return 
-        	if  model.__dict__.get('ipn_ipinuse_id'):
-        		ipninuse_model = self.connection.get_model(model.ipn_ipinuse_id, "billservice_ipinuse")
+            if  model.__dict__.get('ipn_ipinuse_id'):
+                ipninuse_model = self.connection.get_model(model.ipn_ipinuse_id, "billservice_ipinuse")
                 if ipninuse_model.pool_id != pool_id or ipninuse_model.ip!=model.ipn_ip_address:
                     ipinuse_model.disabled="now()"
                     self.connection.save(ipninuse_model, "billservice_ipinuse")
@@ -860,29 +860,23 @@ class SubaccountLinkDialog(QtGui.QDialog):
 
 		 #Операции с пулом    
         try:
-        	pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
-        	#===================================================================
-        	# if pool_id!=0 and model.vpn_ip_address==u'0.0.0.0':
-        	#	QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали VPN пул, но не назначили ip адрес."))
-        	#	self.connection.rollback()
-        	#	return 			
-        	#===================================================================
-        	if  model.__dict__.get('vpn_ipinuse_id'):
-        		ipninuse_model = self.connection.get_model(model.vpn_ipinuse_id, "billservice_ipinuse")
-        		
+            pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
+            if  model.__dict__.get('vpn_ipinuse_id'):
+                ipninuse_model = self.connection.get_model(model.vpn_ipinuse_id, "billservice_ipinuse")
                 if ipninuse_model.pool_id!=pool_id or ipninuse_model.ip!=model.vpn_ip_address:
                     ipninuse_model.disabled='now()'
                     self.connection.save(ipninuse_model, "billservice_ipinuse")
                     model.vpn_ipinuse_id=None
         			
         	
-        	if pool_id!=0:
-        		ipninuse_model= Object()
-        		ipninuse_model.pool_id=pool_id
-        		ipninuse_model.ip=model.vpn_ip_address
-        		ipninuse_model.datetime='now()'
-        		ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
-        		model.vpn_ipinuse_id=ipninuse_model.id
+            if pool_id!=0:
+                model.ipv4_vpn_pool_id=pool_id
+                ipninuse_model= Object()
+                ipninuse_model.pool_id=pool_id
+                ipninuse_model.ip=model.vpn_ip_address
+                ipninuse_model.datetime='now()'
+                ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
+                model.vpn_ipinuse_id=ipninuse_model.id
         		#self.connection.save(model, "billservice_account")
         except Exception, e:
         	print e
@@ -2122,7 +2116,15 @@ class AccountWindow(QtGui.QMainWindow):
         except:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
             return
-        
+        a=(model.vpn_ipinuse_id, model.ipn_ipinuse_id,model.vpn_ipv6_ipinuse_id)
+        l=[]
+        for x in a:
+            if x:
+                l.append(str(x))
+        l.append('-10000000')
+        print l
+        print ','.join(l)
+        self.connection.sql("UPDATE billservice_ipinuse SET disabled=now() WHERE id in (%s)" % (','.join(l),),return_response=False)
         if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             self.connection.iddelete(i, "billservice_subaccount")
             self.subAccountLinkRefresh()
