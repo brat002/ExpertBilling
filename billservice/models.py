@@ -1228,3 +1228,7 @@ class RadiusTrafficNode(models.Model):
     value = models.DecimalField(max_digits=30, decimal_places=20)
     timeperiod = models.ForeignKey(TimePeriod)
     cost = models.DecimalField(max_digits=30, decimal_places=20)
+
+class ContractTemplate(models.Model):
+    template = models.TextField()
+    
