@@ -196,7 +196,7 @@ class MonitorEbs(ebsTableWindow):
         self.fixtures()
         
     def fixtures(self, user=None):
-        print 'tratata'
+        #print 'tratata'
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setRowCount(0)
         self.tableWidget.clearContents()

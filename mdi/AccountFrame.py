@@ -3630,6 +3630,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #self.refresh()
         
     def editTarif(self, *args, **kwargs):
+        tarif_id=self.getTarifId()
         if tarif_id<0: return
         model = self.connection.get_model(tarif_id, "billservice_tariff" )
         
@@ -3880,11 +3881,13 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             columns=[u'#', u'Имя пользователя',  u"Договор", u'Баланс', u'Кредит', u'ФИО', u'',  u"<=0 баланс, дней назад", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
 
-        print "sql=", self.sql            
+        print "sql=", self.sql, id       
         if id==-2000 and self.sql:
             accounts = self.connection.get_accounts_for_tilter(self.sql)
-        else:
+        elif id!=-2000:
             accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
+        else:
+            return
         #print accounts
         #print self.getTarifId()
         self.connection.commit()

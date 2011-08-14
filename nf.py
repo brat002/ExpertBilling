@@ -327,7 +327,7 @@ def nfPacketHandle(data, addrport, flowCache):
         flow_data = data[offset:offset + vars.flowLENGTH]
         flow = flow_class(flow_data)
         if 0: assert isinstance(flow, Flow5Data)
-        logger.debug("New flow arrived. src_ip=%s dst_ip=%s: ", (IPy.intToIp(flow.src_addr, 4),IPy.intToIp(flow.dst_addr, 4)))
+        logger.debug("New flow arrived. src_ip=%s dst_ip=%s in_index=%s, out_index=%s: ", (IPy.intToIp(flow.src_addr, 4),IPy.intToIp(flow.dst_addr, 4), flow.in_index, flow.out_index))
         #look for account for ip address
         if vars.SKIP_INDEX_CHECK==False and (flow.out_index == 0 or flow.in_index == flow.out_index):
             logger.debug("flow int index==flow out index %s==%s or out index==0 rejecting", (flow.in_index,flow.out_index,))
@@ -337,36 +337,67 @@ def nfPacketHandle(data, addrport, flowCache):
         nas_id = None
         nasses_list=[nasitem.id for nasitem in nasses]
         
-        for nasitem in nasses:
-            logger.debug("Checking flow for nas_id=: %s", (nasitem.id, ))
-            if not acc_data_src:
-                #Если нашли - больше не проверяем
-                acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, nasitem.id))
-                if acc_data_src:
+        def find_account_by_port(nasses,flow):
+            if not caches.nas_port_cache.by_nas_id: return None, None
+            acc_data_src,acc_data_dst = None, None
+            for nasitem in nasses:
+                logger.debug("Checking flow for nas_id=: %s. Nas-Port", (nasitem.id, ))
+                if not acc_data_src:
+                    acc_data_src = caches.nas_port_cache.by_nas_id.get(nasitem.id,{}).get(flow.in_index,None)
                     nas_id = nasitem.id
-            if not acc_data_dst:
-                #Если нашли - больше не проверяем
-                acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nasitem.id))
-                if acc_data_dst:
+                if not acc_data_dst: 
+                    acc_data_dst = caches.nas_port_cache.by_nas_id.get(nasitem.id,{}).get(flow.out_index,None)
                     nas_id = nasitem.id
-            if acc_data_dst and acc_data_src: break
-        
-        logger.debug("VPN Account without nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
-        if not acc_data_src:
-            #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
-            acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, None))
-            if nasses:
-                nas_id = nasses[0].id
-            else:
-                nas_id = None
+                if acc_data_dst and acc_data_src: return acc_data_src,acc_data_dst, nas_id
+            return acc_data_src,acc_data_dst, nas_id
 
-        if not acc_data_dst:
-            #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
-            acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, None))
-            if nasses:
-                nas_id = nasses[0].id
-            else:
-                nas_id = None
+        def find_account_by_ip(nasses,flow):
+            acc_data_src,acc_data_dst = None, None
+            for nasitem in nasses:
+    
+                logger.debug("Checking flow for nas_id=: %s Account-id", (nasitem.id, ))
+                if not acc_data_src:
+                    #Если нашли - больше не проверяем
+                    acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, nasitem.id))
+                    if acc_data_src:
+                        nas_id = nasitem.id
+                if not acc_data_dst:
+                    #Если нашли - больше не проверяем
+                    acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nasitem.id))
+                    if acc_data_dst:
+                        nas_id = nasitem.id
+                if acc_data_dst and acc_data_src:  return acc_data_src,acc_data_dst, nas_id
+            
+            if not acc_data_src:
+                #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
+                acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, None))
+                if nasses:
+                    nas_id = nasses[0].id
+                else:
+                    nas_id = None
+    
+            if not acc_data_dst:
+                #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
+                acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, None))
+                if nasses:
+                    nas_id = nasses[0].id
+                else:
+                    nas_id = None
+                    
+            logger.debug("VPN Account without nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
+            return acc_data_src,acc_data_dst, nas_id
+
+
+        if flow.in_index==159:
+            pass    
+        acc_data_src,acc_data_dst, nas_id = find_account_by_port(nasses, flow)
+        
+        if not (acc_data_src or acc_data_dst):
+            acc_data_src,acc_data_dst, nas_id = find_account_by_ip(nasses, flow)
+            
+
+        
+
 
         logger.debug("VPN Account with nas for flow src(%s) dst(%s) default nas(%s)", (acc_data_src, acc_data_dst, nas_id, ))
         #Проверка на IPN сеть

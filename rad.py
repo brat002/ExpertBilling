@@ -376,7 +376,7 @@ class AsyncAuthServ(AsyncUDPServer):
             logger.debug("Access type: %s, packet: %s", (access_type, packetobject))
             if access_type in ['PPTP', 'PPPOE', 'W802.1x']:
                 #logger.info("Auth Type %s, raw packet: %s", (access_type, data))
-                coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
+                coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type, dbconn=self.dbconn)
                 coreconnect.nasip = nas_ip
                 coreconnect.fMem = fMem; coreconnect.caches = self.caches
                 authobject, packetfromcore=coreconnect.handle()
@@ -547,7 +547,7 @@ class AuthHandler(Thread):
                 except:
                     pass
                 if access_type in ['PPTP', 'PPPOE', 'W802.1x']:
-                    coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type)
+                    coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type, dbconn=self.dbconn)
                     coreconnect.nasip = nas_ip
                     coreconnect.fMem = fMem; coreconnect.caches = self.caches
                     authobject, packetfromcore=coreconnect.handle()
@@ -724,12 +724,14 @@ class HandleSNA(HandleSBase):
 authenticated_speeds={}
 #auth_class
 class HandleSAuth(HandleSBase):
-    __slots__ = () + ('access_type', 'secret', 'speed','session_speed','nas_id', 'nas_type', 'multilink', 'fMem', 'datetime')
-    def __init__(self,  packetobject, access_type):
+    __slots__ = () + ('access_type', 'secret', 'speed','session_speed','nas_id', 'nas_type', 'multilink', 'fMem', 'datetime','dbconn','cursor')
+    def __init__(self,  packetobject, access_type, dbconn=None):
         self.packetobject = packetobject
         self.access_type=access_type
         self.secret = ''     
         self.session_speed = ''   
+        self.dbconn=dbconn
+        self.cursor=None
         #logger.debugfun('%s', show_packet, (packetobject,))
 
 
@@ -751,7 +753,7 @@ class HandleSAuth(HandleSBase):
     
     def find_free_ip(self,id):
         def next(id):
-            pool= self.caches.ippool_cache.get(id)
+            pool= self.caches.ippool_cache.by_id.get(id)
             if not pool: return None
             return pool.next_pool_id
         
@@ -762,8 +764,9 @@ class HandleSAuth(HandleSBase):
             if id in processed_pools: logger.error("Recursion in ippools was found");  return id,None
             
             processed_pools.append(id)
-            vars.cursor.execute('SELECT get_free_ip_from_pool(%s);', (id,))
-            framed_ip_address = vars.cursor.fetchone()
+
+            self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (id,))
+            framed_ip_address = self.cursor.fetchone()[0]
             if framed_ip_address: return id, framed_ip_address
 
     def create_speed(self, nas, subacc_id, tarif_id, account_id, speed=''):
@@ -864,6 +867,11 @@ class HandleSAuth(HandleSBase):
             elif result_params and not nas.speed_vendor_2:
                 self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
 
+    def create_cursor(self):
+        if not self.cursor:
+            self.cursor=self.dbconn.cursor()
+
+    
     def handle(self):
         global sqlloggerthread
         self.datetime = datetime.datetime.now()
@@ -1024,9 +1032,10 @@ class HandleSAuth(HandleSBase):
             
             if vars.ONLY_ONE==True:
                 vars.cursor_lock.acquire()
+                self.create_cursor()
                 try:
-                    vars.cursor.execute("""SELECT id from radius_activesession WHERE subaccount_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (subacc.id, nas.acct_interim_interval))
-                    if vars.cursor.fetchone():
+                    self.cursor.execute("""SELECT id from radius_activesession WHERE subaccount_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (subacc.id, nas.acct_interim_interval))
+                    if cursor.fetchone():
                         vars.cursor_lock.release()
                         logger.warning("Account already have session on this NAS. If this error persist - check your nas settings and perform maintance radius_activesession table", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
                         sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_RADIUS_ONLY_ONE", service=self.access_type, cause=u'Попытка повторной авторизации на сервере доступа', datetime=self.datetime)
@@ -1040,32 +1049,34 @@ class HandleSAuth(HandleSBase):
             
             framed_ip_address = None
             ipinuse_id=''
-            if acc.vpn_ip_address in ('0.0.0.0','') and acc.ipv4_vpn_pool_id:
+            if subacc.vpn_ip_address in ('0.0.0.0','') and subacc.ipv4_vpn_pool_id:
                
                with vars.cursor_lock:
                    try:
-                       pool_id=acc.ipv4_vpn_pool_id
-                       vars.cursor.execute('SELECT get_free_ip_from_pool(%s);', (acc.ipv4_vpn_pool_id,))
-                       framed_ip_address = vars.cursor.fetchone()
-                       if not framed_ip_address:
-                           pool_id, framed_ip_address = self.find_free_ip(pool_id)
+                       self.create_cursor()
+                       pool_id=subacc.ipv4_vpn_pool_id
+                       self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
+                       vpn_ip_address = self.cursor.fetchone()[0]
+                       if not vpn_ip_address:
+                           pool_id, vpn_ip_address = self.find_free_ip(pool_id)
+
                        
                        
     
-                       if not framed_ip_address:
-                            logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, acc.ipv4_vpn_pool_id))
+                       if not vpn_ip_address:
+                            logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id))
                             sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
                             #vars.cursor_lock.release()
                             return self.auth_NA(authobject)
                        
-                       vars.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,dynamic) VALUES(%s,%s,True) RETURNING id;",(pool_id, framed_ip_address))
-                       ipinuse_id=vars.cursor.fetchone()[0]
+                       self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
+                       ipinuse_id=self.cursor.fetchone()[0]
                        #vars.cursor.connection.commit()   
                        #vars.cursor_lock.release()
                                 
                    except Exception, ex:
                        #vars.cursor_lock.release()
-                       logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, acc.ipv4_vpn_pool_id, repr(ex)))
+                       logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id, repr(ex)))
                        sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
                        return self.auth_NA(authobject) 
                    #else:
@@ -1541,7 +1552,7 @@ class HandleSAcct(HandleSBase):
             
         self.replypacket.code = packet.AccountingResponse
         now = datetime.datetime.now()
-        
+        #print self.packetobject
         #packet_session = self.packetobject['Acct-Session-Id'][0]
         if self.packetobject['Acct-Status-Type']==['Start']:
             if nas_by_int_id:
@@ -1574,7 +1585,7 @@ class HandleSAcct(HandleSBase):
                                         self.packetobject['Calling-Station-Id'][0], 
                                         self.packetobject['Called-Station-Id'][0], 
                                         self.packetobject.get('Framed-IP-Address',[''])[0],
-                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id, session_speed if not sessions_speed.get(acc.account_id, "") else sessions_speed.get(acc.account_id, ""),self.packetobject['Nas-Port-Id'][0] if self.packetobject.get('Nas-Port-Id') else '' ,ipinuse_id if ipinuse_id else None ))
+                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id, session_speed if not sessions_speed.get(acc.account_id, "") else sessions_speed.get(acc.account_id, ""),self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
                 try:
                     #???? Locks, anyone??
                     del sessions_speed[acc.account_id]

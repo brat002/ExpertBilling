@@ -54,14 +54,14 @@ class AddPoolFrame(QtGui.QDialog):
         self.lineEdit_end_ip.setMinimumSize(QtCore.QSize(131, 0))
         self.lineEdit_end_ip.setMaximumSize(QtCore.QSize(16777215, 20))
         self.lineEdit_end_ip.setObjectName(_fromUtf8("lineEdit_end_ip"))
-        self.gridLayout.addWidget(self.lineEdit_end_ip, 1, 2, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_end_ip, 2, 2, 1, 1)
         self.label_to = QtGui.QLabel(self.groupBox_pool)
         self.label_to.setObjectName(_fromUtf8("label_to"))
         self.gridLayout.addWidget(self.label_to, 2, 0, 1, 1)
         self.lineEdit_start_ip = QtGui.QLineEdit(self.groupBox_pool)
         self.lineEdit_start_ip.setMaximumSize(QtCore.QSize(16777215, 20))
         self.lineEdit_start_ip.setObjectName(_fromUtf8("lineEdit_start_ip"))
-        self.gridLayout.addWidget(self.lineEdit_start_ip, 2, 2, 1, 1)
+        self.gridLayout.addWidget(self.lineEdit_start_ip, 1, 2, 1, 1)
         self.label_name = QtGui.QLabel(self.groupBox_pool)
         self.label_name.setObjectName(_fromUtf8("label_name"))
         self.gridLayout.addWidget(self.label_name, 0, 0, 1, 1)
@@ -113,6 +113,24 @@ class AddPoolFrame(QtGui.QDialog):
         self.comboBox_type.setItemData(2, QtCore.QVariant(2))
         self.comboBox_type.addItem("IPv6 IPN")
         self.comboBox_type.setItemData(3, QtCore.QVariant(3))
+
+        items = self.connection.get_models("billservice_ippool",fields=['id','name'])
+        self.connection.commit()
+        i=0
+        self.comboBox_next_pool_id.clear()
+        self.comboBox_next_pool_id.addItem("---")
+        self.comboBox_next_pool_id.setItemData(i, QtCore.QVariant(0))
+        for item in items:
+            if self.model and item.id==self.model.id:continue
+                
+            self.comboBox_next_pool_id.addItem(item.name)
+            self.comboBox_next_pool_id.setItemData(i+1, QtCore.QVariant(item.id))
+            if self.model:
+                if item.id==self.model.next_ippool_id:
+                    self.comboBox_next_pool_id.setCurrentIndex(i+1)
+            
+            i+=1
+
         
         if self.model:
             self.lineEdit_name.setText(self.model.name)
@@ -122,7 +140,7 @@ class AddPoolFrame(QtGui.QDialog):
 
             self.comboBox_type.setCurrentIndex(self.model.type)
 
-
+            
     def accept(self):
         if self.model:
             model = self.model
@@ -163,7 +181,8 @@ class AddPoolFrame(QtGui.QDialog):
             if not (IPy.IP(pool.end_ip)<IPy.IP(model.start_ip) or (IPy.IP(model.end_ip)<IPy.IP(pool.start_ip))):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Новый диапазон уже входит в пул адресов %s" % pool.name))
                 return
-                 
+        
+        model.next_ippool_id = self.comboBox_next_pool_id.itemData(self.comboBox_next_pool_id.currentIndex()).toInt()[0]         
         try:
             self.connection.save(model, "billservice_ippool")
             self.connection.commit()
