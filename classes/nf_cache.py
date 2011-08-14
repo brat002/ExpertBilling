@@ -7,12 +7,13 @@ from nf_class.AccountData import AccountData
 from nf_class.ClassData import ClassData
 from nf_class.GroupsData import GroupsData
 from nf_class.NasData import NasData
+from nf_class.NasPortData import NasPortData
 from IPy import IP, IPint, parseAddress
 from collections import defaultdict
 
 
 class NfCaches(CacheCollection):
-    __slots__ = ('nas_cache', 'account_cache', 'class_cache', 'group_cache', 'tfgroup_cache')
+    __slots__ = ('nas_cache', 'account_cache', 'class_cache', 'group_cache', 'tfgroup_cache', 'nas_port_cache')
     
     def __init__(self, date):
         super(NfCaches, self).__init__(date)
@@ -21,7 +22,8 @@ class NfCaches(CacheCollection):
         self.class_cache = ClassCache()
         self.group_cache = GroupsCache()
         self.tfgroup_cache = TarifCache(self.group_cache)
-        self.caches = [self.nas_cache, self.account_cache, self.class_cache, self.group_cache, self.tfgroup_cache]
+        self.nas_port_cache = NasPortCache()
+        self.caches = [self.nas_cache, self.account_cache, self.class_cache, self.group_cache, self.tfgroup_cache, self.nas_port_cache]
     
 class NasCache(CacheItem):
     '''Cache id -> nas.ip'''
@@ -46,7 +48,32 @@ class NasCache(CacheItem):
             if not self.by_ip.get(item.ipaddress):
                 self.by_ip[item.ipaddress] = []
             self.by_ip[item.ipaddress].append(item)
+         
+class NasPortCache(CacheItem):
+    __slots__ = ('by_nas_id',)
+    
+    datatype = NasPortData
+    sql = nf_sql['nas_port']
+    
+    def __init__(self):
+        super(NasPortCache, self).__init__()
+        self.by_nas_id = {}
+
+    
+    def reindex(self):
+        #self.ip_id = self.datatype(self.data)
+
+        for item in self.data:
+            #print item
+            #assert isinstance(item, self.datatype)
+
+            #Если такого адреса ещё нету в кэше
+            if not self.by_nas_id.get(item.nas_id):
+                self.by_nas_id[item.nas_id] = {}
                 
+            self.by_nas_id.get(item.nas_id)[item.nas_port_id]=item.account_id
+            #self.by_ip[item.ipaddress].append(item)
+                  
 class AccountCache(CacheItem):
     __slots__ = ('vpn_ips', 'ipn_ips', 'ipn_range')
     

@@ -3659,3 +3659,52 @@ class TemplateSelect(QtGui.QDialog):
         QtGui.QDialog.accept(self)
 
 
+class ContractTemplateEdit(QtGui.QDialog):
+    def __init__(self, connection, model=None):
+        super(ContractTemplateEdit, self).__init__()
+        self.model=model
+        self.connection = connection
+        self.setObjectName(_fromUtf8("ContractTemplateEdit"))
+        self.resize(478, 210)
+        self.gridLayout = QtGui.QGridLayout(Dialog)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.groupBox = QtGui.QGroupBox(Dialog)
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout_2.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.label = QtGui.QLabel(self.groupBox)
+        self.label.setScaledContents(False)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout_2.addWidget(self.label, 0, 0, 1, 1)
+        self.lineEdit = QtGui.QLineEdit(self.groupBox)
+        self.lineEdit.setObjectName(_fromUtf8("lineEdit"))
+        self.gridLayout_2.addWidget(self.lineEdit, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 2)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+        self.pushButton_delete = QtGui.QPushButton(self)
+        self.pushButton_delete.setObjectName(_fromUtf8("pushButton_delete"))
+        self.gridLayout.addWidget(self.pushButton_delete, 1, 1, 1, 1)
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("ContractTemplateEdit", "Редактирование шаблона номера договора", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("ContractTemplateEdit", "Шаблон номера договора", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("ContractTemplateEdit", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+        "p, li { white-space: pre-wrap; }\n"
+        "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">$tarif_id</span><span style=\" font-size:8pt;\"> - идентификатор тарифа</span></p>\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">$accounttarif_id</span><span style=\" font-size:8pt;\"> - идентификатор аккаунта на тарифе</span></p>\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\"> $account_id</span><span style=\" font-size:8pt;\"> - идентификатор аккаунта</span></p>\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">$day,$month,$year,$hour,$minute,$second</span><span style=\" font-size:8pt;\"> - дата подключения на тариф</span></p>\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">$account_type</span><span style=\" font-size:8pt;\"> - тип тарифного плана</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_delete.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))

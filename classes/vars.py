@@ -325,7 +325,7 @@ class NfrQueues(object):
 class RadVars(Vars):
     __slots__ = ('SESSION_TIMEOUT', 'GIGAWORD', 'DICT_LIST', 'DICT', 'COMMON_VPN', 'IGNORE_NAS_FOR_VPN', 'IGNORE_NAS_FOR_DHCP',\
                  'MAX_DATAGRAM_LEN', 'AUTH_PORT', 'ACCT_PORT', 'AUTH_SOCK_TIMEOUT', 'ACCT_SOCK_TIMEOUT',\
-                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE', 'POLL_TIMEOUT','EAP_ACCESS_TYPES', 'ONLY_ONE', 'ENABLE_SQLLOG','SQLLOG_FLUSH_TIMEOUT', 'SQLLOG_SUCCESS')
+                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE', 'POLL_TIMEOUT','EAP_ACCESS_TYPES', 'ONLY_ONE', 'ENABLE_SQLLOG','SQLLOG_FLUSH_TIMEOUT', 'SQLLOG_SUCCESS','cursor_lock')
     
     def __init__(self):
         super(RadVars, self).__init__()
@@ -352,6 +352,7 @@ class RadVars(Vars):
         self.ENABLE_SQLLOG = False
         self.SQLLOG_FLUSH_TIMEOUT = 60
         self.SQLLOG_SUCCESS = False
+        self.cursor_lock = Lock()
         
     def get_dynamic(self, **kwargs):
         super(RadVars, self).get_dynamic(**kwargs)

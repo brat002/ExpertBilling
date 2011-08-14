@@ -1,9 +1,9 @@
 from distutils.core import setup
 import py2exe
 import glob, sys, os
-import comments
 import datetime
-dt = datetime.strptime(datetime.datetime.now(), "%d/%m/%y %H:%M")
+import time
+dt = time.strptime("%d/%m/%y %H:%M", datetime.datetime.now())
 sys.path.append(os.path.abspath('../'))
 f=open('version','w')
 f.write(dt)

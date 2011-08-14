@@ -179,7 +179,7 @@ class check_vpn_access(Thread):
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
                         
 
-                        acstatus = (((subacc.allow_vpn_with_null and acc.ballance+acc.credit >=0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0)\
+                        acstatus = acc.account_status==1 and (((subacc.allow_vpn_with_null and acc.ballance+acc.credit >=0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0)\
                                     and \
                                     (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit))) and acc.tarif_active==True
                         
