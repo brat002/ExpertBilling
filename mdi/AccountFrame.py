@@ -3885,6 +3885,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         if id==-2000 and self.sql:
             accounts = self.connection.get_accounts_for_tilter(self.sql)
         elif id!=-2000:
+            print "account for tarif", id
             accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
         else:
             return
