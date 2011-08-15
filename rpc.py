@@ -808,7 +808,7 @@ class RPCServer(object):
             cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
             FROM billservice_account AS acc 
             WHERE get_tarif(acc.id) is Null ORDER BY acc.username ASC;""")
-        elif tarif_id==-2000:
+        elif tarif_id==-1000:
             cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tarif_name
             FROM billservice_account AS acc 
             WHERE get_tarif(acc.id) IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) ORDER BY acc.username ASC;""", (add_data['USER_ID'][1],) )
