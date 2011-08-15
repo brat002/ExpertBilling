@@ -338,7 +338,7 @@ def nfPacketHandle(data, addrport, flowCache):
         nasses_list=[nasitem.id for nasitem in nasses]
         
         def find_account_by_port(nasses,flow):
-            if not caches.nas_port_cache.by_nas_id: return None, None
+            if not caches.nas_port_cache.by_nas_id: return None, None, None
             acc_data_src,acc_data_dst = None, None
             for nasitem in nasses:
                 logger.debug("Checking flow for nas_id=: %s. Nas-Port", (nasitem.id, ))
