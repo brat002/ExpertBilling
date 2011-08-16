@@ -522,7 +522,7 @@ class Account(models.Model):
     Если аренды нет или она истекла, то создаётся новая и пользователю назначается новый IP адрес.
     """
     #user = models.ForeignKey(User,verbose_name=u'Системный пользователь', related_name='user_account2')
-    #agreement = models.ForeignKey('Document', blank=True, null=True)
+    contract = models.TextField(blank=True, default='')
     username = models.CharField(verbose_name=u'Имя пользователя',max_length=200,unique=True)
     password = models.CharField(verbose_name=u'Пароль',max_length=200, blank=True, default='')
     fullname = models.CharField(verbose_name=u'Имя', blank=True, default='', max_length=200)

@@ -3666,9 +3666,9 @@ class ContractTemplateEdit(QtGui.QDialog):
         self.connection = connection
         self.setObjectName(_fromUtf8("ContractTemplateEdit"))
         self.resize(478, 210)
-        self.gridLayout = QtGui.QGridLayout(Dialog)
+        self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
-        self.groupBox = QtGui.QGroupBox(Dialog)
+        self.groupBox = QtGui.QGroupBox(self)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
         self.gridLayout_2.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
@@ -3693,7 +3693,9 @@ class ContractTemplateEdit(QtGui.QDialog):
         self.retranslateUi()
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), self.reject)
+        QtCore.QObject.connect(self.pushButton_delete, QtCore.SIGNAL(_fromUtf8("clicked()")), self.delete)
         QtCore.QMetaObject.connectSlotsByName(self)
+        self.fixtures()
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("ContractTemplateEdit", "Редактирование шаблона номера договора", None, QtGui.QApplication.UnicodeUTF8))
@@ -3708,3 +3710,29 @@ class ContractTemplateEdit(QtGui.QDialog):
         "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">$day,$month,$year,$hour,$minute,$second</span><span style=\" font-size:8pt;\"> - дата подключения на тариф</span></p>\n"
         "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">$account_type</span><span style=\" font-size:8pt;\"> - тип тарифного плана</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_delete.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
+
+    def accept(self):
+        template = unicode(self.lineEdit.text())
+        
+        if template:
+            if self.model:
+                model=self.model
+            else:
+                model = Object()
+                
+            model.template=template
+            model.counter=0
+            self.connection.save(model, "billservice_contracttemplate")
+            self.connection.commit()
+        QtGui.QDialog.accept(self)
+        
+    def delete(self):
+        if self.model:
+            self.connection.iddelete(self.model.id,"billservice_contracttemplate")
+            self.connection.commit()
+        QtGui.QDialog.accept(self)
+        
+    def fixtures(self):
+        if self.model:
+            self.lineEdit.setText(unicode(self.model.template))
+            

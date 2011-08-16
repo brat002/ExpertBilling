@@ -1086,7 +1086,7 @@ class addon_service(Thread):
                         elif service.nas_id!=0:
                             nas = caches.nas_cache.by_id.get(service.nas_id)
 
-                        if (not accountaddonservice.deactivated and not deactivated) and (service.action and not accountaddonservice.action_status) and not accountaddonservice.temporary_blocked:
+                        if (not accountaddonservice.deactivated and not deactivated) and (service.action and not accountaddonservice.action_status) and not accountaddonservice.temporary_blocked and (service.deactivate_service_for_blocked_account==False or ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 )):
                             #выполняем service_activation_action
                             cur.connection.commit()
                             sended = cred(acc, subacc, 'ipn', nas, format_string=service.service_activation_action)

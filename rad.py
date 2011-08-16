@@ -1049,19 +1049,17 @@ class HandleSAuth(HandleSBase):
             
             framed_ip_address = None
             ipinuse_id=''
-            if subacc.vpn_ip_address in ('0.0.0.0','') and subacc.ipv4_vpn_pool_id:
+            if subacc.vpn_ip_address in ('0.0.0.0','') and (subacc.ipv4_vpn_pool_id or acc.vpn_ippool_id):
                
                with vars.cursor_lock:
                    try:
                        self.create_cursor()
-                       pool_id=subacc.ipv4_vpn_pool_id
+                       pool_id=subacc.ipv4_vpn_pool_id if subacc.ipv4_vpn_pool_id else acc.vpn_ippool_id
                        self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
                        vpn_ip_address = self.cursor.fetchone()[0]
                        if not vpn_ip_address:
                            pool_id, vpn_ip_address = self.find_free_ip(pool_id)
 
-                       
-                       
     
                        if not vpn_ip_address:
                             logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id))
