@@ -84,7 +84,7 @@ class CustomDateTimeWidget(QtGui.QWidget):
         self.toolButton_now.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.toolButton_now.setPopupMode(2)
         
-        self.toolButton_now.setIcon(QtGui.QIcon("images/calendar.svg"))
+        self.toolButton_now.setIcon(QtGui.QIcon("images/calendar.png"))
         
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)

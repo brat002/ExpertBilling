@@ -1411,7 +1411,7 @@ class StatReport(QtGui.QMainWindow):
         self.toolBar.addAction(self.configureAction)
         
         self.printAction = QtGui.QAction(self)
-        self.printAction.setIcon(QtGui.QIcon("images/printer.png"))
+        self.printAction.setIcon(QtGui.QIcon("images/document-print.png"))
         self.printAction.setObjectName("printAction")
         self.toolBar.addAction(self.printAction)
         

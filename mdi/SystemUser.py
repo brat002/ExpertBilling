@@ -346,9 +346,9 @@ class SystemUserFrame(QtGui.QDialog):
         self.label.setText(QtGui.QApplication.translate("Dialog", "Разрешённые IP:", None, QtGui.QApplication.UnicodeUTF8))
         self.comment_label.setText(QtGui.QApplication.translate("Dialog", "Комментарий:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_role.setText(QtGui.QApplication.translate("Dialog", "Роль", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_role.setItemText(0, QtGui.QApplication.translate("Dialog", "Администратор", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_role.setItemText(1, QtGui.QApplication.translate("Dialog", "Кассир", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_role.setItemText(2, QtGui.QApplication.translate("Dialog", "Веб-кабинет", None, QtGui.QApplication.UnicodeUTF8))
+        #self.comboBox_role.setItemText(0, QtGui.QApplication.translate("Dialog", "Администратор", None, QtGui.QApplication.UnicodeUTF8))
+        #self.comboBox_role.setItemText(1, QtGui.QApplication.translate("Dialog", "Кассир", None, QtGui.QApplication.UnicodeUTF8))
+        #self.comboBox_role.setItemText(2, QtGui.QApplication.translate("Dialog", "Веб-кабинет", None, QtGui.QApplication.UnicodeUTF8))
         self.status_checkBox.setText(QtGui.QApplication.translate("Dialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
         self.password_pushButton.setText(QtGui.QApplication.translate("Dialog", "Новый пароль", None, QtGui.QApplication.UnicodeUTF8))
    

@@ -1365,7 +1365,7 @@ class CardPreviewDialog(QtGui.QDialog):
         self.commandLinkButton_print = QtGui.QCommandLinkButton(self)
         self.commandLinkButton_print.setMinimumSize(QtCore.QSize(0, 40))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("images/document-print.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("images/document-print.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.commandLinkButton_print.setIcon(icon)
         self.commandLinkButton_print.setObjectName("commandLinkButton_print")
         self.verticalLayout.addWidget(self.commandLinkButton_print)
