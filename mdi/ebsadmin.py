@@ -719,11 +719,13 @@ class MainWindow(QtGui.QMainWindow):
         self.fileToolBar = QtGui.QToolBar(self)
         self.fileToolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.fileToolBar.addAction(self.newAct)
+        self.fileToolBar.addAction(self.nasAct)
         self.fileToolBar.addAction(self.transactionReportAct)
         self.fileToolBar.addAction(self.sessionsMonAct)
         self.fileToolBar.addAction(self.radiuslogReportAct)
-        self.fileToolBar.addAction(self.nasAct)
+        
         self.fileToolBar.addAction(self.addonserviceAct)
+        self.fileToolBar.addAction(self.cardsAct)
         #self.fileToolBar.addAction(self.openAct)
         #self.fileToolBar.addAction(self.settlementPeriodAct)
         self.fileToolBar.setMovable(False)
@@ -735,7 +737,7 @@ class MainWindow(QtGui.QMainWindow):
         #self.fileToolBar.addAction(self.timePeriodAct)
         #self.fileToolBar.addAction(self.tclassesAct)
         
-        #self.fileToolBar.addAction(self.cardsAct)
+        
         
 
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.fileToolBar)

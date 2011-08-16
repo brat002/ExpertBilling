@@ -995,16 +995,16 @@ class CardsChildEbs(ebsTableWindow):
         
         self.date_start = CustomDateTimeWidget()
         self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
-        self.date_start.setCalendarPopup(True)
+        #self.date_start.setCalendarPopup(True)
         self.date_start.setObjectName("date_start")
-        self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
  
         self.date_end = CustomDateTimeWidget()
         self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
-        self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        self.date_end.setCalendarPopup(True)
+        #self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
+        #self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
-        self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
+        #self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
  
         self.label_date_start = QtGui.QLabel()
         self.label_date_start.setMargin(10)

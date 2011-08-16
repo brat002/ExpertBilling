@@ -1111,7 +1111,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_4.addWidget(self.lineEdit_agreement_num, 1, 2, 1, 1)
         self.toolButton_agreement_print = QtGui.QToolButton(self.groupBox_agreement)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("images/document-print.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("images/document-print.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.toolButton_agreement_print.setIcon(icon)
         self.toolButton_agreement_print.setObjectName("toolButton_agreement_print")
         self.gridLayout_4.addWidget(self.toolButton_agreement_print, 1, 3, 1, 1)
