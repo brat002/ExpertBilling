@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>659</width>
+    <width>707</width>
     <height>650</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Редактирование тарифного плана</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
@@ -54,16 +54,35 @@
        <layout class="QGridLayout" name="gridLayout_10">
         <item row="0" column="0">
          <widget class="QLabel" name="tarif_name_label">
+          <property name="toolTip">
+           <string>Уникальное название тарифного плана</string>
+          </property>
+          <property name="whatsThis">
+           <string>Уникальное название тарифного плана</string>
+          </property>
           <property name="text">
            <string>Название</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1" colspan="3">
-         <widget class="QLineEdit" name="tarif_name_edit"/>
+        <item row="0" column="1" colspan="4">
+         <widget class="QLineEdit" name="tarif_name_edit">
+          <property name="toolTip">
+           <string>Уникальное название тарифного плана</string>
+          </property>
+          <property name="whatsThis">
+           <string>Уникальное название тарифного плана</string>
+          </property>
+         </widget>
         </item>
         <item row="1" column="0" colspan="3">
          <widget class="QGroupBox" name="sp_groupbox">
+          <property name="toolTip">
+           <string>Предоставление тарифного плана как пакета на срок расчётного периода</string>
+          </property>
+          <property name="whatsThis">
+           <string>Предоставление тарифного плана как пакета на срок расчётного периода</string>
+          </property>
           <property name="title">
            <string>Пакетный тарифный план</string>
           </property>
@@ -71,114 +90,179 @@
            <bool>true</bool>
           </property>
           <layout class="QGridLayout" name="gridLayout_8">
-           <item row="1" column="0">
-            <widget class="QLabel" name="sp_name_label">
-             <property name="text">
-              <string>Расчётный период</string>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="tarif_cost_edit">
+             <property name="toolTip">
+              <string>Стоимость пакета. Поле не используется для тарификации пакета.</string>
+             </property>
+             <property name="whatsThis">
+              <string>Стоимость пакета. Поле не используется для тарификации пакета.</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QComboBox" name="sp_name_edit"/>
-           </item>
-           <item row="2" column="0">
+           <item row="0" column="0">
             <widget class="QLabel" name="tarif_cost_label">
+             <property name="toolTip">
+              <string>Стоимость пакета. Поле не используется для тарификации пакета.</string>
+             </property>
+             <property name="whatsThis">
+              <string>Стоимость пакета. Поле не используется для тарификации пакета.</string>
+             </property>
              <property name="text">
               <string>Стоимость пакета</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="tarif_cost_edit"/>
-           </item>
-           <item row="4" column="0" colspan="2">
+           <item row="2" column="0" colspan="2">
             <widget class="QCheckBox" name="reset_tarif_cost_edit">
+             <property name="toolTip">
+              <string>В конце расчётного периода будет произведено доснятие неизрасходованных средств до указанной стоимости пакета.</string>
+             </property>
              <property name="text">
               <string>Производить доснятие суммы до стоимости тарифного плана</string>
              </property>
             </widget>
            </item>
-           <item row="3" column="0" colspan="2">
+           <item row="1" column="0" colspan="2">
             <widget class="QCheckBox" name="sp_type_edit">
+             <property name="toolTip">
+              <string>В случае, если на начало расчётного периода у абонента не будет указанной стоимости пакета - он будет заблокирован</string>
+             </property>
+             <property name="whatsThis">
+              <string>В случае, если на начало расчётного периода у абонента не будет указанной стоимости пакета - он будет заблокирован</string>
+             </property>
              <property name="text">
-              <string>Начать при активации у пользователя данного тарифного плана</string>
+              <string>Требовать наличия всей суммы в начале расчётного периода</string>
              </property>
             </widget>
            </item>
           </layout>
          </widget>
         </item>
-        <item row="1" column="3" rowspan="3">
+        <item row="1" column="3" rowspan="4" colspan="2">
          <widget class="QGroupBox" name="components_groupBox">
+          <property name="toolTip">
+           <string>Набор компонентов тарифного плана</string>
+          </property>
+          <property name="whatsThis">
+           <string>Набор компонентов тарифного плана</string>
+          </property>
           <property name="title">
            <string>Набор компонентов</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_9">
            <item row="0" column="0">
-            <layout class="QVBoxLayout">
-             <item>
-              <widget class="QCheckBox" name="transmit_service_checkbox">
-               <property name="text">
-                <string>NetFlow трафик</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="time_access_service_checkbox">
-               <property name="text">
-                <string>Radius время</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="time_access_service_checkbox_2">
-               <property name="text">
-                <string>Radius трафик</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="onetime_services_checkbox">
-               <property name="text">
-                <string>Разовые услуги</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="periodical_services__checkbox">
-               <property name="text">
-                <string>Периодические услуги</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="limites_checkbox">
-               <property name="text">
-                <string>Лимиты</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkBox_3">
-               <property name="text">
-                <string>Подключаемые услуги</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkBox_4">
-               <property name="text">
-                <string>IP телефония</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <widget class="QCheckBox" name="transmit_service_checkbox">
+             <property name="toolTip">
+              <string>Разрешить тарификацию трафика по протоколу NetFlow</string>
+             </property>
+             <property name="text">
+              <string>NetFlow тарификация</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="time_access_service_checkbox">
+             <property name="toolTip">
+              <string>Разрешить тарификацию времени по RADIUS Accounting</string>
+             </property>
+             <property name="whatsThis">
+              <string>Разрешить тарификацию времени по RADIUS Accounting</string>
+             </property>
+             <property name="text">
+              <string>Radius время</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="radius_access_service_checkbox">
+             <property name="toolTip">
+              <string>Разрешить тарификацию трафика по RADIUS Accounting</string>
+             </property>
+             <property name="whatsThis">
+              <string>Разрешить тарификацию трафика по RADIUS Accounting</string>
+             </property>
+             <property name="text">
+              <string>Radius трафик</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="onetime_services_checkbox">
+             <property name="toolTip">
+              <string>Разрешить первоначальное списание за услуги при подключении абонента на тарифный план.</string>
+             </property>
+             <property name="whatsThis">
+              <string>Разрешить первоначальное списание за услуги при подключении абонента на тарифный план.</string>
+             </property>
+             <property name="text">
+              <string>Разовые услуги</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QCheckBox" name="periodical_services__checkbox">
+             <property name="toolTip">
+              <string>Разрешить тарификацию периодических услуг(Абонентская плата и другие периодические списания)</string>
+             </property>
+             <property name="whatsThis">
+              <string>Разрешить тарификацию периодических услуг(Абонентская плата и другие периодические списания)</string>
+             </property>
+             <property name="text">
+              <string>Периодические услуги</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QCheckBox" name="limites_checkbox">
+             <property name="toolTip">
+              <string>Разрешить использование квот NetFlow трафика.</string>
+             </property>
+             <property name="whatsThis">
+              <string>Разрешить использование квот NetFlow трафика.</string>
+             </property>
+             <property name="text">
+              <string>Лимиты трафика</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QCheckBox" name="checkBox_addonservices">
+             <property name="toolTip">
+              <string>Разрешить активацию подключаемых услуг абонентом</string>
+             </property>
+             <property name="whatsThis">
+              <string>Разрешить активацию подключаемых услуг абонентом</string>
+             </property>
+             <property name="text">
+              <string>Подключаемые услуги</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QCheckBox" name="checkBox_ip_telephony">
+             <property name="toolTip">
+              <string>Разрешить тарификацию IP телефонии</string>
+             </property>
+             <property name="whatsThis">
+              <string>Разрешить тарификацию IP телефонии</string>
+             </property>
+             <property name="text">
+              <string>IP телефония</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
         </item>
-        <item row="10" column="0" colspan="3">
+        <item row="11" column="0" colspan="3">
          <widget class="QLabel" name="tarif_description_label">
+          <property name="toolTip">
+           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
+          </property>
+          <property name="whatsThis">
+           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
+          </property>
           <property name="text">
            <string>Описание тарифного плана</string>
           </property>
@@ -187,83 +271,202 @@
           </property>
          </widget>
         </item>
-        <item row="11" column="0" colspan="4">
+        <item row="12" column="0" colspan="5">
          <widget class="QTextEdit" name="tarif_description_edit">
+          <property name="toolTip">
+           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
+          </property>
+          <property name="whatsThis">
+           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
+          </property>
           <property name="textInteractionFlags">
            <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextEditable|Qt::TextEditorInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
           </property>
          </widget>
         </item>
-        <item row="12" column="0" colspan="2">
+        <item row="13" column="0" colspan="2">
          <widget class="QCheckBox" name="tarif_status_edit">
+          <property name="toolTip">
+           <string>Признак возможности работы абонента на данном тарифном плане</string>
+          </property>
+          <property name="whatsThis">
+           <string>Признак возможности работы абонента на данном тарифном плане</string>
+          </property>
           <property name="text">
-           <string>Активен</string>
+           <string>Тарифный план активен</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="1" colspan="2">
-         <widget class="QComboBox" name="access_type_edit"/>
+        <item row="6" column="1" colspan="2">
+         <widget class="QComboBox" name="access_type_edit">
+          <property name="toolTip">
+           <string>Способ доступа абонента</string>
+          </property>
+          <property name="whatsThis">
+           <string>Способ доступа абонента</string>
+          </property>
+         </widget>
         </item>
-        <item row="7" column="0">
-         <widget class="QLabel" name="label">
+        <item row="8" column="0">
+         <widget class="QLabel" name="label_vpn_ippool">
+          <property name="toolTip">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+          <property name="whatsThis">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
           <property name="text">
            <string>VPN пул</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
+        <item row="6" column="0">
          <widget class="QLabel" name="access_type_label">
+          <property name="toolTip">
+           <string>Способ доступа абонента</string>
+          </property>
+          <property name="whatsThis">
+           <string>Способ доступа абонента</string>
+          </property>
           <property name="text">
            <string>Способ доступа</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="1" colspan="2">
-         <widget class="QCheckBox" name="checkBox_2">
+        <item row="10" column="1" colspan="2">
+         <widget class="QCheckBox" name="checkBox_allow_expresscards_activation">
+          <property name="toolTip">
+           <string>Разрешить активацию карт экспресс-оплаты на данном тарифном плане.</string>
+          </property>
+          <property name="whatsThis">
+           <string>Разрешить активацию карт экспресс-оплаты на данном тарифном плане.</string>
+          </property>
           <property name="text">
            <string>Разрешить активацию карт экспресс-оплаты</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="1" colspan="2">
-         <widget class="QComboBox" name="comboBox"/>
+        <item row="8" column="1" colspan="2">
+         <widget class="QComboBox" name="comboBox_vpn_ippool">
+          <property name="toolTip">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+          <property name="whatsThis">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+         </widget>
         </item>
-        <item row="5" column="3">
-         <widget class="QCheckBox" name="checkBox">
+        <item row="6" column="4">
+         <widget class="QCheckBox" name="checkBox_ipn_actions">
+          <property name="toolTip">
+           <string>Производить дополнительно IPN действия на сервере доступа для данного способа доступа.</string>
+          </property>
+          <property name="whatsThis">
+           <string>Производить дополнительно IPN действия на сервере доступа для данного способа доступа.</string>
+          </property>
           <property name="text">
            <string>Производить IPN действия</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="access_type_label_2">
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_systemgroup">
+          <property name="toolTip">
+           <string>Настройки видимости тарифного плана для системных пользователей</string>
+          </property>
+          <property name="whatsThis">
+           <string>Настройки видимости тарифного плана для системных пользователей</string>
+          </property>
           <property name="text">
            <string>Видимость для группы</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="1" colspan="2">
-         <widget class="QComboBox" name="access_type_edit_2"/>
+        <item row="4" column="1" colspan="2">
+         <widget class="QComboBox" name="comboBox_system_group">
+          <property name="toolTip">
+           <string>Настройки видимости тарифного плана для системных пользователей</string>
+          </property>
+          <property name="whatsThis">
+           <string>Настройки видимости тарифного плана для системных пользователей</string>
+          </property>
+         </widget>
         </item>
-        <item row="4" column="0">
+        <item row="5" column="0">
          <widget class="QLabel" name="access_time_label">
+          <property name="toolTip">
+           <string>Разрешённое время доступа/авторизации для абонентов</string>
+          </property>
+          <property name="whatsThis">
+           <string>Разрешённое время доступа/авторизации для абонентов</string>
+          </property>
           <property name="text">
            <string>Время доступа</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="1" colspan="2">
-         <widget class="QComboBox" name="access_time_edit"/>
+        <item row="5" column="1" colspan="2">
+         <widget class="QComboBox" name="access_time_edit">
+          <property name="toolTip">
+           <string>Разрешённое время доступа/авторизации для абонентов</string>
+          </property>
+          <property name="whatsThis">
+           <string>Разрешённое время доступа/авторизации для абонентов</string>
+          </property>
+         </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_2">
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_contracttemplate">
+          <property name="toolTip">
+           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
+          </property>
+          <property name="whatsThis">
+           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
+          </property>
           <property name="text">
            <string>Шаблон номера договора</string>
           </property>
          </widget>
         </item>
+        <item row="3" column="1">
+         <widget class="QComboBox" name="comboBox_contracttemplate">
+          <property name="toolTip">
+           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
+          </property>
+          <property name="whatsThis">
+           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="sp_name_label">
+          <property name="toolTip">
+           <string>Расчётный период тарифного плана</string>
+          </property>
+          <property name="whatsThis">
+           <string>Расчётный период тарифного плана</string>
+          </property>
+          <property name="text">
+           <string>Расчётный период</string>
+          </property>
+         </widget>
+        </item>
         <item row="2" column="1" colspan="2">
-         <widget class="QComboBox" name="comboBox_2"/>
+         <widget class="QComboBox" name="sp_name_edit">
+          <property name="toolTip">
+           <string>Расчётный период тарифного плана</string>
+          </property>
+          <property name="whatsThis">
+           <string>Расчётный период тарифного плана</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QToolButton" name="toolButton">
+          <property name="text">
+           <string>...</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -274,6 +477,12 @@
        <layout class="QGridLayout" name="gridLayout_12">
         <item row="0" column="0">
          <widget class="QGroupBox" name="speed_access_groupBox">
+          <property name="toolTip">
+           <string>Настройки скорости абонентской линии по-умолчанию для абонентов данного тарифного плана</string>
+          </property>
+          <property name="whatsThis">
+           <string>Настройки скорости абонентской линии по-умолчанию для абонентов данного тарифного плана</string>
+          </property>
           <property name="title">
            <string>Настройки скорости по-умолчанию</string>
           </property>
@@ -391,6 +600,12 @@
         </item>
         <item row="1" column="0">
          <widget class="QGroupBox" name="groupBox">
+          <property name="toolTip">
+           <string>Настройки скорости в зависимости от времени(периода тарификации)</string>
+          </property>
+          <property name="whatsThis">
+           <string>Настройки скорости в зависимости от времени(периода тарификации)</string>
+          </property>
           <property name="title">
            <string>Настройки скорости по времени</string>
           </property>
@@ -475,46 +690,6 @@
              <property name="sortingEnabled">
               <bool>false</bool>
              </property>
-             <column>
-              <property name="text">
-               <string>Id</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Time</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>MAX</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>MIN</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>BURST</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Burst Tr</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Burst time</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Priority</string>
-              </property>
-             </column>
             </widget>
            </item>
           </layout>
@@ -524,7 +699,7 @@
       </widget>
       <widget class="QWidget" name="tab_4">
        <attribute name="title">
-        <string>Оплата за трафик</string>
+        <string>NetFlow тарификация</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_14">
         <item row="0" column="0">
@@ -603,436 +778,6 @@
           <row/>
           <row/>
           <row/>
-          <row>
-           <property name="text">
-            <string>6</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>7</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>8</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>9</string>
-           </property>
-          </row>
-          <row>
-           <property name="text">
-            <string>10</string>
-           </property>
-          </row>
-          <column>
-           <property name="text">
-            <string>Id</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>От МБ</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>До МБ</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Класс трафика</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Вх</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Исх</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Тр</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Время</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Цена</string>
-           </property>
-          </column>
-          <item row="0" column="1">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="0" column="2">
-           <property name="text">
-            <string>20</string>
-           </property>
-          </item>
-          <item row="0" column="3">
-           <property name="text">
-            <string>VPN Ангарская</string>
-           </property>
-          </item>
-          <item row="0" column="4">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="0" column="5">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="0" column="6">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="0" column="7">
-           <property name="text">
-            <string>00:00:00 2008-11-11</string>
-           </property>
-          </item>
-          <item row="0" column="8">
-           <property name="text">
-            <string>65</string>
-           </property>
-          </item>
-          <item row="1" column="1">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="1" column="2">
-           <property name="text">
-            <string>20</string>
-           </property>
-          </item>
-          <item row="1" column="3">
-           <property name="text">
-            <string>VPN Ангарская</string>
-           </property>
-          </item>
-          <item row="1" column="4">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="1" column="5">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="1" column="6">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="1" column="7">
-           <property name="text">
-            <string>01:00:00 2008-21-11</string>
-           </property>
-          </item>
-          <item row="1" column="8">
-           <property name="text">
-            <string>65</string>
-           </property>
-          </item>
-          <item row="2" column="1">
-           <property name="text">
-            <string>20</string>
-           </property>
-          </item>
-          <item row="2" column="2">
-           <property name="text">
-            <string>80</string>
-           </property>
-          </item>
-          <item row="2" column="3">
-           <property name="text">
-            <string>VPN Ангарская</string>
-           </property>
-          </item>
-          <item row="2" column="4">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="2" column="5">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="2" column="6">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="2" column="7">
-           <property name="text">
-            <string>22:00:00 2008-11-11</string>
-           </property>
-          </item>
-          <item row="2" column="8">
-           <property name="text">
-            <string>40</string>
-           </property>
-          </item>
-          <item row="3" column="1">
-           <property name="text">
-            <string>20</string>
-           </property>
-          </item>
-          <item row="3" column="2">
-           <property name="text">
-            <string>80</string>
-           </property>
-          </item>
-          <item row="3" column="3">
-           <property name="text">
-            <string>VPN Ангарская Медиа</string>
-           </property>
-          </item>
-          <item row="3" column="4">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="3" column="5">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="3" column="6">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="3" column="7">
-           <property name="text">
-            <string>22:00:00 2008-11-11</string>
-           </property>
-          </item>
-          <item row="3" column="8">
-           <property name="text">
-            <string>40</string>
-           </property>
-          </item>
-          <item row="4" column="1">
-           <property name="text">
-            <string>20</string>
-           </property>
-          </item>
-          <item row="4" column="2">
-           <property name="text">
-            <string>80</string>
-           </property>
-          </item>
-          <item row="4" column="3">
-           <property name="text">
-            <string>VPN Ангарская</string>
-           </property>
-          </item>
-          <item row="4" column="4">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="4" column="5">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="4" column="6">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="4" column="7">
-           <property name="text">
-            <string>00:00:00 2008-12-11</string>
-           </property>
-          </item>
-          <item row="4" column="8">
-           <property name="text">
-            <string>40</string>
-           </property>
-          </item>
-          <item row="5" column="1">
-           <property name="text">
-            <string>80</string>
-           </property>
-          </item>
-          <item row="5" column="2">
-           <property name="text">
-            <string>150</string>
-           </property>
-          </item>
-          <item row="5" column="3">
-           <property name="text">
-            <string>VPN Ангарская</string>
-           </property>
-          </item>
-          <item row="5" column="4">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="5" column="5">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="5" column="6">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="5" column="7">
-           <property name="text">
-            <string>22:00:00 2008-11-11</string>
-           </property>
-          </item>
-          <item row="5" column="8">
-           <property name="text">
-            <string>10</string>
-           </property>
-          </item>
-          <item row="6" column="1">
-           <property name="text">
-            <string>80</string>
-           </property>
-          </item>
-          <item row="6" column="2">
-           <property name="text">
-            <string>150</string>
-           </property>
-          </item>
-          <item row="6" column="3">
-           <property name="text">
-            <string>VPN Ангарская</string>
-           </property>
-          </item>
-          <item row="6" column="4">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="6" column="5">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="6" column="6">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="6" column="7">
-           <property name="text">
-            <string>22:00:00 2008-11-11</string>
-           </property>
-          </item>
-          <item row="6" column="8">
-           <property name="text">
-            <string>5</string>
-           </property>
-          </item>
-          <item row="7" column="1">
-           <property name="text">
-            <string>150</string>
-           </property>
-          </item>
-          <item row="7" column="2">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="7" column="3">
-           <property name="text">
-            <string>VPN Ангарская</string>
-           </property>
-          </item>
-          <item row="7" column="4">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="7" column="5">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="7" column="6">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="7" column="7">
-           <property name="text">
-            <string>22:00:00 2008-11-11</string>
-           </property>
-          </item>
-          <item row="7" column="8">
-           <property name="text">
-            <string>5</string>
-           </property>
-          </item>
-          <item row="8" column="1">
-           <property name="text">
-            <string>150</string>
-           </property>
-          </item>
-          <item row="8" column="2">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="8" column="3">
-           <property name="text">
-            <string>VPN Ангарская</string>
-           </property>
-          </item>
-          <item row="8" column="4">
-           <property name="text">
-            <string>1</string>
-           </property>
-          </item>
-          <item row="8" column="5">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="8" column="6">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </item>
-          <item row="8" column="7">
-           <property name="text">
-            <string>22:00:00 2008-11-11</string>
-           </property>
-          </item>
-          <item row="8" column="8">
-           <property name="text">
-            <string>5</string>
-           </property>
-          </item>
          </widget>
         </item>
         <item row="3" column="0">
@@ -1052,14 +797,14 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_15">
            <item row="0" column="0">
-            <widget class="QToolButton" name="add_prepaid_time_button">
+            <widget class="QToolButton" name="add_prepaid_traffic_button">
              <property name="text">
               <string>+</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QToolButton" name="del_prepaid_time_button">
+            <widget class="QToolButton" name="del_prepaid_traffic_button">
              <property name="minimumSize">
               <size>
                <width>21</width>
@@ -1107,21 +852,6 @@
           <property name="gridStyle">
            <enum>Qt::DotLine</enum>
           </property>
-          <column>
-           <property name="text">
-            <string>Id</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Класс трафика</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Размер</string>
-           </property>
-          </column>
          </widget>
         </item>
         <item row="6" column="0">
@@ -1148,14 +878,14 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_17">
            <item row="0" column="0">
-            <widget class="QToolButton" name="add_traffic_cost_button_2">
+            <widget class="QToolButton" name="add_radius_traffic_cost_button">
              <property name="text">
               <string>+</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QToolButton" name="del_traffic_cost_button_2">
+            <widget class="QToolButton" name="del_radius_traffic_cost_button">
              <property name="minimumSize">
               <size>
                <width>21</width>
@@ -1184,23 +914,7 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QTableWidget" name="tableWidget_radius_traffic_trafficcost">
-          <column>
-           <property name="text">
-            <string>Объём</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Время</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Цена</string>
-           </property>
-          </column>
-         </widget>
+         <widget class="QTableWidget" name="tableWidget_radius_traffic_trafficcost"/>
         </item>
         <item row="2" column="0">
          <widget class="QGroupBox" name="groupBox_radius_prepaidtraffic">
@@ -1289,7 +1003,7 @@
       </widget>
       <widget class="QWidget" name="tab_radius_time">
        <attribute name="title">
-        <string>Оплата за время</string>
+        <string>Radius время</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
@@ -1302,14 +1016,14 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_18">
            <item row="0" column="0">
-            <widget class="QToolButton" name="add_traffic_cost_button_3">
+            <widget class="QToolButton" name="add_time_cost_button">
              <property name="text">
               <string>+</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QToolButton" name="del_traffic_cost_button_3">
+            <widget class="QToolButton" name="del_time_cost_button">
              <property name="minimumSize">
               <size>
                <width>21</width>
@@ -1357,21 +1071,6 @@
           <property name="gridStyle">
            <enum>Qt::DotLine</enum>
           </property>
-          <column>
-           <property name="text">
-            <string>Id</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Время</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Цена</string>
-           </property>
-          </column>
          </widget>
         </item>
         <item row="2" column="0">
@@ -1462,6 +1161,12 @@
            </item>
            <item row="0" column="1">
             <widget class="QToolButton" name="del_onetime_button">
+             <property name="minimumSize">
+              <size>
+               <width>21</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="text">
               <string>-</string>
              </property>
@@ -1503,21 +1208,6 @@
           <property name="gridStyle">
            <enum>Qt::DotLine</enum>
           </property>
-          <column>
-           <property name="text">
-            <string>Id</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Название</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Стоимость</string>
-           </property>
-          </column>
          </widget>
         </item>
        </layout>
@@ -1536,13 +1226,6 @@
            <enum>QFrame::Raised</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout_21">
-           <item row="0" column="0">
-            <widget class="QToolButton" name="add_periodical_button">
-             <property name="text">
-              <string>+</string>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="1">
             <widget class="QToolButton" name="del_periodical_button">
              <property name="minimumSize">
@@ -1569,6 +1252,19 @@
              </property>
             </spacer>
            </item>
+           <item row="0" column="0">
+            <widget class="QToolButton" name="add_periodical_button">
+             <property name="minimumSize">
+              <size>
+               <width>21</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>+</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -1592,31 +1288,6 @@
           <property name="gridStyle">
            <enum>Qt::DotLine</enum>
           </property>
-          <column>
-           <property name="text">
-            <string>Id</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Название</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Период</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Стоимость</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Способ снятия</string>
-           </property>
-          </column>
          </widget>
         </item>
        </layout>
@@ -1691,31 +1362,6 @@
           <property name="gridStyle">
            <enum>Qt::DotLine</enum>
           </property>
-          <column>
-           <property name="text">
-            <string>Id</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Название</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>За поледний</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Период</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Классы трафика</string>
-           </property>
-          </column>
          </widget>
         </item>
        </layout>
@@ -1735,14 +1381,14 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_26">
            <item row="0" column="0">
-            <widget class="QToolButton" name="add_limit_button_2">
+            <widget class="QToolButton" name="add_addonservice_button">
              <property name="text">
               <string>+</string>
              </property>
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QToolButton" name="del_limit_button_2">
+            <widget class="QToolButton" name="del_addonservice_button">
              <property name="minimumSize">
               <size>
                <width>21</width>
@@ -1771,7 +1417,7 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QTableWidget" name="limit_tableWidget_2">
+         <widget class="QTableWidget" name="tableWidget_addonservices">
           <property name="frameShape">
            <enum>QFrame::Panel</enum>
           </property>
@@ -1790,31 +1436,6 @@
           <property name="gridStyle">
            <enum>Qt::DotLine</enum>
           </property>
-          <column>
-           <property name="text">
-            <string>Id</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Название</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>За поледний</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Период</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Классы трафика</string>
-           </property>
-          </column>
          </widget>
         </item>
        </layout>
@@ -1823,7 +1444,114 @@
     </item>
    </layout>
   </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionSave"/>
+   <addaction name="actionRefresh"/>
+  </widget>
+  <action name="actionRefresh">
+   <property name="icon">
+    <iconset>
+     <normaloff>../images/reload.png</normaloff>../images/reload.png</iconset>
+   </property>
+   <property name="text">
+    <string>Обновить</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset>
+     <normaloff>../images/save.png</normaloff>../images/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Сохранить</string>
+   </property>
+  </action>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>tarif_name_edit</tabstop>
+  <tabstop>sp_groupbox</tabstop>
+  <tabstop>tarif_cost_edit</tabstop>
+  <tabstop>sp_type_edit</tabstop>
+  <tabstop>reset_tarif_cost_edit</tabstop>
+  <tabstop>sp_name_edit</tabstop>
+  <tabstop>comboBox_contracttemplate</tabstop>
+  <tabstop>toolButton</tabstop>
+  <tabstop>comboBox_system_group</tabstop>
+  <tabstop>access_time_edit</tabstop>
+  <tabstop>access_type_edit</tabstop>
+  <tabstop>checkBox_ipn_actions</tabstop>
+  <tabstop>comboBox_vpn_ippool</tabstop>
+  <tabstop>checkBox_allow_expresscards_activation</tabstop>
+  <tabstop>transmit_service_checkbox</tabstop>
+  <tabstop>time_access_service_checkbox</tabstop>
+  <tabstop>radius_access_service_checkbox</tabstop>
+  <tabstop>onetime_services_checkbox</tabstop>
+  <tabstop>periodical_services__checkbox</tabstop>
+  <tabstop>limites_checkbox</tabstop>
+  <tabstop>checkBox_addonservices</tabstop>
+  <tabstop>checkBox_ip_telephony</tabstop>
+  <tabstop>tarif_description_edit</tabstop>
+  <tabstop>tarif_status_edit</tabstop>
+  <tabstop>speed_max_in_edit</tabstop>
+  <tabstop>speed_max_out_edit</tabstop>
+  <tabstop>speed_min_in_edit</tabstop>
+  <tabstop>speed_min_out_edit</tabstop>
+  <tabstop>speed_burst_in_edit</tabstop>
+  <tabstop>speed_burst_out_edit</tabstop>
+  <tabstop>speed_burst_treshold_in_edit</tabstop>
+  <tabstop>speed_burst_treshold_out_edit</tabstop>
+  <tabstop>speed_burst_time_in_edit</tabstop>
+  <tabstop>speed_burst_time_out_edit</tabstop>
+  <tabstop>speed_priority_edit</tabstop>
+  <tabstop>add_speed_button</tabstop>
+  <tabstop>del_speed_button</tabstop>
+  <tabstop>speed_table</tabstop>
+  <tabstop>add_traffic_cost_button</tabstop>
+  <tabstop>del_traffic_cost_button</tabstop>
+  <tabstop>traficcost_tableWidget</tabstop>
+  <tabstop>add_prepaid_traffic_button</tabstop>
+  <tabstop>del_prepaid_traffic_button</tabstop>
+  <tabstop>prepaid_tableWidget</tabstop>
+  <tabstop>reset_traffic_edit</tabstop>
+  <tabstop>add_radius_traffic_cost_button</tabstop>
+  <tabstop>del_radius_traffic_cost_button</tabstop>
+  <tabstop>tableWidget_radius_traffic_trafficcost</tabstop>
+  <tabstop>comboBox_radius_traffic_prepaid_direction</tabstop>
+  <tabstop>spinBox_radius_traffic_prepaid_volume</tabstop>
+  <tabstop>checkBox_radius_traffic_reset_prepaidtraffic</tabstop>
+  <tabstop>comboBox_radius_traffic_direction</tabstop>
+  <tabstop>spinBox_radius_traffic_tarification_step</tabstop>
+  <tabstop>comboBox_radius_traffic_rounding</tabstop>
+  <tabstop>add_time_cost_button</tabstop>
+  <tabstop>del_time_cost_button</tabstop>
+  <tabstop>timeaccess_table</tabstop>
+  <tabstop>prepaid_time_edit</tabstop>
+  <tabstop>reset_time_checkbox</tabstop>
+  <tabstop>comboBox_radius_time_rounding</tabstop>
+  <tabstop>spinBox_radius_time_tarification_step</tabstop>
+  <tabstop>add_onetime_button</tabstop>
+  <tabstop>del_onetime_button</tabstop>
+  <tabstop>onetime_tableWidget</tabstop>
+  <tabstop>add_periodical_button</tabstop>
+  <tabstop>del_periodical_button</tabstop>
+  <tabstop>periodical_tableWidget</tabstop>
+  <tabstop>add_limit_button</tabstop>
+  <tabstop>del_limit_button</tabstop>
+  <tabstop>limit_tableWidget</tabstop>
+  <tabstop>add_addonservice_button</tabstop>
+  <tabstop>del_addonservice_button</tabstop>
+  <tabstop>tableWidget_addonservices</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
