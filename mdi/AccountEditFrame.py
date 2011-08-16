@@ -1559,7 +1559,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.tableWidget_subaccounts = tableFormat(self.tableWidget_subaccounts)
         makeHeaders(columns, self.tableWidget_subaccounts)
                 
-        columns=[u'#', u'Тарифный план', u'Дата', u'Расчётный период закрыт']
+        columns=[u'#', u'Тарифный план', u'Дата', u'Период закрыт', u"Начало текущего расчётного периода", u"Конец текущего расчётного периода"]
         self.tableWidget_accounttarif = tableFormat(self.tableWidget_accounttarif)
         makeHeaders(columns, self.tableWidget_accounttarif)
 
@@ -1912,18 +1912,24 @@ class AccountWindow(QtGui.QMainWindow):
         
     def accountTarifRefresh(self):
         if self.model:
-            ac=self.connection.sql("""SELECT accounttarif.*, tarif.name as tarif_name FROM billservice_accounttarif as accounttarif 
+            ac=self.connection.sql("""SELECT accounttarif.*, tarif.name as tarif_name, tarif.settlement_period_id FROM billservice_accounttarif as accounttarif 
             JOIN billservice_tariff as tarif ON tarif.id=accounttarif.tarif_id
             WHERE account_id=%d AND tarif.deleted IS NOT TRUE ORDER BY datetime ASC""" % self.model.id)
             self.tableWidget_accounttarif.setRowCount(len(ac))
             i=0
             #print ac
             for a in ac:
-
+                sp_start, sp_end,length = "","",""
+                if a.settlement_period_id:
+                    sp_start, sp_end,length = self.connection.sp_info(a.settlement_period_id, a.datetime)
+                    
                 self.addrow(self.tableWidget_accounttarif, a.id, i,0)
                 self.addrow(self.tableWidget_accounttarif, a.tarif_name, i,1)
                 self.addrow(self.tableWidget_accounttarif, a.datetime.strftime(strftimeFormat), i,2)
                 self.addrow(self.tableWidget_accounttarif, u"Да" if a.periodical_billed else u"Нет", i,3)
+                if sp_start and sp_end:
+                    self.addrow(self.tableWidget_accounttarif, sp_start.strftime(strftimeFormat), i,4)
+                    self.addrow(self.tableWidget_accounttarif, sp_end.strftime(strftimeFormat), i,5)
                 i+=1
 
             self.tableWidget_accounttarif.setColumnHidden(0, True)
@@ -2122,8 +2128,8 @@ class AccountWindow(QtGui.QMainWindow):
             if x:
                 l.append(str(x))
         l.append('-10000000')
-        print l
-        print ','.join(l)
+        #print l
+        #print ','.join(l)
         self.connection.sql("UPDATE billservice_ipinuse SET disabled=now() WHERE id in (%s)" % (','.join(l),),return_response=False)
         if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             self.connection.iddelete(i, "billservice_subaccount")

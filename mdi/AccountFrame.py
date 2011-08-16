@@ -993,10 +993,12 @@ class TarifWindow(QtGui.QMainWindow):
             self.spinBox_radius_traffic_tarification_step.setDisabled(False)
                         
     def ipn_for_vpnActions(self, value):
-        if self.model is not None:
-            if value==2 and self.connection.get("SELECT count(*) as accounts FROM billservice_account WHERE ipn_ip_address='0.0.0.0' and get_tarif(id)=%s" % self.model.id).accounts>0:
-                self.checkBox_ipn_actions.setChecked(0)
-                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Вы не можете выбрать эту опцию, так как не у всех у пользователей \nданного тарифного плана указан IPN IP адрес."))
+        #if self.model is not None:
+        #    if value==2 and self.connection.get("SELECT count(*) as accounts FROM billservice_account WHERE ipn_ip_address='0.0.0.0' and get_tarif(id)=%s" % self.model.id).accounts>0:
+        #        self.checkBox_ipn_actions.setChecked(0)
+        #        QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Вы не можете выбрать эту опцию, так как не у всех у пользователей \nданного тарифного плана указан IPN IP адрес."))
+        pass
+        
                  
     def addrow(self, widget, value, x, y, item_type=None, id=None):
         if value==None:
