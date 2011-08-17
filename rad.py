@@ -1493,7 +1493,7 @@ class HandleSAcct(HandleSBase):
         if not nasses:
             logger.info('ACCT: unknown NAS: %s', (self.nasip,))
             return None
-        
+        ipinuse_id = None
         try:
             subacc_id, ipinuse_id, session_speed = self.packetobject.get('Class', ",")[0].split(",")
         except:
