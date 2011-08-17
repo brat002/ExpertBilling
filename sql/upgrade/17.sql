@@ -16,7 +16,7 @@ DECLARE
     fn_bd_tx2_ text := '(account_id, sessionid, interrim_update, date_start, date_end, 
             caller_id, called_id, nas_id, session_time, framed_protocol, 
             bytes_in, bytes_out, session_status, speed_string, framed_ip_address, 
-            nas_int_id, subaccount_id, acct_terminate_cause,lt_time, lt_bytes_in,lt_bytes_out,nas_port_id)
+            nas_int_id, subaccount_id, acct_terminate_cause,lt_time, lt_bytes_in,lt_bytes_out,nas_port_id, ipinuse_id)
                           VALUES 
                          (radaccts.account_id, radaccts.sessionid, radaccts.interrim_update, radaccts.date_start, radaccts.date_end, 
 			    radaccts.caller_id, radaccts.called_id, radaccts.nas_id, radaccts.session_time, radaccts.framed_protocol, 
@@ -61,7 +61,7 @@ DECLARE
     fn_bd_tx2_ text := '(account_id, sessionid, interrim_update, date_start, date_end, 
             caller_id, called_id, nas_id, session_time, framed_protocol, 
             bytes_in, bytes_out, session_status, speed_string, framed_ip_address, 
-            nas_int_id, subaccount_id, acct_terminate_cause,lt_time, lt_bytes_in, lt_bytes_out, nas_port_id)
+            nas_int_id, subaccount_id, acct_terminate_cause,lt_time, lt_bytes_in, lt_bytes_out, nas_port_id, ipiunse_id)
                           VALUES 
                          (radaccts.account_id, radaccts.sessionid, radaccts.interrim_update, radaccts.date_start, radaccts.date_end, 
 			    radaccts.caller_id, radaccts.called_id, radaccts.nas_id, radaccts.session_time, radaccts.framed_protocol, 
