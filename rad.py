@@ -1494,8 +1494,11 @@ class HandleSAcct(HandleSBase):
             logger.info('ACCT: unknown NAS: %s', (self.nasip,))
             return None
         
-        
-        subacc_id, ipinuse_id, session_speed = self.packetobject.get('Class', ",")[0].split(",")
+        try:
+            subacc_id, ipinuse_id, session_speed = self.packetobject.get('Class', ",")[0].split(",")
+        except:
+            subacc_id, session_speed = self.packetobject.get('Class', ",")[0].split(",")
+            
         #if 0: assert isinstance(nas, NasData)
         logger.info('ACCT: Extracting subacc_id, speed from cookie: subacc=%s speed=%s', (subacc_id, session_speed,))
         self.replypacket.secret=str(nasses[0].secret)  
