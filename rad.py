@@ -1626,8 +1626,8 @@ class HandleSAcct(HandleSBase):
                 self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK', acct_terminate_cause=%s
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s;
                              """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0], acc.account_id, self.access_type,))
-
-            self.cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s", (ipinuse_id,))
+            if ipinuse_id:
+                self.cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s", (ipinuse_id,))
                
         return self.replypacket
 

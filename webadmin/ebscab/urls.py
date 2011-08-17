@@ -83,3 +83,8 @@ urlpatterns += patterns('cassa.views',
                         #(?P<id>\d+)
     (r'^cassa/$', 'index'),
 )
+
+urlpatterns += patterns('paymentgateways.quickpay.views',
+    (r'^quickpay/payment/$', 'payment'),
+)
+
