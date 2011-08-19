@@ -559,6 +559,10 @@ class periodical_service_bill(Thread):
                 cur.connection.commit()
                 for addon_ps in caches.addonperiodical_cache.data:
                     if 0: assert isinstance(addon_ps, AddonPeriodicalData)
+                    if not (addon_ps.account_id or addon_ps.subaccount_id): 
+                        logger.error("Accountaddonservice %s has no account and subaccount", (addon_ps.ps_id))
+                        continue
+                    
                     subacc = caches.subaccount_cache.by_id.get(addon_ps.subaccount_id)
                     if subacc:
                         acc = caches.account_cache.by_account.get(subacc.account_id)
@@ -1431,6 +1435,8 @@ class ipn_service(Thread):
                 for acc in caches.account_cache.data:
                     try:
                         if 0: assert isinstance(acc, AccountData)
+                        if acc.username=='23507':
+                            pass
                         """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Пропускаем."""       
                         subaccounts = caches.subaccount_cache.by_account_id.get(acc.account_id, [])
                         access_list = []

@@ -155,7 +155,15 @@ class MonitorEbs(ebsTableWindow):
             value=''
 
         text=value
-            
+
+        if color and y==3:
+            #print value
+            if float(value)<0:
+                item_type.setBackgroundColor(QtGui.QColor("red"))
+                item_type.setTextColor(QtGui.QColor('#ffffff'))
+            elif float(value)==0:
+                item_type.setBackgroundColor(QtGui.QColor("#ffdc51"))
+                        
         if widget.item(x,y):
             widget.item(x,y).setText(unicode(text))
         else:
@@ -243,7 +251,7 @@ class MonitorEbs(ebsTableWindow):
             self.addrow(self.tableWidget, session.sessionid, i, 0, id=session.id, sessionid = session.sessionid, account_id=session.account_id)
             self.addrow(self.tableWidget, session.username, i, 1)
             self.addrow(self.tableWidget, session.subaccount_username, i, 2)
-            self.addrow(self.tableWidget, session.balance, i, 3)
+            self.addrow(self.tableWidget, "%.2f" % session.ballance, i, 3, color=True)
             self.addrow(self.tableWidget, session.credit, i, 4)
             self.addrow(self.tableWidget, session.caller_id, i, 5)
             self.addrow(self.tableWidget, session.framed_ip_address, i, 6)
