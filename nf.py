@@ -338,6 +338,7 @@ def nfPacketHandle(data, addrport, flowCache):
         nasses_list=[nasitem.id for nasitem in nasses]
         
         def find_account_by_port(nasses,flow):
+            global caches
             if not caches.nas_port_cache.by_nas_id: return None, None, None
             acc_data_src,acc_data_dst = None, None
             for nasitem in nasses:
@@ -348,8 +349,8 @@ def nfPacketHandle(data, addrport, flowCache):
                 if not acc_data_dst: 
                     acc_data_dst = caches.nas_port_cache.by_nas_id.get(nasitem.id,{}).get(flow.out_index,None)
                     nas_id = nasitem.id
-                if acc_data_dst and acc_data_src: return self.caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,self.caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
-            return self.caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,self.caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
+                if acc_data_dst and acc_data_src: return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
+            return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
 
         def find_account_by_ip(nasses,flow):
             acc_data_src,acc_data_dst = None, None
@@ -366,7 +367,7 @@ def nfPacketHandle(data, addrport, flowCache):
                     acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nasitem.id))
                     if acc_data_dst:
                         nas_id = nasitem.id
-                if acc_data_dst and acc_data_src:  return self.caches.account_cache.by_id.get(acc_data_src), self.caches.account_cache.by_id.get(acc_data_dst), nas_id
+                if acc_data_dst and acc_data_src:  return caches.account_cache.by_id.get(acc_data_src), caches.account_cache.by_id.get(acc_data_dst), nas_id
             
             if not acc_data_src:
                 #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
