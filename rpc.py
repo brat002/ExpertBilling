@@ -962,6 +962,29 @@ class RPCServer(object):
         self.insert_log_action(add_data['USER_ID'][1],log_string)
         return id
 
+    def account_save(self, model, table, template_id=None, cur=None, connection=None, add_data = {}):
+
+        if template_id and model.contract:
+            pass
+            
+        sql = model.save(table)
+
+        cur.execute(sql)
+        
+        id_fetch = cur.fetchone()
+        id = id_fetch if not id_fetch else id_fetch['id']
+        #a1 = cur.fetchone()
+        #id = cur.fetchone()['id']
+        if model.__dict__.get("id", None):
+            log_string = u"""Пользователь %s обновил запись %s в таблице таблице %s""" % (add_data['USER_ID'][0], str(model.__dict__).decode('unicode-escape'), table)
+        else:
+            log_string = u"""Пользователь %s создал запись %s в таблице таблице %s""" % (add_data['USER_ID'][0], str(model.__dict__).decode('unicode-escape'), table)
+        #log_string = "Пользователь %s получил составляющие класса %s" % (add_data['USER_ID'][0], class_id,)
+        
+        #cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
+        self.insert_log_action(add_data['USER_ID'][1],log_string)
+        return id
+    
     
     def test(self, cur=None, connection=None, add_data = {}):
         pass
@@ -1237,7 +1260,6 @@ class RPCServer(object):
         row = cur.fetchone()
         connection.commit()
         if not row: return
-
         sp = Object(row)   
         
         if not curdatetime:

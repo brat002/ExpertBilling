@@ -31,4 +31,5 @@ setup(console=[{"script":'ebsadmin.py',"icon_resources": [(1, "icon.ico")]}], op
                     (r'.', glob.glob(r'D:\projects\mikrobill\mdi\version')), \
                     (r'.\skins', glob.glob(r'D:\projects\mikrobill\mdi\skins\*')),\
                     (r'.', glob.glob(r'D:\projects\mikrobill\mdi\mdi.qrc')),\
+                    (r'.', glob.glob(r'D:\projects\mikrobill\mdi\ebsadmin.ini')),\
                    ])
