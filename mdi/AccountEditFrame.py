@@ -1104,11 +1104,11 @@ class AccountWindow(QtGui.QMainWindow):
         self.label_agreement_num = QtGui.QLabel(self.groupBox_agreement)
         self.label_agreement_num.setObjectName("label_agreement_num")
         self.gridLayout_4.addWidget(self.label_agreement_num, 1, 0, 1, 1)
-        self.lineEdit_agreement_num = QtGui.QLineEdit(self.groupBox_agreement)
-        self.lineEdit_agreement_num.setEnabled(True)
-        self.lineEdit_agreement_num.setMinimumSize(QtCore.QSize(0, 20))
-        self.lineEdit_agreement_num.setObjectName("lineEdit_agreement_num")
-        self.gridLayout_4.addWidget(self.lineEdit_agreement_num, 1, 2, 1, 1)
+        self.comboBox_agreement_num = QtGui.QComboBox(self.groupBox_agreement)
+        self.comboBox_agreement_num.setEditable(True)
+        #self.comboBox_agreement_num.setMinimumSize(QtCore.QSize(0, 20))
+        self.comboBox_agreement_num.setObjectName("comboBox_agreement_num")
+        self.gridLayout_4.addWidget(self.comboBox_agreement_num, 1, 2, 1, 1)
         self.toolButton_agreement_print = QtGui.QToolButton(self.groupBox_agreement)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("images/document-print.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -1713,7 +1713,7 @@ class AccountWindow(QtGui.QMainWindow):
             self.dateTimeEdit_agreement_date.setDateTime(datetime.datetime.now())
             
         if self.model:
-            self.lineEdit_agreement_num.setText(unicode(self.model.contract))
+            #self.comboBox_agreement_num.setText(unicode(self.model.contract))
             self.dateTimeEdit_agreement_date.setDateTime(self.model.created)
             if self.tarif_id!=-3000:            
                 self.dateTimeEdit_agreement_date.setDisabled(True)
@@ -1809,7 +1809,7 @@ class AccountWindow(QtGui.QMainWindow):
                 return 
             #print 1
             model.password = unicode(self.lineEdit_password.text())
-            model.contract = unicode(self.lineEdit_agreement_num.text())
+            #model.contract = unicode(self.comboBox_agreement_num.text())
             model.status = self.comboBox_status.itemData(self.comboBox_status.currentIndex()).toInt()[0]
             for i in xrange(self.tableWidget.rowCount()):
                 model.__dict__[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text()) 

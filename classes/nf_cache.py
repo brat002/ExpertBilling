@@ -75,7 +75,7 @@ class NasPortCache(CacheItem):
             #self.by_ip[item.ipaddress].append(item)
                   
 class AccountCache(CacheItem):
-    __slots__ = ('vpn_ips', 'ipn_ips', 'ipn_range')
+    __slots__ = ('by_id', 'vpn_ips', 'ipn_ips', 'ipn_range')
     
     datatype = AccountData
     sql = nf_sql['accounts']
@@ -87,6 +87,7 @@ class AccountCache(CacheItem):
         self.vpn_ips = {}
         self.ipn_ips = {}
         self.ipn_range = []
+        self.by_id = {}
         
         
     def transformdata(self):
@@ -97,6 +98,7 @@ class AccountCache(CacheItem):
         self.ipn_ips = {}
         self.ipn_range = []
         for acct in self.data:
+            self.by_id[acct[0]]=acct
             for addr in acct[1]:
                 if not addr: continue
                 try:
