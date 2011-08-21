@@ -1712,6 +1712,8 @@ class AccountWindow(QtGui.QMainWindow):
 
             self.dateTimeEdit_agreement_date.setDateTime(datetime.datetime.now())
             
+            templatecontracts = self.connection.get_models("billservice_templatecontract")
+            
         if self.model:
             #self.comboBox_agreement_num.setText(unicode(self.model.contract))
             self.dateTimeEdit_agreement_date.setDateTime(self.model.created)
