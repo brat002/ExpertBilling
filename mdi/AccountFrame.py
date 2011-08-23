@@ -1581,7 +1581,7 @@ class TarifWindow(QtGui.QMainWindow):
             except:
                 default_text=0
             
-            text = QtGui.QInputDialog.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text,0,1000000,2)      
+            text = QtGui.QInputDialog.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text, -1000000,1000000,2)      
            
             self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
             
@@ -2747,7 +2747,7 @@ class TarifWindow(QtGui.QMainWindow):
             print e
             traceback.print_exc()
             self.connection.rollback()
-            QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка сохранения тарифного плана")
+            QtGui.QMessageBox.warning(self, u"Ошибка", u"Ошибка сохранения тарифного плана\nВозможно тарифный план с таким именем уже существует или существовал раньше.")
             return
         
         self.parent.refreshTree()
@@ -3187,7 +3187,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         return
         
 
-    def addrow(self, value, x, y, id=None, color=None, enabled=True, ctext=None, setdata=False):
+    def addrow(self, value, x, y, id=None, color=None, enabled=True, ctext=None, setdata=False, organization=None):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=''
@@ -3204,10 +3204,18 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
             
         if y==1:
-            if enabled==True:
-                headerItem.setIcon(QtGui.QIcon("images/user.png"))
+            if not organization:
+                
+                if enabled==True:
+                    headerItem.setIcon(QtGui.QIcon("images/user.png"))
+                else:
+                    headerItem.setIcon(QtGui.QIcon("images/user_inactive.png"))
             else:
-                headerItem.setIcon(QtGui.QIcon("images/user_inactive.png"))
+                if enabled==True:
+                    headerItem.setIcon(QtGui.QIcon("images/organization.png"))
+                else:
+                    headerItem.setIcon(QtGui.QIcon("images/organization_inactive.png"))
+                                    
         #if setdata:
             #headerItem.setData(39, QtCore.QVariant(value))
         if isinstance(value, basestring):            
@@ -3363,10 +3371,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #print "status", a
             disabled_accounts += 1 if a.status<>1 else 0
             if id==-1000 or id==-2000:
-                self.addrow(a.tarif_name, i,3, enabled=a.status)
+                self.addrow(a.tarif_name, i,3, enabled=a.status, organization=a.org_id)
                 self.addrow(float("%.02f" % float(a.ballance)), i,4, color="red", enabled=a.status)
                 self.addrow(float(a.credit), i,5, enabled=a.status)
-                self.addrow(a.fullname, i,6, enabled=a.status)
+                self.addrow(a.org_name if a.org_id else a.fullname, i,6, enabled=a.status)
                 #self.addrow(a.nas_name,i,7, enabled=a.status)
                 #self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
                 #self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
@@ -3382,9 +3390,9 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 #self.addrow(a.created, i,11, enabled=a.status)
             else:
                 #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
-                self.addrow("%.02f" % float(a.ballance), i,3, color="red", enabled=a.status)
+                self.addrow("%.02f" % float(a.ballance), i,3, color="red", enabled=a.status, organization=a.org_id)
                 self.addrow(float(a.credit), i,4, enabled=a.status)
-                self.addrow(a.fullname, i,5, enabled=a.status)
+                self.addrow(a.org_name if a.org_id else a.fullname, i,5, enabled=a.status)
                 #self.addrow(a.nas_name,i,6, enabled=a.status)
                 #self.addrow(a.vpn_ip_address, i,6, enabled=a.status)
                 #self.addrow(a.ipn_ip_address, i,7, enabled=a.status)
