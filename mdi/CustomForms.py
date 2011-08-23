@@ -3689,13 +3689,20 @@ class ContractTemplateEdit(QtGui.QDialog):
         self.pushButton_delete = QtGui.QPushButton(self)
         self.pushButton_delete.setObjectName(_fromUtf8("pushButton_delete"))
         self.gridLayout.addWidget(self.pushButton_delete, 1, 1, 1, 1)
-
+        
+        self.pushButton_test = QtGui.QPushButton(self)
+        self.pushButton_test.setObjectName(_fromUtf8("pushButton_test"))
+        self.gridLayout.addWidget(self.pushButton_test, 1, 2, 1, 1)
+        
         self.retranslateUi()
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), self.reject)
         QtCore.QObject.connect(self.pushButton_delete, QtCore.SIGNAL(_fromUtf8("clicked()")), self.delete)
+        QtCore.QObject.connect(self.pushButton_test, QtCore.SIGNAL(_fromUtf8("clicked()")), self.test)
         QtCore.QMetaObject.connectSlotsByName(self)
         self.fixtures()
+        self.pushButton_test.setFocus(True)
+        self.buttonBox.setDisabled(True)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("ContractTemplateEdit", "Редактирование шаблона номера договора", None, QtGui.QApplication.UnicodeUTF8))
@@ -3704,12 +3711,13 @@ class ContractTemplateEdit(QtGui.QDialog):
         "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
         "p, li { white-space: pre-wrap; }\n"
         "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">$tarif_id</span><span style=\" font-size:8pt;\"> - идентификатор тарифа</span></p>\n"
-        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">$accounttarif_id</span><span style=\" font-size:8pt;\"> - идентификатор аккаунта на тарифе</span></p>\n"
-        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\"> $account_id</span><span style=\" font-size:8pt;\"> - идентификатор аккаунта</span></p>\n"
-        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">$day,$month,$year,$hour,$minute,$second</span><span style=\" font-size:8pt;\"> - дата подключения на тариф</span></p>\n"
-        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">$account_type</span><span style=\" font-size:8pt;\"> - тип тарифного плана</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">%(tarif_id)i</span><span style=\" font-size:8pt;\"> - идентификатор тарифа</span></p>\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">%(contract_num)i</span><span style=\" font-size:8pt;\"> - номер заключаемого договора этого типа</span></p>\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\"> %(account_id)i</span><span style=\" font-size:8pt;\"> - идентификатор аккаунта</span></p>\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">%(day)i,%(month)i,%(year)i,%(hour)i,%(minute)i,%(second)i</span><span style=\" font-size:8pt;\"> - дата подключения на тариф</span></p>\n"
+        "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:8pt; font-weight:600;\">%(tarif_type)s</span><span style=\" font-size:8pt;\"> - тип тарифного плана</span></p></body></html>", None, QtGui.QApplication.UnicodeUTF8))
         self.pushButton_delete.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton_test.setText(QtGui.QApplication.translate("Dialog", "Проверить", None, QtGui.QApplication.UnicodeUTF8))
 
     def accept(self):
         template = unicode(self.lineEdit.text())
@@ -3735,4 +3743,15 @@ class ContractTemplateEdit(QtGui.QDialog):
     def fixtures(self):
         if self.model:
             self.lineEdit.setText(unicode(self.model.template))
+            
+    def test(self):
+        try:
+            d={'tarif_id':111, 'account_id':99,'year':2011,'month':11, 'day':22, 'hour':9, 'minute':4,'second':59, 'tarif_type':'VPN', 'contract_num':44}
+            result = unicode(self.lineEdit.text()) % d
+            QtGui.QMessageBox.information(self, u"Успешно", unicode(u"Проверка синтаксиса завершилась успешно.\nРезультат:%s" % result))
+            self.buttonBox.setDisabled(False)
+        except Exception, e:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверка синтаксиса завершилась неудачно. %s" % str(e)))
+            
+        
             

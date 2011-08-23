@@ -539,7 +539,7 @@ class Account(models.Model):
     house = models.ForeignKey("House", null=True)
     postcode = models.CharField(max_length=255, blank=True, null=True)
     region = models.CharField(max_length=255)
-    street = models.CharField(max_length=255)
+    #street = models.CharField(max_length=255)
     #house = models.CharField(max_length=255)
     house_bulk = models.CharField(max_length=255)
     entrance = models.CharField(max_length=255)

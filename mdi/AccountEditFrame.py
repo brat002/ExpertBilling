@@ -1712,7 +1712,43 @@ class AccountWindow(QtGui.QMainWindow):
 
             self.dateTimeEdit_agreement_date.setDateTime(datetime.datetime.now())
             
-            templatecontracts = self.connection.get_models("billservice_templatecontract")
+
+        tarif_contracttemplate = self.connection.get_model(self.tarif_id, "billservice_tariff", fields=['contracttemplate_id',])
+        self.connection.commit()
+        tarif_contracttemplate_id = None
+        if tarif_contracttemplate:
+            tarif_contracttemplate_id = tarif_contracttemplate.contracttemplate_id
+         
+        templatecontracts = self.connection.get_models("billservice_contracttemplate")
+        self.connection.commit()
+        self.comboBox_agreement_num.clear()
+        i=0
+        if not self.model:
+            self.comboBox_agreement_num.addItem(u'-Не указан-', QtCore.QVariant(0))
+            i+=1
+            for item in templatecontracts:
+                self.comboBox_agreement_num.addItem(item.template, QtCore.QVariant(item.id))
+                if tarif_contracttemplate_id==item.id:
+                    self.comboBox_agreement_num.setCurrentIndex(i)
+                i+=1
+                
+        if self.model:
+            if self.model.contract:
+                self.comboBox_agreement_num.addItem(self.model.contract, QtCore.QVariant(0))
+                self.comboBox_agreement_num.setDisabled(True)
+                i+=1
+            else:
+                self.comboBox_agreement_num.addItem(u'-Не указан-', QtCore.QVariant(0))
+                i+=1
+                for item in templatecontracts:
+                    self.comboBox_agreement_num.addItem(item.template, QtCore.QVariant(item.id))
+                    if tarif_contracttemplate_id==item.id:
+                        self.comboBox_agreement_num.setCurrentIndex(i)
+                    i+=1
+        
+
+
+                
             
         if self.model:
             #self.comboBox_agreement_num.setText(unicode(self.model.contract))
@@ -1796,6 +1832,7 @@ class AccountWindow(QtGui.QMainWindow):
 
                 model=Object()
                 model.created = self.dateTimeEdit_agreement_date.currentDate()
+                model.contract=''
                 #model.user_id=1
                 model.ipn_status = False
                 model.ipn_added = False
@@ -1846,10 +1883,12 @@ class AccountWindow(QtGui.QMainWindow):
                 
                                 
             if self.model:
-                model.id = self.connection.save(model, "billservice_account")
+                contracttemplate_id=self.comboBox_agreement_num.itemData(self.comboBox_agreement_num.currentIndex()).toInt()[0]
+                model.id = self.connection.account_save(model, "billservice_account", tarif_id=self.tarif_id,template_id=contracttemplate_id)
             else:
                 #print 123
-                model.id=self.connection.save(model, "billservice_account")
+                contracttemplate_id=self.comboBox_agreement_num.itemData(self.comboBox_agreement_num.currentIndex()).toInt()[0]
+                model.id = self.connection.account_save(model, "billservice_account", tarif_id=self.tarif_id,template_id=contracttemplate_id)
                 if self.tarif_id!=-3000:
                     accounttarif = Object()
                     accounttarif.account_id=model.id

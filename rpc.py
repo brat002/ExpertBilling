@@ -805,17 +805,20 @@ class RPCServer(object):
     def get_accounts_for_tarif(self, tarif_id, cur=None, connection=None, add_data = {}):
         
         if tarif_id==-3000:
-            cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
+            cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name,org.id as org_id, org.name as org_name
             FROM billservice_account AS acc 
+            LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
             WHERE get_tarif(acc.id) is Null ORDER BY acc.username ASC;""")
         elif tarif_id==-1000:
-            cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tarif_name
+            cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tarif_name, org.id as org_id, org.name as org_name
             FROM billservice_account AS acc 
+            LEFT JOIN billservice_organization as org ON org.account_id=acc.id
             WHERE get_tarif(acc.id) IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) ORDER BY acc.username ASC;""", (add_data['USER_ID'][1],) )
    
         else:
-            cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name 
+            cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, org.id as org_id, org.name as org_name
             FROM billservice_account AS acc 
+            LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
             WHERE %s=get_tarif(acc.id) and %s IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) ORDER BY acc.username ASC;""", (tarif_id, tarif_id, add_data['USER_ID'][1],) )
 
         result = map(Object, cur.fetchall())
@@ -827,9 +830,10 @@ class RPCServer(object):
     
     def get_accounts_for_tilter(self, sql, cur=None, connection=None, add_data = {}):
         
-        s="""SELECT DISTINCT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tarif_name
+        s="""SELECT DISTINCT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tarif_name, org.id as org_id, org.name as org_name
             FROM billservice_account AS acc
             LEFT JOIN billservice_subaccount as subacc ON subacc.account_id=acc.id 
+            LEFT JOIN billservice_organization as org ON org.account_id=acc.id
             WHERE get_tarif(acc.id) IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) 
             AND 
             %s
@@ -962,10 +966,9 @@ class RPCServer(object):
         self.insert_log_action(add_data['USER_ID'][1],log_string)
         return id
 
-    def account_save(self, model, table, template_id=None, cur=None, connection=None, add_data = {}):
+    def account_save(self, model, table, tarif_id='', template_id=None, cur=None, connection=None, add_data = {}):
 
-        if template_id and model.contract:
-            pass
+
             
         sql = model.save(table)
 
@@ -973,8 +976,33 @@ class RPCServer(object):
         
         id_fetch = cur.fetchone()
         id = id_fetch if not id_fetch else id_fetch['id']
+        
         #a1 = cur.fetchone()
         #id = cur.fetchone()['id']
+        if template_id and not model.contract and template_id!=0:
+            #if model.contract:
+            cur.execute("SELECT template, counter FROM billservice_contracttemplate WHERE id=%s", (template_id,))
+            row = cur.fetchone()
+            contract_template = row['template'] 
+            contract_counter = row['counter']
+            cur.execute("SELECT access_type FROM billservice_accessparameters WHERE id=(SELECT access_parameters_id FROM billservice_tariff WHERE id=%s)", (tarif_id, ))
+            tarif_type = cur.fetchone()['access_type']
+            year=model.created.year
+            month=model.created.month
+            day=model.created.day
+            hour=model.created.hour
+            minute=model.created.minute
+            second=model.created.second
+            contract_num=contract_counter
+            
+            d={'tarif_id':tarif_id, 'account_id':id,'year':year,'month':month, 'day':day, 'hour':hour, 'minute':minute,'second':second, 'tarif_type':tarif_type, 'contract_num':contract_num}
+            
+
+            contract = contract_template % d
+            cur.execute("UPDATE billservice_account SET contract=%s WHERE id=%s", (contract, id))
+            cur.execute("UPDATE billservice_contracttemplate SET counter=counter+1 WHERE id=%s", (template_id,))
+
+                    
         if model.__dict__.get("id", None):
             log_string = u"""Пользователь %s обновил запись %s в таблице таблице %s""" % (add_data['USER_ID'][0], str(model.__dict__).decode('unicode-escape'), table)
         else:
