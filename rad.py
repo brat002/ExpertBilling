@@ -1560,7 +1560,7 @@ class HandleSAcct(HandleSBase):
                 self.cur.execute("""SELECT id FROM radius_activesession
                                 WHERE account_id=%s AND sessionid=%s AND
                                 caller_id=%s AND called_id=%s AND 
-                                nas_int_id=%s AND framed_protocol=%s and session_status=='ACTIVE' and interrim_update is None;
+                                nas_int_id=%s AND framed_protocol=%s and session_status=='ACTIVE' and interrim_update is Null;
                              """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
                                     self.packetobject['Calling-Station-Id'][0],
                                     self.packetobject['Called-Station-Id'][0], \
@@ -1569,7 +1569,7 @@ class HandleSAcct(HandleSBase):
                 self.cur.execute("""SELECT id FROM radius_activesession
                                     WHERE account_id=%s AND sessionid=%s AND
                                     caller_id=%s AND called_id=%s AND 
-                                    nas_id=%s AND framed_protocol=%s and session_status=='ACTIVE' and interrim_update is None;
+                                    nas_id=%s AND framed_protocol=%s and session_status=='ACTIVE' and interrim_update is Null;
                                  """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
                                         self.packetobject['Calling-Station-Id'][0],
                                         self.packetobject['Called-Station-Id'][0], \
