@@ -32,7 +32,6 @@ INSERT INTO billservice_transaction(
             account_id, type_id, approved, summ,
             created)
     VALUES (%(ACC_ID)s, '%(PAYMENT_TYPE)s', True, (-1)*%(SUM)s,  '%(DATETIME)s');
-
 """
 curdir='/opt/ebs/data/scripts/payments/'
 #curdir='d:/projects/mikrobill/scripts/payments/'
@@ -90,14 +89,27 @@ if __name__=='__main__':
         active = config.get(payment_system, 'active')
         file_mask = config.get(payment_system, 'file_mask')
         exclude_mask = config.get(payment_system, 'exclude_mask')
+        skip_firstline = config.getboolean(payment_system, 'skip_firstline') if config.has_option(payment_system, 'skip_firstline') else False
+        
         folder_in, folder_out, folder_err = config.get(payment_system, 'folder_in'),config.get(payment_system, 'folder_out'),config.get(payment_system, 'folder_err')
         #print folder_in
         for file in os.listdir(curdir+folder_in):
             print "processing file", file
-            buffer=[]
+            buffer_err=[]
+            buffer_out=[]
+            firstline=''
             if not (fnmatch.fnmatch(file, file_mask) and not fnmatch.fnmatch(file, exclude_mask) and not file=='.svn'): print "skip"; continue
-
+            i=0
             for line in open(curdir+folder_in+file,'r'):
+                line=line.strip()
+                if skip_firstline and i==0:
+                    i+=1
+                    firstline=line
+                    buffer_out.append(line)
+                    print "skip first line"
+                    continue
+                if not line:continue
+                i+=1
                 lst=line.split(delimeter)
                 res_dict = make_dict(lst, fields_list, datetime_fmt, text_encoding,  time_fmt)
                 res_dict['PAYMENT_TYPE']=payment_type
@@ -110,7 +122,7 @@ if __name__=='__main__':
                     else:
                        print "Account for contract %s not found. Skip" % res_dict.get('ACC')
                        print "*"*10
-                       buffer.append(line)
+                       buffer_err.append(line)
                        continue
                     res_dict['ACC_ID']=acc_id
                     if check_dublicates(cur, res_dict)==True:
@@ -121,21 +133,30 @@ if __name__=='__main__':
                     print "*"*10
                     cur.execute(s)
                     connection.commit()
+                    buffer_out.append(line)
                     print "*"*10
                 except Exception, e:
                     print 'ERROR',e
                     connection.rollback()
 
-                    buffer.append(line)
+                    buffer_err.append(line)
 
-            if buffer:
+            if buffer_err:
+                if skip_firstline:
+                    buffer_err.insert(0, firstline)
                 f=open(curdir+folder_err+file,'w')
 
-                f.write('\n'.join(buffer))
+                f.write('\n'.join(buffer_err))
                 f.close()
 
+            if buffer_out and (skip_firstline==False or (skip_firstline==True and len(buffer_out)>1)):
+                f=open(curdir+folder_out+file,'w')
 
-            shutil.move(curdir+folder_in+file, curdir+folder_out+file)
+                f.write('\n'.join(buffer_out))
+                f.close()
+
+            #shutil.rm
+            os.remove(curdir+folder_in+file)
 
         #    process_file(payment_system)
 cur.close()
