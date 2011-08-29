@@ -823,7 +823,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         model.ipn_enabled = self.toolButton_ipn_enabled.isChecked()
         
         if self.model:
-            if model.ipn_ip_address!=self.model.ipn_ip_address:
+            if model.ipn_ip_address!=self.model.ipn_ip_address or model.ipn_mac_address!=self.model.ipn_mac_address:
     			"""
     			Если изменили IPN IP адрес-значит нужно добавить новый адрес в лист доступа
     			"""

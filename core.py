@@ -1435,8 +1435,7 @@ class ipn_service(Thread):
                 for acc in caches.account_cache.data:
                     try:
                         if 0: assert isinstance(acc, AccountData)
-                        if acc.username=='23507':
-                            pass
+
                         """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Пропускаем."""       
                         subaccounts = caches.subaccount_cache.by_account_id.get(acc.account_id, [])
                         access_list = []

@@ -53,7 +53,7 @@ from MessagesFrame import MessagesEbs
 from LogFrame import LogViewEbs
 from AddressFrame import AddressEbs
 from Reports import TransactionsReportEbs as TransactionsReport
-
+from TransactionTypeFrame import TransactionTypeEbs
 _reportsdict = [['Статистика по группам',[['report3_users.xml', ['groups'], 'Общий трафик']]],\
                 ['Глобальная статистика',[['report3_users.xml', ['gstat_globals'], 'Общий трафик'],['report3_users.xml', ['gstat_multi'], 'Трафик с выбором классов'], ['report3_pie.xml', ['pie_gmulti'], 'Пирог']]],\
                 ['Другие отчёты',[['report3_sess.xml', ['sessions'], 'Сессии пользователей'], ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли']]]]
@@ -139,6 +139,21 @@ class MainWindow(QtGui.QMainWindow):
         
         child.show()
 
+    @connlogin
+    def transactiontype(self):
+        self.workspace.windowList()  
+
+        child =  TransactionTypeEbs(connection=connection)
+        #child.setIcon( QPixmap("images/icon.ico") )        
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        #self.wsp.addSubWindow(child)
+        
+        child.show()
+        
 
     @connlogin
     def pool(self):
@@ -556,6 +571,12 @@ class MainWindow(QtGui.QMainWindow):
 
         self.connect(self.rrdNassesAct, QtCore.SIGNAL("triggered()"), self.rrdNassesReport)
 
+        self.transactiontypeAct = QtGui.QAction(QtGui.QIcon("images/moneybook.png"),
+                                      u"Типы платежей", self)
+        
+        self.transactiontypeAct.setStatusTip(u"Типы платежей")
+
+        self.connect(self.transactiontypeAct, QtCore.SIGNAL("triggered()"), self.transactiontype)
         
         
         self.reportActs = []
@@ -682,6 +703,7 @@ class MainWindow(QtGui.QMainWindow):
         self.settingsMenu.addAction(self.addressViewAct)
         self.settingsMenu.addAction(self.sysadmAct)
         self.settingsMenu.addAction(self.templatesAct)
+        self.settingsMenu.addAction(self.transactiontypeAct)
         self.settingsMenu.addAction(self.aboutOperAct)
         
         

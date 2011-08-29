@@ -196,7 +196,7 @@ class AddPoolFrame(QtGui.QDialog):
 
 class PoolEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=[u"#", u"Название", u"Тип", u"Start IP", u"End IP", u"Количество адресов", u"Использовано адресов"]
+        columns=[u"#", u"Название", u"Тип", u"Start IP", u"End IP", u"Количество адресов", u"Использовано", u"Осталось", u'% использования']
         initargs = {"setname":"pool_frame_header", "objname":"PoolEbsMDI", "winsize":(0,0,750,400), "wintitle":"Пулы адресов", "tablecolumns":columns}
         super(PoolEbs, self).__init__(connection, initargs)
         
@@ -278,6 +278,13 @@ class PoolEbs(ebsTableWindow):
             self.addrow(pool.end_ip, i,4)
             self.addrow(IPy.IP(pool.end_ip).int()+1- IPy.IP(pool.start_ip).int(), i,5)
             self.addrow(pool.count_used, i,6)
+            self.addrow(IPy.IP(pool.end_ip).int()+1- IPy.IP(pool.start_ip).int()-pool.count_used, i,7)
+            try:
+                proc= "%.3f" % (float(pool.count_used)/float(IPy.IP(pool.end_ip).int()+1- IPy.IP(pool.start_ip).int())*100)
+                self.addrow(proc, i,8)
+            except:
+                self.addrow(0, i,8)
+            
             #self.tableWidget.setRowHeight(i, 14)
             i+=1
         self.tableWidget.setColumnHidden(0, True)

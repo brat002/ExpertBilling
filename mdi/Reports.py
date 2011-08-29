@@ -51,8 +51,31 @@ class TransactionsReportEbs(ebsTableWindow):
         self.cassa=cassa
         columns=[u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
         initargs = {"setname":"transrep_frame_header", "objname":"TransactionReportEbsMDI", "winsize":(0,0,903,483), "wintitle":"История операций над лицевым счётом пользователя", "tablecolumns":columns}
-        self.transactions_types = [u"Другие операции", u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги", u"Платежи QIWI"]
-        self.transactions_tables = [u"billservice_transaction",u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction", "qiwi_invoice"]
+        self.transactions_types = []#[u"Периодические услуги", u"Разовые услуги", u"За трафик", u"За время", u"Подключаемые услуги", u"Платежи QIWI"]
+        self.transactions_types={
+        "PS_GRADUAL":"billservice_periodicalservicehistory",
+        "PS_AT_END":"billservice_periodicalservicehistory",
+        "PS_AT_START":"billservice_periodicalservicehistory",
+        "TIME_ACCESS":"billservice_timeaccesstransaction",
+        "NETFLOW_BILL":"billservice_traffictransaction",
+        "END_PS_MONEY_RESET":"billservice_transaction",
+        "MANUAL_TRANSACTION":"billservice_transaction",
+        "ACTIVATION_CARD":"billservice_transaction",
+        "ONETIME_SERVICE":"billservice_onetimeservicehistory",
+        "OSMP_BILL":"billservice_transaction",
+        "ADDONSERVICE_WYTE_PAY":"billservice_billservice",
+        "ADDONSERVICE_PERIODICAL_GRADUAL":"billservice_addonservicetransaction",
+        "ADDONSERVICE_PERIODICAL_AT_START":"billservice_addonservicetransaction",
+        "ADDONSERVICE_PERIODICAL_AT_END":"billservice_addonservicetransaction",
+        "ADDONSERVICE_ONETIME":"billservice_onetimeservicehistory",
+        "PAY_CARD":"billservice_transaction",
+        "CASSA_TRANSACTION":"billservice_transaction",
+        "PAYMENTGATEWAY_BILL":"billservice_transaction",
+        "WEBMONEY_PAYMENT_IMPORT":"webmoney_payment",
+        "QIWI_PAYMENT":"qiwi_invoice"
+        }
+        
+        #self.transactions_tables = [u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction", "qiwi_invoice"]
         super(TransactionsReportEbs, self).__init__(connection, initargs, parent)
         
     def ebsInterInit(self, initargs):
@@ -140,6 +163,7 @@ class TransactionsReportEbs(ebsTableWindow):
         self.columns["billservice_addonservicetransaction"] = ["#", u'Аккаунт', u"ФИО", u'Услуга', u'Тип услуги', u'Сумма', u'Дата']
         self.columns["billservice_transaction"] = [u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
         self.columns["qiwi_invoice"] = [u'#', u'Аккаунт', u"ФИО", u"№ инвойса", u'Создан', u"Автозачисление", u'Оплачен', u"Сумма"]
+        self.columns["webmoney_payment"] = [u'#', u'Аккаунт', u"ФИО", u"№ инвойса", u'Создан', u"Автозачисление", u'Оплачен', u"Сумма"]
        
     def ebsPostInit(self, initargs):
         self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -190,11 +214,21 @@ class TransactionsReportEbs(ebsTableWindow):
             self.user_edit.setCurrentIndex(self.user_edit.findText(self.account.username, QtCore.Qt.MatchCaseSensitive))
             self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % self.account.username)
 
+
+        items = self.connection.get_models("billservice_transactiontype", order={'name':'ASC'})
+        self.connection.commit()
+        
         i=0
-        for tr_type in self.transactions_types:
-            self.comboBox_transactions_type.addItem(tr_type)
-            self.comboBox_transactions_type.setItemData(i, QtCore.QVariant(i))
-            i+=1
+        for item in items:
+            #self.transactions_tables.insert(0, "billservice_transaction")
+            self.comboBox_transactions_type.addItem(item.name, QtCore.QVariant(item.internal_name))
+            if item.internal_name==u'MANUAL_TRANSACTION':
+                self.comboBox_transactions_type.setCurrentIndex(i)
+            i+=1 
+            
+        #for tr_type in self.transactions_types:
+        #    self.comboBox_transactions_type.addItem(tr_type,QtCore.QVariant(i))
+            
     def addrow(self, value, x, y, id=None, promise=False, date = None):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
@@ -213,7 +247,7 @@ class TransactionsReportEbs(ebsTableWindow):
     def setTableColumns(self):
         self.tableWidget.clear()
         self.tableWidget.setRowCount(0)
-        makeHeaders(self.columns[self.transactions_tables[self.comboBox_transactions_type.currentIndex()]], self.tableWidget)   
+        makeHeaders(self.columns[self.transactions_types.get(unicode(self.comboBox_transactions_type.itemData(self.comboBox_transactions_type.currentIndex()).toString())) or "billservice_transaction"], self.tableWidget)   
            
     def refresh_table(self):
 
@@ -224,13 +258,14 @@ class TransactionsReportEbs(ebsTableWindow):
         end_date = self.date_end.currentDate()
 
         account_id = self.user_edit.itemData(self.user_edit.currentIndex()).toInt()[0]
-
-        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_transaction":
+        transaction_type=unicode(self.comboBox_transactions_type.itemData(self.comboBox_transactions_type.currentIndex()).toString())
+        #print transaction_type
+        if self.transactions_types.get(transaction_type, None) in ["billservice_transaction",None]:
             sql = """SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=transaction.account_id) as fullname, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
                                             FROM billservice_transaction as transaction
                                             JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
                                             LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
-                                            WHERE transaction.created between '%s' and '%s' %%s ORDER BY transaction.created DESC""" %  (start_date, end_date,)
+                                            WHERE transaction.created between '%s' and '%s' %%s and transaction.type_id='%s' ORDER BY transaction.created DESC""" %  (start_date, end_date,transaction_type)
 
             if account_id:
                 sql = sql % " and transaction.account_id=%s %%s" % account_id
@@ -270,7 +305,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 i+=1
             self.addrow(u"Итого", i, 7)
             self.addrow(sum, i, 8)
-        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_periodicalservicehistory":
+        if self.transactions_types.get(transaction_type)=="billservice_periodicalservicehistory":
             services = self.connection.get_models("billservice_periodicalservice")
             s = {}
             for x in services:
@@ -284,8 +319,8 @@ class TransactionsReportEbs(ebsTableWindow):
             sql = """
             SELECT psh.id, psh.service_id, psh.datetime, psh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=psh.accounttarif_id) as tarif_id, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=psh.account_id) as fullname, psh.type_id 
             FROM billservice_periodicalservicehistory as psh 
-            WHERE psh.datetime between '%s' and '%s' %%s ORDER BY psh.datetime DESC
-            """ % (start_date, end_date,)
+            WHERE psh.datetime between '%s' and '%s' %%s and type_id='%s' ORDER BY psh.datetime DESC
+            """ % (start_date, end_date,transaction_type)
             
             if account_id:
                 sql = sql % " and psh.account_id=%s " % account_id
@@ -312,7 +347,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 sum+=item.summ
             self.addrow(u"Итого", i, 5)
             self.addrow(sum, i, 6)
-        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_onetimeservicehistory":
+        if self.transactions_types.get(transaction_type)=="billservice_onetimeservicehistory":
             services = self.connection.get_models("billservice_onetimeservice")
             s = {}
             for x in services:
@@ -353,7 +388,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 sum += item.summ
             self.addrow(u"Итого", i, 4)
             self.addrow(sum, i, 5)                
-        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_traffictransaction":
+        if self.transactions_types.get(transaction_type)=="billservice_traffictransaction":
             tariffs = self.connection.get_models("billservice_tariff")
             t = {}
             for x in tariffs:
@@ -390,7 +425,7 @@ class TransactionsReportEbs(ebsTableWindow):
             self.addrow(u"Итого", i, 4)
             self.addrow(sum, i, 5)   
             
-        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_timetransaction":
+        if self.transactions_types.get(transaction_type)=="billservice_timetransaction":
             #print 111
             tariffs = self.connection.get_models("billservice_tariff")
             t = {}
@@ -426,7 +461,7 @@ class TransactionsReportEbs(ebsTableWindow):
             self.addrow(sum, i, 4)                                 
         self.tableWidget.setColumnHidden(0, False)
         
-        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_addonservicetransaction":
+        if self.transactions_types.get(transaction_type)=="billservice_addonservicetransaction":
             #print 111
             tr_types = self.connection.get_models("billservice_transactiontype")
             t = {}
@@ -465,7 +500,7 @@ class TransactionsReportEbs(ebsTableWindow):
             self.addrow(sum, i, 5)                                 
         self.tableWidget.setColumnHidden(0, False)
 
-        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="qiwi_invoice":
+        if self.transactions_types.get(transaction_type)=="qiwi_invoice":
             #print 111
             #tr_types = self.connection.get_models("billservice_transactiontype")
             #t = {}
@@ -537,250 +572,40 @@ class TransactionsReportEbs(ebsTableWindow):
     def delete_transaction(self):
         ids = self.get_selected_ids()
         #print ids
-        
-        if self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_transaction":
+        table=self.transactions_types.get(unicode(self.comboBox_transactions_type.itemData(self.comboBox_transactions_type.currentIndex()).toString()))
+        if table=="billservice_transaction":
             idss = []
             for id,date in ids:
                 idss.append(id)
                 
             self.connection.transaction_delete(idss)      
-        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_periodicalservicehistory":
+        elif  table=="billservice_periodicalservicehistory":
             for id,date in ids:
                 self.connection.command("DELETE FROM billservice_periodicalservicehistory WHERE id=%s and datetime='%s'" % (id, date,))
                 self.connection.commit()
-        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_onetimeservicehistory":
+        elif  table=="billservice_onetimeservicehistory":
             for id,date in ids:
                 self.connection.command("DELETE FROM billservice_onetimeservicehistory WHERE id=%s and datetime='%s'" % (id, date,))
                 self.connection.commit()
-        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_addonservicetransaction":
+        elif  table=="billservice_addonservicetransaction":
             for id,date in ids:
                 self.connection.command("DELETE FROM billservice_addonservicetransaction WHERE id=%s and created='%s'" % (id, date,))
                 self.connection.commit()
-        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_traffictransaction":
+        elif  table=="billservice_traffictransaction":
             for id,date in ids:
                 self.connection.command("DELETE FROM billservice_traffictransaction WHERE id=%s and datetime='%s'" % (id, date,))
                 self.connection.commit()
-        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="billservice_timetransaction":
+        elif  table=="billservice_timetransaction":
             for id,date in ids:
                 self.connection.command("DELETE FROM billservice_timetransaction WHERE id=%s and datetime='%s'" % (id, date,))
                 self.connection.commit()         
-        elif  self.transactions_tables[self.comboBox_transactions_type.currentIndex()]=="qiwi_invoice":
+        elif  table=="qiwi_invoice":
             for id,date in ids:
                 self.connection.command("DELETE FROM qiwi_invoice WHERE id=%s and created='%s'" % (id, date,))
                 self.connection.commit()                            
         self.refresh_table()
      
-class TransactionsReport(QtGui.QMainWindow):
-    def __init__(self, connection ,account=None):
 
-        super(TransactionsReport, self).__init__()
-        self.setObjectName("TransactionReportMDI")
-        self.account = account
-        self.connection = connection
-        self.connection.commit()
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,903,483).size()).expandedTo(self.minimumSizeHint()))
-        self.datetimeFormat = "dd" + dateDelim + "MM" + dateDelim + "yyyy hh:mm:ss"
-        self.strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
-
-        self.tableWidget = QtGui.QTableWidget(self)
-        self.tableWidget = tableFormat(self.tableWidget) 
-        self.tableWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        
-
-        self.setCentralWidget(self.tableWidget)
-        
-        self.user_edit = QtGui.QComboBox(self)
-        self.user_edit.setGeometry(QtCore.QRect(100,12,201,20))
-        self.user_edit.setObjectName("user_edit")
-        
-        
-        
-        self.date_start = CustomDateTimeWidget()
-        self.date_start.setGeometry(QtCore.QRect(420,9,161,20))
-        #self.date_start.setCalendarPopup(True)
-        self.date_start.setObjectName("date_start")
-        #self.date_start.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-
-
-        self.date_end = CustomDateTimeWidget()
-        self.date_end.setGeometry(QtCore.QRect(420,42,161,20))
-        #self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
-        #self.date_end.setCalendarPopup(True)
-        self.date_end.setObjectName("date_end")
-        #self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
-        
-        try:
-            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            self.date_start.setDateTime(settings.value("trans_date_start", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
-            self.date_end.setDateTime(settings.value("trans_date_end", QtCore.QVariant(QtCore.QDateTime(2000,1,1,0,0))).toDateTime())
-        except Exception, ex:
-            print "Transactions settings error: ", ex
-
-        self.date_start_label = QtGui.QLabel(self)
-        self.date_start_label.setMargin(10)
-        self.date_start_label.setObjectName("date_start_label")
-
-        self.date_end_label = QtGui.QLabel(self)
-        self.date_end_label.setMargin(10)
-        self.date_end_label.setObjectName("date_end_label")
-
-        self.user_label = QtGui.QLabel(self)
-        self.user_label.setMargin(10)
-        self.user_label.setObjectName("user_label")
-
-        self.go_pushButton = QtGui.QPushButton(self)
-        self.go_pushButton.setGeometry(QtCore.QRect(590,40,101,25))
-        self.go_pushButton.setObjectName("go_pushButton")
-
-
-        
-        self.system_transactions_checkbox = QtGui.QCheckBox(self)
-        self.system_transactions_checkbox.setObjectName("system_transactions_checkbox")
-
-        self.toolBar = QtGui.QToolBar(self)
-        
-        
-        self.toolBar.addWidget(self.user_label)
-        self.toolBar.addWidget(self.user_edit)
-        
-        self.toolBar.addWidget(self.date_start_label)
-        self.toolBar.addWidget(self.date_start)
-        self.toolBar.addWidget(self.date_end_label)
-        self.toolBar.addWidget(self.date_end)
-        self.toolBar.addWidget(self.system_transactions_checkbox)
-        self.toolBar.addWidget(self.go_pushButton)
-        self.toolBar.addSeparator()      
-        
-        
-        self.toolBar.setMovable(False)
-        self.toolBar.setFloatable(False)
-        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
-        
-        self.actionDeleteTransaction = QtGui.QAction(self)
-        self.actionDeleteTransaction.setIcon(QtGui.QIcon("images/del.png"))
-        self.actionDeleteTransaction.setObjectName("actionDeleteTransaction")
-        
-        self.tableWidget.addAction(self.actionDeleteTransaction)
-        
-        self.retranslateUi()
-        QtCore.QObject.connect(self.actionDeleteTransaction, QtCore.SIGNAL("triggered()"), self.delete_transaction)
-
-        #QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
-        #QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
-        
-        QtCore.QObject.connect(self.go_pushButton,QtCore.SIGNAL("clicked()"),self.refresh_table)
-        self.fixtures()
-        
-    def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "История операций над лицевым счётом пользователя", None, QtGui.QApplication.UnicodeUTF8))
-        self.date_start_label.setText(QtGui.QApplication.translate("Dialog", "С", None, QtGui.QApplication.UnicodeUTF8))
-        self.date_end_label.setText(QtGui.QApplication.translate("Dialog", "По", None, QtGui.QApplication.UnicodeUTF8))
-        self.user_label.setText(QtGui.QApplication.translate("Dialog", "Пользователь", None, QtGui.QApplication.UnicodeUTF8))
-        self.go_pushButton.setText(QtGui.QApplication.translate("Dialog", "Пыщь", None, QtGui.QApplication.UnicodeUTF8))
-        self.date_end.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
-        self.date_start.setDisplayFormat(QtGui.QApplication.translate("Dialog", self.datetimeFormat, None, QtGui.QApplication.UnicodeUTF8))
-        self.tableWidget.clear()
-
-        columns = [u'#', u'Дата', u'Платёжный документ', u'Вид проводки', u'Тариф', u'Сумма', u'Комментарий']
-        makeHeaders(columns, self.tableWidget)
-        
-        #self.save_pushButton.setText(QtGui.QApplication.translate("Dialog", "Сохранить", None, QtGui.QApplication.UnicodeUTF8))
-        self.system_transactions_checkbox.setText(QtGui.QApplication.translate("Dialog", "Включить в отчёт системные проводки", None, QtGui.QApplication.UnicodeUTF8))
-        #self.write_off_label.setText(QtGui.QApplication.translate("Dialog", "Списано:", None, QtGui.QApplication.UnicodeUTF8))
-        #self.write_off.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
-        #self.write_on_label.setText(QtGui.QApplication.translate("Dialog", "Начислено", None, QtGui.QApplication.UnicodeUTF8))
-        #self.write_on.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
-        #self.ballance_label.setText(QtGui.QApplication.translate("Dialog", "Баланс на конец периода", None, QtGui.QApplication.UnicodeUTF8))
-        #self.ballance.setText(QtGui.QApplication.translate("Dialog", "0", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionDeleteTransaction.setText(u"Отменить проводку")
-        
-    def fixtures(self):
-        accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
-        self.connection.commit()
-        for account in accounts:
-            self.user_edit.addItem(account.username)
-        
-        if self.account:
-            self.user_edit.setCurrentIndex(self.user_edit.findText(self.account.username, QtCore.Qt.MatchCaseSensitive))
-            self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % self.account.username)
-
-
-    def addrow(self, value, x, y):
-        if value==None:
-            value=""
-            
-        headerItem = QtGui.QTableWidgetItem()
-        headerItem.setText(unicode(value))
-        self.tableWidget.setItem(x,y,headerItem)
-                
-    def refresh_table(self):
-        self.tableWidget.setSortingEnabled(False)
-        self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % unicode(self.user_edit.currentText()))
-        self.tableWidget.clearContents()
-        start_date = self.date_start.currentDate()
-        end_date = self.date_end.currentDate()
-        
-        if self.system_transactions_checkbox.checkState()==2:
-            transactions = self.connection.sql("""SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name FROM billservice_transaction as transaction
-                                            JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
-                                            LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
-                                            WHERE transaction.created between '%s' and '%s' and transaction.account_id=%d ORDER BY transaction.created DESC""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))
-        else:
-            transactions = self.connection.sql("""SELECT transaction.*,transactiontype.name as transaction_type_name, tariff.name as tariff_name
-            FROM billservice_transaction as transaction
-            JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
-            LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id
-            WHERE transaction.type_id='MANUAL_TRANSACTION' and transaction.created between '%s' and '%s' and transaction.account_id=%d  ORDER BY transaction.created DESC""" %  (start_date, end_date, self.connection.get("SELECT * FROM billservice_account WHERE username='%s'" % unicode(self.user_edit.currentText())).id))            
-        self.connection.commit()
-        self.tableWidget.setRowCount(len(transactions))
-        i=0
-        ballance = 0
-        write_on = 0
-        write_off = 0
-        for transaction in transactions:
-            self.addrow(transaction.id, i, 0)
-            self.addrow(transaction.created.strftime(self.strftimeFormat), i, 1)
-            self.addrow(transaction.bill, i, 2)
-            self.addrow(transaction.transaction_type_name, i, 3)
-            self.addrow(transaction.tariff_name, i, 4)
-            self.addrow(transaction.summ, i, 5)
-            self.addrow(transaction.description, i, 6)
-            i+=1
-            #if transaction.summ<0:
-            #    write_on +=transaction.summ*(-1)                             
-            #if transaction.summ>0:
-            #    write_off +=transaction.summ
-        self.tableWidget.setColumnHidden(0, True)
-                
-        #self.write_off.setText(unicode(write_off))
-        #self.write_on.setText(unicode(write_on))
-        #self.ballance.setText(unicode(write_on-write_off))
-        try:
-            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            settings.setValue("trans_date_start", QtCore.QVariant(self.date_start.dateTime()))
-            settings.setValue("trans_date_end", QtCore.QVariant(self.date_end.dateTime()))
-        except Exception, ex:
-            print "Transactions settings save error: ", ex
-        self.tableWidget.setSortingEnabled(True)
-        
-    def delete_transaction(self):
-        ids = []
-        #import Pyro
-        for index in self.tableWidget.selectedIndexes():
-            #print index.row(), index.column()
-            if not index.column()==0:
-                continue
-            
-            i=unicode(self.tableWidget.item(index.row(), 0).text())
-            try:
-                ids.append(int(i))
-            except Exception, e:
-                print "can not convert transaction id to int"      
-        
-        self.connection.transaction_delete(ids)      
-        self.connection.commit()
-        self.refresh_table()
         
 class ReportPropertiesDialog(QtGui.QDialog):
     def __init__(self, connection):

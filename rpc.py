@@ -281,7 +281,7 @@ class RPCServer(object):
         log_string = u"""Пользователь %s выполнил отмену проводок %s""" % (add_data['USER_ID'][0], str(ids),)
         
         #cur.execute(u"""INSERT INTO billservice_log(systemuser_id, "text", created) VALUES(%s, %s, now())""", (add_data['USER_ID'][1],log_string,))
-        insert_log_action(add_data['USER_ID'][1],log_string)
+        self.insert_log_action(add_data['USER_ID'][1],log_string)
         return
     
     def flush(self, cur=None, connection=None, add_data = {}):
