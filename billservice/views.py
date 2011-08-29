@@ -1062,10 +1062,10 @@ def traffic_transaction(request):
     summ_on_page = 0
     traffic_transaction = paginator.get_page_items()
     if is_range:
-        for traffic_transaction in qs:
-            summ += traffic_transaction.summ
-        for traffic_transaction in traffic_transaction:
-            summ_on_page += traffic_transaction.summ
+        for ttr in qs:
+            summ += ttr.summ
+        for ttr in traffic_transaction:
+            summ_on_page += ttr.summ
     rec_count = len(traffic_transaction)+1
     return {
             'traffic_transaction':traffic_transaction,
