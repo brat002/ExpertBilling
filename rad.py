@@ -42,7 +42,7 @@ from classes.rad_class.CardActivateData import CardActivateData
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, split_speed, get_decimals_speeds, flatten, command_string_parser, parse_custom_speed_lst_rad, split_speed, flatten
 from pkgutil import simplegeneric
 from itertools import chain
-
+from radius.option_parser import parse
 from utilities.Session import DictSession as util_DictSession
 from utilities.data_utilities import get_db_data as u_get_db_data, simple_list_index as u_simple_list_index
 from utilities.utilities_sql import utilities_sql as u_utilities_sql
@@ -1416,7 +1416,11 @@ class HandleSDHCP(HandleSAuth):
         nas_id = nas.id
         self.replypacket=packet.Packet(secret=nas.secret,dict=vars.DICT)
 
-        
+        if self.packetobject.get("Agent-Remote-ID") and self.packetobject.get("Agent-Circuit-ID"):
+            identify, vlan, module, port=parse(nas.type, self.packetobject.get("Agent-Remote-ID",[''])[0],self.packetobject.get("Agent-Circuit-ID",[''])[0])
+            if identify:
+                subaccount_switch = self.caches.nas_cache.by_id.get(subacc.switch_id)
+                switch = self.caches.nas_cache.by_id.get(subacc.switch_id)
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type='DHCP')
 
         #print dir(acc)

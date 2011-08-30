@@ -216,11 +216,12 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         rdelta = relativedelta(now, time_start) if not prev else relativedelta(now-relativedelta(months=1),time_start)
         tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
         
-        tkc=tnc+relativedelta(months=1)
+        n_days=calendar.mdays[tnc.month]
+        tkc=tnc+relativedelta(days=n_days)
         days=calendar.mdays[tkc.month]
         #Если начало - конец месяца, то во всех следующих месяцах выбираем максимальный день месяца
-        if tnc.day>=tkc.day and days>tkc.day:
-            tkc=tkc.replace(day=days)
+        if tnc.day>tkc.day and days>tkc.day:
+            tkc=tnc.replace(day=days)
         delta=tkc-tnc
 
         return (tnc, tkc, delta.days*86400+delta.seconds)
