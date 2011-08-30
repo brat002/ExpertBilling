@@ -41,3 +41,12 @@ ATTRIBUTE       Mikrotik-Address-List        19  string
 
 
 END-VENDOR      Mikrotik
+
+VENDOR          Redback        2352
+
+BEGIN-VENDOR    Redback
+
+ATTRIBUTE	    Agent-Remote-ID               96   string 
+ATTRIBUTE	    Agent-Circuit-ID              97   string 
+
+END-VENDOR      Redback
