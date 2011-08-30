@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>707</width>
-    <height>650</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -33,7 +33,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -51,7 +51,7 @@
        <attribute name="title">
         <string>Общее</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_10">
+       <layout class="QGridLayout" name="gridLayout_28">
         <item row="0" column="0">
          <widget class="QLabel" name="tarif_name_label">
           <property name="toolTip">
@@ -65,7 +65,7 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="1" colspan="4">
+        <item row="0" column="1" colspan="3">
          <widget class="QLineEdit" name="tarif_name_edit">
           <property name="toolTip">
            <string>Уникальное название тарифного плана</string>
@@ -75,7 +75,7 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0" colspan="3">
+        <item row="1" column="0" colspan="5">
          <widget class="QGroupBox" name="sp_groupbox">
           <property name="toolTip">
            <string>Предоставление тарифного плана как пакета на срок расчётного периода</string>
@@ -88,6 +88,9 @@
           </property>
           <property name="checkable">
            <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
           </property>
           <layout class="QGridLayout" name="gridLayout_8">
            <item row="0" column="1">
@@ -139,7 +142,226 @@
           </layout>
          </widget>
         </item>
-        <item row="1" column="3" rowspan="5" colspan="2">
+        <item row="2" column="0">
+         <widget class="QLabel" name="sp_name_label">
+          <property name="toolTip">
+           <string>Расчётный период тарифного плана</string>
+          </property>
+          <property name="whatsThis">
+           <string>Расчётный период тарифного плана</string>
+          </property>
+          <property name="text">
+           <string>Расчётный период</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" colspan="4">
+         <widget class="QComboBox" name="sp_name_edit">
+          <property name="toolTip">
+           <string>Расчётный период тарифного плана</string>
+          </property>
+          <property name="whatsThis">
+           <string>Расчётный период тарифного плана</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_contracttemplate">
+          <property name="toolTip">
+           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
+          </property>
+          <property name="whatsThis">
+           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
+          </property>
+          <property name="text">
+           <string>Шаблон номера договора</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1" colspan="3">
+         <widget class="QComboBox" name="comboBox_contracttemplate">
+          <property name="toolTip">
+           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
+          </property>
+          <property name="whatsThis">
+           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_systemgroup">
+          <property name="toolTip">
+           <string>Настройки видимости тарифного плана для системных пользователей</string>
+          </property>
+          <property name="whatsThis">
+           <string>Настройки видимости тарифного плана для системных пользователей</string>
+          </property>
+          <property name="text">
+           <string>Видимость для группы</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1" colspan="4">
+         <widget class="QComboBox" name="comboBox_system_group">
+          <property name="toolTip">
+           <string>Настройки видимости тарифного плана для системных пользователей</string>
+          </property>
+          <property name="whatsThis">
+           <string>Настройки видимости тарифного плана для системных пользователей</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="access_time_label">
+          <property name="toolTip">
+           <string>Разрешённое время доступа/авторизации для абонентов</string>
+          </property>
+          <property name="whatsThis">
+           <string>Разрешённое время доступа/авторизации для абонентов</string>
+          </property>
+          <property name="text">
+           <string>Время доступа</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1" colspan="4">
+         <widget class="QComboBox" name="access_time_edit">
+          <property name="toolTip">
+           <string>Разрешённое время доступа/авторизации для абонентов</string>
+          </property>
+          <property name="whatsThis">
+           <string>Разрешённое время доступа/авторизации для абонентов</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="access_type_label">
+          <property name="toolTip">
+           <string>Способ доступа абонента</string>
+          </property>
+          <property name="whatsThis">
+           <string>Способ доступа абонента</string>
+          </property>
+          <property name="text">
+           <string>Способ доступа</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="1" colspan="4">
+         <widget class="QComboBox" name="access_type_edit">
+          <property name="toolTip">
+           <string>Способ доступа абонента</string>
+          </property>
+          <property name="whatsThis">
+           <string>Способ доступа абонента</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QLabel" name="label_vpn_ippool">
+          <property name="toolTip">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+          <property name="whatsThis">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+          <property name="text">
+           <string>VPN пул</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="1" colspan="4">
+         <widget class="QComboBox" name="comboBox_vpn_ippool">
+          <property name="toolTip">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+          <property name="whatsThis">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0" colspan="6">
+         <widget class="QGroupBox" name="groupBox_allowuserblock">
+          <property name="title">
+           <string>Разрешить пользовательскую блокировку</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_10">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_userblock_cost">
+             <property name="text">
+              <string>Стоимость активации блокировки</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="lineEdit_userblock_cost"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_max_block_days">
+             <property name="text">
+              <string>Максимальная продолжительность блокировки, дней</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QSpinBox" name="spinBox_max_block_days"/>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QCheckBox" name="checkBox_userblock_balance_require">
+             <property name="text">
+              <string>Требовать положительного баланса для активации блокировки</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item row="11" column="0">
+         <widget class="QLabel" name="tarif_description_label">
+          <property name="toolTip">
+           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
+          </property>
+          <property name="whatsThis">
+           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
+          </property>
+          <property name="text">
+           <string>Описание тарифного плана</string>
+          </property>
+          <property name="buddy">
+           <cstring>tarif_description_edit</cstring>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="0" colspan="6">
+         <widget class="QTextEdit" name="tarif_description_edit">
+          <property name="toolTip">
+           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
+          </property>
+          <property name="whatsThis">
+           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextEditable|Qt::TextEditorInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="0">
+         <widget class="QCheckBox" name="tarif_status_edit">
+          <property name="toolTip">
+           <string>Признак возможности работы абонента на данном тарифном плане</string>
+          </property>
+          <property name="whatsThis">
+           <string>Признак возможности работы абонента на данном тарифном плане</string>
+          </property>
+          <property name="text">
+           <string>Тарифный план активен</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5" rowspan="5">
          <widget class="QGroupBox" name="components_groupBox">
           <property name="toolTip">
            <string>Набор компонентов тарифного плана</string>
@@ -255,85 +477,27 @@
           </layout>
          </widget>
         </item>
-        <item row="11" column="0" colspan="3">
-         <widget class="QLabel" name="tarif_description_label">
+        <item row="6" column="5">
+         <widget class="QCheckBox" name="checkBox_ipn_actions">
           <property name="toolTip">
-           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
+           <string>Производить дополнительно IPN действия на сервере доступа для данного способа доступа.</string>
           </property>
           <property name="whatsThis">
-           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
+           <string>Производить дополнительно IPN действия на сервере доступа для данного способа доступа.</string>
           </property>
           <property name="text">
-           <string>Описание тарифного плана</string>
-          </property>
-          <property name="buddy">
-           <cstring>tarif_description_edit</cstring>
+           <string>Производить IPN действия</string>
           </property>
          </widget>
         </item>
-        <item row="12" column="0" colspan="5">
-         <widget class="QTextEdit" name="tarif_description_edit">
-          <property name="toolTip">
-           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
-          </property>
-          <property name="whatsThis">
-           <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextEditable|Qt::TextEditorInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="13" column="0" colspan="2">
-         <widget class="QCheckBox" name="tarif_status_edit">
-          <property name="toolTip">
-           <string>Признак возможности работы абонента на данном тарифном плане</string>
-          </property>
-          <property name="whatsThis">
-           <string>Признак возможности работы абонента на данном тарифном плане</string>
-          </property>
+        <item row="3" column="4">
+         <widget class="QToolButton" name="toolButton">
           <property name="text">
-           <string>Тарифный план активен</string>
+           <string>...</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="1" colspan="2">
-         <widget class="QComboBox" name="access_type_edit">
-          <property name="toolTip">
-           <string>Способ доступа абонента</string>
-          </property>
-          <property name="whatsThis">
-           <string>Способ доступа абонента</string>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0">
-         <widget class="QLabel" name="label_vpn_ippool">
-          <property name="toolTip">
-           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
-          </property>
-          <property name="whatsThis">
-           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
-          </property>
-          <property name="text">
-           <string>VPN пул</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
-         <widget class="QLabel" name="access_type_label">
-          <property name="toolTip">
-           <string>Способ доступа абонента</string>
-          </property>
-          <property name="whatsThis">
-           <string>Способ доступа абонента</string>
-          </property>
-          <property name="text">
-           <string>Способ доступа</string>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="1" colspan="2">
+        <item row="8" column="1" colspan="5">
          <widget class="QCheckBox" name="checkBox_allow_expresscards_activation">
           <property name="toolTip">
            <string>Разрешить активацию карт экспресс-оплаты на данном тарифном плане.</string>
@@ -346,125 +510,16 @@
           </property>
          </widget>
         </item>
-        <item row="8" column="1" colspan="2">
-         <widget class="QComboBox" name="comboBox_vpn_ippool">
+        <item row="9" column="1" colspan="5">
+         <widget class="QCheckBox" name="checkBox_allow_moneytransfer">
           <property name="toolTip">
-           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+           <string>Разрешить активацию карт экспресс-оплаты на данном тарифном плане.</string>
           </property>
           <property name="whatsThis">
-           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_systemgroup">
-          <property name="toolTip">
-           <string>Настройки видимости тарифного плана для системных пользователей</string>
-          </property>
-          <property name="whatsThis">
-           <string>Настройки видимости тарифного плана для системных пользователей</string>
+           <string>Разрешить активацию карт экспресс-оплаты на данном тарифном плане.</string>
           </property>
           <property name="text">
-           <string>Видимость для группы</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1" colspan="2">
-         <widget class="QComboBox" name="comboBox_system_group">
-          <property name="toolTip">
-           <string>Настройки видимости тарифного плана для системных пользователей</string>
-          </property>
-          <property name="whatsThis">
-           <string>Настройки видимости тарифного плана для системных пользователей</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="access_time_label">
-          <property name="toolTip">
-           <string>Разрешённое время доступа/авторизации для абонентов</string>
-          </property>
-          <property name="whatsThis">
-           <string>Разрешённое время доступа/авторизации для абонентов</string>
-          </property>
-          <property name="text">
-           <string>Время доступа</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="1" colspan="2">
-         <widget class="QComboBox" name="access_time_edit">
-          <property name="toolTip">
-           <string>Разрешённое время доступа/авторизации для абонентов</string>
-          </property>
-          <property name="whatsThis">
-           <string>Разрешённое время доступа/авторизации для абонентов</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_contracttemplate">
-          <property name="toolTip">
-           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
-          </property>
-          <property name="whatsThis">
-           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
-          </property>
-          <property name="text">
-           <string>Шаблон номера договора</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QComboBox" name="comboBox_contracttemplate">
-          <property name="toolTip">
-           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
-          </property>
-          <property name="whatsThis">
-           <string>Шаблон номера договора для создаваемых на данном тарифном плане абонентов.</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="sp_name_label">
-          <property name="toolTip">
-           <string>Расчётный период тарифного плана</string>
-          </property>
-          <property name="whatsThis">
-           <string>Расчётный период тарифного плана</string>
-          </property>
-          <property name="text">
-           <string>Расчётный период</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1" colspan="2">
-         <widget class="QComboBox" name="sp_name_edit">
-          <property name="toolTip">
-           <string>Расчётный период тарифного плана</string>
-          </property>
-          <property name="whatsThis">
-           <string>Расчётный период тарифного плана</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="2">
-         <widget class="QToolButton" name="toolButton">
-          <property name="text">
-           <string>...</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="3">
-         <widget class="QCheckBox" name="checkBox_ipn_actions">
-          <property name="toolTip">
-           <string>Производить дополнительно IPN действия на сервере доступа для данного способа доступа.</string>
-          </property>
-          <property name="whatsThis">
-           <string>Производить дополнительно IPN действия на сервере доступа для данного способа доступа.</string>
-          </property>
-          <property name="text">
-           <string>Производить IPN действия</string>
+           <string>Разрешить услугу &quot;Поделись балансом&quot;</string>
           </property>
          </widget>
         </item>
@@ -755,7 +810,7 @@
          </widget>
         </item>
         <item row="2" column="0">
-         <widget class="QTableWidget" name="traficcost_tableWidget">
+         <widget class="QTableWidget" name="trafficcost_tableWidget">
           <property name="frameShape">
            <enum>QFrame::Panel</enum>
           </property>
@@ -774,10 +829,9 @@
           <property name="gridStyle">
            <enum>Qt::NoPen</enum>
           </property>
-          <row/>
-          <row/>
-          <row/>
-          <row/>
+          <property name="rowCount">
+           <number>0</number>
+          </property>
          </widget>
         </item>
         <item row="3" column="0">
@@ -1483,14 +1537,6 @@
   <tabstop>tarif_cost_edit</tabstop>
   <tabstop>sp_type_edit</tabstop>
   <tabstop>reset_tarif_cost_edit</tabstop>
-  <tabstop>sp_name_edit</tabstop>
-  <tabstop>comboBox_contracttemplate</tabstop>
-  <tabstop>toolButton</tabstop>
-  <tabstop>comboBox_system_group</tabstop>
-  <tabstop>access_time_edit</tabstop>
-  <tabstop>access_type_edit</tabstop>
-  <tabstop>comboBox_vpn_ippool</tabstop>
-  <tabstop>checkBox_allow_expresscards_activation</tabstop>
   <tabstop>transmit_service_checkbox</tabstop>
   <tabstop>time_access_service_checkbox</tabstop>
   <tabstop>radius_access_service_checkbox</tabstop>
@@ -1499,6 +1545,19 @@
   <tabstop>limites_checkbox</tabstop>
   <tabstop>checkBox_addonservices</tabstop>
   <tabstop>checkBox_ip_telephony</tabstop>
+  <tabstop>sp_name_edit</tabstop>
+  <tabstop>comboBox_contracttemplate</tabstop>
+  <tabstop>toolButton</tabstop>
+  <tabstop>comboBox_system_group</tabstop>
+  <tabstop>access_time_edit</tabstop>
+  <tabstop>access_type_edit</tabstop>
+  <tabstop>checkBox_ipn_actions</tabstop>
+  <tabstop>comboBox_vpn_ippool</tabstop>
+  <tabstop>checkBox_allow_expresscards_activation</tabstop>
+  <tabstop>checkBox_allow_moneytransfer</tabstop>
+  <tabstop>groupBox_allowuserblock</tabstop>
+  <tabstop>lineEdit_userblock_cost</tabstop>
+  <tabstop>spinBox_max_block_days</tabstop>
   <tabstop>tarif_description_edit</tabstop>
   <tabstop>tarif_status_edit</tabstop>
   <tabstop>speed_max_in_edit</tabstop>
@@ -1517,7 +1576,7 @@
   <tabstop>speed_table</tabstop>
   <tabstop>add_traffic_cost_button</tabstop>
   <tabstop>del_traffic_cost_button</tabstop>
-  <tabstop>traficcost_tableWidget</tabstop>
+  <tabstop>trafficcost_tableWidget</tabstop>
   <tabstop>add_prepaid_traffic_button</tabstop>
   <tabstop>del_prepaid_traffic_button</tabstop>
   <tabstop>prepaid_tableWidget</tabstop>

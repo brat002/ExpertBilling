@@ -1712,8 +1712,9 @@ class AccountWindow(QtGui.QMainWindow):
 
             self.dateTimeEdit_agreement_date.setDateTime(datetime.datetime.now())
             
-
-        tarif_contracttemplate = self.connection.get_model(self.tarif_id, "billservice_tariff", fields=['contracttemplate_id',])
+        tarif_contracttemplate=None
+        if self.tarif_id>0:
+            tarif_contracttemplate = self.connection.get_model(self.tarif_id, "billservice_tariff", fields=['contracttemplate_id',])
         self.connection.commit()
         tarif_contracttemplate_id = None
         if tarif_contracttemplate:
