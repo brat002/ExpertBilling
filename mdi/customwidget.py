@@ -69,9 +69,15 @@ class CustomDateTimeWidget(QtGui.QWidget):
         self.monthAct_00 = QtGui.QAction(u"&Начало месяца", self)
         self.connect(self.monthAct_00, QtCore.SIGNAL("triggered()"), self.set_month_00)
 
+        self.monthAct_last_day = QtGui.QAction(u"&Конец месяца", self)
+        self.connect(self.monthAct_last_day, QtCore.SIGNAL("triggered()"), self.set_month_last_day)
+        
         self.yearAct_00 = QtGui.QAction(u"&Начало года", self)
         self.connect(self.yearAct_00, QtCore.SIGNAL("triggered()"), self.set_year_00)
-                               
+
+        self.yearAct_end = QtGui.QAction(u"&Конец года", self)
+        self.connect(self.yearAct_end, QtCore.SIGNAL("triggered()"), self.set_year_end)                 
+        
         self.toolButton_now.addAction(self.nowAct)
         self.toolButton_now.addAction(self.nowAct_00)
         self.toolButton_now.addAction(self.yesterdayAct)
@@ -80,7 +86,11 @@ class CustomDateTimeWidget(QtGui.QWidget):
         self.toolButton_now.addAction(self.tomorrowAct_00)
         self.toolButton_now.addAction(self.monthAct)
         self.toolButton_now.addAction(self.monthAct_00)
+        self.toolButton_now.addAction(self.monthAct_last_day)
+        
         self.toolButton_now.addAction(self.yearAct_00)
+        self.toolButton_now.addAction(self.yearAct_end)
+        
         self.toolButton_now.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.toolButton_now.setPopupMode(2)
         
@@ -156,7 +166,17 @@ class CustomDateTimeWidget(QtGui.QWidget):
         dt=datetime.datetime(now.year,1,1)
         self.dateTimeEdit.setDateTime(dt)    
         
-              
+    def set_year_end(self):
+        now=datetime.datetime.now()
+        dt=datetime.datetime(now.year+1,1,1)
+        self.dateTimeEdit.setDateTime(dt)    
+        
     def setDisplayFormat(self,*args,**kwargs):
         pass
+    
+    def set_month_last_day(self):
+        now=datetime.datetime.now()
+        dt=datetime.datetime(now.year,now.month,1)+relativedelta(months=1)
+        self.dateTimeEdit.setDateTime(dt)  
+        
     
