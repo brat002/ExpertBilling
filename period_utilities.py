@@ -60,10 +60,10 @@ def in_period(time_start, length, repeat_after, now=None):
         #Февраль!
         rdelta = relativedelta(now, time_start)
         tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
+        n_days=calendar.mdays[tnc.month]
         tkc=tnc+relativedelta(months=1)
         days=calendar.mdays[tkc.month]
-        #Если начало - конец месяца, то во всех следующих месяцах выбираем максимальный день месяца
-        if tnc.day>=tkc.day and days>tkc.day:
+        if time_start.day>tkc.day and days>=tkc.day:
             tkc=tkc.replace(day=days)
         if now>=tnc and now<=tkc:
             return True
@@ -135,10 +135,10 @@ def in_period_info(time_start, length, repeat_after, now=None):
         #Февраль!
         rdelta = relativedelta(now, time_start)
         tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
+        n_days=calendar.mdays[tnc.month]
         tkc=tnc+relativedelta(months=1)
         days=calendar.mdays[tkc.month]
-        #Если начало - конец месяца, то во всех следующих месяцах выбираем максимальный день месяца
-        if tnc.day>=tkc.day and days>tkc.day:
+        if time_start.day>tkc.day and days>=tkc.day:
             tkc=tkc.replace(day=days)
         
         if now>=tnc and now<=tkc:
@@ -217,11 +217,14 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
         
         n_days=calendar.mdays[tnc.month]
-        tkc=tnc+relativedelta(days=n_days)
+        tkc=tnc+relativedelta(months=1)
         days=calendar.mdays[tkc.month]
+        if time_start.day>tkc.day and days>=tkc.day:
+            tkc=tkc.replace(day=days)
         #Если начало - конец месяца, то во всех следующих месяцах выбираем максимальный день месяца
-        if tnc.day>tkc.day and days>tkc.day:
-            tkc=tnc.replace(day=days)
+        #if tnc.day>tkc.day and days>tkc.day:
+        #    
+        #    tkc=tnc.replace(month=tnc.month+1)
         delta=tkc-tnc
 
         return (tnc, tkc, delta.days*86400+delta.seconds)
