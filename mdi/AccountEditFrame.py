@@ -844,7 +844,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
                     self.connection.save(ipninuse_model, "billservice_ipinuse")
                     model.ipn_ipinuse_id=None
         	
-        	if pool_id!=0:
+            if pool_id!=0:
         		ipninuse_model= Object()
         		ipninuse_model.pool_id=pool_id
         		ipninuse_model.ip=model.ipn_ip_address

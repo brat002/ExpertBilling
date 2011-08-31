@@ -1080,7 +1080,7 @@ class HandleSAuth(HandleSBase):
                    #else:
                    #    vars.cursor_lock.release()
             else:
-               framed_ip_address = acc.vpn_ip_address
+               framed_ip_address = subacc.vpn_ip_address
 
             authobject.set_code(2)
             self.replypacket.username = str(username) #Нельзя юникод
@@ -1330,14 +1330,51 @@ class HandleHotSpotAuth(HandleSAuth):
         allow_dial = self.caches.period_cache.in_period.get(acct_card.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acct_card.account_status, acct_card.ballance, acct_card.disabled_by_limit, acct_card.balance_blocked,acct_card.tariff_active))
+        framed_ip_address = None
+        ipinuse_id=''
+        if acc.ippool_id:
+
+            if (not (subacc) or (subacc and subacc.vpn_ip_address in ('0.0.0.0',''))) and (subacc and (subacc.ipv4_vpn_pool_id or acc.ippool_id)):
+               
+               with vars.cursor_lock:
+                   try:
+                       self.create_cursor()
+                       pool_id=subacc.ipv4_vpn_pool_id if subacc.ipv4_vpn_pool_id else acc.ippool_id
+                       self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
+                       vpn_ip_address = self.cursor.fetchone()[0]
+                       if not vpn_ip_address:
+                           pool_id, vpn_ip_address = self.find_free_ip(pool_id)
+
+    
+                       if not vpn_ip_address:
+                            logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id))
+                            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
+                            #vars.cursor_lock.release()
+                            return self.auth_NA(authobject)
+                       
+                       self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
+                       ipinuse_id=self.cursor.fetchone()[0]
+                       #vars.cursor.connection.commit()   
+                       #vars.cursor_lock.release()
+                                
+                   except Exception, ex:
+                       #vars.cursor_lock.release()
+                       logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id, repr(ex)))
+                       sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
+                       return self.auth_NA(authobject) 
+                   #else:
+                   #    vars.cursor_lock.release()
+            else:
+               framed_ip_address = subacc.vpn_ip_address
+                
         if allow_dial and acct_card.tariff_active:
             authobject.set_code(packet.AccessAccept)
             #self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
             if subacc:
 
-                if subacc.vpn_ip_address not in ['', '0.0.0.0', '0.0.0.0/0']:
-                    self.replypacket.AddAttribute('Framed-IP-Address', subacc.vpn_ip_address)
-                else:
+                if vpn_ip_address not in [None, '', '0.0.0.0', '0.0.0.0/0']:
+                    self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
+                elif subacc.ipn_ip_address:
                     self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)  
                               
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)

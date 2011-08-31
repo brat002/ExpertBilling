@@ -83,7 +83,7 @@ class Reception_UDP(DatagramProtocol):
             queues.nfQueue.append((data, addrport))
         else:
             logger.error("NF server exception: packet %s <= %s", (len(data), vars.MAX_DATAGRAM_LEN))
-            
+
 class SendPacketProducer(object):
 
     implements(interfaces.IPullProducer)
