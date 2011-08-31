@@ -33,7 +33,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -127,7 +127,7 @@
             </widget>
            </item>
            <item row="1" column="0" colspan="2">
-            <widget class="QCheckBox" name="sp_type_edit">
+            <widget class="QCheckBox" name="require_tarif_cost_edit">
              <property name="toolTip">
               <string>В случае, если на начало расчётного периода у абонента не будет указанной стоимости пакета - он будет заблокирован</string>
              </property>
@@ -309,12 +309,15 @@
            <item row="2" column="1">
             <widget class="QSpinBox" name="spinBox_max_block_days"/>
            </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QCheckBox" name="checkBox_userblock_balance_require">
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_userblock_minballance">
              <property name="text">
-              <string>Требовать положительного баланса для активации блокировки</string>
+              <string>Минимальный баланс для установки блокировки</string>
              </property>
             </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="lineEdit_userblock_minballance"/>
            </item>
           </layout>
          </widget>
@@ -397,7 +400,7 @@
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QCheckBox" name="radius_access_service_checkbox">
+            <widget class="QCheckBox" name="radius_traffic_access_service_checkbox">
              <property name="toolTip">
               <string>Разрешить тарификацию трафика по RADIUS Accounting</string>
              </property>
@@ -423,7 +426,7 @@
             </widget>
            </item>
            <item row="4" column="0">
-            <widget class="QCheckBox" name="periodical_services__checkbox">
+            <widget class="QCheckBox" name="periodical_services_checkbox">
              <property name="toolTip">
               <string>Разрешить тарификацию периодических услуг(Абонентская плата и другие периодические списания)</string>
              </property>
@@ -449,7 +452,7 @@
             </widget>
            </item>
            <item row="6" column="0">
-            <widget class="QCheckBox" name="checkBox_addonservices">
+            <widget class="QCheckBox" name="checkBox_addon_services">
              <property name="toolTip">
               <string>Разрешить активацию подключаемых услуг абонентом</string>
              </property>
@@ -1420,7 +1423,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="tab_8">
        <attribute name="title">
         <string>Подключаемые услуги</string>
        </attribute>
@@ -1535,15 +1538,15 @@
   <tabstop>tarif_name_edit</tabstop>
   <tabstop>sp_groupbox</tabstop>
   <tabstop>tarif_cost_edit</tabstop>
-  <tabstop>sp_type_edit</tabstop>
+  <tabstop>require_tarif_cost_edit</tabstop>
   <tabstop>reset_tarif_cost_edit</tabstop>
   <tabstop>transmit_service_checkbox</tabstop>
   <tabstop>time_access_service_checkbox</tabstop>
-  <tabstop>radius_access_service_checkbox</tabstop>
+  <tabstop>radius_traffic_access_service_checkbox</tabstop>
   <tabstop>onetime_services_checkbox</tabstop>
-  <tabstop>periodical_services__checkbox</tabstop>
+  <tabstop>periodical_services_checkbox</tabstop>
   <tabstop>limites_checkbox</tabstop>
-  <tabstop>checkBox_addonservices</tabstop>
+  <tabstop>checkBox_addon_services</tabstop>
   <tabstop>checkBox_ip_telephony</tabstop>
   <tabstop>sp_name_edit</tabstop>
   <tabstop>comboBox_contracttemplate</tabstop>
@@ -1557,6 +1560,7 @@
   <tabstop>checkBox_allow_moneytransfer</tabstop>
   <tabstop>groupBox_allowuserblock</tabstop>
   <tabstop>lineEdit_userblock_cost</tabstop>
+  <tabstop>lineEdit_userblock_minballance</tabstop>
   <tabstop>spinBox_max_block_days</tabstop>
   <tabstop>tarif_description_edit</tabstop>
   <tabstop>tarif_status_edit</tabstop>
