@@ -88,3 +88,7 @@ urlpatterns += patterns('paymentgateways.quickpay.views',
     (r'^quickpay/payment/$', 'payment'),
 )
 
+urlpatterns += patterns('paymentgateways.osmp_customproviders.views',
+    (r'^osmp_custom/payment/$', 'payment'),
+)
+

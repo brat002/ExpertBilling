@@ -339,15 +339,19 @@ def nfPacketHandle(data, addrport, flowCache):
         
         def find_account_by_port(nasses,flow):
             #global caches
-            if not caches.nas_port_cache.by_nas_id: return None, None, None
+            if not caches.nas_port_cache.by_nas_id: 
+                logger.debug("Nas ports cache is empty return", ())
+                return None, None, None
             acc_data_src,acc_data_dst = None, None
             for nasitem in nasses:
-                logger.debug("Checking flow for nas_id=: %s. Nas-Port", (nasitem.id, ))
+                logger.debug("Checking flow port for nas_id=: %s. Nas-Port. In index=%s, out index=%s. cache len=%s", (nasitem.id, flow.in_index,flow.out_index, len(caches.nas_port_cache.by_nas_id)))
                 if not acc_data_src:
                     acc_data_src = caches.nas_port_cache.by_nas_id.get(nasitem.id,{}).get(flow.in_index,None)
+                    logger.debug("Search for flow src port  account=%s", (acc_data_src, ))
                     nas_id = nasitem.id
                 if not acc_data_dst: 
                     acc_data_dst = caches.nas_port_cache.by_nas_id.get(nasitem.id,{}).get(flow.out_index,None)
+                    logger.debug("Search for flow dst port account=%s", (acc_data_dst, ))
                     nas_id = nasitem.id
                 if acc_data_dst and acc_data_src: return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
             return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
@@ -389,16 +393,26 @@ def nfPacketHandle(data, addrport, flowCache):
             return acc_data_src,acc_data_dst, nas_id
 
 
-        if flow.in_index==159:
-            pass    
+  
         acc_data_src,acc_data_dst, nas_id = find_account_by_port(nasses, flow)
-        
+        acc_data_src_ip, acc_data_dst_ip, nas_id_ip=None,None,None
         if not (acc_data_src or acc_data_dst):
-            acc_data_src,acc_data_dst, nas_id = find_account_by_ip(nasses, flow)
+            acc_data_src_ip,acc_data_dst_ip, nas_id_ip = find_account_by_ip(nasses, flow)
             
-
+        if  acc_data_src:
+            acc_data_src=acc_data_src
+        else:
+            acc_data_src=acc_data_src_ip
+            
+        if  acc_data_dst:
+            acc_data_dst=acc_data_dst
+        else:
+            acc_data_dst=acc_data_dst_ip
         
-
+        if  nas_id:
+            nas_id=nas_id
+        else:
+            nas_id=nas_id_ip
 
         logger.debug("VPN Account with nas for flow src(%s) dst(%s) default nas(%s)", (acc_data_src, acc_data_dst, nas_id, ))
         #Проверка на IPN сеть
@@ -419,7 +433,7 @@ def nfPacketHandle(data, addrport, flowCache):
         logger.debug("IPN Account for flow src(%s) dst(%s)", (acc_data_src, acc_data_dst, ))
         local = bool(acc_data_src and acc_data_dst)
         if local:
-            logger.debug("Flow is local")
+            logger.debug("Flow is local",())
         acc_acct_tf = (acc_data_src, acc_data_dst) if local else (acc_data_src or acc_data_dst,)
         #print repr(acc_acct_tf)
             

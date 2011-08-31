@@ -783,7 +783,7 @@ class AddCards(QtGui.QDialog):
         
         if self.radioButton_access.isChecked():
             pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
-            ips = get_free_addreses_from_pool(self.connection, self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0], self.count_spinBox.text().toInt()[0])
+            #ips = get_free_addreses_from_pool(self.connection, self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0], self.count_spinBox.text().toInt()[0])
             
         cards_count=self.count_spinBox.value()
         i=0
@@ -807,7 +807,7 @@ class AddCards(QtGui.QDialog):
             if self.radioButton_access.isChecked()==True:
                 model.login = "%s%s" % (model.series, GenPasswd2(length=randint(self.spinBox_login_from.value(), self.spinBox_login_to.value())-1,chars=login_mask))
                 model.tarif_id = tarif_id
-                model.ip = ips[i]
+                model.ippool_id = pool_id
                 model.nas_id = nas_id
                 model.type = 2
                 ipinuse_model = Object()
@@ -820,6 +820,7 @@ class AddCards(QtGui.QDialog):
                 model.login = "%s%s" % (model.series, GenPasswd2(length=randint(self.spinBox_login_from.value(), self.spinBox_login_to.value())-1,chars=login_mask))
                 model.tarif_id = tarif_id
                 model.type = 1
+                model.ippool_id = pool_id or None
             if self.radioButton_phone.isChecked():
                 model.login = "%s%s" % (model.series, GenPasswd2(length=randint(self.spinBox_login_from.value(), self.spinBox_login_to.value())-1,chars=login_mask))
                 model.tarif_id = tarif_id
@@ -884,9 +885,9 @@ class AddCards(QtGui.QDialog):
         pools = self.connection.sql("SELECT id,name FROM billservice_ippool WHERE type=0 ORDER BY name ASC")
         self.connection.commit()
         i=0
+        self.comboBox_ippool.addItem('---',QtCore.QVariant(0))
         for pool in pools:
-            self.comboBox_ippool.addItem(pool.name)
-            self.comboBox_ippool.setItemData(i, QtCore.QVariant(pool.id))
+            self.comboBox_ippool.addItem(pool.name, QtCore.QVariant(pool.id))
             i+=1
             
         nasses = self.connection.sql("SELECT id,name FROM nas_nas ORDER BY name ASC")
