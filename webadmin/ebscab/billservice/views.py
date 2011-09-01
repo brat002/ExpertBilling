@@ -1122,7 +1122,25 @@ def news_delete(request):
                 'message':u'Новость успешно удалена',
                 }
 
-
+@ajax_request
+@login_required
+def userblock_action(request):
+    message = u'Невозможно заблокировать учётную записть'
+    if request.method == 'POST':
+        news_id = request.POST.get('news_id', '')
+        try:
+            news = AccountViewedNews.objects.get(id = news_id, account = request.user.account)
+        except:
+            return {
+                    'message':message,
+                    }
+        news.viewed = True
+        news.save()
+        return {
+                'message':u'Новость успешно удалена',
+                }
+        
+        
 @ajax_request
 @login_required
 def jsonaccounts(request):

@@ -449,12 +449,12 @@ class RPCServer(object):
                     
                     cur.execute(""" 
                     INSERT INTO billservice_subaccount(
-                             account_id, username, "password", vpn_ip_address, 
-                            vpn_ipinuse_id, nas_id, 
-                            allow_addonservice)
-                    VALUES (%s, %s, %s, %s, %s, %s
+                             account_id, username, "password", ipv4_vpn_pool_id, 
+                             nas_id, 
+                            allow_addonservice )
+                    VALUES (%s, %s, %s, %s, %s
                             True);                    
-                    """, (account_id, login, pin, card['ip'], card['ipinuse_id'],  card['nas_id']))
+                    """, (account_id, login, pin, card['ippool_id'],  card['nas_id']))
                     cur.execute("INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s, %s, %s);", (account_id, card['tarif_id'], now))
                     
                     cur.execute(u"""
