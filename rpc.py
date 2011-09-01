@@ -976,7 +976,7 @@ class RPCServer(object):
         
         id_fetch = cur.fetchone()
         id = id_fetch if not id_fetch else id_fetch['id']
-        
+        model.id=id
         #a1 = cur.fetchone()
         #id = cur.fetchone()['id']
         if template_id and not model.contract and template_id!=0:
@@ -995,8 +995,9 @@ class RPCServer(object):
             second=model.created.second
             contract_num=contract_counter
             
-            d={'tarif_id':tarif_id, 'account_id':id,'year':year,'month':month, 'day':day, 'hour':hour, 'minute':minute,'second':second, 'tarif_type':tarif_type, 'contract_num':contract_num}
             
+            d={'tarif_id':tarif_id, 'account_id':id,'year':year,'month':month, 'day':day, 'hour':hour, 'minute':minute,'second':second, 'tarif_type':tarif_type, 'contract_num':contract_num}
+            d.update(model.__dict__)
 
             contract = contract_template % d
             cur.execute("UPDATE billservice_account SET contract=%s WHERE id=%s", (contract, id))
