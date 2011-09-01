@@ -1574,7 +1574,9 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_status.setItemData(1, QtCore.QVariant(2))
         self.comboBox_status.addItem(u"Неактивен, списывать периодические услуги")
         self.comboBox_status.setItemData(2, QtCore.QVariant(3))
-    
+        self.comboBox_status.addItem(u"Пользовательская блокировка.")
+        self.comboBox_status.setItemData(3, QtCore.QVariant(4))
+        
     def refresh_combo_city(self):
         pass
     def refresh_combo_street(self):
