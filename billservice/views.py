@@ -1122,6 +1122,13 @@ def news_delete(request):
                 'message':u'Новость успешно удалена',
                 }
 
+@render_to('accounts/popup_userblock.html')
+@login_required
+def user_block(request):
+    return {
+        
+            }
+    
 @ajax_request
 @login_required
 def userblock_action(request):
@@ -1140,6 +1147,7 @@ def userblock_action(request):
                 'message':u'Новость успешно удалена',
                 }
         
+      
         
 @ajax_request
 @login_required
