@@ -282,6 +282,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
         self.restoreWindow()
         self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
         self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.refresh()
         
     def retranslateUI(self, initargs):
         super(TimePeriodChildEbs, self).retranslateUI(initargs)
