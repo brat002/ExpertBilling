@@ -619,6 +619,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         self.restoreWindow()
         self.tableWidget.setTextElideMode(QtCore.Qt.ElideNone)
         self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.refresh_list()
         
     def retranslateUI(self, initargs):
         super(ClassChildEbs, self).retranslateUI(initargs)
