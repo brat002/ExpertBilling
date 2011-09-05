@@ -60,7 +60,7 @@
 <table class="wide main_table" cellpadding="0" cellspacing="0" >
 	<!--- Мои баланс --->
 	<tr>
-		<td class="blue_caption white s-11 bold">БАЛАНС <a id="user-info_a" class="close" href="javascript:return 0;" onclick="runEffect('user-info')">&nbsp;</a></td>
+		<td class="blue_caption white s-11 bold">СТАТУС АККАУНТА <a id="user-info_a" class="close" href="javascript:return 0;" onclick="runEffect('user-info')">&nbsp;</a></td>
 	</tr>
 	<tr>
 		<td class="" id="user-info">
@@ -69,7 +69,11 @@
 					{{user.username}}
 				</div>
 				{% if not user.account_status %}
-					<div class="user_is_blocked f-right">Вы заблокированы</div>
+				  {% if user.status == 4 %}
+					<div class="user_is_blocked f-right"><a href="/account/block/?height=250&width=450&modal=true" class="thickbox text">Включена пользовательская блокировка</a></div>
+				  {% else %}
+				    <div class="user_is_blocked f-right">Выша учётная запись заблокирована</div>
+				  {% endif %}	
 					<div class="clear"></div>
 				{% endif %}
 		
@@ -82,7 +86,7 @@
 		        
 		        {% if user.disabled_by_limit %}
 			        <div class="no-limit f-right">
-						Вы превысили лимит
+						Вы превысили лимит трафика
 			        </div>        
 					<div class="clear"></div>
 		        {%endif%}
@@ -92,7 +96,8 @@
 			<div class="user_ballance f-left">
 				<div><span>Баланс :</span> {{ ballance }}{{ CURRENCY }}</div>
 				<div><span>Размер кредита :</span> {{ user.credit }}{{ CURRENCY }}</div>
-				<div><span><a href="/account/block/?height=400&width=400&modal=true" class="thickbox text">Блокировка учётной записи</a></span></div>
+				{% if user.contract %}<div><span>Номер договора :</span> {{ user.contract }}</div>{% endif %}
+				<div><span><a href="/account/block/?height=250&width=450&modal=true" class="thickbox text">Блокировка учётной записи</a></span></div>
 				
 			</div>
 		</td>
