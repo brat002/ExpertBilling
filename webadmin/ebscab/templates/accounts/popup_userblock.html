@@ -1,25 +1,30 @@
 <script>
 	function user_block() {
 
-		var message=document.getElementById("error_message");
+		var message=document.getElementById("dialog_message");
+		var userblock=document.getElementById("userblock_button");
 	 	jQuery.ajax({
         	type: "POST",
         	cache: false,
-        	url: '/account/block/',
+        	url: '/account/block/action/',
         	data: {},
         	timeout: 15000,
 			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
         	//beforeSend: function(XMLHttpRequest){},
         	success: function(data, status){
 				var ret = eval('('+data+')');
-				message.innerHTML = ret['error_message'];
+				message.innerHTML = ret['message'];
+				if (ret['result']==true)
+					{
+					userblock.type='hidden';
+					}
 				if (typeof ret['ok'] != 'undefined') {
 					tb_remove();
 				} 
 			},
         	error: function(data, status){
 				var ret = eval('('+data+')'); 
-				message.innerHTML = ret['error_message'];
+				message.innerHTML = ret['message'];
 			 },
         	complete: function(data, status){  }
     	});
@@ -32,8 +37,7 @@
 
 <div>
 
-	<h2 id="error_message" align="center"></h2>
-
+	<font color="red"><h3 id="dialog_message" align="center"></h3></font>
 
 <div class="pass_table_margin_top">
 <table class="pass_table wide" cellpadding="0" cellspacing="0">
@@ -44,19 +48,27 @@
 	</tr>
 	<tr>
 		<td>
-			Выша учётная запись {% if not activated %}не {% endif %}заблокирована.<br>
-			Максимальный срок блокировки составляет {% block_days %} дней.<br>
-			{% if block_cost %}Стоимость блокировки {{block_cost}}{% endif %}.
-			
-			
+			Выша учётная запись {% if account_status == 1 %}<strong>не</strong> {% endif %}заблокирована{% if sp %}<br><strong> {{sp.start_date|date:"d.m.Y H:i"}}</strong>{% endif %}.<br>
+			{% if tarif.allow_userblock %}
+			 {% if tarif.userblock_max_days %}Максимальный срок блокировки составляет {{ tarif.userblock_max_days }} дней.<br>{% endif %}
+			 {% if tarif.userblock_cost %}Стоимость блокировки составляет {{tarif.userblock_cost}}{{CURRENCY}}.{% endif %}
+			{% endif %}
 		</td>
 	</tr>
 
 	<tr>
 		<td>
+		{% if tarif.allow_userblock %}
 			<form method="post" onsubmit="return false;">
-				<input type="submit" class="pass_button button_margin f-right" value="Ок" onclick="user_block()"/>
+			
+				{% if account_status == 1 %}
+				<input type="submit" id='userblock_button' class='pass_button_unsized button_margin f-right' value="Включить блокировку" onclick="user_block()"/>
+				{% else %}
+				<input type="submit" id='userblock_button' class='pass_button_unsized button_margin f-right' value="Отключить блокировку" onclick="user_block()"/>
+				{% endif %}
+			
 			</form>
+		{% endif %}
 		</td>
 	</tr>
 </table>

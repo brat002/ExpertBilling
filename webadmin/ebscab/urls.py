@@ -55,6 +55,7 @@ urlpatterns += patterns('billservice.views',
      (r'^subaccount/password/change/$', 'subaccount_change_password'),
      (r'^service/(?P<action>set|del)/(?P<id>\d+)/$', 'service_action'),     
      (r'^account/block/$', 'user_block'),
+     (r'^account/block/action/$', 'userblock_action'),
      #(r'^jsonaccounts$', 'jsonaccounts'),
 )
 urlpatterns = urlpatterns + patterns('helpdesk.views.account',

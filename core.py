@@ -291,7 +291,7 @@ class periodical_service_bill(Thread):
         account_ballance = (acc.ballance or 0) + (acc.credit or 0)
         susp_per_mlt = 1
         if pss_type == PERIOD:
-            susp_per_mlt = 0 if not acc.current_acctf or caches.suspended_cache.by_id.has_key(acc.account_id) else 1
+            susp_per_mlt = 0 if not acc.current_acctf or caches.suspended_cache.by_account_id.has_key(acc.account_id) else 1
             
             time_start_ps = acc.datetime if ps.autostart else ps.time_start
             
@@ -1328,6 +1328,19 @@ class settlement_period_service_dog(Thread):
                 cur.execute("""UPDATE billservice_transaction as tr SET summ=0, description='Обнуление обещанного платежа на сумму ' || summ*(-1), promise_expired = True 
                                 WHERE promise=True and promise_expired = False and end_promise<=now();""")
                 cur.connection.commit()
+                for account in caches.account_cache.data:
+                    if account.account_status==4:
+                        sps=caches.suspended_cache.by_account_id.get(acc.account_id,[])
+                        for sp in sps:
+                            if sp.end_date and sp.start_date+account.userblock_max_days>=dateAT:
+                                
+                                """
+                                Запрос должен быть именно такого вида, чтобы не допустить двойной установки статуса
+                                UPDATE billservice_account SET status=1 WHERE id=%s and status=4;
+                                """
+                                cur.execute("UPDATE billservice_account SET status=1 WHERE id=%s and status=4;", (account.account_id,))
+                                cur.connection.commit()
+                        
                 logger.info("SPALIVE: %s run time: %s", (self.getName(), time.clock() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))

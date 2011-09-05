@@ -725,7 +725,7 @@ class AddCards(QtGui.QDialog):
             self.comboBox_tarif.setDisabled(False)
             self.spinBox_login_from.setDisabled(False)
             self.spinBox_login_to.setDisabled(False)
-            self.comboBox_ippool.setDisabled(True)
+            self.comboBox_ippool.setDisabled(False)
             self.comboBox_nas.setDisabled(True)
             self.l_checkBox_login.setDisabled(False)
             self.numbers_checkBox_login.setDisabled(False)

@@ -1821,7 +1821,7 @@ class AccountWindow(QtGui.QMainWindow):
         понаставить проверок
         """
         try:
-            
+            contracttemplate_id=self.comboBox_agreement_num.itemData(self.comboBox_agreement_num.currentIndex()).toInt()[0]
             if self.model:
                 model=self.model
                 if self.tarif_id==-3000:
@@ -1835,7 +1835,10 @@ class AccountWindow(QtGui.QMainWindow):
 
                 model=Object()
                 model.created = self.dateTimeEdit_agreement_date.currentDate()
-                model.contract=''
+                if not contracttemplate_id:
+                    model.contract=unicode(self.comboBox_agreement_num.currentText())
+                else:
+                    model.contract=''
                 #model.user_id=1
                 model.ipn_status = False
                 model.ipn_added = False
@@ -1884,13 +1887,11 @@ class AccountWindow(QtGui.QMainWindow):
             if house_id:
                 model.house_id = house_id
                 
-                                
+            #print model.__dict__                    
             if self.model:
-                contracttemplate_id=self.comboBox_agreement_num.itemData(self.comboBox_agreement_num.currentIndex()).toInt()[0]
                 model.id = self.connection.account_save(model, "billservice_account", tarif_id=self.tarif_id,template_id=contracttemplate_id)
             else:
                 #print 123
-                contracttemplate_id=self.comboBox_agreement_num.itemData(self.comboBox_agreement_num.currentIndex()).toInt()[0]
                 model.id = self.connection.account_save(model, "billservice_account", tarif_id=self.tarif_id,template_id=contracttemplate_id)
                 if self.tarif_id!=-3000:
                     accounttarif = Object()
