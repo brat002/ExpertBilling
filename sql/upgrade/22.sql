@@ -1,7 +1,7 @@
 ALTER TABLE billservice_tariff
    ADD COLUMN allow_userblock boolean DEFAULT False;
 
-update billservice_tariff SET userblock=False;
+update billservice_tariff SET allow_userblock=False;
 
 ALTER TABLE billservice_tariff
    ADD COLUMN userblock_cost numeric DEFAULT 0;

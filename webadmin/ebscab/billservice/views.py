@@ -32,7 +32,7 @@ from lib.http import JsonResponse
 
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
 
-from billservice.models import SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime
+from billservice.models import SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime, SuspendedPeriod
 
 from billservice.forms import LoginForm, PasswordForm, SimplePasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
@@ -539,7 +539,7 @@ def subaccount_change_password(request):
                             }
                 else:
                     return {
-                            'error_message': u'Проверьте пароль',
+                            'error_message': u'Пароли не совпадают',
                             }
             except Exception, e:
                 return {
@@ -547,7 +547,7 @@ def subaccount_change_password(request):
                         }
         else:
             return {
-                    'error_message': u'Проверьте введенные данные',
+                    'error_message': u'Одно из полей не заполнено',
                     }
     else:
         return {
@@ -1125,8 +1125,14 @@ def news_delete(request):
 @render_to('accounts/popup_userblock.html')
 @login_required
 def user_block(request):
+    account = request.user.account
+    tarif=account.get_account_tariff()
+    account_status=account.status
+    sp = SuspendedPeriod.objects.filter(account=account, end_date__isnull=True)
+    if sp:
+        sp=sp[0]
     return {
-        
+            'account_status':account_status,'tarif':tarif,'sp':sp,
             }
     
 @ajax_request
@@ -1134,17 +1140,45 @@ def user_block(request):
 def userblock_action(request):
     message = u'Невозможно заблокировать учётную записть'
     if request.method == 'POST':
-        news_id = request.POST.get('news_id', '')
-        try:
-            news = AccountViewedNews.objects.get(id = news_id, account = request.user.account)
-        except:
-            return {
-                    'message':message,
-                    }
-        news.viewed = True
-        news.save()
+        account=request.user.account
+        if account.status==4:
+            now=datetime.datetime.now()
+            account.status=1
+            account.save()
+            result=True
+            message=u'Аккаунт успешно активирован'
+        elif account.status==1:
+            tarif=account.get_account_tariff()
+            if tarif.allow_userblock:
+                print 1
+                if tarif.userblock_require_balance!=0 and tarif.userblock_require_balance>account.ballance+account.credit:
+                    print 1.5
+                    result=False
+                    message=u'Аккаунт не может быть заблокирован. </br>Минимальный остаток на балансе должен составлять %s.' % tarif.userblock_require_balance
+                    return {
+                            'message':message, 'result':result,
+                            }
+                print 2
+                account.status=4
+                account.save()
+                print 3
+                cursor = connection.cursor()
+
+                cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise)
+                                  VALUES(%s, 'Списание средств за пользовательскую блокировку', 'USERBLOCK_PAYMENT', True, get_tarif(%s), %s, now(), False)""" , (account.id, account.id, tarif.userblock_cost,))
+                cursor.connection.commit()
+                print 4
+                message=u'Аккаунт успешно заблокирован'
+                result=True
+            else:
+                message=u'Блокировка аккаунта запрещена'
+                result=False
+        else:
+            message=u'Блокировка аккаунта невозможна. Обратитесь в служюу поддержки провайдера.'
+            result=False
+            
         return {
-                'message':u'Новость успешно удалена',
+                'message':message, 'result':result,
                 }
         
       

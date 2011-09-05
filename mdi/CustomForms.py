@@ -3565,7 +3565,22 @@ class ContractTemplateEdit(QtGui.QDialog):
             
     def test(self):
         try:
-            d={'tarif_id':111, 'account_id':99,'year':2011,'month':11, 'day':22, 'hour':9, 'minute':4,'second':59, 'tarif_type':'VPN', 'contract_num':44}
+            d={'comment': u'', 'username': u'22196', 'allow_webcab': True, 'allow_ipn_with_minus': False, 'city_id': 1, 'house': u'', 
+            'ipn_speed': u'', 'vpn_ip_address': '0.0.0.0', 'postcode': u'', 'suspended': True, 'systemuser_id': 1, 
+            'allow_vpn_block': True, 'allow_vpn_null': True, 'id': 32, 'row': u'', 'ipn_mac_address': u'', 
+            'assign_ipn_ip_from_dhcp': False, 'contactperson_phone': u'', 'ipn_status': False, 'entrance_code': u'', 
+            'passport_date': u'', 'elevator_direction': u'', 'passport': u'', 'ipn_ipinuse_id': None, 'nas_id': 0, 
+            'last_balance_null': datetime.datetime(2011, 9, 1, 23, 57, 32, 872284), 'email': u'', 'status': 1, 
+            'entrance': u'', 'phone_m': u'8-029-870-35-52 \u042e\u0440\u0438\u0439', 'associate_pptp_ipn_ip': False, 
+            'street_id': 8, 'phone_h': u'228-03-97', 'city': u'', 'allow_ipn_with_block': False, 'vlan': None, 
+            'allow_expresscards': False, 'assign_dhcp_block': True, 'netmask': '0.0.0.0/0', 'address': u'', 
+            'private_passport_number': u'', 'password': u'YURA1194', 'associate_pppoe_mac': False, 'ipn_added': False, 
+            'vpn_ipinuse_id': None, 'disabled_by_limit': False, 'balance_blocked': False, 'house_id': 51, 'room': u'54', 
+            'created': datetime.datetime(2011, 6, 21, 14, 58, 27, 599000), 'region': u'', 'contract': u'22196', 'assign_dhcp_null': True, 
+            'credit': u'0', 'ballance': u'-38860.72777777777777777777777780', 'street': u'', 
+            'contactperson': u'Иван Иванов', 'ipn_ip_address': '0.0.0.0', 'house_bulk': u'', 
+            'fullname': u'Иванов Иван', 'vpn_speed': u'', 'allow_ipn_with_null': False, 'passport_given': u'',
+            'tarif_id':111, 'account_id':99,'year':2011,'month':11, 'day':22, 'hour':9, 'minute':4,'second':59, 'tarif_type':'VPN', 'contract_num':44}
             result = unicode(self.lineEdit.text()) % d
             QtGui.QMessageBox.information(self, u"Успешно", unicode(u"Проверка синтаксиса завершилась успешно.\nРезультат:%s" % result))
             self.buttonBox.setDisabled(False)

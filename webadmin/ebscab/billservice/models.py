@@ -491,6 +491,11 @@ class Tariff(models.Model):
     deleted           = models.BooleanField(default=False, blank=True)
     allow_express_pay = models.BooleanField(verbose_name=u'Оплата экспресс картами', blank=True, default=False)
     require_tarif_cost = models.BooleanField(default=False, blank=True)
+    allow_userblock   =models.BooleanField(default=False)
+    userblock_cost = models.DecimalField(decimal_places=10, max_digits=60)  
+    userblock_max_days = models.IntegerField()
+    userblock_require_balance = models.DecimalField(decimal_places=10, max_digits=60)  
+    allow_ballance_transfer = models.BooleanField()
     
     def __unicode__(self):
         return u"%s" % self.name
@@ -1009,6 +1014,7 @@ class SuspendedPeriod(models.Model):
     account = models.ForeignKey(Account)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+    activated_by_account = models.BooleanField()
     
 class Group(models.Model):
     #make it an array

@@ -1,6 +1,4 @@
-* {
-	border:none;
-}
+
 
 .clear {
 	clear:both;
@@ -116,9 +114,14 @@ h2 {
 }
 
 .button {
-	margin:10px 0 10px 120px;
+	margin:10px 0 10px;
 }
-
+input.groovybutton
+{
+   color:#FFFFFF;
+   background-color:#FE660D;
+   border-style:outset;
+}
 #message {
 	color:#FE0000;
 	margin-left:10px;
@@ -206,12 +209,20 @@ table.main_table {
 .pass_button {
 	display:block;
 	margin:0 auto;
-	background:#000;
+	background:#FE660D;
 	color:#fff;
 	font-weight:bold;
-	width:40px;
+	width:80px;
 }
 
+.pass_button_unsized {
+    display:block;
+    padding:4px 4px 4px 4px;
+    background:#FE660D;
+    color:#fff;
+    font-weight:bold;
+    //width:80px;
+}
 .button_margin {
 	margin:0 8px 10px 15px;
 }

@@ -2298,17 +2298,19 @@ class TarifWindow(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, u"Ошибка", u"'Производить IPN действия' может быть выбрано только для VPN планов")
             return
 
-        if  (self.prepaid_tableWidget.rowCount()>0 or self.reset_traffic_edit.isChecked()==True):
-            QtGui.QMessageBox.warning(self, u"Ошибка", u"Для начисления и сброса предоплаченного трафика необходимо указать расчётный период")
-            return
-
-        if  (self.spinBox_radius_traffic_prepaid_volume.value()!=0 or self.checkBox_radius_traffic_reset_prepaidtraffic.isChecked()==True):
-            QtGui.QMessageBox.warning(self, u"Ошибка", u"Для начисления и сброса предоплаченного RADIUS трафика необходимо указать расчётный период")
-            return
-
-        if  (self.reset_time_checkbox.isChecked()==True or self.prepaid_time_edit.value()!=0):
-            QtGui.QMessageBox.warning(self, u"Ошибка", u"Для начисления и сброса предоплаченного времени необходимо указать расчётный период")
-            return
+#===============================================================================
+#        if  self.sp_name_edit.currentText() and not (self.prepaid_tableWidget.rowCount()>0 or self.reset_traffic_edit.isChecked()):
+#            QtGui.QMessageBox.warning(self, u"Ошибка", u"Для начисления и сброса предоплаченного трафика необходимо указать расчётный период")
+#            return
+# 
+#        if  self.sp_name_edit.currentText() and not (self.spinBox_radius_traffic_prepaid_volume.value()!=0 or self.checkBox_radius_traffic_reset_prepaidtraffic.isChecked()==True):
+#            QtGui.QMessageBox.warning(self, u"Ошибка", u"Для начисления и сброса предоплаченного RADIUS трафика необходимо указать расчётный период")
+#            return
+# 
+#        if  self.sp_name_edit.currentText() and not (self.reset_time_checkbox.isChecked()==True or self.prepaid_time_edit.value()!=0):
+#            QtGui.QMessageBox.warning(self, u"Ошибка", u"Для начисления и сброса предоплаченного времени необходимо указать расчётный период")
+#            return
+#===============================================================================
         
         try:
             
@@ -2333,7 +2335,7 @@ class TarifWindow(QtGui.QMainWindow):
             access_parameters.ipn_for_vpn = self.checkBox_ipn_actions.checkState()==2
             
             model.allow_userblock = self.groupBox_allowuserblock.isChecked()
-            model.userblock_require_balance = unicode(self.checkBox_userblock_balance_require.text())
+            model.userblock_require_balance = unicode(self.lineEdit_userblock_minballance.text())
             model.userblock_cost = unicode(self.lineEdit_userblock_cost.text()) or 0
             model.userblock_max_days=self.spinBox_max_block_days.value() or 0
             model.allow_ballance_transfer = self.checkBox_allow_moneytransfer.isChecked()

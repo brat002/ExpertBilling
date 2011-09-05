@@ -236,19 +236,24 @@ class OnetimeHistoryCache(CacheItem):
             self.by_acctf_ots_id[(otsh[1], otsh[2])] = otsh[0]
             
 class SuspendedCache(SimpleDefDictCache):
-    __slots__ = ()
+    __slots__ = ('by_account_id',)
     datatype = SuspendedPeriodData
     sql = core_sql['suspended']
     num = 1
+    
     def __init__(self, date):
         super(SuspendedCache, self).__init__()
-        self.vars = (date,)
+        self.vars = (date,date,)
     '''
     def transformdata(self): pass
+    '''
+    
     def reindex(self):
         self.by_account_id = {}
         for susp in self.data:
-            self.by_account_id[susp[1]] = susp[0]'''
+            if not self.by_account_id.get(susp.account.id):
+                self.by_account_id[susp.account.id] = []
+            self.by_account_id[susp.account.id].append(susp)
             
 class TimePeriodAccessCache(CacheItem):
     __slots__ = ('in_period', 'fMem', 'date')
