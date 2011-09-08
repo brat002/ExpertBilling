@@ -251,8 +251,8 @@ class SuspendedCache(SimpleDefDictCache):
     def reindex(self):
         self.by_account_id = {}
         for susp in self.data:
-            if not self.by_account_id.get(susp.account.id):
-                self.by_account_id[susp.account.id] = []
+            if not self.by_account_id.get(susp.account_id):
+                self.by_account_id[susp.account_id] = []
             self.by_account_id[susp.account.id].append(susp)
             
 class TimePeriodAccessCache(CacheItem):
