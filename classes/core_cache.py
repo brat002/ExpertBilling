@@ -253,7 +253,7 @@ class SuspendedCache(SimpleDefDictCache):
         for susp in self.data:
             if not self.by_account_id.get(susp.account_id):
                 self.by_account_id[susp.account_id] = []
-            self.by_account_id[susp.account.id].append(susp)
+            self.by_account_id[susp.account_id].append(susp)
             
 class TimePeriodAccessCache(CacheItem):
     __slots__ = ('in_period', 'fMem', 'date')
