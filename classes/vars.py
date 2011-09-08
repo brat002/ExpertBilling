@@ -438,7 +438,7 @@ class CoreVars(Vars):
         if config.has_option(name, 'settlement_period_sleep'): self.SETTLEMENT_PERIOD_SLEEP = config.getint(name, 'settlement_period_sleep')
         if config.has_option(name, 'ipn_sleep'): self.IPN_SLEEP = config.getint(name, 'ipn_sleep')
         if config.has_option(name, 'ssh_backend'): self.SSH_BACKEND = config.get(name, 'ssh_backend')
-        if config.has_option(name, 'use_coeff_for_prepaid'): self.USE_COEFF_FOR_PREPAID = config.boolean(name, 'use_coeff_for_prepaid')
+        if config.has_option(name, 'use_coeff_for_prepaid'): self.USE_COEFF_FOR_PREPAID = config.getboolean(name, 'use_coeff_for_prepaid')
         if config.has_option(name, 'account_create_action'): self.ACCOUNT_CREATE_ACTION = config.get(name, 'account_create_action')
         if config.has_option(name, 'account_delete_action'): self.ACCOUNT_DELETE_ACTION = config.get(name, 'account_delete_action')
         if config.has_option(name, 'account_enable_action'): self.ACCOUNT_ENABLE_ACTION = config.get(name, 'account_enable_action')
