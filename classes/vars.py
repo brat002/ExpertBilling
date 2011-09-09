@@ -444,7 +444,7 @@ class CoreVars(Vars):
         if config.has_option(name, 'account_delete_action'): self.ACCOUNT_DELETE_ACTION = config.get(name, 'account_delete_action')
         if config.has_option(name, 'account_enable_action'): self.ACCOUNT_ENABLE_ACTION = config.get(name, 'account_enable_action')
         if config.has_option(name, 'account_disable_action'): self.ACCOUNT_DISABLE_ACTION = config.get(name, 'account_disable_action')
-        if config.has_option(name, 'use_coeff_for_ps'): self.USE_COEFF_FOR_PS = config.get(name, 'use_coeff_for_ps')
+        if config.has_option(name, 'use_coeff_for_ps'): self.USE_COEFF_FOR_PS = config.getboolean(name, 'use_coeff_for_ps')
         if config.has_option(name, 'dict_list'):
             self.DICT_LIST = config.get(name, 'dict_list').split(',')
         self.DICT = dictionary.Dictionary(*self.DICT_LIST)
