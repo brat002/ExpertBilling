@@ -414,6 +414,10 @@ class periodical_service_bill(Thread):
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     chk_date = period_start_ast
+                    delta_coef=1
+                    if chk_date and ((chk_date-acc.datetime).days*86400+(chk_date-acc.datetime).seconds)<delta_ast and vars.USE_COEFF_FOR_PS==True:
+                        delta_coef=float((chk_date-acc.datetime).days*86400+(chk_date-acc.datetime).seconds)/float(delta_ast)        
+                    cash_summ=cash_summ*delta_coef        
                     if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                         cash_summ = 0
                     if pss_type == PERIOD:
