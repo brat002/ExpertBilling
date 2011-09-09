@@ -418,7 +418,7 @@ class periodical_service_bill(Thread):
                     if vars.USE_COEFF_FOR_PS==True and first_time and ((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)<delta_ast:
                         logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
                         delta_coef=float((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)/float(delta_ast)        
-                        cash_summ=cash_summ*delta_coef
+                        cash_summ=cash_summ*Decimal(delta_coef)
                                 
                     if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                         cash_summ = 0
