@@ -415,8 +415,8 @@ class periodical_service_bill(Thread):
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     chk_date = period_start_ast
                     delta_coef=1
-                    if chk_date and ((chk_date-acc.datetime).days*86400+(chk_date-acc.datetime).seconds)<delta_ast and vars.USE_COEFF_FOR_PS==True:
-                        delta_coef=float((chk_date-acc.datetime).days*86400+(chk_date-acc.datetime).seconds)/float(delta_ast)        
+                    if first_time and ((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)<delta_ast and vars.USE_COEFF_FOR_PS==True:
+                        delta_coef=float((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)/float(delta_ast)        
                     cash_summ=cash_summ*delta_coef        
                     if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                         cash_summ = 0
@@ -428,6 +428,7 @@ class periodical_service_bill(Thread):
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
                     cur.connection.commit()
                     chk_date += s_delta_ast
+                    first_time=False
                     if chk_date > period_start: break
             cur.connection.commit()
         if ps.cash_method=="AT_END":
