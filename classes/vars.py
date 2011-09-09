@@ -405,7 +405,7 @@ class RadQueues(object):
         
 class CoreVars(Vars):
     __slots__ = ('TRANSACTIONS_PER_DAY', 'VPN_SLEEP', 'IPN_SLEEP', 'PERIODICAL_SLEEP', 'TIMEACCESS_SLEEP', 'LIMIT_SLEEP', 'SETTLEMENT_PERIOD_SLEEP',\
-                 'DICT_LIST', 'DICT', 'SSH_BACKEND', 'USE_COEFF_FOR_PREPAID', 'ACCOUNT_CREATE_ACTION', 'ACCOUNT_DELETE_ACTION', 'ACCOUNT_ENABLE_ACTION', 'ACCOUNT_DISABLE_ACTION')
+                 'DICT_LIST', 'DICT', 'SSH_BACKEND', 'USE_COEFF_FOR_PREPAID', 'ACCOUNT_CREATE_ACTION', 'ACCOUNT_DELETE_ACTION', 'ACCOUNT_ENABLE_ACTION', 'ACCOUNT_DISABLE_ACTION', 'USE_COEFF_FOR_PS')
     
     def __init__(self):
         super(CoreVars, self).__init__()
@@ -425,6 +425,7 @@ class CoreVars(Vars):
         self.ACCOUNT_DISABLE_ACTION = ''
         self.DICT = None
         self.SSH_BACKEND = None
+        self.USE_COEFF_FOR_PS = True
         
     def get_dynamic(self, **kwargs):
         super(CoreVars, self).get_dynamic(**kwargs)
@@ -443,6 +444,7 @@ class CoreVars(Vars):
         if config.has_option(name, 'account_delete_action'): self.ACCOUNT_DELETE_ACTION = config.get(name, 'account_delete_action')
         if config.has_option(name, 'account_enable_action'): self.ACCOUNT_ENABLE_ACTION = config.get(name, 'account_enable_action')
         if config.has_option(name, 'account_disable_action'): self.ACCOUNT_DISABLE_ACTION = config.get(name, 'account_disable_action')
+        if config.has_option(name, 'use_coeff_for_ps'): self.USE_COEFF_FOR_PS = config.get(name, 'use_coeff_for_ps')
         if config.has_option(name, 'dict_list'):
             self.DICT_LIST = config.get(name, 'dict_list').split(',')
         self.DICT = dictionary.Dictionary(*self.DICT_LIST)
