@@ -780,8 +780,8 @@ class AddCards(QtGui.QDialog):
         
         if self.radioButton_access.isChecked():
             nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
-        
-        if self.radioButton_access.isChecked():
+        pool_id=None
+        if self.radioButton_access.isChecked() or self.radioButton_hotspot.isChecked():
             pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
             #ips = get_free_addreses_from_pool(self.connection, self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0], self.count_spinBox.text().toInt()[0])
             
@@ -810,12 +810,6 @@ class AddCards(QtGui.QDialog):
                 model.ippool_id = pool_id
                 model.nas_id = nas_id
                 model.type = 2
-                ipinuse_model = Object()
-                ipinuse_model.ip = model.ip
-                ipinuse_model.pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
-                ipinuse_model.datetime = "now()"
-                ipinuse_model.id = self.connection.save(ipinuse_model, "billservice_ipinuse")
-                model.ipinuse_id = ipinuse_model.id
             if self.radioButton_hotspot.isChecked():
                 model.login = "%s%s" % (model.series, GenPasswd2(length=randint(self.spinBox_login_from.value(), self.spinBox_login_to.value())-1,chars=login_mask))
                 model.tarif_id = tarif_id
@@ -968,7 +962,7 @@ class AddCards(QtGui.QDialog):
 
 class CardsChildEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=['#', u'Серия', u'Номинал', u'Тип', u'PIN', u'Логин', u'Тариф', u'NAS', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
+        columns=['#', u'Серия', u'Номинал', u'Тип', u'Пул', u'PIN', u'Логин', u'Тариф', u'NAS', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
         initargs = {"setname":"cards_frame", "objname":"CardsFrameMDI", "winsize":(0,0,947, 619), "wintitle":"Система карт оплаты", "tablecolumns":columns}
         super(CardsChildEbs, self).__init__(connection, initargs)
         
@@ -1190,7 +1184,7 @@ class CardsChildEbs(ebsTableWindow):
     def refresh(self, widget=None):
         
         self.statusBar().showMessage(u"Ожидание ответа")
-        sql = """SELECT * FROM billservice_card"""
+        sql = """SELECT *,(SELECT name FROM billservice_ippool WHERE id=c.ippool_id) as pool_name FROM billservice_card as c"""
         if self.checkBox_filter.checkState()==2:
             start_date = self.date_start.currentDate()
             end_date = self.date_end.currentDate()
@@ -1237,15 +1231,16 @@ class CardsChildEbs(ebsTableWindow):
             self.addrow(node.series, i,1, status = node.disabled, activated=node.activated)
             self.addrow(node.nominal, i,2, status = node.disabled, activated=node.activated)
             self.addrow(card_types[node.type], i,3, status = node.disabled, activated=node.activated)
-            self.addrow(node.pin, i,4, status = node.disabled, activated=node.activated)
-            self.addrow(node.login, i,5, status = node.disabled, activated=node.activated)
-            self.addrow(t.get("%s" % node.tarif_id), i,6, status = node.disabled, activated=node.activated)
-            self.addrow(n.get("%s" % node.nas_id), i,7, status = node.disabled, activated=node.activated)
+            self.addrow(node.pool_name, i,4, status = node.disabled, activated=node.activated)
+            self.addrow(node.pin, i,5, status = node.disabled, activated=node.activated)
+            self.addrow(node.login, i,6, status = node.disabled, activated=node.activated)
+            self.addrow(t.get("%s" % node.tarif_id), i,7, status = node.disabled, activated=node.activated)
+            self.addrow(n.get("%s" % node.nas_id), i,8, status = node.disabled, activated=node.activated)
             
-            self.addrow(node.sold, i,8, status = node.disabled, activated=node.activated)
-            self.addrow(node.activated, i,9, status = node.disabled, activated=node.activated)
-            self.addrow(node.start_date.strftime(self.strftimeFormat), i,10, status = node.disabled, activated=node.activated)
-            self.addrow(node.end_date.strftime(self.strftimeFormat), i,11, status = node.disabled, activated=node.activated)
+            self.addrow(node.sold, i,9, status = node.disabled, activated=node.activated)
+            self.addrow(node.activated, i,10, status = node.disabled, activated=node.activated)
+            self.addrow(node.start_date.strftime(self.strftimeFormat), i,11, status = node.disabled, activated=node.activated)
+            self.addrow(node.end_date.strftime(self.strftimeFormat), i,12, status = node.disabled, activated=node.activated)
             i+=1
             
         self.statusBar().showMessage(u"Данные получены")

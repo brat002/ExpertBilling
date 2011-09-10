@@ -2335,9 +2335,24 @@ class TarifWindow(QtGui.QMainWindow):
             access_parameters.ipn_for_vpn = self.checkBox_ipn_actions.checkState()==2
             
             model.allow_userblock = self.groupBox_allowuserblock.isChecked()
-            model.userblock_require_balance = unicode(self.lineEdit_userblock_minballance.text())
-            model.userblock_cost = unicode(self.lineEdit_userblock_cost.text()) or 0
-            model.userblock_max_days=self.spinBox_max_block_days.value() or 0
+            if model.allow_userblock:
+                try:
+                    model.userblock_require_balance = unicode(self.lineEdit_userblock_minballance.text()) or 0
+                except Exception, e:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", u"В поле минимальный баланс для блокировки может быть только целым или дробным числом")
+    #                print 1
+                    self.connection.rollback()
+                    return
+                try:  
+                    model.userblock_cost = float(unicode(self.lineEdit_userblock_cost.text())) or 0
+                except Exception, e:
+                    QtGui.QMessageBox.warning(self, u"Ошибка", u"В поле 'Стоимость блокировки' может быть только целым или дробным числом")
+    #                print 1
+                    self.connection.rollback()
+                    return
+
+                model.userblock_max_days=self.spinBox_max_block_days.value() or 0
+
             model.allow_ballance_transfer = self.checkBox_allow_moneytransfer.isChecked()
             
             if check_speed([access_parameters.max_limit, access_parameters.burst_limit, access_parameters.burst_treshold, access_parameters.burst_time, access_parameters.priority, access_parameters.min_limit])==False:
