@@ -1835,7 +1835,7 @@ class AccountWindow(QtGui.QMainWindow):
 
                 model=Object()
                 model.created = self.dateTimeEdit_agreement_date.currentDate()
-                if not contracttemplate_id:
+                if contracttemplate_id!=0:
                     model.contract=unicode(self.comboBox_agreement_num.currentText())
                 else:
                     model.contract=''

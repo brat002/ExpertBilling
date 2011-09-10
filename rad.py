@@ -1239,13 +1239,13 @@ class HandlelISGAuth(HandleSAuth):
 #HotSpot_class
 #auth_class
 class HandleHotSpotAuth(HandleSAuth):
-    __slots__ = () + ('access_type', 'secret', 'speed','nas_id', 'nas_type', 'fMem', 'cur')
+    __slots__ = () + ('access_type', 'secret', 'speed','nas_id', 'nas_type', 'fMem', 'cursor')
     def __init__(self,  packetobject, access_type, dbCur):
         #self.nasip = str(packetobject['NAS-IP-Address'][0])
         self.packetobject = packetobject
         self.access_type=access_type
         self.secret = ''
-        self.cur = dbCur
+        self.cursor = dbCur
 
         #logger.debugfun('%s', show_packet, (packetobject,))
 
@@ -1277,47 +1277,50 @@ class HandleHotSpotAuth(HandleSAuth):
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type)
         subacc = self.caches.subaccount_cache.by_username.get(user_name)
         if not subacc:
-            self.cur.execute("SELECT pin FROM billservice_card WHERE sold IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
-            pin = self.cur.fetchone()
+            self.cursor.execute("SELECT pin FROM billservice_card WHERE sold IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
+            pin = self.cursor.fetchone()
             if pin == None:
                 sqlloggerthread.add_message(nas=nas.id, type="CARD_USER_NOT_FOUND", service=self.access_type, cause=u'Карта/пользователь с логином %s не найдены ' % (user_name,), datetime=self.datetime)
-                self.cur.close()
+                self.cursor.close()
                 return self.auth_NA(authobject)
             pin = pin[0]
         else:
             pin = subacc.password
 
         authobject.plainusername = str(user_name)
-        authobject.plainpassword = str(pin)
+        if subacc:
+            authobject.plainpassword = str(subacc.password)
+        else:
+            authobject.plainpassword = str(pin)
 
         check_auth, left = authobject.check_auth()
         if not check_auth:
             logger.warning(left, ())
             sqlloggerthread.add_message(nas=nas.id, type="AUTH_BAD_PASSWORD", service=self.access_type, cause=u'Ошибка авторизации. Необходимо проверить указанный пароль.', datetime=self.datetime)
-            self.cur.close()
+            self.cursor.close()
             return self.auth_NA(authobject)   
 
         #print user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])
 
-        self.cur.execute("""SELECT * FROM card_activate_fn(%s, %s, %s, %s::inet) AS 
+        self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet) AS 
                          A(account_id int, subaccount_id int, "password" character varying, nas_id int, tarif_id int, account_status int, 
-                         balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean)
-                        """, (user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])))
+                         balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet)
+                        """, (user_name, pin, str(self.packetobject['Mikrotik-Host-IP'][0])))
 
-        acct_card = self.cur.fetchone()
-        self.cur.connection.commit()
-        self.cur.close()
+        acct_card = self.cursor.fetchone()
+        self.cursor.connection.commit()
+        #self.cursor.close()
 
         acc = acct_card
         if acct_card is None:
             logger.warning("Unknown User %s", user_name)
             sqlloggerthread.add_message(nas=nas.id, type="AUTH_BAD_USER", service=self.access_type, cause=u'Пользователь HotSpot с логином %s не найден или не может быть активирован.' % (user_name,), datetime=self.datetime)
             return self.auth_NA(authobject)
-
+        
         acct_card = CardActivateData(*acct_card)
         acc = acct_card
         acstatus = acct_card.ballance >0 and not acct_card.balance_blocked and not acct_card.disabled_by_limit and acct_card.account_status==1
-        
+       
         if subacc:
             subacc_id=subacc.id
         else:
@@ -1330,56 +1333,54 @@ class HandleHotSpotAuth(HandleSAuth):
         allow_dial = self.caches.period_cache.in_period.get(acct_card.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acct_card.account_status, acct_card.ballance, acct_card.disabled_by_limit, acct_card.balance_blocked,acct_card.tariff_active))
-        framed_ip_address = None
+        vpn_ip_address = None
         ipinuse_id=''
-        if acc.ippool_id:
+        pool_id=None
+        if (acc.ipv4_vpn_pool_id or acc.tarif_vpn_ippool_id) and acc.vpn_ip_address in ('0.0.0.0','0.0.0.0/32',''):
+           with vars.cursor_lock:
+               try:
+                   #self.create_cursor()
+                   pool_id=acc.ipv4_vpn_pool_id if acc.ipv4_vpn_pool_id else acc.tarif_vpn_ippool_id
+                   self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
+                   vpn_ip_address = self.cursor.fetchone()[0]
+                   if not vpn_ip_address:
+                       pool_id, vpn_ip_address = self.find_free_ip(pool_id)
 
-            if (not (subacc) or (subacc and subacc.vpn_ip_address in ('0.0.0.0',''))) and (subacc and (subacc.ipv4_vpn_pool_id or acc.ippool_id)):
-               
-               with vars.cursor_lock:
-                   try:
-                       self.create_cursor()
-                       pool_id=subacc.ipv4_vpn_pool_id if subacc.ipv4_vpn_pool_id else acc.ippool_id
-                       self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
-                       vpn_ip_address = self.cursor.fetchone()[0]
-                       if not vpn_ip_address:
-                           pool_id, vpn_ip_address = self.find_free_ip(pool_id)
 
-    
-                       if not vpn_ip_address:
-                            logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id))
-                            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
-                            #vars.cursor_lock.release()
-                            return self.auth_NA(authobject)
-                       
-                       self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
-                       ipinuse_id=self.cursor.fetchone()[0]
-                       #vars.cursor.connection.commit()   
-                       #vars.cursor_lock.release()
-                                
-                   except Exception, ex:
-                       #vars.cursor_lock.release()
-                       logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id, repr(ex)))
-                       sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
-                       return self.auth_NA(authobject) 
-                   #else:
-                   #    vars.cursor_lock.release()
-            else:
-               framed_ip_address = subacc.vpn_ip_address
+                   if not vpn_ip_address:
+                        logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc_id, pool_id))
+                        sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc_id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
+                        #vars.cursor_lock.release()
+                        return self.auth_NA(authobject)
+                   
+                   self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
+                   ipinuse_id=self.cursor.fetchone()[0]
+                   #vars.cursor.connection.commit()   
+                   #vars.cursor_lock.release()
+                            
+               except Exception, ex:
+                   #vars.cursor_lock.release()
+                   logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc_id, pool_id, repr(ex)))
+                   sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
+                   return self.auth_NA(authobject) 
+               #else:
+               #    vars.cursor_lock.release()
+        else:
+           framed_ip_address = subacc.vpn_ip_address
                 
         if allow_dial and acct_card.tariff_active:
             authobject.set_code(packet.AccessAccept)
             #self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
-            if subacc:
 
-                if vpn_ip_address not in [None, '', '0.0.0.0', '0.0.0.0/0']:
-                    self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
-                elif subacc.ipn_ip_address:
-                    self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)  
+
+            if vpn_ip_address not in [None, '', '0.0.0.0', '0.0.0.0/0']:
+                self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
+            elif subacc.vpn_ip_address:
+                self.replypacket.AddAttribute('Framed-IP-Address', subacc.vpn_ip_address)  
                               
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             self.create_speed(nas, None, acct_card.tarif_id, acct_card.account_id, speed='')
-            self.replypacket.AddAttribute('Class', str("%s,%s" % (subacc.id,str(self.session_speed))))
+            self.replypacket.AddAttribute('Class', str("%s,%s,%s" % (subacc_id,ipinuse_id,str(self.session_speed))))
             self.add_values(acct_card.tarif_id)
             if vars.SQLLOG_SUCCESS:
                 sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.account_id,  type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)            
