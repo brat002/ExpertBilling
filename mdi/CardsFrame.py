@@ -391,7 +391,7 @@ class SaleCards(QtGui.QDialog):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"К сожалению, данные не могут быть сохранены."))
                 return
             
-            if unicode(self.lineEdit_pay.text())>0:
+            if float(unicode(self.lineEdit_pay.text()))>0:
                 if QtGui.QMessageBox.question(self, u"Зачислить сумму на счёт?" , u'''Произвести запись оплаты за эту партию карт?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                     pay = Object()
                     pay.dealer_id = model.dealer_id
@@ -779,7 +779,7 @@ class AddCards(QtGui.QDialog):
         template_id = self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0]
         
         if self.radioButton_access.isChecked():
-            nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
+            nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0] or None
         pool_id=None
         if self.radioButton_access.isChecked() or self.radioButton_hotspot.isChecked():
             pool_id = self.comboBox_ippool.itemData(self.comboBox_ippool.currentIndex()).toInt()[0]
@@ -886,7 +886,8 @@ class AddCards(QtGui.QDialog):
             
         nasses = self.connection.sql("SELECT id,name FROM nas_nas ORDER BY name ASC")
         self.connection.commit()
-        i=0
+        self.comboBox_nas.addItem(u"--Не указан--", QtCore.QVariant(0))
+        i=1
         for nas in nasses:
             self.comboBox_nas.addItem(nas.name)
             self.comboBox_nas.setItemData(i, QtCore.QVariant(nas.id))
