@@ -42,6 +42,15 @@ class CashType(object):
         self.id = id
         self.name=name
         
+class CustomDateTime(QtCore.QDateTime):
+    def __init__(self, *args, **kwargs):
+        super(CustomDateTime, self).__init__(*args, **kwargs)
+        print 321, self
+        
+    def toString(self, format):
+        print 123
+        return super(CustomDateTime, self).toString("yyyy.MM.dd")
+        
 cash_types = [CashType(0, "AT_START"), CashType(1,"AT_END"), CashType(2, "GRADUAL")]
 
 limit_actions = [CashType(0, u"Заблокировать пользователя"), CashType(1,u"Изменить скорость")]
@@ -422,7 +431,13 @@ class SubaccountLinkDialog(QtGui.QDialog):
             value=''
         if y==0:
             headerItem.id=value
-        headerItem.setText(unicode(value))
+        if isinstance(value, basestring):            
+            headerItem.setText(unicode(value))     
+        elif type(value)==datetime:
+            #.strftime(self.strftimeFormat)   
+            headerItem.setData(0, QtCore.QVariant(value))         
+        else:            
+            headerItem.setData(0, QtCore.QVariant(value))         
         if id:
             headerItem.id=id
             
@@ -547,14 +562,14 @@ class SubaccountLinkDialog(QtGui.QDialog):
             for a in sp:
                 self.addrow(self.tableWidget, a.id, i, 0)
                 self.addrow(self.tableWidget, a.addonservice_name, i, 1)
-                self.addrow(self.tableWidget, a.activated.strftime(strftimeFormat), i, 2)
+                self.addrow(self.tableWidget, a.activated, i, 2)
                 try:
-                    self.addrow(self.tableWidget, a.deactivated.strftime(strftimeFormat), i, 3)
+                    self.addrow(self.tableWidget, a.deactivated, i, 3)
                 except:
                     self.addrow(self.tableWidget, u"Не закончен", i, 3)
                 self.addrow(self.tableWidget, a.action_status, i, 4)
                 try:
-                    self.addrow(self.tableWidget, a.temporary_blocked.strftime(strftimeFormat), i, 5)
+                    self.addrow(self.tableWidget, a.temporary_blocked, i, 5)
                 except:
                     self.addrow(self.tableWidget, u"Нет", i, 5)
                 i+=1
@@ -959,26 +974,34 @@ class AddAccountTarif(QtGui.QDialog):
         self.connection = connection
         self.connection.commit()
 
-        self.resize(460, 109)
+        self.resize(460, 113)
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.label_tarif = QtGui.QLabel(self)
         self.label_tarif.setObjectName(_fromUtf8("label_tarif"))
-        self.gridLayout.addWidget(self.label_tarif, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_tarif, 1, 0, 1, 1)
         self.comboBox_tarif = QtGui.QComboBox(self)
         self.comboBox_tarif.setObjectName(_fromUtf8("comboBox_tarif"))
-        self.gridLayout.addWidget(self.comboBox_tarif, 0, 1, 1, 2)
+        self.gridLayout.addWidget(self.comboBox_tarif, 1, 1, 1, 2)
         self.label_start = QtGui.QLabel(self)
         self.label_start.setObjectName(_fromUtf8("label_start"))
-        self.gridLayout.addWidget(self.label_start, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_start, 2, 0, 1, 1)
         self.dateTimeEdit_start = CustomDateTimeWidget()
         self.dateTimeEdit_start.setObjectName(_fromUtf8("dateTimeEdit_start"))
-        self.gridLayout.addWidget(self.dateTimeEdit_start, 1, 1, 1, 2)
+        self.gridLayout.addWidget(self.dateTimeEdit_start, 2, 1, 1, 2)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.gridLayout.addWidget(self.buttonBox, 2, 1, 1, 2)
+        self.gridLayout.addWidget(self.buttonBox, 3, 1, 1, 2)
+        self.label = QtGui.QLabel(self)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.label_accounttarif_start = QtGui.QLabel(self)
+        self.label_accounttarif_start.setText(_fromUtf8(""))
+        self.label_accounttarif_start.setObjectName(_fromUtf8("label_accounttarif_start"))
+        self.gridLayout.addWidget(self.label_accounttarif_start, 0, 1, 1, 2)
+
 
 
 
@@ -1016,6 +1039,8 @@ class AddAccountTarif(QtGui.QDialog):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Смена тарифного плана", None, QtGui.QApplication.UnicodeUTF8))   
         self.label_tarif.setText(QtGui.QApplication.translate("AddAccountTarif", "Укажите новый тарифный план", None, QtGui.QApplication.UnicodeUTF8))
         self.label_start.setText(QtGui.QApplication.translate("AddAccountTarif", "Дата начала", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("AddAccountTarif", "Начало текущего тарифа", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_accounttarif_start.setText(QtGui.QApplication.translate("AddAccountTarif", "-", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
         tarifs=self.connection.sql("SELECT id, name FROM billservice_tariff WHERE deleted IS NOT TRUE ORDER BY name;")
@@ -1031,6 +1056,13 @@ class AddAccountTarif(QtGui.QDialog):
 
             now.setTime_t((mktime(self.model.datetime.timetuple())))
         self.dateTimeEdit_start.setDateTime(now)
+        
+        
+        if self.account:
+            curat = self.connection.sql("SELECT datetime FROM billservice_accounttarif WHERE datetime<now() and account_id=%s ORDER BY datetime DESC LIMIT 1" % self.account.id)
+            self.connection.commit()
+            if curat:
+                self.label_accounttarif_start.setText(unicode(curat[0].datetime.strftime(strftimeFormat)))
 
     def reject(self):
         self.connection.rollback()
@@ -1966,11 +1998,11 @@ class AccountWindow(QtGui.QMainWindow):
                     
                 self.addrow(self.tableWidget_accounttarif, a.id, i,0)
                 self.addrow(self.tableWidget_accounttarif, a.tarif_name, i,1)
-                self.addrow(self.tableWidget_accounttarif, a.datetime.strftime(strftimeFormat), i,2)
+                self.addrow(self.tableWidget_accounttarif, a.datetime, i,2)
                 self.addrow(self.tableWidget_accounttarif, u"Да" if a.periodical_billed else u"Нет", i,3)
                 if sp_start and sp_end:
-                    self.addrow(self.tableWidget_accounttarif, sp_start.strftime(strftimeFormat), i,4)
-                    self.addrow(self.tableWidget_accounttarif, sp_end.strftime(strftimeFormat), i,5)
+                    self.addrow(self.tableWidget_accounttarif, sp_start, i,4)
+                    self.addrow(self.tableWidget_accounttarif, sp_end, i,5)
                 i+=1
 
             self.tableWidget_accounttarif.setColumnHidden(0, True)
@@ -1989,9 +2021,9 @@ class AccountWindow(QtGui.QMainWindow):
             i=0
             for a in sp:
                 self.addrow(self.tableWidget_suspended, a.id, i, 0)
-                self.addrow(self.tableWidget_suspended, a.start_date.strftime(strftimeFormat), i, 1)
+                self.addrow(self.tableWidget_suspended, a.start_date, i, 1)
                 try:
-                    self.addrow(self.tableWidget_suspended, a.end_date.strftime(strftimeFormat), i, 2)
+                    self.addrow(self.tableWidget_suspended, a.end_date, i, 2)
                 except:
                     self.addrow(self.tableWidget_suspended, u"Не закончен", i, 2)
                 i+=1
@@ -2014,14 +2046,14 @@ class AccountWindow(QtGui.QMainWindow):
                 self.addrow(self.tableWidget_addonservice, a.addonservice_name, i, 1)
                 self.addrow(self.tableWidget_addonservice, a.subaccount_username, i, 2)
                 
-                self.addrow(self.tableWidget_addonservice, a.activated.strftime(strftimeFormat), i, 3)
+                self.addrow(self.tableWidget_addonservice, a.activated, i, 3)
                 try:
-                    self.addrow(self.tableWidget_addonservice, a.deactivated.strftime(strftimeFormat), i, 4)
+                    self.addrow(self.tableWidget_addonservice, a.deactivated, i, 4)
                 except:
                     self.addrow(self.tableWidget_addonservice, u"Не закончен", i, 4)
                 self.addrow(self.tableWidget_addonservice, a.action_status, i, 5)
                 try:
-                    self.addrow(self.tableWidget_addonservice, a.temporary_blocked.strftime(strftimeFormat), i, 6)
+                    self.addrow(self.tableWidget_addonservice, a.temporary_blocked, i, 6)
                 except:
                     pass
                 i+=1
@@ -2068,7 +2100,17 @@ class AccountWindow(QtGui.QMainWindow):
             value=''
         if y==0:
             headerItem.id=value
-        headerItem.setText(unicode(value))
+            
+        if isinstance(value, basestring):            
+            headerItem.setText(unicode(value))     
+        elif type(value)==datetime.datetime:
+            #.strftime(self.strftimeFormat)   
+
+            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QString(unicode(value.strftime(strftimeFormat))))      
+ 
+        else:            
+            headerItem.setData(0, QtCore.QVariant(value))         
+            
         if id:
             headerItem.id=id
             

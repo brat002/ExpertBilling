@@ -3017,7 +3017,11 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def changeTariff(self):
         tarif_id = None
         ids = self.get_selected_accounts()
-        child=AddAccountTarif(connection=self.connection, account=None, get_info = True)
+        account=None
+        if len(ids)==1:
+            account=self.connection.get_model(ids[0], "billservice_account", fields=['id'])
+            self.connection.commit()
+        child=AddAccountTarif(connection=self.connection, account=account, get_info = True)
         if child.exec_()==1:
             tarif_id = child.tarif_edit.itemData(child.tarif_edit.currentIndex()).toInt()[0]
             date = child.date_edit.currentDate()
@@ -3290,7 +3294,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         #if setdata:
             #headerItem.setData(39, QtCore.QVariant(value))
         if isinstance(value, basestring):            
-            headerItem.setText(unicode(value))        
+            headerItem.setText(unicode(value))     
+        elif isinstance(value,datetime.datetime):
+            #.strftime(self.strftimeFormat)   
+            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QString(unicode(value.strftime(strftimeFormat))))         
         else:            
             headerItem.setData(0, QtCore.QVariant(value))         
             '''if ctext is not None:                headerItem.setText(unicode(ctext))            else:                headerItem.setText(unicode(value))'''        
@@ -3324,7 +3331,17 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         item.setText(0, u"Без тарифа")
         item.setIcon(0,QtGui.QIcon("images/new_users.png"))   
         
-        
+        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
+        item.id = -4000
+        item.tarif_type = 'all'
+        item.setText(0, u"Физ. лица")
+        item.setIcon(0,QtGui.QIcon("images/new_users.png"))   
+
+        item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
+        item.id = -5000
+        item.tarif_type = 'all'
+        item.setText(0, u"Юр. лица")
+        item.setIcon(0,QtGui.QIcon("images/new_users.png"))   
         
         for tarif in tariffs:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
@@ -3342,7 +3359,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         item.setText(0, u"Все аккаунты")
         item.setIcon(0,QtGui.QIcon("images/folder.png"))
         
-
+        
         self.connectTree()
         if curItem != -1:
             self.tarif_treeWidget.setCurrentItem(self.tarif_treeWidget.topLevelItem(curItem))
@@ -3384,7 +3401,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         #print item
         if item:
             id=item.id
-            if id==-1000 or id==-2000:
+            if id==-1000 or id==-2000 or id==-4000 or id==-5000:
                 self.addAction.setDisabled(True)
                 self.delAction.setDisabled(True)
                 
@@ -3394,7 +3411,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         else:
             try:
                 id=self.getTarifId()
-                if id==-1000 or id==-2000:
+                if id==-1000 or id==-2000 or id==-4000 or id==-5000:
                     self.addAction.setDisabled(True)
                     self.delAction.setDisabled(True)
                     
@@ -3404,7 +3421,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             except:
                 return
         
-        if id==-1000 or id==-2000:
+        if id==-1000 or id==-2000 or id==-4000 or id==-5000:
             #self.sql=''
             columns=[u'#', u'Имя пользователя', u"Договор",u'Тарифный план', u'Баланс', u'Кредит', u'ФИО',   u'',  u"<=0 баланс, дней назад", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
@@ -3475,7 +3492,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 if a.last_balance_null:
                     self.addrow((now-a.last_balance_null).days, i,7, enabled=a.status)
                 
-                self.addrow(a.created.strftime(self.strftimeFormat), i,8, enabled=a.status)
+                self.addrow(a.created, i,8, enabled=a.status)
                 
                 self.addrow(a.comment, i,9, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)

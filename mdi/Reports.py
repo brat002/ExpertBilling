@@ -22,7 +22,7 @@ try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
     _fromUtf8 = lambda s: s
-
+strftimeFormat = "%d.%m.%Y %H:%M:%S"
 #TODO: заменить сообщение о пустой выборке пустой картинкой
 _xmlpath = "reports/xml"
 reppath  = "reports/genhtml"
@@ -72,7 +72,8 @@ class TransactionsReportEbs(ebsTableWindow):
         "CASSA_TRANSACTION":"billservice_transaction",
         "PAYMENTGATEWAY_BILL":"billservice_transaction",
         "WEBMONEY_PAYMENT_IMPORT":"webmoney_payment",
-        "QIWI_PAYMENT":"qiwi_invoice"
+        "QIWI_PAYMENT":"qiwi_invoice",
+        "TOTAL_TRANSACTIONS":"totaltransactions"
         }
         
         #self.transactions_tables = [u"billservice_periodicalservicehistory",u"billservice_onetimeservicehistory",u"billservice_traffictransaction",u"billservice_timetransaction","billservice_addonservicetransaction", "qiwi_invoice"]
@@ -160,6 +161,7 @@ class TransactionsReportEbs(ebsTableWindow):
         self.columns["billservice_onetimeservicehistory"]=['#', u'Аккаунт', u"ФИО", u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
         self.columns["billservice_traffictransaction"] = ["#", u'Аккаунт', u"ФИО", u'Тарифный план', u'Сумма', u'Дата']
         self.columns["billservice_timetransaction"] = ["#", u'Аккаунт', u"ФИО", u'Тарифный план', u'Сумма', u'Дата']
+        self.columns["totaltransactions"] = ["#", u'Аккаунт', u"ФИО", u'Тарифный план', u'Тип списания', u'Услуга/Документ', u'Сумма', u'Дата', u"Описание", u"Обещанный платёж", u"Кассир"]
         self.columns["billservice_addonservicetransaction"] = ["#", u'Аккаунт', u"ФИО", u'Услуга', u'Тип услуги', u'Сумма', u'Дата']
         self.columns["billservice_transaction"] = [u'#', u'Аккаунт', u"ФИО", u'Дата', u'Платёжный документ', u'Вид проводки', u"Выполнено", u'Тариф', u'Сумма', u'Комментарий', u"В долг", u"До числа"]
         self.columns["qiwi_invoice"] = [u'#', u'Аккаунт', u"ФИО", u"№ инвойса", u'Создан', u"Автозачисление", u'Оплачен', u"Сумма"]
@@ -218,7 +220,8 @@ class TransactionsReportEbs(ebsTableWindow):
         items = self.connection.get_models("billservice_transactiontype", order={'name':'ASC'})
         self.connection.commit()
         
-        i=0
+        self.comboBox_transactions_type.addItem(u"Общий отчёт", QtCore.QVariant("TOTAL_TRANSACTIONS"))
+        i=1
         for item in items:
             #self.transactions_tables.insert(0, "billservice_transaction")
             self.comboBox_transactions_type.addItem(item.name, QtCore.QVariant(item.internal_name))
@@ -238,7 +241,17 @@ class TransactionsReportEbs(ebsTableWindow):
         
         if promise:
             headerItem.setBackgroundColor(QtGui.QColor("lightblue"))
-        headerItem.setText(unicode(value))
+            
+        if isinstance(value, basestring):            
+            headerItem.setText(unicode(value))     
+        elif type(value)==datetime.datetime:
+            #.strftime(self.strftimeFormat)   
+
+            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QString(unicode(value.strftime(strftimeFormat))))      
+ 
+        else:            
+            headerItem.setData(0, QtCore.QVariant(float(value))) 
+            
         if id:
             headerItem.id = id
             headerItem.date = date
@@ -260,6 +273,7 @@ class TransactionsReportEbs(ebsTableWindow):
         account_id = self.user_edit.itemData(self.user_edit.currentIndex()).toInt()[0]
         transaction_type=unicode(self.comboBox_transactions_type.itemData(self.comboBox_transactions_type.currentIndex()).toString())
         #print transaction_type
+        self.statusBar().showMessage(u"Выполняется обработка запроса. Подождите.")
         if self.transactions_types.get(transaction_type, None) in ["billservice_transaction",None]:
             sql = """SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=transaction.account_id) as fullname, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
                                             FROM billservice_transaction as transaction
@@ -281,14 +295,14 @@ class TransactionsReportEbs(ebsTableWindow):
 
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items)+1)
+            self.tableWidget.setRowCount(len(items))
             i=0
             sum = 0
             for item in items:
                 self.addrow(i, i, 0, id=item.id, promise = item.promise, date = item.created)
                 self.addrow(item.username, i, 1, promise = item.promise)
                 self.addrow(item.fullname, i, 2, promise = item.promise)
-                self.addrow(item.created.strftime(self.strftimeFormat), i, 3, promise = item.promise)
+                self.addrow(item.created, i, 3, promise = item.promise)
                 self.addrow(item.bill, i, 4, promise = item.promise)
                 self.addrow(item.transaction_type_name, i, 5, promise = item.promise)
                 self.addrow(item.systemuser, i, 6, promise = item.promise)
@@ -303,8 +317,7 @@ class TransactionsReportEbs(ebsTableWindow):
                     except Exception, e:
                         print e
                 i+=1
-            self.addrow(u"Итого", i, 7)
-            self.addrow(sum, i, 8)
+            self.statusBar().showMessage(u"Всего записей:%s. Итоговая сумма %.3f" % (i,sum))
         if self.transactions_types.get(transaction_type)=="billservice_periodicalservicehistory":
             services = self.connection.get_models("billservice_periodicalservice")
             s = {}
@@ -329,7 +342,7 @@ class TransactionsReportEbs(ebsTableWindow):
         
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items)+1)
+            self.tableWidget.setRowCount(len(items))
             i=0
             
             ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
@@ -342,11 +355,11 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(s.get(item.service_id), i, 4)
                 self.addrow(item.type_id, i, 5)
                 self.addrow(item.summ, i, 6)
-                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 7)
+                self.addrow(item.datetime, i, 7)
                 i+=1
                 sum+=item.summ
-            self.addrow(u"Итого", i, 5)
-            self.addrow(sum, i, 6)
+            self.statusBar().showMessage(u"Всего записей:%s. Итоговая сумма %.3f" % (i,sum))
+            
         if self.transactions_types.get(transaction_type)=="billservice_onetimeservicehistory":
             services = self.connection.get_models("billservice_onetimeservice")
             s = {}
@@ -371,7 +384,7 @@ class TransactionsReportEbs(ebsTableWindow):
         
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items)+1)
+            self.tableWidget.setRowCount(len(items))
             i=0
             
             ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u"Сумма", u"Дата"]
@@ -383,11 +396,11 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(t.get(item.tarif_id), i, 3)
                 self.addrow(s.get(item.onetimeservice_id), i, 4)
                 self.addrow(item.summ, i, 5)
-                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 6)
+                self.addrow(item.datetime, i, 6)
                 i+=1
                 sum += item.summ
-            self.addrow(u"Итого", i, 4)
-            self.addrow(sum, i, 5)                
+            self.statusBar().showMessage(u"Всего записей:%s. Итоговая сумма %.3f" % (i,sum))
+                        
         if self.transactions_types.get(transaction_type)=="billservice_traffictransaction":
             tariffs = self.connection.get_models("billservice_tariff")
             t = {}
@@ -407,7 +420,7 @@ class TransactionsReportEbs(ebsTableWindow):
         
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items)+1)
+            self.tableWidget.setRowCount(len(items))
             i=0
             
             ["#", u'Аккаунт', u'Тарифный план', u'Сумма', u'Дата']
@@ -418,12 +431,11 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.fullname, i, 2)
                 self.addrow(t.get(item.tarif_id), i, 3)
                 self.addrow(item.summ, i, 4)
-                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 5)
+                self.addrow(item.datetime, i, 5)
                 i+=1
                 sum+=item.summ
                 
-            self.addrow(u"Итого", i, 4)
-            self.addrow(sum, i, 5)   
+            self.statusBar().showMessage(u"Всего записей:%s. Итоговая сумма %.3f" % (i,sum))
             
         if self.transactions_types.get(transaction_type)=="billservice_timetransaction":
             #print 111
@@ -445,7 +457,7 @@ class TransactionsReportEbs(ebsTableWindow):
         
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items)+1)
+            self.tableWidget.setRowCount(len(items))
             i=0
             sum = 0
             for item in items:
@@ -454,11 +466,10 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.fullname, i, 2)
                 self.addrow(t.get(item.tarif_id), i, 3)
                 self.addrow(item.summ, i, 4)
-                self.addrow(item.datetime.strftime(self.strftimeFormat), i, 5)
+                self.addrow(item.datetime, i, 5)
                 i+=1
                 sum +=item.summ
-            self.addrow(u"Итого", i, 3)
-            self.addrow(sum, i, 4)                                 
+            self.statusBar().showMessage(u"Всего записей:%s. Итоговая сумма %.3f" % (i,sum))                                
         self.tableWidget.setColumnHidden(0, False)
         
         if self.transactions_types.get(transaction_type)=="billservice_addonservicetransaction":
@@ -467,8 +478,7 @@ class TransactionsReportEbs(ebsTableWindow):
             t = {}
             for x in tr_types:
                 t[x.internal_name] = x.name
-                               
-            #print (start_date, end_date,)
+
             sql = """
             select addst.id, (SELECT name FROM billservice_addonservice WHERE id=addst.service_id) as service_name, addst.summ, addst.created, addst.type_id, (SELECT username FROM billservice_account WHERE id=addst.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=addst.account_id) as fullname
             FROM billservice_addonservicetransaction as addst
@@ -482,7 +492,7 @@ class TransactionsReportEbs(ebsTableWindow):
         
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items)+1)
+            self.tableWidget.setRowCount(len(items))
             i=0
             sum = 0
             ["#", u'Аккаунт', u'Услуга', u'Тип услуги', u'Сумма', u'Дата']
@@ -493,11 +503,10 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.service_name, i, 3)
                 self.addrow(t[item.type_id], i, 4)
                 self.addrow(item.summ, i, 5)
-                self.addrow(item.created.strftime(self.strftimeFormat), i, 6)
+                self.addrow(item.created, i, 6)
                 i+=1
                 sum +=item.summ
-            self.addrow(u"Итого", i, 4)
-            self.addrow(sum, i, 5)                                 
+            self.statusBar().showMessage(u"Всего записей:%s. Итоговая сумма %.3f" % (i,sum))                               
         self.tableWidget.setColumnHidden(0, False)
 
         if self.transactions_types.get(transaction_type)=="qiwi_invoice":
@@ -522,7 +531,7 @@ class TransactionsReportEbs(ebsTableWindow):
         
             items = self.connection.sql(sql)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(items)+2)
+            self.tableWidget.setRowCount(len(items))
             i=0
             sum = 0
             allsumm=0
@@ -531,7 +540,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(item.id, i, 3)
-                self.addrow(item.created.strftime(self.strftimeFormat), i, 4)
+                self.addrow(item.created, i, 4)
                 self.addrow(item.autoaccept, i, 5)
                 try:
                     self.addrow(item.date_accepted.strftime(self.strftimeFormat), i, 6)
@@ -546,9 +555,277 @@ class TransactionsReportEbs(ebsTableWindow):
             self.addrow(allsumm, i, 7)
             self.addrow(u"Оплачено на сумму", i+1, 6)
             self.addrow(sum, i+1, 7)
+            self.statusBar().showMessage(u"Всего записей:%s.Инвойсов на сумму %.3f, оплачено %.3f" % (i,allsumm, sum))
                                              
         self.tableWidget.setColumnHidden(0, False)
 
+        if self.transactions_types.get(transaction_type)=="totaltransactions":
+            
+            sql = """
+            SELECT qi.id as id, (SELECT username FROM billservice_account WHERE id=qi.account_id) as username,(SELECT fullname FROM billservice_account WHERE id=qi.account_id) as fullname,qi,created as created, qi.autoaccept, qi.date_accepted, qi.summ, get_tarif_name(qi.account_id, qi.date_accepted) as tarif_name
+            FROM qiwi_invoice as qi
+            WHERE qi.date_accepted is not Null and qi.created>='%s' and qi.created<='%s' %%s ORDER BY created ASC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and qi.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            qiwi_items = self.connection.sql(sql)
+
+#####################
+            tr_types = self.connection.get_models("billservice_transactiontype",fields=['id','name', 'internal_name'])
+            tr_type = {}
+            for x in tr_types:
+                tr_type[x.internal_name] = x.name
+
+            tariffs = self.connection.get_models("billservice_tariff", fields=['id', "name"])
+            tariff = {}
+            for x in tariffs:
+                tariff[x.id] = x.name
+
+            services = self.connection.get_models("billservice_onetimeservice", fields=['id', 'name'])
+            ot_service = {}
+            for x in services:
+                ot_service[x.id] = x.name
+
+            services = self.connection.get_models("billservice_periodicalservice", fields=['id', 'name'])
+            p_service = {}
+            for x in services:
+                p_service[x.id] = x.name
+                
+            sql = """
+            select addst.id, (SELECT name FROM billservice_addonservice WHERE id=addst.service_id) as service_name, addst.summ, addst.created, addst.type_id, (SELECT username FROM billservice_account WHERE id=addst.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=addst.account_id) as fullname, get_tarif_name(addst.account_id,addst.created) as tarif_name
+            FROM billservice_addonservicetransaction as addst
+            WHERE addst.created>='%s' and addst.created<='%s' %%s ORDER BY created ASC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and addst.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            addonservice_items = self.connection.sql(sql)
+            
+            ##
+            
+
+                               
+            sql = """
+            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname
+            FROM billservice_timetransaction as tr 
+            WHERE tr.datetime between '%s' and '%s' %%s ORDER BY tr.datetime DESC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and tr.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            timetransaction_items = self.connection.sql(sql)
+            
+            ##
+            
+                               
+            sql = """
+            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username , (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname, tr.radiustraffictransmitservice_id
+            FROM billservice_traffictransaction as tr 
+            WHERE tr.datetime between '%s' and '%s' %%s ORDER BY tr.datetime DESC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and tr.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            traffictransaction_items = self.connection.sql(sql)
+            
+            ##
+            
+
+ 
+                               
+            sql = """
+            SELECT osh.id, osh.onetimeservice_id, osh.datetime, osh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=osh.accounttarif_id) as tarif_id, osh.summ, (SELECT username FROM billservice_account WHERE id=osh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=osh.account_id) as fullname 
+            FROM billservice_onetimeservicehistory as osh 
+            WHERE osh.datetime between '%s' and '%s' %%s ORDER BY osh.datetime DESC
+            """ % (start_date, end_date,)
+            
+            if account_id:
+                sql = sql % " and osh.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            otsh_items = self.connection.sql(sql)
+            
+            ##
+
+
+                               
+            sql = """
+            SELECT psh.id, psh.service_id, psh.datetime, psh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=psh.accounttarif_id) as tarif_id, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=psh.account_id) as fullname, psh.type_id 
+            FROM billservice_periodicalservicehistory as psh 
+            WHERE psh.datetime between '%s' and '%s' %%s  ORDER BY psh.datetime DESC
+            """ % (start_date, end_date)
+            
+            if account_id:
+                sql = sql % " and psh.account_id=%s " % account_id
+            else:
+                sql = sql % " "  
+        
+            period_items = self.connection.sql(sql)
+            ##
+            
+            
+            sql = """SELECT transaction.*, transactiontype.name as transaction_type_name, tariff.name as tariff_name, (SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=transaction.account_id) as fullname, (SELECT username FROM billservice_systemuser WHERE id=transaction.systemuser_id) as systemuser
+                                            FROM billservice_transaction as transaction
+                                            JOIN billservice_transactiontype as transactiontype ON transactiontype.internal_name = transaction.type_id
+                                            LEFT JOIN billservice_tariff as tariff ON tariff.id = transaction.tarif_id   
+                                            WHERE transaction.created between '%s' and '%s' %%s ORDER BY transaction.created DESC""" %  (start_date, end_date,)
+
+            if account_id:
+                sql = sql % " and transaction.account_id=%s %%s" % account_id
+            else:
+                sql = sql % " %s"
+
+            systemuser_id = self.comboBox_cashier.itemData(self.comboBox_cashier.currentIndex()).toInt()[0]
+            #print sql
+            if systemuser_id!=0:
+                sql = sql % " and transaction.systemuser_id=%s " % systemuser_id
+            else:
+                sql = sql % " "
+
+            transaction_items = self.connection.sql(sql)
+            
+            
+#####################
+            self.tableWidget.setSortingEnabled(False)
+            self.connection.commit()
+            self.tableWidget.setRowCount(len(qiwi_items)+len(addonservice_items)+len(timetransaction_items)+len(traffictransaction_items)+len(period_items)+len(otsh_items)+len(transaction_items)+2)
+            i=0
+            pos_sum = 0
+            neg_sum=0
+            for item in qiwi_items:
+                self.addrow(i, i, 0, id = item.id, date = item.created)
+                self.addrow(item.username, i, 1)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(item.tarif_name, i, 3)
+                self.addrow(u"QIWI инвойс", i, 4)
+                self.addrow(item.id, i, 5)
+                self.addrow(item.summ, i, 6)
+                self.addrow(item.created, i, 7)
+                i+=1
+                if item.summ>0:
+                    pos_sum +=item.summ
+                else:
+                    neg_sum +=item.summ
+
+            for item in addonservice_items:
+                self.addrow(i, i, 0, id = item.id, date = item.created)
+                self.addrow(item.username, i, 1)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(item.tarif_name, i, 3)
+                self.addrow(item.service_name, i, 4)
+                self.addrow(tr_type[item.type_id], i, 5)
+                self.addrow(item.summ, i, 6)
+                self.addrow(item.created, i,7)
+                i+=1
+                if item.summ>0:
+                    pos_sum +=item.summ
+                else:
+                    neg_sum +=item.summ
+                
+            for item in timetransaction_items:
+                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(item.username, i, 1)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(tariffs.get(item.tarif_id), i, 3) #!!!
+                self.addrow(u"Списание денег за время", i, 4) #!!!
+                self.addrow(item.summ, i, 6)
+                self.addrow(item.datetime, i, 7)
+                i+=1           
+                if item.summ>0:
+                    pos_sum +=item.summ
+                else:
+                    neg_sum +=item.summ
+                
+            for item in traffictransaction_items:
+                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(item.username, i, 1)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(tariff.get(item.tarif_id), i, 3)
+                self.addrow(u"Списание денег за трафик", i, 4)
+                if item.radiustraffictransmitservice_id:
+                    self.addrow(u"Тарификация по RADIUS", i, 5)
+                else:
+                    self.addrow(u"Тарификация по NetFlow", i, 5)
+                self.addrow(item.summ, i, 6)
+                self.addrow(item.datetime, i, 7)
+                i+=1                
+                if item.summ>0:
+                    pos_sum +=item.summ
+                else:
+                    neg_sum +=item.summ
+                
+            for item in period_items:
+                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(item.username, i, 1)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(tariff.get(item.tarif_id), i, 3)
+                self.addrow(p_service.get(item.service_id), i, 4)
+                self.addrow(item.type_id, i, 5)
+                self.addrow(item.summ, i, 6)
+                self.addrow(item.datetime, i, 7)
+                i+=1
+                if item.summ>0:
+                    pos_sum +=item.summ
+                else:
+                    neg_sum +=item.summ
+                
+            for item in otsh_items:
+                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(item.username, i, 1)
+                self.addrow(item.fullname, i, 2)
+                self.addrow(tariff.get(item.tarif_id), i, 3)
+                self.addrow(ot_service.get(item.onetimeservice_id), i, 4)
+                self.addrow(item.summ, i, 6)
+                self.addrow(item.datetime, i, 7)
+                if item.summ>0:
+                    pos_sum +=item.summ
+                else:
+                    neg_sum +=item.summ
+                i+=1
+                
+            for item in transaction_items:
+                self.addrow(i, i, 0, id=item.id, promise = item.promise, date = item.created)
+                self.addrow(item.username, i, 1, promise = item.promise)
+                self.addrow(item.fullname, i, 2, promise = item.promise)
+                self.addrow(item.tariff_name, i, 3, promise = item.promise)
+                
+                self.addrow(item.transaction_type_name, i, 4, promise = item.promise)
+                self.addrow(item.bill, i, 5, promise = item.promise)
+                self.addrow(item.summ*(-1), i, 6, promise = item.promise)
+                self.addrow(item.created, i, 7, promise = item.promise)
+                
+                self.addrow(item.description, i, 8, promise = item.promise)
+                self.addrow(item.promise, i, 9, promise = item.promise)
+                self.addrow(item.systemuser, i, 10, promise = item.promise)
+                #sum+=item.summ*(-1)
+                if item.summ>0:
+                    pos_sum +=item.summ*(-1)
+                else:
+                    neg_sum +=item.summ*(-1)              
+                i+=1
+            #self.addrow(u"Начислено на сумму", i+1, 6)
+            #self.addrow(pos_sum, i+1, 7)
+            #i+=1
+            #self.addrow(u"Списано на сумму", i+1, 6)
+            #self.addrow(neg_sum, i+1, 7)
+            self.statusBar().showMessage(u"Всего записей:%s. Начислено:%.3f. Списано:%.3f" % (i, neg_sum,pos_sum))
+            
+        self.tableWidget.setSortingEnabled(True)        
+        self.tableWidget.setColumnHidden(0, False)
         
                 
         try:
@@ -2168,7 +2445,15 @@ class SimpleReportEbs(ebsTableWindow):
             headerItem.setBackgroundColor(QtGui.QColor("lightgreen"))
             
         
-        headerItem.setText(unicode(value))        
+        if isinstance(value, basestring):            
+            headerItem.setText(unicode(value))     
+        elif type(value)==datetime.datetime:
+            #.strftime(self.strftimeFormat)   
+
+            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QString(unicode(value.strftime(strftimeFormat))))      
+ 
+        else:            
+            headerItem.setData(0, QtCore.QVariant(float(value)))     
  
             
         if id:

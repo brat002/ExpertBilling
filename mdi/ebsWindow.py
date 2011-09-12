@@ -646,8 +646,8 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         rows = 0
         for r in self.tableWidget.selectedRanges():
             rows += r.rowCount() 
-        if rows>1:
-            disable=True
+        #if rows>1:
+        #    disable=True
                 
         if self.tableWidget.currentRow()==-1 or disable==True:
             for actObj in actList:
