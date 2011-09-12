@@ -1658,11 +1658,11 @@ class TemplatesWindow(QtGui.QMainWindow):
                 data=u"Error %s" % str(e)
         if id==2:
             account = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0].id
-            organization = self.connection.sql("SELECT * FROM billservice_organization LIMIT 1" )[0]
-            bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
-
+            #organization = self.connection.sql("SELECT * FROM billservice_organization LIMIT 1" )[0]
+            #bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
+            operator = self.connection.get("SELECT * FROM billservice_operator LIMIT 1")
             try:
-                data=templ.render_unicode(accounts=(account,), bank=bank, organization=organization, connection=self.connection)
+                data=templ.render_unicode(account=account, operator=operator,  connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
 

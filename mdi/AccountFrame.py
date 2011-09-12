@@ -2856,7 +2856,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         self.tb = QtGui.QToolButton(self)
         self.tb.setIcon(QtGui.QIcon("images/documents.png"))
-        self.tb.setText(u"Документы")
+        self.tb.setText(u"Информация")
         self.tb.setPopupMode(QtGui.QToolButton.InstantPopup)
         self.menu = QtGui.QMenu(self.toolBar)
         
@@ -2883,14 +2883,14 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                  ("actionDeleteAccount", "Удалить с сервера доступа", "images/del.png", self.accountDelete), \
                  ("editTarifAction", "Редактировать", "images/edit.png", self.editTarif),\
                  ("editAccountAction", "Редактировать", "images/configure.png", self.editframe),\
-                 ("connectionAgreementAction", "Договор на подключение", "", self.pass_),\
+                 ("connectionAgreementAction", "Договор на подключение", "images/Contract-icon.png", self.printAgreement),\
                  ("actionChangeTarif", "Сменить тарифный план", "images/tarif_change.png", self.changeTariff),\
-                 ("actionSetSuspendedPeriod", "Отключить списание периодических услуг", "", self.suspended_period),\
-                 ("actionLimitInfo", "Остаток трафика по лимитам", "", self.limit_info),\
+                 ("actionSetSuspendedPeriod", "Отключить списание периодических услуг", "images/Lock-icon.png", self.suspended_period),\
+                 ("actionLimitInfo", "Остаток трафика по лимитам", "images/traffic_limit.png", self.limit_info),\
                  ("actionPrepaidTrafficInfo", "Остаток предоплаченного трафика", "", self.prepaidtraffic_info),\
                  ("actionPrepaidRadiusTrafficInfo", "Остаток предоплаченного RADIUS трафика", "", self.radiusprepaidtraffic_info),\
                  ("actionPrepaidRadiusTimeInfo", "Остаток предоплаченного RADIUS времени ", "", self.radiusprepaidtime_info),\
-                 ("actionSettlementPeriodInfo", "Информация по расчётным периодам", "", self.settlementperiod_info),\
+                 ("actionSettlementPeriodInfo", "Информация по расчётным периодам", "images/sp.png", self.settlementperiod_info),\
                  ("rrdAccountTrafficInfo", "График использования канала аккаунтом", "images/bandwidth.png", self.rrdtraffic_info),\
                  ("radiusauth_logInfo", "Логи RADIUS авторизаций", "images/easytag.png", self.radiusauth_log),\
                  ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs),\
@@ -2905,7 +2905,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
                    self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction",  "actionAddAccount", "actionEnableSession", "actionDisableSession", "actionDeleteAccount", "messageDialogAction", "rrdAccountTrafficInfo","radiusauth_logInfo", "actionBalanceLog"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
-                   self.menu       :[ "actionChangeTarif", "separator", "actionRadiusAttrs", "separator", 'actionSettlementPeriodInfo', 'separator', "actionSetSuspendedPeriod", "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', 'actionPrepaidRadiusTimeInfo', "separator", "rrdAccountTrafficInfo", 'radiusauth_logInfo', "actionBalanceLog", "separator"],\
+                   self.toolBar2   :["actionChangeTarif", "actionSetSuspendedPeriod", "connectionAgreementAction", 'separator',  'radiusauth_logInfo', "actionBalanceLog","rrdAccountTrafficInfo", "separator","actionRadiusAttrs",],\
+                   self.menu   :[ 'actionSettlementPeriodInfo', 'separator', "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', 'actionPrepaidRadiusTimeInfo'],\
                    self.reports_menu :["actionReports",],
                   }
         self.actionCreator(actList, objDict)
@@ -2914,7 +2915,9 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         
         self.toolBar.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.toolBar2.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.toolBar.setIconSize(QtCore.QSize(18,18))
+        self.toolBar2.setIconSize(QtCore.QSize(18,18))
         
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
@@ -3077,6 +3080,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 print "can not convert id to int"      
                 
         #print ids
+        if not ids: return
         child=SuspendedPeriodForm()
 
         if child.exec_()==1:
@@ -3532,10 +3536,40 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
         self.refresh()
         
-    
+    def printAgreement(self):
+       
+
+        models_id=self.get_selected_accounts()
+        if len(models_id)!=1:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пакетная печать договоров невоможна. Выберите один аккаунт."))
+            return
+        model_id=models_id[0]
+        
+        operator = self.connection.get("SELECT * FROM billservice_operator LIMIT 1")
+        child = TemplateSelect(connection = self.connection)
+        if child.exec_():
+            template_id = child.id
+        else:
+            return
+        template = self.connection.get_model(template_id, "billservice_template")
+        templ = Template(template.body, input_encoding='utf-8')
+        
+        account = self.connection.get_model(model_id, "billservice_account")
+        try:
+            data=templ.render_unicode(account=account, operator=operator, connection=self.connection)
+        except Exception, e:
+            data=unicode(u"Ошибка рендеринга документа: %s" % e)
+        self.connection.commit()            
+        file= open('templates/tmp/temp.html', 'wb')
+        file.write(data.encode("utf-8", 'replace'))
+        file.flush()
+        a=CardPreviewDialog(url="templates/tmp/temp.html")
+        a.exec_()
+        
+
     def addNodeLocalAction(self):
-        super(AccountsMdiEbs, self).addNodeLocalAction([self.addAction,self.delTarifAction])
+        super(AccountsMdiEbs, self).addNodeLocalAction([self.addAction,self.delTarifAction, self.actionRadiusAttrs])
         
     def delNodeLocalAction(self):
-        super(AccountsMdiEbs, self).delNodeLocalAction([self.delAction,self.transactionAction,self.transactionReportAction])
+        super(AccountsMdiEbs, self).delNodeLocalAction([self.delAction, self.actionChangeTarif, self.transactionAction,self.transactionReportAction, self.messageDialogAction,self.connectionAgreementAction,self.actionSetSuspendedPeriod,self.actionLimitInfo,self.actionPrepaidTrafficInfo,self.actionPrepaidRadiusTrafficInfo,self.actionPrepaidRadiusTimeInfo,self.actionSettlementPeriodInfo,self.rrdAccountTrafficInfo,self.radiusauth_logInfo, self.actionBalanceLog])
         

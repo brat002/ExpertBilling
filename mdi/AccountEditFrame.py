@@ -1615,7 +1615,9 @@ class AccountWindow(QtGui.QMainWindow):
             
     def printAgreement(self):
        
-        tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id = get_tarif(%s)" % self.model.id)
+
+        #model_id=self.model
+        
         operator = self.connection.get("SELECT * FROM billservice_operator LIMIT 1")
         child = TemplateSelect(connection = self.connection)
         if child.exec_():
@@ -1624,18 +1626,12 @@ class AccountWindow(QtGui.QMainWindow):
             return
         template = self.connection.get_model(template_id, "billservice_template")
         templ = Template(template.body, input_encoding='utf-8')
-        if self.groupBox_urdata.isChecked()==True:
-            
-            try:
-                data=templ.render_unicode(accounts=[self.model.id], operator=operator, organization = self.organization, bank=self.bank, connection=self.connection)
-            except Exception, e:
-                data=unicode(u"Ошибка рендеринга документа: %s" % e)
-            
-        else:
-            try:
-                data=templ.render_unicode(accounts=[self.model.id], operator=operator, connection=self.connection)
-            except Exception, e:
-                data=unicode(u"Ошибка рендеринга документа: %s" % e)
+        
+        account = self.model
+        try:
+            data=templ.render_unicode(account=account, operator=operator, connection=self.connection)
+        except Exception, e:
+            data=unicode(u"Ошибка рендеринга документа: %s" % e)
         self.connection.commit()            
         file= open('templates/tmp/temp.html', 'wb')
         file.write(data.encode("utf-8", 'replace'))

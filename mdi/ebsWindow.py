@@ -449,9 +449,16 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
         self.toolBar.setMovable(False)
         self.toolBar.setFloatable(False)
         self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar)
+        
+        self.toolBar2 = QtGui.QToolBar(self)
+        self.toolBar2.setMovable(False)
+        self.toolBar2.setFloatable(False)
+        self.addToolBar(QtCore.Qt.TopToolBarArea,self.toolBar2)
         if initargs.has_key("tbiconsize"):
             self.toolBar.setIconSize(QtCore.QSize(*initargs["tbiconsize"]))
+            self.toolBar2.setIconSize(QtCore.QSize(*initargs["tbiconsize"]))
         
+        self.insertToolBarBreak(self.toolBar2)
         #---------
         self.ebsInterInit(initargs) 
         #---------
