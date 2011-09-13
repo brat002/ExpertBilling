@@ -433,9 +433,9 @@ class SubaccountLinkDialog(QtGui.QDialog):
             headerItem.id=value
         if isinstance(value, basestring):            
             headerItem.setText(unicode(value))     
-        elif type(value)==datetime:
+        elif type(value)==datetime.datetime:
             #.strftime(self.strftimeFormat)   
-            headerItem.setData(0, QtCore.QVariant(value))         
+            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QString(unicode(value.strftime(strftimeFormat))))  
         else:            
             headerItem.setData(0, QtCore.QVariant(value))         
         if id:
