@@ -1333,6 +1333,26 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_nas.setObjectName("comboBox_nas")
         self.gridLayout_14.addWidget(self.comboBox_nas, 0, 1, 1, 1)
         self.gridLayout_17.addWidget(self.groupBox_nas, 0, 0, 1, 2)
+####
+        self.groupBox_ipn_status = QtGui.QGroupBox(self.tab_network_settings)
+        self.groupBox_ipn_status.setObjectName(_fromUtf8("groupBox_ipn_status"))
+        self.horizontalLayout_ipn_status = QtGui.QHBoxLayout(self.groupBox_ipn_status)
+        self.horizontalLayout_ipn_status.setObjectName(_fromUtf8("horizontalLayout_ipn_status"))
+        self.toolButton_ipn_added = QtGui.QToolButton(self.groupBox_ipn_status)
+        self.toolButton_ipn_added.setCheckable(True)
+        self.toolButton_ipn_added.setArrowType(QtCore.Qt.NoArrow)
+        self.toolButton_ipn_added.setObjectName(_fromUtf8("toolButton_ipn_added"))
+        self.horizontalLayout_ipn_status.addWidget(self.toolButton_ipn_added)
+        self.toolButton_ipn_enabled = QtGui.QToolButton(self.groupBox_ipn_status)
+        self.toolButton_ipn_enabled.setCheckable(True)
+        self.toolButton_ipn_enabled.setObjectName(_fromUtf8("toolButton_ipn_enabled"))
+        self.horizontalLayout_ipn_status.addWidget(self.toolButton_ipn_enabled)
+        self.toolButton_ipn_sleep = QtGui.QToolButton(self.groupBox_ipn_status)
+        self.toolButton_ipn_sleep.setCheckable(True)
+        self.toolButton_ipn_sleep.setObjectName(_fromUtf8("toolButton_ipn_sleep"))
+        self.horizontalLayout_ipn_status.addWidget(self.toolButton_ipn_sleep)
+        self.gridLayout_17.addWidget(self.groupBox_ipn_status, 1, 0, 1, 2)
+####
         self.groupBox_accessparameters = QtGui.QGroupBox(self.tab_network_settings)
         self.groupBox_accessparameters.setObjectName("groupBox_accessparameters")
         self.gridLayout_16 = QtGui.QGridLayout(self.groupBox_accessparameters)
@@ -1352,9 +1372,9 @@ class AccountWindow(QtGui.QMainWindow):
         self.checkBox_allow_ipn_with_null = QtGui.QCheckBox(self.groupBox_accessparameters)
         self.checkBox_allow_ipn_with_null.setObjectName("checkBox_allow_ipn_with_null")
         self.gridLayout_16.addWidget(self.checkBox_allow_ipn_with_null, 3, 0, 1, 1)
-        self.gridLayout_17.addWidget(self.groupBox_accessparameters, 1, 0, 1, 2)
+        self.gridLayout_17.addWidget(self.groupBox_accessparameters, 2, 0, 1, 2)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_17.addItem(spacerItem, 2, 0, 1, 1)
+        self.gridLayout_17.addItem(spacerItem, 3, 0, 1, 1)
         
 
         self.tabWidget.addTab(self.tab_network_settings, "")
@@ -1461,6 +1481,9 @@ class AccountWindow(QtGui.QMainWindow):
         self.connect(self.actionDel, QtCore.SIGNAL("triggered()"), self.del_action)
         self.connect(self.toolButton_agreement_print, QtCore.SIGNAL("clicked()"), self.printAgreement)
 
+        self.connect(self.toolButton_ipn_added,QtCore.SIGNAL("clicked()"),self.subaccountAddDel)
+        self.connect(self.toolButton_ipn_enabled,QtCore.SIGNAL("clicked()"),self.subaccountEnableDisable)
+        self.connect(self.toolButton_ipn_sleep,QtCore.SIGNAL("clicked()"),self.subAccountIpnSleep)
         
         self.fixtures()
         if not bhdr.isEmpty():
@@ -1513,7 +1536,11 @@ class AccountWindow(QtGui.QMainWindow):
         self.checkBox_allow_ipn_with_minus.setText(QtGui.QApplication.translate("MainWindow", "Разрешить IPN доступ при отрицательном балансе", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_ipn_with_block.setText(QtGui.QApplication.translate("MainWindow", "Разрешить IPN доступ, если клиент неактивен, заблокирован или находится в режиме простоя", None, QtGui.QApplication.UnicodeUTF8))
         self.checkBox_allow_ipn_with_null.setText(QtGui.QApplication.translate("MainWindow", "Разрешить IPN доступ при нулевом балансе", None, QtGui.QApplication.UnicodeUTF8))
-        self.dateTimeEdit_agreement_date.setDisplayFormat(QtGui.QApplication.translate("Dialog", "dd.MM.yyyy H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        #self.dateTimeEdit_agreement_date.setDisplayFormat(QtGui.QApplication.translate("Dialog", "dd.MM.yyyy H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_ipn_added.setText(QtGui.QApplication.translate("SubAccountDialog", "Не добавлен", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_ipn_enabled.setText(QtGui.QApplication.translate("SubAccountDialog", "Не активен", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_ipn_sleep.setText(QtGui.QApplication.translate("SubAccountDialog", "Управлять доступом", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_ipn_status.setTitle(QtGui.QApplication.translate("SubAccountDialog", "IPN статусы", None, QtGui.QApplication.UnicodeUTF8))
         columns = [u"Название", u"Значение"]
         makeHeaders(columns, self.tableWidget)
         #self.tableWidget.
@@ -1644,6 +1671,63 @@ class AccountWindow(QtGui.QMainWindow):
     def saveHeader(self, *args):
 
         HeaderUtil.saveHeader(self.tableWidget.objectName(), self.tableWidget)
+
+    def subAccountIpnSleep(self):
+        if self.toolButton_ipn_sleep.isChecked()==True:
+            self.toolButton_ipn_sleep.setText(unicode(u"Не управлять доступом"))
+            
+        else:
+            self.toolButton_ipn_sleep.setText(unicode(u"Управлять доступом"))
+            
+    def subaccountEnableDisable(self):
+        if not self.model: return
+        state = True if self.toolButton_ipn_enabled.isChecked() else False
+        if state:
+            if not self.connection.accountActions(self.model.id, None, 'enable'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+                self.toolButton_ipn_enabled.setChecked(QtCore.Qt.Unchecked)
+                self.toolButton_ipn_enabled.setText(unicode(u"Не активен"))
+            else:
+                self.toolButton_ipn_enabled.setText(unicode(u"Активен"))
+        else:
+             if not self.connection.accountActions(self.model.id, None, 'disable'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+                self.toolButton_ipn_enabled.setChecked(QtCore.Qt.Checked)
+                self.toolButton_ipn_enabled.setText(unicode(u"Активен"))
+                #self.toolButton_ipn_enabled.set
+             else:
+                self.toolButton_ipn_enabled.setText(unicode(u"Не активен"))    
+                
+    def subaccountAddDel(self):
+        if not self.model: return
+        state = True if self.toolButton_ipn_added.isChecked() else False
+        if state==True:
+            if not self.connection.accountActions(self.model.id, None,  'create'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+                self.toolButton_ipn_added.setChecked(QtCore.Qt.Unchecked)
+                self.toolButton_ipn_added.setText(unicode(u"Не добавлен"))
+            else:
+                self.toolButton_ipn_added.setText(unicode(u"Добавлен"))
+        else:
+            if not self.connection.accountActions(self.model.id, None,  'delete'):
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+                self.toolButton_ipn_added.setChecked(QtCore.Qt.Checked)
+                self.toolButton_ipn_added.setText(unicode(u"Добавлен"))             
+            else:
+                self.toolButton_ipn_added.setText(unicode(u"Не добавлен"))
+
+    def checkActions(self):
+        if self.model.suspended:
+            self.toolButton_ipn_sleep.setChecked(self.model.ipn_sleep)
+            self.toolButton_ipn_sleep.setText(unicode(u"Не управлять"))
+        
+        if self.model.ipn_added:
+            self.toolButton_ipn_added.setChecked(self.model.ipn_added)
+            self.toolButton_ipn_added.setText(unicode(u"Добавлен"))
+        
+        if self.model.ipn_status:
+            self.toolButton_ipn_enabled.setChecked(self.model.ipn_enabled)
+            self.toolButton_ipn_enabled.setText(unicode(u"Активен"))    
             
     def printAgreement(self):
        
@@ -1782,6 +1866,7 @@ class AccountWindow(QtGui.QMainWindow):
                 
             
         if self.model:
+            self.checkActions()
             #self.comboBox_agreement_num.setText(unicode(self.model.contract))
             self.dateTimeEdit_agreement_date.setDateTime(self.model.created)
             if self.tarif_id!=-3000:            
@@ -1868,8 +1953,9 @@ class AccountWindow(QtGui.QMainWindow):
                 else:
                     model.contract=''
                 #model.user_id=1
-                model.ipn_status = False
-                model.ipn_added = False
+                model.ipn_status = self.toolButton_ipn_enabled.isChecked()
+                model.ipn_added = self.toolButton_ipn_added.isChecked()
+                model.suspended = self.toolButton_ipn_sleep.isChecked()
                 model.disabled_by_limit = False
                 model.vpn_ipinuse_id = None
                 model.ipn_ipinuse_id = None

@@ -3429,7 +3429,9 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             columns=[u'#', u'Имя пользователя',  u"Договор", u'Баланс', u'Кредит', u'ФИО', u'',  u"<=0 баланс, дней назад", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
 
-        print "sql=", self.sql, id       
+        print "sql=", self.sql, id    
+        self.tableWidget.clearContents()  
+        self.tableWidget.setRowCount(0)
         if self.sql:
             accounts = self.connection.get_accounts_for_tilter(self.sql)
             self.sql=''
@@ -3446,8 +3448,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
 
         #print "after acc"
         self.tableWidget.setRowCount(len(accounts))
-        self.tableWidget.clearContents()
         
+
         m_ballance = 0
         disabled_accounts = 0
         now = datetime.datetime.now()
@@ -3506,7 +3508,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                     self.tableWidget.setRangeSelected(QtGui.QTableWidgetSelectionRange(i,0,i,12), True)
             i+=1
             
-        self.statusBar().showMessage(u'Учётных записей:%s. Средний баланс: %s. Общий баланс: %.2f. Неактивно: %s' % (len(accounts), m_ballance/(1 if len(accounts)==0 else len(accounts)), m_ballance, disabled_accounts))
+        self.statusBar().showMessage(u'Учётных записей:%s. Средний баланс: %.4f. Общий баланс: %.4f. Неактивно: %s' % (len(accounts), m_ballance/(1 if len(accounts)==0 else len(accounts)), m_ballance, disabled_accounts))
         self.tableWidget.setColumnHidden(0, False)
         #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
