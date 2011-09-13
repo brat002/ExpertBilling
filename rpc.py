@@ -814,7 +814,20 @@ class RPCServer(object):
             FROM billservice_account AS acc 
             LEFT JOIN billservice_organization as org ON org.account_id=acc.id
             WHERE get_tarif(acc.id) IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) ORDER BY acc.username ASC;""", (add_data['USER_ID'][1],) )
+
+        elif tarif_id==-4000:#Физ лица
+            cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, org.id as org_id, org.name as org_name
+            FROM billservice_account AS acc 
+            LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
+            WHERE %s=get_tarif(acc.id) and %s IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) and acc.id not IN (SELECT account_id FROM billservice_organization) ORDER BY acc.username ASC;""", (tarif_id, tarif_id, add_data['USER_ID'][1],) )
+
+        elif tarif_id==-5000:#Юр лица
+            cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, org.id as org_id, org.name as org_name
+            FROM billservice_account AS acc 
+            LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
+            WHERE %s=get_tarif(acc.id) and %s IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) and acc.id IN (SELECT account_id FROM billservice_organization)  ORDER BY acc.username ASC;""", (tarif_id, tarif_id, add_data['USER_ID'][1],) )
    
+      
         else:
             cur.execute("""SELECT acc.id, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, org.id as org_id, org.name as org_name
             FROM billservice_account AS acc 
