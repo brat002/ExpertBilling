@@ -336,7 +336,8 @@ class statDequeThread(Thread):
                     classes.append(class_)
                     octlist.append([sdict['INPUT'], sdict['OUTPUT']])              
                     
-                self.cur.execute("""SELECT global_stat_fn(%s, %s, %s, %s::timestamp without time zone, %s, %s::int[], %s::bigint[]);""" , (account_id, octets_in, octets_out, sdate, nas_id, classes, octlist))
+                self.cur.execute("""INSERT INTO billservice_globalstat(account_id, bytes_in, bytes_out, datetime, nas_id, classes, classbytes) 
+                                    VALUES(%s, %s, %s, %s::timestamp without time zone, %s, %s::int[], %s::bigint[]);""" , (account_id, octets_in, octets_out, sdate, nas_id, classes, octlist))
                 self.connection.commit()
                 
                 if flags.writeProf:
