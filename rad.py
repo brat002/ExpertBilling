@@ -1035,7 +1035,7 @@ class HandleSAuth(HandleSBase):
                 self.create_cursor()
                 try:
                     self.cursor.execute("""SELECT id from radius_activesession WHERE subaccount_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (subacc.id, nas.acct_interim_interval))
-                    if cursor.fetchone():
+                    if self.cursor.fetchone():
                         vars.cursor_lock.release()
                         logger.warning("Account already have session on this NAS. If this error persist - check your nas settings and perform maintance radius_activesession table", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
                         sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_RADIUS_ONLY_ONE", service=self.access_type, cause=u'Попытка повторной авторизации на сервере доступа', datetime=self.datetime)
