@@ -1718,7 +1718,7 @@ class AccountWindow(QtGui.QMainWindow):
 
     def checkActions(self):
         if self.model.suspended:
-            self.toolButton_ipn_sleep.setChecked(self.model.ipn_sleep)
+            self.toolButton_ipn_sleep.setChecked(self.model.suspended)
             self.toolButton_ipn_sleep.setText(unicode(u"Не управлять"))
         
         if self.model.ipn_added:
