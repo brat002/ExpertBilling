@@ -3430,8 +3430,9 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             makeHeaders(columns, self.tableWidget)
 
         print "sql=", self.sql, id       
-        if id==-2000 and self.sql:
+        if self.sql:
             accounts = self.connection.get_accounts_for_tilter(self.sql)
+            self.sql=''
         elif id!=-2000:
             print "account for tarif", id
             accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
