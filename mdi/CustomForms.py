@@ -1286,7 +1286,7 @@ class tableImageWidget(QtGui.QWidget):
             
 
 class simpleTableImageWidget(QtGui.QWidget):
-    def __init__(self, nops=True, balance_blocked=False, trafic_limit=False, ipn_status=False, ipn_added=False):
+    def __init__(self, nops=True, balance_blocked=False, trafic_limit=False, ipn_status=False, ipn_added=False, online_status=False):
         super(simpleTableImageWidget,self).__init__()
         
         #self.resize(78, 20)
@@ -1321,7 +1321,11 @@ class simpleTableImageWidget(QtGui.QWidget):
         self.toolButton_ipn_added.resize(17,17)
         self.horizontalLayout.addWidget(self.toolButton_ipn_added)
         
-
+        self.toolButton_online_status = QtGui.QToolButton(self)
+        self.toolButton_online_status.setMinimumSize(QtCore.QSize(17, 17))
+        self.toolButton_online_status.setMaximumSize(QtCore.QSize(17, 17))
+        self.toolButton_online_status.resize(17,17)
+        self.horizontalLayout.addWidget(self.toolButton_online_status)
     
         if balance_blocked==True:
             self.toolButton_balance_blocked.setIcon(QtGui.QIcon("images/money_false.png"))
@@ -1351,6 +1355,14 @@ class simpleTableImageWidget(QtGui.QWidget):
         else:
             self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/false.png"))
             self.toolButton_ipn_added.setToolTip(u"Пользователь не добавлен в ACL на NAS")
+
+        if online_status==True: 
+            self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/connect-icon.png"))
+            self.toolButton_ipn_added.setToolTip(u"В мониторе сессии есть активные сессии этого аккаунта")
+        else:
+            self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/disconnect-icon.png"))
+            self.toolButton_ipn_added.setToolTip(u"В мониторе сессии нет активных сессий этого аккаунта")
+            
             
 class CustomWidget(QtGui.QTableWidgetItem):
     def __init__(self, parent, models, *args, **kwargs):
