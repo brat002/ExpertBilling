@@ -1329,32 +1329,32 @@ class simpleTableImageWidget(QtGui.QWidget):
     
         if balance_blocked==True:
             self.toolButton_balance_blocked.setIcon(QtGui.QIcon("images/money_false.png"))
-            self.toolButton_balance_blocked.setToolTip(u"На счету недостаточно средств для активации пользователя в этом расчётном периоде")
+            self.toolButton_balance_blocked.setToolTip(u"На счету недостаточно средств для активации аккаунта в этом расчётном периоде")
         else:
             self.toolButton_balance_blocked.setIcon(QtGui.QIcon("images/money_true.png"))
             self.toolButton_balance_blocked.setToolTip(u"На счету достаточно средств")
         
         if trafic_limit==True: 
             self.toolButton_trafic_limit.setIcon(QtGui.QIcon("images/false.png"))
-            self.toolButton_trafic_limit.setToolTip(u"Пользователь исчерпал лимит трафика")
+            self.toolButton_trafic_limit.setToolTip(u"Аккаунт исчерпал лимит трафика")
         else:
             self.toolButton_trafic_limit.setIcon(QtGui.QIcon("images/ok.png"))
-            self.toolButton_trafic_limit.setToolTip(u"Пользователь не исчерпал лимит трафика")
+            self.toolButton_trafic_limit.setToolTip(u"Аккаунт не исчерпал лимит трафика")
       
         if ipn_status==True: 
             self.toolButton_ipn_status.setIcon(QtGui.QIcon("images/ok.png"))
-            self.toolButton_ipn_status.setToolTip(u"Пользователь активен в ACL на NAS")
+            self.toolButton_ipn_status.setToolTip(u"Аккаунт активен в ACL на NAS")
         else:
             self.toolButton_ipn_status.setIcon(QtGui.QIcon("images/false.png"))
-            self.toolButton_ipn_status.setToolTip(u"Пользователь не активен в ACL на NAS")
+            self.toolButton_ipn_status.setToolTip(u"Аккаунт не активен в ACL на NAS")
             
 
         if ipn_added==True: 
             self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/ok.png"))
-            self.toolButton_ipn_added.setToolTip(u"Пользователь добавлен в ACL на NAS")
+            self.toolButton_ipn_added.setToolTip(u"Аккаунт добавлен в ACL на NAS")
         else:
             self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/false.png"))
-            self.toolButton_ipn_added.setToolTip(u"Пользователь не добавлен в ACL на NAS")
+            self.toolButton_ipn_added.setToolTip(u"Аккаунт не добавлен в ACL на NAS")
 
         if online_status==True: 
             self.toolButton_online_status.setIcon(QtGui.QIcon("images/connect-icon.png"))
