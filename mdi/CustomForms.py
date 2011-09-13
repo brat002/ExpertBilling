@@ -1357,11 +1357,11 @@ class simpleTableImageWidget(QtGui.QWidget):
             self.toolButton_ipn_added.setToolTip(u"Пользователь не добавлен в ACL на NAS")
 
         if online_status==True: 
-            self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/connect-icon.png"))
-            self.toolButton_ipn_added.setToolTip(u"В мониторе сессии есть активные сессии этого аккаунта")
+            self.toolButton_online_status.setIcon(QtGui.QIcon("images/connect-icon.png"))
+            self.toolButton_online_status.setToolTip(u"В мониторе сессии есть активные сессии этого аккаунта")
         else:
-            self.toolButton_ipn_added.setIcon(QtGui.QIcon("images/disconnect-icon.png"))
-            self.toolButton_ipn_added.setToolTip(u"В мониторе сессии нет активных сессий этого аккаунта")
+            self.toolButton_online_status.setIcon(QtGui.QIcon("images/disconnect-icon.png"))
+            self.toolButton_online_status.setToolTip(u"В мониторе сессии нет активных сессий этого аккаунта")
             
             
 class CustomWidget(QtGui.QTableWidgetItem):

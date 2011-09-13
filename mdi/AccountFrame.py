@@ -3472,7 +3472,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 #self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,7,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.online_status))
+                self.tableWidget.setCellWidget(i,7,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.account_online))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 if a.last_balance_null:
                     self.addrow((now-a.last_balance_null).days, i,8, enabled=a.status)
@@ -3490,7 +3490,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 #self.addrow(a.ipn_mac_address, i,8, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,6,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.online_status))
+                self.tableWidget.setCellWidget(i,6,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.account_online))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 if a.last_balance_null:
                     self.addrow((now-a.last_balance_null).days, i,7, enabled=a.status)
