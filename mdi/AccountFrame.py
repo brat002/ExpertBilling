@@ -3262,16 +3262,16 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         return
         
 
-    def addrow(self, value, x, y, id=None, color=None, enabled=True, ctext=None, setdata=False, organization=None, balance=True, balance_value=0):
+    def addrow(self, value, x, y, id=None, color=None, enabled=True, ctext=None, setdata=False, organization=None):
         headerItem = QtGui.QTableWidgetItem()
 
         if value==None:
             value=''
         if color:
-            if balance and float(balance_value)<0:
+            if float(value)<0:
                 headerItem.setBackgroundColor(QtGui.QColor(color))
                 headerItem.setTextColor(QtGui.QColor('#ffffff'))
-            elif balance and float(balance_value)==0:
+            elif float(value)==0:
                 headerItem.setBackgroundColor(QtGui.QColor("#ffdc51"))
                 #headerItem.setTextColor(QtGui.QColor('#ffffff'))
                                 
@@ -3471,7 +3471,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             disabled_accounts += 1 if a.status<>1 else 0
             if id==-1000 or id==-2000 or id==-4000 or id==-5000:
                 self.addrow(a.tarif_name, i,3, enabled=a.status, organization=a.org_id)
-                self.addrow("%.2f" % float(a.ballance), i,4, color="red", enabled=a.status)
+                self.addrow(float(a.ballance), i,4, color="red", enabled=a.status)
                 self.addrow(float(a.credit), i,5, enabled=a.status)
                 self.addrow(a.org_name if a.org_id else a.fullname, i,6, enabled=a.status)
                 #self.addrow(a.nas_name,i,7, enabled=a.status)
@@ -3485,8 +3485,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 #if a.last_balance_null:
                 #    self.addrow((now-a.last_balance_null).days, i,8, enabled=a.status)
                 #print self.format_array(a.ipn_ips)
-                self.addrow(self.format_array(a.ipn_ips), i,8, enabled=a.status)
-                self.addrow(self.format_array(a.vpn_ips), i,9, enabled=a.status)
+                self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
+                self.addrow(self.format_array(a.ipn_ips), i,9, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_macs), i,10, enabled=a.status)
                 self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
                 self.addrow(a.comment, i,12, enabled=a.status)
@@ -3507,8 +3507,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 #if a.last_balance_null:
                 #    self.addrow((now-a.last_balance_null).days, i,7, enabled=a.status)
                 
-                self.addrow(self.format_array(a.ipn_ips), i,7, enabled=a.status)
-                self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
+                self.addrow(self.format_array(a.vpn_ips), i,7, enabled=a.status)
+                self.addrow(self.format_array(a.ipn_ips), i,8, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_macs), i,9, enabled=a.status)
                 self.addrow(a.created.strftime(self.strftimeFormat), i,10, enabled=a.status)
                 self.addrow(a.created, i,11, enabled=a.status)
