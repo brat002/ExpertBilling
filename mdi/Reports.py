@@ -232,7 +232,7 @@ class TransactionsReportEbs(ebsTableWindow):
         #for tr_type in self.transactions_types:
         #    self.comboBox_transactions_type.addItem(tr_type,QtCore.QVariant(i))
             
-    def addrow(self, value, x, y, id=None, promise=False, date = None):
+    def addrow(self, value, x, y, id=None, promise=False, date = None, table=None):
         headerItem = QtGui.QTableWidgetItem()
         if value==None:
             value=""
@@ -255,6 +255,7 @@ class TransactionsReportEbs(ebsTableWindow):
         if id:
             headerItem.id = id
             headerItem.date = date
+            headerItem.table = table
         self.tableWidget.setItem(x,y,headerItem)
              
     def setTableColumns(self):
@@ -299,7 +300,7 @@ class TransactionsReportEbs(ebsTableWindow):
             i=0
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id=item.id, promise = item.promise, date = item.created)
+                self.addrow(i, i, 0, id=item.id, promise = item.promise, date = item.created, table="billservice_transaction")
                 self.addrow(item.username, i, 1, promise = item.promise)
                 self.addrow(item.fullname, i, 2, promise = item.promise)
                 self.addrow(item.created, i, 3, promise = item.promise)
@@ -348,7 +349,7 @@ class TransactionsReportEbs(ebsTableWindow):
             ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_periodicalservicehistory")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(t.get(item.tarif_id), i, 3)
@@ -390,7 +391,7 @@ class TransactionsReportEbs(ebsTableWindow):
             ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u"Сумма", u"Дата"]
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_onetimeservicehistory")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(t.get(item.tarif_id), i, 3)
@@ -426,7 +427,7 @@ class TransactionsReportEbs(ebsTableWindow):
             ["#", u'Аккаунт', u'Тарифный план', u'Сумма', u'Дата']
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_traffictransaction")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(t.get(item.tarif_id), i, 3)
@@ -461,7 +462,7 @@ class TransactionsReportEbs(ebsTableWindow):
             i=0
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_timetransaction")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(t.get(item.tarif_id), i, 3)
@@ -497,7 +498,7 @@ class TransactionsReportEbs(ebsTableWindow):
             sum = 0
             ["#", u'Аккаунт', u'Услуга', u'Тип услуги', u'Сумма', u'Дата']
             for item in items:
-                self.addrow(i, i, 0, id = item.id, date = item.created)
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="billservice_addonservicetransaction")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(item.service_name, i, 3)
@@ -536,7 +537,7 @@ class TransactionsReportEbs(ebsTableWindow):
             sum = 0
             allsumm=0
             for item in items:
-                self.addrow(i, i, 0, id = item.id, date = item.created)
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="qiwi_invoice")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(item.id, i, 3)
@@ -702,12 +703,12 @@ class TransactionsReportEbs(ebsTableWindow):
 #####################
             self.tableWidget.setSortingEnabled(False)
             self.connection.commit()
-            self.tableWidget.setRowCount(len(qiwi_items)+len(addonservice_items)+len(timetransaction_items)+len(traffictransaction_items)+len(period_items)+len(otsh_items)+len(transaction_items)+2)
+            self.tableWidget.setRowCount(len(qiwi_items)+len(addonservice_items)+len(timetransaction_items)+len(traffictransaction_items)+len(period_items)+len(otsh_items)+len(transaction_items))
             i=0
             pos_sum = 0
             neg_sum=0
             for item in qiwi_items:
-                self.addrow(i, i, 0, id = item.id, date = item.created)
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="qiwi_invoice")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(item.tarif_name, i, 3)
@@ -722,7 +723,7 @@ class TransactionsReportEbs(ebsTableWindow):
                     neg_sum +=item.summ
 
             for item in addonservice_items:
-                self.addrow(i, i, 0, id = item.id, date = item.created)
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="billservice_addonservicetransaction")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(item.tarif_name, i, 3)
@@ -737,7 +738,7 @@ class TransactionsReportEbs(ebsTableWindow):
                     neg_sum +=item.summ
                 
             for item in timetransaction_items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_timetransaction")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(tariffs.get(item.tarif_id), i, 3) #!!!
@@ -751,7 +752,7 @@ class TransactionsReportEbs(ebsTableWindow):
                     neg_sum +=item.summ
                 
             for item in traffictransaction_items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_traffictransaction")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(tariff.get(item.tarif_id), i, 3)
@@ -769,7 +770,7 @@ class TransactionsReportEbs(ebsTableWindow):
                     neg_sum +=item.summ
                 
             for item in period_items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_periodicalservicehistory")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(tariff.get(item.tarif_id), i, 3)
@@ -784,7 +785,7 @@ class TransactionsReportEbs(ebsTableWindow):
                     neg_sum +=item.summ
                 
             for item in otsh_items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime)
+                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_onetimeservicehistory")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(tariff.get(item.tarif_id), i, 3)
@@ -798,7 +799,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 i+=1
                 
             for item in transaction_items:
-                self.addrow(i, i, 0, id=item.id, promise = item.promise, date = item.created)
+                self.addrow(i, i, 0, id=item.id, promise = item.promise, date = item.created, table="billservice_transaction")
                 self.addrow(item.username, i, 1, promise = item.promise)
                 self.addrow(item.fullname, i, 2, promise = item.promise)
                 self.addrow(item.tariff_name, i, 3, promise = item.promise)
@@ -842,45 +843,41 @@ class TransactionsReportEbs(ebsTableWindow):
         for r in self.tableWidget.selectedItems():
             #print r.column()
             if r.column()==0:
-                ids.append((r.id, r.date))
+                ids.append((r.id, r.date, r.table))
         return ids
     
    
     def delete_transaction(self):
         ids = self.get_selected_ids()
         #print ids
-        table=self.transactions_types.get(unicode(self.comboBox_transactions_type.itemData(self.comboBox_transactions_type.currentIndex()).toString()))
-        if table=="billservice_transaction":
-            idss = []
-            for id,date in ids:
-                idss.append(id)
-                
-            self.connection.transaction_delete(idss)      
-        elif  table=="billservice_periodicalservicehistory":
-            for id,date in ids:
+        #table=self.transactions_types.get(unicode(self.comboBox_transactions_type.itemData(self.comboBox_transactions_type.currentIndex()).toString()))
+        if not ids:return
+        
+        for id,date,table in ids:
+            #print id,date,table
+            if table=="billservice_transaction":
+                self.connection.transaction_delete(ids=[(id,date)])       
+            elif  table=="billservice_periodicalservicehistory":
+
                 self.connection.command("DELETE FROM billservice_periodicalservicehistory WHERE id=%s and datetime='%s'" % (id, date,))
                 self.connection.commit()
-        elif  table=="billservice_onetimeservicehistory":
-            for id,date in ids:
+            elif  table=="billservice_onetimeservicehistory":
                 self.connection.command("DELETE FROM billservice_onetimeservicehistory WHERE id=%s and datetime='%s'" % (id, date,))
                 self.connection.commit()
-        elif  table=="billservice_addonservicetransaction":
-            for id,date in ids:
+            elif  table=="billservice_addonservicetransaction":
                 self.connection.command("DELETE FROM billservice_addonservicetransaction WHERE id=%s and created='%s'" % (id, date,))
                 self.connection.commit()
-        elif  table=="billservice_traffictransaction":
-            for id,date in ids:
+            elif  table=="billservice_traffictransaction":
                 self.connection.command("DELETE FROM billservice_traffictransaction WHERE id=%s and datetime='%s'" % (id, date,))
                 self.connection.commit()
-        elif  table=="billservice_timetransaction":
-            for id,date in ids:
+            elif  table=="billservice_timetransaction":
                 self.connection.command("DELETE FROM billservice_timetransaction WHERE id=%s and datetime='%s'" % (id, date,))
                 self.connection.commit()         
-        elif  table=="qiwi_invoice":
-            for id,date in ids:
+            elif  table=="qiwi_invoice":
                 self.connection.command("DELETE FROM qiwi_invoice WHERE id=%s and created='%s'" % (id, date,))
                 self.connection.commit()                            
-        self.refresh_table()
+        if ids:
+            self.refresh_table()
      
 
         

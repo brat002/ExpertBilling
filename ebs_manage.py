@@ -204,7 +204,7 @@ def upgrade_db():
     first_time=False
     if not os.path.exists(LAST_SQL):
         first_time=True
-        las_sql_id=0
+        last_sql_id=0
     
     if first_time==True:
         install_config.read(FIRST_TIME_LAST_SQL)
@@ -217,7 +217,7 @@ def upgrade_db():
         
     available_files=[int(x.replace(".sql", '')) for x in os.listdir(SQL_UPGRADE_PATH)]
     
-    for id in xrange(las_sql_id+1, max(available_files)+1):
+    for id in xrange(last_sql_id+1, max(available_files)+1):
         not_write = False
         upgrade_sql="%s%s.sql" % (SQL_UPGRADE_PATH, id)
         if not os.path.exists(upgrade_sql):
