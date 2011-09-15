@@ -1,4 +1,5 @@
 BEGIN;
+DROP TRIGGER a_set_deleted_trg on billservice_tariff;
 ALTER TABLE billservice_account
   DROP CONSTRAINT billservice_account_ipnipinuse_fkey;
 ALTER TABLE billservice_account
@@ -29,8 +30,9 @@ IF (TG_OP = 'DELETE') THEN
     DELETE FROM billservice_subaccount WHERE account_id=OLD.id;
     DELETE FROM billservice_suspendedperiod WHERE account_id=OLD.id;
     DELETE FROM billservice_timetransaction WHERE account_id=OLD.id;
+    DELETE FROM billservice_transaction WHERE account_id=OLD.id;
     DELETE FROM billservice_traffictransaction WHERE account_id=OLD.id;
-    DELETE FROM billservice_x8021 WHERE acount_id=OLD.id;
+    DELETE FROM billservice_x8021 WHERE account_id=OLD.id;
     DELETE FROM radius_activesession WHERE account_id=OLD.id;
     
     RETURN OLD;
@@ -111,7 +113,7 @@ $BODY$
 BEGIN
 
 IF (TG_OP = 'DELETE') THEN
-    DELETE FROM accountprepaystime WHERE account_tarif_id=OLD.id;
+    DELETE FROM billservice_accountprepaystime WHERE account_tarif_id=OLD.id;
     DELETE FROM billservice_accountprepaystrafic WHERE account_tarif_id=OLD.id;
     DELETE FROM billservice_addonservicetransaction WHERE accounttarif_id=OLD.id;
     DELETE FROM billservice_onetimeservicehistory WHERE accounttarif_id=OLD.id;
@@ -431,13 +433,18 @@ BEGIN
 
 IF (TG_OP = 'DELETE') THEN
     DELETE FROM billservice_accountprepaystime WHERE tarif_id=OLD.id;
-    DELETE FROM accountprepaystrafic WHERE tarif_id=OLD.id;
+    DELETE FROM billservice_accountprepaystrafic WHERE tarif_id=OLD.id;
     DELETE FROM billservice_accounttarif WHERE tarif_id=OLD.id;
     DELETE FROM billservice_addonservicetarif WHERE tarif_id=OLD.id;
-    DELETE FROM billservice_netflowstream WHERE tarif_id=OLD.id;
     DELETE FROM billservice_onetimeservice WHERE tarif_id=OLD.id;
     DELETE FROM billservice_periodicalservice WHERE tarif_id=OLD.id;
     DELETE FROM billservice_radiusattrs WHERE tarif_id=OLD.id;
+    DELETE FROM billservice_traffictransmitservice WHERE id=OLD.traffic_transmit_service_id;
+    DELETE FROM billservice_timeaccessservice WHERE id=OLD.time_access_service_id;
+    DELETE FROM billservice_radiustraffic WHERE id=OLD.radius_traffic_transmit_service_id;
+    DELETE FROM billservice_accessparameters WHERE id=OLD.access_parameters_id;
+    DELETE FROM billservice_trafficlimit WHERE tarif_id=OLD.id;
+
     RETURN OLD;
 END IF;
 RETURN NEW;
@@ -471,4 +478,119 @@ ALTER TABLE billservice_x8021
 ALTER TABLE billservice_x8021
   DROP CONSTRAINT   billservice_x8021_nas_id_fkey;
 
+CREATE OR REPLACE FUNCTION nas_trafficclass_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+
+IF (TG_OP = 'DELETE') THEN
+    DELETE FROM nas_trafficnode WHERE traffic_class_id=OLD.id;
+    DELETE FROM billservice_group_trafficclass WHERE trafficclass_id=OLD.id;
+    DELETE FROM billservice_traffictransmitnodes_traffic_class WHERE trafficclass_id=OLD.id;
+    RETURN OLD;
+END IF;
+RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+CREATE TRIGGER nas_trafficclass_trg
+  BEFORE INSERT OR UPDATE OR DELETE
+  ON nas_trafficclass
+  FOR EACH ROW
+  EXECUTE PROCEDURE nas_trafficclass_trg_fn();
+
+CREATE OR REPLACE FUNCTION billservice_traffictransmitservice_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+
+IF (TG_OP = 'DELETE') THEN
+    DELETE FROM billservice_traffictransmitnodes WHERE traffic_transmit_service_id_id=OLD.id;
+    RETURN OLD;
+END IF;
+RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+CREATE TRIGGER billservice_traffictransmitservice_trg
+  BEFORE INSERT OR UPDATE OR DELETE
+  ON billservice_traffictransmitservice
+  FOR EACH ROW
+  EXECUTE PROCEDURE billservice_traffictransmitservice_trg_fn();
+
+CREATE OR REPLACE FUNCTION billservice_traffictransmitnodes_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+
+IF (TG_OP = 'DELETE') THEN
+    DELETE FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=OLD.id;
+    DELETE FROM billservice_traffictransmitnodes_traffic_class WHERE traffictransmitnodes_id=OLD.id;
+    RETURN OLD;
+END IF;
+RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+CREATE TRIGGER billservice_traffictransmitnodes_trg
+  BEFORE INSERT OR UPDATE OR DELETE
+  ON billservice_traffictransmitnodes
+  FOR EACH ROW
+  EXECUTE PROCEDURE billservice_traffictransmitnodes_trg_fn();
+
+
+
+CREATE OR REPLACE FUNCTION billservice_timeaccessservice_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+
+IF (TG_OP = 'DELETE') THEN
+    DELETE FROM billservice_timeaccessnode WHERE time_access_service_id=OLD.id;
+    RETURN OLD;
+END IF;
+RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+CREATE TRIGGER billservice_timeaccessservice_trg
+  BEFORE INSERT OR UPDATE OR DELETE
+  ON billservice_timeaccessservice
+  FOR EACH ROW
+  EXECUTE PROCEDURE billservice_timeaccessservice_trg_fn();
+
+CREATE OR REPLACE FUNCTION billservice_timeperiod_trg_fn()
+  RETURNS trigger AS
+$BODY$
+BEGIN
+
+IF (TG_OP = 'DELETE') THEN
+    DELETE FROM billservice_timeaccessnode WHERE time_period_id=OLD.id;
+    DELETE FROM billservice_traffictransmitnodes_time_nodes WHERE timeperiod_id=OLD.id;
+    DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=OLD.id;
+    DELETE FROM billservice_timespeed WHERE time_id=OLD.id;
+    RETURN OLD;
+END IF;
+RETURN NEW;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+CREATE TRIGGER billservice_timeperiod_trg
+  BEFORE INSERT OR UPDATE OR DELETE
+  ON billservice_timeperiod
+  FOR EACH ROW
+  EXECUTE PROCEDURE billservice_timeperiod_trg_fn();
+
+
 COMMIT;
+

@@ -274,9 +274,10 @@ class RPCServer(object):
 
     
     def transaction_delete(self, ids, cur=None, connection=None, add_data = {}):
-        for i in ids:
+        for id,date in ids:
             #print "delete %s transaction" % i
-            delete_transaction(cur, int(i))
+            #delete_transaction(cur, int(i))
+            cur.execute("DELETE FROM billservice_transaction WHERE id=%s and created=%s;", (id, date))
         connection.commit()
         log_string = u"""Пользователь %s выполнил отмену проводок %s""" % (add_data['USER_ID'][0], str(ids),)
         

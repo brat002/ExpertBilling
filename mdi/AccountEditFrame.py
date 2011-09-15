@@ -1138,6 +1138,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_4.addWidget(self.label_agreement_num, 1, 0, 1, 1)
         self.comboBox_agreement_num = QtGui.QComboBox(self.groupBox_agreement)
         self.comboBox_agreement_num.setEditable(True)
+        #self.comboBox_agreement_num.mouseDoubleClickEvent=self.mouseDoubleClickEvent
         #self.comboBox_agreement_num.setMinimumSize(QtCore.QSize(0, 20))
         self.comboBox_agreement_num.setObjectName("comboBox_agreement_num")
         self.gridLayout_4.addWidget(self.comboBox_agreement_num, 1, 2, 1, 1)
@@ -1485,6 +1486,8 @@ class AccountWindow(QtGui.QMainWindow):
         self.connect(self.toolButton_ipn_enabled,QtCore.SIGNAL("clicked()"),self.subaccountEnableDisable)
         self.connect(self.toolButton_ipn_sleep,QtCore.SIGNAL("clicked()"),self.subAccountIpnSleep)
         
+        shortEditAgreement = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_E), self)
+        
         self.fixtures()
         if not bhdr.isEmpty():
             HeaderUtil.setBinaryHeader(self.tableWidget.objectName(), bhdr)
@@ -1492,6 +1495,8 @@ class AccountWindow(QtGui.QMainWindow):
         else: self.firsttime = False
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
+        self.connect(shortEditAgreement, QtCore.SIGNAL("activated()"), self.edit_agreement)
+        
         
         self.dhcpActions()
         
@@ -1638,6 +1643,10 @@ class AccountWindow(QtGui.QMainWindow):
         
     def refresh_combo_city(self):
         pass
+    
+    def edit_agreement(self):
+        self.comboBox_agreement_num.setDisabled(False)
+        
     def refresh_combo_street(self):
         city_id = self.comboBox_city.itemData(self.comboBox_city.currentIndex()).toInt()[0]
         if city_id==0:
@@ -1839,7 +1848,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_agreement_num.clear()
         i=0
         if not self.model:
-            self.comboBox_agreement_num.addItem(u'-Не указан-', QtCore.QVariant(0))
+            self.comboBox_agreement_num.addItem('', QtCore.QVariant(0))
             i+=1
             for item in templatecontracts:
                 self.comboBox_agreement_num.addItem(item.template, QtCore.QVariant(item.id))
@@ -1853,12 +1862,12 @@ class AccountWindow(QtGui.QMainWindow):
                 self.comboBox_agreement_num.setDisabled(True)
                 i+=1
             else:
-                self.comboBox_agreement_num.addItem(u'-Не указан-', QtCore.QVariant(0))
+                self.comboBox_agreement_num.addItem(u'', QtCore.QVariant(0))
                 i+=1
                 for item in templatecontracts:
                     self.comboBox_agreement_num.addItem(item.template, QtCore.QVariant(item.id))
-                    if tarif_contracttemplate_id==item.id:
-                        self.comboBox_agreement_num.setCurrentIndex(i)
+                    #if tarif_contracttemplate_id==item.id:
+                    #    self.comboBox_agreement_num.setCurrentIndex(i)
                     i+=1
         
 
@@ -1929,6 +1938,10 @@ class AccountWindow(QtGui.QMainWindow):
             for i in xrange(self.tableWidget.rowCount()):
                 self.addrow(self.tableWidget, '', i,1)
 
+    def mouseDoubleClickEvent(self, event):
+        print 123
+        event.accept()
+        
     def accept(self):
         """
         понаставить проверок
@@ -1948,10 +1961,8 @@ class AccountWindow(QtGui.QMainWindow):
 
                 model=Object()
                 model.created = self.dateTimeEdit_agreement_date.currentDate()
-                if contracttemplate_id!=0:
-                    model.contract=unicode(self.comboBox_agreement_num.currentText())
-                else:
-                    model.contract=''
+                print "contracttemplate_id", contracttemplate_id
+
                 #model.user_id=1
                 model.ipn_status = self.toolButton_ipn_enabled.isChecked()
                 model.ipn_added = self.toolButton_ipn_added.isChecked()
@@ -1960,7 +1971,11 @@ class AccountWindow(QtGui.QMainWindow):
                 model.vpn_ipinuse_id = None
                 model.ipn_ipinuse_id = None
                 
-                
+            if contracttemplate_id==0:
+                model.contract=unicode(self.comboBox_agreement_num.currentText())
+                print "model.contract", model.contract
+
+                    
             model.username = unicode(self.lineEdit_username.text())
             
             if model.username=='':
