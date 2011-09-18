@@ -3298,7 +3298,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             headerItem.setText(unicode(value))     
         elif isinstance(value,datetime.datetime):
             #.strftime(self.strftimeFormat)   
-            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QString(unicode(value.strftime(strftimeFormat))))         
+            #headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QString(unicode(value.strftime(strftimeFormat))))         
+            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QDateTime(value))
         else:            
             headerItem.setData(0, QtCore.QVariant(value))         
             '''if ctext is not None:                headerItem.setText(unicode(ctext))            else:                headerItem.setText(unicode(value))'''        
@@ -3434,7 +3435,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             columns=[u'#', u'Аккаунт', u"Договор",u'Тарифный план', u'Баланс', u"Кредит", u'ФИО',   u'',  u"VPN IP", u"IPN IP", u"MAC", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
         else:
-            columns=[u'#', u'Аккаунт',  u"Договор", u'Кредит', u"Кредит", u'ФИО', u'', u"VPN IP", u"IPN IP", u"MAC", u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Аккаунт',  u"Договор", u'Баланс', u"Кредит", u'ФИО', u'', u"VPN IP", u"IPN IP", u"MAC", u"Дата создания", u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
 
         print "sql=", self.sql, id    
@@ -3488,7 +3489,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_ips), i,9, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_macs), i,10, enabled=a.status)
-                self.addrow(a.created.strftime(self.strftimeFormat), i,11, enabled=a.status)
+                self.addrow(a.created, i,11, enabled=a.status)
                 self.addrow(a.comment, i,12, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
             else:
@@ -3510,10 +3511,9 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 self.addrow(self.format_array(a.vpn_ips), i,7, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_ips), i,8, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_macs), i,9, enabled=a.status)
-                self.addrow(a.created.strftime(self.strftimeFormat), i,10, enabled=a.status)
-                self.addrow(a.created, i,11, enabled=a.status)
+                self.addrow(a.created, i,10, enabled=a.status)
                 
-                self.addrow(a.comment, i,12, enabled=a.status)
+                self.addrow(a.comment, i,11, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
                 
             m_ballance += float(a.ballance)
