@@ -384,7 +384,7 @@ class AsyncAuthServ(AsyncUDPServer):
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
                 #authobject.add_mppe_keys()
                 logger.info("Password check: %s", authobject.code)
-                returndata, replypacket = authobject.ReturnPacket(packetfromcore) 
+                returndata, replypacket = authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT) 
                 logger.debug("REPLY packet: %s", repr(replypacket))
     
             elif access_type in ['HotSpot']:
@@ -397,20 +397,20 @@ class AsyncAuthServ(AsyncUDPServer):
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
     
                 logger.info("Password check: %s", authobject.code)
-                returndata, replypacket=authobject.ReturnPacket(packetfromcore) 
+                returndata, replypacket=authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT) 
                 
             elif access_type in ['DHCP'] :
                 coreconnect = HandleSDHCP(packetobject=packetobject)
                 coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                 authobject, packetfromcore = coreconnect.handle()
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
-                returndata, replypacket=authobject.ReturnPacket(packetfromcore)
+                returndata, replypacket=authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT)
             elif access_type in ['lISG'] :
                 coreconnect = HandlelISGAuth(packetobject=packetobject, access_type = access_type)
                 coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                 authobject, packetfromcore = coreconnect.handle()
                 if packetfromcore is None: logger.info("Unknown NAS or Account %s", str(nas_ip)); return
-                returndata, replypacket=authobject.ReturnPacket(packetfromcore)                
+                returndata, replypacket=authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT)                
                 
             else:
                 #-----
@@ -558,7 +558,7 @@ class AuthHandler(Thread):
 
                     logger.info("Password check: %s", authobject.code)
                     #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
-                    returndata, replypacket = authobject.ReturnPacket(packetfromcore) 
+                    returndata, replypacket = authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT) 
                     logger.debug("REPLY packet: %s", repr(replypacket)) 
 
                 elif access_type in ['HotSpot']:
@@ -572,7 +572,7 @@ class AuthHandler(Thread):
                         continue
 
                     logger.info("%s: Password check: %s", (self.getName(), authobject.code))
-                    returndata, replypacket=authobject.ReturnPacket(packetfromcore) 
+                    returndata, replypacket=authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT) 
 
                 elif access_type in ['DHCP'] :
                     coreconnect = HandleSDHCP(packetobject=packetobject)

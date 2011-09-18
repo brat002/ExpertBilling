@@ -86,7 +86,7 @@ class Auth:
                                                               ('\n packet: ', self.packet), ('\n extensions: ', ' | '.join((str(key) +': ' + str(value) for key, value in self.extensions.iteritems())))))) 
 
 
-    def ReturnPacket(self, packetfromcore):
+    def ReturnPacket(self, packetfromcore, mppe_support=False):
         self.attrs=packetfromcore._PktEncodeAttributes()
 
         self.Reply=self.packet.CreateReply()
@@ -108,7 +108,10 @@ class Auth:
             self.Reply.code=self.code
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
                 self.Reply.AddAttribute((311,26),self._MSchapSuccess())
-                self.add_mppe_keys()
+                if mppe_support:
+                    self.add_mppe_keys()
+                else:
+                    self.Reply.AddAttribute((311,7),struct.pack("!I", 0))
             return self.Reply.ReplyPacket(self.attrs), self.Reply
             #return self.Reply.ReplyPacket(), self.Reply
 

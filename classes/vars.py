@@ -325,7 +325,7 @@ class NfrQueues(object):
 class RadVars(Vars):
     __slots__ = ('SESSION_TIMEOUT', 'GIGAWORD', 'DICT_LIST', 'DICT', 'COMMON_VPN', 'IGNORE_NAS_FOR_VPN', 'IGNORE_NAS_FOR_DHCP',\
                  'MAX_DATAGRAM_LEN', 'AUTH_PORT', 'ACCT_PORT', 'AUTH_SOCK_TIMEOUT', 'ACCT_SOCK_TIMEOUT',\
-                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE', 'POLL_TIMEOUT','EAP_ACCESS_TYPES', 'ONLY_ONE', 'ENABLE_SQLLOG','SQLLOG_FLUSH_TIMEOUT', 'SQLLOG_SUCCESS','cursor_lock')
+                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE', 'POLL_TIMEOUT','EAP_ACCESS_TYPES', 'ONLY_ONE', 'ENABLE_SQLLOG','SQLLOG_FLUSH_TIMEOUT', 'SQLLOG_SUCCESS','cursor_lock','MPPE_SUPPORT')
     
     def __init__(self):
         super(RadVars, self).__init__()
@@ -353,6 +353,7 @@ class RadVars(Vars):
         self.SQLLOG_FLUSH_TIMEOUT = 60
         self.SQLLOG_SUCCESS = False
         self.cursor_lock = Lock()
+        self.MPPE_SUPPORT = False
         
     def get_dynamic(self, **kwargs):
         super(RadVars, self).get_dynamic(**kwargs)
@@ -381,6 +382,7 @@ class RadVars(Vars):
         if config.has_option(name, 'enable_sqllog'): self.ENABLE_SQLLOG = config.getboolean(name, 'enable_sqllog')
         if config.has_option(name, 'sqllog_success'): self.SQLLOG_SUCCESS = config.getboolean(name, 'sqllog_success')
         if config.has_option(name, 'sqllog_flush_timeout'): self.SQLLOG_FLUSH_TIMEOUT = config.getint(name, 'sqllog_flush_timeout')
+        if config.has_option(name, 'mppe_support'): self.MPPE_SUPPORT = config.getboolean(name, 'mppe_support')
         if config.has_option(name, 'eap_id_type'):
             self.EAP_ID_TYPE = config.get(name, 'eap_id_type').lower()
         if config.has_option(name, 'eap_access_type'):
