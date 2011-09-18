@@ -382,7 +382,7 @@ class AsyncAuthServ(AsyncUDPServer):
                 authobject, packetfromcore=coreconnect.handle()
                 
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
-    
+                #authobject.add_mppe_keys()
                 logger.info("Password check: %s", authobject.code)
                 returndata, replypacket = authobject.ReturnPacket(packetfromcore) 
                 logger.debug("REPLY packet: %s", repr(replypacket))
@@ -551,7 +551,7 @@ class AuthHandler(Thread):
                     coreconnect.nasip = nas_ip
                     coreconnect.fMem = fMem; coreconnect.caches = self.caches
                     authobject, packetfromcore=coreconnect.handle()
-
+                    
                     if packetfromcore is None: 
                         logger.info("Unknown NAS %s", str(nas_ip))
                         continue
@@ -964,6 +964,7 @@ class HandleSAuth(HandleSBase):
         authobject.plainusername = str(username)
         authobject.plainpassword = str(password)
 
+        
         logger.debug("Account data : %s", repr(acc))
 
         process, ok, left = authobject._HandlePacket()

@@ -13,6 +13,7 @@ from encodings import utf_16_le,hex_codec
 from Crypto.Hash import MD4 as md4
 from Crypto.Hash import SHA as SHA
 from Crypto.Hash import MD5 as md5
+from Crypto.Cipher import XOR
 #import radius.eap.eap_packet as EAP
 from radius.eap.eap_packet import EAP, EAP_Packet, EAP_MD5, EAP_HANDLERS, EAP_TLS, EAP_IDENTITY_CHECK_TYPES
 from collections import defaultdict
@@ -107,6 +108,7 @@ class Auth:
             self.Reply.code=self.code
             if (self.typeauth=='MSCHAP2') and (self.code!=3):
                 self.Reply.AddAttribute((311,26),self._MSchapSuccess())
+                self.add_mppe_keys()
             return self.Reply.ReplyPacket(self.attrs), self.Reply
             #return self.Reply.ReplyPacket(), self.Reply
 
@@ -252,7 +254,92 @@ class Auth:
         return False, 'Password check: bad password: %s' % self.plainusername
 
 
+    def add_mppe_keys(self):
+        magic1 = \
+          "\x54\x68\x69\x73\x20\x69\x73\x20\x74" + \
+          "\x68\x65\x20\x4d\x50\x50\x45\x20\x4d" + \
+          "\x61\x73\x74\x65\x72\x20\x4b\x65\x79"
 
+        SHSpad1 = "\x00"*40
+        SHSpad2 = "\xf2"*40
+
+        Magic2 = \
+          "\x4f\x6e\x20\x74\x68\x65\x20\x63\x6c\x69" + \
+          "\x65\x6e\x74\x20\x73\x69\x64\x65\x2c\x20" + \
+          "\x74\x68\x69\x73\x20\x69\x73\x20\x74\x68" + \
+          "\x65\x20\x73\x65\x6e\x64\x20\x6b\x65\x79" + \
+          "\x3b\x20\x6f\x6e\x20\x74\x68\x65\x20\x73" + \
+          "\x65\x72\x76\x65\x72\x20\x73\x69\x64\x65" + \
+          "\x2c\x20\x69\x74\x20\x69\x73\x20\x74\x68" + \
+          "\x65\x20\x72\x65\x63\x65\x69\x76\x65\x20" + \
+          "\x6b\x65\x79\x2e"
+          
+        Magic3 = \
+          "\x4f\x6e\x20\x74\x68\x65\x20\x63\x6c\x69" + \
+          "\x65\x6e\x74\x20\x73\x69\x64\x65\x2c\x20" + \
+          "\x74\x68\x69\x73\x20\x69\x73\x20\x74\x68" + \
+          "\x65\x20\x72\x65\x63\x65\x69\x76\x65\x20" + \
+          "\x6b\x65\x79\x3b\x20\x6f\x6e\x20\x74\x68" + \
+          "\x65\x20\x73\x65\x72\x76\x65\x72\x20\x73" + \
+          "\x69\x64\x65\x2c\x20\x69\x74\x20\x69\x73" + \
+          "\x20\x74\x68\x65\x20\x73\x65\x6e\x64\x20" + \
+          "\x6b\x65\x79\x2e"
+          
+          
+        masterSessionKey=SHA.new(self._NtPasswordHash(self.plainpassword)+self.NTResponse+magic1).digest()[:16]
+        
+        sendMasterKey = SHA.new(masterSessionKey+SHSpad1+Magic3+SHSpad2).digest()[:16]
+        recvMasterKey = SHA.new(masterSessionKey+SHSpad1+Magic2+SHSpad2).digest()[:16]
+        
+        salt = "\x80\x01"
+
+        #P = '\x0f'+recvMasterKey+'\x00'*15
+        P = struct.pack("!B16s15x", 16,recvMasterKey)
+
+        b1=md5.new(self.secret+self.packet.authenticator+salt).digest()
+        
+        res=''
+        for i in xrange(0,16):
+            xor=XOR.new(P[i])
+            res+=xor.encrypt(b1[i])
+            
+        m=md5.new(self.secret+self.packet.authenticator).digest()
+        
+        for i in xrange(0,16):
+            xor=XOR.new(P[i+16])
+            res+=xor.encrypt(m[i])
+
+        recvkey = salt+res
+
+        
+        P = struct.pack("!B16s15x", 16,sendMasterKey)
+
+        b1=md5.new(self.secret+self.packet.authenticator+salt).digest()
+        
+        res=''
+        for i in xrange(0,16):
+            xor=XOR.new(P[i])
+            res+=xor.encrypt(b1[i])
+            
+        m=md5.new(self.secret+self.packet.authenticator).digest()
+        
+        for i in xrange(0,16):
+            xor=XOR.new(P[i+16])
+            res+=xor.encrypt(m[i])
+            
+
+        sendkey = salt+res
+
+        #encryption policy
+        self.Reply.AddAttribute((311,7),struct.pack("!I", 1))
+        
+        #encryption type
+        self.Reply.AddAttribute((311,8),struct.pack("!I", 6))
+        
+        self.Reply.AddAttribute((311,16),sendkey)
+        self.Reply.AddAttribute((311,17),recvkey)
+        
+        
     def _MSCHAP2Decrypt(self):
         (self.ident, var, self.PeerChallenge, reserved, self.NTResponse)=struct.unpack("!BB16s8s24s",self.packet['MS-CHAP2-Response'][0])
         self.AuthenticatorChallenge=self.packet['MS-CHAP-Challenge'][0]
