@@ -117,5 +117,35 @@ class TrafficNode(models.Model):
         verbose_name = u"Направление трафика"
         verbose_name_plural = u"Направления трафика"
         
-
+class Switch(models.Model):
+    manufacturer = models.CharField(max_length=250)
+    model = models.CharField(max_length=500)
+    name = models.CharField(max_length=500)
+    sn = models.CharField(max_length=500)
+    city = models.IntegerField()
+    street = models.IntegerField()
+    house = models.IntegerField()
+    place = models.TextField()#место установки
+    comment = models.TextField()#
+    ports_count = models.IntegerField()
+    broken_ports = models.TextField()#через запятую
+    uplink_ports = models.TextField()#через запятую
+    protected_ports = models.TextField()#через запятую
+    monitored_ports = model.TextField()
+    snmp_support = models.BooleanField(default=False)
+    snmp_version = models.CharField(max_length=10)#version
+    snmp_community = models.CharField(max_length=128)#
+    ipaddress = models.IPAddressField()
+    macaddress = models.CharField(max_length=32)
+    management_method = models.CharField(max_length=32)
+    option82 = models.BooleanField(default=False)
+    option82_auth_type = models.IntegerField()#1-port, 2 - mac+port, 3-mac
+    secret = models.CharField(max_length=128)
+    identify = models.CharField(max_length=128)
+    username = models.CharField(max_length=256)
+    password = models.CharField(max_length=256)
+    
+    
+    
+    
     
