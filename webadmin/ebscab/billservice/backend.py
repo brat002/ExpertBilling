@@ -36,6 +36,7 @@ class LoginUserBackend(object):
     def authenticate(self, username=None, password=None):
         log.debug("auth called with args: %r"%locals())
         account = get_account(username=username)
+        print account
         if account and check_password(account, password):
             user, created = User.objects.get_or_create(username=username)
             log.debug("User %s was %s" % (user, created and 'created' or 'found'))

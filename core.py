@@ -1181,7 +1181,7 @@ class settlement_period_service_dog(Thread):
                         if not acc.account_status == 1: continue
                         
                         shedl = caches.shedulelog_cache.by_id.get(acc.account_id)
-                        if not shedl: shedl = ShedulelogData(-1, *(None,)*10)
+                        if not shedl: return #shedl = ShedulelogData(-1, *(None,)*10)
                         if 0: assert isinstance(shedl, ShedulelogData)
 
                         time_start, period_end = None, None
