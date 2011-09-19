@@ -634,8 +634,9 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
                     print "ebsWindow.actionCreator addaction error: ", repr(ex)
     
     def saveHeader(self, *args):
+        realm = self.getTreeId()
         if self.tableWidget.rowCount():
-            HeaderUtil.saveHeader(self.setname, self.tableWidget)
+            HeaderUtil.saveHeader("%s%s" % (self.setname,realm<0), self.tableWidget)
             
     def saveSplitter(self, *args):
         SplitterUtil.saveSplitter(self.splname, self.splitter)
