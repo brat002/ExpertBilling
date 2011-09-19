@@ -1072,7 +1072,7 @@ class AddAccountTarif(QtGui.QDialog):
             
             
 class AccountWindow(QtGui.QMainWindow):
-    def __init__(self, connection, tarif_id, ttype, model=None, ipn_for_vpn=False):
+    def __init__(self, connection, tarif_id, ttype, model=None, ipn_for_vpn=False, parent=None):
         super(AccountWindow, self).__init__()
         self.model=model
         self.ttype = ttype
@@ -1081,7 +1081,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.tarif_id = tarif_id
         self.organization = None
         self.bank = None
-        
+        self.parent_window=parent
         self.setObjectName("AccountWindow")
         bhdr = HeaderUtil.getBinaryHeader('AccountWindow-account_info')
         self.resize(851, 680)
@@ -2070,10 +2070,12 @@ class AccountWindow(QtGui.QMainWindow):
             self.model = self.connection.get_model(model.id, "billservice_account")
             self.connection.commit()
             self.fixtures()
-            self.emit(QtCore.SIGNAL("refresh()"))
+            if self.parent_window:
+                self.parent_window.refresh()
             self.actionAdd.setDisabled(False)
             self.actionDel.setDisabled(False)      
-            self.toolButton_agreement_print.setDisabled(False)      
+            self.toolButton_agreement_print.setDisabled(False)     
+            #self.parent.refresh() 
         except Exception, e:
             import traceback
             traceback.print_exc()
