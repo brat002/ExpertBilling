@@ -15,15 +15,15 @@ DECLARE
     tmp record;
     tmp_pass text;
 BEGIN
-    -- Получаем информацию о карточке, которая продана и у которой не истёк срок годности
+    -- РџРѕР»СѓС‡Р°РµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РєР°СЂС‚РѕС‡РєРµ, РєРѕС‚РѕСЂР°СЏ РїСЂРѕРґР°РЅР° Рё Сѓ РєРѕС‚РѕСЂРѕР№ РЅРµ РёСЃС‚С‘Рє СЃСЂРѕРє РіРѕРґРЅРѕСЃС‚Рё
     SELECT id, sold, activated, activated_by_id, nominal, tarif_id, pin, ippool_id INTO card_data_ FROM billservice_card WHERE type=1 and "login"=login_ and sold is not Null and now() between start_date and end_date;
-    -- Если карты нету - return
+    -- Р•СЃР»Рё РєР°СЂС‚С‹ РЅРµС‚Сѓ - return
     IF (card_data_ is NULL) THEN
     RETURN tmp;
 
-    -- Если карта уже продана, но ещё не активирвоана
+    -- Р•СЃР»Рё РєР°СЂС‚Р° СѓР¶Рµ РїСЂРѕРґР°РЅР°, РЅРѕ РµС‰С‘ РЅРµ Р°РєС‚РёРІРёСЂРІРѕР°РЅР°
     ELSIF card_data_.activated_by_id IS NULL and card_data_.sold is not NULL and card_data_.pin=pin_ THEN
-    -- Создаём пользователя
+    -- РЎРѕР·РґР°С‘Рј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
         INSERT INTO billservice_account(username, "password", ipn_status, status, created, ipn_added, allow_webcab, allow_expresscards, assign_dhcp_null, assign_dhcp_block, allow_vpn_null, allow_vpn_block)
         VALUES(login_, pin_, False, 1, now(), False, True, True, False, False, False, False) RETURNING id INTO account_id_;
     INSERT INTO billservice_subaccount(
@@ -33,15 +33,15 @@ BEGIN
     VALUES (account_id_, login_, pin_, 
             False, False, False, '', True, card_data_.ippool_id) RETURNING id INTO subaccount_id_;
 
-    -- Добавлеяем пользователю тариф
+    -- Р”РѕР±Р°РІР»РµСЏРµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ С‚Р°СЂРёС„
         INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(account_id_, card_data_.tarif_id, now());
-        -- Пополняем счёт
+        -- РџРѕРїРѕР»РЅСЏРµРј СЃС‡С‘С‚
         INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created)
-        VALUES('Карта доступа', account_id_, 'ACCESS_CARD', True, card_data_.tarif_id, card_data_.nominal*(-1),'', now());
-    -- Обновляем информацию о карточке
+        VALUES('РљР°СЂС‚Р° РґРѕСЃС‚СѓРїР°', account_id_, 'ACCESS_CARD', True, card_data_.tarif_id, card_data_.nominal*(-1),'', now());
+    -- РћР±РЅРѕРІР»СЏРµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РєР°СЂС‚РѕС‡РєРµ
     UPDATE billservice_card SET activated = now(), activated_by_id = account_id_ WHERE id = card_data_.id;
 
-    -- Выбираем нужную информацию
+    -- Р’С‹Р±РёСЂР°РµРј РЅСѓР¶РЅСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ
     SELECT account.id, subaccount.id, subaccount.password, subaccount.nas_id, bsat.tarif_id,  account.status, 
     account.balance_blocked, (account.ballance+account.credit) as ballance, account.disabled_by_limit, 
     tariff.active, subaccount.ipv4_vpn_pool_id,tariff.vpn_ippool_id,subaccount.vpn_ip_address INTO account_data_ 
@@ -51,7 +51,7 @@ BEGIN
     JOIN billservice_tariff as tariff on tariff.id=bsat.tarif_id
     WHERE  subaccount.id=subaccount_id_;
     RETURN account_data_;
-    -- Если карта продана и уже активирована
+    -- Р•СЃР»Рё РєР°СЂС‚Р° РїСЂРѕРґР°РЅР° Рё СѓР¶Рµ Р°РєС‚РёРІРёСЂРѕРІР°РЅР°
     ELSIF (card_data_.sold is not Null) AND (card_data_.activated_by_id is not Null) THEN
     SELECT account.id, subaccount.id as subaccount_id, subaccount.password, subaccount.nas_id, bsat.tarif_id,  account.status, 
     account.balance_blocked, (account.ballance+account.credit) as ballance, account.disabled_by_limit, 

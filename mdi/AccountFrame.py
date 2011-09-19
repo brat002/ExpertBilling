@@ -3526,6 +3526,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             
         self.statusBar().showMessage(u'Учётных записей:%s. Средний баланс: %.4f. Общий баланс: %.4f. Неактивно: %s' % (len(accounts), m_ballance/(1 if len(accounts)==0 else len(accounts)), m_ballance, disabled_accounts))
         self.tableWidget.setColumnHidden(0, False)
+        HeaderUtil.getHeader("%s%s" % (self.setname,self.getTreeId()<0), self.tableWidget)
         #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
         self.delNodeLocalAction()
         #self.tablewidget.setShowGrid(False)
