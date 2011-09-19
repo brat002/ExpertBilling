@@ -891,6 +891,7 @@ class SystemUser(models.Model):
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255, default='')
     email = models.CharField(verbose_name=u'Фамилия', blank=True, default='',max_length=200)
+    fullname = models.TextField()
     last_ip  = models.CharField(max_length=64, blank=True, null=True)
     last_login = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, default='')
