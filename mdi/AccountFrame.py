@@ -3183,7 +3183,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             ipn_for_vpn=False
             
         #child = AddAccountFrame(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn)
-        child = AccountWindow(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn)
+        child = AccountWindow(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn, parent=self)
         self.parent.workspace.addWindow(child)
         self.connect(child, QtCore.SIGNAL("refresh()"), self.refresh)
         child.show()
@@ -3254,7 +3254,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             ipn_for_vpn=False
         tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
         #addf = AddAccountFrame(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
-        child = AccountWindow(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
+        child = AccountWindow(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn, parent=self)
         
         self.parent.workspace.addWindow(child)
         #self.connect(child, QtCore.SIGNAL("refresh()"), self.refresh)
@@ -3432,10 +3432,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         
         if id==-1000 or id==-2000 or id==-4000 or id==-5000:
             #self.sql=''
-            columns=[u'#', u'Аккаунт', u"Договор",u'Тарифный план', u'Баланс', u"Кредит", u'ФИО',   u'',  u"VPN IP", u"IPN IP", u"MAC", u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Аккаунт', u"Договор",u'Тарифный план', u'Баланс', u"Кредит", u'ФИО',  u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'',  u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
         else:
-            columns=[u'#', u'Аккаунт',  u"Договор", u'Баланс', u"Кредит", u'ФИО', u'', u"VPN IP", u"IPN IP", u"MAC", u"Дата создания", u"Комментарий"]
+            columns=[u'#', u'Аккаунт',  u"Договор", u'Баланс', u"Кредит", u'ФИО', u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'',  u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
 
         print "sql=", self.sql, id    
@@ -3475,21 +3475,23 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 self.addrow(float(a.ballance), i,4, color="red", enabled=a.status)
                 self.addrow(float(a.credit), i,5, enabled=a.status)
                 self.addrow(a.org_name if a.org_id else a.fullname, i,6, enabled=a.status)
+                self.addrow(a.address, i,7, enabled=a.status)
+                self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
+                self.addrow(self.format_array(a.ipn_ips), i,9, enabled=a.status)
+                self.addrow(self.format_array(a.ipn_macs), i,10, enabled=a.status)
                 #self.addrow(a.nas_name,i,7, enabled=a.status)
                 #self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
                 #self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
                 #self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,7,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.account_online))
+                self.tableWidget.setCellWidget(i,11,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.account_online))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 #if a.last_balance_null:
                 #    self.addrow((now-a.last_balance_null).days, i,8, enabled=a.status)
                 #print self.format_array(a.ipn_ips)
-                self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
-                self.addrow(self.format_array(a.ipn_ips), i,9, enabled=a.status)
-                self.addrow(self.format_array(a.ipn_macs), i,10, enabled=a.status)
-                self.addrow(a.created, i,11, enabled=a.status)
+
+                #self.addrow(a.created, i,11, enabled=a.status)
                 self.addrow(a.comment, i,12, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
             else:
@@ -3497,21 +3499,17 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 self.addrow(float("%.2f" % float(a.ballance)), i,3, color="red", enabled=a.status)
                 self.addrow(float(a.credit), i,4, enabled=a.status)
                 self.addrow(a.org_name if a.org_id else a.fullname, i,5, enabled=a.status)
-                #self.addrow(a.nas_name,i,6, enabled=a.status)
-                #self.addrow(a.vpn_ip_address, i,6, enabled=a.status)
-                #self.addrow(a.ipn_ip_address, i,7, enabled=a.status)
-                #self.addrow(a.ipn_mac_address, i,8, enabled=a.status)
-                #self.addrow(a.suspended, i,10, enabled=a.status)
-                #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,6,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.account_online))
+                self.addrow(a.address, i,6, enabled=a.status)
+                self.addrow(self.format_array(a.vpn_ips), i,7, enabled=a.status)
+                self.addrow(self.format_array(a.ipn_ips), i,8, enabled=a.status)
+                self.addrow(self.format_array(a.ipn_macs), i,9, enabled=a.status)
+                self.tableWidget.setCellWidget(i,10,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.account_online))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 #if a.last_balance_null:
                 #    self.addrow((now-a.last_balance_null).days, i,7, enabled=a.status)
                 
-                self.addrow(self.format_array(a.vpn_ips), i,7, enabled=a.status)
-                self.addrow(self.format_array(a.ipn_ips), i,8, enabled=a.status)
-                self.addrow(self.format_array(a.ipn_macs), i,9, enabled=a.status)
-                self.addrow(a.created, i,10, enabled=a.status)
+
+                #self.addrow(a.created, i,10, enabled=a.status)
                 
                 self.addrow(a.comment, i,11, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
