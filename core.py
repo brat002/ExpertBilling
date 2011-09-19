@@ -1296,7 +1296,7 @@ class settlement_period_service_dog(Thread):
                             cur.connection.commit()
                                                     
                         prepaid_time, reset_time = caches.timeaccessservice_cache.by_id.get(acc.time_access_service_id, (None, 0, None))[1:3]
-                        need_time_reset = (reset_time or acc.time_access_service_id is None) and (shedl.prepaid_time_reset is None or (shedl.prepaid_time_reset and shedl.prepaid_time_reset<period_start) or acc.acctf_id!=shedl.accounttarif_id)   
+                        need_time_reset = (reset_time or acc.time_access_service_id is None) and (shedl.prepaid_time_reset is None or (shedl.prepaid_time_reset if shedl.prepaid_time_reset else period_start<period_start) or acc.acctf_id!=shedl.accounttarif_id)   
                         if need_time_reset:
                             #(Если нужно сбрасывать время или нет услуги доступа по времени) И                        
                             #(Никогда не сбрасывали время или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)                          
