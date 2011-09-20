@@ -54,6 +54,7 @@ from LogFrame import LogViewEbs
 from AddressFrame import AddressEbs
 from Reports import TransactionsReportEbs as TransactionsReport
 from TransactionTypeFrame import TransactionTypeEbs
+from SwitchFrame import SwitchEbs
 _reportsdict = [['Статистика по группам',[['report3_users.xml', ['groups'], 'Общий трафик']]],\
                 ['Глобальная статистика',[['report3_users.xml', ['gstat_globals'], 'Общий трафик'],['report3_users.xml', ['gstat_multi'], 'Трафик с выбором классов'], ['report3_pie.xml', ['pie_gmulti'], 'Пирог']]],\
                 ['Другие отчёты',[['report3_sess.xml', ['sessions'], 'Сессии пользователей'], ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли']]]]
@@ -341,6 +342,16 @@ class MainWindow(QtGui.QMainWindow):
                 return
         self.workspace.addWindow(child)
         child.show()
+
+    @connlogin
+    def switchWindow(self):
+        child = SwitchEbs(parent=self,connection=connection)
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        child.show()
     
     #@connlogin
     def about(self):
@@ -453,10 +464,13 @@ class MainWindow(QtGui.QMainWindow):
                 
         self.nasAct = QtGui.QAction(QtGui.QIcon("images/nas.png"), u"&Серверы доступа", self)
         
-        #self.nasAct.setShortcut(self.tr("Ctrl+N"))
         self.nasAct.setStatusTip(u'Серверы доступа')
         self.connect(self.nasAct, QtCore.SIGNAL("triggered()"), self.open)
         
+        self.switchAct = QtGui.QAction(QtGui.QIcon("images/switch.png"), u"&Комутаторы", self)
+        
+        self.switchAct.setStatusTip(u'Комутаторы')
+        self.connect(self.switchAct, QtCore.SIGNAL("triggered()"), self.switchWindow)
        
 
         self.settlementPeriodAct = QtGui.QAction(QtGui.QIcon("images/sp.png"), u'Расчётные периоды', self)
@@ -695,6 +709,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.settingsMenu = self.menuBar().addMenu(u"&Справочники")
         self.settingsMenu.addAction(self.nasAct)
+        self.settingsMenu.addAction(self.switchAct)
         self.settingsMenu.addAction(self.addonserviceAct)
         self.settingsMenu.addAction(self.settlementPeriodAct)
         self.settingsMenu.addAction(self.timePeriodAct)

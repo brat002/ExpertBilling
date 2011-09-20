@@ -131,7 +131,8 @@ class Switch(models.Model):
     broken_ports = models.TextField()#через запятую
     uplink_ports = models.TextField()#через запятую
     protected_ports = models.TextField()#через запятую
-    monitored_ports = model.TextField()
+    monitored_ports = models.TextField()
+    disabled_ports = models.TextField()
     snmp_support = models.BooleanField(default=False)
     snmp_version = models.CharField(max_length=10)#version
     snmp_community = models.CharField(max_length=128)#
@@ -144,6 +145,8 @@ class Switch(models.Model):
     identify = models.CharField(max_length=128)
     username = models.CharField(max_length=256)
     password = models.CharField(max_length=256)
+    enable_port = models.TextField()
+    disable_port = models.TextField()
     
     
     
