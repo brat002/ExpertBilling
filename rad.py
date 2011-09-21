@@ -42,7 +42,7 @@ from classes.rad_class.CardActivateData import CardActivateData
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, split_speed, get_decimals_speeds, flatten, command_string_parser, parse_custom_speed_lst_rad, split_speed, flatten
 from pkgutil import simplegeneric
 from itertools import chain
-from radius.option_parser import parse
+from option_parser import parse
 from utilities.Session import DictSession as util_DictSession
 from utilities.data_utilities import get_db_data as u_get_db_data, simple_list_index as u_simple_list_index
 from utilities.utilities_sql import utilities_sql as u_utilities_sql
