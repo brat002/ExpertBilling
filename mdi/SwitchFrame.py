@@ -238,6 +238,15 @@ class SwitchMainWindow(QtGui.QMainWindow):
         self.actionSave.setObjectName("actionSave")
         self.toolBar.addAction(self.actionSave)
         
+        self.actionRefreshTable = QtGui.QAction(self)
+        self.actionRefreshTable = QtGui.QAction(self)
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap("images/reload.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionRefreshTable.setIcon(icon1)
+        self.actionRefreshTable.setObjectName("actionRefreshTable")
+        self.toolBar.addAction(self.actionRefreshTable)
+        
+        
         self.retranslateUi()
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -279,6 +288,7 @@ class SwitchMainWindow(QtGui.QMainWindow):
         self.connect(self.comboBox_city, QtCore.SIGNAL("currentIndexChanged(int)"), self.refresh_combo_street)
         self.connect(self.comboBox_street, QtCore.SIGNAL("currentIndexChanged(int)"), self.refresh_combo_house)
         self.connect(self.actionSave, QtCore.SIGNAL("triggered()"),  self.accept)
+        self.connect(self.actionRefreshTable, QtCore.SIGNAL("triggered()"),  self.fill_ports)
         tableHeader = self.tableWidget.horizontalHeader()
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
 
@@ -317,7 +327,8 @@ class SwitchMainWindow(QtGui.QMainWindow):
         self.groupBox_ports_status.setTitle(QtGui.QApplication.translate("SwitchMainWindow", "Параметры портов", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("SwitchMainWindow", "Управление", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("SwitchMainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.actionSave.setToolTip(u"Сохранить изменения")
+        self.actionRefreshTable.setToolTip(u"Получить состояние портов с коммутаторе")
         columns = [u"Порт", u"Скорость", u"Включен", u"Аплинк", u"Защита", u"Битый"]
         makeHeaders(columns, self.tableWidget)
 
@@ -371,13 +382,21 @@ class SwitchMainWindow(QtGui.QMainWindow):
         if ports_count==0: return
         print ports_count
         self.tableWidget.setRowCount(ports_count)
-        disabled_ports = self.model.disabled_ports.split(',')
+        port_speed=['']*ports_count
+        if self.model.snmp_support:
+            try:
+                disabled_ports, port_speed = self.connection.get_ports_status(self.model.id)
+            except Exception, e:
+                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Невозможно получить информацию о портах коммутатора. Неверно настоен или не настроен протокол SNMP."))
+                disabled_ports = self.model.disabled_ports.split(',')
+        else:
+            disabled_ports = self.model.disabled_ports.split(',')
         uplink_ports = self.model.uplink_ports.split(',')
         protected_ports = self.model.protected_ports.split(',')
         broken_ports = self.model.broken_ports.split(',')
         for i in xrange(0,ports_count):
             self.addrow(i+1, i, 0)
-            self.addrow(u'100 Fdx', i, 1)
+            self.addrow(ports_count[i], i, 1)
             self.addrow(u'Включен', i, 2, checked=str(i+1) not in disabled_ports)
             self.addrow(u'Аплинк', i, 3, checked=str(i+1) in uplink_ports)
             self.addrow(u'Защита', i, 4, checked=str(i+1) in protected_ports)
@@ -410,7 +429,7 @@ class SwitchMainWindow(QtGui.QMainWindow):
             
 
         self.comboBox_version.clear()
-        methods=((u"v1",0),(u"v2",1),)
+        methods=((u"v1",0),(u"v2c",1),)
         i=0
         for name, value in methods:
             self.comboBox_version.addItem(name, QtCore.QVariant(value))

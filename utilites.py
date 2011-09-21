@@ -368,6 +368,55 @@ def cred(account, subacc, access_type, nas, format_string):
             log_error_('CRED ssh error: %s' % repr(e))
             return False
 
+def switch_action(port, switch, format_string):
+        """
+        
+        """
+        command_dict={
+                             'access_type':unicode(access_type),
+                    }
+        d = account._asdict()
+        for x in d.keys():
+            
+            command_dict.update({
+                          'acc_%s' % x: unicode(d[x]),
+                           })
+        d = nas._asdict()
+        for x in d.keys():
+            
+            command_dict.update({
+                          'nas_%s' % x: unicode(d[x]),
+                           })
+        if subacc :
+            d = subacc._asdict()
+            for x in d.keys():
+                
+                command_dict.update({
+                              'subacc_%s' % x: unicode(d[x]),
+                               })
+
+        command_string=command_string_parser(command_string=format_string, command_dict=command_dict)        
+        if not command_string: return True
+        #print command_string
+        #print command_dict
+        #log_debug_('CRED ssh dictionary: %s' % command_dict) 
+        try:
+            
+            if ssh_exec:
+                sshclient = ssh_execute(nas.login, nas.ipaddress, nas.password, command_string)
+                log_debug_('CRED ssh reply: %s' % sshclient)
+            elif nas.type!='localhost':
+                sshclient=ssh_client(host=nas.ipaddress, username=nas.login, password=nas.password, command = command_string)
+                log_debug_('CRED ssh connected')
+                del sshclient
+            elif nas.type=='localhost':
+                status, output = commands.getstatusoutput(command_string)
+                log_debug_('Local command %s was executed with status %s and output %s' % (command_string, status, output))
+            return True
+        except Exception, e:
+            log_error_('CRED ssh error: %s' % repr(e))
+            return False
+        
 cs_pattern = re.compile('\$[_\w]+')
 def command_string_parser(command_string='', command_dict={}):
     """

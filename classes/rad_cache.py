@@ -126,12 +126,24 @@ class AddonServiceCache(SimpleDictCache):
     datatype = AddonServiceData
     sql = core_sql['addon_service']
     
-class SwitchCache(SimpleDictCache):
+class SwitchCache(CacheItem):
     '''By id'''
-    __slots__ = ()
+    __slots__ = ('by_remote_id','by_id')
     datatype = SwitchData
     sql = rad_sql['switch']
-    
+
+    def __init__(self):
+        super(SwitchCache, self).__init__()
+        self.by_remote_id = {}
+        self.by_id = {}
+        
+    def reindex(self):
+
+        for switch in self.data:
+            self.by_id[switch.id]=switch
+            if switch.remote_id:
+                self.by_remote_id[switch.remote_id]=switch
+            
 class IpPoolCache(SimpleDictCache):
     '''By id'''
     __slots__ = ()
@@ -170,7 +182,7 @@ class AccountAddonServiceCache(CacheItem):
             
             
 class SubAccountsCache(CacheItem):
-    __slots__ = ('by_id', 'by_username', 'by_username_w_ipn_vpn_link', 'by_mac', 'by_ipn_ip', 'by_vpn_ip', 'by_ipn_ip_nas_id')
+    __slots__ = ('by_id', 'by_username', 'by_username_w_ipn_vpn_link', 'by_mac', 'by_ipn_ip', 'by_vpn_ip', 'by_ipn_ip_nas_id', 'by_switch_port')
     
     datatype = SubAccountsData
     sql = rad_sql['subaccounts']
@@ -186,6 +198,7 @@ class SubAccountsCache(CacheItem):
         self.by_vpn_ip = {}
         self.by_ipn_ip_nas_id = {}
         self.by_username_w_ipn_vpn_link = {}
+        self.by_switch_port = {}
         #self.by_username_w_pppoe_mac = {}
         
         for item in self.data:
@@ -204,5 +217,9 @@ class SubAccountsCache(CacheItem):
 
             if item.ipn_mac_address  and item.associate_pppoe_ipn_mac==True:
                 self.by_username_w_ipn_vpn_link[(item.username, item.ipn_mac_address)]=item
+                
+            if item.switch_id and item.switch_port:
+                self.by_switch_port[(item.switch_id,item.switch_port)]=item
+                
             
     
