@@ -1431,8 +1431,8 @@ class HandleSDHCP(HandleSAuth):
                 identify, vlan, module, port=parse('dlink-32xx', self.packetobject.get("Agent-Remote-ID",[''])[0],self.packetobject.get("Agent-Circuit-ID",[''])[0])
                 if identify:
                     subaccount_switch = self.caches.switch_cache.by_remote_id.get(identify)
-  
-            if subaccount_switch.remote_id!=identify or subaccount.switch_port!=port:
+            logger.warning("DHCP option82 remote_id, port %s %s", (identify, port,))
+            if subaccount_switch and subaccount_switch.remote_id!=identify or subaccount.switch_port!=port:
                 sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
                 return self.auth_NA(authobject)  
             
