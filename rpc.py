@@ -617,7 +617,92 @@ class RPCServer(object):
     def rollback(self, cur=None, connection=None, add_data = {}):
         connection.rollback()
 
-    
+    def get_ports_status(self, switch_id, cur=None, connection=None, add_data = {}):
+        
+        cur.execute("SELECT snmp_community, ipaddress, snmp_version FROM nas_switch WHERE snmp_support=True and id=%s", (switch_id,))
+        result = map(Object, cur.fetchall())
+        connection.commit()
+        if result:
+            switch=result[0]
+        else:
+            return []
+        version = '2c' if switch.snmp_version==1 else '1'
+        #oper status .1.3.6.1.2.1.2.2.1.8.
+        status, output = commands.getstatusoutput("snmpwalk -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.7" % (version, switch.snmp_community, switch_ipaddress))
+        if status!=0:return []
+        ports_status={}
+        for line in output.split("\n"):
+            #print 'line=',line
+            if line.rfind(".")==-1:continue
+            try:
+                oid, value=line.split(" ")
+            except Exception, e:
+                print line, e
+                continue
+            
+            id=oid.split(".")[-1]
+            ports_status[id]=value
+        status, output = commands.getstatusoutput("snmpwalk -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.5" % (version, switch.snmp_community, switch_ipaddress))
+        if status!=0:return []
+        ports_speed_status={}
+        for line in output.split("\n"):
+            #print 'line=',line
+            if line.rfind(".")==-1:continue
+            try:
+                oid, value=line.split(" ")
+            except Exception, e:
+                print line, e
+                continue
+            
+            id=oid.split(".")[-1]
+            ports_speed_status[id]=value
+        return ports_speed_status,ports_speed_status
+            
+    def set_ports_status(self, switch_id, ports, cur=None, connection=None, add_data = {}):
+        cur.execute("SELECT snmp_community, ipaddress, snmp_version FROM nas_switch WHERE snmp_support=True and id=%s", (switch_id,))
+        result = map(Object, cur.fetchall())
+        connection.commit()
+        if result:
+            switch=result[0]
+        else:
+            return []
+        version = '2c' if switch.snmp_version==1 else '1'
+        #получили статусы, чтобы было с чем сравнивать
+        status, output = commands.getstatusoutput("snmpwalk -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.7" % (version, switch.snmp_community, switch_ipaddress))
+        if status!=0:return []
+        ports_status={}
+        for line in output.split("\n"):
+            #print 'line=',line
+            if line.rfind(".")==-1:continue
+            try:
+                oid, value=line.split(" ")
+            except Exception, e:
+                print line, e
+                continue
+            
+            id=oid.split(".")[-1]
+            ports_status[id]=value
+            
+        for port, status in ports:
+            if ports_status[port]!=status:
+                status, output = commands.getstatusoutput("snmpset -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.7.%s i %s" % (version, switch.snmp_community, switch_ipaddress, port, 1 if status==True else 2))
+        
+        status, output = commands.getstatusoutput("snmpwalk -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.7" % (version, switch.snmp_community, switch_ipaddress))
+        if status!=0:return []
+        ports_status={}
+        for line in output.split("\n"):
+            #print 'line=',line
+            if line.rfind(".")==-1:continue
+            try:
+                oid, value=line.split(" ")
+            except Exception, e:
+                print line, e
+                continue
+            id=oid.split(".")[-1]
+            ports_status[id]=value
+            
+        return ports_status
+            
     def sql(self, sql, return_response=True, pickler=False, cur=None, connection=None, add_data = {}):
         #print self.ticket
         #print sql

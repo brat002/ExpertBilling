@@ -1420,6 +1420,24 @@ class HandleSDHCP(HandleSAuth):
  
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type='DHCP')
         subacc = self.caches.subaccount_cache.by_mac.get(mac)
+        if subacc:
+            subaccount_switch = self.caches.switch_cache.by_id.get(subacc.switch_id)
+        if self.packetobject.get("Agent-Remote-ID") and self.packetobject.get("Agent-Circuit-ID"):
+            if subacc_switch:
+                identify, vlan, module, port=parse(subaccount_switch.option82_template, self.packetobject.get("Agent-Remote-ID",[''])[0],self.packetobject.get("Agent-Circuit-ID",[''])[0])
+                
+            else:
+                identify, vlan, module, port=parse('dlink-32xx', self.packetobject.get("Agent-Remote-ID",[''])[0],self.packetobject.get("Agent-Circuit-ID",[''])[0])
+                if identify:
+                    subaccount_switch = self.caches.switch_cache.by_remote_id.get(identify)
+  
+            if subaccount_switch.remote_id!=identify or subaccount.switch_port!=port:
+                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
+                return self.auth_NA(authobject)  
+            
+            if not subacc:
+                subacc=self.caches.subaccount_cache.by_switch_port.get((subaccount_switch.id, port))  
+              
         if not subacc:
             logger.warning("Subaccount not found for DHCP request with mac address %s", (mac, ))
             #Не учитывается сервер доступа
@@ -1456,16 +1474,7 @@ class HandleSDHCP(HandleSAuth):
             nas = nasses[0]
         nas_id = nas.id
         self.replypacket=packet.Packet(secret=nas.secret,dict=vars.DICT)
-
-        if self.packetobject.get("Agent-Remote-ID") and self.packetobject.get("Agent-Circuit-ID"):
-            identify, vlan, module, port=parse(nas.type, self.packetobject.get("Agent-Remote-ID",[''])[0],self.packetobject.get("Agent-Circuit-ID",[''])[0])
-            if identify:
-                subaccount_switch = self.caches.switch_cache.by_id.get(subacc.switch_id)
-                #switch = self.caches.nas_cache.by_id.get(subacc.switch_id)
-                if subaccount_switch:
-                    if subaccount_switch.remote_id!=identify or subaccount.switch_port!=port:
-                        sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
-                        return self.auth_NA(authobject)   
+ 
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type='DHCP')
 
 
