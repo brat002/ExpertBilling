@@ -1423,7 +1423,7 @@ class HandleSDHCP(HandleSAuth):
         if subacc:
             subaccount_switch = self.caches.switch_cache.by_id.get(subacc.switch_id)
         if self.packetobject.get("Agent-Remote-ID") and self.packetobject.get("Agent-Circuit-ID"):
-            if subacc_switch:
+            if subaccount_switch:
                 identify, vlan, module, port=parse(subaccount_switch.option82_template, self.packetobject.get("Agent-Remote-ID",[''])[0],self.packetobject.get("Agent-Circuit-ID",[''])[0])
                 
             else:
