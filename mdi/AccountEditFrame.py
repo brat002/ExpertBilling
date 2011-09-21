@@ -583,9 +583,12 @@ class SubaccountLinkDialog(QtGui.QDialog):
         for nas in nasses:
             self.comboBox_nas.addItem(nas.name, QtCore.QVariant(nas.id))
 
+        switches=self.connection.sql("SELECT id, name FROM nas_switch ORDER BY name;")
+        self.connection.commit()
+        
         self.comboBox_link_switch_id.addItem(u"---Не указан---", QtCore.QVariant(0))
-        for nas in nasses:
-            self.comboBox_link_switch_id.addItem(nas.name, QtCore.QVariant(nas.id))
+        for switch in switches:
+            self.comboBox_link_switch_id.addItem(switch.name, QtCore.QVariant(switch.id))
             
         #print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
         if self.model:
