@@ -1420,6 +1420,7 @@ class HandleSDHCP(HandleSAuth):
  
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type='DHCP')
         subacc = self.caches.subaccount_cache.by_mac.get(mac)
+        subaccount_switch=None
         if subacc:
             subaccount_switch = self.caches.switch_cache.by_id.get(subacc.switch_id)
         if self.packetobject.get("Agent-Remote-ID") and self.packetobject.get("Agent-Circuit-ID"):
