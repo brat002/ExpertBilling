@@ -4,6 +4,7 @@ from cache_sql import rad_sql, core_sql
 from collections import defaultdict
 from rad_class.AccountData import AccountData
 from rad_class.NasData import NasData
+from rad_class.SwitchData import SwitchData
 from rad_class.DefaultSpeedData import DefaultSpeedData
 from rad_class.SpeedData import SpeedData
 from rad_class.SpeedlimitData import SpeedlimitData
@@ -18,7 +19,7 @@ from common.AccountAddonServiceData import AccountAddonServiceData
 from core_cache import AddonServiceCache, AddonServiceTarifCache, AccessParametersCache
 
 class RadCaches(CacheCollection):
-    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache', 'subaccount_cache','ippool_cache')
+    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache', 'subaccount_cache','ippool_cache', 'switch_cache')
     
     def __init__(self, date, fMem):
         super(RadCaches, self).__init__(date)
@@ -33,7 +34,8 @@ class RadCaches(CacheCollection):
         self.accountaddonservice_cache = AccountAddonServiceCache()
         self.subaccount_cache = SubAccountsCache()
         self.ippool_cache = IpPoolCache()
-        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache, self.subaccount_cache, self.ippool_cache]
+        self.switch_cache = SwitchCache()
+        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache, self.subaccount_cache, self.ippool_cache, self.switch_cache]
 
 
 class AccountCache(CacheItem):
@@ -123,6 +125,12 @@ class AddonServiceCache(SimpleDictCache):
     __slots__ = ()
     datatype = AddonServiceData
     sql = core_sql['addon_service']
+    
+class SwitchCache(SimpleDictCache):
+    '''By id'''
+    __slots__ = ()
+    datatype = SwitchData
+    sql = rad_sql['switch']
     
 class IpPoolCache(SimpleDictCache):
     '''By id'''
