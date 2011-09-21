@@ -1432,11 +1432,12 @@ class HandleSDHCP(HandleSAuth):
                 if identify:
                     subaccount_switch = self.caches.switch_cache.by_remote_id.get(identify)
             logger.warning("DHCP option82 remote_id, port %s %s", (identify, port,))
-            if subaccount_switch and subaccount_switch.remote_id!=identify or subacc.switch_port!=port:
-                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
-                return self.auth_NA(authobject)  
+            if subaccount_switch:
+                if subaccount_switch and subaccount_switch.remote_id!=identify or subacc.switch_port!=port:
+                    sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
+                    return self.auth_NA(authobject)  
             
-            if not subacc:
+            if not subacc and subaccount_switch:
                 subacc=self.caches.subaccount_cache.by_switch_port.get((subaccount_switch.id, port))  
               
         if not subacc:
