@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>707</width>
-    <height>700</height>
+    <height>701</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -280,7 +280,7 @@
           </property>
          </widget>
         </item>
-        <item row="10" column="0" colspan="6">
+        <item row="11" column="0" colspan="6">
          <widget class="QGroupBox" name="groupBox_allowuserblock">
           <property name="title">
            <string>Разрешить пользовательскую блокировку</string>
@@ -322,7 +322,7 @@
           </layout>
          </widget>
         </item>
-        <item row="11" column="0">
+        <item row="12" column="0">
          <widget class="QLabel" name="tarif_description_label">
           <property name="toolTip">
            <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
@@ -338,7 +338,7 @@
           </property>
          </widget>
         </item>
-        <item row="13" column="0" colspan="6">
+        <item row="14" column="0" colspan="6">
          <widget class="QTextEdit" name="tarif_description_edit">
           <property name="toolTip">
            <string>Текстовое описание тарифного плана для печати накладных и работы с договорами</string>
@@ -351,7 +351,7 @@
           </property>
          </widget>
         </item>
-        <item row="14" column="0">
+        <item row="15" column="0">
          <widget class="QCheckBox" name="tarif_status_edit">
           <property name="toolTip">
            <string>Признак возможности работы абонента на данном тарифном плане</string>
@@ -500,7 +500,7 @@
           </property>
          </widget>
         </item>
-        <item row="8" column="1" colspan="5">
+        <item row="9" column="1" colspan="5">
          <widget class="QCheckBox" name="checkBox_allow_expresscards_activation">
           <property name="toolTip">
            <string>Разрешить активацию карт экспресс-оплаты на данном тарифном плане.</string>
@@ -513,7 +513,7 @@
           </property>
          </widget>
         </item>
-        <item row="9" column="1" colspan="5">
+        <item row="10" column="1" colspan="5">
          <widget class="QCheckBox" name="checkBox_allow_moneytransfer">
           <property name="toolTip">
            <string>Разрешить активацию карт экспресс-оплаты на данном тарифном плане.</string>
@@ -523,6 +523,29 @@
           </property>
           <property name="text">
            <string>Разрешить услугу &quot;Поделись балансом&quot;</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1" colspan="4">
+         <widget class="QComboBox" name="comboBox_vpn_guest_ippool">
+          <property name="toolTip">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+          <property name="whatsThis">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <widget class="QLabel" name="label_vpn_guest_ippool">
+          <property name="toolTip">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+          <property name="whatsThis">
+           <string>IPv4 пул по-умолчанию для динамической выдачи IP адресов клиентам при VPN авторизации.</string>
+          </property>
+          <property name="text">
+           <string>Гостевой VPN пул</string>
           </property>
          </widget>
         </item>
