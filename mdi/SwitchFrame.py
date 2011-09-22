@@ -396,7 +396,7 @@ class SwitchMainWindow(QtGui.QMainWindow):
         broken_ports = self.model.broken_ports.split(',')
         for i in xrange(0,ports_count):
             self.addrow(i+1, i, 0)
-            self.addrow(ports_count[i], i, 1)
+            self.addrow(port_speed[i], i, 1)
             self.addrow(u'Включен', i, 2, checked=str(i+1) not in disabled_ports)
             self.addrow(u'Аплинк', i, 3, checked=str(i+1) in uplink_ports)
             self.addrow(u'Защита', i, 4, checked=str(i+1) in protected_ports)
