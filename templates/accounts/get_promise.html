@@ -3,7 +3,39 @@
 {% load custom_filters %}
 
 {% block content %}
-{{error_message}}
+<center><h2>{{error_message}}</h2></center>
+{% if allow_ballance_transfer %}
+<form method = "POST" action="">
+<table class="wide extra_table promise_table" cellpadding="0" cellspacing="0">
+    <tr>
+        <th class="white bold s-11 blue_caption a-left ie" colspan="2">Перевести средства другому пользователю.</th>
+    </tr>
+    <tr>
+        <td class="coll_bg caption">
+        	Сумма
+        </td>
+        <td class="left_border ">
+        	<input type = "input" name = "sum">(макс {{allow_transfer_summ}} {{ CURRENCY }})
+        </td>
+    </tr>
+    <tr>
+        <td class="coll_bg caption">
+        	Логин адресата
+        </td>
+        <td class="left_border ">
+        	<input type = "input" name = "username">
+        </td>
+    </tr>
+    <tr>
+    <td colspan="2" class="no_border">
+    <input value="Ок" type="submit" class="pass_button f-right promise_button">
+    </td>
+    </tr>
+</table>
+<input type="hidden" name="operation" value='moneytransfer'>
+</form>
+{% endif %}
+
 {% if not disable_promise %}
 <form method = "POST" action="">
 <table class="wide extra_table promise_table" cellpadding="0" cellspacing="0">
@@ -32,7 +64,7 @@
     </td>
     </tr>
 </table>
-
+<input type="hidden" name='operation' value="promise">
 </form>
 {% endif %}
 {% if last_promises %}
