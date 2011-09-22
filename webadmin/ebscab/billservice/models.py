@@ -1031,7 +1031,7 @@ class GroupStat(models.Model):
     account = models.ForeignKey(Account)
     bytes = models.IntegerField()
     datetime = models.DateTimeField()
-    trafficclass = models.ForeignKey(TrafficClass, blank=True, null=True)
+    #trafficclass = models.ForeignKey(TrafficClass, blank=True, null=True)
     
     
 #class GroupStatAll(models.Model):

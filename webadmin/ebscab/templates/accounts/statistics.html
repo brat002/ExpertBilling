@@ -60,7 +60,13 @@
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.traffic_transaction_date_to }}');
 		
-		
+		jQuery(' #traffic_volume_date_from').datepicker({
+	        dateFormat: dtFormat,
+	    }).attr('value', '{{ date_id_dict.traffic_volume_date_from }}');
+		jQuery(' #traffic_volume_date_to').datepicker({
+	        dateFormat: dtFormat,
+	    }).attr('value', '{{ date_id_dict.traffic_volume_date_to }}');
+	    
 		jQuery(' #active_session_date_from').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.active_session_date_from }}');
@@ -398,7 +404,55 @@
 			</td>
 		</tr>
 		{% endif %}
-		
+		{% if group_stat %}
+		<tr>
+			<th class="white bold s-11 blue_caption">
+				<div class="f-right statistics_link white">
+					<form method="get" action="/traffic/volume/info/" id="traffic_volume">
+						<div class="range">
+							<ul>
+								<li>
+									<label>с даты:</label> <input type="text" name="date_from" id="traffic_volume_date_from" />
+								</li>
+								<li>
+									<label>по дату:</label> <input type="text" name="date_to" id="traffic_volume_date_to" />
+								</li>
+							</ul>
+						</div>
+					</form>
+					<a id="traffic_volume_data_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic_volume_data')">&nbsp;</a>
+					<a href="#" onclick="document.getElementById('traffic_volume').submit(); return false;">Фильтровать</a>
+					<a href="/traffic/volume/info/">Архив</a>
+				</div>
+				<div class="f-left statistics_title">Объём трафика</div>
+			</th>
+		</tr>
+		<tr>
+			<td id="traffic_volume_data">
+				<table class="wide extra_table" cellpadding="0" cellspacing="0">
+					<tr>
+						<th>Направление</th>
+						<th>Год</th>
+						<th>Месяц</th>
+						<th>День</th>
+						<th>Объём</th>
+					</tr>
+					{% for gpst in group_stat %}
+						<tr>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ gpst.group_name }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ gpst.year }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ gpst.month }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ gpst.day }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_format gpst.bytes %}&nbsp;</td>
+						</tr>
+					{% endfor %}
+					<tr>
+						<td colspan="2" class="no_border">&nbsp;</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		{% endif %}
 		
 		
 		
