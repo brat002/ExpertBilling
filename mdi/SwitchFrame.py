@@ -457,7 +457,7 @@ class SwitchMainWindow(QtGui.QMainWindow):
                 if self.model.option82_template==value:
                     self.comboBox_option82_template.setCurrentIndex(i)
             i+=1
-            
+        self.actionRefreshTable.setDisabled(True)    
         if self.model:
             
             self.refresh_combo_street()
@@ -485,6 +485,8 @@ class SwitchMainWindow(QtGui.QMainWindow):
             self.lineEdit_enable_port_command.setText(self.model.enable_port)
             self.lineEdit_disable_port_command.setText(self.model.disable_port)
             
+            if self.model.snmp_support:
+                self.actionRefreshTable.setDisabled(False)    
             self.fill_ports()
         
     def accept(self):
