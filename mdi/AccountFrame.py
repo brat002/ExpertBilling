@@ -71,7 +71,7 @@ class TarifWindow(QtGui.QMainWindow):
         self.model=model
         self.parent=parent
         self.setObjectName(_fromUtf8("TarifWindow"))
-        self.resize(707, 700)
+        self.resize(707, 701)
         self.centralwidget = QtGui.QWidget(self)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.gridLayout_2 = QtGui.QGridLayout(self.centralwidget)
@@ -174,17 +174,17 @@ class TarifWindow(QtGui.QMainWindow):
         self.lineEdit_userblock_minballance = QtGui.QLineEdit(self.groupBox_allowuserblock)
         self.lineEdit_userblock_minballance.setObjectName(_fromUtf8("lineEdit_userblock_minballance"))
         self.gridLayout_10.addWidget(self.lineEdit_userblock_minballance, 1, 1, 1, 1)
-        self.gridLayout_28.addWidget(self.groupBox_allowuserblock, 10, 0, 1, 6)
+        self.gridLayout_28.addWidget(self.groupBox_allowuserblock, 11, 0, 1, 6)
         self.tarif_description_label = QtGui.QLabel(self.tab_1)
         self.tarif_description_label.setObjectName(_fromUtf8("tarif_description_label"))
-        self.gridLayout_28.addWidget(self.tarif_description_label, 11, 0, 1, 1)
+        self.gridLayout_28.addWidget(self.tarif_description_label, 12, 0, 1, 1)
         self.tarif_description_edit = QtGui.QTextEdit(self.tab_1)
         self.tarif_description_edit.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByKeyboard|QtCore.Qt.LinksAccessibleByMouse|QtCore.Qt.TextBrowserInteraction|QtCore.Qt.TextEditable|QtCore.Qt.TextEditorInteraction|QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.tarif_description_edit.setObjectName(_fromUtf8("tarif_description_edit"))
-        self.gridLayout_28.addWidget(self.tarif_description_edit, 13, 0, 1, 6)
+        self.gridLayout_28.addWidget(self.tarif_description_edit, 14, 0, 1, 6)
         self.tarif_status_edit = QtGui.QCheckBox(self.tab_1)
         self.tarif_status_edit.setObjectName(_fromUtf8("tarif_status_edit"))
-        self.gridLayout_28.addWidget(self.tarif_status_edit, 14, 0, 1, 1)
+        self.gridLayout_28.addWidget(self.tarif_status_edit, 15, 0, 1, 1)
         self.components_groupBox = QtGui.QGroupBox(self.tab_1)
         self.components_groupBox.setObjectName(_fromUtf8("components_groupBox"))
         self.gridLayout_9 = QtGui.QGridLayout(self.components_groupBox)
@@ -222,10 +222,16 @@ class TarifWindow(QtGui.QMainWindow):
         self.gridLayout_28.addWidget(self.toolButton, 3, 4, 1, 1)
         self.checkBox_allow_expresscards_activation = QtGui.QCheckBox(self.tab_1)
         self.checkBox_allow_expresscards_activation.setObjectName(_fromUtf8("checkBox_allow_expresscards_activation"))
-        self.gridLayout_28.addWidget(self.checkBox_allow_expresscards_activation, 8, 1, 1, 5)
+        self.gridLayout_28.addWidget(self.checkBox_allow_expresscards_activation, 9, 1, 1, 5)
         self.checkBox_allow_moneytransfer = QtGui.QCheckBox(self.tab_1)
         self.checkBox_allow_moneytransfer.setObjectName(_fromUtf8("checkBox_allow_moneytransfer"))
-        self.gridLayout_28.addWidget(self.checkBox_allow_moneytransfer, 9, 1, 1, 5)
+        self.gridLayout_28.addWidget(self.checkBox_allow_moneytransfer, 10, 1, 1, 5)
+        self.comboBox_vpn_guest_ippool = QtGui.QComboBox(self.tab_1)
+        self.comboBox_vpn_guest_ippool.setObjectName(_fromUtf8("comboBox_vpn_guest_ippool"))
+        self.gridLayout_28.addWidget(self.comboBox_vpn_guest_ippool, 8, 1, 1, 4)
+        self.label_vpn_guest_ippool = QtGui.QLabel(self.tab_1)
+        self.label_vpn_guest_ippool.setObjectName(_fromUtf8("label_vpn_guest_ippool"))
+        self.gridLayout_28.addWidget(self.label_vpn_guest_ippool, 8, 0, 1, 1)
         self.tabWidget.addTab(self.tab_1, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName(_fromUtf8("tab_2"))
@@ -857,7 +863,9 @@ class TarifWindow(QtGui.QMainWindow):
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
         self.actionRefresh.setText(QtGui.QApplication.translate("MainWindow", "Обновить", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Сохранить", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.comboBox_vpn_guest_ippool.setToolTip(QtGui.QApplication.translate("MainWindow", "IPv4 пул адреса из которого будут выдаваться абонентам, если их баланс будет <=0 или они будут заблокированы.", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_vpn_guest_ippool.setWhatsThis(QtGui.QApplication.translate("MainWindow", "IPv4 пул адреса из которого будут выдаваться абонентам, если их баланс будет <=0 или они будут заблокированы.", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_vpn_guest_ippool.setText(QtGui.QApplication.translate("MainWindow", "Гостевой VPN пул", None, QtGui.QApplication.UnicodeUTF8))
 
 
     def tabordering(self):
@@ -1838,13 +1846,19 @@ class TarifWindow(QtGui.QMainWindow):
 
         self.comboBox_vpn_ippool.addItem(unicode(u"--Без пула--"))
         self.comboBox_vpn_ippool.setItemData(0, QtCore.QVariant(0))
+        self.comboBox_vpn_guest_ippool.addItem(unicode(u"--Без пула--"))
+        self.comboBox_vpn_guest_ippool.setItemData(0, QtCore.QVariant(0))
         i=1
         for item in items:
             self.comboBox_vpn_ippool.addItem(unicode(item.name))
             self.comboBox_vpn_ippool.setItemData(i, QtCore.QVariant(item.id))
+            self.comboBox_vpn_guest_ippool.addItem(unicode(item.name),QtCore.QVariant(item.id))
+                        
             if self.model:
                 if self.model.vpn_ippool_id==item.id:
-                    self.comboBox_vpn_ippool.setCurrentIndex(i)            
+                    self.comboBox_vpn_ippool.setCurrentIndex(i)    
+                if self.model.vpn_guest_ippool_id==item.id:
+                    self.comboBox_vpn_guest_ippool.setCurrentIndex(i)    
             i+=1   
             
     def fixtures(self):
@@ -2324,6 +2338,7 @@ class TarifWindow(QtGui.QMainWindow):
             model.allow_express_pay = self.checkBox_allow_expresscards_activation.checkState()==2
             model.contracttemplate_id = self.comboBox_contracttemplate.itemData(self.comboBox_contracttemplate.currentIndex()).toInt()[0] if self.comboBox_contracttemplate.itemData(self.comboBox_contracttemplate.currentIndex()).toInt()[0] else None
             model.vpn_ippool_id = self.comboBox_vpn_ippool.itemData(self.comboBox_vpn_ippool.currentIndex()).toInt()[0] if self.comboBox_vpn_ippool.itemData(self.comboBox_vpn_ippool.currentIndex()).toInt()[0] else None
+            model.vpn_guest_ippool_id = self.comboBox_vpn_guest_ippool.itemData(self.comboBox_vpn_guest_ippool.currentIndex()).toInt()[0] if self.comboBox_vpn_guest_ippool.itemData(self.comboBox_vpn_guest_ippool.currentIndex()).toInt()[0] else None
             access_parameters.access_type = unicode(self.access_type_edit.currentText())
             access_parameters.access_time_id = self.connection.get("SELECT * FROM billservice_timeperiod WHERE name='%s'" % unicode(self.access_time_edit.currentText())).id
             access_parameters.max_limit = u"%s/%s" % (self.speed_max_in_edit.text() or 0, self.speed_max_out_edit.text() or 0)
