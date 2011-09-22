@@ -32,7 +32,7 @@ from lib.http import JsonResponse
 
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
 
-from billservice.models import SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime, SuspendedPeriod
+from billservice.models import SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime, SuspendedPeriod, GroupStat
 
 from billservice.forms import LoginForm, PasswordForm, SimplePasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
@@ -410,6 +410,45 @@ def transaction(request):
             'active_class':'statistic-img',
             }
 
+@render_to('accounts/groupstat.html')
+@login_required
+def traffic_volume(request):
+    from lib.paginator import SimplePaginator
+    is_range, addon_query = addon_queryset(request, 'gpst', 'datetime')
+    #print is_range, addon_query
+    user = request.user.account
+    cursor = connection.cursor()
+    sql="""
+        SELECT (SELECT name FROM billservice_group WHERE id=group_id) as group_name,sum(bytes), date_part('day',datetime) as dt_day, date_part('month',datetime) as dt_month, date_part('year',datetime) as dt_year  
+        FROM billservice_groupstat 
+        WHERE account_id=%s %%s
+        GROUP BY date_part('year',datetime),date_part('month',datetime),date_part('day',datetime), group_name ORDER BY dt_year,dt_month, dt_day DESC;
+    
+    """ % (user.id,)
+    
+    if is_range and addon_query.has_key('datetime__gte') and addon_query.has_key('datetime__lte'):
+        sql = sql % " and datetime between '%s' and '%s' " % (addon_query['datetime__gte'],addon_query['datetime__lte'])
+    else:
+        sql = sql % ' '
+    cursor.execute(sql)
+    items=cursor.fetchall()
+    group_stat=[]
+    summ_bytes = 0
+    for item in items:
+        group_stat.append({'day':int(item[2]),'month':int(item[3]),'year':int(item[4]),'group_name':item[0],'bytes':item[1],})
+        summ_bytes += item[1]
+
+
+    rec_count = len(items)+1
+    return {
+            'group_stat':group_stat,
+            #'paginator': paginator,
+            'is_range':is_range,
+            'summ_bytes':summ_bytes,
+            'rec_count':rec_count,
+            'active_class':'statistic-img',
+            }
+    
 @render_to('accounts/vpn_session.html')
 @login_required
 def vpn_session(request):
@@ -831,6 +870,18 @@ def statistics(request):
     addon_service_transaction = AddonServiceTransaction.objects.filter(account=user).order_by('-created')[:8]
     one_time_history = OneTimeServiceHistory.objects.filter(account=user).order_by('-datetime')[:8]
     traffic_transaction = TrafficTransaction.objects.filter(account=user).order_by('-datetime')[:8]
+    #groupstat = GroupStat.objects.filter(account=user).order_by('-datetime')[:8]
+    cursor = connection.cursor()
+    cursor.execute("""
+        SELECT (SELECT name FROM billservice_group WHERE id=group_id) as group_name,sum(bytes), date_part('day',datetime) as dt_day, date_part('month',datetime) as dt_month, date_part('year',datetime) as dt_year  
+        FROM billservice_groupstat WHERE account_id=%s GROUP BY date_part('year',datetime),date_part('month',datetime),date_part('day',datetime), group_name ORDER BY dt_year,dt_month, dt_day DESC;
+    
+    """, (user.id,))
+    items=cursor.fetchall()
+    group_stat=[]
+    for item in items:
+        group_stat.append({'day':int(item[2]),'month':int(item[3]),'year':int(item[4]),'group_name':item[0],'bytes':item[1],})
+    #connection.commit()
     if request.session.has_key('date_id_dict'):
         date_id_dict = request.session['date_id_dict']
     else:
@@ -844,6 +895,7 @@ def statistics(request):
             'addon_service_transaction':addon_service_transaction,
             'one_time_history':one_time_history,
             'traffic_transaction':traffic_transaction,
+            'group_stat':group_stat,
             'form':StatististicForm(),
             'date_id_dict':date_id_dict,
             'active_class':'statistic-img',
