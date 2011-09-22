@@ -1423,23 +1423,41 @@ class HandleSDHCP(HandleSAuth):
         subaccount_switch=None
         if subacc:
             subaccount_switch = self.caches.switch_cache.by_id.get(subacc.switch_id)
+
         if self.packetobject.get("Agent-Remote-ID") and self.packetobject.get("Agent-Circuit-ID"):
             if subaccount_switch:
                 identify, vlan, module, port=parse(subaccount_switch.option82_template, self.packetobject.get("Agent-Remote-ID",[''])[0],self.packetobject.get("Agent-Circuit-ID",[''])[0])
                 
             else:
                 identify, vlan, module, port=parse('dlink-32xx', self.packetobject.get("Agent-Remote-ID",[''])[0],self.packetobject.get("Agent-Circuit-ID",[''])[0])
-                if identify:
-                    subaccount_switch = self.caches.switch_cache.by_remote_id.get(identify)
+            switch = self.caches.switch_cache.by_remote_id.get(identify)# реальный свитч, с которого пришёл запрос
+            if not switch:
+                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_CANT_FIND_SWITH_BY_REMOTE_ID", service=self.access_type, cause=u'Невозможно найти коммутатор с remote-id %s ' % (identify, ), datetime=self.datetime)
+                return self.auth_NA(authobject)  
             logger.warning("DHCP option82 remote_id, port %s %s", (identify, port,))
-            if subaccount_switch:
-                if subaccount_switch and subaccount_switch.remote_id!=identify or subacc.switch_port!=port:
-                    sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
+
+            if not subacc:
+                """
+                если субаккаунт не найден по маку первоначально, ищем субаккаунт по id свитча и порту
+                """
+                subacc=self.caches.subaccount_cache.by_switch_port.get((switch.id, port))    
+                if subacc:
+                    subaccount_switch= self.caches.switch_cache.by_id.get(subacc.switch_id)
+                else:
+                    sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_SWITCH_WRONG", service=self.access_type, cause=u'Субаккаунт с remote-id %s и портом %s не найден' % (identify, port), datetime=self.datetime)
                     return self.auth_NA(authobject)  
-            
-            if not subacc and subaccount_switch:
-                subacc=self.caches.subaccount_cache.by_switch_port.get((subaccount_switch.id, port))  
-              
+                
+            if subaccount_switch.option82_auth_type==0 and (subaccount_switch.remote_id!=switch.remote_id or subacc.switch_port!=port):
+                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
+                return self.auth_NA(authobject)  
+            elif subaccount_switch.option82_auth_type==1 and (subaccount_switch.remote_id!=switch.remote_id or subacc.switch_port!=port):
+                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
+                return self.auth_NA(authobject)  
+            elif subaccount_switch.option82_auth_type==2 and subaccount_switch.id!=switch.id:
+                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_SWITCH_WRONG", service=self.access_type, cause=u'Свитч c remote-id=%s не совпадает с указанным в настройках субаккаунта' % (identify, port), datetime=self.datetime)
+                return self.auth_NA(authobject)  
+                    
+          
         if not subacc:
             logger.warning("Subaccount not found for DHCP request with mac address %s", (mac, ))
             #Не учитывается сервер доступа

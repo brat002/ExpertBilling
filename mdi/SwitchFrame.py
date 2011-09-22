@@ -439,7 +439,7 @@ class SwitchMainWindow(QtGui.QMainWindow):
             i+=1
 
         self.comboBox_option82_auth_type.clear()
-        methods=((u"Порт",0),(u"Порт+MAC",1),)
+        methods=((u"Порт",0),(u"Порт+MAC",1),(u"MAC",2),)
         i=0
         for name, value in methods:
             self.comboBox_option82_auth_type.addItem(name, QtCore.QVariant(value))
