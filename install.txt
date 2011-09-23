@@ -3,7 +3,7 @@ cd ~
 tar -xvzf путь к архиву с биллингом
 
 apt-get update
-apt-get install mc openssh-server python-twisted python-psycopg2 openssl python-paramiko python-dateutil python-pytils python-crypto libpython2.6 libapache2-mod-wsgi python-jsonpickle python-simplejson rrdtool snmp
+apt-get install mc openssh-server python-twisted python-psycopg2 openssl python-paramiko python-dateutil python-pytils python-crypto libpython2.6 libapache2-mod-wsgi python-jsonpickle python-simplejson rrdtool snmp python-pexpect
 mkdir /opt/ebs
 mkdir /opt/ebs/data/
 apt-get install postgresql-8.4 postgresql-contrib-8.4
