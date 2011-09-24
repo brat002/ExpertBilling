@@ -1240,24 +1240,24 @@ def userblock_action(request):
         elif account.status==1:
             tarif=account.get_account_tariff()
             if tarif.allow_userblock:
-                print 1
+                #print 1
                 if tarif.userblock_require_balance!=0 and tarif.userblock_require_balance>account.ballance+account.credit:
-                    print 1.5
+                    #print 1.5
                     result=False
                     message=u'Аккаунт не может быть заблокирован. </br>Минимальный остаток на балансе должен составлять %s.' % tarif.userblock_require_balance
                     return {
                             'message':message, 'result':result,
                             }
-                print 2
+                #print 2
                 account.status=4
                 account.save()
-                print 3
+                #print 3
                 cursor = connection.cursor()
 
                 cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise)
                                   VALUES(%s, 'Списание средств за пользовательскую блокировку', 'USERBLOCK_PAYMENT', True, get_tarif(%s), %s, now(), False)""" , (account.id, account.id, tarif.userblock_cost,))
                 cursor.connection.commit()
-                print 4
+                #print 4
                 message=u'Аккаунт успешно заблокирован'
                 result=True
             else:

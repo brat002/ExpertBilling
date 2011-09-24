@@ -1010,10 +1010,11 @@ class HandleSAuth(HandleSBase):
         #acstatus = True
 
         
-        if not acstatus:
+        if not acstatus and not acc.vpn_guest_ippool_id:
             logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
             sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_VPN_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
-            return self.auth_NA(authobject)      
+            return self.auth_NA(authobject)
+           
 
         #if self.access_type == 'PPTP' and subacc.associate_pptp_ipn_ip and not (ipn_ip_address == station_id):
         #    logger.warning("Unallowed dialed ipn_ip_address for user %s vpn: station_id - %s , ipn_ip - %s; vpn_ip - %s access_type: %s", (username, station_id, subacc.ipn_ip_address, subacc.vpn_ip_address, self.access_type))
@@ -1050,12 +1051,15 @@ class HandleSAuth(HandleSBase):
             
             framed_ip_address = None
             ipinuse_id=''
-            if subacc.vpn_ip_address in ('0.0.0.0','') and (subacc.ipv4_vpn_pool_id or acc.vpn_ippool_id):
+            if (subacc.vpn_ip_address in ('0.0.0.0','') and (subacc.ipv4_vpn_pool_id or acc.vpn_ippool_id)) or acstatus==False:
                
                with vars.cursor_lock:
                    try:
                        self.create_cursor()
                        pool_id=subacc.ipv4_vpn_pool_id if subacc.ipv4_vpn_pool_id else acc.vpn_ippool_id
+                       if acstatus==False:
+                           pool_id=acc.vpn_guest_ippool_id
+                           logger.error("Searching free ip for subaccount %s in vpn guest pool with id %s ", (str(user_name), acc.vpn_guest_ippool_id))
                        self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
                        vpn_ip_address = self.cursor.fetchone()[0]
                        if not vpn_ip_address:
