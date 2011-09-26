@@ -263,7 +263,7 @@ def get_promise(request):
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         error_message = u"У вас есть незакрытые обещанные платежи"
         return {'error_message': error_message, 'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
-    if settings.ALLOW_PROMISE==True and user.ballance<settings.MIN_BALANCE_FOR_PROMISE:
+    if settings.ALLOW_PROMISE==True and user.ballance<settings.MIN_BALLANCE_FOR_PROMISE:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         error_message = u"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный баланс: %s %s" % (settings.MIN_BALANCE_FOR_PROMISE, settings.CURRENCY)
         return {'error_message': error_message, 'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
