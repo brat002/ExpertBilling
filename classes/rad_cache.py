@@ -112,12 +112,20 @@ class NasCache(CacheItem):
             
             self.by_id[nas.id] = nas
             
-class RadiusAttrsCache(SimpleDefDictCache):
+class RadiusAttrsCache(CacheItem):
     '''by tarif_id'''
-    __slots__ = ()
+    __slots__ = ('by_tarif_id','by_nas_id')
     datatype = RadiusAttrsData
     sql = rad_sql['attrs']
-    num = 3
+
+    def reindex(self):
+        self.by_tarif_id={}
+        self.by_nas_id={}
+        for item in self.data:
+            if item.tarif_id:
+                self.by_tarif_id[item.tarif_id]=item
+            if item.nas_id:
+                self.nas_id_id[item.nas_id]=item
 
 
 class AddonServiceCache(SimpleDictCache):

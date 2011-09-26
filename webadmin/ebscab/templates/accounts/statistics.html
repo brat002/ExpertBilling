@@ -146,7 +146,7 @@
 					{% for transaction in transactions %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y H:i" }}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ|multiply:"-1" }}&nbsp;{{ CURRENCY }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ|multiply:"-1"|format_sum }}&nbsp;{{ CURRENCY }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{% if transaction.promise %}да{% else %}нет{% endif %}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.end_promise|date:"d.m.Y"  }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% ifequal transaction.description None %}&nbsp;{% else %} {{ transaction.description }} &nbsp;{% endifequal %}&nbsp;</td>
@@ -252,7 +252,7 @@
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.name }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.summ }}&nbsp;{{ CURRENCY }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.summ|format_sum|format_sum }}&nbsp;{{ CURRENCY }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.type_id }}&nbsp;</td>
 						</tr>
 					{% endfor %}
@@ -299,7 +299,7 @@
 					{% for one_time in one_time_history %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.onetimeservice.name }}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.summ }}&nbsp;{{ CURRENCY }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.summ|format_sum }}&nbsp;{{ CURRENCY }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
 						</tr>
 					{% endfor %}
@@ -341,15 +341,13 @@
 						<th>Услуга</th>
 						<th>Тип услуги</th>
 						<th>Сумма</th>
-						<th>Тип списания</th>
 						<th>Дата</th>
 					</tr>
 					{% for transaction in addon_service_transaction %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.service.name }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.service_type }}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ }}&nbsp;{{ CURRENCY }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.type_id }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ|format_sum }}&nbsp;{{ CURRENCY }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y H:i" }}&nbsp;</td>
 						</tr>
 					{% endfor %}
@@ -394,7 +392,7 @@
 					{% for transaction in traffic_transaction %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ }}&nbsp;{{ CURRENCY }}</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ|format_sum }}&nbsp;{{ CURRENCY }}</td>
 						</tr>
 					{% endfor %}
 					<tr>

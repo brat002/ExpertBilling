@@ -401,6 +401,7 @@ table.statistic_table th {
 .range li input {
 	width:70px;
 	color:#ff4f11;
+	height:11px;
 }
 
 .total {
