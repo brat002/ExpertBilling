@@ -259,10 +259,16 @@ def get_promise(request):
     user = request.user.account
     allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance)
     LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = settings.LEFT_PROMISE_DAYS)
-    if Transaction.objects.filter(account=user, promise=True, promise_expired=False).count() >= 1:
+    if settings.ALLOW_PROMISE==True and Transaction.objects.filter(account=user, promise=True, promise_expired=False).count() >= 1:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         error_message = u"У вас есть незакрытые обещанные платежи"
-        return {'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
+        return {'error_message': error_message, 'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
+    if settings.ALLOW_PROMISE==True and user.ballance<settings.MIN_BALANCE_FOR_PROMISE:
+        last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
+        error_message = u"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный баланс: %s %s" % (settings.MIN_BALANCE_FOR_PROMISE, settings.CURRENCY)
+        return {'error_message': error_message, 'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
+    
+    
     if request.method == 'POST':
         operation= request.POST.get("operation")
         if operation=='promise':
