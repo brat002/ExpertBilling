@@ -9,7 +9,7 @@ from helpers import makeHeaders
 from helpers import HeaderUtil
 from CustomForms import RrdReportMainWindow
 from ebsWindow import ebsTableWindow
-
+from CustomForms import RadiusAttrsDialog
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
                 (u'mikrotik2.9',u'MikroTik 2.9'),
@@ -671,8 +671,8 @@ class NasEbs(ebsTableWindow):
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
-        actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete), ("configureAction", "Конфигурировать", "images/configure.png", self.configure),("rrdNasTrafficInfo", "График загрузки сервера доступа", "images/bandwidth.png", self.rrdtraffic_info),]
-        objDict = {self.tableWidget:["editAction", "addAction", "delAction", 'rrdReportAction',"configureAction"], self.toolBar:["addAction", "delAction", "rrdNasTrafficInfo","configureAction"]}
+        actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete), ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs), ("configureAction", "Конфигурировать", "images/configure.png", self.configure),("rrdNasTrafficInfo", "График загрузки сервера доступа", "images/bandwidth.png", self.rrdtraffic_info),]
+        objDict = {self.tableWidget:["editAction", "addAction", "delAction", 'rrdReportAction',"configureAction"], self.toolBar:["addAction", "delAction", "actionRadiusAttrs","rrdNasTrafficInfo","configureAction"]}
         self.actionCreator(actList, objDict)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.delNodeLocalAction()
@@ -683,7 +683,12 @@ class NasEbs(ebsTableWindow):
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
 
         
-
+    def radius_attrs(self):
+        id=self.getSelectedId()
+        if id>0:
+            child = RadiusAttrsDialog(nas_id = id, connection = self.connection)
+            child.exec_()
+            
     def rrdtraffic_info(self):
         id = self.getSelectedId()
         if id:

@@ -28,6 +28,9 @@ def writen_of_traffic(session, user):
     for transaction in transactions:
         sum += transaction.summ
     return {'sum':sum}
+@register.filter(name='format_sum')
+def format_sum(value):
+    return "%.2f" % float(value)
 
 @register.inclusion_tag('accounts/tags/traffic_format.html')
 def traffic_format(value, second_value=None):

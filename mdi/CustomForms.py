@@ -2796,9 +2796,10 @@ class InfoDialog(QtGui.QDialog):
 
         
 class RadiusAttrsDialog(QtGui.QDialog):
-    def __init__(self, tarif_id, connection):
+    def __init__(self, tarif_id=None, nas_id=None, connection=None):
         super(RadiusAttrsDialog, self).__init__()
         self.tarif_id = tarif_id
+        self.nas_id=nas_id
         self.connection = connection
         
         self.setObjectName("RadiusAttrsDialog")
@@ -2896,11 +2897,14 @@ class RadiusAttrsDialog(QtGui.QDialog):
         
     def save(self):
         model = Object()
-        model.tarif_id = self.tarif_id
+        if self.tarif_id:
+            model.tarif_id = self.tarif_id
+        elif self.nas_id:
+            model.nas_id = self.nas_id
         model.vendor = unicode(self.lineEdit_vendor.text()) or 0
         model.attrid = unicode(self.lineEdit_attrid.text())
         model.value = unicode(self.lineEdit_value.text())
-        
+        print "self.nas_id", self.nas_id
         try:
             
             self.connection.save(model, "billservice_radiusattrs")
@@ -2920,7 +2924,12 @@ class RadiusAttrsDialog(QtGui.QDialog):
         return self.tableWidget.item(self.tableWidget.currentRow(), 0).id
     
     def fixtures(self):
-        attrs = self.connection.get_models("billservice_radiusattrs", where={'tarif_id':self.tarif_id,})
+        if self.tarif_id:
+            attrs = self.connection.get_models("billservice_radiusattrs", where={'tarif_id':self.tarif_id,})
+        elif self.nas_id:
+            attrs = self.connection.get_models("billservice_radiusattrs", where={'nas_id':self.nas_id,})
+        else:
+            return
         self.connection.commit()
         self.tableWidget.setRowCount(len(attrs))
         i=0
