@@ -1425,6 +1425,8 @@ class HandleSDHCP(HandleSAuth):
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type='DHCP')
         subacc = self.caches.subaccount_cache.by_mac.get(mac)
         subaccount_switch=None
+        nas=nasses[0]
+        nas_id=nas.id
         if subacc:
             subaccount_switch = self.caches.switch_cache.by_id.get(subacc.switch_id)
 
