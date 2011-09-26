@@ -1450,9 +1450,14 @@ class HandleSDHCP(HandleSAuth):
                 if subacc:
                     subaccount_switch= self.caches.switch_cache.by_id.get(subacc.switch_id)
                 else:
-                    sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_SWITCH_WRONG", service=self.access_type, cause=u'Субаккаунт с remote-id %s и портом %s не найден' % (identify, port), datetime=self.datetime)
+                    sqlloggerthread.add_message(nas=nas_id,  type="DHCP_PORT_SWITCH_WRONG", service=self.access_type, cause=u'Субаккаунт с remote-id %s и портом %s не найден' % (identify, port), datetime=self.datetime)
                     return self.auth_NA(authobject)  
-                
+            acc = self.caches.account_cache.by_id.get(subacc.account_id)
+            if not acc:
+                logger.warning("Account not found for DHCP request with mac address %s", (mac, ))
+                #Не учитывается сервер доступа
+                sqlloggerthread.add_message(type="AUTH_ACC_NOT_FOUND", service=self.access_type, cause=u'Аккаунт для субаккаунта с mac %s в системе не найден.' % (mac, ), datetime=self.datetime)
+                return self.auth_NA(authobject)
             if subaccount_switch.option82_auth_type==0 and (subaccount_switch.remote_id!=switch.remote_id or subacc.switch_port!=port):
                 sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
                 return self.auth_NA(authobject)  
@@ -1474,7 +1479,8 @@ class HandleSDHCP(HandleSAuth):
             logger.warning("Subaccount with mac %s have no rights for DHCP ", (mac, ))
             sqlloggerthread.add_message(type="AUTH_DHCP_DONT_ALLOW", service=self.access_type, cause=u'Субаккаунту с mac %s запрещена выдача IP по DHCP.' % (mac,), datetime=self.datetime)
             return self.auth_NA(authobject)            
-        acc = self.caches.account_cache.by_id.get(subacc.account_id)
+        if not acc:
+            acc = self.caches.account_cache.by_id.get(subacc.account_id)
             
         if not acc:
             logger.warning("Account not found for DHCP request with mac address %s", (mac, ))
