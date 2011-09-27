@@ -2436,9 +2436,9 @@ class SimpleReportEbs(ebsTableWindow):
         if y==1:
             headerItem.setIcon(QtGui.QIcon("images/user.png"))
         
-        if y==5 and value!='AUTH_OK':
+        if y==5 and value not in ['AUTH_OK','DHCP_AUTH_OK']:
             headerItem.setBackgroundColor(QtGui.QColor("red"))
-        elif y==5 and value=='AUTH_OK':
+        elif y==5 and value in ['AUTH_OK','DHCP_AUTH_OK']:
             headerItem.setBackgroundColor(QtGui.QColor("lightgreen"))
             
         

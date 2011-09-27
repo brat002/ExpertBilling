@@ -1977,6 +1977,8 @@ class AccountWindow(QtGui.QMainWindow):
             if contracttemplate_id==0:
                 model.contract=unicode(self.comboBox_agreement_num.currentText())
                 print "model.contract", model.contract
+            else:
+                model.contract=''
 
                     
             model.username = unicode(self.lineEdit_username.text())
