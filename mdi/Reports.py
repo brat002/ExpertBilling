@@ -247,7 +247,7 @@ class TransactionsReportEbs(ebsTableWindow):
         elif type(value)==datetime.datetime:
             #.strftime(self.strftimeFormat)   
 
-            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QString(unicode(value.strftime(strftimeFormat))))      
+            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QDateTime(value))      
  
         else:            
             headerItem.setData(0, QtCore.QVariant(float(value))) 

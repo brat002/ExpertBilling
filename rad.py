@@ -1435,6 +1435,7 @@ class HandleSDHCP(HandleSAuth):
         subaccount_switch=None
         nas=nasses[0]
         nas_id=nas.id
+        acc=None
         if subacc:
             subaccount_switch = self.caches.switch_cache.by_id.get(subacc.switch_id)
 
