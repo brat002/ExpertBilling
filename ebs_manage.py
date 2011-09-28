@@ -140,7 +140,8 @@ def dbconnect():
             
 def pre_upgrade():
     #unpack files to temp folder
-
+    print "Creating archive of billing dir /opt/ebs/."
+    print "*"*80
     status, output = make_archive('%sdata_%s' % (BACKUP_DIR,curdate), BILLING_PATH)
     if status!=0:
         print "Can not create 'data' backup %s" % output

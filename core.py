@@ -425,7 +425,6 @@ class periodical_service_bill(Thread):
                     if pss_type == PERIOD:
                         cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
                     elif pss_type == ADDON:
-                        #print "ADDON CHKDATE OK", chk_date
                         cash_summ = cash_summ * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
                     cur.connection.commit()

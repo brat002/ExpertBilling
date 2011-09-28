@@ -648,6 +648,7 @@ class SwitchEbs(ebsTableWindow):
         self.tableWidget.setRowCount(len(items))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0
+        ['#', u'Производитель', u'Модель', u'Идентификатор', u'IP', u'Место установки', u"Количество портов"]
         for item in items:
             self.addrow(item.id, i,0)
             self.addrow(item.manufacturer, i,1)
