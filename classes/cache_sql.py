@@ -14,7 +14,7 @@ nfroutine_sql = \
                                 LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""",
                'tts'     :"""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""",
                'settlepd':"""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""",
-               'period'  :"""SELECT tpn.time_start, tpn.length, tpn.repeat_after, ttns.traffic_transmit_service_id
+               'period'  :"""SELECT date_trunc('seconds', tpn.time_start), tpn.length, tpn.repeat_after, ttns.traffic_transmit_service_id
                                 FROM billservice_timeperiodnode AS tpn
                                 JOIN billservice_timeperiod_time_period_nodes AS timeperiod_timenodes ON timeperiod_timenodes.timeperiodnode_id=tpn.id
                                 JOIN billservice_traffictransmitnodes_time_nodes AS ttntp ON ttntp.timeperiod_id=timeperiod_timenodes.timeperiod_id
@@ -156,7 +156,7 @@ rad_sql = \
                         JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
                         LEFT JOIN billservice_accessparameters as accps on accps.id = bt.access_parameters_id ;""",
          'nas'      :"""SELECT id, secret, type, multilink, ipaddress, identify, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2, acct_interim_interval FROM nas_nas ORDER BY id, ipaddress, identify;""",
-         'period'   :"""SELECT date_trunc('second', tpn.time_start::timestamp without time zone as time_start), tpn.length as length, tpn.repeat_after as repeat_after, bst.id
+         'period'   :"""SELECT date_trunc('second', tpn.time_start::timestamp without time zone)as time_start, tpn.length as length, tpn.repeat_after as repeat_after, bst.id
                         FROM billservice_timeperiodnode as tpn
                         JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
                         JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
