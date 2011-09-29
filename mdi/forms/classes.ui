@@ -96,7 +96,7 @@
       <item row="2" column="0" colspan="2">
        <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>in interface index</string>
+         <string>In interface index</string>
         </property>
        </widget>
       </item>
