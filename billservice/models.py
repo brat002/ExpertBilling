@@ -1238,4 +1238,27 @@ class RadiusTrafficNode(models.Model):
 
 class ContractTemplate(models.Model):
     template = models.TextField()
+
+class Manufacturer(models.Model):
+    name = models.TextField()
+
+class Model(models.Model):
+    name = models.TextField()
+
+    
+class Hardware(models.Model):
+    manufacturer = models.ForeignKey(Manufacturer)
+    model = models.ForeignKey(Model)
+    name = models.CharField(max_length=500)
+    sn = models.CharField(max_length=500)
+    comment = models.TextField()#
+    ipaddress = models.IPAddressField()
+    macaddress = models.CharField(max_length=32)
+
+class AccountHardware(models.Model):
+    account=models.ForeignKey(Account)
+    hardware = models.ForeignKey(Hardware)
+    datetime = models.DateTimeField()
+    returned = models.DateTimeField()
+    comment = models.TextField()
     
