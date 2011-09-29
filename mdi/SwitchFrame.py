@@ -293,7 +293,10 @@ class SwitchMainWindow(QtGui.QMainWindow):
         self.connect(tableHeader, QtCore.SIGNAL("sectionResized(int,int,int)"), self.saveHeader)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("SwitchMainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        if self.model:
+            self.setWindowTitle(QtGui.QApplication.translate("SwitchMainWindow", u"Редактирование коммутатора %s %s %s" % (self.model.manufacturer,self.model.model,self.model.identify,), None, QtGui.QApplication.UnicodeUTF8))
+        else:
+            self.setWindowTitle(QtGui.QApplication.translate("SwitchMainWindow", "Создание нового коммутатора", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_device.setTitle(QtGui.QApplication.translate("SwitchMainWindow", "Данные о устройстве", None, QtGui.QApplication.UnicodeUTF8))
         self.label_manufacturer.setText(QtGui.QApplication.translate("SwitchMainWindow", "Производитель", None, QtGui.QApplication.UnicodeUTF8))
         self.label_model.setText(QtGui.QApplication.translate("SwitchMainWindow", "Модель", None, QtGui.QApplication.UnicodeUTF8))

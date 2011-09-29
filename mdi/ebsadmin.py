@@ -55,6 +55,8 @@ from AddressFrame import AddressEbs
 from Reports import TransactionsReportEbs as TransactionsReport
 from TransactionTypeFrame import TransactionTypeEbs
 from SwitchFrame import SwitchEbs
+from HardwareFrame import HardwareManufacturerEbs,HardwareTypeEbs,ModelWindowEbs,HardwareWindowEbs
+
 _reportsdict = [['Статистика по группам',[['report3_users.xml', ['groups'], 'Общий трафик']]],\
                 ['Глобальная статистика',[['report3_users.xml', ['gstat_globals'], 'Общий трафик'],['report3_users.xml', ['gstat_multi'], 'Трафик с выбором классов'], ['report3_pie.xml', ['pie_gmulti'], 'Пирог']]],\
                 ['Другие отчёты',[['report3_sess.xml', ['sessions'], 'Сессии пользователей'], ['report3_tr.xml', ['trans_crd'], 'Динамика прибыли']]]]
@@ -155,6 +157,65 @@ class MainWindow(QtGui.QMainWindow):
         
         child.show()
         
+    @connlogin
+    def hardwaremanufacturer(self):
+        self.workspace.windowList()  
+
+        child =  HardwareManufacturerEbs(connection=connection)
+        #child.setIcon( QPixmap("images/icon.ico") )        
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        #self.wsp.addSubWindow(child)
+        
+        child.show()
+
+    @connlogin
+    def hardwaretype(self):
+        self.workspace.windowList()  
+
+        child =  HardwareTypeEbs(connection=connection)
+        #child.setIcon( QPixmap("images/icon.ico") )        
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        #self.wsp.addSubWindow(child)
+        
+        child.show()       
+        
+    @connlogin
+    def modelwindow(self):
+        self.workspace.windowList()  
+
+        child =  ModelWindowEbs(connection=connection)
+        #child.setIcon( QPixmap("images/icon.ico") )        
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        #self.wsp.addSubWindow(child)
+        
+        child.show()  
+
+    @connlogin
+    def hardwarewindow(self):
+        self.workspace.windowList()  
+
+        child =  HardwareWindowEbs(connection=connection)
+        #child.setIcon( QPixmap("images/icon.ico") )        
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        #self.wsp.addSubWindow(child)
+        
+        child.show()  
 
     @connlogin
     def pool(self):
@@ -472,7 +533,28 @@ class MainWindow(QtGui.QMainWindow):
         self.switchAct.setStatusTip(u'Комутаторы')
         self.connect(self.switchAct, QtCore.SIGNAL("triggered()"), self.switchWindow)
        
-
+       
+        self.hardwaremanufacturerAct = QtGui.QAction(QtGui.QIcon("images/switch.png"), u"&Производители оборудования", self)
+        
+        self.hardwaremanufacturerAct.setStatusTip(u'Производители оборудования')
+        self.connect(self.hardwaremanufacturerAct, QtCore.SIGNAL("triggered()"), self.hardwaremanufacturer)
+        
+        self.hardwaretypeAct = QtGui.QAction(QtGui.QIcon("images/switch.png"), u"&Типы оборудования", self)
+        
+        self.hardwaretypeAct.setStatusTip(u'Типы оборудования')
+        self.connect(self.hardwaretypeAct, QtCore.SIGNAL("triggered()"), self.hardwaretype)
+        
+        self.modelwindowAct = QtGui.QAction(QtGui.QIcon("images/switch.png"), u"&Модели оборудования", self)
+        
+        self.modelwindowAct.setStatusTip(u'Модели оборудования')
+        self.connect(self.modelwindowAct, QtCore.SIGNAL("triggered()"), self.modelwindow)        
+        
+        
+        self.hardwarewindowAct = QtGui.QAction(QtGui.QIcon("images/switch.png"), u"&Оборудование провайдера", self)
+        
+        self.hardwarewindowAct.setStatusTip(u'Оборудование провайдера')
+        self.connect(self.hardwarewindowAct, QtCore.SIGNAL("triggered()"), self.hardwarewindow)        
+        
         self.settlementPeriodAct = QtGui.QAction(QtGui.QIcon("images/sp.png"), u'Расчётные периоды', self)
         self.settlementPeriodAct.setStatusTip(u"Расчётные периоды")
         self.connect(self.settlementPeriodAct, QtCore.SIGNAL("triggered()"), self.save)
@@ -719,6 +801,12 @@ class MainWindow(QtGui.QMainWindow):
         self.settingsMenu.addAction(self.sysadmAct)
         self.settingsMenu.addAction(self.templatesAct)
         self.settingsMenu.addAction(self.transactiontypeAct)
+        self.settingsMenu.addSeparator()
+        self.settingsMenu.addAction(self.hardwaremanufacturerAct)
+        self.settingsMenu.addAction(self.hardwaretypeAct)
+        self.settingsMenu.addAction(self.modelwindowAct)
+        self.settingsMenu.addAction(self.hardwarewindowAct)
+        self.settingsMenu.addSeparator()
         self.settingsMenu.addAction(self.aboutOperAct)
         
         
