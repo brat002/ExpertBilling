@@ -1695,7 +1695,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             try:
                 data=templ.render_unicode(accounts=[x.id for x in accounts], connection=self.connection)
             except Exception, e:
-                data=u"Error %s" % str(e)
+                data=u"Error %s" % repr(e)
 
         if id==4:
             account = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0]
