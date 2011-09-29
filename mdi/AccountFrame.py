@@ -3036,9 +3036,12 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         if len(ids)==1:
             account=self.connection.get_model(ids[0], "billservice_account", fields=['id'])
             self.connection.commit()
-        child=AddAccountTarif(connection=self.connection, account=account, get_info = True)
+        if account:
+            child=AddAccountTarif(connection=self.connection, account=account, get_info = True)
+        else:
+            child=AddAccountTarif(connection=self.connection, account=account, get_info = False)
         if child.exec_()==1:
-            tarif_id = child.tarif_edit.itemData(child.tarif_edit.currentIndex()).toInt()[0]
+            tarif_id = child.comboBox_tarif.itemData(child.comboBox_tarif.currentIndex()).toInt()[0]
             date = child.date_edit.currentDate()
         if not tarif_id: return
         if not self.connection.change_tarif(ids, tarif_id, date):

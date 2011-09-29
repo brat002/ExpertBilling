@@ -561,8 +561,8 @@ class ModelWindowEbs(ebsTableWindow):
 
 class HardwareWindowEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=['#', u'Производитель', u'Тип оборудования', u'Модель', u'Название',u'IP', u'Комментарий']
-        initargs = {"setname":"HardwareWindowEbs_window", "objname":"HardwareWindowEbs", "winsize":(0,0,827,476), "wintitle":"Оборудование провайдера", "tablecolumns":columns, "tablesize":(0,0,821,401)}
+        columns=['#', u'Производитель', u'Тип оборудования', u'Модель', u'Название',u'IP',  u'MAC', u'Комментарий']
+        initargs = {"setname":"HardwareWindowEbs_window_", "objname":"HardwareWindowEbs_", "winsize":(0,0,827,476), "wintitle":"Оборудование провайдера", "tablecolumns":columns, "tablesize":(0,0,821,401)}
         super(HardwareWindowEbs, self).__init__(connection, initargs)
         
         
@@ -641,7 +641,7 @@ class HardwareWindowEbs(ebsTableWindow):
         self.tableWidget.setItem(x,y,headerItem)
 
     def refresh(self):
-        ['#', u'Производитель', u'Тип оборудования', u'Модель', u'Название',u'IP', u'Комментарий']
+        ['#', u'Производитель', u'Тип оборудования', u'Модель', u'Название/Назначение',u'IP', u'MAC', u'Комментарий']
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
         items = self.connection.sql("""
