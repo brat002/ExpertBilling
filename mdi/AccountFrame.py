@@ -3042,7 +3042,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             child=AddAccountTarif(connection=self.connection, account=account, get_info = False)
         if child.exec_()==1:
             tarif_id = child.comboBox_tarif.itemData(child.comboBox_tarif.currentIndex()).toInt()[0]
-            date = child.date_edit.currentDate()
+            date = child.dateTimeEdit_start.currentDate()
         if not tarif_id: return
         if not self.connection.change_tarif(ids, tarif_id, date):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Во время выполнения операции произошла ошибка."))
