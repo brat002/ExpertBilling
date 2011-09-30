@@ -118,6 +118,9 @@ class CustomDateTimeWidget(QtGui.QWidget):
     def dateTime(self):
         return self.dateTimeEdit.dateTime()
     
+    def toPyDateTime(self):
+        return self.dateTimeEdit.dateTime().toPyDateTime()
+    
     def setCalendarPopup(self,*args,**kwargs):
         pass
     

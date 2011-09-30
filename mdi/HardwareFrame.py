@@ -18,6 +18,250 @@ try:
 except AttributeError:
     _fromUtf8 = lambda s: s
 
+class AccountHardwareDialog(QtGui.QDialog):
+    def __init__(self,connection, account_model=None, model=None):
+        super(AccountHardwareDialog, self).__init__()
+        self.connection=connection
+        self.model=model
+        self.account_model=account_model
+        self.setObjectName(_fromUtf8("AccountHardwareDialog"))
+        self.resize(658, 393)
+        self.gridLayout = QtGui.QGridLayout(self)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.groupBox = QtGui.QGroupBox(self)
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.label_model = QtGui.QLabel(self.groupBox)
+        self.label_model.setObjectName(_fromUtf8("label_model"))
+        self.gridLayout_2.addWidget(self.label_model, 3, 0, 1, 1)
+        self.comboBox_model = QtGui.QComboBox(self.groupBox)
+        self.comboBox_model.setObjectName(_fromUtf8("comboBox_model"))
+        self.gridLayout_2.addWidget(self.comboBox_model, 3, 1, 1, 1)
+        self.label_datetime_transfer_date = QtGui.QLabel(self.groupBox)
+        self.label_datetime_transfer_date.setObjectName(_fromUtf8("label_datetime_transfer_date"))
+        self.gridLayout_2.addWidget(self.label_datetime_transfer_date, 5, 0, 1, 1)
+        self.dateTimeEdit_transfer_date = CustomDateTimeWidget()
+        self.dateTimeEdit_transfer_date.setObjectName(_fromUtf8("dateTimeEdit_transfer_date"))
+        self.gridLayout_2.addWidget(self.dateTimeEdit_transfer_date, 5, 1, 1, 1)
+        self.checkBox_return = QtGui.QCheckBox(self.groupBox)
+        self.checkBox_return.setObjectName(_fromUtf8("checkBox_return"))
+        self.gridLayout_2.addWidget(self.checkBox_return, 6, 1, 1, 1)
+        self.label_return_date = QtGui.QLabel(self.groupBox)
+        self.label_return_date.setObjectName(_fromUtf8("label_return_date"))
+        self.gridLayout_2.addWidget(self.label_return_date, 7, 0, 1, 1)
+        self.dateTimeEdit_return_date = CustomDateTimeWidget()
+        self.dateTimeEdit_return_date.setObjectName(_fromUtf8("dateTimeEdit_return_date"))
+        self.gridLayout_2.addWidget(self.dateTimeEdit_return_date, 7, 1, 1, 1)
+        self.comboBox_manufacturer = QtGui.QComboBox(self.groupBox)
+        self.comboBox_manufacturer.setObjectName(_fromUtf8("comboBox_manufacturer"))
+        self.gridLayout_2.addWidget(self.comboBox_manufacturer, 0, 1, 1, 1)
+        self.label_manufacturer = QtGui.QLabel(self.groupBox)
+        self.label_manufacturer.setObjectName(_fromUtf8("label_manufacturer"))
+        self.gridLayout_2.addWidget(self.label_manufacturer, 0, 0, 1, 1)
+        self.comboBox_hardwaretype = QtGui.QComboBox(self.groupBox)
+        self.comboBox_hardwaretype.setObjectName(_fromUtf8("comboBox_hardwaretype"))
+        self.gridLayout_2.addWidget(self.comboBox_hardwaretype, 2, 1, 1, 1)
+        self.comboBox_hardware = QtGui.QComboBox(self.groupBox)
+        self.comboBox_hardware.setObjectName(_fromUtf8("comboBox_hardware"))
+        self.gridLayout_2.addWidget(self.comboBox_hardware, 4, 1, 1, 1)
+        self.label_hardware = QtGui.QLabel(self.groupBox)
+        self.label_hardware.setObjectName(_fromUtf8("label_hardware"))
+        self.gridLayout_2.addWidget(self.label_hardware, 4, 0, 1, 1)
+        self.label_comment = QtGui.QLabel(self.groupBox)
+        self.label_comment.setObjectName(_fromUtf8("label_comment"))
+        self.gridLayout_2.addWidget(self.label_comment, 8, 0, 1, 1)
+        self.label_hardwaretype = QtGui.QLabel(self.groupBox)
+        self.label_hardwaretype.setObjectName(_fromUtf8("label_hardwaretype"))
+        self.gridLayout_2.addWidget(self.label_hardwaretype, 2, 0, 1, 1)
+        self.plainTextEdit = QtGui.QPlainTextEdit(self.groupBox)
+        self.plainTextEdit.setObjectName(_fromUtf8("plainTextEdit"))
+        self.gridLayout_2.addWidget(self.plainTextEdit, 8, 1, 1, 1)
+        self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
+
+
+        self.retranslateUi()
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), self.accept)
+
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), self.reject)
+        
+        self.connect(self.comboBox_manufacturer, QtCore.SIGNAL("currentIndexChanged(int)"), self.set_hardwaretype)
+        self.connect(self.comboBox_hardwaretype, QtCore.SIGNAL("currentIndexChanged(int)"), self.set_model)
+        self.connect(self.comboBox_model, QtCore.SIGNAL("currentIndexChanged(int)"), self.set_hardware)
+        self.connect(self.checkBox_return, QtCore.SIGNAL("stateChanged(int)"), self.returned_check)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        
+        self.setTabOrder(self.comboBox_manufacturer, self.comboBox_hardwaretype)
+        self.setTabOrder(self.comboBox_hardwaretype, self.comboBox_model)
+        self.setTabOrder(self.comboBox_model, self.comboBox_hardware)
+        self.setTabOrder(self.comboBox_hardware, self.dateTimeEdit_transfer_date)
+        self.setTabOrder(self.dateTimeEdit_transfer_date, self.checkBox_return)
+        self.setTabOrder(self.checkBox_return, self.dateTimeEdit_return_date)
+        self.setTabOrder(self.dateTimeEdit_return_date, self.plainTextEdit)
+        self.setTabOrder(self.plainTextEdit, self.buttonBox)
+
+
+        self.fixtures()
+        self.returned_check()
+        
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("AccountHardwareDialog", "Выдача оборудования на руки", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("AccountHardwareDialog", "Параметры", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_model.setText(QtGui.QApplication.translate("AccountHardwareDialog", "Модель", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_datetime_transfer_date.setText(QtGui.QApplication.translate("AccountHardwareDialog", "Дата выдачи", None, QtGui.QApplication.UnicodeUTF8))
+        self.dateTimeEdit_transfer_date.setDisplayFormat(QtGui.QApplication.translate("AccountHardwareDialog", "dd.MM.yy H:mm:ss", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_return.setText(QtGui.QApplication.translate("AccountHardwareDialog", "Оборудование возвращено", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_return_date.setText(QtGui.QApplication.translate("AccountHardwareDialog", "Дата возврата", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_manufacturer.setText(QtGui.QApplication.translate("AccountHardwareDialog", "Производитель", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_hardware.setText(QtGui.QApplication.translate("AccountHardwareDialog", "Серийный номер", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_comment.setText(QtGui.QApplication.translate("AccountHardwareDialog", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_hardwaretype.setText(QtGui.QApplication.translate("AccountHardwareDialog", "Тип", None, QtGui.QApplication.UnicodeUTF8))
+
+
+    def set_hardwaretype(self,index):
+        id=self.comboBox_manufacturer.itemData(index).toInt()[0]
+        items = self.connection.get_models("billservice_hardwaretype", order={'name':'ASC'}, fields=['id', 'name'])
+        self.connection.commit()
+        self.comboBox_hardwaretype.clear()
+        i=0
+        for item in items:
+            self.comboBox_hardwaretype.addItem(item.name, QtCore.QVariant(item.id))
+            i+=1   
+
+        hardwaretype_id=self.comboBox_hardwaretype.itemData(0).toInt()[0]
+        if hardwaretype_id:
+            items = self.connection.get_models("billservice_model", order={'name':'ASC'}, fields=['id', 'name'], where={'manufacturer_id':id, 'hardwaretype_id':hardwaretype_id})
+            self.connection.commit()
+            self.comboBox_model.clear()
+            i=0
+            for item in items:
+                self.comboBox_model.addItem(item.name, QtCore.QVariant(item.id))
+                i+=1   
+            
+    def set_model(self, index):
+        id=self.comboBox_hardwaretype.itemData(index).toInt()[0]
+        manufacturer_id=self.comboBox_manufacturer.itemData(self.comboBox_manufacturer.currentIndex()).toInt()[0]
+        items = self.connection.get_models("billservice_model", order={'name':'ASC'}, fields=['id', 'name'], where={'manufacturer_id':manufacturer_id, 'hardwaretype_id':id})
+        self.connection.commit()
+        self.comboBox_model.clear()
+        i=0
+        for item in items:
+            self.comboBox_model.addItem(item.name, QtCore.QVariant(item.id))
+            i+=1  
+            
+            
+    def set_hardware(self, index):
+        id=self.comboBox_model.itemData(index).toInt()[0]
+        items = self.connection.get_models("billservice_hardware", order={'sn':'ASC'}, fields=['id', 'name', 'sn'], where={'model_id':id})
+        self.connection.commit()
+        self.comboBox_hardware.clear()
+        i=0
+        for item in items:
+            self.comboBox_hardware.addItem(u"%s %s" % (item.name, item.sn), QtCore.QVariant(item.id))
+            i+=1     
+          
+    def returned_check(self):
+        self.dateTimeEdit_return_date.setDisabled(True)
+        if self.model:
+            if self.checkBox_return.isChecked():
+                self.dateTimeEdit_return_date.setDisabled(False)
+                       
+    def fixtures(self):
+        hw=None
+        if self.model:
+            hw=self.connection.get("""
+            SELECT hw.id as hardware_id,model.id as model_id,hwtype.id as hwtype_id,m.id as manufacturer_id 
+            FROM billservice_accounthardware as ahw 
+            JOIN billservice_hardware as hw ON ahw.hardware_id=hw.id
+            JOIN billservice_model as model ON model.id=hw.model_id
+            JOIN billservice_hardwaretype as hwtype ON hwtype.id=model.hardwaretype_id
+            JOIN billservice_manufacturer as m ON m.id=model.manufacturer_id
+            WHERE ahw.id=%s        
+            """ % self.model.id)     
+               
+        items = self.connection.get_models("billservice_manufacturer", order={'name':'ASC'}, fields=['id', 'name'])
+        self.connection.commit()
+        self.comboBox_model.clear()
+        i=0
+        for item in items:
+            self.comboBox_manufacturer.addItem(item.name, QtCore.QVariant(item.id))
+            if hw:
+                if hw.manufacturer_id==item.id:
+                    self.comboBox_model.setCurrentIndex(i)
+            i+=1    
+
+        if self.model:
+            items = self.connection.get_models("billservice_hardwaretype", order={'name':'ASC'}, fields=['id', 'name'])
+            self.connection.commit()
+            self.comboBox_hardwaretype.clear()
+            i=0
+            for item in items:
+                self.comboBox_hardwaretype.addItem(item.name, QtCore.QVariant(item.id))
+                if hw:
+                    if hw.hwtype_id==item.id:
+                        self.comboBox_hardwaretype.setCurrentIndex(i)
+                i+=1    
+                
+            items = self.connection.get_models("billservice_model", order={'name':'ASC'}, fields=['id', 'name'])
+            self.connection.commit()
+            self.comboBox_model.clear()
+            i=0
+            for item in items:
+                self.comboBox_model.addItem(item.name, QtCore.QVariant(item.id))
+                if hw:
+                    if hw.model_id==item.id:
+                        self.comboBox_model.setCurrentIndex(i)
+                i+=1   
+                
+            items = self.connection.get_models("billservice_hardware", order={'name':'ASC'}, fields=['id', 'name', 'sn'])
+            self.connection.commit()
+            self.comboBox_hardware.clear()
+            i=0
+            for item in items:
+                self.comboBox_hardware.addItem(u"%s %s" % (item.name,item.sn), QtCore.QVariant(item.id))
+                if hw:
+                    if hw.hardware_id==item.id:
+                        self.comboBox_hardware.setCurrentIndex(i)
+                i+=1 
+                
+            self.dateTimeEdit_transfer_date.setDateTime(self.model.datetime)
+            
+            self.checkBox_return.setChecked(True if self.model.returned else False)
+            if self.model.returned:
+                self.dateTimeEdit_return_date.setDateTime(self.model.returned)
+                
+            self.plainTextEdit.setPlainText(unicode(self.model.comment)) 
+            
+            
+            
+    def accept(self):
+        if self.model:
+            model=self.model
+        else:
+            model = Object()
+            model.account_id=self.account_model
+        model.hardware_id=self.comboBox_hardware.itemData(self.comboBox_hardware.currentIndex()).toInt()[0]
+        model.datetime = self.dateTimeEdit_transfer_date.toPyDateTime()
+        if self.checkBox_return.isChecked():
+            model.returned = self.dateTimeEdit_return_date.toPyDateTime()
+        else:
+            model.returned=None
+        model.comment=unicode(self.plainTextEdit.toPlainText())
+        
+        try:
+            self.connection.save(model, "billservice_accounthardware")
+            self.connection.commit()
+        except Exception, e:
+            print e
+            self.connection.rollback()   
+        QtGui.QDialog.accept(self)
+            
 class HardwareDialog(QtGui.QDialog):
     def __init__(self,connection, model=None):
         super(HardwareDialog, self).__init__()
@@ -322,7 +566,7 @@ class HardwareManufacturerEbs(ebsTableWindow):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
         if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/switch.png"))
+            headerItem.setIcon(QtGui.QIcon("images/modem.png"))
         self.tableWidget.setItem(x,y,headerItem)
 
     def refresh(self):
@@ -430,7 +674,7 @@ class HardwareTypeEbs(ebsTableWindow):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
         if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/switch.png"))
+            headerItem.setIcon(QtGui.QIcon("images/modem.png"))
         self.tableWidget.setItem(x,y,headerItem)
 
     def refresh(self):
@@ -532,7 +776,7 @@ class ModelWindowEbs(ebsTableWindow):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
         if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/switch.png"))
+            headerItem.setIcon(QtGui.QIcon("images/modem.png"))
         self.tableWidget.setItem(x,y,headerItem)
 
     def refresh(self):
@@ -562,7 +806,7 @@ class ModelWindowEbs(ebsTableWindow):
 class HardwareWindowEbs(ebsTableWindow):
     def __init__(self, connection):
         columns=['#', u'Производитель', u'Тип оборудования', u'Модель', u'Название',u'IP',  u'MAC', u'Комментарий']
-        initargs = {"setname":"HardwareWindowEbs_window_", "objname":"HardwareWindowEbs_", "winsize":(0,0,827,476), "wintitle":"Оборудование провайдера", "tablecolumns":columns, "tablesize":(0,0,821,401)}
+        initargs = {"setname":"HardwareWindowEbs_window_", "objname":"HardwareWindowEbs_", "winsize":(0,0,827,476), "wintitle":"Подотчётное оборудование", "tablecolumns":columns, "tablesize":(0,0,821,401)}
         super(HardwareWindowEbs, self).__init__(connection, initargs)
         
         
@@ -637,7 +881,7 @@ class HardwareWindowEbs(ebsTableWindow):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
         if y==1:
-            headerItem.setIcon(QtGui.QIcon("images/switch.png"))
+            headerItem.setIcon(QtGui.QIcon("images/modem.png"))
         self.tableWidget.setItem(x,y,headerItem)
 
     def refresh(self):
