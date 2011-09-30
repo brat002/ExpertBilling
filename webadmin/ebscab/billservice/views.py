@@ -25,7 +25,7 @@ import isdlogger
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.db import connection
-from django.core.cache import cache
+#from django.core.cache import cache
 from django import template
 from django.contrib.auth.decorators import login_required
 
@@ -134,15 +134,7 @@ def login(request):
                     log_in(request, user)
                     if isinstance(user.account, SystemUser):
                         return HttpResponseRedirect(reverse("helpdesk_dashboard"))
-                    if not cache.get(str(user.id)):
-                        cache.set(str(user.id), {'count':0,'last_date':datetime.datetime.now(),'blocked':False,}, 86400*365)
-                    else:
-                        cache_user = cache.get(user.id)
-                        if cache_user['blocked']:
-                            cache.set(str(user.idi), {'count':cache_user['count'],'last_date':cache_user['last_date'],'blocked':cache_user['blocked'],}, 86400*365)
-                        else:
-                            cache.set(str(user.id), {'count':cache_user['count'],'last_date':datetime.datetime.now(),'blocked':cache_user['blocked'],}, 86400*365)
-                    tariff = user.account.get_account_tariff()
+                     tariff = user.account.get_account_tariff()
                     if tariff.allow_express_pay:
                         request.session['express_pay']=True
                     request.session.modified = True
