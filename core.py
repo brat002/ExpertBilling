@@ -356,10 +356,11 @@ class periodical_service_bill(Thread):
                     #make an approved transaction
                     cash_summ = susp_per_mlt * (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
                     if pss_type == PERIOD:
-                        if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0) or (ps.condition==3 and account_ballance<=0):
+                        #if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0) or (ps.condition==3 and account_ballance<=0):
                             #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
-                            cash_summ = 0
-                        ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)
+                        #    cash_summ = 0
+                        #ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)
+                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                     elif pss_type == ADDON:
                         cash_summ = cash_summ * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
@@ -482,6 +483,7 @@ class periodical_service_bill(Thread):
                         tr_date = period_start_ast
                         if pss_type == PERIOD:
                             ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, tr_date)
+#                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                         elif pss_type == ADDON:
                             addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, tr_date)
                     else:
