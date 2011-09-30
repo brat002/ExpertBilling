@@ -20,7 +20,6 @@ CREATE TABLE billservice_model (
 CREATE TABLE billservice_hardware (
     id serial NOT NULL PRIMARY KEY,
     model_id integer NOT NULL,
-    hardwaretype_id integer NOT NULL,
     name varchar(500),
     sn varchar(500),
     comment text DEFAULT '',

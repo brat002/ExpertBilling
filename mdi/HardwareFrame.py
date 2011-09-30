@@ -805,7 +805,7 @@ class ModelWindowEbs(ebsTableWindow):
 
 class HardwareWindowEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=['#', u'Производитель', u'Тип оборудования', u'Модель', u'Название',u'IP',  u'MAC', u'Комментарий']
+        columns=['#', u'Производитель', u'Тип оборудования', u'Модель', u'Название', u's/n','uIP',  u'MAC', u'Комментарий']
         initargs = {"setname":"HardwareWindowEbs_window_", "objname":"HardwareWindowEbs_", "winsize":(0,0,827,476), "wintitle":"Подотчётное оборудование", "tablecolumns":columns, "tablesize":(0,0,821,401)}
         super(HardwareWindowEbs, self).__init__(connection, initargs)
         
@@ -889,7 +889,7 @@ class HardwareWindowEbs(ebsTableWindow):
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
         items = self.connection.sql("""
-        SELECT hw.id, hw.name,hw.comment as comment, hw.ipaddress,hw.macaddress, model.name as model_name, hwtype.name as hardwaretype, m.name as manufacturer
+        SELECT hw.id, hw.name,hw.comment as comment, hw.ipaddress,hw.macaddress, hw.sn, model.name as model_name, hwtype.name as hardwaretype, m.name as manufacturer
         FROM billservice_hardware as hw
         JOIN billservice_model as model ON model.id=hw.model_id
         JOIN billservice_hardwaretype as hwtype ON hwtype.id=model.hardwaretype_id
@@ -904,9 +904,10 @@ class HardwareWindowEbs(ebsTableWindow):
             self.addrow(item.hardwaretype, i,2)
             self.addrow(item.model_name, i,3)
             self.addrow(item.name, i,4)
-            self.addrow(item.ipaddress, i,5)
-            self.addrow(item.macaddress, i,6)
-            self.addrow(item.comment, i,7)
+            self.addrow(item.sn, i,5)
+            self.addrow(item.ipaddress, i,6)
+            self.addrow(item.macaddress, i,7)
+            self.addrow(item.comment, i,8)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
         #self.tableWidget.resizeColumnsToContents()
