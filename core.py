@@ -345,6 +345,7 @@ class periodical_service_bill(Thread):
                         period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
                         cash_summ = (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
                         if pss_type == PERIOD:
+                            #cur.execute("UPDATE billservice_account SET ballance=ballance-")
                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                         elif pss_type == ADDON:
                             cash_summ = cash_summ * susp_per_mlt
