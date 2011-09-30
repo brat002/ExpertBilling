@@ -29,6 +29,8 @@ from CustomForms import simpleTableImageWidget, tableImageWidget, IPAddressSelec
 from CustomForms import CustomWidget, CardPreviewDialog, SuspendedPeriodForm, GroupsDialog, SpeedLimitDialog, InfoDialog, PSCreatedForm, AccountAddonServiceEdit
 from MessagesFrame import MessageDialog
 from mako.template import Template
+from HardwareFrame import AccountHardwareDialog
+
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 qtTimeFormat = "YYYY-MM-DD HH:MM:SS"
 import IPy
@@ -309,6 +311,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         
         self.fixtures()
         self.accountAddonServiceRefresh()
+
         self.connect(self.buttonBox, QtCore.SIGNAL("accepted()"),self.accept)
         self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
         
@@ -1379,9 +1382,8 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_17.addWidget(self.groupBox_accessparameters, 2, 0, 1, 2)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.gridLayout_17.addItem(spacerItem, 3, 0, 1, 1)
-        
-
         self.tabWidget.addTab(self.tab_network_settings, "")
+        
         self.tab_suspended = QtGui.QWidget()
         self.tab_suspended.setObjectName("tab_suspended")
         self.gridLayout_5 = QtGui.QGridLayout(self.tab_suspended)
@@ -1411,6 +1413,15 @@ class AccountWindow(QtGui.QMainWindow):
         self.gridLayout_7.addWidget(self.tableWidget_addonservice, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab_addonservice, "")
         
+        self.tab_accounthardware = QtGui.QWidget()
+        self.tab_accounthardware.setObjectName("tab_accounthardware")
+        self.gridLayout_8 = QtGui.QGridLayout(self.tab_accounthardware)
+        self.gridLayout_8.setObjectName("gridLayout_8")
+        self.tableWidget_accounthardware = QtGui.QTableWidget(self.tab_accounthardware)
+
+        self.tableWidget_accounthardware.setObjectName("tableWidget_accounthardware")
+        self.gridLayout_8.addWidget(self.tableWidget_accounthardware, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_accounthardware, "")
         
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
@@ -1474,6 +1485,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.connect(self.tableWidget_addonservice, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editAddonService)
         self.connect(self.tableWidget_suspended, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.edit_suspendedperiod)
         self.connect(self.tableWidget_subaccounts, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editSubAccount)
+        self.connect(self.tableWidget_accounthardware, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editAccounthardware)
         
         self.connect(self.comboBox_city, QtCore.SIGNAL("currentIndexChanged(int)"), self.refresh_combo_street)
         self.connect(self.comboBox_street, QtCore.SIGNAL("currentIndexChanged(int)"), self.refresh_combo_house)
@@ -1598,7 +1610,8 @@ class AccountWindow(QtGui.QMainWindow):
 
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_tarifs), QtGui.QApplication.translate("MainWindow", "Тарифные планы", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_addonservice), QtGui.QApplication.translate("MainWindow", "Подключаемые услуги", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_accounthardware), QtGui.QApplication.translate("MainWindow", "Оборудование на руках", None, QtGui.QApplication.UnicodeUTF8))
+        
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Сохранить", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAdd.setText(QtGui.QApplication.translate("MainWindow", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
         self.actionDel.setText(QtGui.QApplication.translate("MainWindow", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
@@ -1634,6 +1647,12 @@ class AccountWindow(QtGui.QMainWindow):
         columns=[u'#', u'Название услуги', u'Субаккаунт', u'Дата активации', u'Дата окончания', u'Активирована на сервере доступа', u"Временная блокировка"]
         self.tableWidget_addonservice = tableFormat(self.tableWidget_addonservice)
         makeHeaders(columns, self.tableWidget_addonservice)
+        
+        columns=[u'#', u'Тип оборудования', u'Производитель', u'Модель', u'Серийный номер', u'Выдано', u"Возвращено"]
+        self.tableWidget_accounthardware = tableFormat(self.tableWidget_accounthardware)
+        makeHeaders(columns, self.tableWidget_accounthardware)
+        
+        self.tableWidget_accounthardware
         
         self.comboBox_status.addItem(u"Активен")
         self.comboBox_status.setItemData(0, QtCore.QVariant(1))
@@ -1937,6 +1956,7 @@ class AccountWindow(QtGui.QMainWindow):
             self.suspendedPeriodRefresh()
             self.accountAddonServiceRefresh()
             self.subAccountLinkRefresh()
+            self.accountHardwareRefresh()
         else:
             for i in xrange(self.tableWidget.rowCount()):
                 self.addrow(self.tableWidget, '', i,1)
@@ -2168,6 +2188,40 @@ class AccountWindow(QtGui.QMainWindow):
             self.tableWidget_addonservice.setColumnHidden(0, True)
             self.tableWidget_addonservice.resizeColumnsToContents()
             
+    def accountHardwareRefresh(self):
+        if self.model:
+            [u'#', u'Тип оборудования', u'Производитель', u'Модель', u'Серийный номер', u'Выдано', u"Возвращено"]
+            sp = self.connection.sql("""
+            SELECT ahw.id,ahw.datetime,ahw.returned,ahw.comment, hw.sn, hw.name as hwname , model.name as model, m.name as manufacturer, hwtype.name as hwtype_name
+            FROM billservice_accounthardware as ahw 
+            JOIN billservice_hardware as hw ON ahw.hardware_id=hw.id
+            JOIN billservice_model as model ON model.id=hw.model_id
+            JOIN billservice_hardwaretype as hwtype ON hwtype.id=model.hardwaretype_id
+            JOIN billservice_manufacturer as m ON m.id=model.manufacturer_id
+            WHERE ahw.account_id=%s ORDER BY ahw.returned,ahw.datetime
+            """ % self.model.id)
+            self.connection.commit()
+            self.tableWidget_accounthardware.clearContents()
+            self.tableWidget_accounthardware.setSortingEnabled(False)
+            self.tableWidget_accounthardware.setRowCount(len(sp))
+            i=0
+            for a in sp:
+                self.addrow(self.tableWidget_accounthardware, a.id, i, 0)
+                self.addrow(self.tableWidget_accounthardware, a.hwtype_name, i, 1)
+                self.addrow(self.tableWidget_accounthardware, a.manufacturer, i, 2)
+                self.addrow(self.tableWidget_accounthardware, a.model, i, 3)
+                self.addrow(self.tableWidget_accounthardware, a.sn, i, 4)
+                self.addrow(self.tableWidget_accounthardware, a.datetime, i, 5)
+                self.addrow(self.tableWidget_accounthardware, a.returned, i, 6)
+                
+                self.addrow(self.tableWidget_accounthardware, a.comment, i, 7)
+              
+
+                i+=1
+            self.tableWidget_accounthardware.setColumnHidden(0, True)
+            self.tableWidget_accounthardware.setSortingEnabled(True)
+            self.tableWidget_accounthardware.resizeColumnsToContents()
+            
     def subAccountLinkRefresh(self):
         if self.model:
             sp = self.connection.get_models("billservice_subaccount", where={'account_id':self.model.id})
@@ -2241,7 +2295,9 @@ class AccountWindow(QtGui.QMainWindow):
             self.addAddonService()
         elif self.tabWidget.currentIndex()==1:
             self.addSubAccountLink()
-    
+        elif self.tabWidget.currentIndex()==6:
+            self.addAccountHardware()
+                
     def del_action(self):
         if self.tabWidget.currentIndex()==4:
             self.del_accounttarif()
@@ -2249,7 +2305,9 @@ class AccountWindow(QtGui.QMainWindow):
             self.del_suspendedperiod()
         elif self.tabWidget.currentIndex()==1:
             self.delSubAccountLink()
-           
+        elif self.tabWidget.currentIndex()==6:
+            self.delAccountHardware()
+            
     def addSubAccountLink(self):
         child=SubaccountLinkDialog(connection=self.connection, account=self.model)
         if child.exec_()==1:
@@ -2268,6 +2326,23 @@ class AccountWindow(QtGui.QMainWindow):
         if child.exec_()==1:
             self.accountAddonServiceRefresh()
         
+    def addAccountHardware(self):
+        i=self.getSelectedId(self.tableWidget_addonservice)
+        child = AccountHardwareDialog(connection=self.connection, account_model = self.model.id)
+        if child.exec_()==1:
+            self.accountHardwareRefresh()
+    
+    def editAccounthardware(self):
+        i=self.getSelectedId(self.tableWidget_accounthardware)
+        try:
+            model = self.connection.get_model(i, "billservice_accounthardware")
+        except:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
+            return
+        child = AccountHardwareDialog(connection=self.connection, model=model, account_model = self.model.id)
+        if child.exec_()==1:
+            self.accountHardwareRefresh()
+            
     def editAddonService(self):
         i=self.getSelectedId(self.tableWidget_addonservice)
         try:
@@ -2325,6 +2400,19 @@ class AccountWindow(QtGui.QMainWindow):
         if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             self.connection.iddelete(i, "billservice_subaccount")
             self.subAccountLinkRefresh()
+            
+    def delAccountHardware(self):
+        i=self.getSelectedId(self.tableWidget_accounthardware)
+        try:
+            model = self.connection.get_model(i, "billservice_accounthardware", fields=['id'])
+        except:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
+            return
+     
+        
+        if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы\nЛучшим решением будет установить дату возврата?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            self.connection.iddelete(i, "billservice_accounthardware")
+            self.accountHardwareRefresh()
             
     def add_suspendedperiod(self):
         child=SuspendedPeriodForm()

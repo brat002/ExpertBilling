@@ -534,23 +534,23 @@ class MainWindow(QtGui.QMainWindow):
         self.connect(self.switchAct, QtCore.SIGNAL("triggered()"), self.switchWindow)
        
        
-        self.hardwaremanufacturerAct = QtGui.QAction(QtGui.QIcon("images/switch.png"), u"&Производители оборудования", self)
+        self.hardwaremanufacturerAct = QtGui.QAction(QtGui.QIcon("images/modem.png"), u"&Производители оборудования", self)
         
         self.hardwaremanufacturerAct.setStatusTip(u'Производители оборудования')
         self.connect(self.hardwaremanufacturerAct, QtCore.SIGNAL("triggered()"), self.hardwaremanufacturer)
         
-        self.hardwaretypeAct = QtGui.QAction(QtGui.QIcon("images/switch.png"), u"&Типы оборудования", self)
+        self.hardwaretypeAct = QtGui.QAction(QtGui.QIcon("images/modem.png"), u"&Типы оборудования", self)
         
         self.hardwaretypeAct.setStatusTip(u'Типы оборудования')
         self.connect(self.hardwaretypeAct, QtCore.SIGNAL("triggered()"), self.hardwaretype)
         
-        self.modelwindowAct = QtGui.QAction(QtGui.QIcon("images/switch.png"), u"&Модели оборудования", self)
+        self.modelwindowAct = QtGui.QAction(QtGui.QIcon("images/modem.png"), u"&Модели оборудования", self)
         
         self.modelwindowAct.setStatusTip(u'Модели оборудования')
         self.connect(self.modelwindowAct, QtCore.SIGNAL("triggered()"), self.modelwindow)        
         
         
-        self.hardwarewindowAct = QtGui.QAction(QtGui.QIcon("images/switch.png"), u"&Оборудование провайдера", self)
+        self.hardwarewindowAct = QtGui.QAction(QtGui.QIcon("images/modem.png"), u"&Подотчётное оборудование", self)
         
         self.hardwarewindowAct.setStatusTip(u'Оборудование провайдера')
         self.connect(self.hardwarewindowAct, QtCore.SIGNAL("triggered()"), self.hardwarewindow)        
