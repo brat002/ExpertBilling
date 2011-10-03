@@ -271,7 +271,9 @@ def transaction(cursor, account, approved, type, summ, description, created=None
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
                     """ , (bill, account, approved, type, tarif, accounttarif, summ, description, created))
 
-    tr_id=cursor.fetchone()[0]
+    tr_id=cursor.fetchone()
+    if tr_id:
+        tr_id=tr_id[0]
     return tr_id
 
 def transaction_noret(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null'):

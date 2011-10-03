@@ -1202,7 +1202,9 @@ class settlement_period_service_dog(Thread):
     
                         #нужно производить в конце расчётного периода
                         ballance_checkout = shedl.ballance_checkout if shedl.ballance_checkout else acc.datetime
-                        if ballance_checkout < period_start and acc.reset_tarif_cost and period_end and acc.cost > 0:
+                        if acc.username=='23521':
+                            pass
+                        if (ballance_checkout is None or ballance_checkout < period_start) and acc.reset_tarif_cost and period_end and acc.cost > 0:
                             #Снять сумму до стоимости тарифного плана                   
                             #Считаем сколько было списано по услугам                   
                             tnc, tkc, delta = settlement_period_info(time_start, sp.length_in, sp.length, dateAT, prev=True)
@@ -1224,12 +1226,13 @@ class settlement_period_service_dog(Thread):
                          and acc.cost != 0 and acc.require_tarif_cost and not acc.balance_blocked:
                             '''cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
                                           (acc.account_id, period_start, now))'''
-                            cur.execute("""SELECT transaction_sum(%s, %s, %s::timestamp without time zone, %s::timestamp without time zone);""",
-                                          (acc.account_id, acc.acctf_id, period_start, now))
+                            #cur.execute("""SELECT transaction_sum(%s, %s, %s::timestamp without time zone, %s::timestamp without time zone);""",
+                            #              (acc.account_id, acc.acctf_id, period_start, now))
+                            #cur.execute("SELECT balance FROM billservice_balancehistory WHERE datetime<%s  and account_id=%s ORDER BY datetime DESC limit 1", (now,acc.account_id,))
                             #pstart_balance = (cur.fetchone()[0] or 0) + account_balance
-                            pstart_balance = (cur.fetchone()[0] or 0)
+                            #pstart_balance = (cur.fetchone()[0] or 0)
                             #if acc.cost > pstart_balance:
-                            if acc.cost > (pstart_balance + acc.ballance + acc.credit):
+                            if acc.cost > (acc.ballance + acc.credit):
                                 cur.execute("SELECT shedulelog_blocked_fn(%s, %s, %s::timestamp without time zone, %s);", 
                                             (acc.account_id, acc.acctf_id, now, acc.cost))
                             cur.connection.commit()
@@ -1238,13 +1241,13 @@ class settlement_period_service_dog(Thread):
                             """Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя"""
                             '''cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
                                           (acc.account_id, period_start, now))'''
-                            cur.execute("""SELECT transaction_sum(%s, %s, %s::timestamp without time zone, %s::timestamp without time zone);""",
-                                          (acc.account_id, acc.acctf_id, period_start, now))
+                            #cur.execute("""SELECT transaction_sum(%s, %s, %s::timestamp without time zone, %s::timestamp without time zone);""",
+                            #              (acc.account_id, acc.acctf_id, period_start, now))
                             #pstart_balance = (cur.fetchone()[0] or 0) + account_balance
-                            pstart_balance = (cur.fetchone()[0] or 0)
+                            #pstart_balance = (cur.fetchone()[0] or 0)
                             #if acc.cost <= pstart_balance:
-                            if acc.cost <= (pstart_balance + acc.ballance + acc.credit):
-                                cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (acc.account_id,))                            
+                            #if acc.cost <= (pstart_balance + acc.ballance + acc.credit):
+                            cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (acc.account_id,))                            
                             cur.connection.commit()
                         
                         #print repr(acc)
