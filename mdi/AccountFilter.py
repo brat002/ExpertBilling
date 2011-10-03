@@ -309,12 +309,12 @@ class AccountFilterDialog(QtGui.QDialog):
     def accept(self):
         r=[]
         r.append(('acc.contract','=',unicode(self.lineEdit_agreement.text())))
-        r.append(('acc.username', ' LIKE ',unicode(self.lineEdit_account.text())))
-        r.append(('acc.fullname', ' LIKE ',unicode(self.lineEdit_fullname.text())))
-        r.append(('subacc.username', ' LIKE ',unicode(self.lineEdit_subaccount.text())))
+        r.append(('acc.username', ' ILIKE ',unicode(self.lineEdit_account.text())))
+        r.append(('acc.fullname', ' ILIKE ',unicode(self.lineEdit_fullname.text())))
+        r.append(('subacc.username', ' ILIKE ',unicode(self.lineEdit_subaccount.text())))
         
-        r.append(('subacc.ipn_ip_address::text',' LIKE ',unicode(self.lineEdit_ipn_ip.text())))
-        r.append(('subacc.vpn_ip_address::text', ' LIKE ',unicode(self.lineEdit_vpn_ip.text())))
+        r.append(('subacc.ipn_ip_address::text',' ILIKE ',unicode(self.lineEdit_ipn_ip.text())))
+        r.append(('subacc.vpn_ip_address::text', ' ILIKE ',unicode(self.lineEdit_vpn_ip.text())))
         
         r.append(('acc.entrance', ' = ',unicode(self.comboBox_bulk.currentText())))
         r.append(('acc.row', ' = ',unicode(self.comboBox_stage.currentText())))

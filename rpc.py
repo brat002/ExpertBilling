@@ -941,17 +941,28 @@ class RPCServer(object):
         result = map(Object, cur.fetchall())
         return result    
 
-    def get_accounts_for_cachier(self, fullname, city, street, house, bulk, room, username, contract, cur=None, connection=None, add_data = {}):
+    def get_accounts_for_cachier(self, fullname, city, street, house, bulk, room, username, contract, phone_h, phone_m, cur=None, connection=None, add_data = {}):
         
-        res={'fullname':fullname, 'city':city, 'street':street, 'house':house, 'house_bulk':bulk, 'room':room, 'username': username, "contract":contract,}
+        res={'fullname':fullname,  'house_bulk':bulk, 'room':room, 'username': username, "contract":contract,'phone_h':phone_h, 'phone_m':phone_m}
         if fullname or city or street or house or bulk or room or username or contract:
-            city_sql=''
+            res_sql=[]
             if city:
-                city_sql=" AND name LIKE '%"+city+"'%"
+                res_sql.append(" city_id=%s " % city)
             house_sql=''
             if house:
-                house_sql=" AND name LIKE '%"+house+"'%"
-            sql=u"""SELECT id, contract,username,fullname,ballance,credit,status,created,(SELECT name FROM billservice_street WHERE id=account.street_id %s) as street,(SELECT name FROM billservice_house WHERE id=account.house_id %s) as house,house_bulk,room, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name FROM billservice_account as account WHERE %s and get_tarif(id)IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s))  ORDER BY username ASC;""" % (city_sql,house_sql,' AND '.join([u"%s ILIKE '%s%s%s'" % (key, "%",res[key],"%") for key in res]), add_data['USER_ID'][1],)
+                res_sql.append(" house_id=%s " % house)
+
+            street_sql=''
+            if street:
+                res_sql.append(" street_id=%s " % street)
+                
+            r_sql=' AND '.join(res_sql)
+            if r_sql:
+                r_sql+=' AND '
+            sql=u"""SELECT id, contract,username,fullname,ballance,credit,status,created,(SELECT name FROM billservice_street WHERE id=account.street_id) as street,(SELECT name FROM billservice_house WHERE id=account.house_id) as house,house_bulk,room, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name 
+            FROM billservice_account as account 
+            WHERE %s %s and get_tarif(id)IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN 
+            (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s))  ORDER BY username ASC;""" % (r_sql,' AND '.join([u"%s ILIKE '%s%s%s'" % (key, "%",res[key],"%") for key in res]), add_data['USER_ID'][1],)
         else:
             sql=u"""SELECT id, contract,username,fullname,ballance,credit,status,created,(SELECT name FROM billservice_street WHERE id=account.street_id) as street,(SELECT name FROM billservice_house WHERE id=account.house_id) as house, house_bulk,room, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name  FROM billservice_account as account WHERE get_tarif(id)IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s))ORDER BY username ASC;""" % (add_data['USER_ID'][1],)
 
