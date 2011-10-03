@@ -1450,7 +1450,7 @@ class HandleSDHCP(HandleSAuth):
             if not switch:
                 sqlloggerthread.add_message(nas=nas_id, type="DHCP_CANT_FIND_SWITH_BY_REMOTE_ID", service=self.access_type, cause=u'Невозможно найти коммутатор с remote-id %s ' % (identify, ), datetime=self.datetime)
                 return self.auth_NA(authobject)  
-            
+
 
             if not subacc:
                 """

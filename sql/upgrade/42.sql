@@ -65,4 +65,4 @@ ALTER FUNCTION psh_crt_pdb(date) OWNER TO ebs;
 
 DROP TRIGGER psh_del_trg ON billservice_periodicalservicehistory;
 
-DROP TRIGGER acc_psh_trg ON psh20111001;
+
