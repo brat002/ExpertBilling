@@ -25,7 +25,7 @@ CREATE TABLE billservice_hardware (
     comment text DEFAULT '',
     ipaddress text,
     macaddress varchar(32)
-)
+);
 
 
 

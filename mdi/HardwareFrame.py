@@ -247,6 +247,9 @@ class AccountHardwareDialog(QtGui.QDialog):
             model = Object()
             model.account_id=self.account_model
         model.hardware_id=self.comboBox_hardware.itemData(self.comboBox_hardware.currentIndex()).toInt()[0]
+        if not model.hardware_id:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы должны выбрать оборудование, передаваемое аккаунту."))
+            return
         model.datetime = self.dateTimeEdit_transfer_date.toPyDateTime()
         if self.checkBox_return.isChecked():
             model.returned = self.dateTimeEdit_return_date.toPyDateTime()
@@ -259,7 +262,9 @@ class AccountHardwareDialog(QtGui.QDialog):
             self.connection.commit()
         except Exception, e:
             print e
-            self.connection.rollback()   
+            self.connection.rollback()
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Произошла ошибка записи данных."))
+            return               
         QtGui.QDialog.accept(self)
             
 class HardwareDialog(QtGui.QDialog):
