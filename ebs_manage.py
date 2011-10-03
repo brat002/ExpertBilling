@@ -509,6 +509,32 @@ if __name__=='__main__':
             pre_upgrade()
             
             backup_db()
+            #fromchanges()
+            upgrade_db()
+                        
+            files=files_for_copy()
+            if files:
+                copy_files(files)
+            else:
+                print '*'*80
+                print 'Files copying dont need'
+            allow_continue('Do you want to setup EBS webcab?')
+            
+        if  'upgrade1.3' in sys.argv:
+            installation_date = modification_date(BILLING_PATH+'/license.lic')
+            print installation_date
+            if not len(sys.argv)==3:  
+                print "*"*80
+                print 'Please define archive path and name (example: upgrade.py upgrade /opt/12345678901234567890.tar.gz)'
+                sys.exit()
+            
+            stop_processes()    
+            unpack_archive(sys.argv[2])
+            
+            
+            pre_upgrade()
+            
+            backup_db()
             fromchanges()
             upgrade_db()
                         
@@ -520,7 +546,6 @@ if __name__=='__main__':
                 print 'Files copying dont need'
             allow_continue('Do you want to setup EBS webcab?')
             
-
         if 'migrate' in sys.argv:
             allow_continue('Do you want to migrate your accounts database from 1.3 to 1.4 EBS version?')
             backup_db()
