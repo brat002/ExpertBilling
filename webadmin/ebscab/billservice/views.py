@@ -134,7 +134,7 @@ def login(request):
                     log_in(request, user)
                     if isinstance(user.account, SystemUser):
                         return HttpResponseRedirect(reverse("helpdesk_dashboard"))
-                     tariff = user.account.get_account_tariff()
+                    tariff = user.account.get_account_tariff()
                     if tariff.allow_express_pay:
                         request.session['express_pay']=True
                     request.session.modified = True
