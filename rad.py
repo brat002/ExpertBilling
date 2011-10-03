@@ -1446,10 +1446,11 @@ class HandleSDHCP(HandleSAuth):
             else:
                 identify, vlan, module, port=parse('dlink-32xx', self.packetobject.get("Agent-Remote-ID",[''])[0],self.packetobject.get("Agent-Circuit-ID",[''])[0])
             switch = self.caches.switch_cache.by_remote_id.get(identify)# реальный свитч, с которого пришёл запрос
+            logger.warning("DHCP option82 remote_id, port %s %s", (identify, port,))
             if not switch:
                 sqlloggerthread.add_message(nas=nas_id, type="DHCP_CANT_FIND_SWITH_BY_REMOTE_ID", service=self.access_type, cause=u'Невозможно найти коммутатор с remote-id %s ' % (identify, ), datetime=self.datetime)
                 return self.auth_NA(authobject)  
-            logger.warning("DHCP option82 remote_id, port %s %s", (identify, port,))
+            
 
             if not subacc:
                 """
