@@ -18,8 +18,9 @@ from django.utils.translation import ugettext as _
 from helpdesk.forms import PublicTicketForm
 from helpdesk.lib import send_templated_mail, text_is_spam
 from helpdesk.models import Ticket, Queue
+from lib.decorators import render_to, login_required
 
-
+@login_required
 def homepage(request):
     if request.user.is_staff:
         if getattr(request.user.usersettings.settings, 'login_view_ticketlist', False):
@@ -35,7 +36,7 @@ def homepage(request):
                 # This submission is spam. Let's not save it.
                 return render_to_response('helpdesk/public_spam.html', RequestContext(request, {}))
             else:
-                ticket = form.save()
+                ticket = form.save(request.user)
                 return HttpResponseRedirect('%s?ticket=%s&email=%s'% (
                     reverse('helpdesk_public_view'),
                     ticket.ticket_for_url,
@@ -61,7 +62,7 @@ def homepage(request):
             'form': form,
         }))
 
-
+@login_required
 def view_ticket(request):
     ticket_req = request.GET.get('ticket', '')
     ticket = False
