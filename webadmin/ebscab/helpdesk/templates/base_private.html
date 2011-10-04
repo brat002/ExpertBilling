@@ -1,0 +1,53 @@
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+{% load account_menu %}
+{% block extra_head %}
+
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/helpdesk.css" type="text/css" />
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/private_area_layout.css" type="text/css">
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/notify.css" type="text/css" />
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/forms.css" type="text/css">
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/action_links.css" type="text/css">
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/layout.css">
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/new_design.css">
+<script type="text/javascript" src="{{ MEDIA_URL }}prettyforms/js/jquery.hoverbox.min.js"></script>
+
+{% block helpdesk_head %}{% endblock %}
+{% endblock %}
+</head>
+<body>
+{% block login %}
+    {% if request.user.is_staff %}
+        {% staff_menu %}
+    {% else %}
+        {% account_menu %}
+    {% endif %}
+{% endblock %}
+{% block base %}
+{{ block.super }}
+    <div id="main">
+
+     {% block notifications %}
+        {% if request.notifications %}
+        <ul>
+        {% for message in request.notifications %}
+        <li class="{% if message.tags %}{{ message.tags }}{% else %}information{% endif %}">
+        {{ message }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+      {% endblock %}
+        <div id="main-content" class="clear">
+            <h1>{% block title %}{% endblock %}</h1>
+            {% block content %}{% endblock %}
+        </div> <!-- /main content -->
+    </div> <!-- /main -->
+    <div id="sbar">
+        <!-- EXTRA TASKS -->
+        {% block side_bar %}{% endblock %}
+    </div>
+{% endblock %}s
+</div>
+</body>
+</html>
