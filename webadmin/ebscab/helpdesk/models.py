@@ -269,18 +269,16 @@ class Ticket(models.Model):
         )
 
     queue = models.ForeignKey(Queue, verbose_name=_(u'Queue'))
-    owner = models.ForeignKey(User, related_name='submitted_by', null=True, blank=True, \
+    owner = models.ForeignKey(User, related_name='submitted_by', null=False, blank=False, \
                                   verbose_name=_(u'Owner'))
-    #assigned = models.ForeignKey(User, related_name='assigned_by', null=True, blank=True, \
-    #                              verbose_name=_(u'Assigned'))
-    
+    assigned_to = models.ForeignKey(User,related_name='assigned_to',blank=True,null=True)
     created = models.DateTimeField(_(u'Created'), blank=True, \
                                    help_text=_('Date this ticket was first created'),)
     modified = models.DateTimeField(_(u'Modified'), blank=True, \
         help_text=_(u'Date this ticket was most recently changed.'),)
     submitter_email = models.EmailField(_('Submitter E-Mail'), blank=True, null=True, \
         help_text=_(u'The submitter will receive an email for all public follow-ups left for this task.'))
-    assigned_to = models.ForeignKey(User,related_name='assigned_to',blank=True,null=True)
+    
     status = models.IntegerField(_(u'Status'), choices=STATUS_CHOICES, default=OPEN_STATUS)
     on_hold = models.BooleanField(_(u'On Hold'), blank=True, default=False, \
         help_text=_(u'If a ticket is on hold, it will not automatically be escalated.'))
@@ -466,7 +464,7 @@ class FollowUp(models.Model):
     objects = FollowUpManager()
 
     class Meta:
-        ordering = ['date']
+        ordering = ['-date']
         verbose_name = _(u'follow up')
         verbose_name_plural = _(u'Follow ups')
 
