@@ -1109,7 +1109,7 @@ class HandleSAuth(HandleSBase):
                 self.replypacket.AddAttribute('Framed-IPv6-Prefix', '::/128')
             #account_speed_limit_cache
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
-            self.replypacket.AddAttribute('Class', str("%s,%s,%s" % (subacc.id,ipinuse_id,str(self.session_speed))))
+            self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc.id,ipinuse_id,nas.id,str(self.session_speed))))
             self.add_values(acc.tarif_id, nas.id)
             #print "Setting Speed For User" , self.speed
             if vars.SQLLOG_SUCCESS:
@@ -1242,7 +1242,7 @@ class HandlelISGAuth(HandleSAuth):
                 self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
-            self.replypacket.AddAttribute('Class', str("%s,%s" % (subacc.id,str(self.session_speed))))
+            self.replypacket.AddAttribute('Class', str("%s,0,%s,%s" % (subacc.id,nas_id,str(self.session_speed))))
             self.add_values(acc.tarif_id, nas.id)
             if vars.SQLLOG_SUCCESS:
                 sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
@@ -1339,7 +1339,7 @@ class HandleHotSpotAuth(HandleSAuth):
         if subacc:
             subacc_id=subacc.id
         else:
-            subacc_id = acc.nas_id
+            subacc_id = None
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (user_name,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
             sqlloggerthread.add_message(nas=acc.nas_id, subaccount=subacc_id, account=acc.account_id, type="AUTH_HOTSPOT_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
@@ -1395,7 +1395,7 @@ class HandleHotSpotAuth(HandleSAuth):
                               
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             self.create_speed(nas, None, acct_card.tarif_id, acct_card.account_id, speed='')
-            self.replypacket.AddAttribute('Class', str("%s,%s,%s" % (subacc_id,ipinuse_id,str(self.session_speed))))
+            self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc_id,ipinuse_id,nas.id, str(self.session_speed))))
             self.add_values(acct_card.tarif_id, nas.id)
             if vars.SQLLOG_SUCCESS:
                 sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.account_id,  type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)            
@@ -1583,6 +1583,7 @@ class HandleSAcct(HandleSBase):
     def handle(self):
         # TODO: Прикрутить корректное определение НАС-а
         nas_by_int_id = False
+        nas_int_id = None
         nas_name = ''
         acc = None
         if self.packetobject.has_key('NAS-Identifier'):
@@ -1595,10 +1596,16 @@ class HandleSAcct(HandleSBase):
             logger.info('ACCT: unknown NAS: %s', (self.nasip,))
             return None
         ipinuse_id = None
-        try:
-            subacc_id, ipinuse_id, session_speed = self.packetobject.get('Class', ",")[0].split(",")
-        except:
-            subacc_id, session_speed = self.packetobject.get('Class', ",")[0].split(",")
+        class_info=self.packetobject.get('Class', ",")[0].split(",")
+        if len(class_info)==4:
+            subacc_id, ipinuse_id, nas_int_id, session_speed = class_info
+        elif len(class_info)==3:
+            subacc_id, ipinuse_id, session_speed = class_info
+        elif len(class_info)==2:
+            subacc_id, session_speed = class_info
+            
+        if nas_int_id=='None':
+            nas_int_id=None
             
         #if 0: assert isinstance(nas, NasData)
         logger.info('ACCT: Extracting subacc_id, speed from cookie: subacc=%s speed=%s', (subacc_id, session_speed,))
@@ -1657,7 +1664,7 @@ class HandleSAcct(HandleSBase):
         #print self.packetobject
         #packet_session = self.packetobject['Acct-Session-Id'][0]
         if self.packetobject['Acct-Status-Type']==['Start']:
-            if nas_by_int_id:
+            if nas_int_id:
                 self.cur.execute("""SELECT id FROM radius_activesession
                                 WHERE account_id=%s AND sessionid=%s AND
                                 caller_id=%s AND called_id=%s AND 
@@ -1665,7 +1672,7 @@ class HandleSAcct(HandleSBase):
                              """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
                                     self.packetobject['Calling-Station-Id'][0],
                                     self.packetobject['Called-Station-Id'][0], \
-                                    nas.id, self.access_type,))
+                                    nas_int_id, self.access_type,))
             else:                
                 self.cur.execute("""SELECT id FROM radius_activesession
                                     WHERE account_id=%s AND sessionid=%s AND
@@ -1687,28 +1694,17 @@ class HandleSAcct(HandleSBase):
                                         self.packetobject['Calling-Station-Id'][0], 
                                         self.packetobject['Called-Station-Id'][0], 
                                         self.packetobject.get('Framed-IP-Address',[''])[0],
-                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas.id, session_speed if not sessions_speed.get(acc.account_id, "") else sessions_speed.get(acc.account_id, ""),self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
-                try:
-                    #???? Locks, anyone??
-                    del sessions_speed[acc.account_id]
-                except:
-                    pass
-                if nas_by_int_id:
-                    with queues.sessions_lock:
-                        queues.sessions[str(self.packetobject['Acct-Session-Id'][0])] = (nas.id, now)
-
+                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas_int_id, session_speed if not sessions_speed.get(acc.account_id, "") else sessions_speed.get(acc.account_id, ""),self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
 
         elif self.packetobject['Acct-Status-Type']==['Alive']:
             bytes_in, bytes_out = self.get_bytes()
 
-            if nas_by_int_id:
-                with queues.sessions_lock:
-                    nas_int_id, sess_time = queues.sessions.get(self.packetobject['Acct-Session-Id'][0], (None, None))
-                if nas_int_id:
-                    self.cur.execute("""UPDATE radius_activesession
-                                 SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'
-                                 WHERE sessionid=%s and nas_int_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;
-                                 """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject['Acct-Session-Id'][0], nas_int_id, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None))
+
+            if nas_int_id:
+                self.cur.execute("""UPDATE radius_activesession
+                             SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'
+                             WHERE sessionid=%s and nas_int_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;
+                             """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject['Acct-Session-Id'][0], nas_int_id, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None))
             else:
                 self.cur.execute("""UPDATE radius_activesession
                              SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, session_status='ACTIVE'
@@ -1719,13 +1715,11 @@ class HandleSAcct(HandleSBase):
         elif self.packetobject['Acct-Status-Type']==['Stop']:
             bytes_in, bytes_out=self.get_bytes()
 
-            if nas_by_int_id:
-                with queues.sessions_lock:
-                    nas_int_id, sess_time = queues.sessions.pop(self.packetobject['Acct-Session-Id'][0], (None, None))
-                if nas_int_id is not None:
-                    self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK', acct_terminate_cause=%s
-                                 WHERE sessionid=%s and nas_int_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;;
-                                 """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], nas_int_id, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None,))
+
+            if nas_int_id:
+                self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK', acct_terminate_cause=%s
+                             WHERE sessionid=%s and nas_int_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;;
+                             """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], nas_int_id, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None,))
             else:
                 self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK', acct_terminate_cause=%s
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;;
