@@ -17,11 +17,12 @@ from django.utils.translation import ugettext as _
 
 from helpdesk.forms import PublicTicketForm
 from helpdesk.lib import send_templated_mail, text_is_spam
-from helpdesk.models import Ticket, Queue
+from helpdesk.models import Ticket, Queue, FollowUp, TicketChange, PreSetReply, Attachment, SavedSearch, IgnoreEmail, TicketCC
+from helpdesk.settings import HAS_TAG_SUPPORT
 from lib.decorators import render_to, login_required
-
+from helpdesk.lib import send_templated_mail, line_chart, bar_chart, query_to_dict, apply_query, safe_template_context
 @login_required
-def homepage(request):
+def add_ticket(request):
     if request.user.is_staff:
         if getattr(request.user.usersettings.settings, 'login_view_ticketlist', False):
             return HttpResponseRedirect(reverse('helpdesk_list'))
@@ -64,15 +65,15 @@ def homepage(request):
 
 @login_required
 def view_ticket(request):
-    ticket_id = request.GET.get('ticket', '')
+    ticket_req = request.GET.get('ticket', '')
     ticket = False
     email = request.GET.get('email', '')
     error_message = ''
 
-    if ticket_id:
-        #parts = ticket_req.split('-')
-        #queue = '-'.join(parts[0:-1])
-        #ticket_id = parts[-1]
+    if ticket_req:
+        parts = ticket_req.split('-')
+        queue = '-'.join(parts[0:-1])
+        ticket_id = parts[-1]
 
         try:
             ticket = Ticket.objects.get(id=ticket_id, owner=request.user)
@@ -115,4 +116,206 @@ def view_ticket(request):
 def view_tickets(request):
     tickets=Ticket.objects.filter(owner=request.user).order_by('-created')
     return {'tickets':tickets}
+    
+def update_ticket(request, ticket_id, public=False):
+    #if not (public or (request.user.is_authenticated() and request.user.is_active and request.user.is_staff)):
+    #    return HttpResponseForbidden(_('Sorry, you need to login to do that.'))
+
+    ticket = get_object_or_404(Ticket, id=ticket_id)
+
+    comment = request.POST.get('comment', '')
+    new_status = int(request.POST.get('new_status', ticket.status))
+    title = request.POST.get('title', ticket.title)
+    public = request.POST.get('public', public)
+       
+    owner = int(request.POST.get('owner', 0))
+    priority = int(request.POST.get('priority', ticket.priority))
+    tags = request.POST.get('tags', '')
+
+    # We need to allow the 'ticket' and 'queue' contexts to be applied to the
+    # comment.
+    from django.template import loader, Context
+    context = safe_template_context(ticket)
+    comment = loader.get_template_from_string(comment).render(Context(context))
+
+    if owner is None and ticket.assigned_to:
+        owner = ticket.assigned_to.id
+
+    f = FollowUp(ticket=ticket, date=datetime.now(), comment=comment)
+
+    if request.user.is_authenticated():
+        f.user = request.user
+
+    f.public = public
+
+    reassigned = False
+
+    if owner is not None:
+        if owner != 0 and ((ticket.assigned_to and owner != ticket.assigned_to.id) or not ticket.assigned_to):
+            new_user = User.objects.get(id=owner)
+            f.title = _('Assigned to %(username)s') % {
+                'username': new_user.username,
+                }
+            ticket.assigned_to = new_user
+            reassigned = True
+        elif owner == 0 and ticket.assigned_to is not None:
+            f.title = _('Unassigned')
+            ticket.assigned_to = None
+
+    if new_status != ticket.status:
+        ticket.status = new_status
+        ticket.save()
+        f.new_status = new_status
+        if f.title:
+            f.title += ' and %s' % ticket.get_status_display()
+        else:
+            f.title = '%s' % ticket.get_status_display()
+
+    if not f.title:
+        if f.comment:
+            f.title = _('Comment')
+        else:
+            f.title = _('Updated')
+
+    f.save()
+    files = []
+    if request.FILES:
+        import mimetypes, os
+        for file in request.FILES.getlist('attachment'):
+            filename = file.name.replace(' ', '_')
+            a = Attachment(
+                followup=f,
+                filename=filename,
+                mime_type=mimetypes.guess_type(filename)[0] or 'application/octet-stream',
+                size=file.size,
+                )
+            a.file.save(file.name, file, save=False)
+            a.save()
+
+            if file.size < getattr(settings, 'MAX_EMAIL_ATTACHMENT_SIZE', 512000):
+                # Only files smaller than 512kb (or as defined in
+                # settings.MAX_EMAIL_ATTACHMENT_SIZE) are sent via email.
+                files.append(a.file.path)
+
+
+    if title != ticket.title:
+        c = TicketChange(
+            followup=f,
+            field=_('Title'),
+            old_value=ticket.title,
+            new_value=title,
+            )
+        c.save()
+        ticket.title = title
+
+    if priority != ticket.priority:
+        c = TicketChange(
+            followup=f,
+            field=_('Priority'),
+            old_value=ticket.priority,
+            new_value=priority,
+            )
+        c.save()
+        ticket.priority = priority
+
+    if HAS_TAG_SUPPORT:
+        if tags != ticket.tags:
+            c = TicketChange(
+                followup=f,
+                field=_('Tags'),
+                old_value=ticket.tags,
+                new_value=tags,
+                )
+            c.save()
+            ticket.tags = tags
+
+    if f.new_status == Ticket.RESOLVED_STATUS:
+        ticket.resolution = comment
+
+    messages_sent_to = []
+
+    context.update(
+        resolution=ticket.resolution,
+        comment=f.comment,
+        )
+
+    if ticket.submitter_email and public and (f.comment or (f.new_status in (Ticket.RESOLVED_STATUS, Ticket.CLOSED_STATUS))):
+
+        if f.new_status == Ticket.RESOLVED_STATUS:
+            template = 'resolved_submitter'
+        elif f.new_status == Ticket.CLOSED_STATUS:
+            template = 'closed_submitter'
+        else:
+            template = 'updated_submitter'
+
+        send_templated_mail(
+            template,
+            context,
+            recipients=ticket.submitter_email,
+            sender=ticket.queue.from_address,
+            fail_silently=True,
+            files=files,
+            )
+        messages_sent_to.append(ticket.submitter_email)
+
+        for cc in ticket.ticketcc_set.all():
+            if cc.email_address not in messages_sent_to:
+                send_templated_mail(
+                    template,
+                    context,
+                    recipients=cc.email_address,
+                    sender=ticket.queue.from_address,
+                    fail_silently=True,
+                    )
+                messages_sent_to.append(cc.email_address)
+
+    if ticket.assigned_to and request.user != ticket.assigned_to and ticket.assigned_to.email and ticket.assigned_to.email not in messages_sent_to:
+        # We only send e-mails to staff members if the ticket is updated by
+        # another user. The actual template varies, depending on what has been
+        # changed.
+        if reassigned:
+            template_staff = 'assigned_owner'
+        elif f.new_status == Ticket.RESOLVED_STATUS:
+            template_staff = 'resolved_owner'
+        elif f.new_status == Ticket.CLOSED_STATUS:
+            template_staff = 'closed_owner'
+        else:
+            template_staff = 'updated_owner'
+
+        if (not reassigned or ( reassigned and ticket.assigned_to.usersettings.settings.get('email_on_ticket_assign', False))) or (not reassigned and ticket.assigned_to.usersettings.settings.get('email_on_ticket_change', False)):
+            send_templated_mail(
+                template_staff,
+                context,
+                recipients=ticket.assigned_to.email,
+                sender=ticket.queue.from_address,
+                fail_silently=True,
+                files=files,
+                )
+            messages_sent_to.append(ticket.assigned_to.email)
+
+    if ticket.queue.updated_ticket_cc and ticket.queue.updated_ticket_cc not in messages_sent_to:
+        if reassigned:
+            template_cc = 'assigned_cc'
+        elif f.new_status == Ticket.RESOLVED_STATUS:
+            template_cc = 'resolved_cc'
+        elif f.new_status == Ticket.CLOSED_STATUS:
+            template_cc = 'closed_cc'
+        else:
+            template_cc = 'updated_cc'
+
+        send_templated_mail(
+            template_cc,
+            context,
+            recipients=ticket.queue.updated_ticket_cc,
+            sender=ticket.queue.from_address,
+            fail_silently=True,
+            files=files,
+            )
+
+    ticket.save()
+
+    if request.user.is_staff:
+        return HttpResponseRedirect(ticket.get_absolute_url())
+    else:
+        return HttpResponseRedirect(ticket.ticket_url)
     

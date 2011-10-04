@@ -405,12 +405,14 @@ class AsyncAuthServ(AsyncUDPServer):
                 authobject, packetfromcore = coreconnect.handle()
                 if packetfromcore is None: logger.info("Unknown NAS %s", str(nas_ip)); return
                 returndata, replypacket=authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT)
+                logger.debug("REPLY packet: %s", repr(replypacket))
             elif access_type in ['lISG'] :
                 coreconnect = HandlelISGAuth(packetobject=packetobject, access_type = access_type)
                 coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                 authobject, packetfromcore = coreconnect.handle()
                 if packetfromcore is None: logger.info("Unknown NAS or Account %s", str(nas_ip)); return
-                returndata, replypacket=authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT)                
+                returndata, replypacket=authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT)       
+                logger.debug("REPLY packet: %s", repr(replypacket))         
                 
             else:
                 #-----
@@ -1586,6 +1588,7 @@ class HandleSAcct(HandleSBase):
         nas_int_id = None
         nas_name = ''
         acc = None
+        nas=None
         if self.packetobject.has_key('NAS-Identifier'):
             nas_name = self.packetobject['NAS-Identifier'][0]
             nasses = self.caches.nas_cache.by_ip_n_identify.get((self.nasip,nas_name))
@@ -1606,7 +1609,12 @@ class HandleSAcct(HandleSBase):
             
         if nas_int_id=='None':
             nas_int_id=None
-            
+        else:
+            try:
+                nas_int_id=int(nas_int_id)
+            except:
+                logger.warning("Nas, presented in Class attribute %s can`t be converted to int", (nas_int_id, ))
+                nas_int_id=None
         #if 0: assert isinstance(nas, NasData)
         logger.info('ACCT: Extracting subacc_id, speed from cookie: subacc=%s speed=%s', (subacc_id, session_speed,))
         self.replypacket.secret=str(nasses[0].secret)  
@@ -1642,8 +1650,13 @@ class HandleSAcct(HandleSBase):
             logger.warning("Unknown User %s", self.userName)
             return self.acct_NA()
         if 0: assert isinstance(acc, AccountData)
-        
-        nas = self.caches.nas_cache.by_id.get(subacc.nas_id)
+        if nas_int_id:
+            nas = self.caches.nas_cache.by_id.get(nas_int_id)
+            if not nas:
+                logger.warning("Nas, presented in Class attribute %s not found in system. Settings nas_int_id to Null and search real nas", (nas_int_id, ))
+                nas_int_id=None
+        if not nas:
+            nas = self.caches.nas_cache.by_id.get(subacc.nas_id)
         if (nas and nas not in nasses) and (vars.IGNORE_NAS_FOR_VPN is False):
             """
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
