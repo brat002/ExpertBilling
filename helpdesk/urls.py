@@ -110,7 +110,7 @@ urlpatterns = patterns('helpdesk.views.staff',
 
 urlpatterns += patterns('helpdesk.views.public',
     url(r'^$',
-        'homepage',
+        'view_tickets',
         name='helpdesk_home'),
 
     url(r'^view/$',
