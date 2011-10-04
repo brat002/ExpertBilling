@@ -1,0 +1,23 @@
+{% extends 'base_private.html' %}
+{% load i18n %}
+{% block meta_title %}
+    {% block helpdesk_title %}{% trans "Helpdesk" %}{% endblock %}
+{% endblock %}
+{% block extrahead %}
+    {{ block.super }}
+    <script src='{{ MEDIA_URL }}helpdesk/jquery.js' type='text/javascript' language='javascript'></script>
+    <link rel='stylesheet' href='{{ MEDIA_URL }}helpdesk/helpdesk.css' type='text/css' />
+    {% block helpdesk_head %}{% endblock %}
+{% endblock %}
+{% block title %}{% trans "Helpdesk" %}{% endblock %}
+
+{% block content %}
+    {% block helpdesk_menu %}
+        <ul class="helpdesk-menu">
+            <li><a href='{% url helpdesk_home %}'>{% trans "Submit A Ticket" %}</a></li>
+            <li><a href='{% url helpdesk_kb_index %}'>{% trans "Knowledgebase" %}</a></li>
+        </ul>
+    {% endblock %}
+    {% block helpdesk_body %}{% endblock %}
+	{% include "helpdesk/debug.html" %}
+{% endblock %}
