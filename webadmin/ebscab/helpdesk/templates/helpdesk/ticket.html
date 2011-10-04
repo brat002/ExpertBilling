@@ -68,6 +68,13 @@
 </tr>
 
 <tr class='row_even'>
+    <th>{% trans "Owner" %}</th>
+    <td>
+      {{ ticket.owner }}
+    </td>
+</tr>
+
+<tr class='row_odd'>
     <th>{% trans "Assigned To" %}</th>
     <td>
       {{ ticket.get_assigned_to }}
@@ -76,15 +83,6 @@
         <a href='?take'><span class='button button_take'>{% trans "Take" %}</span></a>
       </strong>
       {% endifequal %}
-    </td>
-</tr>
-
-<tr class='row_odd'>
-    <th>{% trans "Submitter E-Mail" %}</th>
-    <td>{{ ticket.submitter_email }}{% if user.is_superuser %}
-        <strong>
-           <a class="cancel_link" href='{% url helpdesk_email_ignore_add %}?email={{ ticket.submitter_email }}'>{% trans "Ignore" %}</a>
-        </strong>{% endif %}
     </td>
 </tr>
 
