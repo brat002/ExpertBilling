@@ -269,8 +269,11 @@ class Ticket(models.Model):
         )
 
     queue = models.ForeignKey(Queue, verbose_name=_(u'Queue'))
-    submitter = models.ForeignKey(User, related_name='submitted_by', null=True, blank=True, \
-                                  verbose_name=_(u'Submitter'))
+    owner = models.ForeignKey(User, related_name='submitted_by', null=True, blank=True, \
+                                  verbose_name=_(u'Owner'))
+    #assigned = models.ForeignKey(User, related_name='assigned_by', null=True, blank=True, \
+    #                              verbose_name=_(u'Assigned'))
+    
     created = models.DateTimeField(_(u'Created'), blank=True, \
                                    help_text=_('Date this ticket was first created'),)
     modified = models.DateTimeField(_(u'Modified'), blank=True, \
@@ -310,6 +313,19 @@ class Ticket(models.Model):
                 return self.assigned_to.username
     get_assigned_to = property(_get_assigned_to)
 
+    def _get_owner(self):
+        """ Custom property to allow us to easily print 'Unassigned' if a
+        ticket has no owner, or the users name if it's assigned. If the user
+        has a full name configured, we use that, otherwise their username. """
+        if not self.owner:
+            return _('Unassigned')
+        else:
+            if self.owner.get_full_name():
+                return self.owner.get_full_name()
+            else:
+                return self.owner.username
+    get_owner = property(_get_owner)
+    
     def _get_ticket(self):
         """ A user-friendly ticket ID, which is a combination of ticket ID
         and queue slug. This is generally used in e-mail subjects. """
