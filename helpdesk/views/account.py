@@ -68,6 +68,7 @@ def create_ticket(request):
     context['form'] = form
     return context 
 
+@login_required
 @render_to('helpdesk/account/view.html')
 def view_ticket(request, ticket_id):
     """ Show a ticket comments, accepts new comments from user """
@@ -81,6 +82,7 @@ def view_ticket(request, ticket_id):
 
     return {'ticket':ticket, 'current_view_name':'helpdesk_account_tickets_view'}
 
+@login_required
 def reopen_ticket(request, ticket_id):
     """ Reopen ticket, created by user early """
     

@@ -19,9 +19,16 @@ from helpdesk.models import Ticket, Queue, FollowUp, Attachment, IgnoreEmail, Ti
 from helpdesk.settings import HAS_TAG_SUPPORT
 
 class EditTicketForm(forms.ModelForm):
+    assigned_to = forms.ModelChoiceField(
+        queryset=User.objects.filter(is_staff=True).order_by('username'),
+        required=False,
+        label=_('Assigned to'),
+        help_text=_('If you assign ticket yourself, they\'ll be '
+            'e-mailed details of this ticket immediately.'),
+        )    
     class Meta:
         model = Ticket
-        exclude = ('created', 'modified', 'status', 'on_hold', 'resolution', 'last_escalation', 'assigned_to')
+        exclude = ('created', 'modified', 'status', 'on_hold', 'resolution', 'last_escalation')
 
 class TicketForm(forms.Form):
     queue = forms.ChoiceField(
@@ -53,11 +60,19 @@ class TicketForm(forms.Form):
     assigned_to = forms.ChoiceField(
         choices=(),
         required=False,
+        label=_('Assigned to'),
+        help_text=_('If you assign ticket yourself, they\'ll be '
+            'e-mailed details of this ticket immediately.'),
+        )
+
+    owner = forms.ChoiceField(
+        choices=(),
+        required=True,
         label=_('Case owner'),
         help_text=_('If you select an owner other than yourself, they\'ll be '
             'e-mailed details of this ticket immediately.'),
         )
-
+    
     priority = forms.ChoiceField(
         choices=Ticket.PRIORITY_CHOICES,
         required=False,
@@ -213,7 +228,7 @@ class PublicTicketForm(forms.Form):
         )
 
     submitter_email = forms.EmailField(
-        required=True,
+        required=False,
         label=_('Your E-Mail Address'),
         help_text=_('We will e-mail you when your ticket is updated.'),
         )
@@ -240,7 +255,7 @@ class PublicTicketForm(forms.Form):
         help_text=_('You can attach a file such as a document or screenshot to this ticket.'),
         )
 
-    def save(self):
+    def save(self,owner=None):
         """
         Writes and returns a Ticket() object
         """
@@ -249,6 +264,7 @@ class PublicTicketForm(forms.Form):
 
         t = Ticket(
             title = self.cleaned_data['title'],
+            owner=owner,
             submitter_email = self.cleaned_data['submitter_email'],
             created = datetime.now(),
             status = Ticket.OPEN_STATUS,
