@@ -490,6 +490,7 @@ if __name__=='__main__':
             setup_webcab()
             print "*"*80
             print "   CONGRATULATIONS!!! Your ExpertBilling copy was sucefully installed!"
+            print "   Default admin username/password: admin/admin"
             print "   Please, read manual, refer to forum.expertbilling.ru and wiki.expertbilling.ru for detail information about system"
             print "   Contacts: ICQ: 162460666, e-mail: brat002@gmail.com"
             print "*"*80
