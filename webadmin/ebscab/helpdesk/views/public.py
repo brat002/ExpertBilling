@@ -64,22 +64,22 @@ def homepage(request):
 
 @login_required
 def view_ticket(request):
-    ticket_req = request.GET.get('ticket', '')
+    ticket_id = request.GET.get('ticket', '')
     ticket = False
     email = request.GET.get('email', '')
     error_message = ''
 
-    if ticket_req and email:
-        parts = ticket_req.split('-')
-        queue = '-'.join(parts[0:-1])
-        ticket_id = parts[-1]
+    if ticket_id:
+        #parts = ticket_req.split('-')
+        #queue = '-'.join(parts[0:-1])
+        #ticket_id = parts[-1]
 
         try:
-            ticket = Ticket.objects.get(id=ticket_id, queue__slug__iexact=queue, submitter_email__iexact=email)
+            ticket = Ticket.objects.get(id=ticket_id, owner=request.user)
         except:
             ticket = False
             error_message = _('Invalid ticket ID or e-mail address. Please try again.')
-
+        print ticket
         if ticket:
             
             if request.GET.has_key('close') and ticket.status == Ticket.RESOLVED_STATUS:
@@ -109,3 +109,10 @@ def view_ticket(request):
             'error_message': error_message,
         }))
 
+
+@login_required
+@render_to("accounts/account_helpdesk.html")
+def view_tickets(request):
+    tickets=Ticket.objects.filter(owner=request.user).order_by('-created')
+    return {'tickets':tickets}
+    

@@ -3,10 +3,8 @@
 {% block meta_title %}
     {% block helpdesk_title %}{% trans "Helpdesk" %}{% endblock %}
 {% endblock %}
-{% block extrahead %}
+{% block extra_head %}
     {{ block.super }}
-    <script src='{{ MEDIA_URL }}helpdesk/jquery.js' type='text/javascript' language='javascript'></script>
-    <link rel='stylesheet' href='{{ MEDIA_URL }}helpdesk/helpdesk.css' type='text/css' />
     {% block helpdesk_head %}{% endblock %}
 {% endblock %}
 {% block title %}{% trans "Helpdesk" %}{% endblock %}
