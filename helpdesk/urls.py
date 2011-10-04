@@ -116,6 +116,13 @@ urlpatterns += patterns('helpdesk.views.public',
     url(r'^view/$',
         'view_ticket',
         name='helpdesk_public_view'),
+                        
+    url(r'^add/$',
+        'add_ticket',
+        name='helpdesk_public_add'),   
+    url(r'^publicticket/(?P<ticket_id>[0-9]+)/update/$',
+        'update_ticket',
+        name='helpdesk_updatepublicticket'),               
 )
 
 urlpatterns += patterns('',
