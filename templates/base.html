@@ -6,6 +6,7 @@
 {% block context_extra %}
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 {% endblock %}
+{% block head %}
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/typography.css">
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/layout.css">
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/new_design.css">
@@ -15,7 +16,7 @@
 <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.cookies.js"></script>
 <script type="text/javascript" src="{{ MEDIA_URL }}js/js_cookies.js"></script>
 <link rel="stylesheet" href="{{ MEDIA_URL }}css/opera.css" type="opera/css" media="screen" />
-
+{% endblock %}
 {% block extra_head %}
 {% endblock %}
 
