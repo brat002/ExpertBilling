@@ -9,6 +9,10 @@ a.add_link:link, a.add_link:visited, a.add_link:hover, a.add_link:active {
     background: url("../img/icons/icon_addlink.gif") no-repeat left;
     padding-left: 21px;
 }
+a.hold_link:link, a.add_link:visited, a.add_link:hover, a.add_link:active {
+    background: url("../img/icons/icon_holdlink.png") no-repeat left;
+    padding-left: 21px;
+}
 a.change_link:link, a.change_link:visited, a.change_link:hover, a.change_link:active {
     background: url("../img/icons/icon_changelink.gif") no-repeat left;
     padding-left: 21px;
@@ -70,7 +74,10 @@ a.cancel_link{
     padding-left: 21px;
 }
 
-
+a.unhold_link{
+    background: url("../img/icons/unhold.png") no-repeat left;
+    padding-left: 21px;
+}
 a.back_link{
     background: url("../img/icons/inline-restore.png") no-repeat; 
     background-position:  0px 0px;

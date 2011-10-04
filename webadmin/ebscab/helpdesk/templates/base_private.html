@@ -1,6 +1,4 @@
-"http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
+{% extends 'base.html' %}
 {% load account_menu %}
 {% block extra_head %}
 
@@ -11,12 +9,16 @@
 <link rel="stylesheet" href="{{ MEDIA_URL }}css/action_links.css" type="text/css">
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/layout.css">
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/new_design.css">
-<script type="text/javascript" src="{{ MEDIA_URL }}prettyforms/js/jquery.hoverbox.min.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}prettyforms/js/jquery.hoverbox.min.js">
+<script src="/media/js/filter.js" language="javascript" type="text/javascript">
+<script src="/media/js/hover.js" language="javascript" type="text/javascript">
 
-{% block helpdesk_head %}{% endblock %}
+
+{% block helpdesk_head %}
+
 {% endblock %}
-</head>
-<body>
+{% endblock %}
+
 {% block login %}
     {% if request.user.is_staff %}
         {% staff_menu %}
@@ -48,6 +50,3 @@
         {% block side_bar %}{% endblock %}
     </div>
 {% endblock %}s
-</div>
-</body>
-</html>
