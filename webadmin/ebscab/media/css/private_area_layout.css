@@ -482,7 +482,7 @@ li.last, li.last a {
 
 form, input, dt, dl, dd, ol, div, p, blockquote, h1, h2, h3, h4, h5, h6, a {
     margin:0;
-    padding:0;
+    padding-top:5px;
 }
 
 
@@ -510,8 +510,13 @@ ul.info {
 
 .tticket {
     border-bottom:1px solid #DDDDDD;
-    padding:9px !important;
+    padding-top:9px !important;
+    padding-bottom:9px !important;
+    padding-right:9px !important;
     position:relative;
+    background: url("../img/icons/comment.png") no-repeat left;
+    padding-left: 21px;    
+    
 }
 
 .clear:after {

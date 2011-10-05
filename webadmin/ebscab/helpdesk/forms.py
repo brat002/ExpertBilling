@@ -129,7 +129,7 @@ class TicketForm(forms.Form):
         f = FollowUp(   ticket = t,
                         title = _('Ticket Opened'),
                         date = datetime.now(),
-                        public = True,
+                        public = False,
                         comment = self.cleaned_data['body'],
                         user = user,
                      )

@@ -140,6 +140,7 @@ def update_ticket(request, ticket_id, public=False):
 
     ticket = get_object_or_404(Ticket, id=ticket_id)
 
+
     comment = request.POST.get('comment', '')
     new_status = int(request.POST.get('new_status', ticket.status))
     title = request.POST.get('title', ticket.title)
@@ -148,7 +149,11 @@ def update_ticket(request, ticket_id, public=False):
     owner = int(request.POST.get('owner', 0))
     priority = int(request.POST.get('priority', ticket.priority))
     tags = request.POST.get('tags', '')
-
+    
+    if public:
+        ticket.notify_owner=True
+    else:
+        ticket.notify_owner=False
     # We need to allow the 'ticket' and 'queue' contexts to be applied to the
     # comment.
     from django.template import loader, Context

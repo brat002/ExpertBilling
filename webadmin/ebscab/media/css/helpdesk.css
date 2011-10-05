@@ -111,6 +111,9 @@ span.form_optional {
 dd.form_help_text {
     color: #666;
     font-size: 95%;
+    background: url("../img/icons/help.png") no-repeat left;
+    padding-left: 21px;
+    padding-top: 10px;    
 }
 
 ul.errorlist {
@@ -119,9 +122,11 @@ ul.errorlist {
 }
 
 dt {
-    padding-top: 8px;
+    padding: 10px;
 }
-
+dd {
+    padding: 10px;
+}
 .row_tablehead {
     background-color: #6593C0;
     font-weight: bold;
@@ -189,11 +194,23 @@ td {
 div.followup {
     width: 100%;
     border-top: solid #666 1px;
+    padding-top: 10px;
 }
 
+a.attachment{
+    background: url("../img/icons/attach.png") no-repeat left;
+    padding-left: 21px;
+}
+
+a.new_ticket {
+    background: url("../img/icons/comment.png") no-repeat left;
+    padding-left: 21px;
+}
 div.followup .title {
     font-weight: bold;
     font-size: 10pt;
+    background: url("../img/icons/comment.png") no-repeat left;
+    padding-left: 21px;
 }
 
 div.followup .title span {

@@ -271,6 +271,7 @@ class Ticket(models.Model):
     queue = models.ForeignKey(Queue, verbose_name=_(u'Queue'))
     owner = models.ForeignKey(User, related_name='submitted_by', null=False, blank=False, \
                                   verbose_name=_(u'Owner'))
+    notify_owner = models.BooleanField(blank=True, default=True,verbose_name=_(u'Notify owner'),help_text=_('Notify owner of ticket for changes'))
     assigned_to = models.ForeignKey(User,related_name='assigned_to',blank=True,null=True)
     created = models.DateTimeField(_(u'Created'), blank=True, \
                                    help_text=_('Date this ticket was first created'),)
