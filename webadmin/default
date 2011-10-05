@@ -13,6 +13,14 @@
             Order deny,allow
             Allow from all
         </Directory>
+        
+        Alias /admin_media/ /opt/ebs/web/django/contrib/admin/media/
+
+        <Directory /opt/ebs/web/django/contrib/admin/media>
+            Order deny,allow
+            Allow from all
+        </Directory>
+        
 		WSGIApplicationGroup %{GLOBAL}
         WSGIScriptAlias / /opt/ebs/web/django.wsgi
 

@@ -523,7 +523,7 @@ a.promise-img:Hover, a.promise-img-active {
 	background:url('../img/promise_on.gif') no-repeat -6px 0;
 	width:100%;
 }
-a.payment-img:Hover, a.promise-img-active {
+a.payment-img:Hover, a.payment-img-active {
 	background:url('../img/make_payment_active.gif') no-repeat -6px 0;
 	width:100%;
 }
