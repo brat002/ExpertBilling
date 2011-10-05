@@ -19,6 +19,7 @@ from helpdesk.forms import PublicTicketForm
 from helpdesk.lib import send_templated_mail, text_is_spam
 from helpdesk.models import Ticket, Queue, FollowUp, TicketChange, PreSetReply, Attachment, SavedSearch, IgnoreEmail, TicketCC
 from helpdesk.settings import HAS_TAG_SUPPORT
+from django.conf import settings
 from lib.decorators import render_to, login_required
 from helpdesk.lib import send_templated_mail, line_chart, bar_chart, query_to_dict, apply_query, safe_template_context
 @login_required
@@ -77,10 +78,15 @@ def view_ticket(request):
 
         try:
             ticket = Ticket.objects.get(id=ticket_id, owner=request.user)
+            if ticket.notify_owner:
+                ticket.notify_owner=False
+                ticket.save()
+                
+                ticket.notify_owner=True
         except:
             ticket = False
             error_message = _('Invalid ticket ID or e-mail address. Please try again.')
-        print ticket
+        #print ticket
         if ticket:
             
             if request.GET.has_key('close') and ticket.status == Ticket.RESOLVED_STATUS:
@@ -90,7 +96,7 @@ def view_ticket(request):
                 request.POST = {
                     'new_status': Ticket.CLOSED_STATUS,
                     'public': 1,
-                    'owner': ticket.assigned_to.id,
+                    'owner': ticket.owner.id,
                     'title': ticket.title,
                     'comment': _('Submitter accepted resolution and closed ticket'),
                     }
@@ -116,20 +122,20 @@ def view_ticket(request):
 def view_tickets(request):
     tickets=Ticket.objects.filter(owner=request.user).order_by('-created')
     return {'tickets':tickets}
-    
-def update_ticket(request, ticket_id, public=False):
-    #if not (public or (request.user.is_authenticated() and request.user.is_active and request.user.is_staff)):
-    #    return HttpResponseForbidden(_('Sorry, you need to login to do that.'))
 
-    ticket = get_object_or_404(Ticket, id=ticket_id)
+@login_required
+def update_ticket(request, ticket_id, public=False):
+    ticket = get_object_or_404(Ticket, id=ticket_id,owner=request.user)
 
     comment = request.POST.get('comment', '')
     new_status = int(request.POST.get('new_status', ticket.status))
     title = request.POST.get('title', ticket.title)
-    public = request.POST.get('public', public)
+    #public = request.POST.get('public', public)
+    public=True
        
-    owner = int(request.POST.get('owner', 0))
-    priority = int(request.POST.get('priority', ticket.priority))
+    owner = ticket.owner
+    #priority = int(request.POST.get('priority', ticket.priority))
+    
     tags = request.POST.get('tags', '')
 
     # We need to allow the 'ticket' and 'queue' contexts to be applied to the
@@ -138,29 +144,17 @@ def update_ticket(request, ticket_id, public=False):
     context = safe_template_context(ticket)
     comment = loader.get_template_from_string(comment).render(Context(context))
 
-    if owner is None and ticket.assigned_to:
-        owner = ticket.assigned_to.id
+    #if owner is None and ticket.assigned_to:
+    #    owner = ticket.assigned_to.id
 
     f = FollowUp(ticket=ticket, date=datetime.now(), comment=comment)
 
-    if request.user.is_authenticated():
-        f.user = request.user
+    #if request.user.is_authenticated():
+    f.user = request.user
 
     f.public = public
 
     reassigned = False
-
-    if owner is not None:
-        if owner != 0 and ((ticket.assigned_to and owner != ticket.assigned_to.id) or not ticket.assigned_to):
-            new_user = User.objects.get(id=owner)
-            f.title = _('Assigned to %(username)s') % {
-                'username': new_user.username,
-                }
-            ticket.assigned_to = new_user
-            reassigned = True
-        elif owner == 0 and ticket.assigned_to is not None:
-            f.title = _('Unassigned')
-            ticket.assigned_to = None
 
     if new_status != ticket.status:
         ticket.status = new_status
@@ -208,15 +202,6 @@ def update_ticket(request, ticket_id, public=False):
         c.save()
         ticket.title = title
 
-    if priority != ticket.priority:
-        c = TicketChange(
-            followup=f,
-            field=_('Priority'),
-            old_value=ticket.priority,
-            new_value=priority,
-            )
-        c.save()
-        ticket.priority = priority
 
     if HAS_TAG_SUPPORT:
         if tags != ticket.tags:
@@ -314,8 +299,7 @@ def update_ticket(request, ticket_id, public=False):
 
     ticket.save()
 
-    if request.user.is_staff:
-        return HttpResponseRedirect(ticket.get_absolute_url())
-    else:
-        return HttpResponseRedirect(ticket.ticket_url)
+
+    return HttpResponseRedirect(ticket.ticket_url)
+
     

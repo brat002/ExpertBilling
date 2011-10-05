@@ -25,3 +25,4 @@ except ImportError:
     HAS_TAG_SUPPORT = False
         
 
+MAX_EMAIL_ATTACHMENT_SIZE=10000000
