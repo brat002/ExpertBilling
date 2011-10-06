@@ -432,8 +432,6 @@ $BODY$
 BEGIN
 
 IF (TG_OP = 'DELETE') THEN
-    DELETE FROM billservice_accountprepaystime WHERE tarif_id=OLD.id;
-    DELETE FROM billservice_accountprepaystrafic WHERE tarif_id=OLD.id;
     DELETE FROM billservice_accounttarif WHERE tarif_id=OLD.id;
     DELETE FROM billservice_addonservicetarif WHERE tarif_id=OLD.id;
     DELETE FROM billservice_onetimeservice WHERE tarif_id=OLD.id;
