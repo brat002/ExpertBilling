@@ -264,11 +264,11 @@ def update_ticket(request, ticket_id, public=False):
     if ticket.submitter_email and public and (f.comment or (f.new_status in (Ticket.RESOLVED_STATUS, Ticket.CLOSED_STATUS))):
 
         if f.new_status == Ticket.RESOLVED_STATUS:
-            template = 'resolved_submitter'
+            template = 'resolved_owner'
         elif f.new_status == Ticket.CLOSED_STATUS:
-            template = 'closed_submitter'
+            template = 'closed_owner'
         else:
-            template = 'updated_submitter'
+            template = 'updated_owner'
 
         send_templated_mail(
             template,
@@ -296,13 +296,13 @@ def update_ticket(request, ticket_id, public=False):
         # another user. The actual template varies, depending on what has been
         # changed.
         if reassigned:
-            template_staff = 'assigned_owner'
+            template_staff = 'assigned_to'
         elif f.new_status == Ticket.RESOLVED_STATUS:
-            template_staff = 'resolved_owner'
+            template_staff = 'resolved_asigned_to'
         elif f.new_status == Ticket.CLOSED_STATUS:
-            template_staff = 'closed_owner'
+            template_staff = 'closed_assigned_to'
         else:
-            template_staff = 'updated_owner'
+            template_staff = 'updated_assigned_to'
 
         if (not reassigned or ( reassigned and ticket.assigned_to.usersettings.settings.get('email_on_ticket_assign', False))) or (not reassigned and ticket.assigned_to.usersettings.settings.get('email_on_ticket_change', False)):
             send_templated_mail(
@@ -388,7 +388,7 @@ def mass_update(request):
 
             if t.submitter_email:
                 send_templated_mail(
-                    'closed_submitter',
+                    'closed_owner',
                     context,
                     recipients=t.submitter_email,
                     sender=t.queue.from_address,
@@ -399,7 +399,7 @@ def mass_update(request):
             for cc in ticket.ticketcc_set.all():
                 if cc.email_address not in messages_sent_to:
                     send_templated_mail(
-                        'closed_submitter',
+                        'closed_owner',
                         context,
                         recipients=cc.email_address,
                         sender=ticket.queue.from_address,
@@ -409,7 +409,7 @@ def mass_update(request):
 
             if t.assigned_to and request.user != t.assigned_to and t.assigned_to.email and t.assigned_to.email not in messages_sent_to:
                 send_templated_mail(
-                    'closed_owner',
+                    'closed_assigned_to',
                     context,
                     recipients=t.assigned_to.email,
                     sender=t.queue.from_address,
