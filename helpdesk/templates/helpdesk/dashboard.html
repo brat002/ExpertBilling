@@ -1,34 +1,34 @@
 {% extends "helpdesk/base.html" %}{% load i18n %}
 {% block helpdesk_title %}{% trans "Helpdesk Dashboard" %}{% endblock %}
 {% block helpdesk_head %}
-<script type='text/javascript' language='javascript' src='{{ MEDIA_URL }}helpdesk/hover.js'></script>
+
 {% endblock %}
+{% load billservice_tags %}
 {% block helpdesk_body %}
-<table width='40%' align='left'>
-<br style='clear: both;' />
-<tr class='row_tablehead'><td colspan='4'>{% trans "Helpdesk Summary" %}</td></tr>
-<tr class='row_columnheads'><th>{% trans "Queue" %}</th><th>{% trans "Open" %}</th><th>{% trans "Resolved" %}</th></tr>
+<table width='40%'  class="statistic_table extra_table">
+<tr  class="white bold s-11 blue_caption"><td colspan='4'><div class="f-left statistics_title">{% trans "Helpdesk Summary" %}</div></td></tr>
+<tr><th>{% trans "Queue" %}</th><th>{% trans "Open" %}</th><th>{% trans "Resolved" %}</th></tr>
 {% for queue in dash_tickets %}
-<tr class='row_{% cycle odd,even %} row_hover '>
-<th><a href='{% url helpdesk_list %}?queue={{ queue.queue }}&status=1&status=2'>{{ queue.name }}</a></th>
-<td>{% if queue.open %}<a href='{% url helpdesk_list %}?queue={{ queue.queue }}&status=1&status=2'>{% endif %}{{ queue.open }}{% if queue.open %}</a>{% endif %}</td>
-<td>{% if queue.resolved %}<a href='{% url helpdesk_list %}?queue={{ queue.queue }}&status=3'>{% endif %}{{ queue.resolved }}{% if queue.resolved %}</a>{% endif %}</td>
+<tr>
+<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{% url helpdesk_list %}?queue={{ queue.queue }}&status=1&status=2'>{{ queue.name }}</a></th>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if queue.open %}<a href='{% url helpdesk_list %}?queue={{ queue.queue }}&status=1&status=2'>{% endif %}{{ queue.open }}{% if queue.open %}</a>{% endif %}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if queue.resolved %}<a href='{% url helpdesk_list %}?queue={{ queue.queue }}&status=3'>{% endif %}{{ queue.resolved }}{% if queue.resolved %}</a>{% endif %}</td>
 </tr>
 {% endfor %}
 </table>
 
-<table width='100%'>
-<tr class='row_tablehead'><td colspan='7'>{% trans "Your Tickets" %}</td></tr>
-<tr class='row_columnheads'><th>#</th><th>{% trans "Pr" %}</th><th>{% trans "Title" %}</th><th>{% trans "Queue" %}</th><th>{% trans "Owner" %}</th><th>{% trans "Status" %}</th><th>{% trans "Last update" %}</th></tr>
+<table class="wide statistic_table extra_table">
+<tr class="white bold s-11 blue_caption"><td colspan='7'><div class="f-left statistics_title">{% trans "Your Tickets" %}</div></td></tr>
+<tr ><th>#</th><th>{% trans "Pr" %}</th><th>{% trans "Title" %}</th><th>{% trans "Queue" %}</th><th>{% trans "Owner" %}</th><th>{% trans "Status" %}</th><th>{% trans "Last update" %}</th></tr>
 {% for ticket in user_tickets %}
 <tr class='row_{% cycle odd,even %} row_hover'>
-<th><a href='{{ ticket.get_absolute_url }}'>{{ ticket.ticket }}</a></th>
-<td>{{ ticket.get_priority_span }}</td>
-<th><a href='{{ ticket.get_absolute_url }}'>{{ ticket.title }}</a></th>
-<td>{{ ticket.queue }}</td>
-<td>{{ ticket.owner }}</td>
-<td>{{ ticket.get_status }}</td>
-<td><span title='{{ ticket.modified|date:"r" }}'>{{ ticket.modified|date:"d.m.Y H:i" }}</span></td>
+<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.ticket }}</a></th>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.get_priority_span }}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.title }}</a></th>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.queue }}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.owner }}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.get_status }}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><span title='{{ ticket.modified|date:"r" }}'>{{ ticket.modified|date:"d.m.Y H:i" }}</span></td>
 </tr>
 {% endfor %}
 {% if not user_tickets %}
@@ -36,18 +36,18 @@
 {% endif %}
 </table>
 
-<table width='100%'>
-<tr class='row_tablehead'><td colspan='7'>{% trans "Unassigned Tickets" %}</td></tr>
-<tr class='row_columnheads'><th>#</th><th>{% trans "Pr" %}</th><th>{% trans "Title" %}</th><th>{% trans "Queue" %}</th><th>{% trans "Owner" %}</th><th>{% trans "Created" %}</th><th>&nbsp;</th></tr>
+<table class="wide statistic_table extra_table">
+<tr class="white bold s-11 blue_caption"><td colspan='7'><div class="f-left statistics_title">{% trans "Unassigned Tickets" %}</td></tr>
+<tr><th>#</th><th>{% trans "Pr" %}</th><th>{% trans "Title" %}</th><th>{% trans "Queue" %}</th><th>{% trans "Owner" %}</th><th>{% trans "Created" %}</th><th>&nbsp;</th></tr>
 {% for ticket in unassigned_tickets %}
 <tr class='row_{% cycle odd,even %} row_hover'>
-<th><a href='{{ ticket.get_absolute_url }}'>{{ ticket.ticket }}</a></th>
-<td>{{ ticket.get_priority_span }}</td>
-<th><a href='{{ ticket.get_absolute_url }}'>{{ ticket.title }}</a></th>
-<td>{{ ticket.queue }}</td>
-<td>{{ ticket.owner }}</td>
-<td><span title='{{ ticket.created|date:"r" }}'>{{ ticket.created|date:"d.m.Y H:i" }}</span></td>
-<td><a class="accept_link" href='{{ ticket.get_absolute_url }}?take'>
+<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.ticket }}</a></th>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.get_priority_span }}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.title }}</a></th>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.queue }}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.owner }}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><span title='{{ ticket.created|date:"r" }}'>{{ ticket.created|date:"d.m.Y H:i" }}</span></td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a class="accept_link" href='{{ ticket.get_absolute_url }}?take'>
       {% trans "Take" %}</a> <br /> 
     <a class="delete_link" href='{% url helpdesk_delete ticket.id %}'>
       {% trans "Delete" %}</a></td>

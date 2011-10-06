@@ -495,6 +495,7 @@ def ticket_list(request):
         query_params = cPickle.loads(b64decode(str(saved_query.query)))
     elif not (  request.GET.has_key('queue')
             or  request.GET.has_key('assigned_to')
+            or  request.GET.has_key('owner')
             or  request.GET.has_key('status')
             or  request.GET.has_key('q')
             or  request.GET.has_key('sort')
@@ -515,11 +516,16 @@ def ticket_list(request):
             queues = [int(q) for q in queues]
             query_params['filtering']['queue__id__in'] = queues
 
-        owners = request.GET.getlist('assigned_to')
-        if owners:
-            owners = [int(u) for u in owners]
-            query_params['filtering']['assigned_to__id__in'] = owners
+        assigned_to = request.GET.getlist('assigned_to')
+        if assigned_to:
+            assigned_to = [int(u) for u in assigned_to]
+            query_params['filtering']['assigned_to__id__in'] = assigned_to
 
+        owner = request.GET.getlist('owner')
+        if owner:
+            owner = [int(u) for u in owner]
+            query_params['filtering']['owner__id__in'] = owner
+            
         statuses = request.GET.getlist('status')
         if statuses:
             statuses = [int(s) for s in statuses]
@@ -594,7 +600,8 @@ def ticket_list(request):
             context,
             query_string="&".join(query_string),
             tickets=tickets,
-            user_choices=User.objects.filter(is_active=True, is_staff=True),
+            assigned_to_choices=User.objects.filter(is_active=True, is_staff=True),
+            owner_choices=User.objects.filter(is_active=True),
             queue_choices=Queue.objects.all(),
             status_choices=Ticket.STATUS_CHOICES,
             tag_choices=tag_choices,
