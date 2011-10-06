@@ -48,41 +48,44 @@
 {% endblock %}
 {% block content %}
 
-<table width='100%'>
-<tr class='row_tablehead'><td colspan='2'>{{ ticket.id }}. {{ ticket.title }} [{{ ticket.get_status }}]</td></tr>
-<tr class='row_columnheads'><th colspan='2'>{% blocktrans with ticket.queue as queue_name %}Queue: {{ queue_name }}{% endblocktrans %}</th></tr>
-
+<table class="wide statistic_table extra_table">
+<tr class="white bold s-11 blue_caption"><td colspan='2'><div class="f-left statistics_title">{{ ticket.id }}. {{ ticket.title }} [{{ ticket.get_status }}]</div></td></tr>
 <tr class='row_odd'>
-    <th>{% trans "Submitted On" %}</th>
-    <td>{{ ticket.created|date:"r" }} ({{ ticket.created|timesince }} ago)</td>
+<td><strong>{% trans "Queue" %}</strong></td>
+<td class="left_border {{ 1|coll_bg  }} ">{% blocktrans with ticket.queue as queue_name %}{{ queue_name }}{% endblocktrans %}</td>
 </tr>
 
 <tr class='row_even'>
-    <th>{% trans "Submitter E-Mail" %}</th>
-    <td>{{ ticket.submitter_email }}</td>
+    <td><strong>{% trans "Submitted On" %}</strong></td>
+    <td class="left_border {{ 2|coll_bg  }} ">{{ ticket.created|date:"r" }} ({{ ticket.created|timesince }} ago)</td>
 </tr>
 
 <tr class='row_odd'>
-    <th>{% trans "Priority" %}</th>
-    <td>{{ ticket.get_priority_display }}</td>
+    <td><strong>{% trans "Submitter E-Mail" %}</strong></td>
+    <td class="left_border {{ 3|coll_bg  }} ">{{ ticket.submitter_email }}</td>
+</tr>
+
+<tr class='row_even'>
+    <td><strong>{% trans "Priority" %}</strong></td>
+    <td class="left_border {{ 4|coll_bg  }} ">{{ ticket.get_priority_display }}</td>
 </tr>
 
 {% if tags_enabled %}
 <tr class='row_even'>
-    <th>{% trans "Tags" %}</th>
-    <td>{{ ticket.tags }}</td>
+    <td><strong>{% trans "Tags" %}</strong></td>
+    <td class="left_border {{ 5|coll_bg  }} ">{{ ticket.tags }}</td>
 </tr>
 {% endif %}
 
 <tr class='row_{% if tags_enabled %}odd{% else %}even{% endif %}'>
-    <th colspan='2'>{% trans "Description" %}</th>
+    <th colspan='2'><strong>{% trans "Description" %}</strong></th>
 </tr>
 <tr class='row_{% if tags_enabled %}odd{% else %}even{% endif %}'>
     <td colspan='2'>{{ ticket.description|linebreaksbr }}</td>
 </tr>
 
 {% if ticket.resolution %}<tr class='row_{% if tags_enabled %}even{% else %}odd{% endif %}'>
-    <th colspan='2'>{% trans "Resolution" %}{% ifequal ticket.get_status_display "Resolved" %} <a href='{{ request.get_full_path }}&close'><img src='{{ MEDIA_URL }}/helpdesk/buttons/accept.png' alt='{% trans "Accept" %}' title='{% trans "Accept and Close" %}' width='60' height='15' /></a>{% endifequal %}</th>
+    <th colspan='2'><strong>{% trans "Resolution" %}</strong>{% ifequal ticket.get_status_display "Resolved" %} <a href='{{ request.get_full_path }}&close'><img src='{{ MEDIA_URL }}/helpdesk/buttons/accept.png' alt='{% trans "Accept" %}' title='{% trans "Accept and Close" %}' width='60' height='15' /></a>{% endifequal %}</th>
 </tr>
 <tr class='row_{% if tags_enabled %}even{% else %}odd{% endif %}'>
     <td colspan='2'>{{ ticket.resolution }}</td>
@@ -95,6 +98,7 @@
 {% load ticket_to_link %}
 {% for followup in ticket.followup_set.public_followups %}
 <div class='followup'>
+	<ul>
 	<div class='title'>{{ followup.title }} <span class='byline'>{% if followup.user %}by {{ followup.user }}{% endif %} <span title='{{ followup.date|date:"r" }}'>{{ followup.date|timesince }} ago</span></span></div>
 	{% if followup.comment %}
 		{{ followup.comment|force_escape|num_to_link|linebreaksbr }}
@@ -108,11 +112,12 @@
 		<li><a class="attachment" href='{{ attachment.file.url }}'>{{ attachment.filename }}</a> ({{ attachment.mime_type }}, {{ attachment.size|filesizeformat }})</li>
 		{% if forloop.last %}</ul></div>{% endif %}
 	{% endfor %}
-</div></ul>
+</div>
 </div>
 {% endfor %}
 {% endif %}
 <hr />
+<br/>
 <h4>{% trans "Respond to this ticket" %}</h4>
 
 <form method='post' action='{% url helpdesk_updatepublicticket ticket.id %}' enctype='multipart/form-data'>

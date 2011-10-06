@@ -155,23 +155,27 @@ th {
 
 .row_odd {
     background-color: #fff;
+    color: inherit;
 }
 
 .row_even {
     background-color: #ecf6fc;
+    color: inherit;
 }
 
 .row_odd, .row_even {
-    color: #6C79A0;
     border-bottom: solid #d5e7fd 1px;
+    color: inherit;
 }
 
 .row_odd th, .row_even th {
     font-size: 10pt;
+    color: inherit;
 }
 
 .row_odd td:first-child, .row_even td:first-child {
     padding-left: 12px;
+    color: inherit;
 }
 
 .cell_bold {

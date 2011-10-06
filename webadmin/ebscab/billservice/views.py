@@ -1143,6 +1143,7 @@ def addon_service_transaction(request):
 def traffic_transaction(request):
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'traffic_transaction', 'datetime')
+    #print addon_query
     qs = TrafficTransaction.objects.filter(account=request.user.account, \
                                            **addon_query).order_by('-datetime')
     paginator = SimplePaginator(request, qs, 100, 'page')
@@ -1155,6 +1156,7 @@ def traffic_transaction(request):
         for ttr in traffic_transaction:
             summ_on_page += ttr.summ
     rec_count = len(traffic_transaction)+1
+    
     return {
             'traffic_transaction':traffic_transaction,
             'paginator': paginator,

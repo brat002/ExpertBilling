@@ -1,4 +1,5 @@
 {% extends "helpdesk/base.html" %}{% load i18n %}
+{% load billservice_tags %}
 {% block helpdesk_title %}{% trans "View Ticket Details" %}{% endblock %}
 {% block helpdesk_head %}
 <script type="text/javascript">
@@ -50,33 +51,36 @@
 
 {% block helpdesk_body %}
 <h2>#{{ ticket.id }}. {{ ticket.title }} [{{ ticket.get_status }}]</h2>
-<table width="100%">
+<table  width=40% class="wide statistic_table extra_table">
 <tr>
-<td colspan="2">
+<td colspan="2" class="white bold s-11 blue_caption"><div class="f-left statistics_title">
     <a class="change_link" href='{% url helpdesk_edit ticket.id %}'>Изменить</a>&nbsp;|&nbsp;
     <a class="delete_link" href='{% url helpdesk_delete ticket.id %}'>Удалить</a>&nbsp;|&nbsp;
     {% if ticket.on_hold %}
         <a class="unhold_link" href='unhold/'>{% trans "Unhold" %}</a>
     {% else %}
         <a class="hold_link" href='hold/'>{% trans "Hold" %}</a>
-    {% endif %}</td></tr>
-<tr class='row_columnheads'><th colspan='2'>{% blocktrans with ticket.queue as queue %}Queue: {{ queue }}{% endblocktrans %}</th></tr>
+    {% endif %}</div></td></tr>
+<tr class='row_even'>
+	<td class="no_border"><strong>{% trans "Queue" %}</strong></td>
+	<td class="left_border {{ 0|coll_bg  }} ">{% blocktrans with ticket.queue as queue %}{{ queue }}{% endblocktrans %}</td>
+</tr>
 
 <tr class='row_odd'>
-    <th>{% trans "Submitted On" %}</th>
-    <td>{{ ticket.created|date:"r" }} ({{ ticket.created|timesince }} {% trans 'ago' %})</td>
+    <td><strong>{% trans "Submitted On" %}</strong></td>
+    <td class="left_border {{ 1|coll_bg  }} ">{{ ticket.created|date:"r" }} ({{ ticket.created|timesince }} {% trans 'ago' %})</td>
 </tr>
 
 <tr class='row_even'>
-    <th>{% trans "Owner" %}</th>
-    <td>
+    <td><strong>{% trans "Owner" %}</strong></td>
+    <td class="left_border {{ 2|coll_bg  }} ">
       {{ ticket.owner }}
     </td>
 </tr>
 
 <tr class='row_odd'>
-    <th>{% trans "Assigned To" %}</th>
-    <td>
+    <td><strong>{% trans "Assigned To" %}</strong></td>
+    <td class="left_border {{ 3|coll_bg  }} ">
       {{ ticket.get_assigned_to }}
       {% comment%}{% ifequal ticket.get_assigned_to _('Unassigned') %}{% endcomment%}
       {% if not ticket.on_hold %}
@@ -89,13 +93,13 @@
 </tr>
 
 <tr class='row_even'>
-    <th>{% trans "Priority" %}</th>
-    <td>{{ ticket.get_priority_display }}</td>
+    <td><strong>{% trans "Priority" %}</strong></td>
+    <td class="left_border {{ 4|coll_bg  }} ">{{ ticket.get_priority_display }}</td>
 </tr>
 
 <tr class='row_odd'>
-    <th>Отправлять копии</th>
-    <td>{% for ticketcc in ticket.ticketcc_set.all %}
+    <td><strong>Отправлять копии</strong></td>
+    <td class="left_border {{ 5|coll_bg  }} ">{% for ticketcc in ticket.ticketcc_set.all %}
         {{ ticketcc.display }}{% if not forloop.last %}, {% endif %}
          {% endfor %}
          <strong><a class="change_link" href='{% url helpdesk_ticket_cc ticket.id %}'>Настроить</a></strong>
@@ -104,14 +108,14 @@
 
 {% if tags_enabled %}
 <tr class='row_even'>
-    <th>{% trans "Tags" %}</th>
-    <td>{{ ticket.tags }}</td>
+    <td><strong>{% trans "Tags" %}</strong></td>
+    <td class="left_border {{ 6|coll_bg  }} ">{{ ticket.tags }}</td>
 </tr>
 {% endif %}
 
 <tr class='row_even'>
 <tr class='row_{% if tags_enabled %}odd{% else %}even{% endif %}'>
-    <th colspan='2'>{% trans "Description" %}</th>
+    <th colspan='2'><strong>{% trans "Description" %}</strong></th>
 </tr>
 <tr class='row_{% if tags_enabled %}even{% else %}odd{% endif %}'>
     <td colspan='2'>{{ ticket.description|force_escape|linebreaksbr }}</td>
