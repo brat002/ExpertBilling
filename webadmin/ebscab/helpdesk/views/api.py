@@ -5,7 +5,7 @@ Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
 
 api.py - Wrapper around API calls, and core functions to provide complete
          API to third party applications.
-
+        
 The API documentation can be accessed by visiting http://helpdesk/api/help/
 (obviously, substitute helpdesk for your Jutda Helpdesk URI), or by reading
 through templates/helpdesk/help_api.html.
@@ -201,7 +201,7 @@ class API:
 
         if public and ticket.submitter_email:
             send_templated_mail(
-                'updated_submitter',
+                'updated_owner',
                 context,
                 recipients=ticket.submitter_email,
                 sender=ticket.queue.from_address,
@@ -213,7 +213,7 @@ class API:
             for cc in ticket.ticketcc_set.all():
                 if cc.email_address not in messages_sent_to:
                     send_templated_mail(
-                        'updated_submitter',
+                        'updated_owner',
                         context,
                         recipients=cc.email_address,
                         sender=ticket.queue.from_address,
@@ -233,7 +233,7 @@ class API:
 
         if ticket.assigned_to and self.request.user != ticket.assigned_to and getattr(ticket.assigned_to.usersettings.settings, 'email_on_ticket_apichange', False) and ticket.assigned_to.email and ticket.assigned_to.email not in messages_sent_to:
             send_templated_mail(
-                'updated_owner',
+                'updated_assigned_to',
                 context,
                 recipients=ticket.assigned_to.email,
                 sender=ticket.queue.from_address,
@@ -278,7 +278,7 @@ class API:
 
         if ticket.submitter_email:
             send_templated_mail(
-                'resolved_submitter',
+                'resolved_owner',
                 context,
                 recipients=ticket.submitter_email,
                 sender=ticket.queue.from_address,
@@ -289,7 +289,7 @@ class API:
             for cc in ticket.ticketcc_set.all():
                 if cc.email_address not in messages_sent_to:
                     send_templated_mail(
-                        'resolved_submitter',
+                        'resolved_owner',
                         context,
                         recipients=cc.email_address,
                         sender=ticket.queue.from_address,

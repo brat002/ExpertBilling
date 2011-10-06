@@ -169,7 +169,7 @@ class TicketForm(forms.Form):
 
         if t.submitter_email:
             send_templated_mail(
-                'newticket_submitter',
+                'newticket_owner',
                 context,
                 recipients=t.submitter_email,
                 sender=q.from_address,
@@ -180,7 +180,7 @@ class TicketForm(forms.Form):
 
         if t.assigned_to and t.assigned_to != user and getattr(t.assigned_to.usersettings.settings, 'email_on_ticket_assign', False) and t.assigned_to.email and t.assigned_to.email not in messages_sent_to:
             send_templated_mail(
-                'assigned_owner',
+                'assigned_to',
                 context,
                 recipients=t.assigned_to.email,
                 sender=q.from_address,
@@ -312,7 +312,7 @@ class PublicTicketForm(forms.Form):
         messages_sent_to = []
 
         send_templated_mail(
-            'newticket_submitter',
+            'newticket_owner',
             context,
             recipients=t.submitter_email,
             sender=q.from_address,
