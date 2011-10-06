@@ -255,7 +255,7 @@ def ticket_from_message(message, queue, quiet):
 
         if sender_email:
             send_templated_mail(
-                'newticket_submitter',
+                'newticket_owner',
                 context,
                 recipients=sender_email,
                 sender=queue.from_address,
@@ -288,7 +288,7 @@ def ticket_from_message(message, queue, quiet):
 
         if t.assigned_to:
             send_templated_mail(
-                'updated_owner',
+                'updated_assigned_to',
                 context,
                 recipients=t.assigned_to.email,
                 sender=queue.from_address,
