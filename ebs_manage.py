@@ -201,7 +201,8 @@ def auto_backup_db():
     
 def upgrade_db():
     global cur, conn
-    print "upgrading DB"
+    print "*"*80
+    print "Upgrading DB from sql/upgrade/*.sql files"
     first_time=False
     if not os.path.exists(LAST_SQL):
         first_time=True
@@ -252,10 +253,58 @@ def upgrade_db():
             install_config.write(configfile)
                 
 
-
-
-
-
+def modifydb():
+    global cur, conn
+    print "*"*80    
+    print "Modifying DB. Deleting unneeded triggers"
+    
+    l=[]
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100101")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100201")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100301")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh201004101")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100501")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100601")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100701")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100801")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100901")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20101001")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20101101")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20101201")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110101")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110201")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110301")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110401")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110501")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110601")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110701")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110801")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110901")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20111001")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20111101")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20111201")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120101")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120201")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120301")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120401")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120501")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120601")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120701")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120801")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120901")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20121001")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20121101")
+    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20121201")
+    for sql in l:
+        try:
+            cur.execute(sql)
+            conn.commit()
+        except Exception, e:
+            conn.rollback()
+            print "Skip. Not worry.Its Ok."
+    print "Delteing triggers complete"
+    print "*"*80
+        
 def copy_files(files):
     files_copied=[]
     for src, dst in files:
@@ -300,7 +349,7 @@ def setup_init():
 def setup_config():
     global dbhost,dbname,dbuser,dbpassword
     print "*"*80 
-    print "Write database parameters to config file "
+    print "Write database parameters to config file /opt/ebs/data/ebs_config.ini"
     print "*"*80
     config.read(BILLING_PATH+"/ebs_config.ini") 
     config.set('db', 'name', dbname)
@@ -314,10 +363,11 @@ def setup_config():
     shutil.move(BILLING_PATH+'/ebs_config.ini_new', BILLING_PATH+'/ebs_config.ini')
     
 def setup_webcab():
+    print "*"*80
     print "Webcab install"
     #shutil.copytree(BILLING_PATH+'/ebscab/', '/opt/ebs/web/')
     output=commands.getoutput('cp -r %s %s' % (os.path.join(BILLING_PATH,'ebscab/*'), '/opt/ebs/web/'))
-    print output
+    #print output
     shutil.copy(os.path.join(DIST_PATH,'ebscab/default'), '/etc/apache2/sites-available/')
     output=commands.getoutput('echo > %s' % ('/opt/ebs/web/ebscab/log/django.log'))
     output=commands.getoutput('chmod 0777 %s' % ('/opt/ebs/web/ebscab/log/django.log'))
@@ -398,7 +448,7 @@ def prompt_db_access():
 def import_dump():
     global dbhost,dbname,dbuser,dbpassword
     print "*"*80
-    print "Importing main database dump.Enter database password for user %s" % dbuser
+    print "Importing main database dump. Enter database password for user %s" % dbuser
     print "*"*80
     status, output = commands.getstatusoutput('psql -W -h %s -p %s -U %s %s -f %s' % (dbhost,5432,dbuser, dbname, DIST_PATH+'/sql/ebs_dump.sql'))
     
@@ -408,12 +458,13 @@ def import_dump():
 def import_initial_changes():       
     global dbhost,dbname,dbuser,dbpassword
     print "*"*80
-    print "Importing changes dump.Enter database password for user %s" % dbuser
+    print "Importing changes dump. Enter database password for user %s" % dbuser
     print "*"*80
     status, output = commands.getstatusoutput('psql -W -h %s -p %s -U %s %s -f %s' % (dbhost,5432,dbuser, dbname, DIST_PATH+'/sql/changes.sql'))
     
     if status!=0:
-        allow_continue("We get error when importing initial dump. %s" % output)     
+        allow_continue("We get error when importing initial dump. %s" % output)  
+           
 def fromchanges(changes_start=False):
     global conn, cur
     
@@ -512,7 +563,7 @@ if __name__=='__main__':
             backup_db()
             #fromchanges()
             upgrade_db()
-                        
+            modifydb()
             files=files_for_copy()
             if files:
                 copy_files(files)
@@ -520,6 +571,14 @@ if __name__=='__main__':
                 print '*'*80
                 print 'Files copying dont need'
             allow_continue('Do you want to setup EBS webcab?')
+            setup_webcab()
+            print "*"*80
+            print "   CONGRATULATIONS!!! Your ExpertBilling copy was upgraded!"
+            print "   Now start billing processes by running 'billing start' command!"            
+            print "   Please, check for all running!"
+            print "   Please, read manual, refer to forum.expertbilling.ru and wiki.expertbilling.ru for detail information about system"
+            print "   Contacts: ICQ: 162460666, e-mail: brat002@gmail.com"
+            print "*"*80
             
         if  'upgrade1.3' in sys.argv:
             installation_date = modification_date(BILLING_PATH+'/license.lic')
@@ -538,7 +597,7 @@ if __name__=='__main__':
             backup_db()
             fromchanges()
             upgrade_db()
-                        
+            modifydb()
             files=files_for_copy()
             if files:
                 copy_files(files)
@@ -546,6 +605,14 @@ if __name__=='__main__':
                 print '*'*80
                 print 'Files copying dont need'
             allow_continue('Do you want to setup EBS webcab?')
+            setup_webcab()
+            print "*"*80
+            print "   CONGRATULATIONS!!! Your ExpertBilling copy was upgraded frmo 1.3 to 1.4 version!"
+            print "   Now start billing processes by running 'billing start' command!"            
+            print "   Please, check for all running!"
+            print "   Please, read manual, refer to forum.expertbilling.ru and wiki.expertbilling.ru for detail information about system"
+            print "   Contacts: ICQ: 162460666, e-mail: brat002@gmail.com"
+            print "*"*80
             
         if 'migrate' in sys.argv:
             allow_continue('Do you want to migrate your accounts database from 1.3 to 1.4 EBS version?')
