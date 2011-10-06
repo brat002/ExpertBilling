@@ -1,59 +1,6 @@
 {% extends "helpdesk/base.html" %}{% load i18n %}
 {% block helpdesk_title %}{% trans "Ticket Listing" %}{% endblock %}
-{% block extra_head %}
-{{ block.super }}
-{% block helpdesk_head %}
-
-<script type="text/javascript">
-$(document).ready(function(){
-// replace display while hovering over menu item
-$('li.headerlink').hover(
-function() { $('ul', this).css('display', 'block'); },
-function() { $('ul', this).css('display', 'none'); });
-});
-</script>
-	<style type="text/css">
-	/* header */
-	#dropdown li.headerlink { width: auto; float: left; text-align: center; }
-	/* query list */
-	#dropdown li.headerlink ul { display: none;
-	text-align: left;
-	position: absolute;
-	padding: 5px;
-	z-index: 2; }
-	/* query entries */
-	#dropdown li.headerlink:hover ul { display: block; width: auto; }
-	#dropdown li.headerlink:hover ul li { padding: 5px; margin: 1px; float: none; display: block; }
-	</style>
-<script language="javascript" type="text/javascript">
-$(document).ready(function() {
-// Enable Tabs
-$("#searchtabs").tabs({
-collapsible:true
-});
-// Hide all tabs by default
-$("#searchtabs > ul > li").removeClass().addClass("ui-corner-top ui-state-default");
-$("#searchtabs > div").addClass("ui-tabs-hide");
-$("#select_all").click(function() {
-$(".ticket_multi_select").attr('checked', true);
-return false;
-});
-$("#select_none").click(function() {
-$(".ticket_multi_select").attr('checked', false);
-return false;
-});
-$("#select_inverse").click(function() {
-$(".ticket_multi_select").each(function() {
-$(this).attr('checked', !$(this).attr('checked'));
-});
-return false;
-});
-});
-</script>
-
-{% endblock %}
-
-{% endblock %}
+{% load billservice_tags %}
 {% block helpdesk_body %}
 
 {% load in_list %}
@@ -73,6 +20,7 @@ return false;
         <select name='select' id='filterBuilderSelect'>
         <option value='Sort'>{% trans "Sorting" %}</option>
         <option value='Owner'>{% trans "Owner" %}</option>
+        <option value='Assigned_to'>{% trans "Assigned to" %}</option>
         <option value='Queue'>{% trans "Queue" %}</option>
         <option value='Status'>{% trans "Status" %}</option>
         <option value='Keywords'>{% trans "Keywords" %}</option>
@@ -103,6 +51,9 @@ return false;
             {% trans "Priority" %}
         </option>
         <option value='assigned_to'{% ifequal query_params.sorting "assigned_to"%} selected='selected'{% endifequal %}>
+            {% trans "Assigned to" %}
+        </option>
+        <option value='owner'{% ifequal query_params.sorting "owner"%} selected='selected'{% endifequal %}>
             {% trans "Owner" %}
         </option>
     </select><br />
@@ -111,11 +62,11 @@ return false;
     <input type='button' class='filterBuilderRemove' value='-' />
     </div>
 
-    <div class='filterBox{% if query_params.filtering.assigned_to__id__in %} filterBoxShow{% endif %}' id='filterBoxOwner'>
+    <div class='filterBox{% if query_params.filtering.owner__id__in %} filterBoxShow{% endif %}' id='filterBoxOwner'>
     <label for='id_owners'>{% trans "Owner(s)" %}</label>
-    <select id='id_owners' name='assigned_to' multiple='selected' size='5'>
-        {% for u in user_choices %}
-        <option value='{{ u.id }}'{% if u.id|in_list:query_params.filtering.assigned_to__id__in %} selected='selected'{% endif %}>
+    <select id='id_owners' name='owner' multiple='selected' size='5'>
+        {% for u in owner_choices %}
+        <option value='{{ u.id }}'{% if u.id|in_list:query_params.filtering.owner__id__in %} selected='selected'{% endif %}>
             {{ u.username }}{% ifequal u user %} (ME){% endifequal %}
         </option>
         {% endfor %}
@@ -124,6 +75,19 @@ return false;
     <input type='button' class='filterBuilderRemove' value='-' />
     </div>
 
+    <div class='filterBox{% if query_params.filtering.assigned_to__id__in %} filterBoxShow{% endif %}' id='filterBoxAssigned_to'>
+    <label for='id_assigned_to'>{% trans "Assigned to" %}</label>
+    <select id='id_assigned_to' name='assigned_to' multiple='selected' size='5'>
+        {% for u in assigned_to_choices %}
+        <option value='{{ u.id }}'{% if u.id|in_list:query_params.filtering.assigned_to__id__in %} selected='selected'{% endif %}>
+            {{ u.username }}{% ifequal u user %} (ME){% endifequal %}
+        </option>
+        {% endfor %}
+    </select>
+    <p class='help'>{% trans 'Ctrl-Click to select multiple options' %}</p>
+    <input type='button' class='filterBuilderRemove' value='-' />
+    </div>
+    
     <div class='filterBox{% if query_params.filtering.queue__id__in %} filterBoxShow{% endif %}' id='filterBoxQueue'>
     <label for='id_queues'>{% trans "Queue(s)" %}</label><select id='id_queues' name='queue' multiple='selected' size='5'>{% for q in queue_choices %}<option value='{{ q.id }}'{% if q.id|in_list:query_params.filtering.queue__id__in %} selected='selected'{% endif %}>{{ q.title }}</option>{% endfor %}</select>
     <p class='help'>{% trans 'Ctrl-Click to select multiple options' %}</p>
@@ -194,25 +158,29 @@ return false;
 
 {{ search_message|safe }}
 <form method='post' action='{% url helpdesk_mass_update %}'>
-<table width='100%'>
-<tr class='row_tablehead'><td colspan='9'>{% trans "Tickets" %}</td></tr>
-<tr class='row_columnheads'><th>&nbsp;</th><th>#</th><th>{% trans "Pr" %}</th><th>{% trans "Title" %}</th><th>{% trans "Queue" %}</th><th>{% trans "Status" %}</th><th>{% trans "Created" %}</th><th>{% trans "Owner" %}</th>{% if tags_enabled %}<th>{% trans "Tags" %}</th>{% endif %}</tr>
-{% if tickets %}{% for ticket in tickets.object_list %}
+<table class="wide statistic_table extra_table">
+<tr class="white bold s-11 blue_caption"><td colspan='10'><div class="f-left statistics_title">{% trans "Tickets" %}</div></td></tr>
+<tr><th>&nbsp;</th><th>#</th><th>{% trans "Pr" %}</th><th>{% trans "Title" %}</th><th>{% trans "Queue" %}</th><th>{% trans "Status" %}</th><th>{% trans "Modified" %}</th><th>{% trans "Created" %}</th><th>{% trans "Owner" %}</th><th>{% trans "Assigned to" %}</th>{% if tags_enabled %}<th>{% trans "Tags" %}</th>{% endif %}</tr>
+{% if tickets %}
+{% for ticket in tickets.object_list %}
 <tr class='row_{% cycle odd,even %} row_hover'>
-<td><input type='checkbox' name='ticket_id' value='{{ ticket.id }}' class='ticket_multi_select' /></td>
-<th><a href='{{ ticket.get_absolute_url }}'>{{ ticket.ticket }}</a></th>
-<td>{{ ticket.get_priority_span }}</td>
-<th><a href='{{ ticket.get_absolute_url }}'>{{ ticket.title }}</a></th>
-<td>{{ ticket.queue }}</td>
-<td>{{ ticket.get_status }}</td>
-<td><span title='{{ ticket.created|date:"r" }}'>{{ ticket.created|date:"d.m.Y H:i" }}</span></td>
-<td>{{ ticket.get_assigned_to }}</td>
+<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><input type='checkbox' name='ticket_id' value='{{ ticket.id }}' class='ticket_multi_select' /></td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.ticket }}</a></td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><span class="priority{{ ticket.priority }}">{{ ticket.priority }}</span></td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.title }}</a></td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.queue }}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.get_status }}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><span title='{{ ticket.modified|date:"r" }}'>{{ ticket.modified|date:"d.m.Y H:i" }}</span></td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><span title='{{ ticket.created|date:"r" }}'>{{ ticket.created|date:"d.m.Y H:i" }}</span></td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href="{% url  helpdesk_list%}?sort=created&owner={{ticket.owner.id}}">{{ ticket.owner.username }}</a></td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.get_assigned_to }}</td>
 {% if tags_enabled %}<td>{{ ticket.tags }}</td>{% endif %}
 </tr>
 {% endfor %}{% else %}
-<tr class='row_odd'><td colspan='5'>{% trans "No Tickets Match Your Selection" %}</td></tr>
+<tr><td colspan='5'>{% trans "No Tickets Match Your Selection" %}</td></tr>
 {% endif %}
 </table>
+
 <div class="pagination">
     <span class="step-links">
         {% if tickets.has_previous %}

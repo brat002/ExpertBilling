@@ -4,23 +4,10 @@
     {% block helpdesk_title %}Helpdesk{% endblock %}
 {% endblock %}
 
-{% block extra_head %}
-    
-    <script src='{{ MEDIA_URL }}js/jquery-ui-1.7.2.custom.min.js' type='text/javascript' language='javascript'></script>
-	<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/action_links.css">
-	<link rel="stylesheet" href="{{ MEDIA_URL }}css/forms.css" type="text/css">
-    <link rel='stylesheet' href='{{ MEDIA_URL }}css/helpdesk.css' type='text/css' />
-    <link rel='stylesheet' href='{{ MEDIA_URL }}css/private_area_layout.css' type='text/css' />
-    
-    <link rel='stylesheet' href='{{ MEDIA_URL }}css/jquery-ui-1.7.2.custom.css' type='text/css' />
-    
-    <link rel='alternate' href='{% url helpdesk_rss "user" %}{{ user.username }}/' type='application/rss+xml' title='{% trans "My Open Tickets" %}' />
-    <link rel='alternate' href='{% url helpdesk_rss "recent_activity" %}' type='application/rss+xml' title='{% trans "All Recent Activity" %}' />
-    <link rel='alternate' href='{% url helpdesk_rss "unassigned" %}' type='application/rss+xml' title='{% trans "Unassigned Tickets" %}' />
-    {% block helpdesk_head %}{% endblock %}
-{% endblock %}
 
-{% block title %}{% trans "Helpdesk" %}&nbsp;{% trans 'Welcome to your Helpdesk Dashboard! From here you can quickly see your own tickets, and those tickets that have no owner. Why not pick up an orphan ticket and sort it out for a customer?' %}&nbsp;</span>
+
+{% block title %}
+{% trans "Helpdesk" %}&nbsp;{% trans 'Welcome to your Helpdesk Dashboard! From here you can quickly see your own tickets, and those tickets that have no owner. Why not pick up an orphan ticket and sort it out for a customer?' %}&nbsp;</span>
 {% endblock %}
 
 {% block content %}

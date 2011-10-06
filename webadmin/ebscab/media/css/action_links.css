@@ -9,6 +9,7 @@ a.add_link:link, a.add_link:visited, a.add_link:hover, a.add_link:active {
     background: url("../img/icons/icon_addlink.gif") no-repeat left;
     padding-left: 21px;
 }
+
 a.hold_link:link, a.add_link:visited, a.add_link:hover, a.add_link:active {
     background: url("../img/icons/icon_holdlink.png") no-repeat left;
     padding-left: 21px;
@@ -18,10 +19,10 @@ a.change_link:link, a.change_link:visited, a.change_link:hover, a.change_link:ac
     padding-left: 21px;
 }
 a.add_link:hover {
-    color: #000
+    color: #000;
         }
 a.change_link:hover {
-    color: #000
+    color: #4a4a4a;
         }
 a.delete_link:link, a.delete_link:visited, a.delete_link:hover, a.delete_link:active {
         background: url("../img/icons/icon_deletelink.gif") no-repeat left;
@@ -29,7 +30,11 @@ a.delete_link:link, a.delete_link:visited, a.delete_link:hover, a.delete_link:ac
         color:#adadad;
     }
 a.delete_link:hover {
-    color: #000
+    color: #4a4a4a;
+        }
+        
+ a.hold_link:hover {
+    color: #4a4a4a;
         }
 a.export_link {
     background: url("../img/icons/selector-add.gif") no-repeat left;

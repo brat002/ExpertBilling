@@ -348,7 +348,7 @@ class Ticket(models.Model):
         A HTML <span> providing a CSS_styled representation of the priority.
         """
         from django.utils.safestring import mark_safe
-        return mark_safe(u'<span style="color:%s">%s</span>' % (self.get_priority_color(), self.get_priority_verbose()))
+        return mark_safe(u'<center><span class="priority%s">%s</span></center>' % (self.priority,self.priority,))
     get_priority_span = property(_get_priority_span)
 
     def _get_status(self):
