@@ -642,8 +642,8 @@ def create_ticket(request):
             return HttpResponseRedirect(ticket.get_absolute_url())
     else:
         initial_data = {}
-        if request.user.usersettings.settings.get('use_email_as_submitter', False) and request.user.email:
-            initial_data['submitter_email'] = request.user.email
+        if request.user.usersettings.settings.get('use_email_as_submitter', False) and request.user.account.email:
+            initial_data['submitter_email'] = request.user.account.email
 
         form = TicketForm(initial=initial_data)
         form.fields['queue'].choices = [('', '--------')] + [[q.id, q.title] for q in Queue.objects.all()]
