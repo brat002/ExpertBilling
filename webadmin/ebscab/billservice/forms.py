@@ -13,11 +13,17 @@ class LoginForm(forms.Form):
 class PromiseForm(forms.Form):
     sum = forms.FloatField(label=u"Сумма", required = True, error_messages={'required':u'Вы не указали размер платежа!'})
     
+class EmailForm(forms.Form):
+    new_email = forms.EmailField(label=u"Новый e-mail", required = False,  error_messages={'required':u'Обязательное поле!'} )
+    repeat_email = forms.EmailField(label=u"Повторите e-mail", required = False, error_messages={'required':u'Обязательное поле!'} )
+    
+    
 class PasswordForm(forms.Form):
     old_password = forms.CharField(label=u"Старый пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
     new_password = forms.CharField(label=u"Новый пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
-    repeat_password = forms.CharField(label=u"Повторите", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
-    
+    repeat_password = forms.CharField(label=u"Повторите пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
+
+
 
 class SimplePasswordForm(forms.Form):
     new_password = forms.CharField(label=u"Новый пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
@@ -43,3 +49,4 @@ class ChangeTariffForm(forms.Form):
 class StatististicForm(forms.Form):
     date_from = forms.DateField(label=u'с даты', input_formats=('%d/%m/%Y',), required = False)
     date_to = forms.DateField(label=u'по дату', input_formats=('%d/%m/%Y',), required = False)
+    
