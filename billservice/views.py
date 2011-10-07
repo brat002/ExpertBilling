@@ -35,7 +35,7 @@ from billservice.models import Account, AccountTarif, NetFlowStream, Transaction
 
 from billservice.models import SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime, SuspendedPeriod, GroupStat
 
-from billservice.forms import LoginForm, PasswordForm, SimplePasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
+from billservice.forms import LoginForm, PasswordForm, EmailForm, SimplePasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession
 from billservice.utility import is_login_user, settlement_period_info
@@ -570,7 +570,8 @@ def services_info(request):
 @login_required
 def password_form(request):
     return {
-            'form':PasswordForm()
+            'password_form':PasswordForm(),
+            'email_form':EmailForm(),
             }
 
 @render_to('accounts/subaccount_change_password.html')
@@ -610,7 +611,6 @@ def subaccount_change_password(request):
                     subaccount.save()
                     return {
                             'error_message': u'Пароль успешно изменен',
-                            'ok':'ok',
                             }
                 else:
                     return {
@@ -634,20 +634,21 @@ def subaccount_change_password(request):
 @login_required
 def change_password(request):
     if request.method == 'POST':
+        user = request.user.account
+  
         form = PasswordForm(request.POST)
         if form.is_valid():
             try:
-                user = request.user.account
+                
                 if user.password == form.cleaned_data['old_password'] and form.cleaned_data['new_password']==form.cleaned_data['repeat_password']:
                     user.password = form.cleaned_data['new_password']
                     user.save()
                     return {
                             'error_message': u'Пароль успешно изменен',
-                            'ok':'ok',
                             }
                 else:
                     return {
-                            'error_message': u'Проверьте пароль',
+                            'error_message': u'Проверьте пароль. ',
                             }
             except Exception, e:
                 return {
@@ -662,6 +663,30 @@ def change_password(request):
                 'error_message': u'Не предвиденная ошибка',
                 }
 
+
+@ajax_request
+@login_required
+def change_email(request):
+    if request.method == 'POST':
+        user = request.user.account
+        form = EmailForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['new_email'] and form.cleaned_data['repeat_email'] and form.cleaned_data['new_email']==form.cleaned_data['repeat_email']:
+                user.email=form.cleaned_data['new_email']
+                user.save()
+                return {
+                        'error_message': u'E-mail успешно изменен',
+                        'ok':'ok',
+                        }
+            else:
+                return {
+                        'error_message': u'Введённые e-mail не совпадают',
+                        }
+
+        else:
+            return {
+                    'error_message': u'Проверьте введенные данные',
+                    }
 
 
 @ajax_request
