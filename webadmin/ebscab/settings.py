@@ -13,7 +13,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = 'ebs'             # Or path to database file if using sqlite3.
+DATABASE_NAME = 'ebs_nofkeys'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'ebs'             # Not used with sqlite3.
 DATABASE_PASSWORD = 'ebspassword'         # Not used with sqlite3.
 DATABASE_HOST = '127.0.0.1'             # Set to empty string for localhost. Not used with sqlite3.
@@ -138,17 +138,25 @@ LEFT_PROMISE_DAYS = 7
 ALLOW_WEBMONEY = False
 ALLOW_QIWI = True
 WEBCAB_LOG = '/opt/ebs/web/ebscab/log/webcab_log'
-#WEBCAB_LOG = os.path.abspath('log/webcab_log')
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'user@gmail.com'
+EMAIL_HOST_PASSWORD = 'userpassword'
+
 
 CURRENCY = '$'
 
 TEST_RUNNER = 'testcases.test_runner.run_tests'
 PERSONAL_AREA_STAFF_MENU = [
-    ('helpdesk_dashboard', u"Панель"),
-    ('helpdesk_list', u"Поддержка"),
-    ('helpdesk_submit', u"Создать запрос"),
+    ('helpdesk_dashboard', u"Сводка"),
+    ('helpdesk_list', u"Заявки"),
+    ('helpdesk_submit', u"Создать заявку"),
+    ('helpdesk_kb_index', u"База знаний"),
     ('helpdesk_report_index', u"Статистика"),
-    ('/helpdesk/admin/', u"Настройки"),
+    ('helpdesk_user_settings', u"Ваши настройки"),
+    ('/helpdesk/admin/', u"Конфигурация"),
     ('account_logout', u'Выход'),
 ]
 
