@@ -8,7 +8,8 @@ admin.autodiscover()
 
 
 urlpatterns = patterns('',
-    url(r'^webmoney/success/$', success,        name='wm_sample-success'),
-    url(r'^webmoney/fail/$',    fail,           name='wm_sample-fail'),
-    url(r'^webmoney/$',         simple_payment, name='wm_sample-payment'),
+    url(r'^success/$', success,        name='wm_sample-success'),
+    url(r'^fail/$',    fail,           name='wm_sample-fail'),
+    url(r'^$',         simple_payment, name='wm_sample-payment'),
+    url(r'^result/$',           result,         name='webmoney-result'),
 )
