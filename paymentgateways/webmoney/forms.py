@@ -1,8 +1,11 @@
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+import re
 
-from webmoney import PURSE_RE, WMID_RE
+PURSE_RE = re.compile(ur'^(?P<type>[ZREUYBGDC])(?P<number>\d{12})$')
+WMID_RE = re.compile(ur'^\d{12}$')
+
 from django.conf import settings
 
 class PaymentRequestForm(forms.Form):

@@ -8,9 +8,8 @@ except ImportError:
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import mail_admins
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
-from webmoney.forms import *
-from webmoney.models import Payment
-from webmoney.signals import webmoney_payment_accepted
+from forms import *
+from models import Payment
 import settings
 
 try:
@@ -112,6 +111,11 @@ def result(request):
             payment.payment_creditdays=form.cleaned_data['LMI_PAYMENT_CREDITDAYS']
 
             try:
+                from django.db import connection
+                cursor = connection.cursor()
+                cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created)
+                                  VALUES(%s, '%s', 'WEBMONEY_PAYMENT', True, get_tarif(%s), %s, now())""" % (payment.account.id, payment.id, payment.amount*(-1), payment.created))
+                cursor.connection.commit()
                 payment.save()
             except:
                 mail_admins('Unprocessed payment without invoice!',
