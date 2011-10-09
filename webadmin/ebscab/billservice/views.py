@@ -40,7 +40,6 @@ from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession
 from billservice.utility import is_login_user, settlement_period_info
 from nas.models import TrafficClass
-from webmoney.views import simple_payment
 from lib.decorators import render_to, ajax_request#, login_required
 from paymentgateways.qiwi.models import Invoice as QiwiInvoice
 from paymentgateways.qiwi.forms import QiwiPaymentRequestForm
@@ -149,7 +148,7 @@ def login(request):
             except Exception, e:
                 log.debug("Login error: %r" % e)
                 form = LoginForm(initial={'username': form.cleaned_data['username']})
-                error_message = u'Проверьте введенные данные'
+                error_message = u'Произошла ошибка. Сообщите о ней вашему администратору.'
                 return {
                         'error_message':error_message,
                         'form':form,
@@ -166,7 +165,29 @@ def login(request):
         return {
                 'form':form,
                }
+@ajax_request
+def simple_login(request):
+    form = LoginForm(request.POST)
+    if form.is_valid():
+        try:
+            user = authenticate(username=form.cleaned_data['username'], \
+                                password=form.cleaned_data['password'])
+    
+            log_in(request, user)
+            return {"status":1,"message":"Login succeful"}
+        except:
+            return {"status":0,"message":"User not found"}
+    return {"status":0,"message":"User not found"}
 
+@login_required
+@ajax_request
+def get_ballance(request):
+    try:
+        
+        return {"status":1,"ballance":float(request.user.account.ballance),"message":"Ok"}
+    except:
+        return {"status":0,"ballance":-1,"message":"User not found"}
+        
 def login_out(request):
     log_out(request)
     return HttpResponseRedirect('/')
@@ -340,11 +361,7 @@ def make_payment(request):
             qiwi_form = QiwiPaymentRequestForm(initial={'phone':last_qiwi_invoice.phone})
         else:
              qiwi_form = QiwiPaymentRequestForm(initial={'phone':request.user.account.phone_m})
-    if settings.ALLOW_WEBMONEY:
-        wm=simple_payment(request)
-        wm_form=wm['form']
-
-    return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'wm_form':wm_form, 'qiwi_form':qiwi_form}
+    return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'qiwi_form':qiwi_form}
 
 
 

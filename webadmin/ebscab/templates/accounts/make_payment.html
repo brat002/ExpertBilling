@@ -5,11 +5,7 @@
 {% block content %}
 {{error_message}}
 {% if allow_webmoney %}
-<form method="POST" action="https://merchant.webmoney.ru/lmi/payment.asp">
-{{wm_form.LMI_PAYMENT_DESC}}
-{{wm_form.LMI_PAYMENT_NO}}
-{{wm_form.LMI_PAYEE_PURSE}}
-{{wm_form.LMI_SIM_MODE}}
+<form method="POST" action="/webmoney/">
 <table class="wide extra_table promise_table" cellpadding="0" cellspacing="0">
     <tr>
         <th class="white bold s-11 blue_caption a-left ie" colspan="2">Пополнить баланс с помощью WebMoney</th>
@@ -19,7 +15,7 @@
         	Сумма
         </td>
         <td class="left_border ">
-        	{{ wm_form.LMI_PAYMENT_AMOUNT }} {{ CURRENCY }}
+        	<input type="text" name='amount' value='0'> {{ CURRENCY }}
         </td>
     </tr>
     <tr>

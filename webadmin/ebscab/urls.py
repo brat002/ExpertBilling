@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
     #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
     (r'helpdesk/', include('helpdesk.urls')),
+    (r'webmoney/', include('paymentgateways.webmoney.urls')),
 
 )
 
@@ -25,6 +26,8 @@ urlpatterns += patterns('billservice.views',
      #(r'^$', 'index'),
      url(r'^$', 'index', name='billservice_index'),
      (r'^login/$', 'login'),
+     (r'^simple_login/$', 'simple_login'),
+     (r'^get_ballance/$', 'get_ballance'),
      (r'^prepaid/$', 'account_prepays_traffic'),
      url(r'^accounts/logout/$', 'login_out', name='account_logout'),
      (r'^traffic/info/$', 'netflowstream_info'),

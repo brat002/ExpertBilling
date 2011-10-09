@@ -13,7 +13,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = 'ebs_nofkeys'             # Or path to database file if using sqlite3.
+DATABASE_NAME = 'ebs_1'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'ebs'             # Not used with sqlite3.
 DATABASE_PASSWORD = 'ebspassword'         # Not used with sqlite3.
 DATABASE_HOST = '127.0.0.1'             # Set to empty string for localhost. Not used with sqlite3.
@@ -101,7 +101,7 @@ INSTALLED_APPS = (
     'service_monitor',
     'testcases',
     'statistics',
-    'webmoney',
+    'paymentgateways.webmoney',
     'paymentgateways.qiwi',
     'helpdesk',
     'notify',
@@ -135,7 +135,7 @@ MAX_PROMISE_SUM = 100000
 MIN_BALLANCE_FOR_PROMISE=-1000
 LEFT_PROMISE_DAYS = 7
 
-ALLOW_WEBMONEY = False
+ALLOW_WEBMONEY = True
 ALLOW_QIWI = True
 WEBCAB_LOG = '/opt/ebs/web/ebscab/log/webcab_log'
 

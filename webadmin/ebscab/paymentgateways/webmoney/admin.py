@@ -1,5 +1,5 @@
 from django.contrib import admin
-from webmoney.models import Payment
+from models import Payment
 
 
 class PaymentAdmin(admin.ModelAdmin):
