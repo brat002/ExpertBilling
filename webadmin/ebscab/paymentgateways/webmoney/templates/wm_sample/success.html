@@ -1,5 +1,5 @@
-{% extends "wm_sample/base.html" %}
+{% extends "base_extended.html" %}
 
 {% block content %}
-Your payment number {{ id }} is successfully procceded at {{ date|date:"Y.m.d H:i" }}.
+Вам платёж был успешно выполнен {{ date|date:"Y.m.d H:m:s" }}.
 {% endblock %}
