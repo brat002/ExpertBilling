@@ -33,7 +33,7 @@ IF (TG_OP = 'DELETE') THEN
     DELETE FROM billservice_transaction WHERE account_id=OLD.id;
     DELETE FROM billservice_traffictransaction WHERE account_id=OLD.id;
     DELETE FROM billservice_x8021 WHERE account_id=OLD.id;
-    DELETE FROM radius_activesession WHERE account_id=OLD.id;
+    DELETE FROM radius_activesession WHERE account_id=OLD.id;    
     
     RETURN OLD;
 END IF;
