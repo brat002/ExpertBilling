@@ -681,3 +681,13 @@ a.helpdesk-img:hover, a.helpdesk-img-active {
 .p-right {
 	padding-right:3px;
 }
+@media screen and (1){
+.statistics_link {
+    width:600px !important;
+    margin-top:-12px !important;
+}
+
+.statistics_link a {
+    margin-top:-10px !important;
+}
+}
