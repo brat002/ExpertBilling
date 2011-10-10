@@ -1816,7 +1816,7 @@ class SuspendedPeriodForm(QtGui.QDialog):
         self.end_date = self.dateTimeEdit_end_date.currentDate()
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         settings.setValue("window-geometry-%s" % unicode(self.objectName()), QtCore.QVariant(self.saveGeometry()))
-        event.accept()    
+        #event.accept()    
         QtGui.QDialog.accept(self)
         
 class PeriodForm(QtGui.QDialog):
