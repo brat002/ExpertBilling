@@ -795,10 +795,10 @@ def change_tariff(request):
                                                     tarif = rule.to_tariff,
                                                     datetime = data_start_period,
                                                 )
-            from billservice.models import AddonServiceTarif
+            #from billservice.models import AddonServiceTarif
             for service in AccountAddonService.objects.filter(account=user, deactivated__isnull=True):
-                addt=AddonServiceTarif.objects.filter(tarif=current_tariff,service=service.service)
-                if not addt:
+                #addt=AddonServiceTarif.objects.filter(tarif=current_tariff,service=service.service)
+                if service.service.cancel_subscription:
                     service.deactivated = data_start_period
                     service.save()
                     
