@@ -714,11 +714,26 @@ def change_tariff_form(request):
     user = request.user.account
     account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('-datetime')[:1]
     account_tariff = account_tariff_id[0]
-    tariffs = TPChangeRule.objects.filter(ballance_min__lte=(user.ballance+user.credit), from_tariff = account_tariff.tarif)
+    tariffs = TPChangeRule.objects.filter(from_tariff = account_tariff.tarif)
+    res=[]
+    for rule in tariffs:
+        data_start_period=None
+        if rule.on_next_sp:
+            sp = user.get_account_tariff().settlement_period
+            if sp:
+                if sp.autostart:
+                    start = account_tariff.datetime
+                else:
+                    start = sp.time_start
+                td = settlement_period_info(start, sp.length_in, sp.length)
+                data_start_period = td[1]
+        rule.date_start=data_start_period        
+        res.append(rule)
+            
     form = ChangeTariffForm(user, account_tariff)
     return {
             'form': form,
-            'tariff_objects':tariffs,
+            'tariff_objects':res,
             'user':user,
             'tariff':account_tariff,
             #'time':time,
@@ -738,12 +753,13 @@ def change_tariff(request):
         rule_id = request.POST.get('id_tariff_id', None)
         if rule_id != None:
             user = request.user.account
+            current_tariff=user.get_account_tariff()
             account_tariff_id = \
                 AccountTarif.objects.filter(account=user, \
                             datetime__lt=datetime.now()).order_by('-datetime')[:1]
             account_tariff = account_tariff_id[0]
-            from datetime import datetime
-            rules_id =[x.id for x in TPChangeRule.objects.filter(ballance_min__lte=(user.ballance+user.credit))]
+
+            rules_id =[x.id for x in TPChangeRule.objects.filter(from_tariff = account_tariff.tarif)]
             rule = TPChangeRule.objects.get(id=rule_id)
             data_start_period = datetime.now()
             data_start_active = False
@@ -755,7 +771,7 @@ def change_tariff(request):
                             'error_message':u'Вы не можете перейти на выбранный тариф. Для перехода вам необходимо отработать на старом тарифе ещё не менее %s дней' % (delta/86400*(-1), ),
                             }
             if rule.on_next_sp:
-                sp = user.get_account_tariff().settlement_period
+                sp = current_tariff.settlement_period
                 if sp:
                     if sp.autostart:
                         start = account_tariff.datetime
@@ -766,16 +782,26 @@ def change_tariff(request):
                     data_start_active = True
             if not rule.id in rules_id:
                 return {
-                        'error_message':u'Вы не можете перейти на выбранный тариф',
+                        'error_message':u'Вы не можете перейти на выбранный тарифный план.',
                         }
+            
+            if float(rule.ballance_min)>float(user.ballance+user.credit):
+                return {
+                        'error_message':u'Вы не можете перейти на выбранный тарифный план. Ваш баланс меньше разрешённого для такого перехода.',
+                        }
+                
             tariff = AccountTarif.objects.create(
                                                     account = user,
                                                     tarif = rule.to_tariff,
                                                     datetime = data_start_period,
                                                 )
+            from billservice.models import AddonServiceTarif
             for service in AccountAddonService.objects.filter(account=user, deactivated__isnull=True):
-                service.deactivated = datetime.now()
-                service.save()
+                addt=AddonServiceTarif.objects.filter(tarif=current_tariff,service=service.service)
+                if not addt:
+                    service.deactivated = data_start_period
+                    service.save()
+                    
             if rule.cost:
                 cursor = connection.cursor()
 

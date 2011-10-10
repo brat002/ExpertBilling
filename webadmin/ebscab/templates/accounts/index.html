@@ -265,7 +265,7 @@
 	</tr>
 	<!--- Предыдущие тарифные планы/активация карточек - загаловки --->
 	<tr>
-		<td class="blue_caption white s-11 bold main_table_left_border">ПРЕДЫДУЩИЕ ТАРИФНЫЕ ПЛАНЫ<a id="tariffs_a" class="close" href="javascript:return 0;" onclick="runEffect('tariffs')">&nbsp;</a></td>
+		<td class="blue_caption white s-11 bold main_table_left_border">ВАШИ ТАРИФНЫЕ ПЛАНЫ<a id="tariffs_a" class="close" href="javascript:return 0;" onclick="runEffect('tariffs')">&nbsp;</a></td>
 	</tr>
 	<!--- Предыдущие тарифные планы/активация карточек - данные --->
 	<tr>
@@ -277,7 +277,7 @@
 						<th class="bold p-right" align="right">Начало действия</th>
 					</tr>
 						{% for previous_tariff in tariffs %}
-		      				{% ifnotequal tariff previous_tariff %}
+
 								<tr>
 		      						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">
 			     						{{ previous_tariff.tarif }}
@@ -286,7 +286,7 @@
 										{{ previous_tariff.datetime|date:"d.m.Y  H:i" }}
 									</td>
 								</tr>
-			  				{% endifnotequal %}
+
 		   				{% endfor %}
 					<tr>
 						<td colspan="2" class="no_border">&nbsp;</td>
