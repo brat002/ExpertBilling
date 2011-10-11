@@ -456,7 +456,7 @@ class CoreVars(Vars):
 
         
 class RpcVars(Vars):
-    __slots__ = ('pids', 'piddate', 'pidLock', 'db_connection', 'db_connection_lock', 'graph_connection', 'graph_connection_lock','log_connection', 'log_connection_lock', 'LISTEN_PORT', 'USER_ID', 'FLOW_DIR', 'text_report_lock', 'SSH_BACKEND','ENABLE_ACTION_LOG')
+    __slots__ = ('pids', 'piddate', 'pidLock', 'DICT','DICT_LIST','db_connection', 'db_connection_lock', 'graph_connection', 'graph_connection_lock','log_connection', 'log_connection_lock', 'LISTEN_PORT', 'USER_ID', 'FLOW_DIR', 'text_report_lock', 'SSH_BACKEND','ENABLE_ACTION_LOG')
     
     def __init__(self):
         super(RpcVars, self).__init__()
@@ -464,6 +464,8 @@ class RpcVars(Vars):
         self.pids = []
         self.piddate = 0
         self.pidLock = Lock()
+        self.DICT=None
+        self.DICT_LIST = ("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
         self.db_connection_lock = Lock()
         self.db_connection = None
         self.graph_connection_lock = Lock()
@@ -487,6 +489,9 @@ class RpcVars(Vars):
         if config.has_option(name, 'flow_dir'): self.FLOW_DIR = config.get(name, 'flow_dir')
         if config.has_option('core', 'ssh_backend'): self.SSH_BACKEND = config.get('core', 'ssh_backend')
         if config.has_option('rpc', 'enable_action_log'): self.ENABLE_ACTION_LOG = config.getboolean('rpc', 'enable_action_log')
+        if config.has_option('rad', 'dict_list'):
+            self.DICT_LIST = config.get('rad', 'dict_list').split(',')
+        self.DICT = dictionary.Dictionary(*self.DICT_LIST)        
         
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(RpcVars, self).__slots__ + self.__slots__))
