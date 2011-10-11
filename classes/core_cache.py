@@ -192,15 +192,12 @@ class ShedulelogCache(SimpleDictCache):
     
 class TimeAccessServiceCache(SimpleDictCache):
     '''By id'''
-    __slots__ = ('by_id',)
+    __slots__ = ()
     datatype = TimeAccessServiceData
     sql = core_sql['timeaccs']
+    num = 0
 
-    def transformdata(self): pass
-    def reindex(self):
-        self.by_id = {}
-        for item in self.data:
-            self.by_id[item[0]] = item    
+   
 
 class OneTimeServiceCache(SimpleDefDictCache):
     '''By tarif id'''
