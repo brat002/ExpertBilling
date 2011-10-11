@@ -715,7 +715,7 @@ class RadiusAccessBill(Thread):
                                 if taccs_service.tarification_step>0:
                                     total_time = divmod(total_time, taccs_service.tarification_step)[1]*taccs_service.tarification_step+taccs_service.tarification_step
                         logger.debug("RADCOTHREAD: Searching for prepaid time for session : %s", (rs.sessionid, ))
-                        cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s and prepaid_time_service_id=%s and current=True""", (rs.acctf_id,time_access_service_id,))
+                        cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s and prepaid_time_service_id=%s and current=True""", (rs.acctf_id,rs.taccs_id,))
                         result = cur.fetchone()
                         cur.connection.commit()
                         prepaid_id, prepaid = result if result else (0, -1)
