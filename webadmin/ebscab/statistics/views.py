@@ -6,7 +6,9 @@ from lib.decorators import render_to
 from django.conf import settings
 import commands
 from hashlib import md5
-import time, datetime
+import time, datetime, os
+import logging
+log = logging.getLogger('statistics.views')
 WWW_PREFIX='/media/statistics/'
 
 RRDTOOL_PATH='/usr/bin/rrdtool'
@@ -24,6 +26,10 @@ http://martybugs.net/linux/rrdtool/traffic.cgi
 """
 #@render_to("statistics/account_stat.html")
 def generate_graph(image_path, subaccount, interval=None, from_date=None, to_date=None):
+    try:
+        os.remove(image_path)
+    except Exception, e:
+        log.debug("file removing error %s %s" % (image_path, e))
     #rrd=unicode(u"""%s graph %s -a PNG -h 125 -t "График загрузки канала субаккаунтом %s за %s (байты)" --lazy -l 0 -v bytes/sec -s %s DEF:in=%s.rrd:in:AVERAGE  DEF:out=%s.rrd:out:AVERAGE  CDEF:out_neg=out,-1,/  CDEF:in_calc=in,1,/ AREA:in_calc#32CD32:Incoming   LINE1:in_calc#32CD32    AREA:out_neg#4169E1:Outgoing   LINE1:out_neg#4169E1  HRULE:0#000000 """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], interval[1], RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
     if interval[1]:    
         rrd=unicode(u"""%s graph %s -a PNG -h 125 -w 500 --font TITLE:8:Times -t "График загрузки канала субаккаунтом %s за %s (байты)" --lazy -l 0 -v Байты/сек -s %s DEF:in=%s.rrd:in:AVERAGE  DEF:out=%s.rrd:out:AVERAGE  CDEF:out_neg=out,1,/  CDEF:in_calc=in,1,/ LINE2:in_calc#4169E1 AREA:in_calc#4169E1AA:Incomming   GPRINT:in_calc:MAX:"Max in\\:%%5.1lf%%s" GPRINT:in_calc:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in_calc:LAST:" Current\\: %%5.1lf %%S\\n" LINE2:out_neg#FA0502  AREA:out_neg#FA0502AA:Outgoing GPRINT:out_neg:MAX:"Max out\\:%%4.1lf%%s" GPRINT:out_neg:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out_neg:LAST:" Current\\: %%5.1lf %%S\\n" """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], interval[1], RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
@@ -36,7 +42,10 @@ def generate_graph(image_path, subaccount, interval=None, from_date=None, to_dat
 
 #@render_to("statistics/account_stat.html")
 def generate_packets_graph(image_path, subaccount, interval, from_date=None, to_date=None):
-#    print from_date, to_date
+    try:
+        os.remove(image_path)
+    except Exception, e:
+        log.debug("file removing error %s %s" % (image_path, e))
     if interval[1]:    
         rrdf=unicode(u"""%s graph %s -a PNG -h 125 -w 500 --font TITLE:8:Times -t "График загрузки канала субаккаунтом %s за %s (пакеты)" --lazy -l 0 -v Пакеты/сек -s %s DEF:packets_in=%s.rrd:packets_in:AVERAGE  DEF:packets_out=%s.rrd:packets_out:AVERAGE  CDEF:out=packets_out,1,/  CDEF:in=packets_in,1,/ LINE2:in#4169E1 AREA:in#4169E1AA:Incomming   GPRINT:in:MAX:"Max in\\:%%5.1lf%%s" GPRINT:in:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in:LAST:" Current\\: %%5.1lf %%S\\n" LINE2:out#FA0502  AREA:out#FA0502AA:Outgoing GPRINT:out:MAX:"Max out\\:%%5.1lf%%s" GPRINT:out:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out:LAST:" Current\\: %%5.1lf %%S\\n"  """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], interval[1], RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
     else:
@@ -49,7 +58,10 @@ def generate_packets_graph(image_path, subaccount, interval, from_date=None, to_
 
 #@render_to("statistics/account_stat.html")
 def generate_nas_graph(image_path, nas, interval, from_date=None, to_date=None):
-    #rrd=unicode(u"""%s graph %s -a PNG -h 125 -t "График загрузки канала субаккаунтом %s за %s (байты)" --lazy -l 0 -v bytes/sec -s %s DEF:in=%s.rrd:in:AVERAGE  DEF:out=%s.rrd:out:AVERAGE  CDEF:out_neg=out,-1,/  CDEF:in_calc=in,1,/ AREA:in_calc#32CD32:Incoming   LINE1:in_calc#32CD32    AREA:out_neg#4169E1:Outgoing   LINE1:out_neg#4169E1  HRULE:0#000000 """ % (RRDTOOL_PATH, image_path, subaccount.username, interval[0], interval[1], RRDDB_PATH+'bandwidth_%s'%subaccount.id, RRDDB_PATH+'bandwidth_%s' % subaccount.id,)).encode('utf-8')
+    try:
+        os.remove(image_path)
+    except Exception, e:
+        log.debug("file removing error %s %s" % (image_path, e))
     if interval[1]:
         rrd=unicode(u"""%s graph %s -a PNG -h 125 -w 500 --font TITLE:8:Times -t "График загрузки канала на %s за %s (байты)" --lazy -l 0 -v Байты/сек -s %s DEF:in=%s.rrd:in:AVERAGE  DEF:out=%s.rrd:out:AVERAGE  CDEF:out_neg=out,1,/  CDEF:in_calc=in,1,/ LINE2:in_calc#4169E1 AREA:in_calc#4169E1AA:Incomming   GPRINT:in_calc:MAX:"Max in\\:%%5.1lf%%s" GPRINT:in_calc:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in_calc:LAST:" Current\\: %%5.1lf %%S\\n" LINE2:out_neg#FA0502  AREA:out_neg#FA0502AA:Outgoing GPRINT:out_neg:MAX:"Max out\\:%%4.1lf%%s" GPRINT:out_neg:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out_neg:LAST:" Current\\: %%5.1lf %%S\\n" """ % (RRDTOOL_PATH, image_path, nas.name, interval[0], interval[1], RRDDB_PATH+'bandwidth_nas_%s'%nas.id, RRDDB_PATH+'bandwidth_nas_%s' % nas.id,)).encode('utf-8')
     else:
@@ -61,6 +73,10 @@ def generate_nas_graph(image_path, nas, interval, from_date=None, to_date=None):
 
 #@render_to("statistics/account_stat.html")
 def generate_nas_packets_graph(image_path, nas, interval, from_date=None, to_date=None):
+    try:
+        os.remove(image_path)
+    except Exception, e:
+        log.debug("file removing error %s %s" % (image_path, e))    
     if interval[1]:
         rrd=unicode(u"""%s graph %s -a PNG -h 125 -w 500 --font TITLE:8:Times -t "График загрузки канала на %s за %s (пакеты)" --lazy -l 0 -v Пакеты/сек -s %s DEF:packets_in=%s.rrd:packets_in:AVERAGE  DEF:packets_out=%s.rrd:packets_out:AVERAGE  CDEF:out=packets_out,1,/  CDEF:in=packets_in,1,/ LINE2:in#4169E1 AREA:in#4169E1AA:Incomming   GPRINT:in:MAX:"Max in\\:%%5.1lf%%s" GPRINT:in:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in:LAST:" Current\\: %%5.1lf %%S\\n" LINE2:out#FA0502  AREA:out#FA0502AA:Outgoing GPRINT:out:MAX:"Max out\\:%%5.1lf%%s" GPRINT:out:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out:LAST:" Current\\: %%5.1lf %%S\\n"  """ % (RRDTOOL_PATH, image_path, nas.name, interval[0], interval[1], RRDDB_PATH+'bandwidth_nas_%s'%nas.id, RRDDB_PATH+'bandwidth_nas_%s' % nas.id,)).encode('utf-8')
     else:
@@ -72,6 +88,10 @@ def generate_nas_packets_graph(image_path, nas, interval, from_date=None, to_dat
 
 #@render_to("statistics/account_stat.html")
 def generate_nas_sessions_graph(image_path, nas, interval, from_date=None, to_date=None):
+    try:
+        os.remove(image_path)
+    except Exception, e:
+        log.debug("file removing error %s %s" % (image_path, e))
     if interval[1]:
         rrd=unicode(u"""%s graph %s -a PNG -h 125 -w 500 --font TITLE:8:Times -t "График количества VPN сессий на %s за %s" --lazy -l 0 -v Сессий -s %s DEF:sessions=%s.rrd:sessions:AVERAGE LINE2:sessions#4169E1 AREA:sessions#4169E1AA:Sessions   GPRINT:sessions:MAX:"Max in\\:%%5.1lf%%s" GPRINT:sessions:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:sessions:LAST:" Current\\: %%5.1lf %%S\\n" """ % (RRDTOOL_PATH, image_path, nas.name, interval[0], interval[1],  RRDDB_PATH+'bandwidth_nas_sessions_%s' % nas.id,)).encode('utf-8')
     else:
@@ -116,6 +136,7 @@ def subaccounts_stat(request):
             a,b,c=generate_packets_graph(IMAGE_PATH+'subaccounts/'+packets_filename, subaccount, interval)
             filenames.append((interval[0], bytes_filename, packets_filename))
 #            print a,b,c
+            log.debug("Graphing info %s %s %s" % (a,b,c))
     return {'account':account,"filenames":filenames, 'c':'%s%s%s' % (a,b,c)}
 
 @render_to("statistics/subaccount_stat.html")
@@ -147,6 +168,7 @@ def subaccounts_filter_stat(request):
                 a,b,c=generate_packets_graph(IMAGE_PATH+'subaccounts/'+packets_filename, subaccount, interval)
                 filenames.append((interval[0], bytes_filename, packets_filename))
    #            print a,b,c
+                log.debug("Graphing info %s %s %s" % (a,b,c))
     return {'account':account,"filenames":filenames}
 
 @render_to("statistics/subaccount_stat.html")
@@ -173,6 +195,7 @@ def subaccounts_period_stat(request):
             x,n,c=generate_graph(IMAGE_PATH+'subaccounts/'+bytes_filename,  subaccount, [period,''], a, b)
             x,n,c=generate_packets_graph(IMAGE_PATH+'subaccounts/'+packets_filename, subaccount, [period, ''], a, b)
             filenames.append((None, bytes_filename, packets_filename))
+            log.debug("Graphing info %s %s %s" % (x,n,c))
             #print x,n,c
     return {'account':account,"filenames":filenames}
 
@@ -206,6 +229,7 @@ def nasses_filter_stat(request):
             a,b,c=generate_nas_packets_graph(IMAGE_PATH+'nasses/'+packets_filename, nas, interval)
             a,b,c=generate_nas_sessions_graph(IMAGE_PATH+'nasses/'+sessions_filename, nas, interval)
             filenames.append((interval[0], bytes_filename, packets_filename, sessions_filename))
+            log.debug("Graphing info %s %s %s" % (a,b,c))
 
 #            print a,b,c
 
@@ -251,6 +275,7 @@ def overall_stat(request):
             a,b,c=generate_graph(IMAGE_PATH+'subaccounts/'+bytes_filename,  subaccount, interval)
             a,b,c=generate_packets_graph(IMAGE_PATH+'subaccounts/'+packets_filename, subaccount, interval)
             filenames.append((interval[0], bytes_filename, packets_filename))
+            log.debug("Graphing info %s %s %s" % (a,b,c))
 #            print a,b,c
     return {"filenames":filenames, 'c':'%s%s%s' % (a,b,c)}
 
@@ -268,6 +293,7 @@ def nasses_stat(request):
             a,b,c=generate_nas_sessions_graph(IMAGE_PATH+'nasses/'+sessions_filename, nas, interval)
 
             filenames.append((interval[0], bytes_filename, packets_filename, sessions_filename))
+            log.debug("Graphing info %s %s %s" % (a,b,c))
 #            print a,b,c
     return {"filenames":filenames, 'c':'%s%s%s' % (a,b,c)}
 
@@ -287,5 +313,6 @@ def nas_stat(request):
         a,b,c=generate_nas_sessions_graph(IMAGE_PATH+'nasses/'+sessions_filename, nas, interval)
 
         filenames.append((interval[0], bytes_filename, packets_filename, sessions_filename))
+        log.debug("Graphing info %s %s %s" % (a,b,c))
 #            print a,b,c
     return {"filenames":filenames, 'c':'%s%s%s' % (a,b,c)}

@@ -1885,7 +1885,7 @@ class TarifWindow(QtGui.QMainWindow):
 
 
 
-        access_types = ["PPTP", "PPPOE", "IPN", "HotSpot", 'lISG', "DHCP"]
+        access_types = ["PPTP", "PPPOE", "IPN", "HotSpot", 'HotSpotIp+Mac', 'HotSpotIp+Password','HotSpotMac','HotSpotMac+Password','lISG', "DHCP"]
         for access_type in access_types:
             self.access_type_edit.addItem(access_type)
         
