@@ -1290,10 +1290,43 @@ class HandleHotSpotAuth(HandleSAuth):
         self.replypacket=packet.Packet(secret=str(nas.secret),dict=vars.DICT)
 
         user_name = str(self.packetobject['User-Name'][0])
-        
+        mac=str(self.packetobject['Calling-Station-Id'][0])
+        ip=str(self.packetobject['Mikrotik-Host-IP'][0])
+        acc=None
+        ["HotSpot", 'HotSpotIp+Mac', 'HotSpotIp+Password','HotSpotMac','HotSpotMac+Password']
+        """
+        HotSpot - оставляем логику по умолчанию
+        HotSpotIp+Mac - в субаккаунт добавляем только IPN IP и ipn_mac
+        HotSpotIp+Password - в субаккаунт добавляем IPN IP и password
+        HotSpotMac - в субаккаунт
+        """
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type)
         subacc = self.caches.subaccount_cache.by_username.get(user_name)
-        if not subacc:
+        if subacc:
+            acc=self.caches.account_cache.by_id.get(subacc.account_id)
+            if not acc.access_type=='HotSpot':
+                acc=None
+        if not acc and mac:
+            subacc = self.caches.subaccount_cache.by_mac.get(mac)
+            if subacc:
+                acc=self.caches.account_cache.by_id.get(subacc.account_id)
+                if acc.access_type not in ['HotSpotMac','HotSpotIp+Mac']:
+                    acc=None
+                    
+                if acc.access_type=='HotSpotIp+Mac' and subacc.ipn_ip_address!=ip:
+                    acc=None
+
+        if not acc and ip:
+            subacc = self.caches.subaccount_cache.by_ipn_ip.get(ip)
+            if subacc:
+                acc=self.caches.account_cache.by_id.get(subacc.account_id)
+                if acc.access_type!='HotSpotIp+Password':
+                    acc=None
+                    
+        if not acc:
+            """
+            Если не нашли совпадений ранее - пытаемся найти карту, чтобы активировать нового абонента
+            """
             self.cursor.execute("SELECT pin FROM billservice_card WHERE sold IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
             pin = self.cursor.fetchone()
             if pin == None:
@@ -1304,39 +1337,44 @@ class HandleHotSpotAuth(HandleSAuth):
         else:
             pin = subacc.password
 
-        authobject.plainusername = str(user_name)
-        if subacc:
-            authobject.plainpassword = str(subacc.password)
-        else:
-            authobject.plainpassword = str(pin)
 
-        check_auth, left = authobject.check_auth()
-        if not check_auth:
-            logger.warning(left, ())
-            sqlloggerthread.add_message(nas=nas.id, type="AUTH_BAD_PASSWORD", service=self.access_type, cause=u'Ошибка авторизации. Необходимо проверить указанный пароль.', datetime=self.datetime)
-            self.cursor.close()
-            return self.auth_NA(authobject)   
 
         #print user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])
-
-        self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet) AS 
-                         A(account_id int, subaccount_id int, "password" character varying, nas_id int, tarif_id int, account_status int, 
-                         balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet)
-                        """, (user_name, pin, str(self.packetobject['Mikrotik-Host-IP'][0])))
-
-        acct_card = self.cursor.fetchone()
-        self.cursor.connection.commit()
-        #self.cursor.close()
-
-        acc = acct_card
-        if acct_card is None:
-            logger.warning("Unknown User %s", user_name)
-            sqlloggerthread.add_message(nas=nas.id, type="AUTH_BAD_USER", service=self.access_type, cause=u'Пользователь HotSpot с логином %s не найден или не может быть активирован.' % (user_name,), datetime=self.datetime)
-            return self.auth_NA(authobject)
+        if not acc and pin:
+            self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet, %s::text) AS 
+                             A(account_id int, subaccount_id int, "password" character varying, nas_id int, tarif_id int, account_status int, 
+                             balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet)
+                            """, (user_name, pin, ip,mac))
+    
+            acct_card = self.cursor.fetchone()
+            self.cursor.connection.commit()
+            #self.cursor.close()
+    
+            acc = acct_card
+            
+            if acct_card is None:
+                logger.warning("Unknown User %s", user_name)
+                sqlloggerthread.add_message(nas=nas.id, type="AUTH_BAD_USER", service=self.access_type, cause=u'Пользователь HotSpot с логином %s не найден или не может быть активирован.' % (user_name,), datetime=self.datetime)
+                return self.auth_NA(authobject)
+            
+            acct_card = CardActivateData(*acct_card)
+            acc = acct_card
         
-        acct_card = CardActivateData(*acct_card)
-        acc = acct_card
-        acstatus = acct_card.ballance >0 and not acct_card.balance_blocked and not acct_card.disabled_by_limit and acct_card.account_status==1
+        if acc.access_type in ['HotSpot','HotSpotIp+Password', 'HotSpotMac+Password']:
+            authobject.plainusername = str(user_name)
+            if subacc:
+                authobject.plainpassword = str(subacc.password)
+            else:
+                authobject.plainpassword = str(pin)
+    
+            check_auth, left = authobject.check_auth()
+            if not check_auth:
+                logger.warning(left, ())
+                sqlloggerthread.add_message(nas=nas.id, type="AUTH_BAD_PASSWORD", service=self.access_type, cause=u'Ошибка авторизации. Необходимо проверить указанный пароль.', datetime=self.datetime)
+                self.cursor.close()
+                return self.auth_NA(authobject)   
+            
+        acstatus = acc.ballance >0 and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status==1
        
         if subacc:
             subacc_id=subacc.id
@@ -1347,7 +1385,7 @@ class HandleHotSpotAuth(HandleSAuth):
             sqlloggerthread.add_message(nas=acc.nas_id, subaccount=subacc_id, account=acc.account_id, type="AUTH_HOTSPOT_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
             return self.auth_NA(authobject)     
         
-        allow_dial = self.caches.period_cache.in_period.get(acct_card.tarif_id, False)
+        allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acct_card.account_status, acct_card.ballance, acct_card.disabled_by_limit, acct_card.balance_blocked,acct_card.tariff_active))
         vpn_ip_address = None
@@ -1385,7 +1423,7 @@ class HandleHotSpotAuth(HandleSAuth):
         else:
            framed_ip_address = subacc.vpn_ip_address
                 
-        if allow_dial and acct_card.tariff_active:
+        if allow_dial and acc.tariff_active:
             authobject.set_code(packet.AccessAccept)
             #self.replypacket.AddAttribute('Framed-IP-Address', '192.168.22.32')
 
@@ -1396,9 +1434,9 @@ class HandleHotSpotAuth(HandleSAuth):
                 self.replypacket.AddAttribute('Framed-IP-Address', subacc.vpn_ip_address)  
                               
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
-            self.create_speed(nas, None, acct_card.tarif_id, acct_card.account_id, speed='')
+            self.create_speed(nas, None, acc.tarif_id, acc.account_id, speed='')
             self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc_id,ipinuse_id,nas.id, str(self.session_speed))))
-            self.add_values(acct_card.tarif_id, nas.id)
+            self.add_values(acc.tarif_id, nas.id)
             if vars.SQLLOG_SUCCESS:
                 sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.account_id,  type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)            
             return authobject, self.replypacket
