@@ -708,7 +708,7 @@ class RadiusAccessBill(Thread):
                         total_time = rs.session_time - old_time
                         logger.debug("RADCOTHREAD: Tarification time for session: %s %s", (rs.sessionid, total_time))
                         if rs.date_end:
-                            taccs_service = caches.timeaccessservice_cache.by_id.get(time_access_service_id)
+                            taccs_service = caches.timeaccessservice_cache.by_id.get(rs.time_access_service_id)
                             logger.debug("RADCOTHREAD: Tarification time of end session : %s", (rs.sessionid, ))
                             if taccs_service.rounding:
                                 logger.debug("RADCOTHREAD: Rounding session time : %s", (rs.sessionid, ))
