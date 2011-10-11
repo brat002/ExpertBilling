@@ -1757,7 +1757,7 @@ class AccountWindow(QtGui.QMainWindow):
             self.toolButton_ipn_added.setText(unicode(u"Добавлен"))
         
         if self.model.ipn_status:
-            self.toolButton_ipn_enabled.setChecked(self.model.ipn_enabled)
+            self.toolButton_ipn_enabled.setChecked(self.model.ipn_status)
             self.toolButton_ipn_enabled.setText(unicode(u"Активен"))    
             
     def printAgreement(self):

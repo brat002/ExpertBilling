@@ -1,8 +1,8 @@
-INSERT INTO billservice_transactiontype(name, tyle_id) VALUES('Webmoney Merchant', 'WEBMONEY_PAYMENT');
+INSERT INTO billservice_transactiontype(name, internal_name) VALUES('Webmoney Merchant', 'WEBMONEY_PAYMENT');
 
-DROP TABLE webmoney_payment;
-DROP TABLE webmoney_invoice;
-DROP TABLE webmoney_purse;
+DROP TABLE IF EXISTS  webmoney_payment;
+DROP TABLE IF EXISTS  webmoney_invoice;
+DROP TABLE IF EXISTS  webmoney_purse;
 
 CREATE TABLE webmoney_payment
 (
