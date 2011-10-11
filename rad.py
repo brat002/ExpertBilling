@@ -1290,7 +1290,7 @@ class HandleHotSpotAuth(HandleSAuth):
         self.replypacket=packet.Packet(secret=str(nas.secret),dict=vars.DICT)
 
         user_name = str(self.packetobject['User-Name'][0])
-        mac=str(self.packetobject['Calling-Station-Id'][0])
+        mac=str(self.packetobject['Calling-Station-Id'][0]).lower() or str(self.packetobject['User-Name'][0]).lower()
         ip=str(self.packetobject['Mikrotik-Host-IP'][0])
         acc=None
         ["HotSpot", 'HotSpotIp+Mac', 'HotSpotIp+Password','HotSpotMac','HotSpotMac+Password']
@@ -1322,6 +1322,7 @@ class HandleHotSpotAuth(HandleSAuth):
                 acc=self.caches.account_cache.by_id.get(subacc.account_id)
                 if acc.access_type!='HotSpotIp+Password':
                     acc=None
+                    subacc=None
                     
         if not acc:
             """
@@ -1343,7 +1344,7 @@ class HandleHotSpotAuth(HandleSAuth):
         if not acc and pin:
             self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet, %s::text) AS 
                              A(account_id int, subaccount_id int, "password" character varying, nas_id int, tarif_id int, account_status int, 
-                             balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet)
+                             balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet,ipn_ip_address inet,ipn_mac_address text,access_type text)
                             """, (user_name, pin, ip,mac))
     
             acct_card = self.cursor.fetchone()
@@ -1360,7 +1361,7 @@ class HandleHotSpotAuth(HandleSAuth):
             acct_card = CardActivateData(*acct_card)
             acc = acct_card
         
-        if acc.access_type in ['HotSpot','HotSpotIp+Password', 'HotSpotMac+Password']:
+        if str(acc.access_type) in ['HotSpot','HotSpotIp+Password', 'HotSpotMac+Password']:
             authobject.plainusername = str(user_name)
             if subacc:
                 authobject.plainpassword = str(subacc.password)
@@ -1387,15 +1388,15 @@ class HandleHotSpotAuth(HandleSAuth):
         
         allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
-        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acct_card.account_status, acct_card.ballance, acct_card.disabled_by_limit, acct_card.balance_blocked,acct_card.tariff_active))
+        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked,acc.tariff_active))
         vpn_ip_address = None
         ipinuse_id=''
         pool_id=None
-        if (acc.ipv4_vpn_pool_id or acc.tarif_vpn_ippool_id) and acc.vpn_ip_address in ('0.0.0.0','0.0.0.0/32',''):
+        if ((subacc and subacc.ipv4_vpn_pool_id) or acc.vpn_ippool_id) and acc.vpn_ip_address in ('0.0.0.0','0.0.0.0/32',''):
            with vars.cursor_lock:
                try:
                    #self.create_cursor()
-                   pool_id=acc.ipv4_vpn_pool_id if acc.ipv4_vpn_pool_id else acc.tarif_vpn_ippool_id
+                   pool_id=acc.ipv4_vpn_pool_id if acc.ipv4_vpn_pool_id else acc.vpn_ippool_id
                    self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
                    vpn_ip_address = self.cursor.fetchone()[0]
                    if not vpn_ip_address:
@@ -1421,7 +1422,10 @@ class HandleHotSpotAuth(HandleSAuth):
                #else:
                #    vars.cursor_lock.release()
         else:
-           framed_ip_address = subacc.vpn_ip_address
+            if subacc:
+                vpn_ip_address = subacc.vpn_ip_address
+            else:
+                vpn_ip_address=acc.vpn_ip_address
                 
         if allow_dial and acc.tariff_active:
             authobject.set_code(packet.AccessAccept)
@@ -1430,7 +1434,7 @@ class HandleHotSpotAuth(HandleSAuth):
 
             if vpn_ip_address not in [None, '', '0.0.0.0', '0.0.0.0/0']:
                 self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
-            elif subacc.vpn_ip_address:
+            elif subacc and subacc.vpn_ip_address:
                 self.replypacket.AddAttribute('Framed-IP-Address', subacc.vpn_ip_address)  
                               
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)

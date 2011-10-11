@@ -1425,7 +1425,7 @@ class RPCServer(object):
     def pod(self, session, id, cur=None, connection=None, add_data = {}):
         #print "Start POD"
         cur.execute("""
-                    SELECT sessionid, nas_int_id, account_id, subaccount_id, framed_protocol, framed_ip_address
+                    SELECT sessionid, nas_int_id, account_id, subaccount_id, framed_protocol, framed_ip_address,caller_id
                     FROM radius_activesession 
                     WHERE  sessionid=%s and id=%s
                     """ ,( session, id, ))
@@ -1453,13 +1453,14 @@ class RPCServer(object):
         subaccount = Object(row)
         connection.commit()
         #PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='', format_string='')
-        res = PoD(dict=dict, 
+        res = PoD(dict=vars.DICT, 
                   account=account, 
                   subacc=subaccount, 
                   nas=nas,
                   access_type=session.framed_protocol, 
                   session_id=session.sessionid,
                   vpn_ip_address=session.framed_ip_address,
+                  caller_id=session.caller_id,
                   format_string=nas.reset_action)
 
         #log_string = u"""Пользователь %s послал запрос на разрыв сессии %s пользователя %s""" % (add_data['USER_ID'][0], session, str(row['account_name']))

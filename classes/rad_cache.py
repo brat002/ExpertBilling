@@ -214,7 +214,7 @@ class SubAccountsCache(CacheItem):
             if item.username:
                 self.by_username[item.username] = item
             if item.ipn_mac_address:
-                self.by_mac[item.ipn_mac_address] = item
+                self.by_mac[item.ipn_mac_address.lower()] = item
             if item.ipn_ip_address and item.ipn_ip_address is not "0.0.0.0" :
                 self.by_ipn_ip[item.ipn_ip_address] = item
                 #self.by_ipn_ip_nas_id[(item.ipn_ip_address, item.nas_id)] = item                

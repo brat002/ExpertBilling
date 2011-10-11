@@ -67,7 +67,7 @@ class IPNAccount(object):
         ipaddress=''
         mac_address=''
 
-def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='', format_string=''):
+def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='', caller_id='', format_string=''):
     """
     @param account_id: ID of account
     @param account_name: name of account
@@ -95,13 +95,17 @@ def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='
         doc.AddAttribute('NAS-Identifier', str(nas.identify))
         if access_type=='lisg':
             doc.AddAttribute('User-Name', str(subacc.ipn_ip_address))
-        else:
+        elif subacc.username:
             doc.AddAttribute('User-Name', str(subacc.username))
         doc.AddAttribute('Acct-Session-Id', str(session_id))
         if access_type=='hotspot':
             doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
         elif access_type not in ('hotspot', 'lisg'):
             doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
+            
+        if caller_id:
+            doc.AddAttribute('Calling-Station-Id', str(caller_id))
+            
         doc_data=doc.RequestPacket()
         sock.sendto(doc_data,(str(nas.ipaddress), 1700))
         (data, addrport) = sock.recvfrom(8192)
