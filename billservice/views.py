@@ -183,7 +183,6 @@ def simple_login(request):
 @ajax_request
 def get_ballance(request):
     try:
-        
         return {"status":1,"ballance":float(request.user.account.ballance),"message":"Ok"}
     except:
         return {"status":0,"ballance":-1,"message":"User not found"}
