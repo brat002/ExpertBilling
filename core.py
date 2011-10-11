@@ -736,7 +736,7 @@ class RadiusAccessBill(Thread):
                                 if 0: assert isinstance(pnode, TimePeriodNodeData)
                                 if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:
                                     logger.debug("RADCOTHREAD: Time tarification node for session %s was found", (rs.sessionid, ))
-                                    summ = (total_time * period.cost) / float(60)
+                                    summ = (total_time * period.cost) / Decimal("60")
                                     logger.debug("RADCOTHREAD: Summ for checkout for session %s %s", (rs.sessionid, summ))
                                     if summ > 0:
                                         #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
