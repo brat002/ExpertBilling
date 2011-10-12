@@ -1471,7 +1471,7 @@ class HandleSDHCP(HandleSAuth):
             sqlloggerthread.add_message(type="AUTH_NAS_NOT_FOUND", service=self.access_type, cause=u'Сервер доступа c IP %s в системе не найден.' % (self.nasip,), datetime=self.datetime)
             return '',None
         #if 0: assert isinstance(nas, NasData)
-        mac = self.packetobject['User-Name'][0]
+        mac = self.packetobject['User-Name'][0].lower()
         #acc = self.caches.account_cache.by_ipn_mac.get(mac)
  
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type='DHCP')
