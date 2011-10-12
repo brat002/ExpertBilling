@@ -426,6 +426,8 @@ def command_string_parser(command_string='', command_dict={}):
     """
     
     """    
+    if command_string==None:
+        return ''
     import re
     if len(command_string) == 0 or len(command_dict) == 0:
         return ''

@@ -3026,7 +3026,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         ids = []
         for r in self.tableWidget.selectedItems():
             if r.column()==0:
-                ids.append(r.id)
+                if r.id:
+                    ids.append(r.id)
         return ids
     
     def changeTariff(self):
