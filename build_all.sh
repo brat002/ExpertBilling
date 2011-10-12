@@ -80,6 +80,7 @@ svn export soft/django builds/$1/ebscab/django/ --force
 cp webadmin/django.wsgi builds/$1/ebscab/
 cp webadmin/default builds/$1/ebscab/
 cp soft/billing builds/$1/soft/
+svn export soft/hotspot/ builds/$1/soft/hotspot/
 #cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/sql
 cp sql/ebs_dump.sql builds/$1/sql/
