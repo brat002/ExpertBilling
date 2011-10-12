@@ -1582,7 +1582,7 @@ class HandleSDHCP(HandleSAuth):
         allow_dial = True
         if acc.access_type=='DHCP':
             allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
-        if acstatus and allow_dial and acc.tarif_active:
+        if acstatus and allow_dial and acc.tariff_active:
             authobject.set_code(2)
             self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)
             #self.replypacket.AddAttribute('Framed-IP-Netmask', "255.255.255.0")
