@@ -4280,7 +4280,13 @@ CREATE TABLE billservice_radiustrafficnode
   "value" numeric DEFAULT 0,
   timeperiod_id integer NOT NULL,
   "cost" numeric DEFAULT 0,
-  CONSTRAINT billservice_radiustrafficnode_pkey PRIMARY KEY (id)
+  CONSTRAINT billservice_radiustrafficnode_pkey PRIMARY KEY (id),
+  CONSTRAINT billservice_radiustrafficnode_radiustraffic_id_fkey FOREIGN KEY (radiustraffic_id)
+      REFERENCES billservice_radiustraffic (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT billservice_radiustrafficnode_timeperiod_id_fkey FOREIGN KEY (timeperiod_id)
+      REFERENCES billservice_timeperiod (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED
 )
 WITH (
   OIDS=FALSE
