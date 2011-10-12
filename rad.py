@@ -1375,8 +1375,14 @@ class HandleHotSpotAuth(HandleSAuth):
                 self.cursor.close()
                 return self.auth_NA(authobject)   
             
-        acstatus = acc.ballance >0 and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status==1
-       
+
+        if subacc:
+            acstatus = acc.account_status==1 and (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
+                        and \
+                        (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))
+        else:
+            acstatus = acc.ballance >0 and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status==1
+
         if subacc:
             subacc_id=subacc.id
         else:
@@ -1434,7 +1440,7 @@ class HandleHotSpotAuth(HandleSAuth):
 
             if vpn_ip_address not in [None, '', '0.0.0.0', '0.0.0.0/0']:
                 self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
-            elif subacc and subacc.vpn_ip_address:
+            elif subacc and subacc.vpn_ip_address not in [None, '', '0.0.0.0', '0.0.0.0/0']:
                 self.replypacket.AddAttribute('Framed-IP-Address', subacc.vpn_ip_address)  
                               
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
