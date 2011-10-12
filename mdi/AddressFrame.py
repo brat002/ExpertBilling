@@ -96,6 +96,11 @@ class AddressEbs(ebsTableWindow):
         self.connect(self.listWidget_city, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.city_clicked)
         self.connect(self.listWidget_street, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.street_clicked)
         self.connect(self.listWidget_house, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.house_clicked)
+        
+        self.connect(self.listWidget_city, QtCore.SIGNAL("itemPressed(QListWidgetItem *)"), self.city_click)
+        self.connect(self.listWidget_street, QtCore.SIGNAL("itemPressed(QListWidgetItem *)"), self.street_click)
+        self.connect(self.listWidget_house, QtCore.SIGNAL("itemPressed(QListWidgetItem *)"), self.house_click)
+                
         self.toolBar_find.setHidden(True)
         
     def retranslateUI(self, initargs):
@@ -106,10 +111,21 @@ class AddressEbs(ebsTableWindow):
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Номер дома", None, QtGui.QApplication.UnicodeUTF8))
         
     
+    def city_click(self):
+        self.listWidget_city.setStyleSheet("background-color: rgb(174, 218, 255);")
+        self.listWidget_street.setStyleSheet("")
+        self.listWidget_house.setStyleSheet("")
+    def street_click(self):
+        self.listWidget_city.setStyleSheet('')
+        self.listWidget_street.setStyleSheet("background-color: rgb(174, 218, 255);")
+        self.listWidget_house.setStyleSheet("")
+       
+    def house_click(self):
+        self.listWidget_city.setStyleSheet('')
+        self.listWidget_street.setStyleSheet("")
+        self.listWidget_house.setStyleSheet("background-color: rgb(174, 218, 255);")
+                
     def city_clicked(self, item):
-        #self.city_ce.setStrength(100)
-        #self.street_ce.setStrength(0)
-        #self.house_ce.setStrength(0)
         id = item.id
         default_text = item.text()
         text = QtGui.QInputDialog.getText(self,u"Введите название города", u"Название города:", QtGui.QLineEdit.Normal, default_text)      

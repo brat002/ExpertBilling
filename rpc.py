@@ -628,7 +628,7 @@ class RPCServer(object):
             return []
         version = '2c' if switch.snmp_version==1 else '1'
         #oper status .1.3.6.1.2.1.2.2.1.8.
-        status, output = commands.getstatusoutput("snmpwalk -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.7" % (version, switch.snmp_community, switch_ipaddress))
+        status, output = commands.getstatusoutput("snmpwalk -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.7" % (version, switch.snmp_community, switch.ipaddress))
         if status!=0:return []
         ports_status={}
         for line in output.split("\n"):

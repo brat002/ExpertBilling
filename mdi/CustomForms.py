@@ -3252,6 +3252,7 @@ class TransactionForm(QtGui.QDialog):
         self.gridLayout.addWidget(self.summ_label, 1, 0, 1, 1)
         self.summ_edit = QtGui.QLineEdit(self.groupBox)
         self.summ_edit.setObjectName(_fromUtf8("summ_edit"))
+        self.summ_edit.setFocus(True)
         self.gridLayout.addWidget(self.summ_edit, 1, 1, 1, 1)
         self.payed_document_label = QtGui.QLabel(self.groupBox)
         self.payed_document_label.setObjectName(_fromUtf8("payed_document_label"))
