@@ -476,7 +476,11 @@ class periodical_service_bill(Thread):
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     if period_start_ast>period_start: break
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                    #chk_date = period_end_ast
+                    if vars.USE_COEFF_FOR_PS==True and ((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)<delta_ast:
+                        logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
+                        delta_coef=float((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)/float(delta_ast)        
+                        cash_summ=cash_summ*Decimal(str(delta_coef))
+                        
                     if first_time:
                         first_time = False
                         chk_date = last_checkout

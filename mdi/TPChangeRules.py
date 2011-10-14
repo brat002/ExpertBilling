@@ -193,6 +193,7 @@ class TPRulesAdd(QtGui.QDialog):
         QtGui.QDialog.accept(self)
 
     def fixtures(self):
+        self.refreshList(0)
         self.disconnect(self.comboBox_from,QtCore.SIGNAL("currentIndexChanged(int)"),self.refreshList)
         tariffs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE deleted IS NOT TRUE ORDER BY NAME ASC;")
         self.connection.commit()
@@ -231,7 +232,7 @@ class TPRulesAdd(QtGui.QDialog):
                 if self.comboBox_oldtptime.itemData(i).toInt()[0]==self.model.settlement_period_id:
                     self.comboBox_oldtptime.setCurrentIndex(i)    
                     
-        self.refreshList(0)
+        
 
             
         
@@ -252,7 +253,7 @@ class TPRulesAdd(QtGui.QDialog):
                     
             if self.comboBox_from.itemData(self.comboBox_from.currentIndex()).toInt()[0]==tariff.id:
                 item.setHidden(True)
-                        
+
 
     def save(self):
         print 'Saved'
