@@ -1039,8 +1039,8 @@ class HandleSAuth(HandleSBase):
 
         allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
-        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tarif_active))
-        if allow_dial and acc.tarif_active:
+        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
+        if allow_dial and acc.tariff_active:
             
             if vars.ONLY_ONE==True:
                 vars.cursor_lock.acquire()
@@ -1118,7 +1118,7 @@ class HandleSAuth(HandleSBase):
                 sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
             return authobject, self.replypacket
         else:
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tarif_active==False, allow_dial==False), datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
             return self.auth_NA(authobject)
 
 
@@ -1233,8 +1233,8 @@ class HandlelISGAuth(HandleSAuth):
 
         allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
-        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tarif_active))
-        if allow_dial and acc.tarif_active:
+        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
+        if allow_dial and acc.tariff_active:
             authobject.set_code(2)
             self.replypacket.username = '' #Нельзя юникод
             self.replypacket.password = '' #Нельзя юникод
@@ -1250,7 +1250,7 @@ class HandlelISGAuth(HandleSAuth):
                 sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
             return authobject, self.replypacket
         else:
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tarif_active==False, allow_dial==False), datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
             return self.auth_NA(authobject)
              
 #HotSpot_class
@@ -1451,7 +1451,7 @@ class HandleHotSpotAuth(HandleSAuth):
                 sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.account_id,  type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)            
             return authobject, self.replypacket
         else:
-            sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.account_id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tarif_active==False, allow_dial==False), datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.account_id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
             return self.auth_NA(authobject)
 
 
@@ -1600,7 +1600,7 @@ class HandleSDHCP(HandleSAuth):
                 sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
             return authobject, self.replypacket
         else:
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф пользователя неактивен(%s) или время доступа выходит за рамки разрешённого %s' % (acc.tarif_active==False, allow_dial==False), datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф пользователя неактивен(%s) или время доступа выходит за рамки разрешённого %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
             return self.auth_NA(authobject)
 
 #acct class
