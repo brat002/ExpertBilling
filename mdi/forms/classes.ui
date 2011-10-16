@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>481</width>
-    <height>340</height>
+    <width>443</width>
+    <height>327</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Редактирование ноды</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">
@@ -45,7 +45,7 @@
     <widget class="QComboBox" name="protocol_edit"/>
    </item>
    <item row="3" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupBox_src">
      <property name="title">
       <string>Сеть источника</string>
      </property>
@@ -94,20 +94,30 @@
        <widget class="QLineEdit" name="src_port_edit"/>
       </item>
       <item row="2" column="0" colspan="2">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="label_snmp_in">
         <property name="text">
-         <string>In interface index</string>
+         <string>In SNMP  interface index</string>
         </property>
        </widget>
       </item>
       <item row="2" column="2">
        <widget class="QSpinBox" name="spinBox_3"/>
       </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_src_as">
+        <property name="text">
+         <string>Src AS</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2">
+       <widget class="QLineEdit" name="lineEdit_src_as"/>
+      </item>
      </layout>
     </widget>
    </item>
    <item row="3" column="2">
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="groupBox_dst">
      <property name="title">
       <string>Сеть получателя</string>
      </property>
@@ -137,14 +147,28 @@
        <widget class="QLineEdit" name="dst_port_edit"/>
       </item>
       <item row="2" column="0" colspan="2">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="label_snmp_out">
         <property name="text">
-         <string>Out interface index</string>
+         <string>Out SNMP interface index</string>
         </property>
        </widget>
       </item>
       <item row="2" column="2">
-       <widget class="QSpinBox" name="spinBox_2"/>
+       <widget class="QSpinBox" name="spinBox_snmp_out"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="labes_dst_as">
+        <property name="text">
+         <string>Dst AS</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2">
+       <widget class="QLineEdit" name="lineEdit_dst_as">
+        <property name="inputMask">
+         <string/>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -176,12 +200,17 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>name_edit</tabstop>
   <tabstop>group_edit</tabstop>
   <tabstop>protocol_edit</tabstop>
   <tabstop>src_ip_edit</tabstop>
   <tabstop>src_port_edit</tabstop>
+  <tabstop>spinBox_3</tabstop>
+  <tabstop>lineEdit_src_as</tabstop>
   <tabstop>dst_ip_edit</tabstop>
   <tabstop>dst_port_edit</tabstop>
+  <tabstop>spinBox_snmp_out</tabstop>
+  <tabstop>lineEdit_dst_as</tabstop>
   <tabstop>next_hop_edit</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>

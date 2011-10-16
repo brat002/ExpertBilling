@@ -17,6 +17,9 @@ import time
 import datetime
 from customwidget import CustomDateTimeWidget
 
+from helpers import GenericThread
+        #return
+  
 class MonitorEbs(ebsTableWindow):
     def __init__(self, connection, parent):
         columns=[u'#', u'Аккаунт',u"Субаккаунт", u"Баланс", u"Кредит", u'Caller ID', 'VPN IP', u'Сервер доступа', u'Способ доступа', u'Начало', u'Конец', u'Передано', u'Принято', u'Длительность, с', u'Статус', u'Причина разрыва']
@@ -72,6 +75,8 @@ class MonitorEbs(ebsTableWindow):
         #self.date_end.setButtonSymbols(QtGui.QAbstractSpinBox.PlusMinus)
         #self.date_end.setCalendarPopup(True)
         self.date_end.setObjectName("date_end")
+        
+        
         #self.date_end.calendarWidget().setFirstDayOfWeek(QtCore.Qt.Monday)
 
         try:
@@ -204,6 +209,46 @@ class MonitorEbs(ebsTableWindow):
         self.fixtures()
         
     def fixtures(self, user=None):
+        self.statusBar().showMessage(u"Идёт получение данных")
+        self.tableWidget.setRowCount(0)
+        self.tableWidget.clearContents()
+        self.tableWidget.setSortingEnabled(False)
+        date_start = self.date_start.currentDate()
+        date_end = self.date_end.currentDate()
+        self.statusBar().showMessage(u"Ожидание ответа")
+        if self.allTimeCheckbox.checkState()==2:
+            sql="""SELECT session.*,billservice_account.username as username,billservice_account.ballance as ballance, billservice_account.credit as credit, (SELECT username FROM billservice_subaccount WHERE id=session.subaccount_id) as subaccount_username, nas_nas.name as nas_name  FROM radius_activesession as session
+            
+                  JOIN billservice_account ON billservice_account.id=session.account_id
+                  JOIN nas_nas ON nas_nas.id = session.nas_int_id 
+                  WHERE billservice_account.id>0 and date_start>='%s' and date_start<='%s' %%s
+                  ORDER BY session.id DESC 
+                 """ % (date_start, date_end)
+        elif self.allTimeCheckbox.checkState()==0:
+            sql="""SELECT session.*,billservice_account.username as username, billservice_account.ballance as ballance, billservice_account.credit as credit, (SELECT username FROM billservice_subaccount WHERE id=session.subaccount_id) as subaccount_username, nas_nas.name as nas_name  FROM radius_activesession as session
+                  JOIN billservice_account ON billservice_account.id=session.account_id
+                  JOIN nas_nas ON nas_nas.id = session.nas_int_id
+                  WHERE session.session_status='ACTIVE' and date_start>='%s' and date_start<='%s' %%s
+                  ORDER BY session.id DESC
+                  """ % (date_start, date_end)
+        
+        if user==None:
+            user=unicode(self.userCombobox.currentText())                                      
+        
+        #print user
+        if user!="---" and user:
+            sql= sql % (" AND billservice_account.username='%s'" % unicode(user))
+        else:
+            sql = sql % ""
+
+        self.genericThread = GenericThread(self.connection, sql)
+        self.connect(self.genericThread, QtCore.SIGNAL("refresh(QVariant)"), self.fix)
+        self.genericThread.start()
+        #self.genericThread.terminate()
+
+
+    
+    def fixtures_2(self, user=None):
         #print 'tratata'
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setRowCount(0)
@@ -277,6 +322,46 @@ class MonitorEbs(ebsTableWindow):
         #self.tableWidget.setSortingEnabled(True)
 
         
+    def fix(self, sessionss):
+        i=0        
+        sess_time = 0
+        sessions=sessionss.toList()
+        self.tableWidget.setRowCount(len(sessions))        
+        for session in sessions:
+            session=session.toPyObject()
+            if session.date_end==None:
+                date_end=""
+            else:
+                date_end = session.date_end.strftime(self.strftimeFormat)
+            #print session.id
+            self.addrow(self.tableWidget, session.sessionid, i, 0, id=session.id, sessionid = session.sessionid, account_id=session.account_id)
+            self.addrow(self.tableWidget, session.username, i, 1)
+            self.addrow(self.tableWidget, session.subaccount_username, i, 2)
+            self.addrow(self.tableWidget, "%.2f" % session.ballance, i, 3, color=True)
+            self.addrow(self.tableWidget, session.credit, i, 4)
+            self.addrow(self.tableWidget, session.caller_id, i, 5)
+            self.addrow(self.tableWidget, session.framed_ip_address, i, 6)
+            self.addrow(self.tableWidget, session.nas_name, i, 7)
+            self.addrow(self.tableWidget, session.framed_protocol, i, 8)
+            self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 9)
+            self.addrow(self.tableWidget, date_end, i, 10)
+            self.addrow(self.tableWidget, humanable_bytes(session.bytes_out), i, 11)
+            self.addrow(self.tableWidget, humanable_bytes(session.bytes_in), i, 12)
+            self.addrow(self.tableWidget, prntime(session.session_time), i, 13)
+            self.addrow(self.tableWidget, session.session_status, i, 14, color=True)
+            self.addrow(self.tableWidget, session.acct_terminate_cause, i, 15)
+            sess_time += session.session_time if session.session_time else 0
+            i+=1
+        if self.firsttime and sessions and HeaderUtil.getBinaryHeader("monitor_frame_header").isEmpty():
+            self.tableWidget.resizeColumnsToContents()
+            self.firsttime = False
+        else:
+            if sessions:
+                HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
+        self.statusBar().showMessage(u'Сессий:%s. Среднее время сессии: %s минут' % (len(sessions), (sess_time/(1 if len(sessions)==0 else len(sessions))/60)))
+        self.tableWidget.setColumnHidden(0, False)
+        
+                
     def refresh_users(self):
         if self.selected_user is None:
             self.userCombobox.addItem('---')

@@ -851,7 +851,7 @@ class MainWindow(QtGui.QMainWindow):
         
         self.fileToolBar.addAction(self.addonserviceAct)
         self.fileToolBar.addAction(self.cardsAct)
-        #self.fileToolBar.addAction(self.openAct)
+        self.fileToolBar.addAction(self.tclassesAct)
         #self.fileToolBar.addAction(self.settlementPeriodAct)
         self.fileToolBar.setMovable(False)
         self.fileToolBar.setFloatable(False)

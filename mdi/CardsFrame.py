@@ -22,6 +22,7 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 from helpers import transip
 from decimal import Decimal
+from helpers import GenericThread
 templatedir = "templates/cards/"
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 class SaleCards(QtGui.QDialog):
@@ -1040,7 +1041,7 @@ class CardsChildEbs(ebsTableWindow):
         self.actionCreator(actList, objDict)
         
     def ebsPostInit(self, initargs):
-        self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refresh)
+        self.connect(self.pushButton_go, QtCore.SIGNAL("clicked()"),  self.refr)
         self.connect(self.checkBox_filter, QtCore.SIGNAL("stateChanged(int)"), self.filterActions)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -1048,6 +1049,7 @@ class CardsChildEbs(ebsTableWindow):
         self.fixtures()        
         self.filterActions()
         self.delNodeLocalAction()
+        self.refr()
         
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
@@ -1110,7 +1112,7 @@ class CardsChildEbs(ebsTableWindow):
             self.checkBox_sold.setDisabled(True)
             self.checkBox_activated.setDisabled(True)
             self.pushButton_go.setDisabled(True)
-            self.refresh()
+            #self.refresh()
             
     def enableCard(self):
         for index in self.tableWidget.selectedIndexes():
@@ -1182,7 +1184,10 @@ class CardsChildEbs(ebsTableWindow):
             self.fixtures()
         
         
-    def refresh(self, widget=None):
+    def refresh(self):
+        pass
+    
+    def refr(self, widget=None):
         
         self.statusBar().showMessage(u"Ожидание ответа")
         sql = """SELECT *,(SELECT name FROM billservice_ippool WHERE id=c.ippool_id) as pool_name FROM billservice_card as c"""
@@ -1211,7 +1216,19 @@ class CardsChildEbs(ebsTableWindow):
             
         self.tableWidget.clearContents()
 
-        nodes = self.connection.sql(sql)
+
+
+        print sql
+        self.connection.commit()
+        self.genericThread = GenericThread(self.connection, sql)
+        self.connect(self.genericThread, QtCore.SIGNAL("refresh(QVariant)"), self.fix)
+        self.genericThread.start()
+
+    
+    def fix(self, nodes):
+        self.connection.commit()
+        nodes=nodes.toList()
+        #print nodes
         tariffs = self.connection.get_models("billservice_tariff",fields=['id', 'name'])
         t={}
         for tar in tariffs:
@@ -1221,13 +1238,13 @@ class CardsChildEbs(ebsTableWindow):
         n = {}
         for nas in nasses:
             n['%s' % nas.id] = nas.name
-        
-        self.connection.commit()
+            
         self.tableWidget.setRowCount(len(nodes))
         i=0        
         
         card_types=[u'Карта экспресс-оплаты',u'HotSpot карта',u'VPN карта доступа',u"Телефонные карты"]
         for node in nodes:
+            node=node.toPyObject()
             self.addrow(node.id, i,0, status = node.disabled, activated=node.activated)
             self.addrow(node.series, i,1, status = node.disabled, activated=node.activated)
             self.addrow(node.nominal, i,2, status = node.disabled, activated=node.activated)
@@ -1254,7 +1271,7 @@ class CardsChildEbs(ebsTableWindow):
             settings.setValue("cards_date_start", QtCore.QVariant(self.date_start.currentDate()))
             settings.setValue("cards_date_end", QtCore.QVariant(self.date_end.currentDate()))
         except Exception, ex:
-            print "Cards settings save error: ", ex
+            print "Cards settings save error: ", ex        
 
 
     def addrow(self, value, x, y, status, activated):

@@ -478,6 +478,10 @@ def nfPacketHandle(data, addrport, flowCache):
                             ((flow.next_hop == nnode.next_hop) or (not nnode.next_hop)) and \
                             ((flow.src_port == nnode.src_port) or (not nnode.src_port)) and \
                             ((flow.dst_port == nnode.dst_port) or (not nnode.dst_port)) and \
+                            ((flow.in_index == nnode.in_index) or (not nnode.in_index)) and \
+                            ((flow.out_index == nnode.out_index) or (not nnode.out_index)) and \
+                            ((flow.src_as == nnode.src_as) or (not nnode.src_as)) and \
+                            ((flow.dst_as == nnode.dst_as) or (not nnode.dst_as)) and \
                             ((flow.protocol == nnode.protocol) or (not nnode.protocol))):
                             
                             flowCache.addflow5(flow)
@@ -637,6 +641,10 @@ class FlowDequeThread(Thread):
                                     ((flow.next_hop == nnode.next_hop) or (not nnode.next_hop)) and \
                                     ((flow.src_port == nnode.src_port) or (not nnode.src_port)) and \
                                     ((flow.dst_port == nnode.dst_port) or (not nnode.dst_port)) and \
+                                    ((flow.in_index == nnode.in_index) or (not nnode.in_index)) and \
+                                    ((flow.out_index == nnode.out_index) or (not nnode.out_index)) and \
+                                    ((flow.src_as == nnode.src_as) or (not nnode.src_as)) and \
+                                    ((flow.dst_as == nnode.dst_as) or (not nnode.dst_as)) and 
                                     ((flow.protocol == nnode.protocol) or (not nnode.protocol))):
                                     
                                     if not classLst and (not direction or (nnode.direction == direction)):

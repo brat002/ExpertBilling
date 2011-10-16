@@ -2447,7 +2447,7 @@ class SimpleReportEbs(ebsTableWindow):
         elif type(value)==datetime.datetime:
             #.strftime(self.strftimeFormat)   
 
-            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QString(unicode(value.strftime(strftimeFormat))))      
+            headerItem.setData(QtCore.Qt.DisplayRole, QtCore.QDateTime(value))      
  
         else:            
             headerItem.setData(0, QtCore.QVariant(float(value)))     
@@ -2485,7 +2485,7 @@ class SimpleReportEbs(ebsTableWindow):
             self.addrow(item.service, i, 4)
             self.addrow(item.type, i, 5)
             self.addrow(item.cause, i, 6)
-            self.addrow(item.datetime.strftime(self.strftimeFormat), i, 7)
+            self.addrow(item.datetime, i, 7)
             i+=1
 
         try:
@@ -2519,7 +2519,7 @@ class SimpleReportEbs(ebsTableWindow):
             self.addrow(i, i, 0, id=item.id, )
             self.addrow(item.account_username, i, 1)
             self.addrow(item.balance, float(i), 2)
-            self.addrow(item.datetime.strftime(self.strftimeFormat), i, 3)
+            self.addrow(item.datetime, i, 3)
             i+=1
 
         try:
