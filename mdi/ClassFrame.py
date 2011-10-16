@@ -10,7 +10,10 @@ from helpers import HeaderUtil, SplitterUtil
 from ebsWindow import ebsTable_n_TreeWindow
 from IPy import *
 
-
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
 
 class NetworksImportDialog(QtGui.QDialog):
     def __init__(self, class_id, connection):
@@ -327,91 +330,100 @@ class ClassNodeFrame(QtGui.QDialog):
 
     
         
-        self.resize(QtCore.QSize(QtCore.QRect(0,0,221,356).size()).expandedTo(self.minimumSizeHint()))
+        self.resize(443, 327)
 
-        self.setMinimumSize(QtCore.QSize(QtCore.QRect(0,0,221,356).size()))
-        self.setMaximumSize(QtCore.QSize(QtCore.QRect(0,0,221,356).size()))        
-        
-        self.buttonBox = QtGui.QDialogButtonBox(self)
-        self.buttonBox.setGeometry(QtCore.QRect(50,320,160,26))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.NoButton|QtGui.QDialogButtonBox.Ok)
-        self.buttonBox.setObjectName("buttonBox")
-
-        self.groupBox = QtGui.QGroupBox(self)
-        self.groupBox.setGeometry(QtCore.QRect(10,100,201,81))
-        self.groupBox.setObjectName("groupBox")
-
-        self.src_port_edit = QtGui.QLineEdit(self.groupBox)
-        self.src_port_edit.setGeometry(QtCore.QRect(60,50,127,20))
-        self.src_port_edit.setObjectName("src_port_edit")
-
-        self.src_port_label = QtGui.QLabel(self.groupBox)
-        self.src_port_label.setGeometry(QtCore.QRect(10,50,46,20))
-        self.src_port_label.setObjectName("src_port_label")
-
-        self.src_ip_label = QtGui.QLabel(self.groupBox)
-        self.src_ip_label.setGeometry(QtCore.QRect(11,20,46,20))
-        self.src_ip_label.setObjectName("src_ip_label")
-
-        self.src_ip_edit = QtGui.QLineEdit(self.groupBox)
-        self.src_ip_edit.setGeometry(QtCore.QRect(60,20,127,20))
-
-        self.src_ip_edit.setMaxLength(32767)
-        self.src_ip_edit.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-        self.src_ip_edit.setObjectName("src_ip_edit")
-
-        self.groupBox_2 = QtGui.QGroupBox(self)
-        self.groupBox_2.setGeometry(QtCore.QRect(10,190,201,80))
-        self.groupBox_2.setObjectName("groupBox_2")
-
-        self.dst_port_edit = QtGui.QLineEdit(self.groupBox_2)
-        self.dst_port_edit.setGeometry(QtCore.QRect(60,50,127,20))
-        self.dst_port_edit.setObjectName("dst_port_edit")
-
-        self.dst_ip_label = QtGui.QLabel(self.groupBox_2)
-        self.dst_ip_label.setGeometry(QtCore.QRect(8,20,46,20))
-        self.dst_ip_label.setObjectName("dst_ip_label")
-
-        self.dst_ip_edit = QtGui.QLineEdit(self.groupBox_2)
-        self.dst_ip_edit.setGeometry(QtCore.QRect(60,20,127,20))
-        self.dst_ip_edit.setObjectName("dst_ip_edit")
-
-        self.dst_port_label = QtGui.QLabel(self.groupBox_2)
-        self.dst_port_label.setGeometry(QtCore.QRect(8,50,46,20))
-        self.dst_port_label.setObjectName("dst_port_label")
-
-        self.name_edit = QtGui.QLineEdit(self)
-        self.name_edit.setGeometry(QtCore.QRect(70,10,131,20))
-        self.name_edit.setObjectName("name_edit")
-
-        self.next_hop_label = QtGui.QLabel(self)
-        self.next_hop_label.setGeometry(QtCore.QRect(18,280,46,20))
-        self.next_hop_label.setObjectName("next_hop_label")
-
-        self.next_hop_edit = QtGui.QLineEdit(self)
-        self.next_hop_edit.setGeometry(QtCore.QRect(70,280,127,20))
-        self.next_hop_edit.setObjectName("next_hop_edit")
-
+        self.gridLayout_3 = QtGui.QGridLayout(self)
+        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
         self.name_label = QtGui.QLabel(self)
-        self.name_label.setGeometry(QtCore.QRect(10,10,61,22))
-        self.name_label.setObjectName("name_label")
-
-        self.protocol_label = QtGui.QLabel(self)
-        self.protocol_label.setGeometry(QtCore.QRect(10,70,61,20))
-        self.protocol_label.setObjectName("protocol_label")
-
+        self.name_label.setObjectName(_fromUtf8("name_label"))
+        self.gridLayout_3.addWidget(self.name_label, 0, 0, 1, 1)
+        self.name_edit = QtGui.QLineEdit(self)
+        self.name_edit.setObjectName(_fromUtf8("name_edit"))
+        self.gridLayout_3.addWidget(self.name_edit, 0, 1, 1, 2)
         self.group_label = QtGui.QLabel(self)
-        self.group_label.setGeometry(QtCore.QRect(10,40,61,20))
-        self.group_label.setObjectName("group_label")
-
+        self.group_label.setObjectName(_fromUtf8("group_label"))
+        self.gridLayout_3.addWidget(self.group_label, 1, 0, 1, 1)
+        self.group_edit = QtGui.QComboBox(self)
+        self.group_edit.setObjectName(_fromUtf8("group_edit"))
+        self.gridLayout_3.addWidget(self.group_edit, 1, 1, 1, 2)
+        self.protocol_label = QtGui.QLabel(self)
+        self.protocol_label.setObjectName(_fromUtf8("protocol_label"))
+        self.gridLayout_3.addWidget(self.protocol_label, 2, 0, 1, 1)
         self.protocol_edit = QtGui.QComboBox(self)
-        self.protocol_edit.setGeometry(QtCore.QRect(70,70,131,20))
-        self.protocol_edit.setObjectName("protocol_edit")
-
-        self.direction_edit = QtGui.QComboBox(self)
-        self.direction_edit.setGeometry(QtCore.QRect(70,40,131,20))
-        self.direction_edit.setObjectName("group_edit")
+        self.protocol_edit.setObjectName(_fromUtf8("protocol_edit"))
+        self.gridLayout_3.addWidget(self.protocol_edit, 2, 1, 1, 2)
+        self.groupBox_src = QtGui.QGroupBox(self)
+        self.groupBox_src.setObjectName(_fromUtf8("groupBox_src"))
+        self.gridLayout = QtGui.QGridLayout(self.groupBox_src)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.src_ip_label = QtGui.QLabel(self.groupBox_src)
+        self.src_ip_label.setObjectName(_fromUtf8("src_ip_label"))
+        self.gridLayout.addWidget(self.src_ip_label, 0, 0, 1, 1)
+        self.src_ip_edit = QtGui.QLineEdit(self.groupBox_src)
+        self.src_ip_edit.setObjectName(_fromUtf8("src_ip_edit"))
+        self.gridLayout.addWidget(self.src_ip_edit, 0, 1, 1, 2)
+        self.src_port_label = QtGui.QLabel(self.groupBox_src)
+        self.src_port_label.setObjectName(_fromUtf8("src_port_label"))
+        self.gridLayout.addWidget(self.src_port_label, 1, 0, 1, 1)
+        self.src_port_edit = QtGui.QLineEdit(self.groupBox_src)
+        self.src_port_edit.setObjectName(_fromUtf8("src_port_edit"))
+        self.gridLayout.addWidget(self.src_port_edit, 1, 1, 1, 2)
+        self.label_snmp_in = QtGui.QLabel(self.groupBox_src)
+        self.label_snmp_in.setObjectName(_fromUtf8("label_snmp_in"))
+        self.gridLayout.addWidget(self.label_snmp_in, 2, 0, 1, 2)
+        self.spinBox_3 = QtGui.QSpinBox(self.groupBox_src)
+        self.spinBox_3.setObjectName(_fromUtf8("spinBox_3"))
+        self.gridLayout.addWidget(self.spinBox_3, 2, 2, 1, 1)
+        self.label_src_as = QtGui.QLabel(self.groupBox_src)
+        self.label_src_as.setObjectName(_fromUtf8("label_src_as"))
+        self.gridLayout.addWidget(self.label_src_as, 3, 0, 1, 1)
+        self.lineEdit_src_as = QtGui.QLineEdit(self.groupBox_src)
+        self.lineEdit_src_as.setObjectName(_fromUtf8("lineEdit_src_as"))
+        self.gridLayout.addWidget(self.lineEdit_src_as, 3, 1, 1, 2)
+        self.gridLayout_3.addWidget(self.groupBox_src, 3, 0, 1, 2)
+        self.groupBox_dst = QtGui.QGroupBox(self)
+        self.groupBox_dst.setObjectName(_fromUtf8("groupBox_dst"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_dst)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.dst_ip_label = QtGui.QLabel(self.groupBox_dst)
+        self.dst_ip_label.setObjectName(_fromUtf8("dst_ip_label"))
+        self.gridLayout_2.addWidget(self.dst_ip_label, 0, 0, 1, 1)
+        self.dst_ip_edit = QtGui.QLineEdit(self.groupBox_dst)
+        self.dst_ip_edit.setInputMask(_fromUtf8(""))
+        self.dst_ip_edit.setObjectName(_fromUtf8("dst_ip_edit"))
+        self.gridLayout_2.addWidget(self.dst_ip_edit, 0, 1, 1, 2)
+        self.dst_port_label = QtGui.QLabel(self.groupBox_dst)
+        self.dst_port_label.setObjectName(_fromUtf8("dst_port_label"))
+        self.gridLayout_2.addWidget(self.dst_port_label, 1, 0, 1, 1)
+        self.dst_port_edit = QtGui.QLineEdit(self.groupBox_dst)
+        self.dst_port_edit.setObjectName(_fromUtf8("dst_port_edit"))
+        self.gridLayout_2.addWidget(self.dst_port_edit, 1, 1, 1, 2)
+        self.label_snmp_out = QtGui.QLabel(self.groupBox_dst)
+        self.label_snmp_out.setObjectName(_fromUtf8("label_snmp_out"))
+        self.gridLayout_2.addWidget(self.label_snmp_out, 2, 0, 1, 2)
+        self.spinBox_snmp_out = QtGui.QSpinBox(self.groupBox_dst)
+        self.spinBox_snmp_out.setObjectName(_fromUtf8("spinBox_snmp_out"))
+        self.gridLayout_2.addWidget(self.spinBox_snmp_out, 2, 2, 1, 1)
+        self.labes_dst_as = QtGui.QLabel(self.groupBox_dst)
+        self.labes_dst_as.setObjectName(_fromUtf8("labes_dst_as"))
+        self.gridLayout_2.addWidget(self.labes_dst_as, 3, 0, 1, 1)
+        self.lineEdit_dst_as = QtGui.QLineEdit(self.groupBox_dst)
+        self.lineEdit_dst_as.setInputMask(_fromUtf8(""))
+        self.lineEdit_dst_as.setObjectName(_fromUtf8("lineEdit_dst_as"))
+        self.gridLayout_2.addWidget(self.lineEdit_dst_as, 3, 1, 1, 2)
+        self.gridLayout_3.addWidget(self.groupBox_dst, 3, 2, 1, 1)
+        self.next_hop_label = QtGui.QLabel(self)
+        self.next_hop_label.setObjectName(_fromUtf8("next_hop_label"))
+        self.gridLayout_3.addWidget(self.next_hop_label, 4, 0, 1, 1)
+        self.next_hop_edit = QtGui.QLineEdit(self)
+        self.next_hop_edit.setInputMask(_fromUtf8(""))
+        self.next_hop_edit.setObjectName(_fromUtf8("next_hop_edit"))
+        self.gridLayout_3.addWidget(self.next_hop_edit, 4, 1, 1, 2)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout_3.addWidget(self.buttonBox, 5, 1, 1, 2)
         
         
         self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/[0-9][0-9]?)?\b")
@@ -420,39 +432,36 @@ class ClassNodeFrame(QtGui.QDialog):
         self.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),self.accept)
         self.connect(self.buttonBox,QtCore.SIGNAL("rejected()"),self.reject)
         #QtCore.QMetaObject.connectSlotsByName(Dialog)
-        self.setTabOrder(self.direction_edit,self.protocol_edit)
-        self.setTabOrder(self.protocol_edit,self.src_ip_edit)
-        self.setTabOrder(self.src_ip_edit,self.src_port_edit)
-        self.setTabOrder(self.src_port_edit,self.dst_ip_edit)
-        self.setTabOrder(self.dst_ip_edit,self.dst_port_edit)
-        self.setTabOrder(self.dst_port_edit,self.next_hop_edit)
-        self.setTabOrder(self.next_hop_edit,self.buttonBox)
+        self.setTabOrder(self.name_edit, self.group_edit)
+        self.setTabOrder(self.group_edit, self.protocol_edit)
+        self.setTabOrder(self.protocol_edit, self.src_ip_edit)
+        self.setTabOrder(self.src_ip_edit, self.src_port_edit)
+        self.setTabOrder(self.src_port_edit, self.spinBox_3)
+        self.setTabOrder(self.spinBox_3, self.lineEdit_src_as)
+        self.setTabOrder(self.lineEdit_src_as, self.dst_ip_edit)
+        self.setTabOrder(self.dst_ip_edit, self.dst_port_edit)
+        self.setTabOrder(self.dst_port_edit, self.spinBox_snmp_out)
+        self.setTabOrder(self.spinBox_snmp_out, self.lineEdit_dst_as)
+        self.setTabOrder(self.lineEdit_dst_as, self.next_hop_edit)
+        self.setTabOrder(self.next_hop_edit, self.buttonBox)
         self.fixtures()
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Параметры подкласса", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Сеть источника", None, QtGui.QApplication.UnicodeUTF8))
-        self.src_port_label.setText(QtGui.QApplication.translate("Dialog", "Src port", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Параметры ноды", None, QtGui.QApplication.UnicodeUTF8))
+        self.name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
+        self.group_label.setText(QtGui.QApplication.translate("Dialog", "Направление", None, QtGui.QApplication.UnicodeUTF8))
+        self.protocol_label.setText(QtGui.QApplication.translate("Dialog", "Протокол", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_src.setTitle(QtGui.QApplication.translate("Dialog", "Сеть источника", None, QtGui.QApplication.UnicodeUTF8))
         self.src_ip_label.setText(QtGui.QApplication.translate("Dialog", "Src net", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_2.setTitle(QtGui.QApplication.translate("Dialog", "Сеть получателя", None, QtGui.QApplication.UnicodeUTF8))
+        self.src_port_label.setText(QtGui.QApplication.translate("Dialog", "Src port", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_snmp_in.setText(QtGui.QApplication.translate("Dialog", "In SNMP  interface index", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_src_as.setText(QtGui.QApplication.translate("Dialog", "Src AS", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_dst.setTitle(QtGui.QApplication.translate("Dialog", "Сеть получателя", None, QtGui.QApplication.UnicodeUTF8))
         self.dst_ip_label.setText(QtGui.QApplication.translate("Dialog", "Dst net", None, QtGui.QApplication.UnicodeUTF8))
         self.dst_port_label.setText(QtGui.QApplication.translate("Dialog", "Dst port", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_snmp_out.setText(QtGui.QApplication.translate("Dialog", "Out SNMP interface index", None, QtGui.QApplication.UnicodeUTF8))
+        self.labes_dst_as.setText(QtGui.QApplication.translate("Dialog", "Dst AS", None, QtGui.QApplication.UnicodeUTF8))
         self.next_hop_label.setText(QtGui.QApplication.translate("Dialog", "Next Hop", None, QtGui.QApplication.UnicodeUTF8))
-        self.name_label.setText(QtGui.QApplication.translate("Dialog", "Название", None, QtGui.QApplication.UnicodeUTF8))
-        self.protocol_label.setText(QtGui.QApplication.translate("Dialog", "Протокол", None, QtGui.QApplication.UnicodeUTF8))
-        self.group_label.setText(QtGui.QApplication.translate("Dialog", "Направление", None, QtGui.QApplication.UnicodeUTF8))
-        
-        self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "INPUT", None, QtGui.QApplication.UnicodeUTF8))
-        self.direction_edit.addItem(QtGui.QApplication.translate("Dialog", "OUTPUT", None, QtGui.QApplication.UnicodeUTF8))
-        #Help Hints
-        self.name_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Название поднаправления.", None, QtGui.QApplication.UnicodeUTF8))
-        self.direction_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Описываемое направление трафика (Вх/Исх).", None, QtGui.QApplication.UnicodeUTF8))
-        self.protocol_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Выберите протокол из списка.", None, QtGui.QApplication.UnicodeUTF8))
-        self.src_ip_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "IP/Сеть источника трафика.\n Примеры:\n192.168.1.0/24 - сеть 192.168.1.1-192.168.1.254\n192.168.1.1/32 - один IP адрес\n0.0.0.0/0 все IP адреса", None, QtGui.QApplication.UnicodeUTF8))
-        self.dst_ip_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "IP/Сеть получателя трафика.\n Примеры:\n192.168.1.0/24 - сеть 192.168.1.1-192.168.1.254\n192.168.1.1/32 - один IP адрес\n0.0.0.0/0 все IP адреса", None, QtGui.QApplication.UnicodeUTF8))
-        self.dst_port_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Порт получателя. Имеет смысл указывать только, если протокол TCP/UDP", None, QtGui.QApplication.UnicodeUTF8))        
-        self.src_port_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Порт источника. Имеет смысл указывать только, если протокол TCP/UDP", None, QtGui.QApplication.UnicodeUTF8))
-        self.next_hop_edit.setWhatsThis(QtGui.QApplication.translate("Dialog", "Next Hop", None, QtGui.QApplication.UnicodeUTF8))
         self.src_ip_edit.setValidator(self.ipValidator)
         self.dst_ip_edit.setValidator(self.ipValidator)
         self.next_hop_edit.setValidator(self.ipValidator)
@@ -462,13 +471,16 @@ class ClassNodeFrame(QtGui.QDialog):
             #print protocol
             self.protocol_edit.addItem(QtGui.QApplication.translate("Dialog", protocol, None, QtGui.QApplication.UnicodeUTF8))
 
+        self.group_edit.addItem("INPUT")
+        self.group_edit.addItem("OUTPUT")
 
     def fixtures(self):
         
         if self.model:
             
             self.name_edit.setText(unicode(self.model.name))
-            self.direction_edit.setCurrentIndex(self.direction_edit.findText(self.model.direction, QtCore.Qt.MatchCaseSensitive)),
+            self.group_edit.setCurrentIndex(self.group_edit.findText(self.model.direction, QtCore.Qt.MatchCaseSensitive))
+            #self.
             self.src_ip_edit.setText(unicode(self.model.src_ip))
             #self.src_mask_edit.setText(unicode(self.model.src_mask))
             self.src_port_edit.setText(unicode(self.model.src_port or 0))
@@ -477,12 +489,18 @@ class ClassNodeFrame(QtGui.QDialog):
             self.dst_port_edit.setText(unicode(self.model.dst_port or 0))
             #self.protocol_edit.setCurrentIndex(self.protocol_edit.findText(self.protocols[self.model.protocol], QtCore.Qt.MatchCaseSensitive)),
             self.next_hop_edit.setText(unicode(self.model.next_hop))
+            self.spinBox_3.setValue(self.model.in_index)
+            self.spinBox_snmp_out.setValue(self.model.out_index)
+            self.lineEdit_src_as.setText(unicode(self.model.src_as or 0))
+            self.lineEdit_dst_as.setText(unicode(self.model.dst_as or 0))
         else:
             default=u'0.0.0.0/0'
             self.src_ip_edit.setText(default)
             #self.src_mask_edit.setText(default)            
             self.dst_ip_edit.setText(default)
             #self.dst_mask_edit.setText(default)
+            self.lineEdit_src_as.setText(unicode(0))
+            self.lineEdit_dst_as.setText(unicode(0))
             self.next_hop_edit.setText('0.0.0.0')  
         self.connection.commit()                                     
 
@@ -495,7 +513,7 @@ class ClassNodeFrame(QtGui.QDialog):
             model = Object()
             
         model.name = unicode(self.name_edit.text())
-        model.direction = unicode(self.direction_edit.currentText())
+        model.direction = unicode(self.group_edit.currentText())
         
         model.protocol = self.protocols[unicode(self.protocol_edit.currentText())]
         
@@ -547,6 +565,17 @@ class ClassNodeFrame(QtGui.QDialog):
         
         next_hop = unicode(self.next_hop_edit.text())
         
+        model.in_index = self.spinBox_3.value()
+        model.out_index = self.spinBox_snmp_out.value()
+        
+        try:
+            model.src_as = int(unicode(self.lineEdit_src_as.text()))
+            model.dst_as = int(unicode(self.lineEdit_dst_as.text()))
+        except Exception, e:
+            print e
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Src AS и Dst AS должны быть целыми положительными числами или 0."))
+            return
+        
         if next_hop:
             #if self.ipValidator.validate(next_hop, 0)[0]  != QtGui.QValidator.Acceptable:
             #    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Проверьте правильность Next Hop."))
@@ -563,7 +592,7 @@ class ClassNodeFrame(QtGui.QDialog):
 
 class ClassChildEbs(ebsTable_n_TreeWindow):
     def __init__(self, connection):
-        columns  = ['#', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Next Hop']
+        columns  = ['#', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'In index', 'Out index', 'Next Hop']
         initargs = {"setname":"class_frame", "objname":"ClassChildEbs", "winsize":(0,0,795,597), "wintitle":"Пользователи", "tablecolumns":columns, "spltsize":(0,0,200,521), "treeheader":"Классы", "menubarsize":(0,0,800,21), "tbiconsize":(18,18)}
         
         super(ClassChildEbs, self).__init__(connection, initargs)
@@ -821,8 +850,8 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         self.tableWidget.clearContents()
         self.tableWidget.setColumnHidden(0, False)
         #print text
-        model = self.connection.get_model(class_id, "nas_trafficclass")
-        nodes = self.connection.get_models(table="nas_trafficnode", where={'traffic_class_id':model.id})
+        #model = self.connection.get_model(class_id, "nas_trafficclass", fields=[''])
+        nodes = self.connection.get_models(table="nas_trafficnode", where={'traffic_class_id':class_id})
         self.connection.commit()
         self.tableWidget.setRowCount(len(nodes))        
         i=0        
@@ -833,6 +862,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
                         '2':'igmp',   '94':'ipip','89':'ospf',
                         '4':'ipencap','17':'udp', '27':'rdp',      
                         '6':'tcp'}
+        ['#', 'Name', 'Direction', 'Protocol', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'In index', 'Out index', 'Next Hop']
         for node in nodes:
 
             self.addrow(i, i,0, id=node.id)
@@ -844,7 +874,10 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
             
             self.addrow(node.dst_ip, i,6)
             self.addrow(node.dst_port, i,7)
-            self.addrow(node.next_hop, i,8)
+            
+            self.addrow(node.in_index, i,8)
+            self.addrow(node.out_index, i,9)
+            self.addrow(node.next_hop, i,10)
             #self.tableWidget.setRowHeight(i, 17)
             i+=1
         
