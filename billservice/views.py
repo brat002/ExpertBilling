@@ -43,6 +43,7 @@ from nas.models import TrafficClass
 from lib.decorators import render_to, ajax_request#, login_required
 from paymentgateways.qiwi.models import Invoice as QiwiInvoice
 from paymentgateways.qiwi.forms import QiwiPaymentRequestForm
+import math
 logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename=settings.WEBCAB_LOG)
 rpc_protocol.install_logger(logger)
 client_networking.install_logger(logger)
@@ -174,16 +175,36 @@ def simple_login(request):
                                 password=form.cleaned_data['password'])
     
             log_in(request, user)
-            return {"status":1,"message":"Login succeful"}
+            return {"status":1,"fullname":user.account.fullname, "tariff_name":user.account.get_account_tariff().name,"message":"Login succeful"}
         except:
-            return {"status":0,"message":"User not found"}
+            return {"status":0,"fullname":'','tariff_name':'', "message":"User not found"}
     return {"status":0,"message":"User not found"}
 
 @login_required
 @ajax_request
 def get_ballance(request):
+    f = lambda v, l: [v[i*l:(i+1)*l] for i in range(int(math.ceil(len(v)/float(l))))]
+    from models import AccountViewedNews,News
+    
+    #avn = AccountViewedNews.objects.filter(account=request.user.account, viewed=False).select_related().order_by('news.created')
+    #avn=News.objects.filter().select_related().filter()
+    
+    cursor = connection.cursor()
+    cursor.execute("""SELECT news.id, news.body FROM billservice_news as news
+    WHERE agent=True and 
+    (news.id in (SELECT news_id FROM billservice_accountviewednews WHERE account_id=%s and viewed is not True));
+    """, (request.user.account.id,))
+    avn=cursor.fetchall()
+
+    news_arr=[]
+    for n in avn:
+        news_arr.append({'id':n[0],'title':n[1]})
+        cursor.execute("UPDATE billservice_accountviewednews SET viewed=True where account_id=%s and news_id=%s", (request.user.account.id, n[0]))
+        cursor.connection.commit()
+        
     try:
-        return {"status":1,"ballance":float(request.user.account.ballance),"message":"Ok"}
+        
+        return {"status":1,"ballance_float":float(request.user.account.ballance), "ballance":"%.2f" % request.user.account.ballance,"message":"Ok", 'news':news_arr}
     except:
         return {"status":0,"ballance":-1,"message":"User not found"}
         
