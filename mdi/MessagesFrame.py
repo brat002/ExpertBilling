@@ -127,22 +127,28 @@ class MessageDialog(QtGui.QDialog):
         if self.checkBox_public.isChecked()==True:
             news_model.public = True
             self.connection.save(news_model, "billservice_news")
+        
+        #if self.checkBox_agent.isChecked():
+        #    news_model.id=self.connection.save(news_model, "billservice_news")
             
-        if not self.model and self.accounts and (self.checkBox_private.isChecked() or self.checkBox_agent.isChecked()):
+        if not self.model  and (self.checkBox_private.isChecked() or self.checkBox_agent.isChecked()):
             if self.checkBox_private.isChecked()==True: 
                 news_model.private = True
             if self.checkBox_agent.isChecked()==True:
                 news_model.agent = True
-            self.connection.save(news_model, "billservice_news")
+            news_model.id=self.connection.save(news_model, "billservice_news")
             if self.model:
                 QtGui.QDialog.accept(self)
-            account_model = Object()
-            account_model.news_id = news_model.id
-            account_model.viewed = False
-            for account in self.accounts:
-                account_model.account_id = account
-                self.connection.save(account_model, "billservice_accountviewednews")
-                self.connection.commit()
+            if self.accounts:
+                account_model = Object()
+                account_model.news_id = news_model.id
+                account_model.viewed = False
+                for account in self.accounts:
+                    account_model.account_id = account
+                    self.connection.save(account_model, "billservice_accountviewednews")
+                    self.connection.commit()
+            else:
+                self.connection.createAccountViewedNews(news_model.id)
         elif not self.accounts and (self.checkBox_private.isChecked() or self.checkBox_agent.isChecked()):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Это сообщение будет помечено только как публичное. Для посылки приватных сообщений воспользуйтесь этой опцией из окна Пользователи и тарифы"))
         QtGui.QDialog.accept(self)

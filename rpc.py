@@ -887,7 +887,14 @@ class RPCServer(object):
 
         return result
     
-     
+    def createAccountViewedNews(self, news_id, cur=None, connection=None, add_data = {}):
+        cur.execute("select id from billservice_account")
+        res=cur.fetchall()
+        
+        for item in res:
+            cur.execute("INSERT INTO billservice_accountviewednews(account_id, news_id, viewed) VALUES(%s,%s,False)", (item['id'], news_id,))
+        connection.commit()
+        
     def get_accounts_for_tarif(self, tarif_id, cur=None, connection=None, add_data = {}):
         
         if tarif_id==-3000:
