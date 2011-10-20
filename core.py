@@ -287,7 +287,7 @@ class periodical_service_bill(Thread):
         self.NOW = datetime.datetime(2000, 1, 1)
 
     #ps_type - 1 for periodocal service, 2 - for periodical addonservice 
-    def iterate_ps(self, cur, caches, acc, ps, dateAT, pss_type):
+    def iterate_ps(self, cur, caches, acc, ps, mult, dateAT, pss_type):
         account_ballance = (acc.ballance or 0) + (acc.credit or 0)
         susp_per_mlt = 1
         if pss_type == PERIOD:
@@ -311,6 +311,7 @@ class periodical_service_bill(Thread):
         else:
             return
         s_delta = datetime.timedelta(seconds=delta)
+        
         if ps.cash_method == "GRADUAL":
             """
             # Смотрим сколько расчётных периодов закончилось со времени последнего снятия
@@ -343,7 +344,7 @@ class periodical_service_bill(Thread):
                     #Смотрим на какую сумму должны были снять денег и снимаем её
                     while chk_date <= self.NOW:    
                         period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
-                        cash_summ = (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
+                        cash_summ = mult*((self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY))
                         if pss_type == PERIOD:
                             #cur.execute("UPDATE billservice_account SET ballance=ballance-")
                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
@@ -354,7 +355,7 @@ class periodical_service_bill(Thread):
                         chk_date += self.PER_DAY_DELTA
                 else:
                     #make an approved transaction
-                    cash_summ = susp_per_mlt * (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)
+                    cash_summ = mult*(susp_per_mlt * (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY))
                     if pss_type == PERIOD:
                         #if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0) or (ps.condition==3 and account_ballance<=0):
                             #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
@@ -412,7 +413,7 @@ class periodical_service_bill(Thread):
                     #Если тариф закрыт, а доснятие за прошлый расчётный период произошло-прерываем цикл
                     if acc.end_date and acc.end_date == period_end_ast:
                         break
-                    cash_summ = ps.cost
+                    cash_summ = mult*ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     chk_date = period_start_ast
@@ -472,7 +473,7 @@ class periodical_service_bill(Thread):
                     chk_date = period_end_ast
                     time_start_ps = period_start_ast
                 while True:
-                    cash_summ = ps.cost
+                    cash_summ = mult*ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     if period_start_ast>period_start: break
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
@@ -562,8 +563,11 @@ class periodical_service_bill(Thread):
                                                    caches.underbilled_accounts_cache.by_tarif.get(tariff_id, [])):
                             if 0: assert isinstance(acc, AccountData)
                             try:
-                                if acc.acctf_id is None or acc.account_status == 2: continue
-                                self.iterate_ps(cur, caches, acc, ps, dateAT, PERIOD)
+                                if acc.acctf_id is None: continue
+                                mult=1
+                                if acc.account_status in [2,4]:
+                                    mult=0
+                                self.iterate_ps(cur, caches, acc, ps, mult, dateAT, PERIOD)
                                 
                             except Exception, ex:
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -583,11 +587,14 @@ class periodical_service_bill(Thread):
                         acc = caches.account_cache.by_account.get(addon_ps.account_id)
                     if not acc:
                         logger.warning('%s: Addon Periodical Service: %s Account not found: %s', (self.getName(), addon_ps.ps_id, addon_ps.account_id))
+                    mult=1
+                    if acc.account_status in [2,4]:
+                        mult=0                   
                     try:
-                        self.iterate_ps(cur, caches, acc, addon_ps, dateAT, ADDON)
+                        self.iterate_ps(cur, caches, acc, addon_ps, mult, dateAT, ADDON)
                     except Exception, ex:
-                                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                                if ex.__class__ in vars.db_errors: raise ex
+                        logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                        if ex.__class__ in vars.db_errors: raise ex
                     cur.connection.commit()
                         
                 
