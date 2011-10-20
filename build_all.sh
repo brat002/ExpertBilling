@@ -92,6 +92,7 @@ svn export fonts/ builds/$1/fonts/
 svn export scripts/ builds/$1/scripts/
 svn export mail/ builds/$1/modules/mail/
 cp sendmail.py builds/$1/
+cp sendsms.py builds/$1/
 cp install.txt builds/$1/
 
 for bldd in $total_build; do
