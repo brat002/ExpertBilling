@@ -678,7 +678,7 @@ class AddNasFrame(QtGui.QDialog):
             self.lineEdit_attr_id2.setText('')
             self.lineEdit_value1.setText('')
             self.lineEdit_value2.setText('')    
-            self.nas_interim_update.setValue(0)
+            self.nas_interim_update.setValue(60)
             
         #else:
         #    self.buttonBox.setDisabled(True)

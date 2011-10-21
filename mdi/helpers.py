@@ -33,6 +33,38 @@ class GenericThread(QtCore.QThread):
         self.emit(QtCore.SIGNAL("refresh(QVariant)"), data)
         self.terminate()
         
+class AccountsRefreshThread(QtCore.QThread):
+    def __init__(self, connection, tarif_id):
+        QtCore.QThread.__init__(self)
+        self.connection=connection
+        self.tarif_id=tarif_id
+
+    def __del__(self):
+      self.wait()
+
+    def run(self):
+        print "send request"
+        data= self.connection.get_accounts_for_tarif(self.tarif_id)
+        print "get response"
+        self.emit(QtCore.SIGNAL("accountsRefresh(QVariant)"), data)
+        self.terminate()
+        
+class AccountsFilterThread(QtCore.QThread):
+    def __init__(self, connection, sql):
+        QtCore.QThread.__init__(self)
+        self.connection=connection
+        self.sql=sql
+
+    def __del__(self):
+      self.wait()
+
+    def run(self):
+        print "send request"
+        data=self.connection.get_accounts_for_tilter(self.sql)
+        print "get response"
+        self.emit(QtCore.SIGNAL("accountsRefresh(QVariant)"), data)
+        self.terminate()
+         
 def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False):
     """
         Функция возвращает дату начала и дату конца текущего периода

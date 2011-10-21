@@ -1,5 +1,7 @@
-﻿ALTER TABLE nas_trafficnode
+﻿
+ALTER TABLE nas_trafficnode
    ADD COLUMN in_index integer DEFAULT 0;
+
 ALTER TABLE nas_trafficnode
    ADD COLUMN out_index integer DEFAULT 0;
 
