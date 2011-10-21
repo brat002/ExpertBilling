@@ -628,22 +628,6 @@ class Account(models.Model):
     def change_password_url_ajax(self):
         return ('billservice.views.change_password', (), {})
 
-    def save(self, *args, **kwargs):
-        id=self.id
-        #if self.assign_ip_from_dhcp and ipn_ip_address!='':
-        super(Account, self).save(*args, **kwargs)
-        if not id and self.status=='Active':
-            cost=0
-            for ots in self.tarif.onetime_servies.all():
-                cost+=ots.cost
-            transaction=Transaction()
-            transaction.approved=True
-            transaction.account=self
-            transaction.tarif=self.select_related().filter(accounttarif__account=self.id, accounttarif__datetimelte=datetime.datetime.now())[:1]
-            transaction.summ = cost
-            transaction.description = u'Снятие за первоначальную услугу'
-            transaction.save()
-            
     def is_authenticated(self):
         """Always return True. This is a way to tell if the user has been authenticated in templates.
         """
@@ -712,17 +696,6 @@ class Transaction(models.Model):
     class Meta:
         verbose_name = u"Проводка"
         verbose_name_plural = u"Проводки"
-
-    def save(self):
-        if self.approved!=False:
-           self.account.ballance-=self.summ
-           self.account.save()
-           super(Transaction, self).save()
-
-    def delete(self):
-        self.account.ballance+=self.summ
-        self.account.save()
-        super(Transaction, self).delete()
 
     def human_sum(self):
         return self.summ*(-1)
