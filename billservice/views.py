@@ -400,9 +400,9 @@ def qiwi_payment(request):
     #print "summ=",type(summ), summ,summ>=1, len(phone)
     if summ>=1 and len(phone)==10:
         from paymentgateways.qiwi.qiwiapi import create_invoice, accept_invoice_id, lifetime, get_balance
-        if autoaccept:
-            balance, message = get_balance(phone=phone, password=password)
-            if float(balance)<summ: return {'status_message':u"Сбой автозачисления: баланс вашего кошелька меньше суммы оплаты."}
+        #if autoaccept:
+        #    balance, message = get_balance(phone=phone, password=password)
+        #    if float(balance)<summ: return {'status_message':u"Сбой автозачисления: баланс вашего кошелька меньше суммы оплаты или включено sms подтверждение действий."}
         invoice = QiwiInvoice()
         invoice.account = request.user
         invoice.phone = phone
