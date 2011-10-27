@@ -1017,7 +1017,7 @@ class AddAccountTarif(QtGui.QDialog):
         self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
 
     def accept(self):
-        if self.get_info==False:
+        if self.account and self.get_info==False:
             date=self.dateTimeEdit_start.currentDate()
             #print repr(date)
             #print str(self.date_edit.dateTime().toString())

@@ -313,12 +313,6 @@ class periodical_service_bill(Thread):
         s_delta = datetime.timedelta(seconds=delta)
         
         if ps.cash_method == "GRADUAL":
-            """
-            # Смотрим сколько расчётных периодов закончилось со времени последнего снятия
-            # Если закончился один-снимаем всю сумму, указанную в периодической услуге
-            # Если закончилось более двух-значит в системе был сбой. Делаем последнюю транзакцию
-            # а остальные помечаем неактивными и уведомляем администратора
-            """
             last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc.end_date)                                    
             if last_checkout is None:
                 if pss_type == PERIOD:
@@ -347,10 +341,14 @@ class periodical_service_bill(Thread):
                         cash_summ = mult*((self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY))
                         if pss_type == PERIOD:
                             #cur.execute("UPDATE billservice_account SET ballance=ballance-")
-                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                            new_summ=cur.fetchone()[0]
+                            cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
+                            logger.debug('%s: Periodical Service: Gradual iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
                         elif pss_type == ADDON:
                             cash_summ = cash_summ * susp_per_mlt
                             addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
+                            logger.debug('%s: Addon Service Checkout thread: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
                         cur.connection.commit()
                         chk_date += self.PER_DAY_DELTA
                 else:
@@ -361,11 +359,14 @@ class periodical_service_bill(Thread):
                             #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
                         #    cash_summ = 0
                         #ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)
-                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                        new_summ=cur.fetchone()[0]
+                        cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
+                        logger.debug('%s: Periodical Service: Gradual checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
                     elif pss_type == ADDON:
                         cash_summ = cash_summ * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
-            
+                        logger.debug('%s: Addon Service Checkout thread: AT START checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
             cur.connection.commit()
             
         if ps.cash_method == "AT_START":
@@ -426,10 +427,14 @@ class periodical_service_bill(Thread):
                     if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                         cash_summ = 0
                     if pss_type == PERIOD:
-                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))                                                
+                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))
+                        new_summ=cur.fetchone()[0]
+                        cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
+                        logger.debug('%s: Periodical Service: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
                     elif pss_type == ADDON:
                         cash_summ = cash_summ * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
+                        logger.debug('%s: Addon Service Checkout thread: GRADUAL checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))                        
                     cur.connection.commit()
                     chk_date += s_delta_ast
                     first_time=False
@@ -478,7 +483,7 @@ class periodical_service_bill(Thread):
                     if period_start_ast>period_start: break
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     if vars.USE_COEFF_FOR_PS==True and ((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)<delta_ast:
-                        logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
+                        logger.debug('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
                         delta_coef=float((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)/float(delta_ast)        
                         cash_summ=cash_summ*Decimal(str(delta_coef))
                         
@@ -488,9 +493,11 @@ class periodical_service_bill(Thread):
                         tr_date = period_start_ast
                         if pss_type == PERIOD:
                             ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, tr_date)
+                            logger.debug('%s: Periodical Service: AT END First time checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
 #                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                         elif pss_type == ADDON:
                             addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, tr_date)
+                            logger.debug('%s: Addon Service Checkout: AT END First time checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
                     else:
                         if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                             cash_summ = ZERO_SUM
@@ -499,7 +506,10 @@ class periodical_service_bill(Thread):
                             if acc.end_date and acc.end_date < chk_date:
                                 cash_summ = 0
                                 tr_date = acc.end_date
-                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
+                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
+                            new_summ=cur.fetchone()[0]
+                            cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
+                            logger.debug('%s: Periodical Service: AT END iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
                         elif pss_type == ADDON:
                             cash_summ = cash_summ * susp_per_mlt
                             tr_date = chk_date
@@ -508,6 +518,7 @@ class periodical_service_bill(Thread):
                                 cash_summ = 0
                                 tr_date = ps.deactivated
                             addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, tr_date)
+                            logger.debug('%s: Addon Service Checkout thread: AT END checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
                     cur.connection.commit()
                     chk_date = period_end_ast
                     if chk_date-SECOND > period_start: break
@@ -1802,7 +1813,11 @@ if __name__ == "__main__":
     config.read("ebs_config.ini")
     
     try:
-        
+        import psyco
+        #psyco.log()
+        psyco.full(memory=100)
+        psyco.profile(0.05, memory=100)
+        psyco.profile(0.2)
         vars = CoreVars()
         
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
