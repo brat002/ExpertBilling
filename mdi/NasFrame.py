@@ -711,8 +711,8 @@ class NasEbs(ebsTableWindow):
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
-        actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete), ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs), ("configureAction", "Конфигурировать", "images/configure.png", self.configure),("rrdNasTrafficInfo", "График загрузки сервера доступа", "images/bandwidth.png", self.rrdtraffic_info),]
-        objDict = {self.tableWidget:["editAction", "addAction", "delAction", 'rrdReportAction',"configureAction"], self.toolBar:["addAction", "delAction", "actionRadiusAttrs","rrdNasTrafficInfo","configureAction"]}
+        actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete), ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs), ("rrdNasTrafficInfo", "График загрузки сервера доступа", "images/bandwidth.png", self.rrdtraffic_info),]
+        objDict = {self.tableWidget:["editAction", "addAction", "delAction", 'rrdReportAction'], self.toolBar:["addAction", "delAction", "actionRadiusAttrs","rrdNasTrafficInfo"]}
         self.actionCreator(actList, objDict)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.delNodeLocalAction()
@@ -833,5 +833,5 @@ class NasEbs(ebsTableWindow):
     
 
     def delNodeLocalAction(self):
-        super(NasEbs, self).delNodeLocalAction([self.delAction, self.configureAction,self.rrdNasTrafficInfo])
+        super(NasEbs, self).delNodeLocalAction([self.delAction, self.rrdNasTrafficInfo])
         

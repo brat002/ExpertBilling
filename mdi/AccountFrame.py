@@ -2817,7 +2817,8 @@ class TarifWindow(QtGui.QMainWindow):
                             
         
             
-            self.model.id=self.connection.save(model, "billservice_tariff")
+            model.id=self.connection.save(model, "billservice_tariff")
+            self.model=model
             self.connection.commit()
             
             #Было ли изменено состояние ipn_for_vpn 

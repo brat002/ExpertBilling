@@ -1,5 +1,3 @@
-
-
 DROP TABLE IF EXISTS  webmoney_payment;
 DROP TABLE IF EXISTS  webmoney_invoice;
 DROP TABLE IF EXISTS  webmoney_purse;
@@ -65,3 +63,4 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
+  
