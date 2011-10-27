@@ -1102,7 +1102,7 @@ class HandleSAuth(HandleSBase):
                 with vars.cursor_lock:
                     try:
                         self.create_cursor()
-                        self.cursor.execute("UPDATE billservice_subaccount SET ipn_mac_address=%s WHERE id=%s", (subacc.id,station_id))
+                        self.cursor.execute("UPDATE billservice_subaccount SET ipn_mac_address=%s WHERE id=%s", (station_id, subacc.id,))
                         logger.debug("Update subaccount %s with id %s ipn mac address to: %s was succefull", (str(user_name), subacc.id, station_id))
                     except Exception, ex:
                         logger.error("Error update subaccount %s with id %s ipn mac address to: %s %s", (str(user_name), subacc.id, station_id, repr(ex)))
