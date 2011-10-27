@@ -1097,7 +1097,7 @@ class HandleSAuth(HandleSBase):
             else:
                framed_ip_address = subacc.vpn_ip_address
 
-            if self.access_type=='PPPOE' and vars.GET_MAC_FROM_PPPOE==True and subacc.ipn_mac_address not in ['','00:00:00:00:00:00']:
+            if self.access_type=='PPPOE' and vars.GET_MAC_FROM_PPPOE==True and subacc.ipn_mac_address in ['','00:00:00:00:00:00']:
                 logger.debug("Trying to update subaccount %s with id %s ipn mac address to: %s ", (str(user_name), subacc.id, station_id))
                 with vars.cursor_lock:
                     try:
