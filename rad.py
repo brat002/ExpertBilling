@@ -1097,6 +1097,17 @@ class HandleSAuth(HandleSBase):
             else:
                framed_ip_address = subacc.vpn_ip_address
 
+            if self.access_type=='PPPOE' and vars.GET_MAC_FROM_PPPOE==True and subacc.ipn_mac_address not in ['','00:00:00:00:00:00']:
+                logger.debug("Trying to update subaccount %s with id %s ipn mac address to: %s ", (str(user_name), subacc.id, station_id))
+                with vars.cursor_lock:
+                    try:
+                        self.create_cursor()
+                        self.cursor.execute("UPDATE billservice_subaccount SET ipn_mac_address=%s WHERE id=%s", (subacc.id,station_id))
+                        logger.debug("Update subaccount %s with id %s ipn mac address to: %s was succefull", (str(user_name), subacc.id, station_id))
+                    except Exception, ex:
+                        logger.error("Error update subaccount %s with id %s ipn mac address to: %s %s", (str(user_name), subacc.id, station_id, repr(ex)))
+                        
+                       
             authobject.set_code(2)
             self.replypacket.username = str(username) #Нельзя юникод
             self.replypacket.password = str(password) #Нельзя юникод
@@ -1105,7 +1116,6 @@ class HandleSAuth(HandleSBase):
             self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             self.replypacket.AddAttribute('Framed-Compression', 0)
-            self.replypacket.AddAttribute('Framed-IP-Netmask','255.255.255.255')
             if subacc.vpn_ipv6_ip_address and subacc.vpn_ipv6_ip_address!='::':
                 self.replypacket.AddAttribute('Framed-Interface-Id', str(subacc.vpn_ipv6_ip_address))
                 self.replypacket.AddAttribute('Framed-IPv6-Prefix', '::/128')
