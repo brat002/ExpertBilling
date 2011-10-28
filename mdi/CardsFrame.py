@@ -211,9 +211,11 @@ class SaleCards(QtGui.QDialog):
                                                   "Create XML File", "", "XML Files (*.xml)")
         if fileName=="":
             return
-        try:
+        #try:
+        import codecs
+        if True:
             
-            f = open(fileName, "w")
+            f = codecs.open(fileName, "w", "utf-8")
             f.write("<xml>")
             for x in xrange(self.tableWidget.rowCount()):
                 #card = unicode(self.tableWidget.item(x,0).text())
@@ -222,26 +224,28 @@ class SaleCards(QtGui.QDialog):
                 WHERE card.id=%s
                 """ % unicode(self.tableWidget.item(x,0).text()))[0]
                 self.connection.commit()
+                print card.tarif_name
                 f.write("<card>")
                 f.write("<id>%s</id>" % card.id)
-                f.write("<tarif>%s</tarif>" % card.tarif_name)
-                f.write("<series>%s</series>" % card.series)
-                f.write("<nominal>%s</nominal>" % card.nominal)
-                f.write("<pin>%s</pin>" % card.pin)
-                f.write("<login>%s</login>" % card.login)
-                f.write("<template>%s</template>" % card.template_id)
-                f.write("<nas>%s</nas>" % card.nas_id)
-                f.write("<ip>%s</ip>" % card.ip)
-                f.write("<date_start>%s</date_start>" % card.start_date)
-                f.write("<date_end>%s</date_end>" % card.end_date)
+                #f.write(u"<tarif>"+unicode(card.tarif_name)+"</tarif>")
+                f.write(u"<tarif>%s</tarif>" % card.tarif_name)
+                f.write(u"<series>%s</series>" % card.series)
+                f.write(u"<nominal>%s</nominal>" % card.nominal)
+                f.write(u"<pin>%s</pin>" % card.pin)
+                f.write(u"<login>%s</login>" % card.login)
+                f.write(u"<template>%s</template>" % card.template_id)
+                f.write(u"<nas>%s</nas>" % card.nas_id)
+                f.write(u"<ip>%s</ip>" % card.ip)
+                f.write(u"<date_start>%s</date_start>" % card.start_date)
+                f.write(u"<date_end>%s</date_end>" % card.end_date)
                 
                 f.write("</card>")
             f.write("</xml>")
             f.close()
             QtGui.QMessageBox.information(self, u"Файл успешно сохранён", unicode(u"Операция произведена успешно."))
-        except Exception, e:
-            print e
-            QtGui.QMessageBox.warning(self, u"Ошибка‹", unicode(u"Ошибка при сохранении."))
+        #except Exception, e:
+        #    print e
+        #    QtGui.QMessageBox.warning(self, u"Ошибка‹", unicode(u"Ошибка при сохранении."))
             
     def printCards(self):
         
