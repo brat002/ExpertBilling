@@ -357,6 +357,16 @@ def find_account_by_ip(nasses,flow,src=False, dst=False):
     logger.debug("VPN Account without nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
     return acc_data_src,acc_data_dst, nas_id
 
+checkclass=lambda node,flow:(((flow.src_addr & nnode.src_mask) == nnode.src_ip) and \
+                            ((flow.dst_addr & nnode.dst_mask) == nnode.dst_ip) and \
+                            ((flow.next_hop == nnode.next_hop) or (not nnode.next_hop)) and \
+                            ((flow.src_port == nnode.src_port) or (not nnode.src_port)) and \
+                            ((flow.dst_port == nnode.dst_port) or (not nnode.dst_port)) and \
+                            ((flow.in_index == nnode.in_index) or (not nnode.in_index)) and \
+                            ((flow.out_index == nnode.out_index) or (not nnode.out_index)) and \
+                            ((flow.src_as == nnode.src_as) or (not nnode.src_as)) and \
+                            ((flow.dst_as == nnode.dst_as) or (not nnode.dst_as)) and \
+                            ((flow.protocol == nnode.protocol) or (not nnode.protocol)))
 
 def nfPacketHandle(data, addrport, flowCache):
     '''
@@ -396,10 +406,7 @@ def nfPacketHandle(data, addrport, flowCache):
         acc_data_dst = None
         nas_id = None
         nasses_list=[nasitem.id for nasitem in nasses]
-        
 
-
-  
         acc_data_src,acc_data_dst, nas_id = find_account_by_port(nasses, flow)
         acc_data_src_ip, acc_data_dst_ip, nas_id_ip=None,None,None
         
@@ -473,20 +480,33 @@ def nfPacketHandle(data, addrport, flowCache):
                 for nclass, nnodes in caches.class_cache.classes:                        
                     for nnode in nnodes:
                         if 0: assert isinstance(nnode,ClassData)
-                        if (((flow.src_addr & nnode.src_mask) == nnode.src_ip) and \
-                            ((flow.dst_addr & nnode.dst_mask) == nnode.dst_ip) and \
-                            ((flow.next_hop == nnode.next_hop) or (not nnode.next_hop)) and \
-                            ((flow.src_port == nnode.src_port) or (not nnode.src_port)) and \
-                            ((flow.dst_port == nnode.dst_port) or (not nnode.dst_port)) and \
-                            ((flow.in_index == nnode.in_index) or (not nnode.in_index)) and \
-                            ((flow.out_index == nnode.out_index) or (not nnode.out_index)) and \
-                            ((flow.src_as == nnode.src_as) or (not nnode.src_as)) and \
-                            ((flow.dst_as == nnode.dst_as) or (not nnode.dst_as)) and \
-                            ((flow.protocol == nnode.protocol) or (not nnode.protocol))):
+                        if (flow.src_addr & nnode.src_mask) != nnode.src_ip:continue
+                        if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:continue
+                        if ((flow.protocol != nnode.protocol) and nnode.protocol): continue
+                        if ((flow.src_port != nnode.src_port) and nnode.src_port):continue
+                        if ((flow.dst_port != nnode.dst_port) and nnode.dst_port):continue
+                        if ((flow.in_index != nnode.in_index) and nnode.in_index):continue
+                        if ((flow.out_index != nnode.out_index) and nnode.out_index):continue
+                        if ((flow.next_hop != nnode.next_hop) and (nnode.next_hop and nnode.next_hop!='0.0.0.0')):continue
+                        if ((flow.src_as != nnode.src_as) and nnode.src_as):continue
+                        if ((flow.dst_as != nnode.dst_as) and nnode.dst_as):continue
+                                                    
+                         #======================================================
+                         # if (((flow.src_addr & nnode.src_mask) == nnode.src_ip) and \
+                         #   ((flow.dst_addr & nnode.dst_mask) == nnode.dst_ip) and \
+                         #   ((flow.next_hop == nnode.next_hop) or (not nnode.next_hop)) and \
+                         #   ((flow.src_port == nnode.src_port) or (not nnode.src_port)) and \
+                         #   ((flow.dst_port == nnode.dst_port) or (not nnode.dst_port)) and \
+                         #   ((flow.in_index == nnode.in_index) or (not nnode.in_index)) and \
+                         #   ((flow.out_index == nnode.out_index) or (not nnode.out_index)) and \
+                         #   ((flow.src_as == nnode.src_as) or (not nnode.src_as)) and \
+                         #   ((flow.dst_as == nnode.dst_as) or (not nnode.dst_as)) and \
+                         #   ((flow.protocol == nnode.protocol) or (not nnode.protocol))):
+                         #======================================================
                             
-                            flowCache.addflow5(flow)
-                            break_outer = True
-                            break
+                        flowCache.addflow5(flow)
+                        break_outer = True
+                        break
                     if break_outer: break
                 continue
             
@@ -636,27 +656,27 @@ class FlowDequeThread(Thread):
                         for nclass, nnodes in cacheMaster.cache.class_cache.classes:                    
                             for nnode in nnodes:
                                 if 0: assert isinstance(nnode, ClassData)
-                                if (((flow.src_addr & nnode.src_mask) == nnode.src_ip) and \
-                                    ((flow.dst_addr & nnode.dst_mask) == nnode.dst_ip) and \
-                                    ((flow.next_hop == nnode.next_hop) or (not nnode.next_hop)) and \
-                                    ((flow.src_port == nnode.src_port) or (not nnode.src_port)) and \
-                                    ((flow.dst_port == nnode.dst_port) or (not nnode.dst_port)) and \
-                                    ((flow.in_index == nnode.in_index) or (not nnode.in_index)) and \
-                                    ((flow.out_index == nnode.out_index) or (not nnode.out_index)) and \
-                                    ((flow.src_as == nnode.src_as) or (not nnode.src_as)) and \
-                                    ((flow.dst_as == nnode.dst_as) or (not nnode.dst_as)) and 
-                                    ((flow.protocol == nnode.protocol) or (not nnode.protocol))):
+                                if (flow.src_addr & nnode.src_mask) != nnode.src_ip:continue
+                                if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:continue
+                                if ((flow.protocol != nnode.protocol) and nnode.protocol): continue
+                                if ((flow.src_port != nnode.src_port) and nnode.src_port):continue
+                                if ((flow.dst_port != nnode.dst_port) and nnode.dst_port):continue
+                                if ((flow.in_index != nnode.in_index) and nnode.in_index):continue
+                                if ((flow.out_index != nnode.out_index) and nnode.out_index):continue
+                                if ((flow.next_hop != nnode.next_hop) and (nnode.next_hop and nnode.next_hop!='0.0.0.0')):continue
+                                if ((flow.src_as != nnode.src_as) and nnode.src_as):continue
+                                if ((flow.dst_as != nnode.dst_as) and nnode.dst_as):continue
                                     
-                                    if not classLst and (not direction or (nnode.direction == direction)):
-                                        fnode = nnode
-                                    elif not fnode:
-                                        continue
-                                    elif nnode.direction != fnode.direction:
-                                        continue
-                                    classLst.append(nclass)
-                                    if not nnode.passthrough:
-                                        passthr = False
-                                    break
+                                if not classLst and (not direction or (nnode.direction == direction)):
+                                    fnode = nnode
+                                elif not fnode:
+                                    continue
+                                elif nnode.direction != fnode.direction:
+                                    continue
+                                classLst.append(nclass)
+                                if not nnode.passthrough:
+                                    passthr = False
+                                break
                             #found passthrough=false
                             if not passthr:
                                 self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
@@ -1383,7 +1403,6 @@ if __name__=='__main__':
     try:
         
         import psyco
-        psyco.log()
         psyco.full(memory=100)
         psyco.profile(0.05, memory=100)
         psyco.profile(0.2)
