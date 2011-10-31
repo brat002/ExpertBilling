@@ -404,7 +404,7 @@ def qiwi_payment(request):
         #    balance, message = get_balance(phone=phone, password=password)
         #    if float(balance)<summ: return {'status_message':u"Сбой автозачисления: баланс вашего кошелька меньше суммы оплаты или включено sms подтверждение действий."}
         invoice = QiwiInvoice()
-        invoice.account = request.user
+        invoice.account = request.user.account
         invoice.phone = phone
         invoice.summ = summ
         invoice.created = datetime.datetime.now()
