@@ -861,7 +861,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
             if  model.__dict__.get('ipn_ipinuse_id'):
                 ipninuse_model = self.connection.get_model(model.ipn_ipinuse_id, "billservice_ipinuse")
                 if ipninuse_model.pool_id != pool_id or ipninuse_model.ip!=model.ipn_ip_address:
-                    ipinuse_model.disabled="now()"
+                    ipninuse_model.disabled="now()"
                     self.connection.save(ipninuse_model, "billservice_ipinuse")
                     model.ipn_ipinuse_id=None
         
