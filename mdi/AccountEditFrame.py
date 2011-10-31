@@ -898,10 +898,10 @@ class SubaccountLinkDialog(QtGui.QDialog):
                 ipninuse_model.datetime='now()'
                 ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
                 model.vpn_ipinuse_id=ipninuse_model.id
-                elf.connection.save(model, "billservice_account")
+                self.connection.save(model, "billservice_account")
         except Exception, e:
             print e
-            tGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки VPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
+            QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки VPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
             self.connection.rollback()
             return 
                 
