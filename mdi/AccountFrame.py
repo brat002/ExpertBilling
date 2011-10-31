@@ -1927,7 +1927,8 @@ class TarifWindow(QtGui.QMainWindow):
             self.comboBox_radius_traffic_prepaid_direction.addItem(unicode(direction_type.name))
             self.comboBox_radius_traffic_prepaid_direction.setItemData(i, QtCore.QVariant(direction_type.id))
             i+=1  
-                    
+        self.lineEdit_userblock_cost.setText(unicode(0))        
+        self.lineEdit_userblock_minballance.setText(unicode(0))    
         if self.model:
             if not self.model.isnull('settlement_period_id'):
                 self.sp_name_edit.setCurrentIndex(self.sp_name_edit.findText(settlement_period.name, QtCore.Qt.MatchCaseSensitive))
@@ -1939,8 +1940,8 @@ class TarifWindow(QtGui.QMainWindow):
                 print e
 
             self.groupBox_allowuserblock.setChecked(self.model.allow_userblock or False)
-            self.lineEdit_userblock_minballance.setText(unicode(self.model.userblock_require_balance) or 0)
-            self.lineEdit_userblock_cost.setText(unicode(self.model.userblock_cost))
+            self.lineEdit_userblock_minballance.setText(unicode(self.model.userblock_require_balance or 0) )
+            self.lineEdit_userblock_cost.setText(unicode(self.model.userblock_cost or 0))
             self.spinBox_max_block_days.setValue(self.model.userblock_max_days or 0)
             self.checkBox_allow_moneytransfer.setChecked(self.model.allow_ballance_transfer or False)
             self.require_tarif_cost_edit.setCheckState(self.model.require_tarif_cost == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
