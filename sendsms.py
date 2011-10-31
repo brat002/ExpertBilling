@@ -63,8 +63,11 @@ def send_balance_notice():
         if float(account.ballance)>SEND_IF_LESS or not account.phone_m : continue
         print "Sending sms for %s" % account.username
         data=templ.render_unicode(account=account, operator = operator)
-        d={'phone':account.phone_m,'message':data}
-        print commands.getstatusoutput("%s%(phone)s %(message)s" % (command,d))
+        #d={'phone':account.phone_m,'message':data}
+        #print commands.getstatusoutput("%s%(phone)s %(message)s" % (command,d))
+        f=open("/tmp/OUT%s.txt" % account.phone_m,"w")
+        f.write(data)
+        f.close()
 
 
       
