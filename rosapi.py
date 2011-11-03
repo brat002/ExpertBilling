@@ -1,4 +1,6 @@
-import sys, time, binascii, socket, select, md5
+import sys, time, binascii, socket, select
+import hashlib
+md5 = hashlib.md5()
 #from hashlib import md5
 
 class ApiRos:
