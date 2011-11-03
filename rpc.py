@@ -711,7 +711,6 @@ class RPCServer(object):
         
         #print dir(connection)
         result=[]
-        a=time.clock()
         if return_response:
             result = map(Object, cur.fetchall())
         log_string = u"""Пользователь %s выполнил SQL запрос %s""" % (add_data['USER_ID'][0], unicode(sql),)

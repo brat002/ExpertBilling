@@ -256,14 +256,24 @@ class AddDealerFrame(QtGui.QMainWindow):
         icon2.addPixmap(QtGui.QPixmap("images/moneybook.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionPrepareBill.setIcon(icon2)
         self.actionPrepareBill.setObjectName("actionPrepareBill")
+        
+        self.actionExport = QtGui.QAction(self)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("images/fileexport.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionExport.setIcon(icon)
+        self.actionExport.setObjectName("actionExport")
+
+        
         self.toolBar.addAction(self.actionSave)
         self.toolBar.addAction(self.actionPrepareBill)
         self.toolBar.addAction(self.returnCardsAction)
+        self.toolBar.addAction(self.actionExport)
 
         
         
         self.connect(self.actionSave, QtCore.SIGNAL("triggered()"),  self.accept)
         self.connect(self.returnCardsAction, QtCore.SIGNAL("triggered()"),  self.returnCards)
+        self.connect(self.actionExport, QtCore.SIGNAL("triggered()"),  self.export_cards)
         
         QtCore.QMetaObject.connectSlotsByName(self)
         self.setTabOrder(self.lineEdit_organization, self.lineEdit_unp)
@@ -352,8 +362,65 @@ class AddDealerFrame(QtGui.QMainWindow):
         self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Сохранить", None, QtGui.QApplication.UnicodeUTF8))
         self.returnCardsAction.setText(QtGui.QApplication.translate("MainWindow", "Вернуть карточки", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPrepareBill.setText(QtGui.QApplication.translate("MainWindow", "PrepareBill", None, QtGui.QApplication.UnicodeUTF8))
-         
+        self.actionExport.setText(QtGui.QApplication.translate("MainWindow", "Экспорт карт", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionExport.setToolTip(QtGui.QApplication.translate("MainWindow", "Экспорт выделенных карт в xml", None, QtGui.QApplication.UnicodeUTF8))
+
+    def export_cards(self):
+        if self.tabWidget.currentIndex()==1:
+            ids=self.get_selected_ids(self.tableWidget_not_activated)
+            self.exportToXML(ids)
+            
+        elif self.tabWidget.currentIndex()==2:
+            ids=self.get_selected_ids(self.tableWidget_activated)
+            self.exportToXML(ids)
+            
+    def get_selected_ids(self, table):
+        ids = []
+        for r in table.selectedItems():
+            if r.column()==0:
+                if r.id:
+                    ids.append(r.id)
+        return ids
     
+    def exportToXML(self, ids):
+        fileName = QtGui.QFileDialog.getSaveFileName(self,
+                                                  "Create XML File", "", "XML Files (*.xml)")
+        if fileName=="":
+            return
+        #try:
+        import codecs
+        if True:
+            
+            f = codecs.open(fileName, "w", "utf-8")
+            f.write("<xml>")
+            for x in ids:
+                #card = unicode(self.tableWidget.item(x,0).text())
+                card = self.connection.get("""SELECT card.*, tarif.name as tarif_name FROM billservice_card as card
+                LEFT JOIN billservice_tariff as tarif ON tarif.id = card.tarif_id
+                WHERE card.id=%s
+                """ % x)
+                self.connection.commit()
+                #print x,card
+                f.write("<card>")
+                f.write("<id>%s</id>" % card.id)
+                #f.write(u"<tarif>"+unicode(card.tarif_name)+"</tarif>")
+                f.write(u"<tarif>%s</tarif>" % card.tarif_name)
+                f.write(u"<series>%s</series>" % card.series)
+                f.write(u"<nominal>%s</nominal>" % card.nominal)
+                f.write(u"<pin>%s</pin>" % card.pin)
+                f.write(u"<login>%s</login>" % card.login)
+                f.write(u"<template>%s</template>" % card.template_id)
+                f.write(u"<nas>%s</nas>" % card.nas_id)
+                f.write(u"<ip>%s</ip>" % card.ip)
+                f.write(u"<date_start>%s</date_start>" % card.start_date)
+                f.write(u"<date_end>%s</date_end>" % card.end_date)
+                
+                f.write("</card>")
+            f.write("</xml>")
+            f.close()
+            QtGui.QMessageBox.information(self, u"Файл успешно сохранён", unicode(u"Операция произведена успешно."))
+       
+       
     def accept(self):
         """
         понаставить проверок
@@ -460,10 +527,13 @@ class AddDealerFrame(QtGui.QMainWindow):
         self.lineEdit_loss_for_discount.setDisabled(True)
         self.lineEdit_cards_activated.setDisabled(True)
 
-    def addrow(self, widget,value, x, y):
+    def addrow(self, widget,value, x, y, id=None):
         headerItem = QtGui.QTableWidgetItem()
         headerItem.setText(unicode(value))
+        if id: headerItem.id=id
         widget.setItem(x,y,headerItem)
+        
+        
         
     def get_sum_for_pay(self, dealer_id):
         salecards = self.connection.sql("""SELECT salecard.discount, (SELECT sum(card.nominal) FROM billservice_card as card 
@@ -555,7 +625,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             self.tableWidget_not_activated.setRowCount(len(not_activated))
             i=0
             for d in not_activated:
-                self.addrow(self.tableWidget_not_activated, d.id, i,0)
+                self.addrow(self.tableWidget_not_activated, d.id, i,0,id=d.id)
                 self.addrow(self.tableWidget_not_activated, d.series, i,1)
                 self.addrow(self.tableWidget_not_activated, get_type(d.nas_id, d.tarif_id), i,2)
                 try:
@@ -579,7 +649,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             self.tableWidget_activated.setRowCount(len(activated))
             i=0
             for d in activated:
-                self.addrow(self.tableWidget_activated, d.id, i,0)
+                self.addrow(self.tableWidget_activated, d.id, i,0, id=d.id)
                 self.addrow(self.tableWidget_activated, d.series, i,1)
                 if d.tarif_id and not d.nas_id:
                     self.addrow(self.tableWidget_activated, u"HotSpot", i,2)

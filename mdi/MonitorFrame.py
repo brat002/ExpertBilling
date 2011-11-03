@@ -144,6 +144,7 @@ class MonitorEbs(ebsTableWindow):
         Terminate thread
         """
         self.thread.terminate()
+        self.genericThread.terminate()
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             settings.setValue("monitor_date_start", QtCore.QVariant(self.date_start.dateTime()))
@@ -325,6 +326,7 @@ class MonitorEbs(ebsTableWindow):
         
     def fix(self, sessionss):
         self.pushbutton.setDisabled(False)
+        
         i=0        
         sess_time = 0
         sessions=sessionss.toList()
@@ -362,6 +364,7 @@ class MonitorEbs(ebsTableWindow):
                 HeaderUtil.getHeader("monitor_frame_header", self.tableWidget)
         self.statusBar().showMessage(u'Сессий:%s. Среднее время сессии: %s минут' % (len(sessions), (sess_time/(1 if len(sessions)==0 else len(sessions))/60)))
         self.tableWidget.setColumnHidden(0, False)
+        self.tableWidget.setSortingEnabled(True)
         
                 
     def refresh_users(self):
