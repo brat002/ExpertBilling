@@ -968,7 +968,7 @@ class AddCards(QtGui.QDialog):
 
 class CardsChildEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=['#', u'Серия', u'Номинал', u'Тип', u'Пул', u'PIN', u'Логин', u'Тариф', u'NAS', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
+        columns=['#', u'Серия', u'Номинал', u'Тип', u'Пул', u'Логин', u'PIN',  u'Тариф', u'NAS', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
         initargs = {"setname":"cards_frame", "objname":"CardsFrameMDI", "winsize":(0,0,947, 619), "wintitle":"Система карт оплаты", "tablecolumns":columns}
         super(CardsChildEbs, self).__init__(connection, initargs)
         
@@ -1040,8 +1040,8 @@ class CardsChildEbs(ebsTableWindow):
         self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar_filter)
         self.insertToolBarBreak(self.toolBar_filter)
 
-        actList=[("actionGenerate_Cards", "Сгенерировать", "images/add.png", self.generateCards), ("actionDelete_Cards", "Удалить карты", "images/del.png", self.deleteCards), ("actionEnable_Card", "Активна", "images/enable.png", self.enableCard), ("actionDisable_Card", "Неактивна", "images/disable.png", self.disableCard), ("actionSell_Card", "Продать", "images/dollar.png", self.saleCard)]
-        objDict = {self.tableWidget:["actionDelete_Cards", "actionEnable_Card", "actionDisable_Card"], self.toolBar:["actionGenerate_Cards", "actionDelete_Cards", "actionEnable_Card", "actionDisable_Card", "actionSell_Card"]}
+        actList=[("actionGenerate_Cards", "Сгенерировать", "images/add.png", self.generateCards), ("actionDelete_Cards", "Удалить карты", "images/del.png", self.deleteCards), ("actionEnable_Card", "Активна", "images/enable.png", self.enableCard), ("actionDisable_Card", "Неактивна", "images/disable.png", self.disableCard), ("actionSell_Card", "Продать", "images/dollar.png", self.saleCard), ("actionExportXml", "Выгрузить выделенные в xml", "images/fileexport.png", self.export_cards)]
+        objDict = {self.tableWidget:["actionDelete_Cards", "actionEnable_Card", "actionDisable_Card"], self.toolBar:["actionGenerate_Cards", "actionDelete_Cards", "actionEnable_Card", "actionDisable_Card", "actionSell_Card", "actionExportXml"]}
         self.actionCreator(actList, objDict)
         
     def ebsPostInit(self, initargs):
@@ -1088,6 +1088,57 @@ class CardsChildEbs(ebsTableWindow):
         if child.exec_()==1:
             self.refresh()
         
+    def export_cards(self):
+        ids=self.get_selected_ids(self.tableWidget)
+        self.exportToXML(ids)
+
+            
+    def get_selected_ids(self, table):
+        ids = []
+        for r in table.selectedItems():
+            if r.column()==0:
+                if r.id:
+                    ids.append(r.id)
+        return ids
+    
+    def exportToXML(self, ids):
+        fileName = str(QtGui.QFileDialog.getSaveFileName(self,
+                                                  "Create XML File", "", "XML Files (*.xml)")).decode('mbcs')
+        if fileName=="":
+            return
+        #try:
+        import codecs
+        if True:
+            
+            f = codecs.open(fileName, "w", "utf-8")
+            f.write("<xml>")
+            for x in ids:
+                #card = unicode(self.tableWidget.item(x,0).text())
+                card = self.connection.get("""SELECT card.*, tarif.name as tarif_name FROM billservice_card as card
+                LEFT JOIN billservice_tariff as tarif ON tarif.id = card.tarif_id
+                WHERE card.id=%s
+                """ % x)
+                self.connection.commit()
+                #print x,card
+                f.write("<card>")
+                f.write("<id>%s</id>" % card.id)
+                #f.write(u"<tarif>"+unicode(card.tarif_name)+"</tarif>")
+                f.write(u"<tarif>%s</tarif>" % card.tarif_name)
+                f.write(u"<series>%s</series>" % card.series)
+                f.write(u"<nominal>%s</nominal>" % card.nominal)
+                f.write(u"<pin>%s</pin>" % card.pin)
+                f.write(u"<login>%s</login>" % card.login)
+                f.write(u"<template>%s</template>" % card.template_id)
+                f.write(u"<nas>%s</nas>" % card.nas_id)
+                f.write(u"<ip>%s</ip>" % card.ip)
+                f.write(u"<date_start>%s</date_start>" % card.start_date)
+                f.write(u"<date_end>%s</date_end>" % card.end_date)
+                
+                f.write("</card>")
+            f.write("</xml>")
+            f.close()
+            QtGui.QMessageBox.information(self, u"Файл успешно сохранён", unicode(u"Операция произведена успешно."))
+            
     def fixtures(self):
         nominals = self.connection.get_cards_nominal()
         self.connection.commit()
@@ -1219,10 +1270,6 @@ class CardsChildEbs(ebsTableWindow):
 
             
         self.tableWidget.clearContents()
-
-
-
-        print sql
         self.connection.commit()
         self.genericThread = GenericThread(self.connection, sql)
         self.connect(self.genericThread, QtCore.SIGNAL("refresh(QVariant)"), self.fix)
@@ -1249,13 +1296,13 @@ class CardsChildEbs(ebsTableWindow):
         card_types=[u'Карта экспресс-оплаты',u'HotSpot карта',u'VPN карта доступа',u"Телефонные карты"]
         for node in nodes:
             node=node.toPyObject()
-            self.addrow(node.id, i,0, status = node.disabled, activated=node.activated)
+            self.addrow(node.id, i,0, status = node.disabled, activated=node.activated, id=node.id)
             self.addrow(node.series, i,1, status = node.disabled, activated=node.activated)
             self.addrow(node.nominal, i,2, status = node.disabled, activated=node.activated)
             self.addrow(card_types[node.type], i,3, status = node.disabled, activated=node.activated)
             self.addrow(node.pool_name, i,4, status = node.disabled, activated=node.activated)
-            self.addrow(node.pin, i,5, status = node.disabled, activated=node.activated)
-            self.addrow(node.login, i,6, status = node.disabled, activated=node.activated)
+            self.addrow(node.login, i,5, status = node.disabled, activated=node.activated)
+            self.addrow(node.pin, i,6, status = node.disabled, activated=node.activated)
             self.addrow(t.get("%s" % node.tarif_id), i,7, status = node.disabled, activated=node.activated)
             self.addrow(n.get("%s" % node.nas_id), i,8, status = node.disabled, activated=node.activated)
             
@@ -1278,7 +1325,7 @@ class CardsChildEbs(ebsTableWindow):
             print "Cards settings save error: ", ex        
 
 
-    def addrow(self, value, x, y, status, activated):
+    def addrow(self, value, x, y, status, activated, id=None):
         headerItem = QtGui.QTableWidgetItem()
         
         if value == None:
@@ -1296,6 +1343,8 @@ class CardsChildEbs(ebsTableWindow):
         elif activated!=None and y==0:
             headerItem.setIcon(QtGui.QIcon("images/false.png"))
     
+        if id:
+            headerItem.id=id
         self.tableWidget.setItem(x,y,headerItem)
         
 
