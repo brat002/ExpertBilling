@@ -1,0 +1,217 @@
+{% extends 'helpdesk_base_extended_ticket.html' %}
+
+{% load helpdesk_tags %}
+{% load form_tags %}
+
+
+{% block extra_head %}
+<link type="text/css" rel="stylesheet" href="{{MEDIA_URL}}css/jquery-ui-1.7.2.custom.css" />
+<link type="text/css" rel="stylesheet" href="{{MEDIA_URL}}css/auroramenu.css" />
+
+<script type="text/javascript" src = "{{MEDIA_URL}}js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/jquery-ui-1.7.2.custom.min.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/jquery-cookie.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/auroramenu.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/json2.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/jquery.timers.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/ajax_load_block.js"></script>
+<script language="JavaScript" type="text/javascript" src="{{MEDIA_URL}}js/tickets.js"></script>
+<script>
+	jQuery(document).ready(function(){
+		
+	
+		jQuery(".auroramenu").find(' a.link').bind('click',function(){
+			var sender = jQuery(this)
+			var content = sender.parent()			
+			show_hide_table(content, content.next().is(":visible"))
+		})
+		
+		jQuery(".auroramenu div.info_blocks").each(function(){
+
+				var panel_link =  jQuery(this).parent().children('.name_object')
+				if (jQuery(this).is(":visible")) {
+					panel_link.css('font-weight', 'bold')
+					panel_link.children('a.link').children('img').attr('src', '/media/img/open2.gif')
+				}
+			})
+		
+		})
+</script>
+{% endblock %}
+
+
+{% block content %}
+
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+	<tr>
+		<td class="left_block">
+			<div class="auroramenu">
+				<div class="name_object">
+					<a href="javascript:" class="link" >
+						<img align="right" style="vertical-align: middle;" src="{{MEDIA_URL}}img/close.gif">
+						<span style="margin-left:9px;">
+							Даты
+						</span>
+					</a>
+				</div>
+				<div class="content info_blocks" name="dates" id="dates">
+					<table class="info_table" cellpadding="0" cellspacing="0">
+						<tr>
+							<th>Дата создания</th>
+							<td>{{ ticket.created|date:"d.m.Y" }}</td>
+							<th>Дата последнего изменения</th>
+							<td>{{ ticket.last_update|date:"d.m.Y" }}</td>
+						</tr>
+						<tr>
+							<th>Дата открытия</th>
+							<td>
+								{% if open_date %}
+									{{ open_date.created|date:"d.m.Y" }}
+								{% endif %}
+							</td>
+							<th>Дата закрытия</th>
+							<td>
+								{% if close_date %}
+									{{ close_date.created|date:"d.m.Y" }}
+								{% endif %}
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			
+			<div class="auroramenu">
+				<div class="name_object">
+					<a href="javascript:" class="link" >
+						<img align="right" style="vertical-align: middle;" src="{{MEDIA_URL}}img/close.gif">
+						<span style="margin-left:9px;">
+							Детали тикета
+						</span>
+					</a>
+				</div>
+				
+				<div class="content info_blocks" name="detail" id="detail">
+					<table class="info_table" cellpadding="0" cellspacing="0">
+						<tr>
+							<th>Клиент</th>
+							<td><a href="/helpdesk/user/{{ ticket.account.id }}/">{{ ticket.account }}</a></td>
+						</tr>
+						<tr>
+							<th>Способ обращения</th>
+							<td>{{ ticket.get_source }}</td>
+						</tr>
+						<tr>
+							<th>Тип</th>
+							<td>{{ ticket.get_type }}</td>
+						</tr>
+						<tr>
+							<th>Заголовок сообщения</th>
+							<td>{{ ticket.subject }}</td>
+						</tr>
+						<tr>
+							<th>Текст сообщения</th>
+							<td>{{ ticket.boby }}</td>
+						</tr>
+						<tr>
+							<th>Прикрепленные файлы</th>
+							<td>
+								{% for comment in comments%}
+										{% if comment.file %}
+											<div class="file"><a href="{{ comment.file.url }}" target="_blank">{{ comment.file.name|normal_name }}<img class="paper_clip" src="{{ MEDIA_URL }}helpdesk_img/paper_clip.png"><a></div>
+											<div class="clear"></div>
+										{% endif %}
+								{% endfor %}
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			
+			<div class="auroramenu">
+				<div class="name_object">
+					<a href="javascript:" class="link" >
+						<img align="right" style="vertical-align: middle;" src="{{MEDIA_URL}}img/close.gif">
+						<span style="margin-left:9px;">
+						Комментарии
+						</span>
+					</a>
+				</div>
+				<div class="content info_blocks" name="comments" id="comments">
+					{% for comment in comments%}
+						<div class="comment" style="background-color:{% cycle '#e5f1ff' '#d1e5fd' %}">
+							<span class="user"><a href="{{ comment.get_user_link }}">{{ comment.get_user }}</a></span> <span class="date">{{ comment.created|date:"H.i, d.m.Y" }}</span>
+							<div class="body">{{ comment.body  }}</div>
+							{% if comment.file %}
+								<div class="file f-right"><a href="{{ comment.file.url }}" target="_blank">{{ comment.file.name|normal_name }}<img class="paper_clip" src="{{ MEDIA_URL }}helpdesk_img/paper_clip.png"><a></div>
+								<div class="clear"></div>
+							{% endif %}
+						</div>
+					{% endfor %}
+					
+					<div class="comment_form">
+						<form method="post" action="/helpdesk/comment/add/{{ ticket.id }}/" enctype="multipart/form-data">
+							<script type="text/javascript">
+								function atrim(str) {
+									return str.replace(/^\s*/,'').replace(/\s*$/,'');
+								} 
+							</script>
+							<table cellpadding="0" cellspacing="0" width="100%">
+								{% for field in comment_form %}
+									{% form_field field comment %}
+								{% endfor %}
+							</table>
+							<input type="image" src="{{ MEDIA_URL }}helpdesk_img/send_comment_button.jpg" value="Сохранить">
+						</form>	
+					</div>
+				</div>
+			</div>
+			
+			<div class="auroramenu">
+				<div class="name_object">
+					<a href="javascript:" class="link" >
+						<img align="right" style="vertical-align: middle;" src="{{MEDIA_URL}}img/close.gif">
+						<span style="margin-left:9px;">
+						Действия над тикетом
+						</span>
+					</a>
+				</div>
+				
+				<div class="content info_blocks" name="actions" id="actions">
+					<form method="post" id="ticket_edit_form">
+						<table class="info_table" cellpadding="0" cellspacing="0">
+							{% for field in form %}
+								{% form_field field tr %}
+							{% endfor %}
+						</table>
+						<div class="ticket_save_form">
+							<input class="buttons" type="image" src="{{ MEDIA_URL }}helpdesk_img/save_changes.png" id="save_comment_button">
+						</div>
+					</form>
+				</div>
+			</div>
+		</td>
+		<td class="right_block">
+			
+			<div class="addon_info">
+				<div class="title">Информация о пользователе</div>
+				<div class="item"><span>{{ ticket.account }}</span></div>
+				<div class="item"><span>Статус:</span>{{ ticket.account.get_status }}</div>
+				<div class="item"><span>Тарифный план:</span>{{ ticket.account.get_account_tariff }}</div>
+			</div>
+			
+			<div class="addon_info">
+				<div class="title">История тикета</div>
+				{% for history_item in history_items %}
+					<div class="history_item">
+						<span class="date">{{ history_item.created|date:"d.m.Y" }}</span> <span class="user">{{ history_item.user }}</span>
+						<div class="body">{{ history_item.action|safe }}</div>
+						{% get_note history_item %}
+					</div>
+				{% endfor %}
+			</div>
+			
+		</td>
+	</tr>
+</table>
+
+{% endblock %}

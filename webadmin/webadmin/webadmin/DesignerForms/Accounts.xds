@@ -1,0 +1,1231 @@
+{
+    "name": "Accounts.xds",
+    "settings": {
+        "urlPrefix": "http://localhost/",
+        "directAPI": "",
+        "spacesToIndent": 4,
+        "codeGenFormat": "Class",
+        "exportPath": ".",
+        "extPath": "http://extjs.cachefly.net/ext-3.2.1/",
+        "lineEnding": "CRLF",
+        "instantiateStore": true,
+        "exportXDSFiles": true,
+        "genTimestamps": true,
+        "appName": "MyApp"
+    },
+    "xdsVersion": "1.2.2",
+    "components": [
+        {
+            "id": "MyWindow",
+            "type": "window",
+            "reference": {
+                "name": "items",
+                "type": "array"
+            },
+            "codeClass": null,
+            "userConfig": {
+                "height": 588,
+                "width": 1015,
+                "layout": "fit",
+                "title": "My Window",
+                "designer|userClassName": "MyWindow"
+            },
+            "cn": [
+                {
+                    "id": "MyForm",
+                    "type": "form",
+                    "reference": {
+                        "name": "items",
+                        "type": "array"
+                    },
+                    "codeClass": null,
+                    "userConfig": {
+                        "layout": "fit",
+                        "title": null,
+                        "designer|userClassName": "MyForm"
+                    },
+                    "cn": [
+                        {
+                            "id": "MyTabPanel",
+                            "type": "tabpanel",
+                            "reference": {
+                                "name": "items",
+                                "type": "array"
+                            },
+                            "codeClass": null,
+                            "userConfig": {
+                                "activeTab": 1,
+                                "designer|userClassName": "MyTabPanel"
+                            },
+                            "cn": [
+                                {
+                                    "id": "MyPanel",
+                                    "type": "panel",
+                                    "reference": {
+                                        "name": "items",
+                                        "type": "array"
+                                    },
+                                    "codeClass": null,
+                                    "userConfig": {
+                                        "tpl": "",
+                                        "layout": "table",
+                                        "title": "Учётная запись",
+                                        "designer|userClassName": "MyPanel",
+                                        "container|columns": 2
+                                    },
+                                    "cn": [
+                                        {
+                                            "id": "MyFieldSet",
+                                            "type": "fieldset",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "height": 178,
+                                                "width": 416,
+                                                "title": "Главные параметры",
+                                                "designer|userClassName": "MyFieldSet",
+                                                "layout|rowspan": 2
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyTextField",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyTextField",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Логин"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyTextField1",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyTextField1",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Пароль"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyCombo",
+                                                    "type": "combobox",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyCombo",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Лицевой счёт"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyTextField2",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyTextField2",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Номер договора"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyCombo1",
+                                                    "type": "combobox",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyCombo1",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Персональный менеджер"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "MyFieldSet1",
+                                            "type": "fieldset",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "height": 106,
+                                                "title": "Платёжный статус",
+                                                "designer|userClassName": "MyFieldSet1"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyTextField3",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyTextField3",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Баланс"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyTextField4",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyTextField4",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Кредит"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "MyFieldSet2",
+                                            "type": "fieldset",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "title": "Статус",
+                                                "designer|userClassName": "MyFieldSet2"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyCombo2",
+                                                    "type": "combobox",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyCombo2",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Статус"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "MyFieldSet3",
+                                            "type": "fieldset",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "height": 358,
+                                                "width": 415,
+                                                "layout": "fit",
+                                                "title": "Параметры физлица",
+                                                "designer|userClassName": "MyFieldSet8"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyListView",
+                                                    "type": "listview",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "store": "(none)",
+                                                        "columnResize": false,
+                                                        "designer|userClassName": "MyListView1"
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "MyColumn",
+                                                            "type": "lvcolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "Column",
+                                                                "width": 0.25,
+                                                                "designer|userClassName": "MyColumn1"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyColumn1",
+                                                            "type": "lvcolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "Column",
+                                                                "designer|userClassName": "MyColumn2"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyColumn2",
+                                                            "type": "lvcolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "Column",
+                                                                "designer|userClassName": "MyColumn3"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "MyFieldSet4",
+                                            "type": "fieldset",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "height": 361,
+                                                "width": 491,
+                                                "layout": "fit",
+                                                "title": "Параметры юрлица",
+                                                "designer|userClassName": "MyFieldSet9"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyListView1",
+                                                    "type": "listview",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "height": 327,
+                                                        "store": "(none)",
+                                                        "columnResize": false,
+                                                        "designer|userClassName": "MyListView2"
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "MyColumn3",
+                                                            "type": "lvcolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "Column",
+                                                                "width": 0.25,
+                                                                "designer|userClassName": "MyColumn4"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyColumn4",
+                                                            "type": "lvcolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "Column",
+                                                                "designer|userClassName": "MyColumn5"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyColumn5",
+                                                            "type": "lvcolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "Column",
+                                                                "designer|userClassName": "MyColumn6"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "MyPanel1",
+                                    "type": "panel",
+                                    "reference": {
+                                        "name": "items",
+                                        "type": "array"
+                                    },
+                                    "codeClass": null,
+                                    "userConfig": {
+                                        "layout": "table",
+                                        "title": "Сетевые параметры",
+                                        "designer|userClassName": "MyPanel1",
+                                        "container|columns": 2
+                                    },
+                                    "cn": [
+                                        {
+                                            "id": "MyFieldSet5",
+                                            "type": "fieldset",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "autoWidth": true,
+                                                "height": 245,
+                                                "width": 264,
+                                                "title": "IPN параметры",
+                                                "designer|userClassName": "MyFieldSet3"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyCombo3",
+                                                    "type": "combobox",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "editable": false,
+                                                        "designer|userClassName": "MyCombo5",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Сервер доступа"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyContainer",
+                                                    "type": "container",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "autoHeight": true,
+                                                        "autoWidth": true,
+                                                        "height": 26,
+                                                        "width": 569,
+                                                        "forceLayout": true,
+                                                        "hideBorders": true,
+                                                        "layout": "table",
+                                                        "designer|userClassName": "MyContainer"
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "MyLabel",
+                                                            "type": "label",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "text": "IP адрес: ",
+                                                                "designer|userClassName": "MyLabel"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyTextField5",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "autoHeight": true,
+                                                                "autoWidth": true,
+                                                                "designer|userClassName": "MyTextField7"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyLabel1",
+                                                            "type": "label",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "text": "из пула:",
+                                                                "designer|userClassName": "MyLabel1"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyCombo4",
+                                                            "type": "combobox",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "autoHeight": true,
+                                                                "autoWidth": true,
+                                                                "designer|userClassName": "MyCombo3"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "MyTextField6",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "width": 326,
+                                                        "designer|userClassName": "MyTextField6"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyContainer1",
+                                                    "type": "container",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyContainer3"
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "MyCheckbox",
+                                                            "type": "checkbox",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "boxLabel": "Получать адрес по DHCP",
+                                                                "designer|userClassName": "MyCheckbox"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyCheckbox1",
+                                                            "type": "checkbox",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "boxLabel": "Получать адрес по DHCP при нулевом и отрицательном балансе",
+                                                                "designer|userClassName": "MyCheckbox1"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyCheckbox2",
+                                                            "type": "checkbox",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "boxLabel": "Получать адрес по DHCP, если неактивен или заблокирован",
+                                                                "designer|userClassName": "MyCheckbox2"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "MyTextField7",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyTextField8",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Особые настройки скорости"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "MyFieldSet6",
+                                            "type": "fieldset",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "autoWidth": true,
+                                                "height": 244,
+                                                "title": "VPN параметры",
+                                                "designer|userClassName": "MyFieldSet4"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyContainer2",
+                                                    "type": "container",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "cls": null,
+                                                        "ctCls": "",
+                                                        "overCls": "",
+                                                        "autoHeight": true,
+                                                        "autoWidth": true,
+                                                        "height": 26,
+                                                        "width": 569,
+                                                        "forceLayout": true,
+                                                        "hideBorders": true,
+                                                        "layout": "table",
+                                                        "designer|userClassName": "MyContainer",
+                                                        "layout|clearCls": "",
+                                                        "layout|itemCls": ""
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "MyLabel2",
+                                                            "type": "label",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "text": "IP адрес: ",
+                                                                "designer|userClassName": "MyLabel"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyTextField8",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "autoHeight": true,
+                                                                "autoWidth": true,
+                                                                "designer|userClassName": "MyTextField7"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyLabel3",
+                                                            "type": "label",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "text": "из пула:",
+                                                                "designer|userClassName": "MyLabel1"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyCombo5",
+                                                            "type": "combobox",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "autoHeight": true,
+                                                                "autoWidth": true,
+                                                                "designer|userClassName": "MyCombo3"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "MyTextField9",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyTextField10",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Особые настройки скорости"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyContainer3",
+                                                    "type": "container",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "cls": "",
+                                                        "autoHeight": null,
+                                                        "autoWidth": null,
+                                                        "layout": "column",
+                                                        "designer|userClassName": "MyContainer2"
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "MyCheckbox3",
+                                                            "type": "checkbox",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "cls": "",
+                                                                "boxLabel": "Привязать PPTP/L2TP авторизацию к IPN IP",
+                                                                "designer|userClassName": "MyCheckbox3"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyCheckbox4",
+                                                            "type": "checkbox",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "boxLabel": "Привязать MAC авторизацию к IPN MAC",
+                                                                "designer|userClassName": "MyCheckbox4"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyCheckbox5",
+                                                            "type": "checkbox",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "boxLabel": "Разрешить PPTP/L2TP/PPPOE авторизацию при нулевом и отрицательном балансе",
+                                                                "designer|userClassName": "MyCheckbox5"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyCheckbox6",
+                                                            "type": "checkbox",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "boxLabel": "Разрешить PPTP/L2TP/PPPOE авторизацию, если клиент неактивен или заблокирован",
+                                                                "designer|userClassName": "MyCheckbox6"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "MyFieldSet7",
+                                            "type": "fieldset",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "height": 262,
+                                                "title": "Физические параметры подключения",
+                                                "designer|userClassName": "MyFieldSet5"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyCombo6",
+                                                    "type": "combobox",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyCombo6",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Комутатор"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyNumberField",
+                                                    "type": "numberfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyNumberField",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Порт"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyFieldSet8",
+                                                    "type": "fieldset",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "collapsible": null,
+                                                        "title": "802.1x",
+                                                        "checkboxToggle": true,
+                                                        "designer|userClassName": "MyFieldSet6"
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "MyRadio",
+                                                            "type": "radio",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "boxLabel": "Авторизация по логину/паролю",
+                                                                "designer|userClassName": "MyRadio",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": ""
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyRadio1",
+                                                            "type": "radio",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "boxLabel": "Авторизация по MAC",
+                                                                "designer|userClassName": "MyRadio1",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": ""
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyCheckbox7",
+                                                            "type": "checkbox",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "boxLabel": "Разрешить",
+                                                                "designer|userClassName": "MyCheckbox9",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Упрощённая авторизация"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyNumberField1",
+                                                            "type": "numberfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "designer|userClassName": "MyNumberField1",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "VLAN Accept"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyNumberField2",
+                                                            "type": "numberfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "designer|userClassName": "MyNumberField2",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "VLAN Reject"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "MyFieldSet9",
+                                            "type": "fieldset",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "height": 262,
+                                                "title": "Другое",
+                                                "designer|userClassName": "MyFieldSet7"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyCheckbox8",
+                                                    "type": "checkbox",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "boxLabel": "Разрешить вход",
+                                                        "designer|userClassName": "MyCheckbox7",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Веб-кабинет"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyCheckbox9",
+                                                    "type": "checkbox",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "boxLabel": "Разрешить активацию карт экспресс-оплаты",
+                                                        "designer|userClassName": "MyCheckbox8",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Карты"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyLabel4",
+                                                    "type": "label",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "text": "Разрешить авторизацию на следующих серверах доступа",
+                                                        "designer|userClassName": "MyLabel4"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyListView2",
+                                                    "type": "listview",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "height": 129,
+                                                        "store": "(none)",
+                                                        "columnResize": false,
+                                                        "designer|userClassName": "MyListView"
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "MyColumn6",
+                                                            "type": "lvcolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "Сервер доступа",
+                                                                "width": 0.25,
+                                                                "designer|userClassName": "MyColumn"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyBooleanColumn",
+                                                            "type": "lvbooleancolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "PPTP",
+                                                                "designer|userClassName": "MyBooleanColumn"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyBooleanColumn1",
+                                                            "type": "lvbooleancolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "L2TP",
+                                                                "designer|userClassName": "MyBooleanColumn1"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyBooleanColumn2",
+                                                            "type": "lvbooleancolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "PPPOE",
+                                                                "designer|userClassName": "MyBooleanColumn2"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyBooleanColumn3",
+                                                            "type": "lvbooleancolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "lISG",
+                                                                "designer|userClassName": "MyBooleanColumn3"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyBooleanColumn4",
+                                                            "type": "lvbooleancolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "DHCP",
+                                                                "designer|userClassName": "MyBooleanColumn5"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "MyBooleanColumn5",
+                                                            "type": "lvbooleancolumn",
+                                                            "reference": {
+                                                                "name": "columns",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "header": "HotSpot",
+                                                                "designer|userClassName": "MyBooleanColumn4"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "MyPanel2",
+                                    "type": "panel",
+                                    "reference": {
+                                        "name": "items",
+                                        "type": "array"
+                                    },
+                                    "codeClass": null,
+                                    "userConfig": {
+                                        "layout": "fit",
+                                        "title": "Подключаемые услуги",
+                                        "designer|userClassName": "MyPanel2"
+                                    },
+                                    "cn": [
+                                        {
+                                            "id": "MyListView3",
+                                            "type": "listview",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "store": "(none)",
+                                                "columnResize": false,
+                                                "designer|userClassName": "MyListView3"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyColumn7",
+                                                    "type": "lvcolumn",
+                                                    "reference": {
+                                                        "name": "columns",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "header": "Column",
+                                                        "width": 0.25,
+                                                        "designer|userClassName": "MyColumn7"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyColumn8",
+                                                    "type": "lvcolumn",
+                                                    "reference": {
+                                                        "name": "columns",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "header": "Column",
+                                                        "designer|userClassName": "MyColumn8"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyColumn9",
+                                                    "type": "lvcolumn",
+                                                    "reference": {
+                                                        "name": "columns",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "header": "Column",
+                                                        "designer|userClassName": "MyColumn9"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "MyPanel3",
+                                    "type": "panel",
+                                    "reference": {
+                                        "name": "items",
+                                        "type": "array"
+                                    },
+                                    "codeClass": null,
+                                    "userConfig": {
+                                        "layout": "fit",
+                                        "title": "Тарифные планы",
+                                        "designer|userClassName": "MyPanel3"
+                                    },
+                                    "cn": [
+                                        {
+                                            "id": "MyListView4",
+                                            "type": "listview",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "store": "(none)",
+                                                "columnResize": false,
+                                                "designer|userClassName": "MyListView4"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "MyColumn10",
+                                                    "type": "lvcolumn",
+                                                    "reference": {
+                                                        "name": "columns",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "header": "Column",
+                                                        "width": 0.25,
+                                                        "designer|userClassName": "MyColumn10"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyColumn11",
+                                                    "type": "lvcolumn",
+                                                    "reference": {
+                                                        "name": "columns",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "header": "Column",
+                                                        "designer|userClassName": "MyColumn11"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "MyColumn12",
+                                                    "type": "lvcolumn",
+                                                    "reference": {
+                                                        "name": "columns",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "header": "Column",
+                                                        "designer|userClassName": "MyColumn12"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "stores": [],
+    "framework": "ext33"
+}

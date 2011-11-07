@@ -1,0 +1,30 @@
+<center>
+<div class="settings_table">
+			<div class="f-right">
+				<label class="objects_count">Объектов на странице</label> 
+				<select id="{{object_name}}_{{object_id}}" class="{{object_name}}" style="width:50px;"  onchange=show_tickets(this,'#ul_{{object_name}}_{{object_id}}') name="count_in_page">
+					<option value=10>
+						10
+					</option>
+					<option value=20>
+						20
+					</option>
+					<option value=30>
+						30
+					</option>
+				</select>
+				<label class="update">Обновление</label>
+				<select id="update_{{object_name}}_{{object_id}}" style="width:100px;"  name="time" class="time_update" onchange="update_table('#ul_{{object_name}}_{{object_id}}')">
+					<option value=1>
+						1мин
+					</option>
+					<option value=5>
+						5мин
+					</option>	
+				</select>
+			</div>
+	<div class="clear"></div>
+</div>
+</center>
+<div class="content_tickets">
+</div>

@@ -1,0 +1,5 @@
+{% for note in notes %}
+	<div class="note">
+		{{ note.body|safe }}
+	</div>
+{% endfor %}

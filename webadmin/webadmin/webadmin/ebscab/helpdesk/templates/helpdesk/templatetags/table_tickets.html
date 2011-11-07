@@ -1,0 +1,24 @@
+	<table id="table_{{object_name}}_{{object.id}}" cols=10 cellpadding=0 cellspacing=0 width=100% class="tickets">
+		<tbody>
+		<tr class="title_table">
+			<td class="id" width="6%" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))" >№ <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="subject" width="14%" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Тема <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="status" width="7%" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Статус <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="account" width="14%" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Пользователь <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="assign_date" width="230px" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Дата(Открытия) назначения <img src="{{media_url}}img/up_down.gif"></td>
+			<td class="created" onclick="sorted(this,jQuery('#ul_{{object_name}}_{{object.id}}'))">Создан <img src="{{media_url}}img/up_down.gif"></td>
+			<td width="146px">Действия</td>
+		</tr>
+		{% for ticket in tickets %}
+		<tr style="background-color:{% cycle '#e5f1ff' '#d1e5fd' %}" class="ticket_content{% if forloop.last %} border_bottom{% endif %}">
+			<td class="id" style="border-left-color:{{ticket.get_status_color}};"><a href="{{ ticket.get_edit_url }}" class="ticket_id">{{ticket.id}}</a></td>
+			<td class="subject">{{ticket.subject}}</td>
+			<td class="status" style="color:{{ticket.get_status_color}};">{{ticket.get_status}}</td>
+			<td class="account"  style="text-align:left; padding-left:10px;">{{ticket.account}}</td>
+			<td class="assign_date"  style="">{{ ticket.assign_date|date:"d-m-Y" }}</td>
+			<td class="created">{{ ticket.created|date:"d-m-Y" }}</td>
+			<td class="archived" width="73px"><a href="#" onclick="window.open('/helpdesk/ticket/{{ ticket.id }}/comments/','Скрытые комментарии','width=400,height=500,left=200,top=200,resizable')"><img src="{{ MEDIA_URL }}helpdesk_img/show_comments.png"/></a><a href="javascript:" onclick="archived_ticket('#table_{{object_name}}_{{object.id}}', {{ticket.id}})"><img src="{{ MEDIA_URL }}helpdesk_img/archived.png"/></a></td>
+		</tr>
+		{% endfor %}
+		</tbody>
+	</table>
