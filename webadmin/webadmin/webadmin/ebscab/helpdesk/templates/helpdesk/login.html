@@ -1,0 +1,32 @@
+{% extends 'helpdesk_base_extended.html' %}
+{% load form_tags %}
+
+{% block menu_block %}
+{% endblock %}
+
+{% block addon_menu %}
+	<div class="page_title">
+		<span>Вход</span>
+	</div>
+{% endblock %}
+
+{% block login %}
+
+<div class="reg_margin">
+	<form method="post" action="/helpdesk/login/">
+		<table class="info_table" cellpadding="0" cellspacing="0">
+			{% for field in form %}
+				{% form_field field tr  %}
+			{% endfor %}
+		</table>
+		<div class="ticket_save_form">
+			<input class="buttons" type="image" src="{{ MEDIA_URL }}helpdesk_img/enter.png" value="Вход"/>
+		</div>
+	</form>
+</div>
+{% endblock %}
+
+{% block title %}
+    Вход
+{% endblock %}
+

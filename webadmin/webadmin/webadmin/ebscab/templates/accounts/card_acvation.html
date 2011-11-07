@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if error_message %}
+    <h1>{{ error_message }}</h1>
+{% endif %}
+{% if form %}
+<form method="post">
+<table cellpadding="5px;" class="enter_table">
+    {{ form }}
+</table>
+<input type="image" src="{{ MEDIA_URL }}img/design/pass_ok_button.gif" class="enter_ok_button"/>
+</form>
+{% endif %}
+{% endblock %}
+
+
+{% block title %}
+    Активация карточек
+{% endblock %}

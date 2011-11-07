@@ -1,0 +1,123 @@
+{% load form_tags %}
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>EBS::HelpDesk{% block title %}{% endblock %}</title>
+{% block context_extra %}
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+{% endblock %}
+
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/opera.css" type="opera.css" media="screen" />
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/typography.css"  />
+<link rel="stylesheet" href="{{ MEDIA_URL }}css/style.css" />
+
+<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
+
+<!--[if IE]>
+	<link rel="stylesheet" href="{{ MEDIA_URL }}css/helpdesk-IE7.css" />
+<![endif]-->
+	<script type="text/javascript">
+	      
+		$(document).ready(function() {
+	   		$('#{{ order_field }}').attr('class', 'sort {{ way }}');
+			
+	    });
+		
+		function set_user(user_name) {
+			window.top.opener.SetName(user_name)
+		}
+		
+		function sort(sender, field) {
+			url = document.location.toString();
+			tr_object = $(sender);
+			way = 'esc';
+			start = '';
+			if (url[url.length-1] == "/") {
+				start = '?';
+			} else {
+				if (url[url.search('field')-1] != "&" && url[url.search('field')-1] != "?") start = '&'; 
+			}
+			if (tr_object.attr('class') != 'sort' ) {
+				way = (tr_object.attr('class') == "sort esc") ? 'desc' : "esc";	
+			}
+			
+			if (url.search('field') != -1) {
+				url = url.substr(0, url.search('field'));
+			}
+			if (url.search('page') != -1) {
+				url = url.substr(0, url.search('page')-1);
+			}
+			
+			url += start + 'field='+field+'&way='+way;
+			document.location.href = url.replace(/&amp;/g, '&');	
+		}
+
+	</script>
+</head>
+
+<body>
+
+
+
+<table cellpadding="0" cellspacing="0" width="100%" class="main_table">
+<tr>
+	<td class="left_block">
+		
+		<div class="name_object">
+			<span style="margin-left:9px;">
+				Результаты Поиска
+			</span>
+		</div>
+		
+		<table cellpadding=0 cellspacing=0 width=100% class="tickets">
+			<thead> 
+			<tr class="title_table normal">
+				<td id="id" onclick="sort(this, 'id');" class="sort">Номер договора</td>
+				<td id="username" onclick="sort(this, 'username');" class="sort">Пользователь</td>
+				<td id="fullname" onclick="sort(this, 'fullname');" class="sort">ФИО</td>
+				<td id="city" onclick="sort(this, 'city');" class="sort">Город</td>
+				<td id="street" onclick="sort(this, 'street');" class="sort">Улица</td>
+				<td>Дом</td>
+				<td>Квартира</td>
+			</tr>
+			</thead>
+			<tbody>  
+			{% if users %}
+				{% for user in users %}
+					<tr class="user ticket_content filter {% cycle 'first_tr' 'second_tr' %}" onclick="set_user('{{ user }}')">
+						<td>{{ user.id }}</td>
+						<td>{{ user.username }}</td>
+						<td>{{ user.fullname }}</td>
+						<td>{{ user.city }}</td>
+						<td>{{ user.street }}</td>
+						<td>{{ user.house }} {% if user.house_bulk %}({{ user.house_bulk }}){% endif %}</td>
+						<td>{{ user.room }}</td>
+					</tr>
+				{% endfor %}
+			{%endif %}
+			</tbody> 
+		</table>
+		{% include 'paginator.html' %}
+	</td>
+	
+	<td class="right_block">
+				
+		<div class="addon_info">
+			<div class="title">Данные о пользователе</div>
+				<form method="get">
+					{% for field in filter_form %}
+						{% form_field field filter_field %}
+					{% endfor %}
+					<div class="item"> <!-- onclick="load_users()" -->				
+							<input type="image" class="filter_button" src="{{ MEDIA_URL }}helpdesk_img/search.png">
+					</div>
+			</form>
+		</div>
+		
+	</td>
+</tr>
+</table>
+
+</body>
+</html>
