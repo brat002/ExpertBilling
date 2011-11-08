@@ -3,6 +3,7 @@ from django.conf import settings
 from django.conf.urls.defaults import *
 from django.contrib import admin
 from helpdesk import admin as helpdesk_admin
+from extjs import direct
 
 admin.autodiscover()
 
@@ -16,8 +17,10 @@ urlpatterns = patterns('',
     ('^admin/(.*)', admin.site.root),
     #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
     #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
+    (r'^ext/', include('extjs.urls')),
     (r'helpdesk/', include('helpdesk.urls')),
     (r'webmoney/', include('paymentgateways.webmoney.urls')),
+    
 
 )
 
@@ -61,7 +64,12 @@ urlpatterns += patterns('billservice.views',
      (r'^service/(?P<action>set|del)/(?P<id>\d+)/$', 'service_action'),     
      (r'^account/block/$', 'user_block'),
      (r'^account/block/action/$', 'userblock_action'),
-     #(r'^jsonaccounts$', 'jsonaccounts'),
+     (r'^jsonaccounts$', 'jsonaccounts'),
+     (r'^nasses/$', 'nasses'),
+     (r'^account/$', 'account'),
+     #(r'^simplelogin/$', 'simplelogin'),
+     (r'^grid/$', 'grid'),
+     (r'^transactiontypes/$', 'transactiontypes'),
 )
 urlpatterns = urlpatterns + patterns('helpdesk.views.account',
     url(r'^account/helpdesk/$', 'list_tickets', name='helpdesk_account_tickets'), # list user's tickets
@@ -98,4 +106,5 @@ urlpatterns += patterns('paymentgateways.quickpay.views',
 urlpatterns += patterns('paymentgateways.osmp_customproviders.views',
     (r'^osmp_custom/payment/$', 'payment'),
 )
+
 

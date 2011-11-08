@@ -8,7 +8,10 @@ ADMIN_URLS = (
 '/static/',
 '/admin_media',
 'admin-media',
-'/accounts/logout'
+'/accounts/logout',
+'/ext/',
+'/jsonaccounts'
+
 )
 
 class UrlFilter(object):
