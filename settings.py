@@ -84,6 +84,8 @@ TEMPLATE_DIRS = (
     '/opt/ebs/web/ebscab/templates',
     #'/opt/ebs/web/ebscab/helpdesk/templates',
     os.path.abspath('./templates'),
+    os.path.abspath('./extjs/templates'),
+    
     #os.path.abspath('./helpdesk/templates'),
 )
 
@@ -105,6 +107,7 @@ INSTALLED_APPS = (
     'paymentgateways.qiwi',
     'helpdesk',
     'notify',
+    'compress',
     
 )
 
@@ -159,6 +162,151 @@ PERSONAL_AREA_STAFF_MENU = [
     ('/helpdesk/admin/', u"Конфигурация"),
     ('account_logout', u'Выход'),
 ]
+
+COMPRESS = False
+COMPRESS_AUTO = False
+COMPRESS_VERSION = False
+COMPRESS_YUI_BINARY = 'java -jar lib/yuicompressor-2.4.2.jar'
+
+#CSSTIDY_BINARY = 'd:/projects/django_project/lib/csstidy.exe' # windows
+
+CSSTIDY_ARGUMENTS = "--template=highest --remove_last_;=true --allow_html_in_templates=false --compress_colors=true --compress_font-weight=true --lowercase_s=true --sort_properties=true"
+# --preserve_css=true --remove_last_;=true
+#--discard_invalid_properties=false
+#--remove_bslash=false
+#--sort_selectors=false
+#--timestamp=false
+#--merge_selectors=[2|1|0] |
+#--case_properties=[0|1|2] |
+#--optimise_shorthands=[1|2|0] |
+
+
+# aptitude install csstidy
+COMPRESS_CSS_FILTERS = ( 'compress.filters.csstidy.CSSTidyFilter', )
+#COMPRESS_JS_FILTERS = ('compress.filters.jsmin.JSMinFilter',)
+# ## or 
+COMPRESS_JS_FILTERS = ("compress.filters.yui.YUICompressorFilter",)
+
+# packed files stored to MEDIA/p folder
+
+
+
+
+COMPRESS_CSS = {
+    'screen_css': {
+        'source_filenames': (
+            "ext/resources/css/ext-all.css",
+
+            #Default ExtJS theme
+            "ext/resources/css/xtheme-blue.css",
+
+            "ext/ebs/styles.css",
+            "css/style.css",
+            ),
+        'output_filename': 'p/screen.?.css',
+        'extra_context': { 'media': 'screen,projection',},
+    },
+#    'screen_css_ie7': {
+#        'source_filenames': (
+#                'ext/ebs/styles-ie7.css',
+#                ),
+#        'output_filename': 'p/ie7.?.css',
+#        'extra_context': {'media': 'screen,projection',},
+#    }
+#    'print_css': {
+#        'source_filenames': (
+#                'css/print.css',
+#                ),
+#        'output_filename': 'p/print.?.css',
+#        'extra_context': {'media': 'print',},
+#    },
+
+
+}
+
+
+COMPRESS_JS = {
+    #EXTJS Debug
+     #EXTJS Production
+    'scripts_js_ext': {
+        'source_filenames': (
+            "ext/resources/adapter/ext/ext-base.js",
+            "ext/resources/ext-all-debug.js"
+        ),
+        'output_filename': 'p/ext.?.js',
+    },
+
+    'scripts_js_ux': {
+        'source_filenames': (
+        "ext/ux/gridfilters/menu/RangeMenu.js",
+
+        "ext/ux/gridfilters/menu/ListMenu.js",
+
+        "ext/ux/gridfilters/GridFilters.js",
+        "ext/ux/gridfilters/filter/Filter.js",
+        "ext/ux/gridfilters/filter/StringFilter.js",
+        "ext/ux/gridfilters/filter/DateFilter.js",
+        "ext/ux/gridfilters/filter/ListFilter.js",
+
+        "ext/ux/gridfilters/filter/NumericFilter.js",
+        "ext/ux/gridfilters/filter/BooleanFilter.js",
+
+        "ext/ux/print/Printer.js",
+        "ext/ux/print/renderers/Base.js",
+
+        #All grid navigation  plugin support
+        "ext/ux/SlidingPager.js",
+
+        #Main window tabs plugin support
+        "ext/ux/TabScrollerMenu.js"
+        ),
+        'output_filename': 'p/ux.?.js',
+    },
+
+#     'scripts_js_direct': {
+#        'source_filenames': (
+#           "/extjs/remoting/provider_js",
+#           "/extjs/remoting/api/"
+#            ),
+#        'output_filename': 'p/direct.ux.?.js',
+#    },
+    'scripts_js_ebs_user_group_0': {
+        'source_filenames': (
+    # Describe application
+            u"ext/ebs/locale/" + LANGUAGE_CODE + u".js",
+            u"ext/ebs/locale/main_menu." + LANGUAGE_CODE + u".0.js",
+            u"ext/ebs/base_components.js",
+            u"ext/ebs/application.js",
+            u"ext/ebs/datastore.js",
+    # Application components
+            u"ext/ebs/components/admin_accounts_list.js",
+            u"ext/ebs/components/admin_nasses_list.js",
+            #u"ext/ebs/components/admin_session_monitor_list.js",
+            #u"ext/ebs/components/admin_settlement_period_list.js",
+    # Main run script
+            u"ext/ebs/run.js"
+        ),
+         'output_filename': 'p/ebs.%s.%d?.js' % (LANGUAGE_CODE, 0),
+    },
+
+    'scripts_js_ebs_user_group_1': {
+        'source_filenames': (
+    # Describe application
+            u"ext/ebs/locale/" + LANGUAGE_CODE + u".js",
+            u"ext/ebs/locale/main_menu." + LANGUAGE_CODE + u".0.js",
+            u"ext/ebs/base_components.js",
+            u"ext/ebs/application.js",
+            u"ext/ebs/datastore.js", # TODO: other storage
+    # Application components
+            u"ext/ebs/components/admin_nasses_list.js",
+    # Main run script
+            u"ext/ebs/run.js"
+        ),
+         'output_filename': 'p/ebs.%s.%d?.js' % (LANGUAGE_CODE, 1),
+    },
+
+
+}
 
 # load local_settings
 try:
