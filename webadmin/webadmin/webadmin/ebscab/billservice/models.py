@@ -509,7 +509,7 @@ class Account(models.Model):
     room = models.CharField(max_length=255)
     
     #assign_vpn_ip_from_dhcp = models.BooleanField(blank=True, default=False)
-    nas = models.ForeignKey(to=Nas, blank=True, verbose_name=u'Сервер доступа')
+    nas = models.ForeignKey(to=Nas, blank=True,null=True, verbose_name=u'Сервер доступа')
     #vpn_pool = models.ForeignKey(to=IPAddressPool, related_name='virtual_pool', blank=True, null=True)
     #vpn_ip_address = models.IPAddressField(u'Статический IP VPN адрес', help_text=u'Если не назначен-выбрать из пула, указанного в тарифном плане', blank=True, default='0.0.0.0')
     #assign_ipn_ip_from_dhcp = models.BooleanField(blank=True, default=False)
