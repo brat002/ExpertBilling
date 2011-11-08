@@ -246,7 +246,7 @@ class MonitorEbs(ebsTableWindow):
         self.connect(self.genericThread, QtCore.SIGNAL("refresh(QVariant)"), self.fix)
         self.genericThread.start()
         self.pushbutton.setDisabled(True)
-        #self.genericThread.terminate()
+        
 
 
     
@@ -325,6 +325,7 @@ class MonitorEbs(ebsTableWindow):
 
         
     def fix(self, sessionss):
+        self.genericThread.terminate()
         self.pushbutton.setDisabled(False)
         
         i=0        

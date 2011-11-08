@@ -227,7 +227,7 @@ Ext.onReady(function(){
                                     handler: function(obj, e){
                                         form_callback(obj, e);
                                         form = this.ownerCt.ownerCt.items.items[0].getForm()
-                                        form.updateRecord(form.rec);
+                                        //form.updateRecord(form.rec);
                                         //Update server data
                                         //form.rec.store.save();
                                         EBS.closeForm(this)
