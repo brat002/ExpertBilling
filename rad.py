@@ -1047,6 +1047,7 @@ class HandleSAuth(HandleSBase):
                 self.create_cursor()
                 try:
                     self.cursor.execute("""SELECT id from radius_activesession WHERE subaccount_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (subacc.id, nas.acct_interim_interval))
+                    self.cursor.connection.commit()
                     if self.cursor.fetchone():
                         vars.cursor_lock.release()
                         logger.warning("Subaccount %s already have session on this NAS. If this error persist - check your nas settings and perform maintance radius_activesession table", (username,))
@@ -1071,11 +1072,12 @@ class HandleSAuth(HandleSBase):
                            pool_id=acc.vpn_guest_ippool_id
                            logger.error("Searching free ip for subaccount %s in vpn guest pool with id %s ", (str(user_name), acc.vpn_guest_ippool_id))
                        self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
+                       
                        vpn_ip_address = self.cursor.fetchone()[0]
                        if not vpn_ip_address:
                            pool_id, vpn_ip_address = self.find_free_ip(pool_id)
 
-    
+                       self.cursor.connection.commit()
                        if not vpn_ip_address:
                             logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id))
                             sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
@@ -1084,6 +1086,7 @@ class HandleSAuth(HandleSBase):
                        
                        self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
                        ipinuse_id=self.cursor.fetchone()[0]
+                       self.cursor.connection.commit()
                        #vars.cursor.connection.commit()   
                        #vars.cursor_lock.release()
                                 

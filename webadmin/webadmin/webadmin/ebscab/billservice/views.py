@@ -979,23 +979,60 @@ def nasses(request):
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res}
 
-@ajax_request
+def instance_dict(instance, key_format=None):
+    """
+    Returns a dictionary containing field names and values for the given
+    instance
+    """
+    from django.db.models.fields import DateField,DecimalField
+    from django.db.models.fields.related import ForeignKey
+    if key_format:
+        assert '%s' in key_format, 'key_format must contain a %s'
+    key = lambda key: key_format and key_format % key or key
+
+    pk = instance._get_pk_val()
+    d = {}
+    for field in instance._meta.fields:
+        attr = field.name
+        value = getattr(instance, attr)
+        if value is not None:
+            if isinstance(field, ForeignKey):
+                value = value._get_pk_val()
+            elif isinstance(field, DateField):
+                value = value.strftime('%Y-%m-%d %H:%M:%S')
+            elif isinstance(field, DecimalField):
+                value = float(value)
+                               
+        d[key(attr)] = value
+    for field in instance._meta.many_to_many:
+        if pk:
+            d[key(field.name)] = [
+                obj._get_pk_val()
+                for obj in getattr(instance, field.attname).all()]
+        else:
+            d[key(field.name)] = []
+    return d
+
 @login_required
+@ajax_request
 def account(request):
     id=request.GET.get('id')
     acc = Account.objects.get(id=id)
+    from django.core import serializers
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
-
-    res.append({"id":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname,'vpn_ip_address':'',
-                    'status':acc.status,'ipn_ip_address':'','city':'','street':'','nas_id':'','email':'','comment':'',
-                    'ballance':float(acc.ballance),'credit':float(acc.credit),'created':'02.11.1984 00:00:00',
-                    })
+    #data = serializers.serialize("json", [acc], ensure_ascii=False, fields=['username'])
+    data=instance_dict(acc)
+    print data
+    #res.append({"id":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname,'vpn_ip_address':'',
+    #                'status':acc.status,'ipn_ip_address':'','city':'','street':'','nas_id':'','email':'','comment':'',
+    #                'ballance':float(acc.ballance),'credit':float(acc.credit),'created':'02.11.1984 00:00:00',
+    #                })
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
+    return {"records": data}
 
 @ajax_request
 @login_required

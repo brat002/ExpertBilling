@@ -521,8 +521,8 @@ class Account(models.Model):
     suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
     created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True, default='')
     #NOTE: baLance
-    ballance=models.FloatField(u'Баланс', blank=True, default=0)
-    credit = models.FloatField(verbose_name=u'Размер кредита', help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, default=0)
+    ballance=models.DecimalField(u'Баланс', blank=True, default=0,decimal_places=10,max_digits=20)
+    credit = models.DecimalField(verbose_name=u'Размер кредита',decimal_places=10,max_digits=20, help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
     balance_blocked = models.BooleanField(blank=True, default=False)
     ipn_speed = models.CharField(max_length=96, blank=True, default="")
@@ -567,6 +567,10 @@ class Account(models.Model):
         else: 
             return False    
     
+    #def toJSON(self):
+    #    import simplejson
+    #    return simplejson.dumps(dict([(attr, getattr(self, attr)) for attr in [f.name for f in self._meta.fields]]))
+
     class Admin:
         ordering = ['user']
         #list_display = ('user', 'vpn_ip_address', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')

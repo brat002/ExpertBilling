@@ -291,7 +291,7 @@ Ext.onReady(function(){
                                                                 items: [
                                                                     {
                                                                         xtype: 'textfield',
-                                                                        name: 'login',
+                                                                        name: 'username',
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Логин'
                                                                     },
