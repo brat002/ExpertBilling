@@ -255,7 +255,10 @@ Ext.onReady(function(){
                                                 {name: 'username', type:'string'},
                                                 {name: 'fullname', type: 'string'},
                                                         {name: 'ballance', type: 'float'},
-                                                        {name: 'nas_id', type: 'int'}
+                                                        {name: 'nas_id', type: 'int'},
+                                                        'vpn_ip_address', 'status', 'ipn_ip_address','username',
+                                                        'password','id', 'city', 'street', 'credit', 'nas',
+                                                        'created','fullname', 'email', 'ballance','room'
                                             ]
                                         }),     
                                         items:{

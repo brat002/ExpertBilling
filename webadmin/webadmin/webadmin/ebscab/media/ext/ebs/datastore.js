@@ -63,7 +63,7 @@ EBS.store.accounts = new Ext.data.JsonStore({
     }),    
     fields: ['vpn_ip_address', 'status', 'ipn_ip_address','username',
             'password','id', 'city', 'street', 'credit', 'nas',
-            'created','fullname', 'email', 'ballance'],
+            'created','fullname', 'email', 'ballance','room'],
     root: 'records',
     remoteSort:true,
     sortInfo:{

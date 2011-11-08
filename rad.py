@@ -1678,7 +1678,7 @@ class HandleSAcct(HandleSBase):
                 logger.warning("Nas, presented in Class attribute %s can`t be converted to int", (nas_int_id, ))
                 nas_int_id=None
         #if 0: assert isinstance(nas, NasData)
-        logger.info('ACCT: Extracting subacc_id, speed from cookie: subacc=%s speed=%s', (subacc_id, session_speed,))
+        logger.info('ACCT: Extracting subacc_id, speed from cookie: subacc=%s ipinuse=%s nas_int_id=%s speed=%s', (subacc_id, ipinuse_id, nas_int_id, session_speed,))
         self.replypacket.secret=str(nasses[0].secret)  
         if self.packetobject.get('Acct-Status-Type', [''])[0]=='Accounting-On':
             self.replypacket.code = packet.AccountingResponse
