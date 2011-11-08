@@ -1277,6 +1277,7 @@ class CardsChildEbs(ebsTableWindow):
 
     
     def fix(self, nodes):
+        self.genericThread.terminate()
         self.connection.commit()
         nodes=nodes.toList()
         #print nodes
