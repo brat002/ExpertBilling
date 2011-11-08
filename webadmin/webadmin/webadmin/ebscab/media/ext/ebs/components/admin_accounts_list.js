@@ -340,7 +340,7 @@ Ext.onReady(function(){
                                                                         fieldLabel: 'Пароль'
                                                                     },
                                                                     {
-                                                                        xtype: 'datefield',
+                                                                        xtype: 'xdatetime',
                                                                         name: 'created',
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Дата создания'
@@ -428,7 +428,7 @@ Ext.onReady(function(){
                                                                         fieldLabel: 'Кем выдан'
                                                                     },
                                                                     {
-                                                                        xtype: 'datefield',
+                                                                        xtype: 'xdatetime',
                                                                         name: 'passport_date',
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Когда выдан'
