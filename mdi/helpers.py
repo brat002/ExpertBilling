@@ -31,7 +31,7 @@ class GenericThread(QtCore.QThread):
         data=self.connection.sql(self.sql)
         print "get response"
         self.emit(QtCore.SIGNAL("refresh(QVariant)"), data)
-        self.terminate()
+        #self.terminate()
         
 class AccountsRefreshThread(QtCore.QThread):
     def __init__(self, connection, tarif_id):

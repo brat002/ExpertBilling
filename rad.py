@@ -1306,7 +1306,29 @@ class HandleHotSpotAuth(HandleSAuth):
         user_name = str(self.packetobject['User-Name'][0])
         mac=str(self.packetobject['Calling-Station-Id'][0]).lower() or str(self.packetobject['User-Name'][0]).lower()
         ip=str(self.packetobject['Mikrotik-Host-IP'][0])
+        self.cursor.execute("SELECT pin FROM billservice_card WHERE sold IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
+        pin = self.cursor.fetchone()
         acc=None
+        if pin:
+            self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet, %s::text) AS 
+                             A(account_id int, subaccount_id int, "password" character varying, nas_id int, tarif_id int, account_status int, 
+                             balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet,ipn_ip_address inet,ipn_mac_address text,access_type text)
+                            """, (user_name, pin[0], ip,mac))
+    
+            acct_card = self.cursor.fetchone()
+            self.cursor.connection.commit()
+            #self.cursor.close()
+    
+            acc = acct_card
+            
+            if acct_card is None:
+                logger.warning("Card with login %s was not found", user_name)
+                #sqlloggerthread.add_message(nas=nas.id, type="AUTH_BAD_USER", service=self.access_type, cause=u'Пользователь HotSpot с логином %s не найден или не может быть активирован.' % (user_name,), datetime=self.datetime)
+                #return self.auth_NA(authobject)
+            
+            acct_card = CardActivateData(*acct_card)
+            acc = acct_card            
+        
         ["HotSpot", 'HotSpotIp+Mac', 'HotSpotIp+Password','HotSpotMac','HotSpotMac+Password']
         """
         HotSpot - оставляем логику по умолчанию
@@ -1316,7 +1338,7 @@ class HandleHotSpotAuth(HandleSAuth):
         """
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type)
         subacc = self.caches.subaccount_cache.by_username.get(user_name)
-        if subacc:
+        if not acc and subacc:
             acc=self.caches.account_cache.by_id.get(subacc.account_id)
             if not acc.access_type=='HotSpot':
                 acc=None
@@ -1342,38 +1364,41 @@ class HandleHotSpotAuth(HandleSAuth):
             """
             Если не нашли совпадений ранее - пытаемся найти карту, чтобы активировать нового абонента
             """
-            self.cursor.execute("SELECT pin FROM billservice_card WHERE sold IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
-            pin = self.cursor.fetchone()
-            if pin == None:
-                sqlloggerthread.add_message(nas=nas.id, type="CARD_USER_NOT_FOUND", service=self.access_type, cause=u'Карта/пользователь с логином %s не найдены ' % (user_name,), datetime=self.datetime)
-                self.cursor.close()
-                return self.auth_NA(authobject)
-            pin = pin[0]
+           
+            sqlloggerthread.add_message(nas=nas.id, type="CARD_USER_NOT_FOUND", service=self.access_type, cause=u'Карта/пользователь с логином %s ip %s и mac %s не найдены ' % (user_name, ip, mac), datetime=self.datetime)
+            self.cursor.close()
+            return self.auth_NA(authobject)
+
         else:
-            pin = subacc.password
+            if subacc:
+                pin = subacc.password
+            else:
+                pin = acc.password
 
 
 
         #print user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])
-        if not acc and pin:
-            self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet, %s::text) AS 
-                             A(account_id int, subaccount_id int, "password" character varying, nas_id int, tarif_id int, account_status int, 
-                             balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet,ipn_ip_address inet,ipn_mac_address text,access_type text)
-                            """, (user_name, pin, ip,mac))
-    
-            acct_card = self.cursor.fetchone()
-            self.cursor.connection.commit()
-            #self.cursor.close()
-    
-            acc = acct_card
-            
-            if acct_card is None:
-                logger.warning("Unknown User %s", user_name)
-                sqlloggerthread.add_message(nas=nas.id, type="AUTH_BAD_USER", service=self.access_type, cause=u'Пользователь HotSpot с логином %s не найден или не может быть активирован.' % (user_name,), datetime=self.datetime)
-                return self.auth_NA(authobject)
-            
-            acct_card = CardActivateData(*acct_card)
-            acc = acct_card
+    #===========================================================================
+    #    if not acc and pin:
+    #        self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet, %s::text) AS 
+    #                         A(account_id int, subaccount_id int, "password" character varying, nas_id int, tarif_id int, account_status int, 
+    #                         balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet,ipn_ip_address inet,ipn_mac_address text,access_type text)
+    #                        """, (user_name, pin, ip,mac))
+    # 
+    #        acct_card = self.cursor.fetchone()
+    #        self.cursor.connection.commit()
+    #        #self.cursor.close()
+    # 
+    #        acc = acct_card
+    #        
+    #        if acct_card is None:
+    #            logger.warning("Unknown User %s", user_name)
+    #            sqlloggerthread.add_message(nas=nas.id, type="AUTH_BAD_USER", service=self.access_type, cause=u'Пользователь HotSpot с логином %s не найден или не может быть активирован.' % (user_name,), datetime=self.datetime)
+    #            return self.auth_NA(authobject)
+    #        
+    #        acct_card = CardActivateData(*acct_card)
+    #        acc = acct_card
+    #===========================================================================
         
         if str(acc.access_type) in ['HotSpot','HotSpotIp+Password', 'HotSpotMac+Password']:
             authobject.plainusername = str(user_name)
@@ -1422,7 +1447,7 @@ class HandleHotSpotAuth(HandleSAuth):
                    if not vpn_ip_address:
                        pool_id, vpn_ip_address = self.find_free_ip(pool_id)
 
-
+                   self.cursor.connection.commit()
                    if not vpn_ip_address:
                         logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc_id, pool_id))
                         sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc_id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
@@ -1433,6 +1458,7 @@ class HandleHotSpotAuth(HandleSAuth):
                    ipinuse_id=self.cursor.fetchone()[0]
                    #vars.cursor.connection.commit()   
                    #vars.cursor_lock.release()
+                   self.cursor.connection.commit()
                             
                except Exception, ex:
                    #vars.cursor_lock.release()
