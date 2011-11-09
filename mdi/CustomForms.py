@@ -1662,10 +1662,11 @@ class TemplatesWindow(QtGui.QMainWindow):
         data=''
         if id==1:
 
-            account = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0].id
+            account = self.connection.get("SELECT * FROM billservice_account LIMIT 1" )
+            print account
             #tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
             try:
-                data=templ.render_unicode(accounts=[account], connection=self.connection)
+                data=templ.render_unicode(account=account, connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
         if id==2:
