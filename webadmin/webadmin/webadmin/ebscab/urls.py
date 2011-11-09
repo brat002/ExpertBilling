@@ -16,6 +16,7 @@ urlpatterns = patterns('',
      #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
      (r'^helpdesk/', include('helpdesk.urls')),
     (r'^ext/', include('extjs.urls')),
+    (r'^ebsadmin/', include('ebsadmin.urls')),
 )
 
 urlpatterns += patterns('billservice.views',
@@ -46,14 +47,9 @@ urlpatterns += patterns('billservice.views',
      (r'^traffic/transaction/info/$', 'traffic_transaction'),
      (r'^one/time/history/info/$', 'one_time_history'),
      (r'^news/delete/$', 'news_delete'),
-     (r'^jsonaccounts$', 'jsonaccounts'),
-     (r'^nasses/$', 'nasses'),
-     (r'^account/$', 'account'),
-     (r'^simplelogin/$', 'simplelogin'),
-     (r'^grid/$', 'grid'),
-     (r'^transactiontypes/$', 'transactiontypes'),
-     
 )
+
+
 
 urlpatterns += patterns('service_monitor.views',
                         #(?P<id>\d+)

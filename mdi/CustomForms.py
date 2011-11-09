@@ -3401,7 +3401,9 @@ class TransactionForm(QtGui.QDialog):
 
         try:
             
+            
             transaction.id = self.connection.save(transaction, "billservice_transaction")
+            print "transaction.id",transaction.id
             self.transaction = transaction
             self.connection.commit()
             self.pushButton_pay.setDisabled(True)

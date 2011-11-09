@@ -10,7 +10,7 @@ ADMIN_URLS = (
 'admin-media',
 '/accounts/logout',
 '/ext/',
-'/jsonaccounts'
+'/ebsadmin/'
 
 )
 
