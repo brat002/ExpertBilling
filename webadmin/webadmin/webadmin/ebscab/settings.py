@@ -120,7 +120,8 @@ INSTALLED_APPS = (
     'lib',
     'service_monitor',
     'testcases',
-    'compress'
+    'compress',
+    'ebsadmin'
     #'extdjango'
 )
 

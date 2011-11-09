@@ -246,7 +246,7 @@ Ext.onReady(function(){
                                         windowTitle:'Account details',
                                         autoScroll:true,
                                         layout:'anchor',
-                                        url:'/account/', 
+                                        url:'/ebsadmin/account/', 
                                         method:'GET',
                                         reader: new Ext.data.JsonReader({
                                             idProperty: 'id',          
@@ -661,7 +661,7 @@ Ext.onReady(function(){
             xtype: 'form',
             id: 'account-info1',
             windowTitle:'Account details',
-            url:'/account/', 
+            url:'/ebsadmin/account/', 
             method:'GET',
             reader: new Ext.data.JsonReader({
                 idProperty: 'id',          
@@ -716,7 +716,7 @@ Ext.onReady(function(){
                                         store:new Ext.data.Store({
                                         	autoLoad:true,
                                             proxy: new Ext.data.HttpProxy({
-                                                url: '/nasses/',
+                                                url: '/ebsadmin/nasses/',
                                                 method:'GET',
                                                 
                                             }),
@@ -778,7 +778,7 @@ var trtype = new Ext.form.ComboBox({
     store:new Ext.data.Store({
     	autoLoad:true,
         proxy: new Ext.data.HttpProxy({
-            url: '/transactiontypes/',
+            url: '/ebsadmin/transactiontypes/',
             method:'GET',
             
         }),

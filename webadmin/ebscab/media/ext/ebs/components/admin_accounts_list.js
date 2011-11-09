@@ -246,16 +246,57 @@ Ext.onReady(function(){
                                         windowTitle:'Account details',
                                         autoScroll:true,
                                         layout:'anchor',
-                                        url:'/account/', 
-                                        method:'GET',
+                                        url:'/ebsadmin/account/', 
+                                        save_url:'/ebsadmin/account/save/',
+                                        standardSubmit: false,
+                                        method:'POST',
+                                        
                                         reader: new Ext.data.JsonReader({
                                             idProperty: 'id',          
                                             root: 'records',             
                                             fields: [
-                                                {name: 'username', type:'string'},
-                                                {name: 'fullname', type: 'string'},
-                                                        {name: 'ballance', type: 'float'},
-                                                        {name: 'nas_id', type: 'int'}
+                                                {name: 'allow_webcab', type:'boolean'},
+												{name: 'house', type:'int'},
+												{name: 'street', type:'int'},
+												{name: 'postcode', type:'int'},
+												{name: 'suspended', type:'int'},
+												{name: 'id', type:'int'},
+												{name: 'city', type:'int'},
+												{name: 'password', type:'string'},
+												{name: 'ballance', type:'float'},
+												{name: 'email', type:'string'},
+												{name: 'username', type:'string'},
+												{name: 'entrance', type:'string'},
+												{name: 'vlan', type:'int'},
+												{name: 'allow_expresscards', type:'boolean'},
+												{name: 'disabled_by_limit', type:'boolean'},
+												{name: 'balance_blocked', type:'boolean'},
+												{name: 'room', type:'string'},
+												{name: 'created', type:'date', dateFormat: Date.patterns.ISO8601Long},
+												{name: 'region', type:'string'},
+												{name: 'credit', type:'float'},
+												{name: 'ipn_status', type:'boolean'},
+												{name: 'house_bulk', type:'string'},
+												{name: 'fullname', type:'string'},
+												{name: 'passport', type:'string'},
+												{name: 'passport_given', type:'string'},
+												{name: 'phone_h', type:'string'},
+												{name: 'phone_m', type:'string'},
+												{name: 'contactperson_phone', type:'string'},
+												{name: 'comment', type:'string'},
+												{name: 'row', type:'int'},
+												{name: 'elevator_direction', type:'string'},
+												{name: 'contactperson', type:'string'},
+												{name: 'status', type:'int'},
+												{name: 'passport_date', type:'string'},
+												{name: 'contract' , type:'string'},
+												{name: 'systemuser', type:'int'},
+												{name: 'last_balance_null', type:'date', dateFormat: Date.patterns.ISO8601Long},
+												{name: 'entrance_code', type:'string'},
+												{name: 'private_passport_number', type:'string'},
+												{name: 'allow_ipn_with_null', type:'boolean'},
+												{name: 'allow_ipn_with_minus', type:'boolean'},
+												{name: 'allow_ipn_with_block', type:'boolean'},
                                             ]
                                         }),     
                                         items:{
@@ -289,9 +330,13 @@ Ext.onReady(function(){
                                                                 width: 400,
                                                                 title: 'Учётные данные',
                                                                 items: [
+																	{
+																	    xtype: 'hidden',
+																	    name: 'id',
+																	},
                                                                     {
                                                                         xtype: 'textfield',
-                                                                        name: 'login',
+                                                                        name: 'username',
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Логин'
                                                                     },
@@ -302,7 +347,7 @@ Ext.onReady(function(){
                                                                         fieldLabel: 'Пароль'
                                                                     },
                                                                     {
-                                                                        xtype: 'datefield',
+                                                                        xtype: 'xdatetime',
                                                                         name: 'created',
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Дата создания'
@@ -402,10 +447,19 @@ Ext.onReady(function(){
                                                                         fieldLabel: 'Район'
                                                                     },
                                                                     {
-                                                                        xtype: 'combo',
+                                                                        xtype: 'xcombocity',
                                                                         name: 'city',
+                                                                        hiddenName: "city",
                                                                         anchor: '100%',
-                                                                        fieldLabel: 'Город'
+                                                                        fieldLabel: 'Город',
+                                                                        listeners:{
+                                                                        	select: function(combo, record, index) {
+                                                                        		
+                                                                        		Ext.getCmp('street').clearValue();
+                                                                        		Ext.getCmp('street').store.load({params:{city_id: this.value}});
+                                                                        		
+                                                                              },
+                                                                       },
                                                                     },
                                                                     {
                                                                         xtype: 'textfield',
@@ -414,14 +468,25 @@ Ext.onReady(function(){
                                                                         fieldLabel: 'Подъезд'
                                                                     },
                                                                     {
-                                                                        xtype: 'combo',
+                                                                        xtype: 'xcombostreet',
                                                                         name: 'street',
+                                                                        id:'street',
+                                                                        hiddenName: "street",
                                                                         anchor: '100%',
-                                                                        fieldLabel: 'Улица'
+                                                                        fieldLabel: 'Улица',
+                                                                        listeners:{
+                                                                        	select: function(combo, record, index) {
+                                                                        		
+                                                                        		Ext.getCmp('house').clearValue();
+                                                                        		Ext.getCmp('house').store.load({params:{street_id: this.value}});
+                                                                              },
+                                                                       },
                                                                     },
                                                                     {
-                                                                        xtype: 'combo',
+                                                                        xtype: 'xcombohouse',
                                                                         name: 'house',
+                                                                        id:'house',
+                                                                        hiddenName: "house",
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Дом'
                                                                     },
@@ -477,8 +542,9 @@ Ext.onReady(function(){
                                                                 items: [
                                                                     {
                                                                         xtype: 'textfield',
-                                                                        name: 'balance',
+                                                                        name: 'ballance',
                                                                         anchor: '100%',
+                                                                        disabled: true,
                                                                         fieldLabel: 'Баланс'
                                                                     },
                                                                     {
@@ -585,20 +651,24 @@ Ext.onReady(function(){
                                                                 title: 'Параметры',
                                                                 items: [
                                                                     {
-                                                                        xtype: 'combo',
+                                                                        xtype: 'xcomboaccountstatus',
                                                                         name: 'status',
+                                                                        hiddenName: "status",
                                                                         anchor: '100%',
-                                                                        fieldLabel: 'Статус'
+                                                                        fieldLabel: 'Статус',
+                                                                       
                                                                     },
                                                                     {
-                                                                        xtype: 'combo',
-                                                                        name: 'manager',
+                                                                        xtype: 'xcombosystemuser',
+                                                                        name: 'systemuser',
+                                                                        hiddenName: "systemuser",
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Персональный менеджер'
                                                                     },
                                                                     {
                                                                         xtype: 'combo',
                                                                         name: 'group',
+                                                                        hiddenName: "group",
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Группа'
                                                                     }
@@ -619,143 +689,7 @@ Ext.onReady(function(){
         //console.log(form);
     }
     
-    EBS.forms.ebs_accountsPanel.edit_user1 = {
-            xtype: 'form',
-            id: 'account-info1',
-            windowTitle:'Account details',
-            url:'/account/', 
-            method:'GET',
-            reader: new Ext.data.JsonReader({
-                idProperty: 'id',          
-                root: 'records',             
-                fields: [
-                    {name: 'username', type:'string'},
-                    {name: 'fullname', type: 'string'},
-                            {name: 'ballance', type: 'float'},
-                            {name: 'nas_id', type: 'int'}
-                ]
-            }),     
-            items:{
-                id:'edit_user1_form',
-                frame:false,
-                border:false,
 
-               // columnWidth: 0.4,
-                //autoHeight: true,
-                //defaults: {width: 140, border:false},
-                // Can be autogenerated
-                items: [{
-                            layout:'column',
-                            items:[{
-                                columnWidth:.5,
-                                layout: 'form',
-                                defaultType: 'textfield',
-                                items: [{
-                                        fieldLabel: 'Username',
-                                        name: 'username',
-                                        xtype:'textfield',
-                                        minLength: 3, maxLength: 32
-                                    },{
-                                        fieldLabel: 'Fullname',
-                                        name: 'fullname',
-                                        xtype:'textfield',
-                                        minLength: 3, maxLength: 90
-                                    },{
-                                        fieldLabel: 'E-mail',
-                                        name: 'email',
-                                        xtype:'textfield',
-                                        vtype:'email'
-                                    },{
-                                        fieldLabel: 'NAS',
-                                        name: 'nas_id',
-                                        xtype:'combo',
-                                        displayField: 'name',
-                                        valueField: 'nas_id', 
-                                        mode: 'remote',
-                                        
-                                        triggerAction: 'all',
-                                        typeAhead: true,
-                                        store:new Ext.data.Store({
-                                        	autoLoad:true,
-                                            proxy: new Ext.data.HttpProxy({
-                                                url: '/nasses/',
-                                                method:'GET',
-                                                
-                                            }),
-                                            reader: new Ext.data.JsonReader({
-                                                root: 'records'
-                                            }, [{
-                                                name: 'nas_id'
-                                            }, {
-                                                name: 'name'
-                                            }])
-                                        }),
-                                        	
-                                        
-                                    }
-                                    
-                                     ]
-                            },{
-                                columnWidth:.5,
-                                layout: 'form',
-                                items: [{
-                                        fieldLabel: 'ballance',
-                                        name: 'ballance',
-                                        xtype:'textfield'
-                                    },{
-                                        fieldLabel: 'Created',
-                                        name: 'created',
-                                        xtype:'displayfield'
-                                    }]
-                            }]
-                        },{
-                            xtype:'htmleditor',
-                            id:'comment',
-                            fieldLabel:'Comment',
-                            height:100
-                            //autoWidth:true
-                        }]
-
-
-
-               }
-		//form.load({url:'/account/', method:'GET',params:{'id':selection.items[0].id}} );
-          };
-EBS.forms.ebs_accountsPanel.edit_user1_submitAction =  function(object, event){
-//form = object.ownerCt;
-//console.log(form);
-}
-
-var trtype = new Ext.form.ComboBox({
-    name: 'transaction_type_id',
-    id:'transaction_type_id',
-    anchor: '100%',
-    fieldLabel: 'Тип платежа',
-    displayField: 'name',
-    valueField: 'id', 
-    mode: 'remote',
-    editable:false,
-    triggerAction: 'all',
-    typeAhead: true,
-    store:new Ext.data.Store({
-    	autoLoad:true,
-        proxy: new Ext.data.HttpProxy({
-            url: '/transactiontypes/',
-            method:'GET',
-            
-        }),
-        
-    	
-        reader: new Ext.data.JsonReader({
-            root: 'records'
-        }, [{
-            name: 'id'
-        }, {
-            name: 'name'
-        }])
-    }),
-
-});trtype.setValue('7', true);
 
     EBS.forms.ebs_accountsPanel.edit_credit = {
                                         xtype: 'form',
@@ -777,7 +711,11 @@ var trtype = new Ext.form.ComboBox({
                                                     //height: 231,
                                                     title: 'Параметры платежа',
                                                     labelWidth: 150,
-                                                    items: [trtype,
+                                                    items: [{
+                                                    		xtype:'xtrtypecombo',
+                                                    		name:'transaction_type_id',
+                                                    		id:'transaction_type_id',
+                                                    	},
                                                         
                                                         {
                                                             xtype: 'numberfield',
