@@ -1,8 +1,8 @@
 # -*- encoding: utf-8 -*-
 from django import forms
 from datetime import datetime, date
-
-from billservice.models import Tariff, TPChangeRule
+from django.forms import ModelForm
+from billservice.models import Tariff, TPChangeRule, Account
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -50,3 +50,8 @@ class StatististicForm(forms.Form):
     date_from = forms.DateField(label=u'с даты', input_formats=('%d/%m/%Y',), required = False)
     date_to = forms.DateField(label=u'по дату', input_formats=('%d/%m/%Y',), required = False)
     
+    
+
+class AccountForm(ModelForm):
+    class Meta:
+        model = Account

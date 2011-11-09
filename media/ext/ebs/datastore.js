@@ -58,7 +58,7 @@ EBS.store.accounts = new Ext.data.JsonStore({
     paramsAsHash: true,
     autoLoad: {params:{start:0, limit:100}},
     proxy: new Ext.data.HttpProxy({
-        url: '/jsonaccounts',
+        url: '/ebsadmin/accounts/',
         method:'GET',
     }),    
     fields: ['vpn_ip_address', 'status', 'ipn_ip_address','username',
