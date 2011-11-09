@@ -1290,7 +1290,7 @@ class settlement_period_service_dog(Thread):
                             cur.connection.commit()
 
                                     
-                        if (shedl.prepaid_traffic_accrued is None or shedl.prepaid_traffic_accrued<period_start) and acc.traffic_transmit_service_id:                          
+                        if (shedl.prepaid_traffic_accrued is None or shedl.prepaid_traffic_accrued<period_start or acc.acctf_id != shedl.accounttarif_id) and acc.traffic_transmit_service_id:                          
                             #Начислить новый предоплаченный трафик
                             #TODO:если начисляем первый раз - начислять согласно коэффициенту оставшейся части расчётного периода
                             delta_coef=1
@@ -1310,7 +1310,7 @@ class settlement_period_service_dog(Thread):
                             cur.connection.commit()
 
                         #Radius prepaid
-                        if (shedl.prepaid_radius_traffic_accrued is None or shedl.prepaid_radius_traffic_accrued<period_start) and acc.radius_traffic_transmit_service_id and radius_traffic:                          
+                        if (shedl.prepaid_radius_traffic_accrued is None or shedl.prepaid_radius_traffic_accrued<period_start or acc.acctf_id != shedl.accounttarif_id) and acc.radius_traffic_transmit_service_id and radius_traffic:                          
                             #Начислить новый предоплаченный трафик
                             #TODO:если начисляем первый раз - начислять согласно коэффициенту оставшейся части расчётного периода
                             delta_coef=1
@@ -1331,7 +1331,7 @@ class settlement_period_service_dog(Thread):
                                         (acc.account_id, acc.acctf_id, now))                            
                             cur.connection.commit()        
 
-                        if (shedl.prepaid_time_accrued is None or shedl.prepaid_time_accrued<period_start) and acc.time_access_service_id:
+                        if (shedl.prepaid_time_accrued is None or shedl.prepaid_time_accrued<period_start or acc.acctf_id != shedl.accounttarif_id) and acc.time_access_service_id:
                             delta_coef=1
                             if period_end and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta  and vars.USE_COEFF_FOR_PREPAID==True:
                                 delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)     
