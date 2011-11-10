@@ -205,6 +205,7 @@ Ext.onReady(function(){
            if(true){
                         winCmp = new Ext.Panel({
                             id:window_key+id,
+                            instance_id:id,
                             applyTo:Ext.get('body'),
                             //width:500,
                             //height:300,
