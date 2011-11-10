@@ -252,6 +252,7 @@ Ext.onReady(function(){
                                         frame:false,
                                         border:false,
                                         method:'POST',
+                                        waitMsgTarget:true,
                                         
                                         reader: new Ext.data.JsonReader({
                                             idProperty: 'id',          
@@ -305,21 +306,23 @@ Ext.onReady(function(){
                                             id:'edit_user_form',
                                             xtype: 'tabpanel',
                                             activeTab: 0,
+                                            autoHeight:true,
                                             //width: 600,
                                             //height: 250,
-                                            plain: true,
+                                            //plain: true,
                                             
                                             defaults :{
-                                                autoScroll: true,
+                                                //autoScroll: true,
                                                 bodyPadding: 10
                                             },
-                                            items: [{
+                                            items: [
+												
+                                                {
                                                 xtype: 'container',
                                                 autoScroll: true,
                                                 
-                                                title:'ololo',
+                                                title:'Параметры аккаунта',
                                                 layout: 'column',
-                                                animCollapse: false,
                                                 frame:false,
                                                 border:false,                                                
                                                 bodyStyle: {
@@ -687,10 +690,54 @@ Ext.onReady(function(){
                                                 ]
                                                 },
                                                 {
-                                                    xtype: 'container',
-                                                    title: 'group',
-                                                
-                                                },
+												    xtype: 'container',
+												    title: 'Субаккаунты',
+	                                                frame:true,
+	                                                border:false,  
+	                                                //layout: 'fit',
+	                                                items:[
+															{
+															    xtype: 'grid',
+															    name: 'subaccounts',
+															    store:EBS.store.subaccounts,
+															    autoLoad:true,
+															    anchor: '100%',
+															    //fieldLabel: 'Логин',
+															    columns:[
+																		{
+																		    header: 'id',
+																		    //name: 'password11',
+																		    dataIndex: 'id',
+																		    //anchor: '100%',
+																		    //fieldLabel: 'Пароль'
+																		},
+																		{
+																		    header: 'Имя пользователя',
+																		    //name: 'password11',
+																		    dataIndex: 'username',
+																		    //anchor: '100%',
+																		    //fieldLabel: 'Пароль'
+																		},
+																		{
+																		    header: 'VPN IP адрес',
+																		    //name: 'password11',
+																		    dataIndex: 'vpn_ip_address',
+																		    //anchor: '100%',
+																		    //fieldLabel: 'Пароль'
+																		},
+																		{
+																		    header: 'IPN IP адрес',
+																		    //name: 'password11',
+																		    dataIndex: 'ipn_ip_address',
+																		    //anchor: '100%',
+																		    //fieldLabel: 'Пароль'
+																		},
+															             ]
+															    	
+															},
+															
+	                                                       ]
+												},
                                                 ]
 
 
