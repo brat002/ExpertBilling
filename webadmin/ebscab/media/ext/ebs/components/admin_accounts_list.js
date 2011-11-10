@@ -242,7 +242,7 @@ Ext.onReady(function(){
 /* ACCOUNTS FORMS*/
     EBS.forms.ebs_accountsPanel.edit_user = {
                                         xtype: 'form',
-                                        id: 'account-info',
+                                        //id: 'account-info',
                                         windowTitle:'Account details',
                                         autoScroll:true,
                                         layout:'fit',
@@ -252,7 +252,6 @@ Ext.onReady(function(){
                                         frame:false,
                                         border:false,
                                         method:'POST',
-                                        waitMsgTarget:true,
                                         
                                         reader: new Ext.data.JsonReader({
                                             idProperty: 'id',          
@@ -303,26 +302,24 @@ Ext.onReady(function(){
                                             ]
                                         }),     
                                         items:{
-                                            id:'edit_user_form',
+                                            //id:'edit_user_form',
                                             xtype: 'tabpanel',
                                             activeTab: 0,
-                                            autoHeight:true,
                                             //width: 600,
                                             //height: 250,
-                                            //plain: true,
+                                            plain: true,
                                             
                                             defaults :{
-                                                //autoScroll: true,
+                                                autoScroll: true,
                                                 bodyPadding: 10
                                             },
-                                            items: [
-												
-                                                {
+                                            items: [{
                                                 xtype: 'container',
                                                 autoScroll: true,
                                                 
-                                                title:'Параметры аккаунта',
+                                                title:'Учётные данные',
                                                 layout: 'column',
+                                                animCollapse: false,
                                                 frame:false,
                                                 border:false,                                                
                                                 bodyStyle: {
@@ -466,8 +463,8 @@ Ext.onReady(function(){
                                                                         listeners:{
                                                                         	select: function(combo, record, index) {
                                                                         		
-                                                                        		Ext.getCmp('street').clearValue();
-                                                                        		Ext.getCmp('street').store.load({params:{city_id: this.value}});
+                                                                        		this.findParentByType('form').getForm().findField('street').clearValue();
+																				this.findParentByType('form').getForm().findField('street').store.load({params:{city_id: this.value}});
                                                                         		
                                                                               },
                                                                        },
@@ -481,22 +478,24 @@ Ext.onReady(function(){
                                                                     {
                                                                         xtype: 'xcombostreet',
                                                                         name: 'street',
-                                                                        id:'street',
+                                                                        //id:'street',
                                                                         hiddenName: "street",
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Улица',
                                                                         listeners:{
                                                                         	select: function(combo, record, index) {
                                                                         		
-                                                                        		Ext.getCmp('house').clearValue();
-                                                                        		Ext.getCmp('house').store.load({params:{street_id: this.value}});
-                                                                              },
-                                                                       },
+                                                                        		this.findParentByType('form').getForm().findField("house").clearValue();
+																				this.findParentByType('form').getForm().findField("house").store.load({params:{street_id: this.value}});                                                                              },
+                                                                       
+
+                                                                        },
+		                                                                  
                                                                     },
                                                                     {
                                                                         xtype: 'xcombohouse',
                                                                         name: 'house',
-                                                                        id:'house',
+                                                                        //id:'house',
                                                                         hiddenName: "house",
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Дом'
@@ -690,54 +689,10 @@ Ext.onReady(function(){
                                                 ]
                                                 },
                                                 {
-												    xtype: 'container',
-												    title: 'Субаккаунты',
-	                                                frame:true,
-	                                                border:false,  
-	                                                //layout: 'fit',
-	                                                items:[
-															{
-															    xtype: 'grid',
-															    name: 'subaccounts',
-															    store:EBS.store.subaccounts,
-															    autoLoad:true,
-															    anchor: '100%',
-															    //fieldLabel: 'Логин',
-															    columns:[
-																		{
-																		    header: 'id',
-																		    //name: 'password11',
-																		    dataIndex: 'id',
-																		    //anchor: '100%',
-																		    //fieldLabel: 'Пароль'
-																		},
-																		{
-																		    header: 'Имя пользователя',
-																		    //name: 'password11',
-																		    dataIndex: 'username',
-																		    //anchor: '100%',
-																		    //fieldLabel: 'Пароль'
-																		},
-																		{
-																		    header: 'VPN IP адрес',
-																		    //name: 'password11',
-																		    dataIndex: 'vpn_ip_address',
-																		    //anchor: '100%',
-																		    //fieldLabel: 'Пароль'
-																		},
-																		{
-																		    header: 'IPN IP адрес',
-																		    //name: 'password11',
-																		    dataIndex: 'ipn_ip_address',
-																		    //anchor: '100%',
-																		    //fieldLabel: 'Пароль'
-																		},
-															             ]
-															    	
-															},
-															
-	                                                       ]
-												},
+                                                    xtype: 'container',
+                                                    title: 'group',
+                                                
+                                                },
                                                 ]
 
 
