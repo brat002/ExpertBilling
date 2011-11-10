@@ -56,7 +56,10 @@ def city(request):
 @login_required
 def street(request):
     city_id = request.GET.get('city_id')
-    items = Street.objects.filter(city__id=city_id)
+    if city_id:
+        items = Street.objects.filter(city__id=city_id)
+    else:
+        items = Street.objects.all()
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
@@ -117,7 +120,10 @@ def account_save(request):
 @login_required
 def house(request):
     street_id = request.GET.get('street_id')
-    items = House.objects.filter(street__id=street_id)
+    if street_id:
+        items = House.objects.filter(street__id=street_id)
+    else:
+        items = House.objects.all()
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]

@@ -77,6 +77,26 @@ EBS.store.accounts = new Ext.data.JsonStore({
   }
 });
 
+EBS.store.subaccounts = new Ext.data.JsonStore({
+    //paramsAsHash: true,
+    //autoLoad: {params:{start:0, limit:100}},
+    proxy: new Ext.data.HttpProxy({
+        url: '/ebsadmin/subaccounts/',
+        method:'POST',
+    }),    
+    fields: ['id', 'vpn_ip_address', 'username', ],
+    root: 'records',
+    remoteSort:true,
+    sortInfo:{
+         field:'username',
+         direction:'ASC'
+    },
+    listeners: {
+          load:function(){
+             // console.info('load',this,arguments);
+          }
+  }
+});
 // EOF Accounts
 
 
