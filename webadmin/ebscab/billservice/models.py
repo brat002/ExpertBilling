@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 from django.db import models
-from ebscab.nas.models import Nas, TrafficClass, TrafficClass
+from ebscab.nas.models import Nas, TrafficClass, TrafficClass, Switch
 from django.contrib.auth.models import User
 
 import datetime, time
@@ -1183,6 +1183,39 @@ class SubAccount(models.Model):
     ipn_mac_address = models.CharField(max_length=16)
     vpn_ip_address = models.IPAddressField()
     allow_mac_update = models.BooleanField(default=False)
+    nas = models.ForeignKey(Nas, blank=True, null=True)
+    ipn_added = models.BooleanField()
+    ipn_enabled = models.BooleanField()
+    ipn_sleep = models.BooleanField()
+    need_resync = models.BooleanField()
+    speed = models.TextField(blank=True)
+    switch = models.ForeignKey(Switch, blank=True, null=True)
+    switch_port = models.IntegerField(blank=True, null=True)
+    allow_dhcp = models.BooleanField(blank=True, default=False)
+    allow_dhcp_with_null = models.BooleanField(blank=True, default=False)    
+    allow_dhcp_with_minus = models.BooleanField(blank=True, default=False)    
+    allow_dhcp_with_block = models.BooleanField(blank=True, default=False)    
+    allow_vpn_with_null = models.BooleanField(blank=True, default=False)    
+    allow_vpn_with_minus = models.BooleanField(blank=True, default=False)    
+    allow_vpn_with_block = models.BooleanField(blank=True, default=False)   
+    allow_ipn_with_null = models.BooleanField(blank=True, default=False)    
+    allow_ipn_with_minus = models.BooleanField(blank=True, default=False)    
+    allow_ipn_with_block = models.BooleanField(blank=True, default=False)  
+    associate_pptp_ipn_ip = models.BooleanField(blank=True, default=False)
+    associate_pppoe_ipn_mac = models.BooleanField(blank=True, default=False)
+    ipn_speed = models.TextField(blank=True)
+    vpn_speed = models.TextField(blank=True)
+    allow_addonservice = models.BooleanField(blank=True, default=False)
+    vpn_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_vpn_ipinuse_set')
+    ipn_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_ipn_ipinuse_set')
+    vpn_ipv6_ip_address = models.IPAddressField()
+    vpn_ipv6_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_vpn_ipv6_ipinuse_set')
+    ipn_ipv6_ip_address = models.IPAddressField()
+    vlan = models.IntegerField(blank=True, null=True)
+    allow_mac_update = models.BooleanField(blank=True, default=False)
+    ipv4_ipn_pool = models.ForeignKey(IPPool, blank=True, null=True, related_name='subaccount_ipn_ippool_set')
+    ipv4_vpn_pool = models.ForeignKey(IPPool, blank=True, null=True, related_name='subaccount_vpn_ippool_set')
+  
     
 class BalanceHistory(models.Model):
     account=models.ForeignKey(Account)

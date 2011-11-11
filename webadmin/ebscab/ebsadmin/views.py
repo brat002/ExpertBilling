@@ -1,7 +1,7 @@
 #-*-coding:utf-8 -*-
 
 from lib.decorators import render_to, ajax_request
-from billservice.models import Account, TransactionType, City, Street, House, SystemUser
+from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser
 from nas.models import Nas
 from django.contrib.auth.decorators import login_required
 
@@ -22,6 +22,26 @@ def jsonaccounts(request):
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res}
+
+@ajax_request
+@login_required
+def subaccounts(request):
+    account_id = request.POST.get('account_id')
+    print "subaccount", account_id
+    accounts = SubAccount.objects.filter(account__id=account_id)
+    #print accounts
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for acc in accounts:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(acc))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res}
+
+
 
 @ajax_request
 @login_required
@@ -188,6 +208,27 @@ def instance_dict(instance, key_format=None):
 def account(request):
     id=request.POST.get('id')
     acc = Account.objects.get(id=id)
+    from django.core import serializers
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    #data = serializers.serialize("json", [acc], ensure_ascii=False, fields=['username'])
+    data=instance_dict(acc)
+    #print data
+    #res.append({"id":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname,'vpn_ip_address':'',
+    #                'status':acc.status,'ipn_ip_address':'','city':'','street':'','nas_id':'','email':'','comment':'',
+    #                'ballance':float(acc.ballance),'credit':float(acc.credit),'created':'02.11.1984 00:00:00',
+    #                })
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": data}
+
+@login_required
+@ajax_request
+def subaccount(request):
+    id=request.POST.get('id')
+    acc = SubAccount.objects.get(id=id)
     from django.core import serializers
     #from django.core import serializers
     #from django.http import HttpResponse
