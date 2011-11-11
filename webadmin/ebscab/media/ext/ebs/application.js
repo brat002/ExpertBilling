@@ -519,6 +519,9 @@ Ext.onReady(function(){
     Ext.reg("ebs_base_grid", EBS.base.GridPanel);
     
     
+    
+
+    
     EBS.TrTypeCombo = Ext.extend(Ext.form.ComboBox, {
         initComponent:function() {
            var config = {
@@ -564,8 +567,140 @@ Ext.onReady(function(){
      
 
    });
+
+    EBS.gs=function gridStoreFactory() {
+        return new Ext.data.JsonStore({
+	        	paramsAsHash: true,
+			    //	autoLoad: {params:{start:0, limit:100}},
+   		        	proxy: new Ext.data.HttpProxy({
+   		        		url: '/ebsadmin/subaccounts/',
+   		        		method:'POST',
+   		        	}),    
+   		        	fields: ['switch_port', 'vpn_ipv6_ipinuse', 'ipn_speed', 'allow_dhcp', 'vpn_ip_address', 'allow_dhcp_with_block', 'ipn_sleep', 'speed', 'id', 'allow_addonservice', 'ipn_mac_address', 'allow_dhcp_with_minus', 'ipn_enabled', 'vpn_ipinuse', 'ipv4_vpn_pool', 'nas', 'ipv4_ipn_pool', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'username', 'allow_dhcp_with_null', 'associate_pptp_ipn_ip', 'ipn_ip_address', 'associate_pppoe_ipn_mac', 'allow_ipn_with_block', 'vlan', 'allow_mac_update', 'allow_vpn_with_null', 'ipn_ipv6_ip_address', 'vpn_speed', 'allow_vpn_with_minus', 'password', 'ipn_added', 'account', 'ipn_ipinuse', 'switch', 'allow_vpn_with_block', 'need_resync', 'vpn_ipv6_ip_address'],
+   		        	root: 'records',
+   		        	remoteSort:true,
+   		        	sortInfo:{
+   		        		field:'username',
+   		        		direction:'ASC'
+   		        	},
+
+        	   });
+    }
     
-   Ext.reg('xtrtypecombo', EBS.TrTypeCombo);
+    EBS.SubAccountsGrid = Ext.extend(Ext.grid.GridPanel, {
+        initComponent:function() {
+           var config = {
+            	   xtype:'grid',
+            	   store:new Ext.data.JsonStore({
+       		        	paramsAsHash: true,
+    			    //	autoLoad: {params:{start:0, limit:100}},
+       		        	proxy: new Ext.data.HttpProxy({
+       		        		url: '/ebsadmin/subaccounts/',
+       		        		method:'POST',
+       		        	}),    
+       		        	fields: ['switch_port', 'vpn_ipv6_ipinuse', 'ipn_speed', 'allow_dhcp', 'vpn_ip_address', 'allow_dhcp_with_block', 'ipn_sleep', 'speed', 'id', 'allow_addonservice', 'ipn_mac_address', 'allow_dhcp_with_minus', 'ipn_enabled', 'vpn_ipinuse', 'ipv4_vpn_pool', 'nas', 'ipv4_ipn_pool', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'username', 'allow_dhcp_with_null', 'associate_pptp_ipn_ip', 'ipn_ip_address', 'associate_pppoe_ipn_mac', 'allow_ipn_with_block', 'vlan', 'allow_mac_update', 'allow_vpn_with_null', 'ipn_ipv6_ip_address', 'vpn_speed', 'allow_vpn_with_minus', 'password', 'ipn_added', 'account', 'ipn_ipinuse', 'switch', 'allow_vpn_with_block', 'need_resync', 'vpn_ipv6_ip_address'],
+       		        	root: 'records',
+       		        	remoteSort:true,
+       		        	sortInfo:{
+       		        		field:'username',
+       		        		direction:'ASC'
+       		        	},
+
+            	   }),
+            	   //autoHeight: true,
+            	   //autoWidth: true,
+            	   listeners: {
+ 			          render:function(){
+ 			             // console.info('load',this,arguments);
+ 			        	  
+ 			        	  this.store.load({params:{account_id:this.findParentByType('form').getForm().findField("id").value}});
+ 			          }
+            	   },
+            	   
+            	   autoScroll: true,
+            	   columns:[
+            	            {
+            	            	header:'id',
+            	            	dataIndex:'id',
+            	            	sortable:true
+            	            },
+            	            {
+            	            	header:'Username',
+            	            	dataIndex:'username',
+            	            	sortable:true
+            	            },
+            	            {
+            	            	header:'Сервер доступа',
+            	            	dataIndex:'nas',
+            	            	sortable:true
+            	            },
+            	            {
+            	            	header:'IPv4 VPN',
+            	            	dataIndex:'vpn_ip_address',
+            	            	sortable:true
+            	            },
+            	            {
+            	            	header:'IPv4 IPN',
+            	            	dataIndex:'ipn_ip_address',
+            	            	sortable:true
+            	            },
+            	            {
+            	            	header:'MAC',
+            	            	dataIndex:'ipn_mac_address',
+            	            	sortable:true
+            	            },
+            	            {
+            	            	header:'Коммутатор',
+            	            	dataIndex:'switch',
+            	            	sortable:true
+            	            },
+            	            {
+            	            	header:'Порт коммутатора',
+            	            	dataIndex:'switch_port',
+            	            	sortable:true
+            	            },
+            	            {
+            	            	header:'Custom VPN speed',
+            	            	dataIndex:'vpn_speed',
+            	            	sortable:true
+            	            },
+            	            {
+            	            	header:'Custom IPN speed',
+            	            	dataIndex:'ipn_speed',
+            	            	sortable:true
+            	            },
+            	            {
+            	            	header:'Не выполнять IPN действия',
+            	            	dataIndex:'ipn_sleep',
+            	            	sortable:true
+            	            },                                                           	            
+            	            {
+            	            	header:'IPN добавлен',
+            	            	dataIndex:'ipn_added',
+            	            	sortable:true
+            	            },  
+            	            {
+            	            	header:'IPN активен',
+            	            	dataIndex:'ipn_enabled',
+            	            	sortable:true
+            	            },                                                          	            
+            	            ]
+            		   
+            		  
+               }
+
+        		
+           // apply config
+           Ext.applyIf(this, Ext.apply(this.initialConfig, config));
+    
+           EBS.SubAccountsGrid.superclass.initComponent.apply(this, arguments);
+       } // eo function initComponent
+    
+
+
+   });
+
+   Ext.reg('xsubaccountsgrid', EBS.SubAccountsGrid);
    
    EBS.ComboCity = Ext.extend(Ext.form.ComboBox, {
        initComponent:function() {
