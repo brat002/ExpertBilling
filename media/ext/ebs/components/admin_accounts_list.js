@@ -690,7 +690,14 @@ Ext.onReady(function(){
                                                 },
                                                 {
                                                     xtype: 'container',
-                                                    title: 'group',
+                                                    title: 'Субаккаунты',
+                                                    layout:'fit',
+                                                    //autoHeight: true,
+                                                    items:[
+                                                           {
+                                                        	   xtype:'xsubaccountsgrid',
+                                                           }
+                                                           ]
                                                 
                                                 },
                                                 ]

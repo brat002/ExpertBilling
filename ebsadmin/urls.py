@@ -5,6 +5,8 @@ urlpatterns = patterns('ebsadmin.views',
      url(r'^accounts/$', 'jsonaccounts'),
      url(r'^nasses/$', 'nasses'),
      url(r'^account/$', 'account'),
+     url(r'^subaccounts/$', 'subaccounts'),
+     
      #url(r'^simplelogin/$', 'simplelogin'),
      url(r'^grid/$', 'grid'),
      url(r'^city/$', 'city'),
