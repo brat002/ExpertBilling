@@ -241,79 +241,87 @@ Ext.onReady(function(){
 
 /* ACCOUNTS FORMS*/
     EBS.forms.ebs_accountsPanel.edit_user = {
-                                        xtype: 'form',
+                                        xtype: 'panel',
                                         //id: 'account-info',
                                         windowTitle:'Account details',
                                         autoScroll:true,
-                                        layout:'fit',
-                                        url:'/ebsadmin/account/', 
-                                        save_url:'/ebsadmin/account/save/',
-                                        standardSubmit: false,
-                                        frame:false,
-                                        border:false,
-                                        method:'POST',
-                                        
-                                        reader: new Ext.data.JsonReader({
-                                            idProperty: 'id',          
-                                            root: 'records',             
-                                            fields: [
-                                                {name: 'allow_webcab', type:'boolean'},
-												{name: 'house', type:'int'},
-												{name: 'street', type:'int'},
-												{name: 'postcode', type:'int'},
-												{name: 'suspended', type:'int'},
-												{name: 'id', type:'int'},
-												{name: 'city', type:'int'},
-												{name: 'password', type:'string'},
-												{name: 'ballance', type:'float'},
-												{name: 'email', type:'string'},
-												{name: 'username', type:'string'},
-												{name: 'entrance', type:'string'},
-												{name: 'vlan', type:'int'},
-												{name: 'allow_expresscards', type:'boolean'},
-												{name: 'disabled_by_limit', type:'boolean'},
-												{name: 'balance_blocked', type:'boolean'},
-												{name: 'room', type:'string'},
-												{name: 'created', type:'date', dateFormat: Date.patterns.ISO8601Long},
-												{name: 'region', type:'string'},
-												{name: 'credit', type:'float'},
-												{name: 'ipn_status', type:'boolean'},
-												{name: 'house_bulk', type:'string'},
-												{name: 'fullname', type:'string'},
-												{name: 'passport', type:'string'},
-												{name: 'passport_given', type:'string'},
-												{name: 'phone_h', type:'string'},
-												{name: 'phone_m', type:'string'},
-												{name: 'contactperson_phone', type:'string'},
-												{name: 'comment', type:'string'},
-												{name: 'row', type:'int'},
-												{name: 'elevator_direction', type:'string'},
-												{name: 'contactperson', type:'string'},
-												{name: 'status', type:'int'},
-												{name: 'passport_date', type:'string'},
-												{name: 'contract' , type:'string'},
-												{name: 'systemuser', type:'int'},
-												{name: 'last_balance_null', type:'date', dateFormat: Date.patterns.ISO8601Long},
-												{name: 'entrance_code', type:'string'},
-												{name: 'private_passport_number', type:'string'},
-												{name: 'allow_ipn_with_null', type:'boolean'},
-												{name: 'allow_ipn_with_minus', type:'boolean'},
-												{name: 'allow_ipn_with_block', type:'boolean'},
-                                            ]
-                                        }),     
-                                        items:{
+                                        layout:'anchor',
+                                        autoHeight: true,
+                                        items:[{
                                             //id:'edit_user_form',
                                             xtype: 'tabpanel',
                                             activeTab: 0,
                                             //width: 600,
                                             //height: 250,
                                             plain: true,
-                                            
+
                                             defaults :{
                                                 autoScroll: true,
                                                 bodyPadding: 10
                                             },
-                                            items: [{
+                                            items: [
+													{xtype: 'form',
+													//id: 'account-info',
+													title:'Account details',
+													autoScroll:true,
+													layout:'anchor',
+													url:'/ebsadmin/account/', 
+													save_url:'/ebsadmin/account/save/',
+													standardSubmit: false,
+													frame:false,
+													border:false,
+													method:'POST',
+													
+													reader: new Ext.data.JsonReader({
+													    idProperty: 'id',          
+													    root: 'records',             
+													    fields: [
+													        {name: 'allow_webcab', type:'boolean'},
+															{name: 'house', type:'int'},
+															{name: 'street', type:'int'},
+															{name: 'postcode', type:'int'},
+															{name: 'suspended', type:'int'},
+															{name: 'id', type:'int'},
+															{name: 'city', type:'int'},
+															{name: 'password', type:'string'},
+															{name: 'ballance', type:'float'},
+															{name: 'email', type:'string'},
+															{name: 'username', type:'string'},
+															{name: 'entrance', type:'string'},
+															{name: 'vlan', type:'int'},
+															{name: 'allow_expresscards', type:'boolean'},
+															{name: 'disabled_by_limit', type:'boolean'},
+															{name: 'balance_blocked', type:'boolean'},
+															{name: 'room', type:'string'},
+															{name: 'created', type:'date', dateFormat: Date.patterns.ISO8601Long},
+															{name: 'region', type:'string'},
+															{name: 'credit', type:'float'},
+															{name: 'ipn_status', type:'boolean'},
+															{name: 'house_bulk', type:'string'},
+															{name: 'fullname', type:'string'},
+															{name: 'passport', type:'string'},
+															{name: 'passport_given', type:'string'},
+															{name: 'phone_h', type:'string'},
+															{name: 'phone_m', type:'string'},
+															{name: 'contactperson_phone', type:'string'},
+															{name: 'comment', type:'string'},
+															{name: 'row', type:'int'},
+															{name: 'elevator_direction', type:'string'},
+															{name: 'contactperson', type:'string'},
+															{name: 'status', type:'int'},
+															{name: 'passport_date', type:'string'},
+															{name: 'contract' , type:'string'},
+															{name: 'systemuser', type:'int'},
+															{name: 'last_balance_null', type:'date', dateFormat: Date.patterns.ISO8601Long},
+															{name: 'entrance_code', type:'string'},
+															{name: 'private_passport_number', type:'string'},
+															{name: 'allow_ipn_with_null', type:'boolean'},
+															{name: 'allow_ipn_with_minus', type:'boolean'},
+															{name: 'allow_ipn_with_block', type:'boolean'},
+													    ]
+													}), 
+												items:[	
+                                                {
                                                 xtype: 'container',
                                                 autoScroll: true,
                                                 
@@ -687,15 +695,34 @@ Ext.onReady(function(){
                                                         ]
                                                     }
                                                 ]
-                                                },
+                                                },]},
                                                 {
                                                     xtype: 'container',
                                                     title: 'Субаккаунты',
-                                                    layout:'fit',
+                                                    layout:'anchor',
                                                     //autoHeight: true,
                                                     items:[
                                                            {
                                                         	   xtype:'xsubaccountsgrid',
+                                                        	   autoHeight:true,
+                                                        	   tbar: [{
+                                                                   iconCls: 'icon-user-add',
+                                                                   text: 'Добавить',
+                                                                   handler: function(){
+                                                                	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
+                                                                	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
+                                                                	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+                                                                	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', 1, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+                                                                   }
+                                                               },{
+                                                                   //ref: '../removeBtn',
+                                                                   iconCls: 'icon-user-delete',
+                                                                   text: 'Remove Employee',
+                                                                   disabled: true,
+                                                                   handler: function(){
+                                                                	   
+                                                                   }
+                                                               }],
                                                            }
                                                            ]
                                                 
@@ -704,7 +731,7 @@ Ext.onReady(function(){
 
 
 
-                                           }
+                                           }]
     								//form.load({url:'/account/', method:'GET',params:{'id':selection.items[0].id}} );
                                       };
     EBS.forms.ebs_accountsPanel.edit_user_submitAction =  function(object, event){
@@ -925,6 +952,445 @@ Ext.onReady(function(){
     }
 /* EOF ACCOUNTS FORMS*/
 
+/* Subaccounts edit*/
+    EBS.forms.ebs_accountsPanel.subaccounts = {
+    	    xtype: 'form',
+    	    windowTitle:'Редактирование субаккаунта',
+    	    url:'/ebsadmin/subaccounts/get/',
+    	    method:'POST',
+            //width:500,
+            height:800,
+    	    layout: 'vbox',
+    	    autoScroll: true,
+			reader: new Ext.data.JsonReader({
+			    idProperty: 'id',          
+			    root: 'records',             
+			    fields: [
+			        {name: 'allow_webcab', type:'boolean'},
+					{name: 'house', type:'int'},
+					{name: 'street', type:'int'},
+					{name: 'postcode', type:'int'},
+					{name: 'suspended', type:'int'},
+					{name: 'id', type:'int'},
+					{name: 'city', type:'int'},
+					{name: 'password', type:'string'},
+					{name: 'ballance', type:'float'},
+					{name: 'email', type:'string'},
+					{name: 'username', type:'string'},
+					{name: 'entrance', type:'string'},
+					{name: 'vlan', type:'int'},
+					{name: 'allow_expresscards', type:'boolean'},
+					{name: 'disabled_by_limit', type:'boolean'},
+					{name: 'balance_blocked', type:'boolean'},
+					{name: 'room', type:'string'},
+					{name: 'created', type:'date', dateFormat: Date.patterns.ISO8601Long},
+					{name: 'region', type:'string'},
+					{name: 'credit', type:'float'},
+					{name: 'ipn_status', type:'boolean'},
+					{name: 'house_bulk', type:'string'},
+					{name: 'fullname', type:'string'},
+					{name: 'passport', type:'string'},
+					{name: 'passport_given', type:'string'},
+					{name: 'phone_h', type:'string'},
+					{name: 'phone_m', type:'string'},
+					{name: 'contactperson_phone', type:'string'},
+					{name: 'comment', type:'string'},
+					{name: 'row', type:'int'},
+					{name: 'elevator_direction', type:'string'},
+					{name: 'contactperson', type:'string'},
+					{name: 'status', type:'int'},
+					{name: 'passport_date', type:'string'},
+					{name: 'contract' , type:'string'},
+					{name: 'systemuser', type:'int'},
+					{name: 'last_balance_null', type:'date', dateFormat: Date.patterns.ISO8601Long},
+					{name: 'entrance_code', type:'string'},
+					{name: 'private_passport_number', type:'string'},
+					{name: 'allow_ipn_with_null', type:'boolean'},
+					{name: 'allow_ipn_with_minus', type:'boolean'},
+					{name: 'allow_ipn_with_block', type:'boolean'},
+			    ]
+			}), 
+    	    //padding: 10,
+    	    //align: 'stretchmax',
+    	    //padding: 10,
+    	    items: [
+    	        {
+    	            xtype: 'container',
+    	            height: 282,
+    	            width: 775,
+    	            layout: 'column',
+    	            items: [
+    	                {
+    	                    xtype: 'fieldset',
+    	                    autoHeight: true,
+    	                    height: 217,
+    	                    width: 435,
+    	                    padding: '10px',
+    	                    title: 'Параметры доступа',
+    	                    items: [
+    	                        {
+    	                            xtype: 'combo',
+    	                            width: 255,
+    	                            name: 'nas',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Сервер доступа'
+    	                        },
+    	                        {
+    	                            xtype: 'textfield',
+    	                            name: 'username',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Логин'
+    	                        },
+    	                        {
+    	                            xtype: 'textfield',
+    	                            name: 'password',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Пароль'
+    	                        },
+    	                        {
+    	                            xtype: 'container',
+    	                            layout: 'hbox',
+    	                            fieldLabel: 'IPv4 VPN IP',
+    	                            align: 'middle',
+    	                            items: [
+    	                                {
+    	                                    xtype: 'textfield',
+    	                                    name: 'vpn_ip_address',
+    	                                    flex: 1
+    	                                },
+    	                                {
+    	                                    xtype: 'combo',
+    	                                    name: 'ipv4_vpn_pool_id',
+    	                                    flex: 1
+    	                                },
+    	                                {
+    	                                    xtype: 'button',
+    	                                    width: 27,
+    	                                    text: '...',
+    	                                    flex: 1
+    	                                }
+    	                            ]
+    	                        },
+    	                        {
+    	                            xtype: 'container',
+    	                            layout: 'hbox',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'IPv4 IPN IP',
+    	                            align: 'middle',
+    	                            items: [
+    	                                {
+    	                                    xtype: 'textfield',
+    	                                    name: 'ipn_ip_address',
+    	                                    flex: 1
+    	                                },
+    	                                {
+    	                                    xtype: 'combo',
+    	                                    name: 'ipv4_ipn_pool_id',
+    	                                    flex: 1
+    	                                },
+    	                                {
+    	                                    xtype: 'button',
+    	                                    width: 27,
+    	                                    text: '...',
+    	                                    flex: 1
+    	                                }
+    	                            ]
+    	                        },
+    	                        {
+    	                            xtype: 'container',
+    	                            layout: 'hbox',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'IPN MAC',
+    	                            items: [
+    	                                {
+    	                                    xtype: 'textfield',
+    	                                    width: 130,
+    	                                    name: 'ipn_mac_address',
+    	                                    flex: 1
+    	                                },
+    	                                {
+    	                                    xtype: 'button',
+    	                                    text: 'Определить',
+    	                                    flex: 1
+    	                                }
+    	                            ]
+    	                        },
+    	                        {
+    	                            xtype: 'container',
+    	                            layout: 'hbox',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'IPv6 VPN IP',
+    	                            items: [
+    	                                {
+    	                                    xtype: 'textfield',
+    	                                    name: 'vpn_ipv6_ip_address',
+    	                                    flex: 1
+    	                                },
+    	                                {
+    	                                    xtype: 'combo',
+    	                                    flex: 1
+    	                                },
+    	                                {
+    	                                    xtype: 'button',
+    	                                    width: 27,
+    	                                    text: '...',
+    	                                    flex: 1
+    	                                }
+    	                            ]
+    	                        },
+    	                        {
+    	                            xtype: 'container',
+    	                            layout: 'hbox',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'IPv6 IPN IP',
+    	                            items: [
+    	                                {
+    	                                    xtype: 'textfield',
+    	                                    name: 'ipn_ipv6_ip_address',
+    	                                    flex: 1
+    	                                },
+    	                                {
+    	                                    xtype: 'combo',
+    	                                    flex: 1
+    	                                },
+    	                                {
+    	                                    xtype: 'button',
+    	                                    width: 27,
+    	                                    text: '...',
+    	                                    flex: 1
+    	                                }
+    	                            ]
+    	                        }
+    	                    ]
+    	                },
+    	                {
+    	                    xtype: 'container',
+    	                    height: 293,
+    	                    width: 343,
+    	                    layout: 'vbox',
+    	                    items: [
+    	                        {
+    	                            xtype: 'fieldset',
+    	                            autoHeight: true,
+    	                            height: 130,
+    	                            width: 334,
+    	                            padding: '10px',
+    	                            title: 'Коммутатор',
+    	                            items: [
+    	                                {
+    	                                    xtype: 'combo',
+    	                                    name: 'switch',
+    	                                    anchor: '100%',
+    	                                    fieldLabel: 'Коммутатор'
+    	                                },
+    	                                {
+    	                                    xtype: 'textfield',
+    	                                    name: 'switch_port',
+    	                                    anchor: '100%',
+    	                                    fieldLabel: 'Порт'
+    	                                },
+    	                                {
+    	                                    xtype: 'textfield',
+    	                                    name: 'vlan',
+    	                                    anchor: '100%',
+    	                                    fieldLabel: 'VLAN'
+    	                                }
+    	                            ]
+    	                        },
+    	                        {
+    	                            xtype: 'fieldset',
+    	                            autoHeight: true,
+    	                            height: 138,
+    	                            width: 334,
+    	                            title: 'IPN статусы',
+    	                            items: [
+    	                                {
+    	                                    xtype: 'combo',
+    	                                    name: 'ipn_added',
+    	                                    anchor: '100%',
+    	                                    fieldLabel: 'Добавлен'
+    	                                },
+    	                                {
+    	                                    xtype: 'combo',
+    	                                    name: 'ipn_enabled',
+    	                                    anchor: '100%',
+    	                                    fieldLabel: 'Активен'
+    	                                },
+    	                                {
+    	                                    xtype: 'checkbox',
+    	                                    name: 'ipn_sleep',
+    	                                    boxLabel: 'Не менять состояние',
+    	                                    anchor: '100%',
+    	                                    fieldLabel: 'Label',
+    	                                    hideLabel: true
+    	                                },
+    	                                {
+    	                                    xtype: 'button',
+    	                                    text: 'Применить'
+    	                                }
+    	                            ]
+    	                        }
+    	                    ]
+    	                }
+    	            ]
+    	        },
+    	        {
+    	            xtype: 'container',
+    	            height: 272,
+    	            width: 762,
+    	            flex: 1,
+    	            items: [
+    	                {
+    	                    xtype: 'grid',
+    	                    height: 260,
+    	                    width: 765,
+    	                    title: 'Подключаемые услуги',
+    	                    store:new Ext.data.JsonStore({}),
+    	                    stripeRows: true,
+    	                    columns: [
+    	                        {
+    	                            xtype: 'booleancolumn',
+    	                            header: 'Boolean',
+    	                            sortable: true,
+    	                            width: 100
+    	                        }
+    	                    ]
+    	                }
+    	            ]
+    	        },
+    	        {
+    	            xtype: 'container',
+    	            width: 716,
+
+    	            items: [
+    	                {
+    	                    xtype: 'fieldset',
+    	                    height: 399,
+    	                    width: 765,
+    	                    defaults: {
+    	                        hideLabel: true
+    	                    },
+    	                    title: 'Опции',
+    	                    items: [
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_dhcp',
+    	                            boxLabel: 'Выдавать IPN IP адрес по DHCP',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label',
+    	                            hideLabel: true
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_dhcp_with_null',
+    	                            boxLabel: 'Выдавать IP адрес по DHCP при нулевом балансе',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_dhcp_with_minus',
+    	                            boxLabel: 'Выдавать IP адрес по DHCP при отрицательном балансе',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_dhcp_with_block',
+    	                            boxLabel: 'Выдавать IP адрес по DHCP при блокировке по балансу/лимитам трафика',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_vpn_with_null',
+    	                            boxLabel: 'Разрешить RADIUS авторизацию при нулевом балансе',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_vpn_with_minus',
+    	                            boxLabel: 'Разрешить RADIUS авторизацию при отрицательном балансе',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_vpn_with_block',
+    	                            boxLabel: 'Разрешить RADIUS авторизацию при блокировке по балансу/лимитам трафика',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_ipn_with_null',
+    	                            boxLabel: 'Разрешить IPN доступ при нулевом балансе',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_ipn_with_minus',
+    	                            boxLabel: 'Разрешить IPN доступ при отрицательном балансе',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_ipn_with_block',
+    	                            boxLabel: 'Разрешить IPN доступ при блокировке по балансу/лимитам трафика',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'associate_pptp_ipn_ip',
+    	                            boxLabel: 'Привязать PPTP авторизацию к IPN IP',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'associate_pppoe_ipn_mac',
+    	                            boxLabel: 'Привязать PPPOE авторизацию к IPN MAC',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_addonservice',
+    	                            boxLabel: 'Разрешить активацию подключаемых услуг через веб-кабинет',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'checkbox',
+    	                            name: 'allow_mac_update',
+    	                            boxLabel: 'Разрешить обновление IPN MAC адреса через веб-кабинет',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'textfield',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'textfield',
+    	                            anchor: '100%',
+    	                            fieldLabel: 'Label'
+    	                        }
+    	                    ]
+    	                }
+    	            ]
+    	        }
+    	    ]
+    	}
+    EBS.forms.ebs_accountsPanel.subaccounts.edit_submitAction =  function(object, event){
+form = object.ownerCt;
+//console.log(form);
+}
     Ext.reg("ebs_accountsPanel", EBS.conponents.accountsGrid);
     EBS.windows.keys[EBS.windows.keys.length] = 'ebs_accountsPanel';
 });
