@@ -131,11 +131,15 @@ Ext.onReady(function(){
                return;
             }
            rec = selection.items[0];
+           //alert(rec.id);
            form = 'EBS.forms.'+xtype+'.'+action;
+           //alert(form);
            window_key =  xtype+'_'+action;
+           //alert(window_key);
            form_data = eval(form);
            form_callback = eval(form+'_submitAction');
 
+           //alert(form_data.windowTitle);
            //if(typeof form_callback != "function")
            //    Ext.Msg.alert('Error: callback function is not accessible', form + '_submitAction ');
 
@@ -165,8 +169,8 @@ Ext.onReady(function(){
                         });
                         EBS.windows[window_key] = winCmp;
                     }
-             form = winCmp.items.items[0].getForm();
-             form.rec = selection.items[0];
+             //form = winCmp.items.items[0].getForm();
+             //form.rec = selection.items[0];
 
              //form.loadRecord(form.rec);
              //form.load({url:'/account/', method:'GET',params:{'id':selection.items[0].id}} );
@@ -242,7 +246,7 @@ Ext.onReady(function(){
                         });
                         EBS.windows[window_key] = winCmp;
                     }
-             form = winCmp.items.items[0].getForm();
+             form = winCmp.items.items[0].items.items[0].items.items[0].getForm();
              //form.rec = selection.items[0];
              //alert(form.url);
              form.load({url:form.url,method:form.method,params:{'id':id}});
@@ -252,6 +256,86 @@ Ext.onReady(function(){
              //winCmp.show();
     }
 
+    EBS.displayFormInSpecTab = function(xtype, action, id, tab, self){
+        /*
+         * Вызывается из меню компоненты
+         *
+         * создает форму
+         *
+         **/
+
+           console.log(action, self);
+
+            //Create edit window
+           /*selection = self.selModel.selections;
+           if(selection.items.length!=1){
+               Ext.Msg.alert(i18n.information,i18n.please_select_one_row);
+               return;
+            }
+           rec = selection.items[0];*/
+           form = 'EBS.forms.'+xtype+'.'+action;
+           window_key =  xtype+'_'+action;
+           form_data = eval(form);
+           form_callback = eval(form+'_submitAction');
+
+           //if(typeof form_callback != "function")
+           //    Ext.Msg.alert('Error: callback function is not accessible', form + '_submitAction ');
+
+           //if(!EBS.windows[window_key]){
+           winCmp = Ext.get(window_key);
+
+           //if(!winCmp){
+           if(true){
+                        winCmp = new Ext.Panel({
+                            id:window_key+id,
+                            instance_id:id,
+                            applyTo:Ext.get('body'),
+                            width:500,
+                            height:300,
+                            title:form_data.windowTitle,
+                            //autoHeight: true,
+                            viewConfig: {
+                                forceFit: true
+                            },
+                            tools : [{
+                                    id: 'gear',
+                                    handler: function() {
+                                        Ext.Msg.alert('TODO:','Attach as tab.');
+                                        }
+                                   }],
+
+                            plain: true,
+                            items: [form_data],
+                            buttons: [{
+                                    text:'Submit',
+                                    handler: function(obj, e){
+                                        form_callback(obj, e);
+                                        form = this.ownerCt.ownerCt.items.items[0].getForm()
+                                        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true});
+                                        //Update server data
+                                        //form.rec.store.save();
+                                        //EBS.closeForm(this)
+                                    }
+                                },{
+                                    text: 'Close',
+                                    handler: function(){
+                                        EBS.closeForm(this)
+                                    }
+                                }]
+                        });
+                        EBS.windows[window_key] = winCmp;
+                    }
+             form = winCmp.items.items[0].getForm();
+             //form.rec = selection.items[0];
+             //alert(form.url);
+             form.load({url:form.url,method:form.method,params:{'id':id}});
+             //form.loadRecord(form.rec);
+             
+             tab.add(winCmp)
+             //winCmp.show();
+    }
+
+    
     
     EBS.displayWindow = function(xtype, params){
         /*
@@ -591,6 +675,8 @@ Ext.onReady(function(){
         initComponent:function() {
            var config = {
             	   xtype:'grid',
+                   stateful: true,
+                   stateId: 'stateSubaccountsGrid',
             	   store:new Ext.data.JsonStore({
        		        	paramsAsHash: true,
     			    //	autoLoad: {params:{start:0, limit:100}},
@@ -607,16 +693,27 @@ Ext.onReady(function(){
        		        	},
 
             	   }),
+            	   bbar: new Ext.PagingToolbar({
+                       pageSize: 100,
+                      // store: this.store,
+                       displayInfo: true,
+                       dispalyMsg: i18n.paginatorDispalyMsg,
+                       emptyMsg: i18n.paginatorEmptyMsg
+                       //plugins: [new Ext.ux.SlidingPager(), this.filters],
+                    }),
+                selModel : new Ext.grid.RowSelectionModel({
+                     singleSelect : true
+                        }),
             	   //autoHeight: true,
             	   //autoWidth: true,
             	   listeners: {
  			          render:function(){
  			             // console.info('load',this,arguments);
  			        	  
- 			        	  this.store.load({params:{account_id:this.findParentByType('form').getForm().findField("id").value}});
+ 			        	  this.store.load({params:{account_id:this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value}});
  			          }
             	   },
-            	   
+                   
             	   autoScroll: true,
             	   columns:[
             	            {
