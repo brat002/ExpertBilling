@@ -357,16 +357,6 @@ def find_account_by_ip(nasses,flow,src=False, dst=False):
     logger.debug("VPN Account without nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
     return acc_data_src,acc_data_dst, nas_id
 
-checkclass=lambda node,flow:(((flow.src_addr & nnode.src_mask) == nnode.src_ip) and \
-                            ((flow.dst_addr & nnode.dst_mask) == nnode.dst_ip) and \
-                            ((flow.next_hop == nnode.next_hop) or (not nnode.next_hop)) and \
-                            ((flow.src_port == nnode.src_port) or (not nnode.src_port)) and \
-                            ((flow.dst_port == nnode.dst_port) or (not nnode.dst_port)) and \
-                            ((flow.in_index == nnode.in_index) or (not nnode.in_index)) and \
-                            ((flow.out_index == nnode.out_index) or (not nnode.out_index)) and \
-                            ((flow.src_as == nnode.src_as) or (not nnode.src_as)) and \
-                            ((flow.dst_as == nnode.dst_as) or (not nnode.dst_as)) and \
-                            ((flow.protocol == nnode.protocol) or (not nnode.protocol)))
 
 def nfPacketHandle(data, addrport, flowCache):
     '''
@@ -422,7 +412,7 @@ def nfPacketHandle(data, addrport, flowCache):
 
             
         if not (acc_data_src and acc_data_dst):
-            acc_data_src_ip,acc_data_dst_ip, nas_id_ip = find_account_by_ip(nasses, flow,src,dst)
+            acc_data_src_ip,acc_data_dst_ip, nas_id_ip = find_account_by_ip(nasses, flow, src, dst)
             
         if  acc_data_src:
             acc_data_src=acc_data_src
@@ -443,8 +433,6 @@ def nfPacketHandle(data, addrport, flowCache):
         #Проверка на IPN сеть
         if not acc_data_src and caches.account_cache.ipn_range:
             for src_ip, src_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
-                if flow.src_addr==src_ip:
-                    pass
                 if (acc_nas_id in nasses_list or acc_nas_id is None) and (flow.src_addr & src_mask) == src_ip:
                     acc_data_src = account_data
                     nas_id=acc_nas_id
