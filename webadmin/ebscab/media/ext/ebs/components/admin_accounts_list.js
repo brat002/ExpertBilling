@@ -265,12 +265,14 @@ Ext.onReady(function(){
                                             defaults :{
                                                 autoScroll: true,
                                                 bodyPadding: 10
+                                                
                                             },
                                             items: [
 													{xtype: 'form',
 													//id: 'account-info',
 													title:'Account details',
 													autoScroll:true,
+													autoHeight:true,
 													layout:'anchor',
 													url:'/ebsadmin/account/', 
 													save_url:'/ebsadmin/account/save/',
@@ -278,7 +280,26 @@ Ext.onReady(function(){
 													frame:false,
 													border:false,
 													method:'POST',
-													
+										     	   tbar: [{
+										               iconCls: 'icon-user-add',
+										               text: 'Сохранить',
+										               handler: function(){
+					                                        form = this.ownerCt.ownerCt.getForm();
+					                                        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true});
+										            	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
+										            	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
+										            	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+										            	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', 33, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+										               }
+										           },{
+										               //ref: '../removeBtn',
+										               iconCls: 'icon-user-delete',
+										               text: 'Закрыть',
+										               disabled: true,
+										               handler: function(){
+										            	   
+										               }
+										           }],
 													reader: new Ext.data.JsonReader({
 													    idProperty: 'id',          
 													    root: 'records',             
@@ -340,6 +361,7 @@ Ext.onReady(function(){
                                                 bodyStyle: {
                                                     padding: '5px 5px 5px 5px'
                                                 },
+                                                
 
                                                 items: [
                                                     {
@@ -706,12 +728,15 @@ Ext.onReady(function(){
                                                 {
                                                     xtype: 'container',
                                                     title: 'Субаккаунты',
-                                                    layout:'anchor',
+                                                    layout:'fit',
+                                                    
                                                     //autoHeight: true,
                                                     items:[
                                                            {
                                                         	   xtype:'xsubaccountsgrid',
-                                                        	   autoHeight:true,
+                                                        	   //autoHeight:true,
+                                                        	   height:600,
+                                                        	   autoScroll:true,
                                                         	   tbar: [{
                                                                    iconCls: 'icon-user-add',
                                                                    text: 'Добавить',
@@ -719,7 +744,16 @@ Ext.onReady(function(){
                                                                 	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
                                                                 	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
                                                                 	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-                                                                	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', 33, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+                                                                	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid').selModel.selections.items[0].id, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+                                                                   }
+                                                               },{
+                                                                   iconCls: 'icon-user-edit',
+                                                                   text: 'Редактировать',
+                                                                   handler: function(){
+                                                                	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
+                                                                	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
+                                                                	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+                                                                	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid').selModel.selections.items[0].id, this.findParentByType('tabpanel'), this.findParentByType('grid'))
                                                                    }
                                                                },{
                                                                    //ref: '../removeBtn',
@@ -973,53 +1007,68 @@ Ext.onReady(function(){
     	    },
     	    layout: 'vbox',
     	    autoScroll: true,
+     	   tbar: [{
+               iconCls: 'icon-user-add',
+               text: 'Сохранить',
+               handler: function(){
+            	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
+            	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
+            	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+            	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', 33, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+               }
+           },{
+               //ref: '../removeBtn',
+               iconCls: 'icon-user-delete',
+               text: 'Закрыть',
+               disabled: true,
+               handler: function(){
+            	   
+               }
+           }],
 			reader: new Ext.data.JsonReader({
 			    idProperty: 'id',          
 			    root: 'records',             
 			    fields: [
-			        {name: 'allow_webcab', type:'boolean'},
-					{name: 'house', type:'int'},
-					{name: 'street', type:'int'},
-					{name: 'postcode', type:'int'},
-					{name: 'suspended', type:'int'},
-					{name: 'id', type:'int'},
-					{name: 'city', type:'int'},
-					{name: 'password', type:'string'},
-					{name: 'ballance', type:'float'},
-					{name: 'email', type:'string'},
-					{name: 'username', type:'string'},
-					{name: 'entrance', type:'string'},
-					{name: 'vlan', type:'int'},
-					{name: 'allow_expresscards', type:'boolean'},
-					{name: 'disabled_by_limit', type:'boolean'},
-					{name: 'balance_blocked', type:'boolean'},
-					{name: 'room', type:'string'},
-					{name: 'created', type:'date', dateFormat: Date.patterns.ISO8601Long},
-					{name: 'region', type:'string'},
-					{name: 'credit', type:'float'},
-					{name: 'ipn_status', type:'boolean'},
-					{name: 'house_bulk', type:'string'},
-					{name: 'fullname', type:'string'},
-					{name: 'passport', type:'string'},
-					{name: 'passport_given', type:'string'},
-					{name: 'phone_h', type:'string'},
-					{name: 'phone_m', type:'string'},
-					{name: 'contactperson_phone', type:'string'},
-					{name: 'comment', type:'string'},
-					{name: 'row', type:'int'},
-					{name: 'elevator_direction', type:'string'},
-					{name: 'contactperson', type:'string'},
-					{name: 'status', type:'int'},
-					{name: 'passport_date', type:'string'},
-					{name: 'contract' , type:'string'},
-					{name: 'systemuser', type:'int'},
-					{name: 'last_balance_null', type:'date', dateFormat: Date.patterns.ISO8601Long},
-					{name: 'entrance_code', type:'string'},
-					{name: 'private_passport_number', type:'string'},
-					{name: 'allow_ipn_with_null', type:'boolean'},
-					{name: 'allow_ipn_with_minus', type:'boolean'},
-					{name: 'allow_ipn_with_block', type:'boolean'},
-			    ]
+			        {name: 'switch_port',  type:'int'},
+			    	{name: 'vpn_ipv6_ipinuse',  type:'int'},
+			    	{name: 'ipn_speed', type:'string'},
+			    	{name: 'allow_dhcp', type:'string'},
+			    	{name: 'vpn_ip_address', type:'string'},
+			    	{name: 'allow_dhcp_with_block', type:'boolean'},
+			    	{name: 'ipn_sleep', type:'boolean'},
+			    	{name: 'speed', type:'string'},
+			    	{name: 'id',  type:'int'},
+			    	{name: 'allow_addonservice', type:'boolean'},
+			        {name: 'ipn_mac_address', type:'string'},
+		             {name: 'allow_dhcp_with_minus', type:'boolean'},
+		             {name: 'ipn_enabled', type:'boolean'},
+		             {name: 'vpn_ipinuse',  type:'int'},
+		             {name: 'ipv4_vpn_pool',  type:'int'},
+		             {name: 'nas',  type:'int'},
+		             {name: 'ipv4_ipn_pool',  type:'int'},
+		             {name:  'allow_ipn_with_null', type:'boolean'},
+		             {name: 'allow_ipn_with_minus', type:'boolean'},
+		             {name: 'username', type:'string'},
+		             {name: 'allow_dhcp_with_null', type:'boolean'},
+		             {name: 'associate_pptp_ipn_ip', type:'boolean'},
+		             {name: 'ipn_ip_address', type:'string'},
+		             {name: 'associate_pppoe_ipn_mac', type:'boolean'},
+		             {name: 'allow_ipn_with_block', type:'boolean'},
+		             {name: 'vlan',  type:'int'},
+		             {name: 'allow_mac_update', type:'boolean'},
+		             {name: 'allow_vpn_with_null', type:'boolean'},
+		             {name: 'ipn_ipv6_ip_address', type:'string'},
+		             {name: 'vpn_speed', type:'string'},
+		             {name: 'allow_vpn_with_minus', type:'boolean'},
+		             {name: 'password', type:'string'},
+		             {name: 'ipn_added', type:'boolean'},
+		             {name: 'account', type:'string'},
+		             {name: 'ipn_ipinuse',  type:'int'},
+		             {name: 'switch',  type:'int'},
+		             {name: 'allow_vpn_with_block', type:'boolean'},
+		             {name: 'need_resync', type:'boolean'},
+		             {name: 'vpn_ipv6_ip_address', type:'string'},
+			             ]
 			}), 
     	    //padding: 10,
     	    //align: 'stretchmax',
@@ -1040,7 +1089,7 @@ Ext.onReady(function(){
     	                    title: 'Параметры доступа',
     	                    items: [
     	                        {
-    	                            xtype: 'combo',
+    	                            xtype: 'xcombonas',
     	                            width: 255,
     	                            name: 'nas',
     	                            anchor: '100%',
@@ -1070,8 +1119,9 @@ Ext.onReady(function(){
     	                                    flex: 1
     	                                },
     	                                {
-    	                                    xtype: 'combo',
+    	                                    xtype: 'xcomboippool',
     	                                    name: 'ipv4_vpn_pool_id',
+    	                                    pool_type:0,
     	                                    flex: 1
     	                                },
     	                                {
@@ -1095,8 +1145,9 @@ Ext.onReady(function(){
     	                                    flex: 1
     	                                },
     	                                {
-    	                                    xtype: 'combo',
+    	                                    xtype: 'xcomboippool',
     	                                    name: 'ipv4_ipn_pool_id',
+    	                                    pool_type:1,
     	                                    flex: 1
     	                                },
     	                                {
@@ -1138,7 +1189,8 @@ Ext.onReady(function(){
     	                                    flex: 1
     	                                },
     	                                {
-    	                                    xtype: 'combo',
+    	                                    xtype: 'xcomboippool',
+    	                                    pool_type:2,
     	                                    flex: 1
     	                                },
     	                                {
@@ -1161,7 +1213,8 @@ Ext.onReady(function(){
     	                                    flex: 1
     	                                },
     	                                {
-    	                                    xtype: 'combo',
+    	                                    xtype: 'xcomboippool',
+    	                                    pool_type:3,
     	                                    flex: 1
     	                                },
     	                                {
@@ -1189,7 +1242,7 @@ Ext.onReady(function(){
     	                            title: 'Коммутатор',
     	                            items: [
     	                                {
-    	                                    xtype: 'combo',
+    	                                    xtype: 'xcomboswitch',
     	                                    name: 'switch',
     	                                    anchor: '100%',
     	                                    fieldLabel: 'Коммутатор'

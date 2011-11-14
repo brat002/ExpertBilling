@@ -122,9 +122,9 @@ class Switch(models.Model):
     model = models.CharField(max_length=500)
     name = models.CharField(max_length=500)
     sn = models.CharField(max_length=500)
-    city = models.IntegerField()
-    street = models.IntegerField()
-    house = models.IntegerField()
+    city = models.IntegerField(db_column='city_id')
+    street = models.IntegerField(db_column='street_id')
+    house = models.IntegerField(db_column='house_id')
     place = models.TextField()#место установки
     comment = models.TextField()#
     ports_count = models.IntegerField()
