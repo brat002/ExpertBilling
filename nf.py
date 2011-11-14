@@ -1307,7 +1307,7 @@ def main ():
     '''thrnames = [(NfFileReadThread, 'NfFileReadThread'), (NfUDPSenderThread, 'NfUDPSenderThread'), \
                 (FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread')]'''
     
-    thrnames = [(FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread')]
+    thrnames = [(FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread'), (nfDequeThread, 'nfDequeThread')]
     for thClass, thName in thrnames:
         threads.append(thClass())
         threads[-1].setName(thName)

@@ -18,7 +18,7 @@ def setAllowedUsers(licstr, dbconnection = None):
             allowed = str(transformByte(licstr[:2] + licstr[-2:]))
         else:
             #log_error_('Test version: only 32 users allowed!' % ())
-            allowed = str(2**3*2**2*6)
+            allowed = str(2**3*2**2*6*2)
             #allowed = str(5000) 
         allowedUsers = lambda: int(allowed)
     except Exception, ex:
