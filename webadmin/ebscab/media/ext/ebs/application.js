@@ -227,22 +227,7 @@ Ext.onReady(function(){
 
                             plain: true,
                             items: [form_data],
-                            buttons: [{
-                                    text:'Submit',
-                                    handler: function(obj, e){
-                                        form_callback(obj, e);
-                                        form = this.ownerCt.ownerCt.items.items[0].getForm()
-                                        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true});
-                                        //Update server data
-                                        //form.rec.store.save();
-                                        //EBS.closeForm(this)
-                                    }
-                                },{
-                                    text: 'Close',
-                                    handler: function(){
-                                        EBS.closeForm(this)
-                                    }
-                                }]
+
                         });
                         EBS.windows[window_key] = winCmp;
                     }
@@ -1040,6 +1025,147 @@ EBS.ComboAccountStatus = Ext.extend(Ext.form.ComboBox, {
 
 Ext.reg('xcomboaccountstatus', EBS.ComboAccountStatus);
 
+EBS.ComboNas = Ext.extend(Ext.form.ComboBox, {
+    initComponent:function() {
+       var config = {
+    		    anchor: '100%',
+    		    displayField: 'name',
+    		    valueField: 'id', 
+    		    mode: 'remote',
+    		    editable:false,
+    		    triggerAction: 'all',
+    		    typeAhead: true,
+    		    store:new Ext.data.Store({
+    		    	autoLoad:true,
+    		        proxy: new Ext.data.HttpProxy({
+    		            url: '/ebsadmin/nas/',
+    		            method:'GET',
+    		            
+    		        }),
+    		        
+    		        reader: new Ext.data.JsonReader({
+    		            root: 'records'
+    		        }, [{
+    		            name: 'id'
+    		        }, {
+    		            name: 'name'
+    		        }])
+    		    }),
+
+    		}
+       // apply config
+       Ext.apply(this, Ext.apply(this.initialConfig, config));
+
+       EBS.ComboNas.superclass.initComponent.apply(this, arguments);
+   } // eo function initComponent
+
+   ,onRender:function() {
+       var me = this;
+       this.store.on('load',function(store) {
+         //me.setValue('7', true);
+       })
+       EBS.ComboNas.superclass.onRender.apply(this, arguments);
+   } // eo function onRender
+ 
+
+});
+
+Ext.reg('xcombonas', EBS.ComboNas);
+ 
+
+EBS.ComboIpPool = Ext.extend(Ext.form.ComboBox, {
+    initComponent:function() {
+       var config = {
+    		    anchor: '100%',
+    		    displayField: 'name',
+    		    valueField: 'id', 
+    		    mode: 'remote',
+    		    editable:false,
+    		    triggerAction: 'all',
+    		    pool_type:0,
+    		    typeAhead: true,
+    		    store:new Ext.data.Store({
+    		    	autoLoad:true,
+    		        proxy: new Ext.data.HttpProxy({
+    		            url: '/ebsadmin/ippool/',
+    		            method:'POST',
+    		            
+    		        }),
+    		        
+    		        reader: new Ext.data.JsonReader({
+    		            root: 'records'
+    		        }, [{
+    		            name: 'id'
+    		        }, {
+    		            name: 'name'
+    		        }])
+    		    }),
+
+    		}
+       // apply config
+       Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+
+       EBS.ComboIpPool.superclass.initComponent.apply(this, arguments);
+   } // eo function initComponent
+
+   ,onRender:function() {
+       var me = this;
+       this.store.setBaseParam('pool_type', this.pool_type);
+       //this.store.load({params:{'pool_type':this.pool_type}})
+       EBS.ComboIpPool.superclass.onRender.apply(this, arguments);
+   } // eo function onRender
+ 
+
+});
+
+Ext.reg('xcomboippool', EBS.ComboIpPool);
+
+EBS.ComboSwitch = Ext.extend(Ext.form.ComboBox, {
+    initComponent:function() {
+       var config = {
+    		    anchor: '100%',
+    		    displayField: 'name',
+    		    valueField: 'id', 
+    		    mode: 'remote',
+    		    editable:false,
+    		    triggerAction: 'all',
+    		    typeAhead: true,
+    		    store:new Ext.data.Store({
+    		    	//autoLoad:true,
+    		        proxy: new Ext.data.HttpProxy({
+    		            url: '/ebsadmin/switch/',
+    		            method:'GET',
+    		            
+    		        }),
+    		        
+    		        reader: new Ext.data.JsonReader({
+    		            root: 'records'
+    		        }, [{
+    		            name: 'id'
+    		        }, {
+    		            name: 'name'
+    		        }])
+    		    }),
+
+    		}
+       // apply config
+       Ext.apply(this, Ext.apply(this.initialConfig, config));
+
+       EBS.ComboSwitch.superclass.initComponent.apply(this, arguments);
+   } // eo function initComponent
+
+   ,onRender:function() {
+       var me = this;
+       this.store.on('load',function(store) {
+         //me.setValue('7', true);
+       })
+       EBS.ComboSwitch.superclass.onRender.apply(this, arguments);
+   } // eo function onRender
+ 
+
+});
+
+Ext.reg('xcomboswitch', EBS.ComboSwitch);
 /* EOF BASE Components*/
 
 
