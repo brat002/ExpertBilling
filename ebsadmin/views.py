@@ -68,7 +68,54 @@ def nasses(request):
     #from django.http import HttpResponse
     res=[]
     for item in items:
-        res.append({"nas_id":item.id, "name":item.name})
+        res.append({"nas":item.id, "name":item.name})
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res}
+
+@ajax_request
+@login_required
+def nas(request):
+    from nas.models import Nas
+    items = Nas.objects.all()
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append({"id":item.id, "name":item.name})
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res}
+
+@ajax_request
+@login_required
+def switch(request):
+    from nas.models import Switch
+    items = Switch.objects.all()
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append({"id":item.id, "name":item.name})
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res}
+
+@ajax_request
+@login_required
+def ippool(request):
+    from billservice.models import IPPool
+    pool_type = request.POST.get('pool_type')
+    items = IPPool.objects.filter(type=pool_type)
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    res.append({"id":None, "name":u'-- Не указан --'})
+    for item in items:
+        res.append({"id":item.id, "name":item.name})
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
