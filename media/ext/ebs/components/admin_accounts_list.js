@@ -30,6 +30,12 @@ Ext.onReady(function(){
              this.topToolbar = new Ext.Toolbar({
                     enableOverflow: true,
                     items:[
+						{
+						    icon: media+'icons/16/add.png',
+						    height:16,width:16,
+						    text: i18n.edit,
+						    handler: this.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+						},
                          {
                             icon: media+'icons/16/pencil.png',
                             height:16,width:16,
@@ -254,6 +260,7 @@ Ext.onReady(function(){
                                             //width: 600,
                                             //height: 250,
                                             plain: true,
+                                            autoHeight:true,
 
                                             defaults :{
                                                 autoScroll: true,
@@ -712,7 +719,7 @@ Ext.onReady(function(){
                                                                 	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
                                                                 	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
                                                                 	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-                                                                	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', 1, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+                                                                	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', 33, this.findParentByType('tabpanel'), this.findParentByType('grid'))
                                                                    }
                                                                },{
                                                                    //ref: '../removeBtn',
@@ -958,8 +965,12 @@ Ext.onReady(function(){
     	    windowTitle:'Редактирование субаккаунта',
     	    url:'/ebsadmin/subaccounts/get/',
     	    method:'POST',
-            //width:500,
-            height:800,
+            height:1200,
+    	    //autoHeight:true,
+    	    layoutConfig: {
+    	        align : 'stretch',
+    	        pack  : 'start',
+    	    },
     	    layout: 'vbox',
     	    autoScroll: true,
 			reader: new Ext.data.JsonReader({

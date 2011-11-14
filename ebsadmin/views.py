@@ -41,7 +41,23 @@ def subaccounts(request):
 
     return {"records": res}
 
+@ajax_request
+@login_required
+def subaccount(request):
+    subaccount_id = request.POST.get('id')
+    print "subaccount", subaccount_id
+    items = SubAccount.objects.filter(id=subaccount_id)
+    #print accounts
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
+    return {"records": res}
 
 @ajax_request
 @login_required

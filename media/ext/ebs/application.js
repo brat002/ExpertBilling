@@ -290,13 +290,15 @@ Ext.onReady(function(){
                             id:window_key+id,
                             instance_id:id,
                             applyTo:Ext.get('body'),
-                            width:500,
-                            height:300,
+                            //width:500,
+                            //height:1200,
+                            //layout:'fit',
                             title:form_data.windowTitle,
                             //autoHeight: true,
-                            viewConfig: {
-                                forceFit: true
-                            },
+                            autoHeight: true,
+                            //viewConfig: {
+                            //    forceFit: true
+                            //},
                             tools : [{
                                     id: 'gear',
                                     handler: function() {
