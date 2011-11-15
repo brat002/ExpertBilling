@@ -11,7 +11,12 @@ Ext.onReady(function(){
                  **/
                 this.tbFormCallBack = function(self, action){EBS.displayForm(self.xtype, action, self)}
                 this.tbCustomFormCallBack = function(self, action){EBS.displayCustomForm(self.xtype, action, self)}
-                
+
+                this.tbNewFormInTabCallBack = function(self, action){
+                	id=null;
+                	
+                	EBS.displayFormInTab(self.xtype, action,id, self)
+                	}
                 this.tbFormInTabCallBack = function(self, action, id){
                 	//alert(id);
                 	//alert(self.selModel);
@@ -34,7 +39,7 @@ Ext.onReady(function(){
 						    icon: media+'icons/16/add.png',
 						    height:16,width:16,
 						    text: i18n.edit,
-						    handler: this.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+						    handler: this.tbNewFormInTabCallBack.createCallback(this, 'edit_user')
 						},
                          {
                             icon: media+'icons/16/pencil.png',
@@ -406,7 +411,7 @@ Ext.onReady(function(){
 															{name: 'elevator_direction', type:'string'},
 															{name: 'contactperson', type:'string'},
 															{name: 'status', type:'int'},
-															{name: 'passport_date', type:'date', dateFormat: Date.patterns.ISO8601Long},
+															{name: 'passport_date', type:'string'},
 															{name: 'contract' , type:'string'},
 															{name: 'systemuser', type:'int'},
 															{name: 'last_balance_null', type:'date', dateFormat: Date.patterns.ISO8601Long},
@@ -955,20 +960,23 @@ Ext.onReady(function(){
                                         xtype: 'form',
                                         id: 'account-credit',
                                         windowTitle:'Платёж',
+                                        layout: 'anchor',
+                                        //autoHeight:true,
                                         items:{
                                             xtype: 'panel',
-                                            autoHeight: true,
+                                            //autoHeight: true,
                                             //height: 316,
                                             //width: 462,
                                             padding:'5px',
                                             layout: 'anchor',
+                                            autoHeight:true,
                                             //title: 'Проведение платежа',
                                             items: [
                                                 {
                                                     xtype: 'fieldset',
                                                     autoHeight: false,
                                                     autoWidth: false,
-                                                    //height: 231,
+                                                    height: 231,
                                                     title: 'Параметры платежа',
                                                     labelWidth: 150,
                                                     items: [{
