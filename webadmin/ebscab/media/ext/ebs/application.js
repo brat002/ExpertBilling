@@ -279,6 +279,7 @@ Ext.onReady(function(){
                             //height:1200,
                             //layout:'fit',
                             title:form_data.windowTitle,
+                            closable:true,
                             //autoHeight: true,
                             autoHeight: true,
                             //viewConfig: {
@@ -786,6 +787,114 @@ Ext.onReady(function(){
 
    Ext.reg('xsubaccountsgrid', EBS.SubAccountsGrid);
    
+   EBS.AccountAddonServiceGrid = Ext.extend(Ext.grid.GridPanel, {
+       initComponent:function() {
+          var config = {
+           	   xtype:'grid',
+                  stateful: true,
+                  stateId: 'stateAccountAddonServiceGrid',
+           	   	  store:new Ext.data.JsonStore({
+      		        	paramsAsHash: true,
+
+      		        	autoLoad: {params:{start:0, limit:100,'subaccount_id': this.findParentByType('form').findParentByType('panel').instance_id}},
+      		        	proxy: new Ext.data.HttpProxy({
+      		        		url: '/ebsadmin/accountaddonservices/',
+      		        		method:'POST',
+      		        	}),    
+      		        	fields: [{name: 'service', type:'int'},
+      		        		{name: 'account', type:'int'},
+      		        		{name: 'id', type:'int'},
+      		        		{name: 'subaccount', type:'int'},
+      		        		{name: 'activated', type: 'date', dateFormat: Date.patterns.ISO8601Long},
+      		        		{name: 'deactivated',  type: 'date', dateFormat: Date.patterns.ISO8601Long},
+      		        		{name: 'action_status', type:'boolean'},
+      		        		{name: 'speed_status', type:'boolean'},
+      		        		{name: 'temporary_blocked', type: 'date', dateFormat: Date.patterns.ISO8601Long},
+      		        		{name: 'last_checkout', type: 'date', dateFormat: Date.patterns.ISO8601Long},],
+      		        	root: 'records',
+      		        	remoteSort:true,
+      		        	sortInfo:{
+      		        		field:'username',
+      		        		direction:'ASC'
+      		        	},
+
+
+
+           	   }),
+
+               selModel : new Ext.grid.RowSelectionModel({
+                    singleSelect : true
+                       }),
+           	   //autoHeight: true,
+           	   //autoWidth: true,
+           	   listeners: {
+			          render:function(){
+			             // console.info('load',this,arguments);
+			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
+			        	  //this.store.setBaseParam('subaccount_id', this.findParentByType('form').findParentByType('panel').instance_id);
+			        	  //this.store.load();
+			          }
+           	   },
+                  
+           	   autoScroll: true,
+           	   columns:[
+           	            {
+           	            	header:'id',
+           	            	dataIndex:'id',
+           	            	sortable:true
+           	            },
+           	            {
+           	            	header:'Услуга',
+           	            	dataIndex:'service',
+           	            	sortable:true
+           	            },
+           	            {
+           	            	header:'Активирована',
+           	            	dataIndex:'activated',
+           	            	sortable:true,
+           	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+           	            	
+           	            },
+           	            {
+           	            	header:'Отключена',
+           	            	dataIndex:'deactivated',
+           	            	sortable:true,
+           	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+           	            },
+           	            {
+           	            	header:'Последнее списание',
+           	            	dataIndex:'last_checkout',
+           	            	sortable:true,
+           	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+           	            },
+           	            {
+           	            	header:'Команда активации выполнена',
+           	            	dataIndex:'action_status',
+           	            	sortable:true
+           	            },
+           	            {
+           	            	header:'Команда установки скорости выполнена',
+           	            	dataIndex:'speed_status',
+           	            	sortable:true
+           	            },
+           	            ]
+           		   
+           		  
+              }
+
+       		
+          // apply config
+          Ext.applyIf(this, Ext.apply(this.initialConfig, config));
+   
+          EBS.AccountAddonServiceGrid.superclass.initComponent.apply(this, arguments);
+      } // eo function initComponent
+   
+
+
+  });
+
+  Ext.reg('xaccountaddonservicesgrid', EBS.AccountAddonServiceGrid);
+  
    EBS.ComboCity = Ext.extend(Ext.form.ComboBox, {
        initComponent:function() {
           var config = {
@@ -834,7 +943,78 @@ Ext.onReady(function(){
    
   Ext.reg('xcombocity', EBS.ComboCity);
   
+  EBS.ComboAddedLocal = Ext.extend(Ext.form.ComboBox, {
+      initComponent:function() {
+         var config = {
+      		    anchor: '100%',
+      		    editable:false,
+      		    store: new Ext.data.ArrayStore({
+                    fields: ['name', 'value'],
+                    data : [['Добавлен',true],['Не добавлен',false],] // from states.js
+                }),
+                valueField:'value',
+                displayField:'name',
+                typeAhead: true,
+                mode: 'local',
+                triggerAction: 'all',
+                
+
+      		}
+         // apply config
+         Ext.apply(this, Ext.applyIf(this.initialConfig, config));
   
+         EBS.ComboAddedLocal.superclass.initComponent.apply(this, arguments);
+     } // eo function initComponent
+  
+     ,onRender:function() {
+         var me = this;
+         this.store.on('load',function(store) {
+           //me.setValue('7', true);
+         })
+         EBS.ComboAddedLocal.superclass.onRender.apply(this, arguments);
+     } // eo function onRender
+   
+
+ });
+  
+ Ext.reg('xcomboaddedlocal', EBS.ComboAddedLocal);
+
+ EBS.ComboEnabledLocal = Ext.extend(Ext.form.ComboBox, {
+     initComponent:function() {
+        var config = {
+     		    anchor: '100%',
+     		    editable:false,
+     		    store: new Ext.data.ArrayStore({
+                   fields: ['name', 'value'],
+                   data : [['Активирован',true],['Не активирован',false],] // from states.js
+               }),
+               valueField:'value',
+               displayField:'name',
+               typeAhead: true,
+               mode: 'local',
+               triggerAction: 'all',
+               
+
+     		}
+        // apply config
+        Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+ 
+        EBS.ComboAddedLocal.superclass.initComponent.apply(this, arguments);
+    } // eo function initComponent
+ 
+    ,onRender:function() {
+        var me = this;
+        this.store.on('load',function(store) {
+          //me.setValue('7', true);
+        })
+        EBS.ComboEnabledLocal.superclass.onRender.apply(this, arguments);
+    } // eo function onRender
+  
+
+});
+ 
+Ext.reg('xcomboenabledlocal', EBS.ComboEnabledLocal);
+
   EBS.ComboStreet = Ext.extend(Ext.form.ComboBox, {
       initComponent:function() {
          var config = {
@@ -1062,7 +1242,7 @@ EBS.ComboNas = Ext.extend(Ext.form.ComboBox, {
    ,onRender:function() {
        var me = this;
        this.store.on('load',function(store) {
-         //me.setValue('7', true);
+         me.setValue(null, true);
        })
        EBS.ComboNas.superclass.onRender.apply(this, arguments);
    } // eo function onRender
@@ -1103,9 +1283,11 @@ EBS.ComboIpPool = Ext.extend(Ext.form.ComboBox, {
 
     		}
        // apply config
+       
        Ext.apply(this, Ext.applyIf(this.initialConfig, config));
-
+       
        EBS.ComboIpPool.superclass.initComponent.apply(this, arguments);
+       this.store.setBaseParam('pool_type', this.pool_type);
    } // eo function initComponent
 
    ,onRender:function() {
@@ -1131,7 +1313,7 @@ EBS.ComboSwitch = Ext.extend(Ext.form.ComboBox, {
     		    triggerAction: 'all',
     		    typeAhead: true,
     		    store:new Ext.data.Store({
-    		    	//autoLoad:true,
+    		    	autoLoad:true,
     		        proxy: new Ext.data.HttpProxy({
     		            url: '/ebsadmin/switch/',
     		            method:'GET',
@@ -1152,12 +1334,13 @@ EBS.ComboSwitch = Ext.extend(Ext.form.ComboBox, {
        Ext.apply(this, Ext.apply(this.initialConfig, config));
 
        EBS.ComboSwitch.superclass.initComponent.apply(this, arguments);
+       //this.store.setBaseParam('pool_type', this.pool_type);
    } // eo function initComponent
 
    ,onRender:function() {
        var me = this;
        this.store.on('load',function(store) {
-         //me.setValue('7', true);
+         me.setValue(null, true);
        })
        EBS.ComboSwitch.superclass.onRender.apply(this, arguments);
    } // eo function onRender

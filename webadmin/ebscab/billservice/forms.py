@@ -2,7 +2,7 @@
 from django import forms
 from datetime import datetime, date
 from django.forms import ModelForm
-from billservice.models import Tariff, TPChangeRule, Account
+from billservice.models import Tariff, TPChangeRule, Account, SubAccount
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -55,3 +55,7 @@ class StatististicForm(forms.Form):
 class AccountForm(ModelForm):
     class Meta:
         model = Account
+
+class SubAccountForm(ModelForm):
+    class Meta:
+        model = SubAccount

@@ -20,7 +20,17 @@ Ext.onReady(function(){
         YearMonth: "F, Y"
     };
 
-    EBS.moneyRenderer = Ext.util.Format.usMoney;
+    EBS.moneyRenderer = function pctChange(val){
+        if(val > 0){
+            return '<span style="color:green;">' + val.toFixed(2) + ' руб.</span>';
+        }else if(val == 0){
+            return '<span style="color:yellow;">' + val.toFixed(2) + ' руб.</span>';
+        }
+        else if(val < 0){
+            return '<span style="color:red;">' + val.toFixed(2) + ' руб.</span>';
+        }
+        return val;
+    }
 });
 
 
