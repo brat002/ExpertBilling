@@ -118,7 +118,7 @@ Ext.onReady(function(){
                                         sortable : true,
                                         //width    : 85,
                                         locked: true,
-                                        dataIndex: id,
+                                        dataIndex: 'id',
                                         filter: {
                                             type: 'numeric'
                                         }
@@ -157,7 +157,9 @@ Ext.onReady(function(){
                                             type: 'string'
                                         }
 
-                                    },     
+                                    },  
+                                    
+//['comment', 'status', 'allow_webcab', 'house', 'street', 'postcode', 'suspended', 'id', 'row', 'city', 'systemuser', 'contactperson_phone', 'ipn_status', 'nas', 'entrance_code', 'elevator_direction', 'passport', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'last_balance_null', 'email', 'username', 'entrance', 'phone_m', 'phone_h', 'allow_ipn_with_block', 'allow_expresscards', 'contract', 'address', 'private_passport_number', 'password', 'disabled_by_limit', 'balance_blocked', 'room', 'created', 'region', 'contactperson', 'credit', 'ballance', 'house_bulk', 'fullname', 'passport_given']                                    
                                     {
                                         header   : i18n.accounts.nas,
                                         sortable : true,
@@ -182,31 +184,98 @@ Ext.onReady(function(){
 
                                     },
                                    {
-                                        header   : i18n.accounts.vpn_ip_address,
+                                        header   : 'Город',
                                         sortable : true,
                                         //autoexpand:true,
                                         width:200,
-                                        dataIndex: 'vpn_ip_address',
+                                        dataIndex: 'city',
                                         filter: {
                                             type: 'string'
                                         }
 
                                     },
-                                   {
-                                        header   : i18n.accounts.ipn_ip_address,
+                                    {
+                                        header   : 'Улица',
                                         sortable : true,
                                         //autoexpand:true,
                                         width:200,
-                                        dataIndex: 'ipn_ip_address',
+                                        dataIndex: 'street',
                                         filter: {
                                             type: 'string'
                                         }
 
-                                    },                                    {
+                                    },                                    
+                                   {
+                                        header   : 'Дом',
+                                        sortable : true,
+                                        //autoexpand:true,
+                                        width:200,
+                                        dataIndex: 'house',
+                                        filter: {
+                                            type: 'string'
+                                        }
+
+                                    },
+                                    {
+                                        header   : 'Квартира',
+                                        sortable : true,
+                                        //autoexpand:true,
+                                        width:200,
+                                        dataIndex: 'room',
+                                        filter: {
+                                            type: 'string'
+                                        }
+
+                                    },
+                                    {
+                                        header   : 'Контактное лицо',
+                                        sortable : true,
+                                        //autoexpand:true,
+                                        width:200,
+                                        dataIndex: 'contactperson',
+                                        filter: {
+                                            type: 'string'
+                                        }
+
+                                    },
+                                    {
+                                        header   : 'Контактный телефон',
+                                        sortable : true,
+                                        //autoexpand:true,
+                                        width:200,
+                                        dataIndex: 'contactphone',
+                                        filter: {
+                                            type: 'string'
+                                        }
+
+                                    },    
+                                    {
+                                        header   : 'Домашний телефон',
+                                        sortable : true,
+                                        //autoexpand:true,
+                                        width:200,
+                                        dataIndex: 'phone_h',
+                                        filter: {
+                                            type: 'string'
+                                        }
+
+                                    },     
+                                    {
+                                        header   : 'Мобильный телефон',
+                                        sortable : true,
+                                        //autoexpand:true,
+                                        width:200,
+                                        dataIndex: 'phone_m',
+                                        filter: {
+                                            type: 'string'
+                                        }
+
+                                    },                                      
+                                    {
                                         header   : i18n.accounts.created,
                                         width    : 115,
                                         sortable : true,
-                                        renderer : Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+                                        renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
                                         dataIndex: 'created'
                                     },
 
@@ -337,7 +406,7 @@ Ext.onReady(function(){
 															{name: 'elevator_direction', type:'string'},
 															{name: 'contactperson', type:'string'},
 															{name: 'status', type:'int'},
-															{name: 'passport_date', type:'string'},
+															{name: 'passport_date', type:'date', dateFormat: Date.patterns.ISO8601Long},
 															{name: 'contract' , type:'string'},
 															{name: 'systemuser', type:'int'},
 															{name: 'last_balance_null', type:'date', dateFormat: Date.patterns.ISO8601Long},
@@ -487,7 +556,7 @@ Ext.onReady(function(){
                                                                     },
                                                                     {
                                                                         xtype: 'textfield',
-                                                                        name: 'postcode',
+                                                                        name: 'region',
                                                                         anchor: '100%',
                                                                         fieldLabel: 'Район'
                                                                     },
@@ -508,9 +577,9 @@ Ext.onReady(function(){
                                                                     },
                                                                     {
                                                                         xtype: 'textfield',
-                                                                        name: 'region',
+                                                                        name: 'postcode',
                                                                         anchor: '100%',
-                                                                        fieldLabel: 'Подъезд'
+                                                                        fieldLabel: 'Индекс'
                                                                     },
                                                                     {
                                                                         xtype: 'xcombostreet',
@@ -998,6 +1067,7 @@ Ext.onReady(function(){
     	    xtype: 'form',
     	    windowTitle:'Редактирование субаккаунта',
     	    url:'/ebsadmin/subaccounts/get/',
+    	    save_url:'/ebsadmin/subaccounts/set/',
     	    method:'POST',
             height:1200,
     	    //autoHeight:true,
@@ -1011,6 +1081,8 @@ Ext.onReady(function(){
                iconCls: 'icon-user-add',
                text: 'Сохранить',
                handler: function(){
+                   form = this.ownerCt.ownerCt.getForm();
+                   form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true});
             	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
             	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
             	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
@@ -1046,6 +1118,7 @@ Ext.onReady(function(){
 		             {name: 'ipv4_vpn_pool',  type:'int'},
 		             {name: 'nas',  type:'int'},
 		             {name: 'ipv4_ipn_pool',  type:'int'},
+		             {name: 'subaccount_id',  type:'int'},
 		             {name:  'allow_ipn_with_null', type:'boolean'},
 		             {name: 'allow_ipn_with_minus', type:'boolean'},
 		             {name: 'username', type:'string'},
@@ -1088,12 +1161,22 @@ Ext.onReady(function(){
     	                    padding: '10px',
     	                    title: 'Параметры доступа',
     	                    items: [
+        	                        {
+        	                            xtype: 'hidden',
+        	                            name: 'id',
+        	                        },    	          	                            
+        	                        {
+        	                            xtype: 'hidden',
+        	                            name: 'account',
+        	                        },   
     	                        {
     	                            xtype: 'xcombonas',
     	                            width: 255,
     	                            name: 'nas',
+    	                            hiddenName: 'nas',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Сервер доступа'
+    	                            fieldLabel: 'Сервер доступа',
+    	                            
     	                        },
     	                        {
     	                            xtype: 'textfield',
@@ -1120,7 +1203,8 @@ Ext.onReady(function(){
     	                                },
     	                                {
     	                                    xtype: 'xcomboippool',
-    	                                    name: 'ipv4_vpn_pool_id',
+    	                                    name: 'ipv4_vpn_pool',
+    	                                    hiddenName:'ipv4_ipn_pool',
     	                                    pool_type:0,
     	                                    flex: 1
     	                                },
@@ -1146,7 +1230,8 @@ Ext.onReady(function(){
     	                                },
     	                                {
     	                                    xtype: 'xcomboippool',
-    	                                    name: 'ipv4_ipn_pool_id',
+    	                                    name: 'ipv4_ipn_pool',
+    	                                    hiddenName: 'ipv4_ipn_pool',
     	                                    pool_type:1,
     	                                    flex: 1
     	                                },
@@ -1244,6 +1329,7 @@ Ext.onReady(function(){
     	                                {
     	                                    xtype: 'xcomboswitch',
     	                                    name: 'switch',
+    	                                    hiddenName:'switch',
     	                                    anchor: '100%',
     	                                    fieldLabel: 'Коммутатор'
     	                                },
@@ -1269,14 +1355,16 @@ Ext.onReady(function(){
     	                            title: 'IPN статусы',
     	                            items: [
     	                                {
-    	                                    xtype: 'combo',
+    	                                    xtype: 'xcomboaddedlocal',
     	                                    name: 'ipn_added',
+    	                                    hiddenName:'ipn_added',
     	                                    anchor: '100%',
     	                                    fieldLabel: 'Добавлен'
     	                                },
     	                                {
-    	                                    xtype: 'combo',
+    	                                    xtype: 'xcomboenabledlocal',
     	                                    name: 'ipn_enabled',
+    	                                    hiddenName:'ipn_enabled',
     	                                    anchor: '100%',
     	                                    fieldLabel: 'Активен'
     	                                },
@@ -1290,7 +1378,23 @@ Ext.onReady(function(){
     	                                },
     	                                {
     	                                    xtype: 'button',
-    	                                    text: 'Применить'
+    	                                    text: 'Применить',
+    	                                    handler:function(){
+    	                                    	maskingAjax.request({
+    	                                    	    url: '/ebsadmin/setipnstate/',
+    	                                    	    success: function(r, o){
+    	                                    	        alert('success');
+    	                                    	    },
+    	                                    	    failure: function(){alert('failed')},
+    	                                    	    params: {
+    	                                    	        subaccount_id: this.findParentByType('form').getForm().findField('id').value,
+    	                                    	        added: this.findParentByType('form').getForm().findField('ipn_added').getValue(),
+    	                                    	        enabled: this.findParentByType('form').getForm().findField('ipn_enabled').getValue(),
+    	                                    	        sleep: this.findParentByType('form').getForm().findField('ipn_sleep').getValue(),
+    	                                    	    },
+    	                                    	});
+    	                                    	
+    	                                    }
     	                                }
     	                            ]
     	                        }
@@ -1305,20 +1409,10 @@ Ext.onReady(function(){
     	            flex: 1,
     	            items: [
     	                {
-    	                    xtype: 'grid',
+    	                    xtype: 'xaccountaddonservicesgrid',
     	                    height: 260,
     	                    width: 765,
     	                    title: 'Подключаемые услуги',
-    	                    store:new Ext.data.JsonStore({}),
-    	                    stripeRows: true,
-    	                    columns: [
-    	                        {
-    	                            xtype: 'booleancolumn',
-    	                            header: 'Boolean',
-    	                            sortable: true,
-    	                            width: 100
-    	                        }
-    	                    ]
     	                }
     	            ]
     	        },
@@ -1329,8 +1423,9 @@ Ext.onReady(function(){
     	            items: [
     	                {
     	                    xtype: 'fieldset',
-    	                    height: 399,
+    	                    //height: 399,
     	                    width: 765,
+    	                    autoHeight:true,
     	                    defaults: {
     	                        hideLabel: true
     	                    },
@@ -1341,7 +1436,6 @@ Ext.onReady(function(){
     	                            name: 'allow_dhcp',
     	                            boxLabel: 'Выдавать IPN IP адрес по DHCP',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label',
     	                            hideLabel: true
     	                        },
     	                        {
@@ -1349,101 +1443,92 @@ Ext.onReady(function(){
     	                            name: 'allow_dhcp_with_null',
     	                            boxLabel: 'Выдавать IP адрес по DHCP при нулевом балансе',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'allow_dhcp_with_minus',
     	                            boxLabel: 'Выдавать IP адрес по DHCP при отрицательном балансе',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'allow_dhcp_with_block',
     	                            boxLabel: 'Выдавать IP адрес по DHCP при блокировке по балансу/лимитам трафика',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'allow_vpn_with_null',
     	                            boxLabel: 'Разрешить RADIUS авторизацию при нулевом балансе',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'allow_vpn_with_minus',
     	                            boxLabel: 'Разрешить RADIUS авторизацию при отрицательном балансе',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'allow_vpn_with_block',
     	                            boxLabel: 'Разрешить RADIUS авторизацию при блокировке по балансу/лимитам трафика',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'allow_ipn_with_null',
     	                            boxLabel: 'Разрешить IPN доступ при нулевом балансе',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'allow_ipn_with_minus',
     	                            boxLabel: 'Разрешить IPN доступ при отрицательном балансе',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'allow_ipn_with_block',
     	                            boxLabel: 'Разрешить IPN доступ при блокировке по балансу/лимитам трафика',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'associate_pptp_ipn_ip',
     	                            boxLabel: 'Привязать PPTP авторизацию к IPN IP',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'associate_pppoe_ipn_mac',
     	                            boxLabel: 'Привязать PPPOE авторизацию к IPN MAC',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'allow_addonservice',
     	                            boxLabel: 'Разрешить активацию подключаемых услуг через веб-кабинет',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'checkbox',
     	                            name: 'allow_mac_update',
     	                            boxLabel: 'Разрешить обновление IPN MAC адреса через веб-кабинет',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
     	                        },
     	                        {
     	                            xtype: 'textfield',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
+    	                            fieldLabel: 'VPN speed',
+    	                            name: 'vpn_speed',
+    	                            hideLabel:false,
     	                        },
     	                        {
     	                            xtype: 'textfield',
     	                            anchor: '100%',
-    	                            fieldLabel: 'Label'
+    	                            fieldLabel: 'IPN speed',
+    	                            name: 'ipn_speed',
+    	                            hideLabel:false,
     	                        }
     	                    ]
     	                }

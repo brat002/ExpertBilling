@@ -61,9 +61,7 @@ EBS.store.accounts = new Ext.data.JsonStore({
         url: '/ebsadmin/accounts/',
         method:'GET',
     }),    
-    fields: ['vpn_ip_address', 'status', 'ipn_ip_address','username',
-            'password','id', 'city', 'street', 'credit', 'nas',
-            'created','fullname', 'email', 'ballance'],
+    fields: ['comment', 'status', 'allow_webcab', 'house', 'street', 'postcode', 'suspended', 'id', 'row', 'city', 'systemuser', 'contactperson_phone', 'ipn_status', 'nas', 'entrance_code', 'elevator_direction', 'passport', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'last_balance_null', 'email', 'username', 'entrance', 'phone_m', 'phone_h', 'allow_ipn_with_block', 'allow_expresscards', 'contract', 'address', 'private_passport_number', 'password', 'disabled_by_limit', 'balance_blocked', 'room', 'created', 'region', 'contactperson', 'credit', 'ballance', 'house_bulk', 'fullname', 'passport_given'],
     root: 'records',
     remoteSort:true,
     sortInfo:{

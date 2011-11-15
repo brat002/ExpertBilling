@@ -259,7 +259,9 @@ COMPRESS_JS = {
         "ext/ux/SlidingPager.js",
 
         #Main window tabs plugin support
-        "ext/ux/TabScrollerMenu.js"
+        "ext/ux/TabScrollerMenu.js",
+        #plugins
+        "ext/ebs/plugins/xcheckbox.js",
         ),
         'output_filename': 'p/ux.?.js',
     },

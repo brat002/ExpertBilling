@@ -2,6 +2,29 @@
 
 });
 */
+var maskingAjax = new Ext.data.Connection({
+    listeners: {
+        'beforerequest': {
+            fn: function(con, opt){
+                Ext.get(document.body).mask('Loading...');
+            },
+            scope: this
+        },
+        'requestcomplete': {
+            fn: function(con, res, opt){
+                Ext.get(document.body).unmask();
+            },
+            scope: this
+        },
+        'requestexception': {
+            fn: function(con, res, opt){
+                Ext.get(document.body).unmask();
+            },
+            scope: this
+        }
+    }
+});
+
 Ext.ns('Ext.ux.form');
 
 /**
@@ -657,6 +680,69 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
 // register xtype
 Ext.reg('xdatetime', Ext.ux.form.DateTime);
 
+//redefining Ext.lib.Ajax.serializeForm to handle checkboxes more ideally
+
+Ext.lib.Ajax.serializeForm = function(F){
+	if(typeof F=="string"){
+		F=(document.getElementById(F)||document.forms[F])
+	}
+	var G,E,H,J,K="",M=false;
+	for(var L=0;L<F.elements.length;L++){
+		G=F.elements[L];
+		J=F.elements[L].disabled;
+		E=F.elements[L].name;
+		H=F.elements[L].value;
+		if(!J&&E){
+			switch(G.type){
+				case"select-one":
+				case"select-multiple":
+					for(var I=0;I<G.options.length;I++){
+						if(G.options[I].selected){
+							if(Ext.isIE){
+								K+=encodeURIComponent(E)+"="+encodeURIComponent(G.options[I].attributes["value"].specified?G.options[I].value:G.options[I].text)+"&"
+							}else{
+								K+=encodeURIComponent(E)+"="+encodeURIComponent(G.options[I].hasAttribute("value")?G.options[I].value:G.options[I].text)+"&"
+							}
+						}
+					}
+					break;
+				case"radio":
+				case"checkbox":
+					if(G.checked){
+						K+=encodeURIComponent(E)+"="+encodeURIComponent(H)+"&"
+					} else {
+						K+=encodeURIComponent(E)+"="+encodeURIComponent('0')+"&"
+					}
+					break;
+				case"file":
+				case undefined:
+				case"reset":
+				case"button":
+					break;
+				case"submit":
+					if(M==false){
+						K+=encodeURIComponent(E)+"="+encodeURIComponent(H)+"&";M=true
+					}
+					break;
+				default:
+					K+=encodeURIComponent(E)+"="+encodeURIComponent(H)+"&";
+					break
+			}
+		}
+	}
+	K=K.substr(0,K.length-1);
+	return K
+}
+
+Ext.namespace("Ext.ux");
+Ext.ux.comboBoxRenderer = function(combo) {
+  return function(value) {
+    var idx = combo.store.find(combo.valueField, value);
+    var rec = combo.store.getAt(idx);
+    return rec.get(combo.displayField);
+  };
+}
+
 Ext.namespace("Ext.ux.Action");
 
 
@@ -705,3 +791,4 @@ Ext.extend(Ext.ux.Action.JsonSubmit, Ext.form.Action.Submit, {
 Ext.apply(Ext.form.Action.ACTION_TYPES, {
     'jsonsubmit' : Ext.ux.Action.JsonSubmit
 });
+
