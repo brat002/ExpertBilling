@@ -121,7 +121,7 @@ Ext.onReady(function(){
          * создает форму
          *
          **/
-
+    	   //alert(123);
            console.log(action, self);
 
             //Create edit window
@@ -157,12 +157,7 @@ Ext.onReady(function(){
                             viewConfig: {
                                 forceFit: true
                             },
-                            tools : [{
-                                    id: 'gear',
-                                    handler: function() {
-                                        Ext.Msg.alert('TODO:','Attach as tab.');
-                                        }
-                                   }],
+                            
 
                             plain: true,
                             items: [form_data],
@@ -231,12 +226,13 @@ Ext.onReady(function(){
                         });
                         EBS.windows[window_key] = winCmp;
                     }
-             form = winCmp.items.items[0].items.items[0].items.items[0].getForm();
-             //form.rec = selection.items[0];
-             //alert(form.url);
-             form.load({url:form.url,method:form.method,params:{'id':id}});
-             //form.loadRecord(form.rec);
-             
+           	 if(id){
+           		 form = winCmp.items.items[0].items.items[0].items.items[0].getForm();
+           		 //form.rec = selection.items[0];
+           		 //alert(form.url);
+           		 form.load({url:form.url,method:form.method,params:{'id':id}});
+           		 //form.loadRecord(form.rec);
+           	 };
              EBS.windowCmp.add(winCmp)
              //winCmp.show();
     }
@@ -639,7 +635,8 @@ Ext.onReady(function(){
      
 
    });
-
+    Ext.reg('xtrtypecombo', EBS.TrTypeCombo);
+    
     EBS.gs=function gridStoreFactory() {
         return new Ext.data.JsonStore({
 	        	paramsAsHash: true,
@@ -697,8 +694,11 @@ Ext.onReady(function(){
             	   listeners: {
  			          render:function(){
  			             // console.info('load',this,arguments);
- 			        	  
- 			        	  this.store.load({params:{account_id:this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value}});
+ 			        	  var account_id;
+ 			        	  account_id=this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value;
+ 			        	  if (account_id){
+ 			        		  this.store.load({params:{account_id:account_id}});
+ 			        	  }
  			          }
             	   },
                    
