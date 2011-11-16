@@ -81,7 +81,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
     /**
      * @cfg {String} timeFormat Format of TimeField. Can be localized. (defaults to 'g:i A')
      */
-    ,timeFormat:'g:i A'
+    ,timeFormat:'g:i:s'
     /**
      * @cfg {Object} dateConfig Config for DateField constructor.
      */

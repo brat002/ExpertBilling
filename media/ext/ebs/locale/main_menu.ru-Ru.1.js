@@ -5,7 +5,7 @@ var mainMenu = [
     children:[{
         text:'Аккаунты',
         id:'accounts',
-        type:'ebs_accountsPanel',
+        type:'xaccountspanel',
         singleton: true,
         leaf:true
     },{

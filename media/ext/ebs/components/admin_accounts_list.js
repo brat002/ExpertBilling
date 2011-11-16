@@ -30,6 +30,12 @@ Ext.onReady(function(){
                 this.tbCommandCallBack = function(self, a,b,c){
                     eval(action)(a,b,c)
                 }
+                
+                this.tbFormReloadCallBack = function(self){
+                	
+                	
+                	self.store.load();
+                	}
 
              // MENU
              this.topToolbar = new Ext.Toolbar({
@@ -102,6 +108,13 @@ Ext.onReady(function(){
                             tooltip: i18n.saveToolTip,
                             handler: EBS.store.accounts.save
                         }
+                        ,{xtype: 'tbseparator'},{
+                            text: 'Обновить',
+                            icon: media+'icons/16/arrow_refresh.png',
+                            height:24,width:24,
+                            tooltip: i18n.saveToolTip,
+                            handler: this.tbFormReloadCallBack.createCallback(this)
+                        }
 
                     ]
                 });
@@ -113,6 +126,7 @@ Ext.onReady(function(){
 
              Ext.apply(this, {
                                 id:'accounts_list',
+                                view: new Ext.grid.GroupingView(),
                                 store   : EBS.store.accounts,
                                 closable:true,
                               //  plugins : [this.filters],
@@ -130,10 +144,10 @@ Ext.onReady(function(){
 
                                     },                                
                                     {
-                                        header   : i18n.accounts.username,
+                                        header   : 'Логин',
                                         sortable : true,
-                                        width    : 85,
-                                        locked: true,
+                                        //width    : 85,
+                                        //locked: true,
                                         dataIndex: 'username',
                                         filter: {
                                             type: 'string'
@@ -141,9 +155,9 @@ Ext.onReady(function(){
 
                                     },
                                     {
-                                        header   : i18n.accounts.fio,
+                                        header   : "ФИО'",
                                         sortable : true,
-                                        //autoexpand:true,
+                                        autoexpand:true,
                                         width:200,
                                         dataIndex: 'fullname',
                                         filter: {
@@ -180,7 +194,7 @@ Ext.onReady(function(){
                                         header   : i18n.accounts.credit,
                                         sortable : true,
                                         //autoexpand:true,
-                                        width:200,
+                                        //width:200,
                                         dataIndex: 'credit',
                                         renderer: EBS.moneyRenderer,
                                         filter: {
@@ -192,7 +206,7 @@ Ext.onReady(function(){
                                         header   : 'Город',
                                         sortable : true,
                                         //autoexpand:true,
-                                        width:200,
+                                        //width:200,
                                         dataIndex: 'city',
                                         filter: {
                                             type: 'string'
@@ -203,7 +217,7 @@ Ext.onReady(function(){
                                         header   : 'Улица',
                                         sortable : true,
                                         //autoexpand:true,
-                                        width:200,
+                                        //width:200,
                                         dataIndex: 'street',
                                         filter: {
                                             type: 'string'
@@ -214,7 +228,7 @@ Ext.onReady(function(){
                                         header   : 'Дом',
                                         sortable : true,
                                         //autoexpand:true,
-                                        width:200,
+                                        //width:200,
                                         dataIndex: 'house',
                                         filter: {
                                             type: 'string'
@@ -225,7 +239,7 @@ Ext.onReady(function(){
                                         header   : 'Квартира',
                                         sortable : true,
                                         //autoexpand:true,
-                                        width:200,
+                                        //width:200,
                                         dataIndex: 'room',
                                         filter: {
                                             type: 'string'
@@ -236,7 +250,7 @@ Ext.onReady(function(){
                                         header   : 'Контактное лицо',
                                         sortable : true,
                                         //autoexpand:true,
-                                        width:200,
+                                        //width:200,
                                         dataIndex: 'contactperson',
                                         filter: {
                                             type: 'string'
@@ -247,7 +261,7 @@ Ext.onReady(function(){
                                         header   : 'Контактный телефон',
                                         sortable : true,
                                         //autoexpand:true,
-                                        width:200,
+                                        //width:200,
                                         dataIndex: 'contactphone',
                                         filter: {
                                             type: 'string'
@@ -258,7 +272,7 @@ Ext.onReady(function(){
                                         header   : 'Домашний телефон',
                                         sortable : true,
                                         //autoexpand:true,
-                                        width:200,
+                                        //width:200,
                                         dataIndex: 'phone_h',
                                         filter: {
                                             type: 'string'
@@ -269,7 +283,7 @@ Ext.onReady(function(){
                                         header   : 'Мобильный телефон',
                                         sortable : true,
                                         //autoexpand:true,
-                                        width:200,
+                                        //width:200,
                                         dataIndex: 'phone_m',
                                         filter: {
                                             type: 'string'
@@ -278,7 +292,7 @@ Ext.onReady(function(){
                                     },                                      
                                     {
                                         header   : i18n.accounts.created,
-                                        width    : 115,
+                                        //width    : 115,
                                         sortable : true,
                                         renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
                                         dataIndex: 'created'
@@ -286,7 +300,7 @@ Ext.onReady(function(){
 
                                     {
                                         header   : i18n.accounts.email,
-                                        width    : 115,
+                                        //width    : 115,
                                         sortable : true,
                                         dataIndex: 'email',
                                         filter: {
@@ -818,7 +832,11 @@ Ext.onReady(function(){
                                                                 	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
                                                                 	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
                                                                 	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-                                                                	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid').selModel.selections.items[0].id, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+                                                                	   var account_id;
+                                                                	   
+                                                                	   account_id = this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value;
+                                                                	   
+                                                                	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
                                                                    }
                                                                },{
                                                                    iconCls: 'icon-user-edit',
@@ -827,7 +845,11 @@ Ext.onReady(function(){
                                                                 	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
                                                                 	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
                                                                 	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-                                                                	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid').selModel.selections.items[0].id, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+                                                                	   var id;
+                                                                	   var account_id;
+                                                                	   account_id = this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value;
+                                                                	   id = this.findParentByType('grid').selModel.selections.items[0].id;
+                                                                	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
                                                                    }
                                                                },{
                                                                    //ref: '../removeBtn',
@@ -1550,4 +1572,6 @@ form = object.ownerCt;
 }
     Ext.reg("ebs_accountsPanel", EBS.conponents.accountsGrid);
     EBS.windows.keys[EBS.windows.keys.length] = 'ebs_accountsPanel';
+    
+    
 });

@@ -15,11 +15,11 @@ def jsonaccounts(request):
     #from django.http import HttpResponse
     res=[]
     for item in items:
-        res.append(instance_dict(item))
+        res.append(instance_dict(item,normal_fields=True))
     print instance_dict(item).keys()
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
+    return {"records": res, 'total':len(res)}
 
 @ajax_request
 @login_required
@@ -64,6 +64,21 @@ def subaccount(request):
 def nasses(request):
     from nas.models import Nas
     items = Nas.objects.all()
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append({"nas":item.id, "name":item.name})
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res}
+
+@ajax_request
+@login_required
+def tariffs(request):
+    from billservice.models import Tariff
+    items = Tariff.objects.all()
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
@@ -130,6 +145,7 @@ def city(request):
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
+    res.append({"id":None, "name":u'-- Не указан --'})
     for item in items:
         res.append({"id":item.id, "name":item.name})
     
@@ -148,6 +164,7 @@ def street(request):
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
+    res.append({"id":None, "name":u'-- Не указан --'})
     for item in items:
         res.append({"id":item.id, "name":item.name})
     
@@ -179,8 +196,12 @@ def account_save(request):
     #from django.core import serializers
     #from django.http import HttpResponse
     print request
-    acc = Account.objects.get(id=request.POST.get('id'))
-    a=AccountForm(request.POST, instance=acc)
+    id = request.POST.get('id')
+    if id:
+        acc = Account.objects.get(id=id)
+        a=AccountForm(request.POST, instance=acc)
+    else:
+        a=AccountForm(request.POST)
     p=request.POST
     res=[]
     print "a.is_valid()",a.is_valid()
@@ -192,7 +213,6 @@ def account_save(request):
     #acc.fullllname=p.get("fullname")
     if a.is_valid():
         try:
-            print 'acc.id', acc.id
             a.save()
             res={"success": True}
         except Exception, e:
@@ -243,7 +263,9 @@ def house(request):
         items = House.objects.all()
     #from django.core import serializers
     #from django.http import HttpResponse
+    
     res=[]
+    res.append({"id":None, "name":u'-- Не указан --'})
     for item in items:
         res.append({"id":item.id, "name":item.name})
     
@@ -275,6 +297,7 @@ def systemuser(request):
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
+    res.append({"id":None, "name":u'-- Не указан --'})
     for item in items:
         res.append({"id":item.id, "name":"%s %s" % (item.username, item.fullname)})
     
@@ -282,7 +305,7 @@ def systemuser(request):
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res}
 
-def instance_dict(instance, key_format=None):
+def instance_dict(instance, key_format=None, normal_fields=False):
     """
     Returns a dictionary containing field names and values for the given
     instance
@@ -304,7 +327,11 @@ def instance_dict(instance, key_format=None):
             value=None
         if value is not None:
             if isinstance(field, ForeignKey):
-                value = value._get_pk_val()
+                try:
+                    value = value._get_pk_val() if normal_fields==False else unicode(value)
+                except Exception, e:
+                    print e
+                    
             elif isinstance(field, DateField):
                 value = value.strftime('%Y-%m-%d %H:%M:%S')
             elif isinstance(field, DecimalField):
