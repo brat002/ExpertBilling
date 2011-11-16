@@ -11,6 +11,7 @@ urlpatterns = patterns('ebsadmin.views',
      
      url(r'^account/$', 'account'),
      url(r'^subaccounts/$', 'subaccounts'),
+     url(r'^tariffs/$', 'tariffs'),
      url(r'^subaccounts/get/$', 'subaccount'),
      url(r'^subaccounts/set/$', 'subaccount_save'),
      #url(r'^simplelogin/$', 'simplelogin'),

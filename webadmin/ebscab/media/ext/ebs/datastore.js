@@ -54,16 +54,24 @@ EBS.store.accounts_ = new Ext.data.DirectStore({
             }
         });
 
-EBS.store.accounts = new Ext.data.JsonStore({
+EBS.store.accounts = new Ext.data.GroupingStore({
     paramsAsHash: true,
     autoLoad: {params:{start:0, limit:100}},
     proxy: new Ext.data.HttpProxy({
         url: '/ebsadmin/accounts/',
         method:'GET',
     }),    
-    fields: ['comment', 'status', 'allow_webcab', 'house', 'street', 'postcode', 'suspended', 'id', 'row', 'city', 'systemuser', 'contactperson_phone', 'ipn_status', 'nas', 'entrance_code', 'elevator_direction', 'passport', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'last_balance_null', 'email', 'username', 'entrance', 'phone_m', 'phone_h', 'allow_ipn_with_block', 'allow_expresscards', 'contract', 'address', 'private_passport_number', 'password', 'disabled_by_limit', 'balance_blocked', 'room', 'created', 'region', 'contactperson', 'credit', 'ballance', 'house_bulk', 'fullname', 'passport_given'],
-    root: 'records',
-    remoteSort:true,
+    reader:new Ext.data.JsonReader({
+        root: 'records',
+        id: 'id',
+        idProperty: 'id',
+        totalProperty:'total',
+        fields: ['comment', 'status', 'allow_webcab', 'house', 'street', 'postcode', 'suspended', 'id', 'row', {'name':'city', type:'string'}, 'systemuser', 'contactperson_phone', 'ipn_status', 'nas', 'entrance_code', 'elevator_direction', 'passport', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'last_balance_null', 'email', 'username', 'entrance', 'phone_m', 'phone_h', 'allow_ipn_with_block', 'allow_expresscards', 'contract', 'address', 'private_passport_number', 'password', 'disabled_by_limit', 'balance_blocked', 'room', 'created', 'region', 'contactperson', 'credit', 'ballance', 'house_bulk', 'fullname', 'passport_given'],
+        
+    }),
+    //fields: ['comment', 'status', 'allow_webcab', 'house', 'street', 'postcode', 'suspended', 'id', 'row', 'city', 'systemuser', 'contactperson_phone', 'ipn_status', 'nas', 'entrance_code', 'elevator_direction', 'passport', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'last_balance_null', 'email', 'username', 'entrance', 'phone_m', 'phone_h', 'allow_ipn_with_block', 'allow_expresscards', 'contract', 'address', 'private_passport_number', 'password', 'disabled_by_limit', 'balance_blocked', 'room', 'created', 'region', 'contactperson', 'credit', 'ballance', 'house_bulk', 'fullname', 'passport_given'],
+    //root: 'records',
+    remoteSort:false,
     sortInfo:{
          field:'username',
          direction:'ASC'
