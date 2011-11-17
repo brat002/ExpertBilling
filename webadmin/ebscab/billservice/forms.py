@@ -51,6 +51,33 @@ class StatististicForm(forms.Form):
     date_to = forms.DateField(label=u'по дату', input_formats=('%d/%m/%Y',), required = False)
     
     
+class SearchAccountForm(forms.Form):
+    contract = forms.CharField(required=False)
+    username = forms.CharField(required=False)
+    fullname = forms.CharField(required=False)
+    contactperson = forms.CharField(required=False)
+    city = forms.CharField(required=False)
+    street = forms.CharField(required=False)
+    house = forms.CharField(required=False)
+    house_bulk = forms.CharField(required=False)
+    room = forms.CharField(required=False)
+    status = forms.IntegerField(required=False)
+    ballance_exp = forms.CharField(required=False)
+    ballance = forms.DecimalField(required=False)
+    credit_exp = forms.CharField(required=False)
+    credit = forms.DecimalField(required=False)
+    tariff_filter = forms.MultipleChoiceField(required=False)
+    group_filter = forms.MultipleChoiceField(required=False)
+    ballance_blocked = forms.CheckboxInput()
+    limit_blocked = forms.CheckboxInput()
+    nas_filter = forms.MultipleChoiceField(required=False)
+    ipn_added = forms.CheckboxInput()
+    ipn_enabled = forms.CheckboxInput()
+    ipn_sleep = forms.CheckboxInput()
+    systemuser_filter = forms.MultipleChoiceField(required=False)
+    created_from = forms.DateTimeField(required=False)
+    created_to = forms.DateTimeField(required=False)
+
 
 class AccountForm(ModelForm):
     class Meta:
