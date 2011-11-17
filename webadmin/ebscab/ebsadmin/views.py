@@ -5,18 +5,47 @@ from billservice.models import Account, SubAccount, TransactionType, City, Stree
 from nas.models import Nas
 from django.contrib.auth.decorators import login_required
 
-from billservice.forms import AccountForm, SubAccountForm
+from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm
 
 @ajax_request
 @login_required
 def jsonaccounts(request):
-    items = Account.objects.all()
+    if request.GET.get('action')!='search':
+        items = Account.objects.all()
+    else:
+        f=SearchAccountForm(request.GET)
+        print f.errors
+        print f.cleaned_data
+        query={}
+        for k in f.cleaned_data:
+            if f.cleaned_data.get(k):
+                query[k]=f.cleaned_data.get(k)
+            
+        items = Account.objects.filter(**query)
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
     for item in items:
         res.append(instance_dict(item,normal_fields=True))
-    print instance_dict(item).keys()
+    #print instance_dict(item).keys()
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'total':len(res)}
+
+@ajax_request
+@login_required
+def account_livesearch(request):
+    from extdirect.django.store import ExtDirectStore
+    query=request.POST.get('query')
+    field=request.POST.get('field')
+    if not (query and field):return {"records": [], 'total':0}
+    items = Account.objects.filter(**{'%s__icontains' % field:query})
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append({'id':item.id, 'username':item.username, 'contract':item.contract,'fullname':item.fullname, 'created':item.created.strftime('%Y-%m-%d %H:%M:%S')})
+    #print instance_dict(item).keys()
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res, 'total':len(res)}
@@ -83,7 +112,7 @@ def tariffs(request):
     #from django.http import HttpResponse
     res=[]
     for item in items:
-        res.append({"nas":item.id, "name":item.name})
+        res.append({"tariff":item.id, "name":item.name})
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')

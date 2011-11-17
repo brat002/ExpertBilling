@@ -128,7 +128,7 @@ Ext.onReady(function(){
                                 id:'accounts_list',
                                 view: new Ext.grid.GroupingView(),
                                 store   : EBS.store.accounts,
-                                closable:true,
+                                closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
                                 columns : [
@@ -155,7 +155,18 @@ Ext.onReady(function(){
 
                                     },
                                     {
-                                        header   : "ФИО'",
+                                        header   : 'Договор',
+                                        sortable : true,
+                                        //width    : 85,
+                                        //locked: true,
+                                        dataIndex: 'contract',
+                                        filter: {
+                                            type: 'string'
+                                        }
+
+                                    },                                    
+                                    {
+                                        header   : "ФИО",
                                         sortable : true,
                                         autoexpand:true,
                                         width:200,
@@ -178,18 +189,7 @@ Ext.onReady(function(){
 
                                     },  
                                     
-//['comment', 'status', 'allow_webcab', 'house', 'street', 'postcode', 'suspended', 'id', 'row', 'city', 'systemuser', 'contactperson_phone', 'ipn_status', 'nas', 'entrance_code', 'elevator_direction', 'passport', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'last_balance_null', 'email', 'username', 'entrance', 'phone_m', 'phone_h', 'allow_ipn_with_block', 'allow_expresscards', 'contract', 'address', 'private_passport_number', 'password', 'disabled_by_limit', 'balance_blocked', 'room', 'created', 'region', 'contactperson', 'credit', 'ballance', 'house_bulk', 'fullname', 'passport_given']                                    
-                                    {
-                                        header   : i18n.accounts.nas,
-                                        sortable : true,
-                                        //autoexpand:true,
-                                        width:200,
-                                        dataIndex: 'nas',
-                                        filter: {
-                                            type: 'string'
-                                        }
 
-                                    },
                                    {
                                         header   : i18n.accounts.credit,
                                         sortable : true,
@@ -337,7 +337,8 @@ Ext.onReady(function(){
     EBS.forms.ebs_accountsPanel.edit_user = {
                                         xtype: 'panel',
                                         //id: 'account-info',
-                                        windowTitle:'Account details',
+                                        //windowTitle:'Account details',
+                                        closable:false,
                                         autoScroll:true,
                                         layout:'anchor',
                                         autoHeight: true,
