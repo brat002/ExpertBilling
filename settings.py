@@ -203,7 +203,7 @@ COMPRESS_CSS = {
 
             "ext/ebs/styles.css",
             "css/style.css",
-            "css/boxselect.css",
+            "css/MultiSelect.css",
             
             ),
         'output_filename': 'p/screen.?.css',
@@ -256,7 +256,8 @@ COMPRESS_JS = {
 
         "ext/ux/print/Printer.js",
         "ext/ux/print/renderers/Base.js",
-        "ext/ux/Ext.ux.BoxSelect.js",
+        "ext/ux/MultiSelect.js",
+        "ext/ux/ItemSelector.js",
 
         #All grid navigation  plugin support
         "ext/ux/SlidingPager.js",

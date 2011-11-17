@@ -586,138 +586,75 @@ Ext.onReady(function(){
 
     });
     Ext.reg("ebs_base_grid", EBS.base.GridPanel);
-    Ext.exampledata = [
-                              ['AL', 'Alabama', 'The Heart of Dixie'],
-                              ['AK', 'Alaska', 'The Land of the Midnight Sun'],
-                              ['AZ', 'Arizona', 'The Grand Canyon State'],
-                              ['AR', 'Arkansas', 'The Natural State'],
-                              ['CA', 'California', 'The Golden State'],
-                              ['CO', 'Colorado', 'The Mountain State'],
-                              ['CT', 'Connecticut', 'The Constitution State'],
-                              ['DE', 'Delaware', 'The First State'],
-                              ['DC', 'District of Columbia', "The Nation's Capital"],
-                              ['FL', 'Florida', 'The Sunshine State'],
-                              ['GA', 'Georgia', 'The Peach State'],
-                              ['HI', 'Hawaii', 'The Aloha State'],
-                              ['ID', 'Idaho', 'Famous Potatoes'],
-                              ['IL', 'Illinois', 'The Prairie State'],
-                              ['IN', 'Indiana', 'The Hospitality State'],
-                              ['IA', 'Iowa', 'The Corn State'],
-                              ['KS', 'Kansas', 'The Sunflower State'],
-                              ['KY', 'Kentucky', 'The Bluegrass State'],
-                              ['LA', 'Louisiana', 'The Bayou State'],
-                              ['ME', 'Maine', 'The Pine Tree State'],
-                              ['MD', 'Maryland', 'Chesapeake State'],
-                              ['MA', 'Massachusetts', 'The Spirit of America'],
-                              ['MI', 'Michigan', 'Great Lakes State'],
-                              ['MN', 'Minnesota', 'North Star State'],
-                              ['MS', 'Mississippi', 'Magnolia State'],
-                              ['MO', 'Missouri', 'Show Me State'],
-                              ['MT', 'Montana', 'Big Sky Country'],
-                              ['NE', 'Nebraska', 'Beef State'],
-                              ['NV', 'Nevada', 'Silver State'],
-                              ['NH', 'New Hampshire', 'Granite State'],
-                              ['NJ', 'New Jersey', 'Garden State'],
-                              ['NM', 'New Mexico', 'Land of Enchantment'],
-                              ['NY', 'New York', 'Empire State'],
-                              ['NC', 'North Carolina', 'First in Freedom'],
-                              ['ND', 'North Dakota', 'Peace Garden State'],
-                              ['OH', 'Ohio', 'The Heart of it All'],
-                              ['OK', 'Oklahoma', 'Oklahoma is OK'],
-                              ['OR', 'Oregon', 'Pacific Wonderland'],
-                              ['PA', 'Pennsylvania', 'Keystone State'],
-                              ['RI', 'Rhode Island', 'Ocean State'],
-                              ['SC', 'South Carolina', 'Nothing Could be Finer'],
-                              ['SD', 'South Dakota', 'Great Faces, Great Places'],
-                              ['TN', 'Tennessee', 'Volunteer State'],
-                              ['TX', 'Texas', 'Lone Star State'],
-                              ['UT', 'Utah', 'Salt Lake State'],
-                              ['VT', 'Vermont', 'Green Mountain State'],
-                              ['VA', 'Virginia', 'Mother of States'],
-                              ['WA', 'Washington', 'Green Tree State'],
-                              ['WV', 'West Virginia', 'Mountain State'],
-                              ['WI', 'Wisconsin', "America's Dairyland"],
-                              ['WY', 'Wyoming', 'Like No Place on Earth']
-                          ];
-    EBS.base.BoxSelect =Ext.extend(Ext.ux.BoxSelect,{
-    	constructor: function(config) {
-    		
-            Ext.apply(this, {
-				fieldLabel: 'State',
-				resizable: true,
-				name: 'to[]',
-				anchor:'100%',
-				store: new Ext.data.SimpleStore({
-					fields: ['abbr', 'state', 'nick'],
-					data: Ext.exampledata,
-					sortInfo: {field: 'state', direction: 'ASC'}
-				}),
-				mode: 'local',
-				displayField: 'state',
-				displayFieldTpl: '{state} ({abbr})',
-				valueField: 'abbr',
-				addUniqueValues: false,
-				
-            
-            }
-            );
-            Ext.apply(this, Ext.applyIf(this.initialConfig, config));
-            EBS.base.BoxSelect.superclass.constructor.call(this, config)
-        },
-        initComponent: function(arguments) {
-            EBS.base.BoxSelect.superclass.initComponent.apply(this, arguments);
-        }
 
-
-
-    });
-    Ext.reg("xboxselect", EBS.base.BoxSelect);
     
     EBS.AccountsPanel = Ext.extend(Ext.TabPanel, {
         initComponent:function() {
            var config = {
 						title:'Аккаунты',
 						id:'accountspanel',
-						items:[{
-						       xtype:'container',
-						       title:'Поиск',
-						       items:[{
-						    	   
-
+						activeTab       : 0,
+						align:'center',
+						items:[{						    	   
+						    	    title:'Поиск',
 								    xtype: 'form',
 								    autoHeight: true,
 								    autoScroll: true,
-								    autoWidth: true,
-								    width: 907,
+								    width: 320,
+								    //width: 907,
 								    activeItem: 0,
 								    layout: 'accordion',
-								    bodyStyle: 'padding:15px',
+								    bodyStyle: 'padding:20px 150px 20px 150px',
+								    buttonAlign: 'center',
+								    //bodyStyle: "padding: 15px;"
+								    //align:'center',
 								    items: [
+								            
 								        {
 								            xtype: 'fieldset',
 								            autoHeight: true,
-								            width: 888,
+								            autoWidth: true,
+								            //width: 600,
 								            title: 'Учётные данные',
 								            labelPad: 10,
-								            labelWidth: 200,
+								            //labelWidth: 200,
 								            items: [
+								                    {
+								                    	xtype:'hidden',
+								                    	name:'action',
+								                    	value:'search',
+								                    },
+									                {
+									                    xtype: 'xaccountslivesearchcombo',
+									                    name: 'contract',
+									                    field:'contract',
+									                    valueField:'contract',
+									                    displayField:'contract',
+									                    anchor: '100%',
+									                    fieldLabel: 'Договор',
+									                    blankText: 'Укажите договор или его часть'
+									                },
 								                {
-								                    xtype: 'textfield',
-								                    name: 'contract',
-								                    anchor: '100%',
-								                    fieldLabel: 'Номер договора'
-								                },
-								                {
-								                    xtype: 'textfield',
+								                    xtype: 'xaccountslivesearchcombo',
 								                    name: 'username',
+								                    field:'username',
+								                    valueField:'username',
+								                    displayField:'username',
 								                    anchor: '100%',
-								                    fieldLabel: 'Имя пользоателя'
+								                    fieldLabel: 'Имя пользователя',
+								                    blankText: 'Укажите имя пользователя или его часть'
+								                  
 								                },
 								                {
-								                    xtype: 'textfield',
+								                    xtype: 'xaccountslivesearchcombo',
 								                    name: 'fullname',
+								                    field:'fullname',
+								                    displayField:'fullname',
+								                    valueField:'fullname',
+								                    hiddenField:'fullname',
 								                    anchor: '100%',
-								                    fieldLabel: 'ФИО'
+								                    fieldLabel: 'ФИО',
+								                    blankText: 'Укажите ФИО или его часть'
 								                },
 								                {
 								                    xtype: 'textfield',
@@ -728,6 +665,7 @@ Ext.onReady(function(){
 								                {
 								                    xtype: 'xcombocity',
 								                    name: 'city',
+								                    hiddenName: 'city',
 								                    anchor: '100%',
 								                    fieldLabel: 'Город',
 								                    listeners:{
@@ -743,6 +681,7 @@ Ext.onReady(function(){
 								                    xtype: 'xcombostreet',
 								                    name: 'street',
 								                    anchor: '100%',
+								                    hiddenName: 'street',
 								                    fieldLabel: 'Улица',
 								                    listeners:{
                                                     	select: function(combo, record, index) {
@@ -758,6 +697,7 @@ Ext.onReady(function(){
 								                    xtype: 'xcombohouse',
 								                    name: 'house',
 								                    anchor: '100%',
+								                    hiddenName: 'house',
 								                    fieldLabel: 'Дом',
 								                    
 								                },
@@ -771,13 +711,37 @@ Ext.onReady(function(){
 								                    xtype: 'textfield',
 								                    name: 'room',
 								                    fieldLabel: 'Квартира'
-								                }
+								                },
+								                {
+						                            xtype: 'combo',
+						                            name: 'status',
+						                            fieldLabel: 'Статус',
+						                            width:300,
+						                            local:true,
+						                            displayField:'status',
+						                            hiddenName:'status',
+						                            valueField:'id',
+						                            typeAhead: true,
+						                            mode: 'local',
+						                            forceSelection: true,
+						                            triggerAction: 'all',
+						                            editable:false,
+						                            store:  new Ext.data.ArrayStore({
+						                                fields: ['id','status'],
+						                                data : [['',''],
+						                                        ['1','Активен'], 
+						                                        ['2','Не активен, списывать периодические услуги'],
+						                                        ['3','Не активен, не списывать периодические услуги'],
+						                                        ['4','Пользовательская блокировка'],] 
+						                            })
+						                        },
 								            ]
 								        },
 								        {
 								            xtype: 'fieldset',
 								            autoHeight: true,
-								            width: 889,
+								            autoWidth:true,
+								            //width: 600,
 								            title: 'Тарификация',
 								            items: [
 								                {
@@ -787,12 +751,23 @@ Ext.onReady(function(){
 								                    items: [
 								                        {
 								                            xtype: 'combo',
-								                            name: 'ballance_exp'
+								                            name: 'ballance_exp',
+								                            local:true,
+								                            displayField:'exp',
+								                            typeAhead: true,
+								                            mode: 'local',
+								                            forceSelection: true,
+								                            triggerAction: 'all',
+								                            editable:false,
+								                            store:  new Ext.data.ArrayStore({
+								                                fields: ['exp'],
+								                                data : [[''],['<'],['<='],['='],['>='],['>']] 
+								                            })
 								                        },
 								                        {
 								                            xtype: 'textfield',
 								                            name: 'ballance',
-								                            fieldLabel: 'Label'
+								                            
 								                        }
 								                    ]
 								                },
@@ -803,7 +778,18 @@ Ext.onReady(function(){
 								                    items: [
 								                        {
 								                            xtype: 'combo',
-								                            name: 'credit_exp'
+								                            name: 'credit_exp',
+								                            local:true,
+								                            displayField:'exp',
+								                            typeAhead: true,
+								                            mode: 'local',
+								                            forceSelection: true,
+								                            triggerAction: 'all',
+								                            editable:false,
+								                            store:  new Ext.data.ArrayStore({
+								                                fields: ['exp'],
+								                                data : [[''],['<'],['<='],['='],['>='],['>']] 
+								                            })
 								                        },
 								                        {
 								                            xtype: 'textfield',
@@ -813,11 +799,16 @@ Ext.onReady(function(){
 								                    ]
 								                },
 								                {
-								                    xtype: 'listview',
-								                    multiSelect: true,
-								                    columnResize: false,
-								                    autoWidth:true,
-								                    height:200,
+								                	xtype: 'multiselect',
+								                    name:'tariff_filter',
+								                    id:'tariff_filter',
+								                    valueField:'tariff',
+								                    displayField:'name',
+								                    width:400,
+								                    //autoWidth:true,
+								                    autoHeight: true,
+								                    maxHeight:200,
+								                    border:true,
 								                    store: new Ext.data.JsonStore({
 								                        paramsAsHash: true,
 								                        autoLoad: {},
@@ -825,77 +816,57 @@ Ext.onReady(function(){
 								                            url: '/ebsadmin/tariffs/',
 								                            method:'GET',
 								                        }),    
-								                        fields: ['id', 'name'],
+								                        fields: ['tariff', 'name'],
 								                        root: 'records',
 								                        remoteSort:true,
 								                        
 								                      }
 								                    ),
 								                    fieldLabel: 'Тарифные планы',
-								                    columns: [
-								                        {
-								                            xtype: 'lvcolumn',
-								                            header: 'Тарифный план',
-								                            dataIndex:'name',
-								                            //width: 0.25
-								                        }
-								                    ]
+								                   
 								                },
 								                {
-								                    xtype: 'listview',
+								                    xtype: 'multiselect',
 								                    multiSelect: true,
 								                    columnResize: false,
 								                    autoWidth:true,
+								                    name:'group_filter',
 								                    fieldLabel: 'Группа',
-								                    columns: [
-								                        {
-								                            xtype: 'lvcolumn',
-								                            header: 'Column',
-								                            //width: 0.25
-								                        },
-								                        {
-								                            xtype: 'lvbooleancolumn',
-								                            header: 'True/False'
-								                        }
-								                    ]
+								                    
 								                },
+								               
 								                {
 								                    xtype: 'checkbox',
-								                    name: 'without_tariff',
-								                    boxLabel: 'Да',
+								                    boxLabel: 'BoxLabel',
+								                    name:'ballance_blocked',
 								                    anchor: '100%',
 								                    fieldLabel: 'Блокировка по балансу'
 								                },
 								                {
 								                    xtype: 'checkbox',
 								                    boxLabel: 'BoxLabel',
+								                    name:'limit_blocked',
 								                    anchor: '100%',
-								                    fieldLabel: 'Блокировка по балансу'
-								                },
-								                {
-								                    xtype: 'checkbox',
-								                    boxLabel: 'BoxLabel',
-								                    anchor: '100%',
-								                    fieldLabel: 'Блокировка по балансу'
+								                    fieldLabel: 'Блокировка по лимитам'
 								                }
 								            ]
 								        },
 								        {
 								            xtype: 'fieldset',
 								            autoHeight: true,
-								            width: 891,
+								            autoWidth:true,
+								            //width: 600,
 								            title: 'Другое',
 								            items: [
 								                {
-								                    xtype: 'listview',
+								                    xtype: 'multiselect',
 								                    name:'nas_filter',
 								                    id:'nas_filter',
-								                    multiSelect: true,
-								                    columnResize: false,
+								                    valueField:'nas',
+								                    displayField:'name',
 								                    fieldLabel: 'Сервер доступа',
-								                    multiSelect: true,
-								                    columnResize: false,
-								                    autoWidth:true,
+								                    width:300,
+								                    //autoWidth:true,
 								                    autoHeight: true,
 								                    maxHeight:200,
 								                    border:true,
@@ -906,21 +877,13 @@ Ext.onReady(function(){
 								                            url: '/ebsadmin/nasses/',
 								                            method:'GET',
 								                        }),    
-								                        fields: ['id', 'name'],
+								                        fields: ['nas', 'name'],
 								                        root: 'records',
-								                        remoteSort:true,
+								                        remoteSort:false,
 								                        
 								                      }
 								                    ),
-								                    fieldLabel: 'Сервер доступа',
-								                    columns: [
-								                        {
-								                            xtype: 'lvcolumn',
-								                            header: 'Сервер доступа',
-								                            dataIndex:'name',
-								                            //width: 0.25
-								                        }
-								                    ]
+								                   
 								                },
 								                {
 								                    xtype: 'checkboxgroup',
@@ -945,18 +908,16 @@ Ext.onReady(function(){
 								                    ]
 								                },
 								                {
-								                	xtype: 'listview',
+								                	xtype: 'multiselect',
 								                    name:'systemuser_filter',
 								                    id:'systemuser_filter',
-								                    multiSelect: true,
-								                    columnResize: false,
-								                    fieldLabel: 'Менеджер',
-								                    xtype: 'listview',
-								                    multiSelect: true,
-								                    columnResize: false,
-								                    autoWidth:true,
+								                    valueField:'id',
+								                    displayField:'name',
+								                    width:400,
+								                    //autoWidth:true,
 								                    autoHeight: true,
 								                    maxHeight:200,
+								                    border:true,
 								                    store: new Ext.data.JsonStore({
 								                        paramsAsHash: true,
 								                        autoLoad: {},
@@ -966,19 +927,12 @@ Ext.onReady(function(){
 								                        }),    
 								                        fields: ['id', 'name'],
 								                        root: 'records',
-								                        remoteSort:true,
+								                        remoteSort:false,
 								                        
 								                      }
 								                    ),
 								                    fieldLabel: 'Менеджер',
-								                    columns: [
-								                        {
-								                            xtype: 'lvcolumn',
-								                            header: 'Менеджер/Администратор',
-								                            dataIndex:'name',
-								                            //width: 0.25
-								                        }
-								                    ]
+								                   
 								                },
 								                {
 								                    xtype: 'compositefield',
@@ -1003,34 +957,39 @@ Ext.onReady(function(){
 								        
 								        },
 								       
-								    ]
-							}, {
-					        	xtype:'container',
-					        	autoHeight: true,
-					        	items:{
-					        		xtype:'button',
-					        		text:'Искать',
+								    ],
+						       buttons:[{
+									text:'Искать',
 					        		handler:function(){
 					        			var f;
-					        			f=this.findParentByType('tabpanel').items.items[0].items.items[0].getForm();
-					        			//alert();
-					        			var n,i;
-					        			n = Ext.getCmp('nas_filter').getSelectedRecords();
-					        			//alert(Ext.getCmp('nas_filter').getSelectedRecords()[0].data['value']);
-					        			//alert(n.getSelectedRecords().len());
-					        			for(i in n){
-					        				//alert(i.data.value);
-					        				//console.info(i);
-					        				alert(i.constructor);
-					        				
-					        			}
+					        			f=this.findParentByType('tabpanel').items.items[0].getForm();
+					        			
 					        			EBS.store.accounts.load({'params':f.getValues()})
 					        		}
+								},
+								{
+									text:'Добавить к результатам',
+					        		handler:function(){
+					        			var f;
+					        			f=this.findParentByType('tabpanel').items.items[0].getForm();
+					        			
+					        			EBS.store.accounts.load({'params':f.getValues(),add:true})
 					        		}
-					        }]},
+								},{
+									text:'Очистить',
+					        		handler:function(){
+					        			var f;
+					        			f=this.findParentByType('tabpanel').items.items[0].getForm();
+					        			f.reset()
+					        			//EBS.store.accounts.load({'params':f.getValues()})
+					        		}
+								}
+								],
+							},
 					    	{
 					      		xtype :'ebs_accountsPanel',
-					    		id    :'ebs_accountsPanel'
+					    		id    :'ebs_accountsPanel',
+					    		closable:false
 					    	},
 						
 						]
@@ -1054,6 +1013,72 @@ Ext.onReady(function(){
    });
     Ext.reg('xaccountspanel', EBS.AccountsPanel);
     EBS.windows.keys[EBS.windows.keys.length] = 'xaccountspanel';
+
+    EBS.AccountsLiveSearchCombo = Ext.extend(Ext.form.ComboBox, {
+        initComponent:function() {
+           var config = {
+        		    anchor: '100%',
+        		    displayField: 'username',
+        		    valueField: 'id', 
+        		    mode: 'remote',
+        		    editable:true,
+        		    triggerAction: 'all',
+        		    typeAhead: false,
+        		    minChars:2,
+        		    blankText:'УКажите слово или часть слова для поиска',
+        		    //field:'username',
+        		    hideTrigger:true,
+        		    pageSize:15,
+        	        tpl: new Ext.XTemplate(
+        	                '<tpl for="."><div class="search-item">',
+        	                '<h3>Логин:{username}, ФИО: {fullname}, Договор: {contract}<br />Создан:<span>{created:date("M j, Y")}</span></h3>',
+        	                '{excerpt}',
+        	            '</div></tpl>'
+        	        ),
+        	        itemSelector: 'div.search-item',
+        		    loadingText: 'Секундочку...',
+        		    store:new Ext.data.Store({
+        		    	autoLoad:true,
+        		        proxy: new Ext.data.HttpProxy({
+        		            url: '/ebsadmin/accounts/live/',
+        		            method:'POST',
+        		            
+        		        }),
+        		        
+        		        reader: new Ext.data.JsonReader({
+        		            root: 'records'
+        		        }, [{
+        		            name: 'id'
+        		        }, {
+        		            name: 'username'
+        		        }, {
+        		            name: 'created', type:'date',dateFormat: Date.patterns.ISO8601Long
+        		        }, {
+        		            name: 'fullname'
+        		        }, {
+        		            name: 'contract'
+        		        } ])
+        		    }),
+
+        		}
+           // apply config
+           Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+           this.store.setBaseParam('field',this.field)
+           EBS.AccountsLiveSearchCombo.superclass.initComponent.apply(this, arguments);
+       } // eo function initComponent
+    
+       ,onRender:function() {
+           var me = this;
+           this.store.on('load',function(store) {
+             //me.setValue('7', true);
+             //me.store.setBaseParams({'field':this.field})
+           })
+           EBS.AccountsLiveSearchCombo.superclass.onRender.apply(this, arguments);
+       } // eo function onRender
+     
+
+   });
+    Ext.reg('xaccountslivesearchcombo', EBS.AccountsLiveSearchCombo);
     
     EBS.TrTypeCombo = Ext.extend(Ext.form.ComboBox, {
         initComponent:function() {
@@ -1102,25 +1127,7 @@ Ext.onReady(function(){
    });
     Ext.reg('xtrtypecombo', EBS.TrTypeCombo);
     
-    EBS.gs=function gridStoreFactory() {
-        return new Ext.data.JsonStore({
-	        	paramsAsHash: true,
-			    //	autoLoad: {params:{start:0, limit:100}},
-   		        	proxy: new Ext.data.HttpProxy({
-   		        		url: '/ebsadmin/subaccounts/',
-   		        		method:'POST',
-   		        	}),    
-   		        	fields: ['switch_port', 'vpn_ipv6_ipinuse', 'ipn_speed', 'allow_dhcp', 'vpn_ip_address', 'allow_dhcp_with_block', 'ipn_sleep', 'speed', 'id', 'allow_addonservice', 'ipn_mac_address', 'allow_dhcp_with_minus', 'ipn_enabled', 'vpn_ipinuse', 'ipv4_vpn_pool', 'nas', 'ipv4_ipn_pool', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'username', 'allow_dhcp_with_null', 'associate_pptp_ipn_ip', 'ipn_ip_address', 'associate_pppoe_ipn_mac', 'allow_ipn_with_block', 'vlan', 'allow_mac_update', 'allow_vpn_with_null', 'ipn_ipv6_ip_address', 'vpn_speed', 'allow_vpn_with_minus', 'password', 'ipn_added', 'account', 'ipn_ipinuse', 'switch', 'allow_vpn_with_block', 'need_resync', 'vpn_ipv6_ip_address'],
-   		        	root: 'records',
-   		        	remoteSort:true,
-   		        	sortInfo:{
-   		        		field:'username',
-   		        		direction:'ASC'
-   		        	},
 
-        	   });
-    }
-    
     EBS.SubAccountsGrid = Ext.extend(Ext.grid.GridPanel, {
         initComponent:function() {
            var config = {
@@ -1488,7 +1495,7 @@ Ext.reg('xcomboenabledlocal', EBS.ComboEnabledLocal);
       		    displayField: 'name',
       		    valueField: 'id', 
       		    mode: 'remote',
-      		    //editable:true,
+      		    editable:false,
                 loadingText  : 'Searching...',
                 pageSize     : 5,
       		    triggerAction: 'all',
