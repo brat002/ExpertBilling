@@ -40,6 +40,25 @@ Ext.onReady(function(){
         winCmp.hide().destroy();
         delete EBS.windows[winCmp.id];
     }
+    
+    ExInstancePanel = Ext.extend(Ext.Panel,{
+    	
+    	instance_id: 0,
+
+    	initComponent: function() {     
+
+    	    // Component Configuration...   
+    	    var config = {
+    	    
+    	    };  
+
+    	    Ext.applyIf(this, Ext.applyIf(this.initialConfig, config));
+    	    ExInstancePanel.superclass.initComponent.apply(this, arguments);       
+
+    	},
+    	
+    });
+    
     EBS.displayForm = function(xtype, action, self){
         /*
          * Вызывается из меню компоненты
@@ -202,7 +221,7 @@ Ext.onReady(function(){
 
            //if(!winCmp){
            if(true){
-                        winCmp = new Ext.Panel({
+                        winCmp = new ExInstancePanel({
                             id:window_key+id,
                             instance_id:id,
                             applyTo:Ext.get('body'),
@@ -1248,7 +1267,7 @@ Ext.onReady(function(){
 
         		
            // apply config
-           Ext.applyIf(this, Ext.apply(this.initialConfig, config));
+           Ext.applyIf(this, Ext.applyIf(this.initialConfig, config));
     
            EBS.SubAccountsGrid.superclass.initComponent.apply(this, arguments);
        } // eo function initComponent
@@ -1356,7 +1375,7 @@ Ext.onReady(function(){
 
        		
           // apply config
-          Ext.applyIf(this, Ext.apply(this.initialConfig, config));
+          Ext.apply(this, Ext.applyIf(this.initialConfig, config));
    
           EBS.AccountAddonServiceGrid.superclass.initComponent.apply(this, arguments);
       } // eo function initComponent
@@ -1366,7 +1385,93 @@ Ext.onReady(function(){
   });
 
   Ext.reg('xaccountaddonservicesgrid', EBS.AccountAddonServiceGrid);
+
   
+  EBS.AccountTariffsGrid = Ext.extend(Ext.grid.GridPanel, {
+      initComponent:function() {
+         var config = {
+          	   xtype:'grid',
+                 stateful: true,
+                 stateId: 'stateAccountTariffsGrid',
+          	   	  store:new Ext.data.JsonStore({
+     		        	paramsAsHash: true,
+
+     		        	//autoLoad: {params:{start:0, limit:100,'account_id': this.findParentByType('form').findParentByType('panel').instance_id}},
+     		        	proxy: new Ext.data.HttpProxy({
+     		        		url: '/ebsadmin/accounttariffs/',
+     		        		method:'POST',
+     		        	}),    
+     		        	fields: [{name: 'tarif'},
+     		        		{name: 'id', type:'int'},
+     		        		{name: 'datetime', type: 'date', dateFormat: Date.patterns.ISO8601Long},
+     		        		{name: 'periodical_billed', type:'boolean'},
+     		        		],
+     		        	root: 'records',
+     		        	remoteSort:false,
+
+
+
+          	   }),
+
+              selModel : new Ext.grid.RowSelectionModel({
+                   singleSelect : true
+                      }),
+          	   //autoHeight: true,
+          	   //autoWidth: true,
+          	   listeners: {
+			          render:function(){
+			             // console.info('load',this,arguments);
+			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
+			        	  //this.store.setBaseParam('subaccount_id', this.findParentByType('form').findParentByType('panel').instance_id);
+			        	  //alert();
+			        	  this.store.setBaseParam('account_id', this.findParentByType('tabpanel').findParentByType('panel').findParentByType('panel').instance_id);
+			        	  this.store.load();
+			          }
+          	   },
+                 
+          	   autoScroll: true,
+          	   columns:[
+          	            {
+          	            	header:'id',
+          	            	dataIndex:'id',
+          	            	sortable:true
+          	            },
+          	            {
+          	            	header:'Тарифный план',
+          	            	dataIndex:'tarif',
+          	            	sortable:true
+          	            },
+          	            {
+          	            	header:'Начало действия',
+          	            	dataIndex:'datetime',
+          	            	sortable:true,
+          	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+          	            	
+          	            },
+          	            {
+          	            	header:'Расчёты по период. услугам произведены',
+          	            	dataIndex:'periodical_billed',
+          	            	sortable:true,
+          	            	
+          	            },
+          	            ]
+          		   
+          		  
+             }
+
+      		
+         // apply config
+         Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+  
+         EBS.AccountTariffsGrid.superclass.initComponent.apply(this, arguments);
+     } // eo function initComponent
+  
+
+
+ });
+
+ Ext.reg('xaccounttariffsgrid', EBS.AccountTariffsGrid);
+ 
    EBS.ComboCity = Ext.extend(Ext.form.ComboBox, {
        initComponent:function() {
           var config = {

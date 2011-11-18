@@ -1,7 +1,7 @@
 #-*-coding:utf-8 -*-
 
 from lib.decorators import render_to, ajax_request
-from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser
+from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif
 from nas.models import Nas
 from django.contrib.auth.decorators import login_required
 
@@ -63,6 +63,24 @@ def subaccounts(request):
     for acc in accounts:
         #print instance_dict(acc).keys()
         res.append(instance_dict(acc))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res}
+
+@ajax_request
+@login_required
+def accounttariffs(request):
+    account_id = request.POST.get('account_id')
+    
+    items = AccountTarif.objects.filter(account__id=account_id)
+    #print accounts
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item,normal_fields=True))
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
