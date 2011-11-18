@@ -3503,6 +3503,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         i=0
         for a in accounts:    
             a=a.toPyObject()
+            print dir(a)
             self.addrow(i, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
             self.addrow(a.contract, i,2, enabled=a.status)

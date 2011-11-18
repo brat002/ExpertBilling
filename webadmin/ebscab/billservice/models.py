@@ -718,6 +718,7 @@ class AccountTarif(models.Model):
     account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, related_name='related_accounttarif')
     tarif     = models.ForeignKey(to=Tariff, verbose_name=u'Тарифный план', related_name="account_tarif")
     datetime  = models.DateTimeField(default='', blank=True)
+    periodical_billed = models.BooleanField(blank=True)
 
     class Admin:
         ordering = ['-datetime']
