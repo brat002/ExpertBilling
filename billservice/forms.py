@@ -2,7 +2,7 @@
 from django import forms
 from datetime import datetime, date
 from django.forms import ModelForm
-from billservice.models import Tariff, TPChangeRule, Account, SubAccount
+from billservice.models import Tariff, TPChangeRule, Account, SubAccount,AccountTarif
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -78,7 +78,10 @@ class SearchAccountForm(forms.Form):
     created_from = forms.DateTimeField(required=False)
     created_to = forms.DateTimeField(required=False)
 
-
+class AccountTariffForm(ModelForm):
+    class Meta:
+        model = AccountTarif
+    
 class AccountForm(ModelForm):
     class Meta:
         model = Account
@@ -86,3 +89,4 @@ class AccountForm(ModelForm):
 class SubAccountForm(ModelForm):
     class Meta:
         model = SubAccount
+        

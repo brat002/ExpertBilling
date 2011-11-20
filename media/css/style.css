@@ -416,3 +416,34 @@ a.selector-search { padding:2px 0 0 5px;}
 .archived img{
 	margin-left:10px;	
 }
+
+.icon-user {
+    background-image: url(/media/icons/16/new/user.png) !important;
+}
+
+.icon-user-add {
+    background-image: url(/media/icons/16/new/user_add.png) !important;
+}
+
+.icon-user-edit {
+    background-image: url(/media/icons/16/new/user_edit.png) !important;
+}
+.icon-save {
+    background-image: url(/media/icons/16/new/save.png) !important;
+}
+
+.icon-reset {
+    background-image: url(/media/icons/16/new/stop.png) !important;
+}
+
+.icon-grid {
+    background-image: url(/media/icons/16/new/grid.png) !important;
+}
+
+.icon-add {
+    background-image: url(/media/icons/16/new/add.png) !important;
+}
+
+.icon-delete {
+    background-image: url(/media/icons/16/new/delete.png) !important;
+}
