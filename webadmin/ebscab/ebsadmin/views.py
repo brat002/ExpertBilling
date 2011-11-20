@@ -5,7 +5,7 @@ from billservice.models import Account, SubAccount, TransactionType, City, Stree
 from nas.models import Nas
 from django.contrib.auth.decorators import login_required
 
-from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm
+from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm,AccountTariffForm
 
 @ajax_request
 @login_required
@@ -26,7 +26,9 @@ def jsonaccounts(request):
     #from django.http import HttpResponse
     res=[]
     for item in items:
-        res.append(instance_dict(item,normal_fields=True))
+        r=instance_dict(item,normal_fields=True)
+        r['tariff']=item.tariff
+        res.append(r)
     #print instance_dict(item).keys()
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
@@ -62,7 +64,7 @@ def subaccounts(request):
     res=[]
     for acc in accounts:
         #print instance_dict(acc).keys()
-        res.append(instance_dict(acc))
+        res.append(instance_dict(acc,normal_fields=True))
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
@@ -130,7 +132,7 @@ def tariffs(request):
     #from django.http import HttpResponse
     res=[]
     for item in items:
-        res.append({"tariff":item.id, "name":item.name})
+        res.append({"tarif":item.id, "name":item.name})
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
@@ -151,6 +153,46 @@ def nas(request):
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res}
+
+@ajax_request
+@login_required
+def tpchange(request):
+    id = request.POST.get('id')
+
+    item = AccountTarif.objects.get(id=id)
+    #from django.core import serializers
+    #from django.http import HttpResponse
+
+    res=instance_dict(item)
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res}
+
+@ajax_request
+@login_required
+def tpchange_save(request):
+    
+    id = request.POST.get('id')
+    if id:
+        item = AccountTarif.objects.get(id=id)
+        form = AccountTariffForm(request.POST, instance=item)
+    else:
+        form = AccountTariffForm(request.POST)
+        
+    if form.is_valid():
+        try:
+            form.save()
+            res={"success": True}
+        except Exception, e:
+            print e
+            res={"success": False, "message": str(e)}
+    else:
+        res={"success": False, "errors": form._errors}
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return res
 
 @ajax_request
 @login_required
@@ -177,7 +219,7 @@ def ippool(request):
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
-    res.append({"id":0, "name":u'-- Не указан --'})
+    res.append({"id":None, "name":u'-- Не указан --'})
     for item in items:
         res.append({"id":item.id, "name":item.name})
     
@@ -277,8 +319,12 @@ def subaccount_save(request):
     #from django.core import serializers
     #from django.http import HttpResponse
     print request
-    cc = SubAccount.objects.get(id=request.POST.get('id'))
-    a=SubAccountForm(request.POST,instance=cc)
+    id=request.POST.get('id')
+    if id:
+        cc = SubAccount.objects.get(id=id)
+        a=SubAccountForm(request.POST,instance=cc)
+    else:
+        a=SubAccountForm(request.POST)
     #a.account=aa.account_id
     p=request.POST
     res=[]
@@ -324,8 +370,8 @@ def house(request):
 @login_required
 def accountaddonservices(request):
     from billservice.models import AccountAddonService
-    subaccount_id = request.POST.get('subaccount_id')
-    items = AccountAddonService.objects.filter(subaccount__id=subaccount_id)
+    account_id = request.POST.get('account_id')
+    items = AccountAddonService.objects.filter(account__id=account_id)
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]

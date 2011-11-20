@@ -653,7 +653,12 @@ class Account(models.Model):
         tariff_info = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[:1]
         for tariff in tariff_info:
             return [tariff.id, tariff.name,]
-        
+
+    @property
+    def tariff(self):
+        tariff_info = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[0]
+        return tariff_info.name
+           
     def get_status(self):
         return dict(ACCOUNT_STATUS)[int(self.status)]
 
@@ -1182,17 +1187,17 @@ class SubAccount(models.Model):
     account = models.ForeignKey(Account, related_name='subaccounts')
     username = models.CharField(max_length=512, blank=True)
     password = models.CharField(max_length=512, blank=True)
-    ipn_ip_address = models.IPAddressField(blank=True)
+    ipn_ip_address = models.IPAddressField(blank=True,null=True, default=None)
     ipn_mac_address = models.CharField(blank=True, max_length=17)
-    vpn_ip_address = models.IPAddressField(blank=True)
+    vpn_ip_address = models.IPAddressField(blank=True,null=True, default=None)
     allow_mac_update = models.BooleanField(default=False)
-    nas = models.ForeignKey(Nas, blank=True, null=True)
+    nas = models.ForeignKey(Nas, blank=True, null=True, default=None)
     ipn_added = models.BooleanField()
     ipn_enabled = models.BooleanField()
     ipn_sleep = models.BooleanField()
     need_resync = models.BooleanField()
     speed = models.TextField(blank=True)
-    switch = models.ForeignKey(Switch, blank=True, null=True)
+    switch = models.ForeignKey(Switch, blank=True, null=True, default=None)
     switch_port = models.IntegerField(blank=True, null=True)
     allow_dhcp = models.BooleanField(blank=True, default=False)
     allow_dhcp_with_null = models.BooleanField(blank=True, default=False)    
@@ -1216,8 +1221,8 @@ class SubAccount(models.Model):
     ipn_ipv6_ip_address = models.TextField(blank=True, null=True)
     vlan = models.IntegerField(blank=True, null=True)
     allow_mac_update = models.BooleanField(blank=True, default=False)
-    ipv4_ipn_pool = models.ForeignKey(IPPool, blank=True, null=True, related_name='subaccount_ipn_ippool_set')
-    ipv4_vpn_pool = models.ForeignKey(IPPool, blank=True, null=True, related_name='subaccount_vpn_ippool_set')
+    ipv4_ipn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_ipn_ippool_set')
+    ipv4_vpn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_vpn_ippool_set')
   
     
 class BalanceHistory(models.Model):
