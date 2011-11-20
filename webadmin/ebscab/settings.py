@@ -13,7 +13,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = 'ebs_nofkeys'             # Or path to database file if using sqlite3.
+DATABASE_NAME = 'ebs_1'             # Or path to database file if using sqlite3.
 DATABASE_USER = 'ebs'             # Not used with sqlite3.
 DATABASE_PASSWORD = 'ebspassword'         # Not used with sqlite3.
 DATABASE_HOST = '127.0.0.1'             # Set to empty string for localhost. Not used with sqlite3.
@@ -254,10 +254,17 @@ COMPRESS_JS = {
         "ext/ux/gridfilters/filter/NumericFilter.js",
         "ext/ux/gridfilters/filter/BooleanFilter.js",
 
-        "ext/ux/print/Printer.js",
-        "ext/ux/print/renderers/Base.js",
+        "ext/ux/Ext.ux.Printer.js",
+        #"ext/ux/print/Printer.js",
+        #"ext/ux/print/renderers/Base.js",
+        #"ext/ux/print/renderers/GridPanel.js",
+        
         "ext/ux/MultiSelect.js",
         "ext/ux/ItemSelector.js",
+        "ext/ux/Ext.ux.grid.Search.js",
+        "ext/ux/CenterLayout.js",
+        
+        
 
         #All grid navigation  plugin support
         "ext/ux/SlidingPager.js",
@@ -265,7 +272,7 @@ COMPRESS_JS = {
         #Main window tabs plugin support
         "ext/ux/TabScrollerMenu.js",
         #plugins
-        "ext/ebs/plugins/xcheckbox.js",
+        
         ),
         'output_filename': 'p/ux.?.js',
     },

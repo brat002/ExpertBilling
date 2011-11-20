@@ -22,12 +22,12 @@ Ext.onReady(function(){
 
     EBS.moneyRenderer = function pctChange(val){
         if(val > 0){
-            return '<span style="color:green;">' + val.toFixed(2) + ' руб.</span>';
+            return '<span style="background-color:green;color:#ffdc51;">' + val.toFixed(2) + ' руб.</span>';
         }else if(val == 0){
-            return '<span style="color:yellow;">' + val.toFixed(2) + ' руб.</span>';
+            return '<span style="background-color:lightyellow;">' + val.toFixed(2) + ' руб.</span>';
         }
         else if(val < 0){
-            return '<span style="color:red;">' + val.toFixed(2) + ' руб.</span>';
+            return '<span style="background-color:red;color:#ffffff;">' + val.toFixed(2) + ' руб.</span>';
         }
         return val;
     }

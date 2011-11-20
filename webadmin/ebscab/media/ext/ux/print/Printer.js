@@ -32,7 +32,7 @@ Ext.ux.Printer = function() {
      * @param {String} xtype The component xtype the renderer will handle
      * @param {Function} renderer The renderer to invoke for components of this xtype
      */
-    registerRenderer: function(xtype, renderer) {
+    registerRenderer: function(xtype, renderer) {     
       this.renderers[xtype] = new (renderer)();
     },
     
@@ -51,12 +51,14 @@ Ext.ux.Printer = function() {
      */
     print: function(component) {
       var xtypes = component.getXTypes().split('/');
-      
+       
       //iterate backwards over the xtypes of this component, dispatching to the most specific renderer
       for (var i = xtypes.length - 1; i >= 0; i--){
         var xtype    = xtypes[i],        
             renderer = this.getRenderer(xtype);
-        
+            
+            
+            
         if (renderer != undefined) {
           renderer.print(component);
           break;

@@ -75,5 +75,5 @@ Ext.ux.Printer.BaseRenderer = Ext.extend(Object, {
    * @type String
    * The path at which the print stylesheet can be found (defaults to 'stylesheets/print.css')
    */
-  stylesheetPath: 'stylesheets/print.css'
+  stylesheetPath: '/media/ext/ux/print/print.css'
 });
