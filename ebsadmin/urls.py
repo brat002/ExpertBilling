@@ -13,6 +13,7 @@ urlpatterns = patterns('ebsadmin.views',
      
      url(r'^accountaddonservices/$', 'accountaddonservices'),
      url(r'^accountaddonservices/get/$', 'accountaddonservices_get'),
+     url(r'^accountaddonservices/set/$', 'accountaddonservices_set'),
      url(r'^accounttariffs/$', 'accounttariffs'),
      url(r'^account/$', 'account'),
      url(r'^accounts/live/$', 'account_livesearch'),
