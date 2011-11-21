@@ -441,9 +441,12 @@ Ext.onReady(function(){
 		                                            //width: 600,
 		                                            height: '100%',
 		                                            plain: true,
-		                                            //autoHeight:true,
-
 		                                            
+		                                            //autoHeight:true,
+		                                            deferredRender:false,
+		                                            defaults:{
+		                                            	hideMode:'offsets',
+		                                            },
 		                                            items: [
 													{
 													    xtype: 'panel',
@@ -1328,10 +1331,7 @@ Ext.onReady(function(){
 			             {name: 'service', type:'int'},
 			             {name: 'deactivated', type:'date', dateFormat: Date.patterns.ISO8601Long},
 			             {name: 'activated', type:'date', dateFormat: Date.patterns.ISO8601Long},
-			             {name: 'action_status', type:'boolean'},
-			             {name: 'last_checkout', type:'date', dateFormat: Date.patterns.ISO8601Long},
 			             {name: 'id', type:'int'},
-			             {name: 'speed_status', type:'boolean'}
 			             ]
 			      
 			}), 
@@ -1342,6 +1342,10 @@ Ext.onReady(function(){
     	    items: [
     	        {
     	            xtype: 'tabpanel',
+    	            deferredRender:false,
+                    defaults:{
+                    	hideMode:'offsets',
+                    },
     	            height: 277,
     	            width: 550,
     	            activeTab: 0,
@@ -1395,7 +1399,7 @@ Ext.onReady(function(){
     	                                    align: 'middle',
     	                                    items: [
     	                                        {
-    	                                            xtype: 'displayfield',
+    	                                            xtype: 'label',
     	                                            value: 'с  '
     	                                        },
     	                                        {
@@ -1404,7 +1408,7 @@ Ext.onReady(function(){
     	                                            name:'activated'
     	                                        },
     	                                        {
-    	                                            xtype: 'displayfield',
+    	                                            xtype: 'label',
     	                                            value: 'по'
     	                                        },
     	                                        {
@@ -1417,34 +1421,24 @@ Ext.onReady(function(){
     	                                {
     	                                    xtype: 'textfield',
     	                                    anchor: '100%',
-    	                                    fieldLabel: 'Особая цена'
+    	                                    fieldLabel: 'Особая цена',
+    	                                    name:'price_cost'
     	                                }
     	                            ]
     	                        }
     	                    ]
     	                },
     	                {
-    	                    xtype: 'panel',
-    	                    layout: 'form',
-    	                    padding: 10,
+    	                    //xtype: 'panel',
+    	                    //layout: 'fit',
+    	                    //padding: 10,
     	                    title: 'Комментарий',
     	                    items: [
     	                        {
     	                            xtype: 'container',
     	                            layout: 'form',
     	                            items: [
-    	                                {
-    	                                    xtype: 'textarea',
-    	                                    height: 87,
-    	                                    name:'comment',
-    	                                    width: 395,
-    	                                    fieldLabel: 'Комментарий'
-    	                                },
-    	                                {
-    	                                    xtype: 'datefield',
-    	                                    width: 200,
-    	                                    fieldLabel: 'Контроль'
-    	                                }
+    	                               
     	                            ]
     	                        }
     	                    ]

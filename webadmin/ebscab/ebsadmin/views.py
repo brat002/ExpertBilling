@@ -412,6 +412,23 @@ def accountaddonservices_get(request):
 
 @ajax_request
 @login_required
+def accountaddonservices_set(request):
+    from billservice.models import AccountAddonService
+    id = request.POST.get('id')
+    """{name: 'temporary_blocked', type:'boolean'},
+                         {name: 'account', type:'int'},
+                         {name: 'subaccount', type:'int'},
+                         {name: 'service', type:'int'},
+                         {name: 'deactivated', type:'date', dateFormat: Date.patterns.ISO8601Long},
+                         {name: 'activated', type:'date', dateFormat: Date.patterns.ISO8601Long},
+                         {name: 'id', type:'int'},"""
+    item = AccountAddonService.objects.get(id=id)
+    print instance_dict(item).keys()
+    return {"records": instance_dict(item)}
+
+accountaddonservices_set
+@ajax_request
+@login_required
 def systemuser(request):
     items = SystemUser.objects.all()
     #from django.core import serializers
