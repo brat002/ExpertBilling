@@ -1305,15 +1305,45 @@ Ext.onReady(function(){
     EBS.forms.ebs_accountsPanel.accountaddonservice = {
     	    xtype: 'form',
     	    height: 243,
-    	    width: 600,
+    	    width: 620,
     	    layout: 'fit',
     	    padding: 5,
     	    windowTitle: 'Подключаемая улуга',
+    	    url:'/ebsadmin/accountaddonservices/get/',
+    	    save_url:'/ebsadmin/accountaddonservice/set/',
+    	    method:'POST',
+    	    closeForm:function(instance_id)
+    	    {
+    	    	owner = this.ownerCt;
+    	    	owner.hide().destroy();
+    	    	delete EBS.windows[owner.id];
+    	    },
+
+		    reader: new Ext.data.JsonReader({
+			    idProperty: 'id',          
+			    root: 'records',             
+			    fields: [{name: 'temporary_blocked', type:'boolean'},
+			             {name: 'account', type:'int'},
+			             {name: 'subaccount', type:'int'},
+			             {name: 'service', type:'int'},
+			             {name: 'deactivated', type:'date', dateFormat: Date.patterns.ISO8601Long},
+			             {name: 'activated', type:'date', dateFormat: Date.patterns.ISO8601Long},
+			             {name: 'action_status', type:'boolean'},
+			             {name: 'last_checkout', type:'date', dateFormat: Date.patterns.ISO8601Long},
+			             {name: 'id', type:'int'},
+			             {name: 'speed_status', type:'boolean'}
+			             ]
+			      
+			}), 
+    		loadForm:function(instance_id)
+    	    {
+    	    	this.load({'id':instance_id});
+    	    },
     	    items: [
     	        {
     	            xtype: 'tabpanel',
     	            height: 277,
-    	            width: 517,
+    	            width: 550,
     	            activeTab: 0,
     	            items: [
     	                {
@@ -1327,14 +1357,27 @@ Ext.onReady(function(){
     	                            title: 'Параметры',
     	                            items: [
     	                                {
-    	                                    xtype: 'combo',
+    	                                    xtype: 'hidden',
+    	                                    name:'id',
+    	                                },{
+    	                                    xtype: 'hidden',
+    	                                    name:'account',
+    	                                },{
+    	                                    xtype: 'hidden',
+    	                                    name:'subaccount',
+    	                                },{
+    	                                    xtype: 'xaddonservicescombo',
     	                                    anchor: '100%',
+    	                                    name:'service',
+    	                                    hiddenName:'service',
+    	                                    valueField:'id',
     	                                    fieldLabel: 'Услуга'
     	                                },
     	                                {
     	                                    xtype: 'checkbox',
     	                                    boxLabel: 'Временно отключить услугу',
     	                                    anchor: '100%',
+    	                                    name:'temporary_blocked',
     	                                    fieldLabel: 'Пауза'
     	                                },
     	                                {
@@ -1358,6 +1401,7 @@ Ext.onReady(function(){
     	                                        {
     	                                            xtype: 'xdatetime',
     	                                            //width: 174
+    	                                            name:'activated'
     	                                        },
     	                                        {
     	                                            xtype: 'displayfield',
@@ -1366,6 +1410,7 @@ Ext.onReady(function(){
     	                                        {
     	                                            xtype: 'xdatetime',
     	                                            //width: 184
+    	                                            name:'deactivated'
     	                                        }
     	                                    ]
     	                                },
@@ -1391,6 +1436,7 @@ Ext.onReady(function(){
     	                                {
     	                                    xtype: 'textarea',
     	                                    height: 87,
+    	                                    name:'comment',
     	                                    width: 395,
     	                                    fieldLabel: 'Комментарий'
     	                                },
@@ -1417,6 +1463,11 @@ Ext.onReady(function(){
     	        }
     	    ]
     	}
+    EBS.forms.ebs_accountsPanel.accountaddonservice_submitAction =  function(object, event, form){
+    	alert(form = object.ownerCt.ownerCtgetForm().findField('service').value);
+    	form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: false, success: function(form,action) {        
+        	form.closeForm()}})	
+    }
     EBS.forms.ebs_accountsPanel.tpchange = {
     	    xtype: 'form',
     	    height: 156,

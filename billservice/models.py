@@ -656,8 +656,11 @@ class Account(models.Model):
 
     @property
     def tariff(self):
-        tariff_info = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[0]
-        return tariff_info.name
+        try:
+            name = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[0].name
+        except:
+            name=u'Не назначен'
+        return 
            
     def get_status(self):
         return dict(ACCOUNT_STATUS)[int(self.status)]
