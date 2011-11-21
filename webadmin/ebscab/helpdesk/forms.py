@@ -67,7 +67,7 @@ class TicketForm(forms.Form):
 
     owner = forms.ChoiceField(
         choices=(),
-        required=True,
+        required=False,
         label=_('Case owner'),
         help_text=_('If you select an owner other than yourself, they\'ll be '
             'e-mailed details of this ticket immediately.'),

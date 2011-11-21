@@ -96,10 +96,11 @@ Ext.onReady(function(){
            console.log(action, self);
            var id, account_id;
            id=ids.id;
+           
            account_id=ids.account_id;
             //Create edit window
            selection = self.selModel.selections;
-           if(selection.items.length!=1){
+           if(selection.items.length!=1 && id!=null){
                Ext.Msg.alert(i18n.information,i18n.please_select_one_row);
                return;
             }
@@ -117,6 +118,8 @@ Ext.onReady(function(){
            if(!winCmp){
                         winCmp = new Ext.Window({
                             id:window_key,
+                            instance_id:id,
+                            parent_id:account_id,
                             applyTo:Ext.get('body'),
                             width:500,
                             height:300,
@@ -136,12 +139,16 @@ Ext.onReady(function(){
                             buttons: [{
                                     text:'Submit',
                                     handler: function(obj, e){
-                                        form_callback(obj, e);
-                                        form = this.ownerCt.ownerCt.items.items[0].getForm()
-                                        form.updateRecord(form.rec);
+                                    	form = this.ownerCt.ownerCt.items.items[0].getForm()
+                                        form_callback(obj, e, form);
+                                        //
+                                        //form.updateRecord(form.rec);
                                         //Update server data
                                         //form.rec.store.save();
-                                        EBS.closeForm(this)
+                                        //winCmp = this.ownerCt.ownerCt;
+                                        //winCmp.hide().destroy();
+                                    	//form_data.submitForm(this);
+                                        //delete EBS.windows[winCmp.id];
                                     }
                                 },{
                                     text: 'Close',
@@ -152,9 +159,15 @@ Ext.onReady(function(){
                         });
                         EBS.windows[window_key] = winCmp;
                     }
-             form = winCmp.items.items[0].getForm();
-             form.rec = selection.items[0];
-
+             //form = winCmp.items.items[0].getForm();
+             //form.rec = selection.items[0];
+           if (id){
+               form = winCmp.items.items[0].getForm();
+               //form.rec = selection.items[0];
+             
+               //form.loadRecord(form.rec);
+               form.load({url:form.url, method:'POST',params:{'id':id}} );
+             }
              //form.loadRecord(form.rec);
              //form.load({url:'/account/', method:'GET',params:{'id':selection.items[0].id}} );
              winCmp.show();
@@ -1179,7 +1192,56 @@ Ext.onReady(function(){
    });
     Ext.reg('xtrtypecombo', EBS.TrTypeCombo);
     
+    EBS.AddonServicesCombo = Ext.extend(Ext.form.ComboBox, {
+        initComponent:function() {
+           var config = {
+        		    anchor: '100%',
+        		    //fieldLabel: 'Тип платежа',
+        		    displayField: 'name',
+        		    valueField: 'id', 
+        		    mode: 'remote',
+        		    editable:false,
+        		    triggerAction: 'all',
+        		    typeAhead: true,
+        		    tpl: new Ext.XTemplate(
+        	                '<tpl for="."><div class="search-item">',
+        	                '<h4>{name}, Цена: {cost}, <br /> <span style="font-size:10px;">Комментарий: {comment}</span></h4>',
+        	                '{excerpt}',
+        	            '</div></tpl>'
+        	        ),
+        	        itemSelector: 'div.search-item',
+        		    store:new Ext.data.Store({
+        		    	autoLoad:true,
+        		        proxy: new Ext.data.HttpProxy({
+        		            url: '/ebsadmin/addonservices/',
+        		            method:'GET',
+        		            
+        		        }),
+        		        
+        		        reader: new Ext.data.JsonReader({
+        		            root: 'records'
+        		        }, ['comment', 'burst_tx', 'wyte_period', 'cost', 'service_deactivation_action', 'max_tx', 'id', 'burst_rx', 'cancel_subscription', 'allow_activation', 'max_rx', 'wyte_cost', 'priority', 'nas', 'service_type', 'min_tx', 'timeperiod', 'change_speed', 'sp_period', 'min_rx', 'service_activation_action', 'change_speed_type', 'sp_type', 'deactivate_service_for_blocked_account', 'burst_treshold_rx', 'burst_time_rx', 'burst_time_tx', 'name', 'action', 'speed_units', 'burst_treshold_tx'])
+        		    }),
 
+        		}
+           // apply config
+           Ext.apply(this, Ext.apply(this.initialConfig, config));
+    
+           EBS.TrTypeCombo.superclass.initComponent.apply(this, arguments);
+       } // eo function initComponent
+    
+       ,onRender:function() {
+           var me = this;
+           this.store.on('load',function(store) {
+             //me.setValue('7', true);
+           })
+           EBS.AddonServicesCombo.superclass.onRender.apply(this, arguments);
+       } // eo function onRender
+     
+
+   });
+    Ext.reg('xaddonservicescombo', EBS.AddonServicesCombo);
+    
     EBS.SubAccountsGrid = Ext.extend(Ext.grid.GridPanel, {
         initComponent:function() {
            var config = {
@@ -1219,8 +1281,12 @@ Ext.onReady(function(){
  			          render:function(){
  			             // console.info('load',this,arguments);
  			        	  var account_id;
- 			        	  account_id=this.findParentByType('form').getForm().findField('id').value;
+ 			        	  //account_id=this.findParentByType('form').getForm().findField('id').value;
+ 			        	  account_id=this.findParentByType('xinstancecontainer').instance_id;
+ 			        	  //alert(account_id);
+ 			        	  
  			        	  if (account_id){
+ 			        		  //alert(account_id)
  			        		  this.store.setBaseParam('account_id',account_id);
  			        		  this.store.load();
  			        	  }
@@ -1301,7 +1367,7 @@ Ext.onReady(function(){
 
         		
            // apply config
-           Ext.applyIf(this, Ext.applyIf(this.initialConfig, config));
+           Ext.apply(this, Ext.applyIf(this.initialConfig, config));
     
            EBS.SubAccountsGrid.superclass.initComponent.apply(this, arguments);
        } // eo function initComponent

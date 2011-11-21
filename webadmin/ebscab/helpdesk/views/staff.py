@@ -637,6 +637,7 @@ def create_ticket(request):
         form = TicketForm(request.POST, request.FILES)
         form.fields['queue'].choices = [('', '--------')] + [[q.id, q.title] for q in Queue.objects.all()]
         form.fields['assigned_to'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
+        form.fields['owner'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
         if form.is_valid():
             ticket = form.save(user=request.user)
             return HttpResponseRedirect(ticket.get_absolute_url())
@@ -648,6 +649,7 @@ def create_ticket(request):
         form = TicketForm(initial=initial_data)
         form.fields['queue'].choices = [('', '--------')] + [[q.id, q.title] for q in Queue.objects.all()]
         form.fields['assigned_to'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
+        form.fields['owner'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
 
     return render_to_response('helpdesk/create_ticket.html',
         RequestContext(request, {
