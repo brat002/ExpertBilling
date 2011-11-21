@@ -139,8 +139,11 @@ Ext.onReady(function(){
                             buttons: [{
                                     text:'Submit',
                                     handler: function(obj, e){
-                                    	form = this.ownerCt.ownerCt.items.items[0].getForm()
-                                        form_callback(obj, e, form);
+                                    	form = this.ownerCt.ownerCt.items.items[0].getForm();
+                                    	//alert(form.findField('service').getValue());
+                                    	form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: false, success: function(form,action) {        
+                                        	form.closeForm()}})	
+                                        //form_callback(obj, e, form);
                                         //
                                         //form.updateRecord(form.rec);
                                         //Update server data
@@ -1211,7 +1214,7 @@ Ext.onReady(function(){
         	        ),
         	        itemSelector: 'div.search-item',
         		    store:new Ext.data.Store({
-        		    	autoLoad:true,
+        		    	//autoLoad:true,
         		        proxy: new Ext.data.HttpProxy({
         		            url: '/ebsadmin/addonservices/',
         		            method:'GET',
@@ -1234,7 +1237,8 @@ Ext.onReady(function(){
            var me = this;
            this.store.on('load',function(store) {
              //me.setValue('7', true);
-           })
+           });
+           me.store.load();
            EBS.AddonServicesCombo.superclass.onRender.apply(this, arguments);
        } // eo function onRender
      
