@@ -5,7 +5,7 @@ from billservice.models import Account, SubAccount, TransactionType, City, Stree
 from nas.models import Nas
 from django.contrib.auth.decorators import login_required
 
-from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm,AccountTariffForm
+from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm
 
 @ajax_request
 @login_required
@@ -414,19 +414,15 @@ def accountaddonservices_get(request):
 @login_required
 def accountaddonservices_set(request):
     from billservice.models import AccountAddonService
-    id = request.POST.get('id')
-    """{name: 'temporary_blocked', type:'boolean'},
-                         {name: 'account', type:'int'},
-                         {name: 'subaccount', type:'int'},
-                         {name: 'service', type:'int'},
-                         {name: 'deactivated', type:'date', dateFormat: Date.patterns.ISO8601Long},
-                         {name: 'activated', type:'date', dateFormat: Date.patterns.ISO8601Long},
-                         {name: 'id', type:'int'},"""
-    item = AccountAddonService.objects.get(id=id)
-    print instance_dict(item).keys()
-    return {"records": instance_dict(item)}
+    form = AccountAddonForm(request.POST)
+    if form.is_valid():
+        print form.cleaned_data
+        res={"success": True}
+    else:
+        res={"success": False, "errors": a._errors}
+    #print instance_dict(item).keys()
+    return res
 
-accountaddonservices_set
 @ajax_request
 @login_required
 def systemuser(request):

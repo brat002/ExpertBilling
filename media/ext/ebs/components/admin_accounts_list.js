@@ -1313,7 +1313,7 @@ Ext.onReady(function(){
     	    padding: 5,
     	    windowTitle: 'Подключаемая улуга',
     	    url:'/ebsadmin/accountaddonservices/get/',
-    	    save_url:'/ebsadmin/accountaddonservice/set/',
+    	    save_url:'/ebsadmin/accountaddonservices/set/',
     	    method:'POST',
     	    closeForm:function(instance_id)
     	    {
