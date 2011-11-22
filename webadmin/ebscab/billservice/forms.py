@@ -78,6 +78,15 @@ class SearchAccountForm(forms.Form):
     created_from = forms.DateTimeField(required=False)
     created_to = forms.DateTimeField(required=False)
 
+class AccountAddonForm(forms.Form):
+    account = forms.IntegerField(required=False)
+    subaccount = forms.IntegerField(required=False)    
+    id = forms.IntegerField(required=False)
+    activated = forms.DateTimeField(required=True)
+    deactivated = forms.DateTimeField(required=False)
+    temporary_blocked = forms.CheckboxInput()
+    
+    
 class AccountTariffForm(ModelForm):
     class Meta:
         model = AccountTarif
