@@ -283,10 +283,10 @@ def street(request):
 @ajax_request
 @login_required
 def accountstatus(request):
-    items = ['1','Активен'], \
-            ['2','Не активен, списывать периодические услуги'],\
-            ['3','Не активен, не списывать периодические услуги'],\
-            ['4','Пользовательская блокировка'],
+    items = ['1',u'Активен'], \
+            ['2',u'Не активен, списывать периодические услуги'],\
+            ['3',u'Не активен, не списывать периодические услуги'],\
+            ['4',u'Пользовательская блокировка'],
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
@@ -327,7 +327,8 @@ def account_save(request):
             print e
             res={"success": False, "errors": a._errors}
     else:
-        res={"success": False, "errors": a._errors}
+        
+        res={"success": False, "errors": a._errors, 'msg':u"Поля с ошибками:<br />"+unicode('<br />'.join([u'%s:%s' %(x,a._errors.get(x)) for x in a._errors]))}
     return res
 
 
