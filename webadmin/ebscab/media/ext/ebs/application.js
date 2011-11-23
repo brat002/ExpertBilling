@@ -25,7 +25,8 @@ Ext.onReady(function(){
     EBS.windows.keys =[];
     EBS.conponents = {};
     EBS.conponents.keys =[];
-
+    Ext.Msg.minWidth = 360;
+    
     // hide debug info. TODO: remove at production
     if(typeof(console) != "object"){
         var console = new (function(){

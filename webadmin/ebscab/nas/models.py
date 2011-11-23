@@ -148,6 +148,8 @@ class Switch(models.Model):
     enable_port = models.TextField()
     disable_port = models.TextField()
     
+    def __unicode__(self):
+        return u"%s" % self.name
     
 
     

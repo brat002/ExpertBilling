@@ -12,7 +12,7 @@ log = logging.getLogger('billservice.views')
 #print os.path.abspath('../../../')
 sys.path.append(os.path.abspath('../../'))
 
-from rpc2 import rpc_protocol, client_networking
+#from rpc2 import rpc_protocol, client_networking
 
 import datetime
 
@@ -45,8 +45,8 @@ from paymentgateways.qiwi.models import Invoice as QiwiInvoice
 from paymentgateways.qiwi.forms import QiwiPaymentRequestForm
 import math
 logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename=settings.WEBCAB_LOG)
-rpc_protocol.install_logger(logger)
-client_networking.install_logger(logger)
+#rpc_protocol.install_logger(logger)
+#client_networking.install_logger(logger)
 
 def addon_queryset(request, id_begin, field='datetime', field_to=None):
     if field_to == None:
@@ -147,6 +147,7 @@ def login(request):
                             'form':form,
                             }
             except Exception, e:
+                print e
                 log.debug("Login error: %r" % e)
                 form = LoginForm(initial={'username': form.cleaned_data['username']})
                 error_message = u'Произошла ошибка. Сообщите о ней вашему администратору.'
