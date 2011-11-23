@@ -371,7 +371,9 @@ Ext.onReady(function(){
 										               text: 'Сохранить',
 										               handler: function(){
 					                                        form = this.ownerCt.ownerCt.getForm();
-					                                        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true});
+					                                        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(form,action) {        
+					                                        	Ext.Msg.alert('Данные были успешно сохранены', 'Данные были успешно сохранены' )},failure: function(form,action) {        
+						                                        	Ext.Msg.alert('Ошибка', action.result.msg )}});
 										            	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
 										            	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
 										            	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
