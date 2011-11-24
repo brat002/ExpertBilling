@@ -1126,6 +1126,10 @@ class AddonService(models.Model):
     min_tx = models.IntegerField()    
     min_rx = models.IntegerField()    
     priority = models.IntegerField()    
+    
+    
+    def __unicode__(self):
+        return u"%s" % self.name
 
 class AddonServiceTarif(models.Model):    
     tarif = models.ForeignKey(Tariff)    
@@ -1139,11 +1143,11 @@ class AccountAddonService(models.Model):
     account = models.ForeignKey(Account, blank=True, null=True)   
     subaccount = models.ForeignKey('SubAccount', blank=True, null=True) 
     activated = models.DateTimeField()    
-    deactivated = models.DateTimeField()    
+    deactivated = models.DateTimeField(blank=True, null=True)    
     action_status = models.BooleanField()    
     speed_status = models.BooleanField()
-    temporary_blocked = models.DateTimeField()
-    last_checkout = models.DateTimeField()
+    temporary_blocked = models.DateTimeField(blank=True, null=True)
+    last_checkout = models.DateTimeField(blank=True, null=True)
 
 class AddonServiceTransaction(models.Model):
     service = models.ForeignKey(AddonService)

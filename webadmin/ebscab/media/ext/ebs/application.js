@@ -46,6 +46,7 @@ Ext.onReady(function(){
     	
     	instance_id: 0,
     	parent_id:0,
+    	ids:{},
 
     	initComponent: function() {     
 
@@ -68,6 +69,7 @@ Ext.onReady(function(){
     	
     	instance_id: 0,
     	parent_id:0,
+    	ids:{},
 
     	initComponent: function() {     
 
@@ -120,6 +122,7 @@ Ext.onReady(function(){
                         winCmp = new Ext.Window({
                             id:window_key,
                             instance_id:id,
+                            ids:ids,
                             parent_id:account_id,
                             applyTo:Ext.get('body'),
                             width:500,
@@ -142,9 +145,9 @@ Ext.onReady(function(){
                                     handler: function(obj, e){
                                     	form = this.ownerCt.ownerCt.items.items[0].getForm();
                                     	//alert(form.findField('service').getValue());
-                                    	form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: false, success: function(form,action) {        
-                                        	form.closeForm()}})	
-                                        //form_callback(obj, e, form);
+                                    	//form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: false, success: function(form,action) {        
+                                        //	form.closeForm()}})	
+                                        form_callback(obj, e, form,this.ownerCt.ownerCt);
                                         //
                                         //form.updateRecord(form.rec);
                                         //Update server data
@@ -217,6 +220,7 @@ Ext.onReady(function(){
                             id:window_key+id,
                             applyTo:Ext.get('body'),
                             instance_id:id,
+                            ids:ids,
                             closable: true,
                             parent_id:account_id,
                             layout:'anchor',
@@ -244,7 +248,7 @@ Ext.onReady(function(){
              winCmp.show();
     }
     
-    EBS.displayFormInTab = function(xtype, action, id, self){
+    EBS.displayFormInTab = function(xtype, action, id, ids, self){
         /*
          * Вызывается из меню компоненты
          *
@@ -253,7 +257,7 @@ Ext.onReady(function(){
          **/
 
            console.log(action, self);
-
+           
             //Create edit window
            /*selection = self.selModel.selections;
            if(selection.items.length!=1){
@@ -278,6 +282,7 @@ Ext.onReady(function(){
                             id:window_key+id,
                             instance_id:id,
                             parent_id:id,
+                            ids:ids,
                             applyTo:Ext.get('body'),
                             //width:500,
                             //height:300,
@@ -348,6 +353,7 @@ Ext.onReady(function(){
                             id:window_key+id,
                             instance_id:id,
                             parent_id:account_id,
+                            ids:ids,
                             applyTo:Ext.get('body'),
                             
                             
@@ -1397,7 +1403,7 @@ Ext.onReady(function(){
       		        		url: '/ebsadmin/accountaddonservices/',
       		        		method:'POST',
       		        	}),    
-      		        	fields: [{name: 'service', type:'int'},
+      		        	fields: [{name: 'service', type:'string'},
       		        		{name: 'account', type:'int'},
       		        		{name: 'id', type:'int'},
       		        		{name: 'subaccount', type:'int'},
@@ -1427,7 +1433,7 @@ Ext.onReady(function(){
 			          render:function(){
 			             // console.info('load',this,arguments);
 			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
-			        	  //this.store.setBaseParam('subaccount_id', this.findParentByType('form').findParentByType('panel').instance_id);
+			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
 			        	  //this.store.load();
 			          }
            	   },
