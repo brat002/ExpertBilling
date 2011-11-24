@@ -371,8 +371,14 @@ Ext.onReady(function(){
 										               text: 'Сохранить',
 										               handler: function(){
 					                                        form = this.ownerCt.ownerCt.getForm();
-					                                        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(form,action) {        
-					                                        	Ext.Msg.alert('Данные были успешно сохранены', 'Данные были успешно сохранены' )},failure: function(form,action) {        
+					                                        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, 
+					                                        	success: function(form,action) {        
+					                                        		form.ownerCt.findParentByType('xinstancecontainer').ids={'id':action.result.account_id};
+					                                        	
+					                                        	Ext.Msg.alert('Данные были успешно сохранены', 'Данные были успешно сохранены' )
+					                                        	form.load({url:form.url,method:form.method,params:{'id':action.result.account_id}});
+					                                        	},
+					                                        	failure: function(form,action) {        
 						                                        	Ext.Msg.alert('Ошибка', action.result.msg )}});
 										            	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
 										            	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
@@ -481,7 +487,7 @@ Ext.onReady(function(){
 													                    xtype: 'fieldset',
 													                    //width: '20%',
 													                    height: 150,
-													                    columnWidth: .333,
+													                    columnWidth: .28,
 													                    
 													                    title: 'Учётные данные',
 													                    
@@ -532,7 +538,7 @@ Ext.onReady(function(){
 													                {
 													                    xtype: 'fieldset',
 													                    //autoWidth: true,
-													                    columnWidth: .333,
+													                    columnWidth: .28,
 													                    height: 150,
 													                    title: 'Баланс',
 													                    
@@ -541,6 +547,7 @@ Ext.onReady(function(){
 													                            xtype: 'textfield',
 													                            name: 'ballance',
 													                            anchor: '100%',
+													                            disabled:true,
 													                            fieldLabel: 'Баланс'
 													                        },
 													                        {
@@ -559,7 +566,7 @@ Ext.onReady(function(){
 													                },
 													                {
 													                    xtype: 'fieldset',
-													                    columnWidth: .333,
+													                    columnWidth: .44,
 													                    height: 150,
 													                    title: 'Параметры',
 													                   
@@ -592,7 +599,7 @@ Ext.onReady(function(){
 													        {
 													            xtype: 'container',
 													            autoHeight: true,
-													            height: 559,
+													            
 													            width: '100%',
 													            defaults:{
 					    	                                        margins:'0 5 5 0',    	                                        
@@ -604,7 +611,8 @@ Ext.onReady(function(){
 																		   xtype:'xsubaccountsgrid',
 																		   //autoHeight:true,
 																		   title:'Субаккаунты',
-																		   height:200,
+																		   authHeight: true,
+																		   height:300,
 																		   width:'100%',
 																		   autoScroll:true,
 																		   tbar: [{
@@ -645,6 +653,7 @@ Ext.onReady(function(){
 																	     	   account_id = this.findParentByType('form').getForm().findField('id').value;
 																	     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
 																	     	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':id}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+																	     	   //EBS.displayForm('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':id}, this.findParentByType('grid'))
 																	        }
 																	    },{
 																	        //ref: '../removeBtn',
@@ -671,8 +680,9 @@ Ext.onReady(function(){
 																	},
 													                {
 													                    xtype: 'xaccountaddonservicesgrid',
-													                    height: 121,
+													                    authHeight: true,
 													                    width: '100%',
+													                    height:300,
 													                    title: 'Подключаемые услуги',
 													                    tbar: [{
 																		    icon: media+'icons/16/arrow_refresh.png',
@@ -728,10 +738,10 @@ Ext.onReady(function(){
 													                },
 													                {
 													                    xtype: 'xaccounttariffsgrid',
-													                    height: 125,
+													                    authHeight: true,
 													                    width: '100%',
 													                    title: 'Тарифные планы',
-													                    
+													                    height:300,
 													                    
 													                    tbar: [{
 													        			    icon: media+'icons/16/arrow_refresh.png',
@@ -758,7 +768,7 @@ Ext.onReady(function(){
 																	     	  account_id = this.findParentByType('xinstancecontainer').parent_id;
 																	     	   
 																	     	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'));
-																	     	   EBS.displayCustomForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:null}, this.findParentByType('grid'))
+																	     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:null}, this.findParentByType('grid'))
 																	     	   
 																	        }
 																	    },{
@@ -772,7 +782,7 @@ Ext.onReady(function(){
 																	     	   var account_id;
 																	     	  account_id = this.findParentByType('xinstancecontainer').parent_id;
 																	     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
-																	     	  EBS.displayCustomForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:id}, this.findParentByType('grid'))
+																	     	  EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:id}, this.findParentByType('grid'))
 																	        }
 																	    },{
 																	        //ref: '../removeBtn',
@@ -788,10 +798,11 @@ Ext.onReady(function(){
 													                },
 													                {
 													                    xtype: 'grid',
-													                    height: 118,
+													                    authHeight: true,
 													                    width: '100%',
 													                    store: new Ext.data.JsonStore({}),
 													                    title: 'Оборудование на руках',
+													                    height:300,
 													                    tbar: [{
 																	        iconCls: 'icon-user-add',
 																	        text: 'Добавить',
@@ -1330,6 +1341,7 @@ Ext.onReady(function(){
     	    url:'/ebsadmin/accountaddonservices/get/',
     	    save_url:'/ebsadmin/accountaddonservices/set/',
     	    method:'POST',
+    	    plugins:['msgbus'],
     	    closeForm:function(instance_id)
     	    {
     	    	owner = this.ownerCt;
@@ -1482,16 +1494,29 @@ Ext.onReady(function(){
     		
     		
     		}
-    	form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: false, success: function(form,action) {        
+    	/*form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: false, success: function(form,action) {        
             	form.closeForm()},
             	
-    	})	
+    	})*/
+    	
+    	//form = this.ownerCt.ownerCt.getForm();
+ 	    f=form;
+ 	    pub = function(){window.items.items[0].publish('ebs.accountaddonservice.change', 'msg');	}
+        
+        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
+        	
+        	pub();
+        	form.closeForm()
+        },failure: function(form,action) {        
+         	Ext.Msg.alert('Ошибка', action.result.msg )}});
     }
+    
     EBS.forms.ebs_accountsPanel.tpchange = {
     	    xtype: 'form',
     	    height: 156,
     	    width: 398,
     	    padding:10,
+    	    plugins:['msgbus'],
     	    url:'/ebsadmin/tpchange/',
     	    save_url:'/ebsadmin/tpchange/set/',
     	    method:'POST',
@@ -1555,26 +1580,23 @@ Ext.onReady(function(){
     	            ]
     	        }
     	    ],
-    	    buttons:[{
-                iconCls: 'icon-user-add',
-                text: 'Сохранить',
-                handler: function(){
-                	form = this.ownerCt.ownerCt.getForm();
-                    form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: false, success: function(form,action) {        
-                    	form.closeForm()}})	
-                    
-                }
-            },{
-                //ref: '../removeBtn',
-                iconCls: 'icon-user-delete',
-                text: 'Закрыть',
-                //disabled: true,
-                handler: function(){
-             	   EBS.closeForm(this)
-                }
-            }],
+
     	    
     	};
+
+    EBS.forms.ebs_accountsPanel.tpchange_submitAction =  function(object, event, form, window){
+    	
+    	
+ 	    f=form;
+ 	    pub = function(){window.items.items[0].publish('ebs.accounttarif.change', 'msg');	}
+        
+        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
+        	
+        	pub();
+        	form.closeForm()
+        },failure: function(form,action) {        
+         	Ext.Msg.alert('Ошибка', action.result.msg )}});
+    }
     
     EBS.forms.ebs_accountsPanel.edit_credit = {
                                         xtype: 'form',
@@ -1707,12 +1729,21 @@ Ext.onReady(function(){
     	    layout: 'auto',
     	    autoScroll: true,
     	    bodyStyle:'padding:0 30% 0 30%',
-     	   tbar: [{
+    	    plugins:['msgbus'],
+     	    tbar: [{
                iconCls: 'icon-user-add',
                text: 'Сохранить',
                handler: function(){
-                   form = this.ownerCt.ownerCt.getForm();
-                   form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true});
+            	   form = this.ownerCt.ownerCt.getForm();
+            	   f=this.ownerCt.ownerCt;
+            	   pub = function(){f.publish('ebs.subaccounts.change', 'msg');	}
+                   
+                   form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
+                   	Ext.Msg.alert('Данные были успешно сохранены', 'Данные были успешно сохранены' );
+                   	pub();
+                   },failure: function(form,action) {        
+                    	Ext.Msg.alert('Ошибка', action.result.msg )}});
+                   
             	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
             	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
             	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
@@ -1786,7 +1817,7 @@ Ext.onReady(function(){
     	            	listeners: {
     	                    'render' : function(n){
     	                    	//alert(this.findParentByType('xinstancecontainer').parent_id);
-    	                    	this.setValue(this.findParentByType('xinstancecontainer').parent_id);
+    	                    	this.setValue(this.findParentByType('xinstancecontainer').ids.account_id);
     	                    	//alert(this.value);
     	                    }
     	                    }
