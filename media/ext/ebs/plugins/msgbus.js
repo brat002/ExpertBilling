@@ -189,3 +189,4 @@ Ext.override(Ext.ux.MsgBus, {
  
 // register ptype
 Ext.preg('msgbus', Ext.ux.MsgBus); 
+.6

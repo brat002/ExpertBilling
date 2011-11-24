@@ -119,7 +119,7 @@ Ext.onReady(function(){
            //if(!EBS.windows[window_key]){
            winCmp = Ext.get(window_key);
            if(!winCmp){
-                        winCmp = new Ext.Window({
+                        winCmp = new ExInstanceWindow({
                             id:window_key,
                             instance_id:id,
                             ids:ids,
@@ -216,7 +216,7 @@ Ext.onReady(function(){
            //if(!EBS.windows[window_key]){
            winCmp = Ext.get(window_key);
            if(!winCmp){
-                        winCmp = new ExInstanceWindow({
+                        winCmp = new ExInstancePanel({
                             id:window_key+id,
                             applyTo:Ext.get('body'),
                             instance_id:id,
@@ -1259,6 +1259,7 @@ Ext.onReady(function(){
             	   xtype:'grid',
                    stateful: true,
                    stateId: 'stateSubaccountsGrid',
+                   plugins:['msgbus'],
             	   store:new Ext.data.JsonStore({
        		        	paramsAsHash: true,
     			    //	autoLoad: {params:{start:0, limit:100}},
@@ -1275,6 +1276,13 @@ Ext.onReady(function(){
        		        	},
 
             	   }),
+            	   onChange:function(subject, message) {
+            		   //Ext.Msg.alert(message);
+            		   var me;
+            		   me=this;
+            	       me.store.load();
+            	       //Ext.Msg.alert(message);
+            	    },
             	   bbar: new Ext.PagingToolbar({
                        pageSize: 100,
                       // store: this.store,
@@ -1301,7 +1309,16 @@ Ext.onReady(function(){
  			        		  this.store.setBaseParam('account_id',account_id);
  			        		  this.store.load();
  			        	  }
- 			          }
+ 			        	 var me;
+ 	            		   me=this;
+ 			        	 me.subscribe('ebs.subaccounts.change', {fn:this.onChange, single:false});
+ 			          },
+ 			          
+ 			         /*beforedestroy:function(){
+ 			             // console.info('load',this,arguments);
+			        	  
+			        	 this.unsubscribe('ebs.subaccounts.change');
+			          },*/
             	   },
                    
             	   autoScroll: true,
@@ -1398,7 +1415,7 @@ Ext.onReady(function(){
            	   	  store:new Ext.data.JsonStore({
       		        	paramsAsHash: true,
 
-      		        	autoLoad: {params:{start:0, limit:100,'account_id': this.findParentByType('xinstancecontainer').instance_id}},
+      		        	//autoLoad: {params:{start:0, limit:100,'account_id': this.findParentByType('xinstancecontainer').instance_id}},
       		        	proxy: new Ext.data.HttpProxy({
       		        		url: '/ebsadmin/accountaddonservices/',
       		        		method:'POST',
@@ -1423,7 +1440,15 @@ Ext.onReady(function(){
 
 
            	   }),
-
+           	   plugins:['msgbus'],	
+           	
+	     	   onChange:function(subject, message) {
+	     		   //Ext.Msg.alert(message);
+	     		   var me;
+	     		   me=this;
+	     	       me.store.load();
+	     	       
+	     	    },
                selModel : new Ext.grid.RowSelectionModel({
                     singleSelect : true
                        }),
@@ -1434,7 +1459,12 @@ Ext.onReady(function(){
 			             // console.info('load',this,arguments);
 			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
 			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
-			        	  //this.store.load();
+			        	  if (this.findParentByType('xinstancecontainer').instance_id){
+			        		  this.store.load();
+			        	  }
+			        	  var me;
+	            		  me=this;
+			        	  me.subscribe('ebs.accountaddonservice.change', {fn:this.onChange, single:false});
 			          }
            	   },
                   
@@ -1503,6 +1533,7 @@ Ext.onReady(function(){
          var config = {
           	   xtype:'grid',
                  stateful: true,
+                 plugins:['msgbus'],
                  stateId: 'stateAccountTariffsGrid',
           	   	  store:new Ext.data.JsonStore({
      		        	paramsAsHash: true,
@@ -1523,7 +1554,15 @@ Ext.onReady(function(){
 
 
           	   }),
-
+          	  onChange:function(subject, message) {
+	     		   //Ext.Msg.alert(message);
+	     		   var me;
+	     		   me=this;
+	     	       me.store.load();
+	     	       
+	     	    },
+	     	    
+	     	  
               selModel : new Ext.grid.RowSelectionModel({
                    singleSelect : true
                       }),
@@ -1536,7 +1575,12 @@ Ext.onReady(function(){
 			        	  //this.store.setBaseParam('subaccount_id', this.findParentByType('form').findParentByType('panel').instance_id);
 			        	  //alert();
 			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
-			        	  this.store.load();
+			        	  if (this.findParentByType('xinstancecontainer').instance_id){
+			        		  this.store.load();
+			        	  }
+			        	  var me;
+	            		  me=this;
+			        	  me.subscribe('ebs.accounttarif.change', {fn:this.onChange, single:false});
 			          }
           	   },
                  

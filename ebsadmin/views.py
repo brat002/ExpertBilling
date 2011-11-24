@@ -321,8 +321,9 @@ def account_save(request):
     #acc.fullllname=p.get("fullname")
     if a.is_valid():
         try:
-            a.save()
-            res={"success": True}
+            item = a.save(commit=False)
+            item.save()
+            res={"success": True, 'account_id':item.id}
         except Exception, e:
             print e
             res={"success": False, "errors": a._errors}
