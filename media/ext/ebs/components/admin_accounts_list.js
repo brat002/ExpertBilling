@@ -15,7 +15,7 @@ Ext.onReady(function(){
                 this.tbNewFormInTabCallBack = function(self, action){
                 	id=null;
                 	
-                	EBS.displayFormInTab(self.xtype, action,id, self)
+                	EBS.displayFormInTab(self.xtype, action,id, {'account_id':id}, self)
                 	}
                 this.tbFormInTabCallBack = function(self, action, id){
                 	//alert(id);
@@ -24,7 +24,7 @@ Ext.onReady(function(){
                 		id=self.selModel.selections.items[0].id;
                 		//alert(self.selModel.selections.items[0]);
                 	
-                	EBS.displayFormInTab(self.xtype, action,id, self)
+                	EBS.displayFormInTab(self.xtype, action,id, {'account_id':id}, self)
                 	}
                 this.tbWindowCallBack = function(self, action){EBS.displayWindow(self.xtype, action, self)}
                 this.tbCommandCallBack = function(self, a,b,c){
@@ -675,6 +675,19 @@ Ext.onReady(function(){
 													                    width: '100%',
 													                    title: 'Подключаемые услуги',
 													                    tbar: [{
+																		    icon: media+'icons/16/arrow_refresh.png',
+																	        text: 'Обновить',
+																	        handler: function(){
+																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
+																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
+																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+																	     	   //var account_id;
+																	     	   
+																	     	  //account_id = this.findParentByType('xinstancecontainer').parent_id;
+																	        	this.ownerCt.ownerCt.store.load();
+																	     	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+																	        }
+																	    },{
 																	        iconCls: 'icon-user-add',
 																	        text: 'Добавить',
 																	        handler: function(){
@@ -1327,7 +1340,7 @@ Ext.onReady(function(){
 		    reader: new Ext.data.JsonReader({
 			    idProperty: 'id',          
 			    root: 'records',             
-			    fields: [{name: 'temporary_blocked', type:'boolean'},
+			    fields: [{name: 'temporary_blocked_checkbox', type:'boolean'},
 			             {name: 'account', type:'int'},
 			             {name: 'subaccount', type:'int'},
 			             {name: 'service', type:'int'},
@@ -1383,7 +1396,7 @@ Ext.onReady(function(){
     	                                    xtype: 'checkbox',
     	                                    boxLabel: 'Временно отключить услугу',
     	                                    anchor: '100%',
-    	                                    name:'temporary_blocked',
+    	                                    name:'temporary_blocked_checkbox',
     	                                    fieldLabel: 'Пауза'
     	                                },
     	                                {
@@ -1401,7 +1414,7 @@ Ext.onReady(function(){
     	                                    align: 'middle',
     	                                    items: [
     	                                        {
-    	                                            xtype: 'label',
+    	                                            xtype: 'displayfield',
     	                                            value: 'с  '
     	                                        },
     	                                        {
@@ -1410,7 +1423,7 @@ Ext.onReady(function(){
     	                                            name:'activated'
     	                                        },
     	                                        {
-    	                                            xtype: 'label',
+    	                                            xtype: 'displayfield',
     	                                            value: 'по'
     	                                        },
     	                                        {
@@ -1459,10 +1472,20 @@ Ext.onReady(function(){
     	        }
     	    ]
     	}
-    EBS.forms.ebs_accountsPanel.accountaddonservice_submitAction =  function(object, event, form){
-    	alert(form = object.ownerCt.ownerCtgetForm().findField('service').value);
+    EBS.forms.ebs_accountsPanel.accountaddonservice_submitAction =  function(object, event, form, window){
+    	
+    	var acc_id;
+    	acc_id = form.findField('account').getValue();
+    	if (!acc_id)
+    		{
+    		form.findField('account').setValue(window.ids.account_id);
+    		
+    		
+    		}
     	form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: false, success: function(form,action) {        
-        	form.closeForm()}})	
+            	form.closeForm()},
+            	
+    	})	
     }
     EBS.forms.ebs_accountsPanel.tpchange = {
     	    xtype: 'form',
