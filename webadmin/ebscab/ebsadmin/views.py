@@ -5,7 +5,7 @@ from billservice.models import Account, SubAccount, TransactionType, City, Stree
 from nas.models import Nas
 from django.contrib.auth.decorators import login_required
 
-from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm
+from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm
 
 @ajax_request
 @login_required
@@ -396,7 +396,7 @@ def accountaddonservices(request):
     #from django.http import HttpResponse
     res=[]
     for item in items:
-        res.append(instance_dict(item))
+        res.append(instance_dict(item,normal_fields=True))
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
@@ -414,13 +414,26 @@ def accountaddonservices_get(request):
 @ajax_request
 @login_required
 def accountaddonservices_set(request):
+    id = request.POST.get('id')
     from billservice.models import AccountAddonService
     form = AccountAddonForm(request.POST)
     if form.is_valid():
         print form.cleaned_data
-        res={"success": True}
+        if id:
+            #Если id найден - обновляем поля
+            item = AccountAddonService.objects.filter(id=id).update(**form.cleaned_data)
+            #print dir(item)
+            res={"success": True}
+        else:
+            #Если id _не_ найден - создаём модельформ и сохраняем её.
+            form = AccountAddonServiceModelForm(request.POST)
+            if form.is_valid():
+                form.save()
+                res={"success": True}
+            else:
+                res={"success": False, "errors": form._errors}
     else:
-        res={"success": False, "errors": a._errors}
+        res={"success": False, "errors": form._errors}
     #print instance_dict(item).keys()
     return res
 
