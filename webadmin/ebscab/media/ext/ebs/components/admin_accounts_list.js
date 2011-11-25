@@ -471,8 +471,12 @@ Ext.onReady(function(){
 													            //autoHeight:true,
 													            
 													            //height:'100%',
-													            autoWidth: true,
+													            //autoWidth: true,
 													            layout: 'hbox',
+													            layoutConfig : {
+													                pack : 'center',
+													               align : 'middle'
+													            },
 													            defaults:{
 					    	                                        margins:'0 5 5 0',    	                                        
 					    	                                    },
@@ -487,7 +491,7 @@ Ext.onReady(function(){
 													                    xtype: 'fieldset',
 													                    //width: '20%',
 													                    height: 150,
-													                    columnWidth: .28,
+													                    columnWidth: 350,
 													                    
 													                    title: 'Учётные данные',
 													                    
@@ -538,7 +542,7 @@ Ext.onReady(function(){
 													                {
 													                    xtype: 'fieldset',
 													                    //autoWidth: true,
-													                    columnWidth: .28,
+													                    columnWidth: 350,
 													                    height: 150,
 													                    title: 'Баланс',
 													                    
@@ -566,7 +570,7 @@ Ext.onReady(function(){
 													                },
 													                {
 													                    xtype: 'fieldset',
-													                    columnWidth: .44,
+													                    columnWidth: 350,
 													                    height: 150,
 													                    title: 'Параметры',
 													                   
@@ -599,7 +603,9 @@ Ext.onReady(function(){
 													        {
 													            xtype: 'container',
 													            autoHeight: true,
-													            
+													            //layout: 'fit',
+													            autoWidth:true,
+													            //height:900,
 													            width: '100%',
 													            defaults:{
 					    	                                        margins:'0 5 5 0',    	                                        
@@ -614,7 +620,7 @@ Ext.onReady(function(){
 																		   authHeight: true,
 																		   height:300,
 																		   width:'100%',
-																		   autoScroll:true,
+																		   //autoScroll:true,
 																		   tbar: [{
 																			    icon: media+'icons/16/arrow_refresh.png',
 																		        text: 'Обновить',
@@ -638,8 +644,12 @@ Ext.onReady(function(){
 																	     	   var account_id;
 																	     	   
 																	     	  account_id = this.findParentByType('xinstancecontainer').parent_id;
-																	     	   
-																	     	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+																	     	  if (!account_id){
+																	     		  Ext.Msg.alert('Действие не может быть выполнено','Сохраните аккаут.');
+																	     	  }else{
+																	     		  EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+																	     	  }
+																	     	  //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
 																	        }
 																	    },{
 																	        iconCls: 'icon-user-edit',

@@ -1374,20 +1374,88 @@ Ext.onReady(function(){
             	            	sortable:true
             	            },
             	            {
-            	            	header:'Не выполнять IPN действия',
-            	            	dataIndex:'ipn_sleep',
-            	            	sortable:true
-            	            },                                                           	            
+            	                xtype: 'actioncolumn',
+            	                header:'Отключить изменение IPN статуса',
+            	                dataIndex:'ipn_sleep',
+            	                width: 50,
+            	                items: [{
+            	                    //icon   : '/media/icons/16/delete.gif',  // Use a URL in the icon config
+            	                    tooltip: 'Выполнять IPN действия',
+            	                    handler: function(grid, rowIndex, colIndex) {
+            	                    	var rec = grid.store.getAt(rowIndex);
+            	                        alert("Sell "+rec.get('ipn_sleep'));
+            	                    }
+            	                }, {
+            	                    getClass: function(v, meta, rec) {          // Or return a class from a function
+            	                        if (rec.get('ipn_sleep') ==true) {
+            	                            this.items[0].tooltip = 'Активно! Кликните, чтобы отключить.';
+            	                            return 'enable-col';
+            	                        } else {
+            	                            this.items[0].tooltip = 'Не активно! Кликните, чтобы включить.';
+            	                            return 'disable-col';
+            	                        }
+            	                    },
+            	                    handler: function(grid, rowIndex, colIndex) {
+            	                        
+            	                        alert("Buy ");
+            	                    }
+            	                }]
+            	            },
             	            {
-            	            	header:'IPN добавлен',
-            	            	dataIndex:'ipn_added',
-            	            	sortable:true
-            	            },  
-            	            {
-            	            	header:'IPN активен',
-            	            	dataIndex:'ipn_enabled',
-            	            	sortable:true
-            	            },                                                          	            
+            	                xtype: 'actioncolumn',
+            	                header:'Добавлен в ACL',
+            	                dataIndex:'ipn_added',
+            	                width: 50,
+            	                items: [{
+            	                    //icon   : '/media/icons/16/delete.gif',  // Use a URL in the icon config
+            	                    tooltip: 'Была выполнена команда добавления на сервер доступа',
+            	                    handler: function(grid, rowIndex, colIndex) {
+            	                    	var rec = grid.store.getAt(rowIndex);
+            	                        alert("Sell "+rec.get('ipn_sleep'));
+            	                    }
+            	                }, {
+            	                    getClass: function(v, meta, rec) {          // Or return a class from a function
+            	                        if (rec.get('ipn_added') ==true) {
+            	                            this.items[0].tooltip = 'Активно! Кликните, чтобы отключить.';
+            	                            return 'enable-col';
+            	                        } else {
+            	                            this.items[0].tooltip = 'Не активно! Кликните, чтобы включить.';
+            	                            return 'disable-col';
+            	                        }
+            	                    },
+            	                    handler: function(grid, rowIndex, colIndex) {
+            	                        
+            	                        alert("Buy ");
+            	                    }
+            	                }]
+            	            },{
+            	                xtype: 'actioncolumn',
+            	                header:'Активен в ACL',
+            	                dataIndex:'ipn_enabled',
+            	                width: 50,
+            	                items: [{
+            	                    //icon   : '/media/icons/16/delete.gif',  // Use a URL in the icon config
+            	                    tooltip: 'Была выполнена команда активации ACL записи на сервере доступа',
+            	                    handler: function(grid, rowIndex, colIndex) {
+            	                    	var rec = grid.store.getAt(rowIndex);
+            	                        alert("Sell "+rec.get('ipn_sleep'));
+            	                    }
+            	                }, {
+            	                    getClass: function(v, meta, rec) {          // Or return a class from a function
+            	                        if (rec.get('ipn_enabled') ==true) {
+            	                            this.items[0].tooltip = 'Активно! Кликните, чтобы отключить.';
+            	                            return 'enable-col';
+            	                        } else {
+            	                            this.items[0].tooltip = 'Не активно! Кликните, чтобы включить.';
+            	                            return 'disable-col';
+            	                        }
+            	                    },
+            	                    handler: function(grid, rowIndex, colIndex) {
+            	                        
+            	                        alert("Buy ");
+            	                    }
+            	                }]
+            	            }                                                  	            
             	            ]
             		   
             		  
@@ -1937,6 +2005,7 @@ EBS.SystemUser = Ext.extend(Ext.form.ComboBox, {
        this.store.on('load',function(store) {
          me.setValue(null, true);
        })
+       this.store.load();
        EBS.SystemUser.superclass.onRender.apply(this, arguments);
    } // eo function onRender
  
@@ -1983,7 +2052,9 @@ EBS.ComboAccountStatus = Ext.extend(Ext.form.ComboBox, {
        var me = this;
        this.store.on('load',function(store) {
          me.setValue(1, true);
+        
        })
+       this.store.load();
        EBS.ComboAccountStatus.superclass.onRender.apply(this, arguments);
    } // eo function onRender
  
