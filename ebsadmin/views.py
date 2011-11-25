@@ -283,10 +283,10 @@ def street(request):
 @ajax_request
 @login_required
 def accountstatus(request):
-    items = ['1',u'Активен'], \
-            ['2',u'Не активен, списывать периодические услуги'],\
-            ['3',u'Не активен, не списывать периодические услуги'],\
-            ['4',u'Пользовательская блокировка'],
+    items = [1,u'Активен'], \
+            [2,u'Не активен, списывать периодические услуги'],\
+            [3,u'Не активен, не списывать периодические услуги'],\
+            [4,u'Пользовательская блокировка'],
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
