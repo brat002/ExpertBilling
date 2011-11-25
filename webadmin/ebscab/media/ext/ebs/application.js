@@ -1408,7 +1408,7 @@ Ext.onReady(function(){
             	                width: 50,
             	                items: [{
             	                    //icon   : '/media/icons/16/delete.gif',  // Use a URL in the icon config
-            	                    tooltip: 'Была выполнена команда добавления на сервер доступа',
+            	                    
             	                    handler: function(grid, rowIndex, colIndex) {
             	                    	var rec = grid.store.getAt(rowIndex);
             	                        alert("Sell "+rec.get('ipn_sleep'));
@@ -1426,6 +1426,7 @@ Ext.onReady(function(){
             	                    handler: function(grid, rowIndex, colIndex) {
             	                        
             	                        alert("Buy ");
+            	                        tooltip: 'Была выполнена команда добавления на сервер доступа',
             	                    }
             	                }]
             	            },{
