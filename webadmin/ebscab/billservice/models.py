@@ -1060,6 +1060,8 @@ class IPInUse(models.Model):
     pool = models.ForeignKey(IPPool)
     ip = models.CharField(max_length=255)
     datetime = models.DateTimeField()
+    disabled = models.DateTimeField(blank=True, null=True)
+    dynamic = models.BooleanField(default=False)
     
 
 class TrafficTransaction(models.Model):

@@ -447,7 +447,9 @@ a.selector-search { padding:2px 0 0 5px;}
 .icon-delete {
     background-image: url(/media/icons/16/new/delete.png) !important;
 }
-
+.icon-user-delete {
+    background-image: url(/media/icons/16/new/delete.png) !important;
+}
 .x-action-col-cell img.enable-col {
             height: 16px;
             width: 16px;

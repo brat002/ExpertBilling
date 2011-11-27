@@ -525,7 +525,7 @@ Ext.onReady(function(){
                                         stateId: 'main_tab_panel',
                                         enableTabScroll : true,
                                         resizeTabs      : true,
-                                        minTabWidth     : 75,
+                                        //minTabWidth     : 75,
                                         border          : false,
                                         defaults		: {               // defaults are applied to items, not the container
                                             				closable:true,
@@ -536,7 +536,7 @@ Ext.onReady(function(){
                                                                                         pageSize : 5
                                                                                         })
                                                          ],
-                                        items           : [
+                                        /*items           : [
                                             {
                                                 title : 'Welcome',
                                                 html  : i18n.welcomeText
@@ -547,7 +547,7 @@ Ext.onReady(function(){
                                                 id:'ebs_nasPanel'
 
                                             }
-                                        ]
+                                        ]*/
                                     }
                                 },
                             // Right help block
@@ -668,7 +668,7 @@ Ext.onReady(function(){
            var config = {
 						title:'Аккаунты',
 						id:'accountspanel',
-						activeTab       : 0,
+						activeTab       : 1,
 						align:'center',
 						items:[{						    	   
 						    	    title:'Поиск',
@@ -1380,24 +1380,49 @@ Ext.onReady(function(){
             	                width: 50,
             	                items: [{
             	                    //icon   : '/media/icons/16/delete.gif',  // Use a URL in the icon config
-            	                    tooltip: 'Выполнять IPN действия',
+            	                    //tooltip: 'Была выполнена команда добавления ACL записи на сервере доступа',
             	                    handler: function(grid, rowIndex, colIndex) {
             	                    	var rec = grid.store.getAt(rowIndex);
-            	                        alert("Sell "+rec.get('ipn_sleep'));
-            	                    }
-            	                }, {
+            	                        //alert("Sell "+rec.get('ipn_added'));
+            	                    	var act;
+            	                    	if (rec.get('ipn_sleep')==true){
+            	                    		act='ipn_disable';
+            	                    	}else{
+            	                    		act='ipn_enable';
+            	                    	}
+            	                        Ext.Ajax.request({
+            	                            params: {subaccounts_id: [rec.get('id'),], state: rec.get('ipn_sleep'),action:act},
+            	                            url: '/ebsadmin/actions/set/',
+            	                            success: function (resp) {
+            	                                var data;
+            	                                data = Ext.decode(resp.responseText);
+            	                                if (data.success === true) {
+            	                                    
+            	                                    if (rec.get('ipn_sleep')==true){
+            	                                    	rec.set('ipn_sleep',false);
+                        	                    	}else{
+                        	                    		rec.set('ipn_sleep',true);
+                        	                    	}
+            	                                    
+            	                                } else {
+            	                                    Ext.MessageBox.alert('Ошибка', 'Состояние не изменено. '+data.msg);
+            	                                }
+            	                            },
+            	                            failure: function () {
+            	                            	Ext.MessageBox.alert('Ошибка', 'Состояние не изменено');
+            	                            }
+            	                        });
+            	                    },
+            	                
             	                    getClass: function(v, meta, rec) {          // Or return a class from a function
             	                        if (rec.get('ipn_sleep') ==true) {
-            	                            this.items[0].tooltip = 'Активно! Кликните, чтобы отключить.';
-            	                            return 'enable-col';
-            	                        } else {
-            	                            this.items[0].tooltip = 'Не активно! Кликните, чтобы включить.';
+            	                            this.items[0].tooltip = 'IPN действия не будут выполняться. Кликните, чтобы изменить.';
             	                            return 'disable-col';
+            	                            
+            	                        } else {
+            	                            this.items[0].tooltip = 'IPN действия будут выполняться. Кликните, чтобы изменить.';
+            	                            return 'enable-col';
             	                        }
-            	                    },
-            	                    handler: function(grid, rowIndex, colIndex) {
-            	                        
-            	                        alert("Buy ");
             	                    }
             	                }]
             	            },
@@ -1408,25 +1433,49 @@ Ext.onReady(function(){
             	                width: 50,
             	                items: [{
             	                    //icon   : '/media/icons/16/delete.gif',  // Use a URL in the icon config
-            	                    
+            	                    tooltip: 'Была выполнена команда добавления ACL записи на сервере доступа',
             	                    handler: function(grid, rowIndex, colIndex) {
             	                    	var rec = grid.store.getAt(rowIndex);
-            	                        alert("Sell "+rec.get('ipn_sleep'));
-            	                    }
-            	                }, {
+            	                        //alert("Sell "+rec.get('ipn_added'));
+            	                    	var act;
+            	                    	if (rec.get('ipn_added')==true){
+            	                    		act='delete';
+            	                    	}else{
+            	                    		act='create';
+            	                    	}
+            	                        Ext.Ajax.request({
+            	                            params: {subaccounts_id: [rec.get('id'),], state: rec.get('ipn_added'),action:act},
+            	                            url: '/ebsadmin/actions/set/',
+            	                            success: function (resp) {
+            	                                var data;
+            	                                data = Ext.decode(resp.responseText);
+            	                                if (data.success === true) {
+            	                                    
+            	                                    if (rec.get('ipn_added')==true){
+            	                                    	rec.set('ipn_added',false);
+                        	                    	}else{
+                        	                    		rec.set('ipn_added',true);
+                        	                    	}
+            	                                    
+            	                                } else {
+            	                                    Ext.MessageBox.alert('Ошибка', 'Состояние не изменено. '+data.msg);
+            	                                }
+            	                            },
+            	                            failure: function () {
+            	                            	Ext.MessageBox.alert('Ошибка', 'Состояние не изменено');
+            	                            }
+            	                        });
+            	                    },
+            	                
             	                    getClass: function(v, meta, rec) {          // Or return a class from a function
             	                        if (rec.get('ipn_added') ==true) {
             	                            this.items[0].tooltip = 'Активно! Кликните, чтобы отключить.';
-            	                            return 'enable-col';
+            	                            return 'disable-col';
+            	                            
             	                        } else {
             	                            this.items[0].tooltip = 'Не активно! Кликните, чтобы включить.';
-            	                            return 'disable-col';
+            	                            return 'enable-col';
             	                        }
-            	                    },
-            	                    handler: function(grid, rowIndex, colIndex) {
-            	                        
-            	                        alert("Buy ");
-            	                        tooltip: 'Была выполнена команда добавления на сервер доступа',
             	                    }
             	                }]
             	            },{
@@ -1439,21 +1488,46 @@ Ext.onReady(function(){
             	                    tooltip: 'Была выполнена команда активации ACL записи на сервере доступа',
             	                    handler: function(grid, rowIndex, colIndex) {
             	                    	var rec = grid.store.getAt(rowIndex);
-            	                        alert("Sell "+rec.get('ipn_sleep'));
-            	                    }
-            	                }, {
+            	                        //alert("Sell "+rec.get('ipn_added'));
+            	                    	var act;
+            	                    	if (rec.get('ipn_enabled')==true){
+            	                    		act='disable';
+            	                    	}else{
+            	                    		act='enable';
+            	                    	}
+            	                        Ext.Ajax.request({
+            	                            params: {subaccounts_id: [rec.get('id'),], state: rec.get('ipn_enabled'),action:act},
+            	                            url: '/ebsadmin/actions/set/',
+            	                            success: function (resp) {
+            	                                var data;
+            	                                data = Ext.decode(resp.responseText);
+            	                                if (data.success === true) {
+            	                                    
+            	                                    if (rec.get('ipn_enabled')==true){
+            	                                    	rec.set('ipn_enabled',false);
+                        	                    	}else{
+                        	                    		rec.set('ipn_enabled',true);
+                        	                    	}
+            	                                    
+            	                                } else {
+            	                                    Ext.MessageBox.alert('Ошибка', 'Состояние не изменено. '+data.msg);
+            	                                }
+            	                            },
+            	                            failure: function () {
+            	                            	Ext.MessageBox.alert('Ошибка', 'Состояние не изменено');
+            	                            }
+            	                        });
+            	                    },
+            	                
             	                    getClass: function(v, meta, rec) {          // Or return a class from a function
             	                        if (rec.get('ipn_enabled') ==true) {
             	                            this.items[0].tooltip = 'Активно! Кликните, чтобы отключить.';
-            	                            return 'enable-col';
+            	                            return 'disable-col';
             	                        } else {
             	                            this.items[0].tooltip = 'Не активно! Кликните, чтобы включить.';
-            	                            return 'disable-col';
+            	                            
+            	                            return 'enable-col';
             	                        }
-            	                    },
-            	                    handler: function(grid, rowIndex, colIndex) {
-            	                        
-            	                        alert("Buy ");
             	                    }
             	                }]
             	            }                                                  	            
