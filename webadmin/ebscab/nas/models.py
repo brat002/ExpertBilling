@@ -49,7 +49,11 @@ class Nas(models.Model):
     ipn_speed_action = models.TextField(max_length=255, blank=True, default="")
     reset_action = models.TextField(max_length=255, blank=True, default="")
     confstring = models.TextField(verbose_name="Конфигурация по запросу", blank=True, default='')
-
+    subacc_disable_action = models.TextField(blank=True, default="")
+    subacc_enable_action = models.TextField(blank=True, default="")
+    subacc_add_action = models.TextField(blank=True, default="")
+    subacc_delete_action = models.TextField(blank=True, default="")
+            
     def save(self):
         if self.configure_nas==True:
             self.configure_nas=False

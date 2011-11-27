@@ -669,9 +669,30 @@ Ext.onReady(function(){
 																	        //ref: '../removeBtn',
 																	        iconCls: 'icon-user-delete',
 																	        text: 'Remove',
-																	        disabled: true,
+																	        disabled: false,
 																	        handler: function(){
-																	     	   
+																	        	id = this.findParentByType('grid').selModel.selections.items[0].id;
+																	        	store = this.findParentByType('grid').store;
+																	        	if(id){
+																	        		Ext.Ajax.request({
+											            	                            params: {id: id},
+											            	                            url: '/ebsadmin/subaccounts/delete/',
+											            	                            success: function (resp) {
+											            	                                var data;
+											            	                                data = Ext.decode(resp.responseText);
+											            	                                if (data.success === true) {
+											            	                                    
+											            	                                	store.load();
+											            	                                    
+											            	                                } else {
+											            	                                    Ext.MessageBox.alert('Ошибка', 'Субаккаунт не удалён. '+data.msg);
+											            	                                }
+											            	                            },
+											            	                            failure: function () {
+											            	                            	Ext.MessageBox.alert('Ошибка', 'Субаккаунт не удалён. ');
+											            	                            }
+											            	                        });
+																	        	}
 																	        }
 																	    },{
 																	        iconCls: 'icon-user-add',
@@ -1735,7 +1756,7 @@ Ext.onReady(function(){
     	    //autoHeight:true,
     	    //padding:10,
     	    align:'center',
-    	    frame:true,
+    	    //frame:true,
     	    layout: 'auto',
     	    autoScroll: true,
     	    bodyStyle:'padding:0 30% 0 30%',
@@ -1748,6 +1769,25 @@ Ext.onReady(function(){
             	   f=this.ownerCt.ownerCt;
             	   pub = function(){f.publish('ebs.subaccounts.change', 'msg');	}
                    
+                   form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
+                   	Ext.Msg.alert('Данные были успешно сохранены', 'Данные были успешно сохранены' );
+                   	pub();
+                   },failure: function(form,action) {        
+                    	Ext.Msg.alert('Ошибка', action.result.msg )}});
+                   
+            	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
+            	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
+            	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+            	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', 33, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+               }
+           },{
+               iconCls: 'icon-user-add',
+               text: 'Сохранить как копию',
+               handler: function(){
+            	   form = this.ownerCt.ownerCt.getForm();
+            	   f=this.ownerCt.ownerCt;
+            	   pub = function(){f.publish('ebs.subaccounts.change', 'msg');	}
+                   form.findField('id').setValue('');
                    form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
                    	Ext.Msg.alert('Данные были успешно сохранены', 'Данные были успешно сохранены' );
                    	pub();
@@ -1887,18 +1927,93 @@ Ext.onReady(function(){
     	                                width: 533,
     	                                title: 'RADIUS авторизация',
     	                                items: [
-    	                                    {
-    	                                        xtype: 'textfield',
-    	                                        name: 'username',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Логин'
-    	                                    },
-    	                                    {
-    	                                        xtype: 'textfield',
-    	                                        name: 'password',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Пароль'
-    	                                    },
+											{
+											    xtype: 'container',
+											    layout: 'hbox',
+											    fieldLabel: 'IPv4 VPN IP',
+											    align: 'middle',
+											    fieldLabel: 'Логин',
+											    defaults:{
+	    	                                        margins:'0 5 5 0',    	                                        
+	    	                                    },
+	    	                                    baseCls:'x-plain',
+											    anchor: '100%',
+											    items: [
+			    	                                    {
+			    	                                        xtype: 'textfield',
+			    	                                        name: 'username',
+			    	                                        anchor: '90%',
+			    	                                        //fieldLabel: 'Логин'
+			    	                                    },{
+			    	                                        xtype: 'button',
+			    	                                        anchor: '10%',
+			    	                                        text: 'Сгенерировать',
+			    	                                        handler:function(button, event){
+			    	                                        	Ext.Ajax.request({
+			    	                	                            params: {'action':'login'},
+			    	                	                            url: '/ebsadmin/credentials/gen/',
+			    	                	                            success: function (resp) {
+			    	                	                                var data;
+			    	                	                                data = Ext.decode(resp.responseText);
+			    	                	                                if (data.success === true) {
+			    	                	                                	button.findParentByType('form').getForm().findField('username').setValue(data.generated);
+			    	                	                                    
+			    	                	                                } else {
+			    	                	                                    Ext.MessageBox.alert('Ошибка', 'Неверный запрос. ');
+			    	                	                                }
+			    	                	                            },
+			    	                	                            failure: function () {
+			    	                	                            	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
+			    	                	                            }
+			    	                	                        });
+			    	                                        }
+			    	                                    }
+			    	                                    ]
+	    	                                    },
+	    	                                    {
+												    xtype: 'container',
+												    layout: 'hbox',
+												    fieldLabel: 'IPv4 VPN IP',
+												    align: 'middle',
+												    fieldLabel: 'Пароль',
+												    defaults:{
+		    	                                        margins:'0 5 5 0',    	                                        
+		    	                                    },
+		    	                                    baseCls:'x-plain',
+												    anchor: '100%',
+												    items: [
+			    	                                    
+			    	                                    {
+			    	                                        xtype: 'textfield',
+			    	                                        name: 'password',
+			    	                                        anchor: '100%',
+			    	                                        fieldLabel: 'Пароль'
+			    	                                    },{
+			    	                                        xtype: 'button',
+			    	                                        anchor: '10%',
+			    	                                        text: 'Сгенерировать',
+			    	                                        handler:function(button, event){
+			    	                                        	Ext.Ajax.request({
+			    	                	                            params: {'action':'password'},
+			    	                	                            url: '/ebsadmin/credentials/gen/',
+			    	                	                            success: function (resp) {
+			    	                	                                var data;
+			    	                	                                data = Ext.decode(resp.responseText);
+			    	                	                                if (data.success === true) {
+			    	                	                                	button.findParentByType('form').getForm().findField('password').setValue(data.generated);
+			    	                	                                    
+			    	                	                                } else {
+			    	                	                                    Ext.MessageBox.alert('Ошибка', 'Неверный запрос. ');
+			    	                	                                }
+			    	                	                            },
+			    	                	                            failure: function () {
+			    	                	                            	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
+			    	                	                            }
+			    	                	                        });
+			    	                                        }
+			    	                                    }
+			    	                                    ]
+		    	                                    },
     	                                    {
     	                                        xtype: 'container',
     	                                        layout: 'hbox',
@@ -1906,23 +2021,57 @@ Ext.onReady(function(){
     	                                        align: 'middle',
     	                                        items: [
     	                                            {
-    	                                                xtype: 'textfield',
+    	                                                xtype: 'combo',
     	                                                name: 'vpn_ip_address',
     	                                                vtype:'IPAddress',
     	                                                value:'0.0.0.0',
-    	                                                flex: 1
+    	                                                flex: 1,
+    	                                                anchor: '100%',
+    	                                     		    
+    	                                     		    displayField: 'ipaddress',
+    	                                     		    valueField: 'ipaddress', 
+    	                                     		    mode: 'remote',
+    	                                     		    editable:true,
+    	                                                loadingText  : 'Searching...',
+    	                                                pageSize     : 25,
+    	                                     		    triggerAction: 'all',
+    	                                     		    typeAhead: false,
+    	                                     		    //ref: 'store/p',
+    	                                     		    listeners:{
+	                                     		        	focus:function(obj, options){
+	                                     		        		pool_id=this.findParentByType('form').getForm().findField('ipv4_vpn_pool').getValue();
+	                                     		        		//alert();
+	                                     		        		obj.store.setBaseParam('pool_id',pool_id);
+	                                     		        		if (pool_id){
+	                                     		        			obj.store.load()
+	                                     		        		}
+	                                     		        	},
+	                                     		        	//scope:this.ownerCt,
+	                                     		        	
+	                                     		        },
+	                                     		        
+    	                                     		    store:new Ext.data.Store({
+    	                                     		    	ref: '../st',
+    	                                     		    	param:{pool_id:function (){return this.ownerCt.ownerCt.ipv4_vpn_pool.getValue()}},
+    	                                     		        proxy: new Ext.data.HttpProxy({
+    	                                     		            url: '/ebsadmin/ipaddress/getfrompool/',
+    	                                     		            method:'POST',
+    	                                     		            
+    	                                     		        }),
+    	                                     		        
+    	                                     		        reader: new Ext.data.JsonReader({
+    	                                     		        	totalProperty: 'totalCount',
+    	                                     		            root: 'records'
+    	                                     		        }, [{
+    	                                     		            name: 'ipaddress'
+    	                                     		        }])
+    	                                     		    }),
     	                                            },
     	                                            {
     	                                                xtype: 'xcomboippool',
     	                                                name: 'ipv4_vpn_pool',
     	                                                hiddenName: 'ipv4_vpn_pool',
     	                                                type:0,
-    	                                                flex: 1
-    	                                            },
-    	                                            {
-    	                                                xtype: 'button',
-    	                                                width: 27,
-    	                                                text: '...',
     	                                                flex: 1
     	                                            }
     	                                        ]
@@ -1931,6 +2080,7 @@ Ext.onReady(function(){
     	                                        xtype: 'container',
     	                                        layout: 'hbox',
     	                                        anchor: '100%',
+    	                                        hidden:true,
     	                                        fieldLabel: 'IPv6 VPN IP',
     	                                        items: [
     	                                            {
@@ -1944,12 +2094,6 @@ Ext.onReady(function(){
     	                                                xtype: 'xcomboippool',
     	                                                pool_type:2,
     	                                                
-    	                                                flex: 1
-    	                                            },
-    	                                            {
-    	                                                xtype: 'button',
-    	                                                width: 27,
-    	                                                text: '...',
     	                                                flex: 1
     	                                            }
     	                                        ]
@@ -2019,23 +2163,57 @@ Ext.onReady(function(){
     	                                        align: 'middle',
     	                                        items: [
     	                                            {
-    	                                                xtype: 'textfield',
+    	                                                xtype: 'combo',
     	                                                name: 'ipn_ip_address',
     	                                                vtype:'IPAddress',
     	                                                value:'0.0.0.0',
-    	                                                flex: 1
+    	                                                flex: 1,
+    	                                                anchor: '100%',
+    	                                     		    
+    	                                     		    displayField: 'ipaddress',
+    	                                     		    valueField: 'ipaddress', 
+    	                                     		    mode: 'remote',
+    	                                     		    editable:true,
+    	                                                loadingText  : 'Searching...',
+    	                                                pageSize     : 25,
+    	                                     		    triggerAction: 'all',
+    	                                     		    typeAhead: false,
+    	                                     		    //ref: 'store/p',
+    	                                     		    listeners:{
+	                                     		        	focus:function(obj, options){
+	                                     		        		pool_id=this.findParentByType('form').getForm().findField('ipv4_ipn_pool').getValue();
+	                                     		        		//alert();
+	                                     		        		obj.store.setBaseParam('pool_id',pool_id);
+	                                     		        		if (pool_id){
+	                                     		        			obj.store.load()
+	                                     		        		}
+	                                     		        	},
+	                                     		        	//scope:this.ownerCt,
+	                                     		        	
+	                                     		        },
+	                                     		        
+    	                                     		    store:new Ext.data.Store({
+    	                                     		    	ref: '../st',
+    	                                     		    	param:{pool_id:function (){return this.ownerCt.ownerCt.ipv4_vpn_pool.getValue()}},
+    	                                     		        proxy: new Ext.data.HttpProxy({
+    	                                     		            url: '/ebsadmin/ipaddress/getfrompool/',
+    	                                     		            method:'POST',
+    	                                     		            
+    	                                     		        }),
+    	                                     		        
+    	                                     		        reader: new Ext.data.JsonReader({
+    	                                     		        	totalProperty: 'totalCount',
+    	                                     		            root: 'records'
+    	                                     		        }, [{
+    	                                     		            name: 'ipaddress'
+    	                                     		        }])
+    	                                     		    }),
     	                                            },
     	                                            {
     	                                                xtype: 'xcomboippool',
     	                                                name: 'ipv4_ipn_pool',
     	                                                hiddenName: 'ipv4_ipn_pool',
     	                                                pool_type: 1,
-    	                                                flex: 1
-    	                                            },
-    	                                            {
-    	                                                xtype: 'button',
-    	                                                width: 27,
-    	                                                text: '...',
     	                                                flex: 1
     	                                            }
     	                                        ]
@@ -2061,6 +2239,7 @@ Ext.onReady(function(){
     	                                    },
     	                                    {
     	                                        xtype: 'container',
+    	                                        hidden:true,
     	                                        layout: 'hbox',
     	                                        anchor: '100%',
     	                                        fieldLabel: 'IPv6 IPN IP',
@@ -2074,12 +2253,6 @@ Ext.onReady(function(){
     	                                            },
     	                                            {
     	                                                xtype: 'combo',
-    	                                                flex: 1
-    	                                            },
-    	                                            {
-    	                                                xtype: 'button',
-    	                                                width: 27,
-    	                                                text: '...',
     	                                                flex: 1
     	                                            }
     	                                        ]
