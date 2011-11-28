@@ -9,6 +9,8 @@ from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm, Ac
 from utilites import cred
 import IPy
 from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
+from IPy import IP
+from utilites import rosClient
 
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
@@ -74,20 +76,33 @@ def generate_credentials(request):
 
 @ajax_request
 @login_required
-def get_mac_for_ip(self, nas_id, ipn_ip_address, cur=None, connection=None, add_data = {}):
-    cur.execute("SELECT ipaddress, login, password FROM nas_nas WHERE id=%s", (nas_id,))
-    row = cur.fetchone()
-    if not row: return
-    nas = Object(row)
-    connection.commit()
-    apiros = rosClient(nas.ipaddress, nas.login, nas.password)
-    command='/ping =address=%s =count=1' % ipn_ip_address
-    rosExecute(command)
-    command='/ip/arp/print ?address=%s' % ipn_ip_address
-    rosExecute(command)
-    mac = rosExecute(command).get('mac-address', '')
-    del apiros
-    return mac
+def get_mac_for_ip(request):
+    nas_id = request.POST.get('nas_id', None)
+    if not nas_id:
+        return {'success':False, 'msg':u'Сервер доступа не указан'}
+    ipn_ip_address = request.POST.get('ipn_ip_address')
+    try:
+        nas = Nas.objects.get(id=nas_id)
+    except Exception, e:
+        return {'success':False, 'msg':str(e)}
+    try:
+        IPy.IP(ipn_ip_address)
+    except Exception, e:
+        return {'success':False, 'msg':str(e)}
+    try:
+        apiros = rosClient(nas.ipaddress, nas.login, nas.password)
+        command='/ping =address=%s =count=1' % ipn_ip_address
+        rosExecute(command)
+        command='/ip/arp/print ?address=%s' % ipn_ip_address
+        rosExecute(command)
+        mac = rosExecute(command).get('mac-address', '')
+        apiros.close()
+        del apiros
+        del rosExecute
+    except Exception, e:
+        return {'success':False, 'msg':str(e)}
+    
+    return {'success':True, 'mac':mac}
     
 @ajax_request
 @login_required
@@ -378,6 +393,7 @@ def subaccount_save(request):
     #from django.http import HttpResponse
     print request
     id=request.POST.get('id')
+    
     if id:
         cc = SubAccount.objects.get(id=id)
         a=SubAccountForm(request.POST,instance=cc)
@@ -386,20 +402,20 @@ def subaccount_save(request):
     #a.account=aa.account_id
     p=request.POST
     res=[]
-    print "a.is_valid()",a.is_valid()
-    print a._errors
-    #print a.clean()
     
-    #acc.username=p.get("username")
-    #acc.password=p.get("password")
-    #acc.fullllname=p.get("fullname")
-    try:
-        #print 'subacc.id', acc.id
-        #acc.save()
-        a.save()
-        res={"success": True}
-    except Exception, e:
-        print e
+    if a.is_valid():
+        if id:
+            if cc.vpn_ipinuse:
+                if cc.vpn_ipinuse.ip!=a.vpn_ip_address:
+                    pass
+            
+        try:
+            a.save()
+            res={"success": True}
+        except Exception, e:
+            print e
+            res={"success": False, "errors": a._errors}
+    else:
         res={"success": False, "errors": a._errors}
     return res
 

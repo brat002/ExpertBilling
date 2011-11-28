@@ -2233,7 +2233,35 @@ Ext.onReady(function(){
     	                                            {
     	                                                xtype: 'button',
     	                                                text: 'Определить',
-    	                                                flex: 1
+    	                                                flex: 1,
+    	                                                width:100,
+    	                                                //getmacforip
+    	                                                handler:function(button, event){
+    	                                                	//button.disable();
+    	                                                	button.setText('Подождите');
+		    	                                        	Ext.Ajax.request({
+		    	                	                            params: {'nas_id':button.findParentByType('form').getForm().findField('nas').getValue(),
+		    	                	                            	'ipn_ip_address':button.findParentByType('form').getForm().findField('ipn_ip_address').getValue()
+		    	                	                            	},
+		    	                	                            url: '/ebsadmin/getmacforip/',
+		    	                	                            success: function (resp) {
+		    	                	                                var data;
+		    	                	                                data = Ext.decode(resp.responseText);
+		    	                	                                //button.enable();
+		    	                	                                button.setText('Определить');
+		    	                	                                if (data.success === true) {
+		    	                	                                	button.findParentByType('form').getForm().findField('ipn_mac_address').setValue(data.mac);
+		    	                	                                    
+		    	                	                                } else {
+		    	                	                                    Ext.MessageBox.alert('Ошибка', 'Неверный запрос. '+data.msg);
+		    	                	                                }
+		    	                	                            },
+		    	                	                            failure: function () {
+		    	                	                            	button.setText('Определить');
+		    	                	                            	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
+		    	                	                            }
+		    	                	                        });
+		    	                                        }
     	                                            }
     	                                        ]
     	                                    },
