@@ -26,6 +26,7 @@ urlpatterns = patterns('ebsadmin.views',
      url(r'^subaccounts/delete/$', 'subaccount_delete'),
      url(r'^ipaddress/getfrompool/$', 'getipfrompool'),
      url(r'^credentials/gen/$', 'generate_credentials'),
+     url(r'^getmacforip/$', 'get_mac_for_ip'),
      
      #url(r'^simplelogin/$', 'simplelogin'),
      url(r'^grid/$', 'grid'),
