@@ -78,6 +78,7 @@ class Session(models.Model):
 # Create your models here.
 class ActiveSession(models.Model):
     account=models.ForeignKey(Account)
+    subaccount=models.ForeignKey(SubAccount)
     #Атрибут радиуса Acct-Session-Id
     sessionid=models.CharField(max_length=255, blank=True)
     #Время последнего обновления
