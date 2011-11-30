@@ -37,7 +37,7 @@ Ext.onReady(function(){
     }
 
     EBS.closeForm = function(self){
-        winCmp = self.ownerCt.ownerCt.ownerCt;
+        winCmp = self.ownerCt.ownerCt;
         winCmp.hide().destroy();
         delete EBS.windows[winCmp.id];
     }
@@ -129,15 +129,11 @@ Ext.onReady(function(){
                             height:300,
                             title:form_data.windowTitle,
                             autoHeight: true,
+                            closable:true,
                             viewConfig: {
                                 forceFit: true
                             },
-                            tools : [{
-                                    handler: function() {
-                                        Ext.Msg.alert('TODO:','Attach as tab.');
-                                        }
-                                   }],
-
+                            
                             plain: true,
                             items: [form_data],
                             buttons: [{
@@ -226,6 +222,7 @@ Ext.onReady(function(){
                             layout:'anchor',
                             title:form_data.windowTitle,
                             autoHeight: false,
+                            closable:true,
                             viewConfig: {
                                 forceFit: true
                             },
@@ -292,12 +289,6 @@ Ext.onReady(function(){
                             viewConfig: {
                                 forceFit: true
                             },
-                            tools : [{
-                                    id: 'gear',
-                                    handler: function() {
-                                        Ext.Msg.alert('TODO:','Attach as tab.');
-                                        }
-                                   }],
 
                             plain: true,
                             items: [form_data],
@@ -1267,7 +1258,7 @@ Ext.onReady(function(){
        		        		url: '/ebsadmin/subaccounts/',
        		        		method:'POST',
        		        	}),    
-       		        	fields: ['switch_port', 'vpn_ipv6_ipinuse', 'ipn_speed', 'allow_dhcp', 'vpn_ip_address', 'allow_dhcp_with_block', 'ipn_sleep', 'speed', 'id', 'allow_addonservice', 'ipn_mac_address', 'allow_dhcp_with_minus', 'ipn_enabled', 'vpn_ipinuse', 'ipv4_vpn_pool', 'nas', 'ipv4_ipn_pool', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'username', 'allow_dhcp_with_null', 'associate_pptp_ipn_ip', 'ipn_ip_address', 'associate_pppoe_ipn_mac', 'allow_ipn_with_block', 'vlan', 'allow_mac_update', 'allow_vpn_with_null', 'ipn_ipv6_ip_address', 'vpn_speed', 'allow_vpn_with_minus', 'password', 'ipn_added', 'account', 'ipn_ipinuse', 'switch', 'allow_vpn_with_block', 'need_resync', 'vpn_ipv6_ip_address'],
+       		        	fields: ['switch_port', 'ipn_speed', 'allow_dhcp', 'vpn_ip_address', 'allow_dhcp_with_block', 'ipn_sleep', 'speed', 'id', 'allow_addonservice', 'ipn_mac_address', 'allow_dhcp_with_minus', 'ipn_enabled', 'ipv4_vpn_pool', 'nas', 'ipv4_ipn_pool', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'username', 'allow_dhcp_with_null', 'associate_pptp_ipn_ip', 'ipn_ip_address', 'associate_pppoe_ipn_mac', 'allow_ipn_with_block', 'vlan', 'allow_mac_update', 'allow_vpn_with_null', 'ipn_ipv6_ip_address', 'vpn_speed', 'allow_vpn_with_minus', 'password', 'ipn_added', 'account', 'switch', 'allow_vpn_with_block', 'need_resync', 'vpn_ipv6_ip_address'],
        		        	root: 'records',
        		        	remoteSort:true,
        		        	sortInfo:{

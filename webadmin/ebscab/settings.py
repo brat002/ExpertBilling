@@ -297,6 +297,7 @@ COMPRESS_JS = {
     # Application components
             u"ext/ebs/components/admin_accounts_list.js",
             u"ext/ebs/components/admin_nasses_list.js",
+            u"ext/ebs/components/admin_sessionmonitor.js",
             #u"ext/ebs/components/admin_session_monitor_list.js",
             #u"ext/ebs/components/admin_settlement_period_list.js",
     # Main run script

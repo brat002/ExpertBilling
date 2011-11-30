@@ -101,4 +101,5 @@ class AccountForm(ModelForm):
 class SubAccountForm(ModelForm):
     class Meta:
         model = SubAccount
+        exclude = ('ipn_ipinuse','vpn_ipinuse',)
         

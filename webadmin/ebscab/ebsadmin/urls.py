@@ -27,6 +27,8 @@ urlpatterns = patterns('ebsadmin.views',
      url(r'^ipaddress/getfrompool/$', 'getipfrompool'),
      url(r'^credentials/gen/$', 'generate_credentials'),
      url(r'^getmacforip/$', 'get_mac_for_ip'),
+     url(r'^contracttemplate/$', 'contracttemplate'),
+     url(r'^sessions/$', 'sessions'),
      
      #url(r'^simplelogin/$', 'simplelogin'),
      url(r'^grid/$', 'grid'),

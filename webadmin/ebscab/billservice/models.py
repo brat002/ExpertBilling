@@ -660,7 +660,7 @@ class Account(models.Model):
             name = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[0].name
         except:
             name=u'Не назначен'
-        return 
+        return name
            
     def get_status(self):
         return dict(ACCOUNT_STATUS)[int(self.status)]
@@ -1233,7 +1233,8 @@ class SubAccount(models.Model):
     ipv4_ipn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_ipn_ippool_set')
     ipv4_vpn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_vpn_ippool_set')
   
-    
+    def __unicode__(self):
+        return u"%s" % self.username
 class BalanceHistory(models.Model):
     account=models.ForeignKey(Account)
     balance = models.DecimalField(max_digits=30, decimal_places=20)
