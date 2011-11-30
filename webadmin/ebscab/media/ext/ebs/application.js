@@ -436,6 +436,7 @@ Ext.onReady(function(){
                                              *
                                              *TODO: Перенести в конструктор, где он и должен быть. проблема - инициализация.
                                              **/
+                                        
                                         if(type_exists){
                                             if(n.attributes.singleton){
                                                 if(EBS.windowCmp.items.containsKey(type)){
@@ -446,7 +447,11 @@ Ext.onReady(function(){
                                                         id:type,
                                                         singleton:true
                                                         });
+                                                    
+                                                    
                                                     EBS.windowCmp.add(cmp);
+                                                    
+                                                    
                                                 }
                                             }else{
                                                 cmp = Ext.create({
@@ -1091,7 +1096,7 @@ Ext.onReady(function(){
         		    triggerAction: 'all',
         		    typeAhead: false,
         		    minChars:2,
-        		    blankText:'УКажите слово или часть слова для поиска',
+        		    blankText:'Укажите слово или часть слова для поиска',
         		    //field:'username',
         		    hideTrigger:true,
         		    pageSize:15,
@@ -1249,8 +1254,10 @@ Ext.onReady(function(){
            var config = {
             	   xtype:'grid',
                    stateful: true,
+                   collapsible: true,
                    stateId: 'stateSubaccountsGrid',
                    plugins:['msgbus'],
+                   unstyled:true,
             	   store:new Ext.data.JsonStore({
        		        	paramsAsHash: true,
     			    //	autoLoad: {params:{start:0, limit:100}},
@@ -1546,6 +1553,8 @@ Ext.onReady(function(){
            	   xtype:'grid',
                   stateful: true,
                   stateId: 'stateAccountAddonServiceGrid',
+                  collapsible: true,
+                  unstyled:true,
            	   	  store:new Ext.data.JsonStore({
       		        	paramsAsHash: true,
 
@@ -1667,6 +1676,8 @@ Ext.onReady(function(){
          var config = {
           	   xtype:'grid',
                  stateful: true,
+                 collapsible: true,
+                 unstyled:true,
                  plugins:['msgbus'],
                  stateId: 'stateAccountTariffsGrid',
           	   	  store:new Ext.data.JsonStore({

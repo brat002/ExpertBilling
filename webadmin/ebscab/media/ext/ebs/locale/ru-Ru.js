@@ -20,19 +20,31 @@ Ext.onReady(function(){
         YearMonth: "F, Y"
     };
 
-    EBS.moneyRenderer = function pctChange(val){
-        if(val > 0){
-            return '<span style="background-color:green;color:#ffdc51;">' + val.toFixed(2) + ' руб.</span>';
-        }else if(val == 0){
-            return '<span style="background-color:lightyellow;">' + val.toFixed(2) + ' руб.</span>';
+EBS.sessionRenderer = function pctChange(val){
+        if(val == 'ACTIVE'){
+            return '<div style="background-color:green;color:#ffdc51;text-align:center;">' + val + '</div>';
+        }else if(val == 'NACK'){
+            return '<div style="background-color:lightyellow;text-align:center;">' + val + '</div>';
         }
-        else if(val < 0){
-            return '<span style="background-color:red;color:#ffffff;">' + val.toFixed(2) + ' руб.</span>';
+        else if(val == 'ACK'){
+            return '<div style="background-color:lightblue;color:#00;text-align:center;">' + val + '</div>';
         }
         return val;
     }
-});
 
+
+EBS.moneyRenderer = function pctChange(val){
+    if(val > 0){
+        return '<span style="background-color:green;color:#ffdc51;">' + val.toFixed(2) + ' руб.</span>';
+    }else if(val == 0){
+        return '<span style="background-color:lightyellow;">' + val.toFixed(2) + ' руб.</span>';
+    }
+    else if(val < 0){
+        return '<span style="background-color:red;color:#ffffff;">' + val.toFixed(2) + ' руб.</span>';
+    }
+    return val;
+}
+});
 
 
 var i18n = {

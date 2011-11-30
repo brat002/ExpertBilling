@@ -128,7 +128,7 @@ Ext.onReady(function(){
                                 id:'sessionmonitor_list',
                                 view: new Ext.grid.GroupingView(),
                                 store   : EBS.store.sessions,
-                                windowTitle:'Монитор',
+                                title: 'Монитор',
                                 closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
@@ -296,6 +296,7 @@ Ext.onReady(function(){
                                     {
                                         header   : 'Статус',
                                         //width    : 115,
+                                        renderer: EBS.sessionRenderer,
                                         sortable : true,
                                         dataIndex: 'session_status',
                                         filter: {
@@ -310,15 +311,14 @@ Ext.onReady(function(){
                                     }*/
                                 },
                                 stripeRows: false,
-                                title: i18n.accounts.accounts,
                                 stateful: true,
-                                stateId: 'accountsgrid',
+                                stateId: 'sessionmonitorgrid',
                                 
                             //bbar:this.pagination
                 });
             this.bbar.store = this.store;
             this.on('rowdblclick', function(eventGrid, rowIndex, e) {
-            	this.tbFormInTabCallBack(this, 'edit_user',this.selModel.selections.items[0].id);
+            	//this.tbFormInTabCallBack(this, 'edit_user',this.selModel.selections.items[0].id);
             	
             	}, this);            
             EBS.conponents.sessionmonitorGrid.superclass.initComponent.apply(this, arguments);
