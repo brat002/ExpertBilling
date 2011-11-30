@@ -79,6 +79,7 @@ var mainMenu = [
     children:[{
         text:'Монитор сессий',
         id:'sessionmonitor',
+        type:'ebs_sessionmonitorPanel',
         leaf:true
     },{
         text:'Логи авторизацией',

@@ -1,8 +1,9 @@
 #-*-coding:utf-8 -*-
 
 from lib.decorators import render_to, ajax_request
-from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse
+from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate
 from nas.models import Nas
+from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm
@@ -11,6 +12,7 @@ import IPy
 from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
 from IPy import IP
 from utilites import rosClient
+import datetime
 
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
@@ -117,6 +119,26 @@ def subaccounts(request):
     for acc in accounts:
         #print instance_dict(acc).keys()
         res.append(instance_dict(acc,normal_fields=True))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res}
+
+@ajax_request
+@login_required
+def sessions(request):
+    #account_id = request.POST.get('account_id')
+    #print "subaccount", account_id
+    items = ActiveSession.objects.all().order_by('-interrim_update')
+    #print accounts
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item,normal_fields=True))
+        
+    print instance_dict(item,normal_fields=True).keys()
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
@@ -391,26 +413,126 @@ def subaccount_save(request):
     
     #from django.core import serializers
     #from django.http import HttpResponse
-    print request
+    #print request
     id=request.POST.get('id')
+    ipv4_vpn_pool = request.POST.get('ipv4_vpn_pool')
+    ipv4_ipn_pool = request.POST.get('ipv4_ipn_pool')
+    vpn_pool = None
+    if ipv4_vpn_pool:
+        vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
+    ipn_pool = None
+    if ipv4_ipn_pool:
+        ipn_pool = IPPool.objects.get(id=ipv4_ipn_pool)
+        
     
     if id:
         cc = SubAccount.objects.get(id=id)
+        
         a=SubAccountForm(request.POST,instance=cc)
+        f=SubAccountForm(request.POST)
     else:
         a=SubAccountForm(request.POST)
     #a.account=aa.account_id
     p=request.POST
     res=[]
     
+    print instance_dict(cc)
+    print "cc1",cc.vpn_ipinuse
+    
     if a.is_valid():
-        if id:
-            if cc.vpn_ipinuse:
-                if cc.vpn_ipinuse.ip!=a.vpn_ip_address:
-                    pass
-            
         try:
-            a.save()
+            subacc = a.save(commit=False)
+            pass
+            subacc.save()
+        except Exception, e:
+            print e
+            res={"success": False, "errors": a._errors}
+            return res
+        print 1
+        
+        print "cc.vpn_ipinuse11",cc.vpn_ipinuse
+       
+        if cc.vpn_ipinuse:
+            print 2
+            #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
+            
+            if  subacc.vpn_ip_address not in ['0.0.0.0','',None]:
+                if vpn_pool:
+                    if not IPy.IP(vpn_pool.start_ip).int()<=IPy.IP(subacc.vpn_ip_address).int()<=IPy.IP(vpn_pool.end_ip).int():
+                        return {"success": False, 'msg':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
+                    
+                
+                    if cc.vpn_ipinuse.ip!=subacc.vpn_ip_address:
+                        obj = subacc.vpn_ipinuse
+                        obj.disabled=datetime.datetime.now()
+                        obj.save()
+                        
+                        subacc.vpn_ipinuse = IPInUse.objects.create(pool=vpn_pool,ip=subacc.vpn_ip_address,datetime=datetime.datetime.now())
+                else:
+                    obj = subacc.vpn_ipinuse
+                    obj.disabled=datetime.datetime.now()
+                    obj.save()
+                    subacc.vpn_ipinuse = None
+                
+                    
+                
+            elif subacc.vpn_ip_address in ['0.0.0.0','',None]:
+                print 5
+                obj = subacc.vpn_ipinuse
+                obj.disabled=datetime.datetime.now()
+                obj.save()
+                subacc.vpn_ipinuse=None
+        elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and vpn_pool:
+            print 6
+            if not IPy.IP(vpn_pool.start_ip).int()<=IPy.IP(subacc.vpn_ip_address).int()<=IPy.IP(vpn_pool.end_ip).int():
+                return {"success": False, 'msg':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
+            print 7
+            ip=IPInUse(pool=vpn_pool, ip=subacc.vpn_ip_address, datetime=datetime.datetime.now())
+            ip.save()
+            subacc.vpn_ipinuse = ip 
+            
+        if cc.ipn_ipinuse:
+            print 2
+            #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
+            
+            if  subacc.ipn_ip_address not in ['0.0.0.0','',None]:
+                if vpn_pool:
+                    if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
+                        return {"success": False, 'msg':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
+                    
+                
+                    if cc.ipn_ipinuse.ip!=subacc.ipn_ip_address:
+                        obj = subacc.ipn_ipinuse
+                        obj.disabled=datetime.datetime.now()
+                        obj.save()
+                        
+                        subacc.ipn_ipinuse = IPInUse.objects.create(pool=ipn_pool,ip=subacc.ipn_ip_address,datetime=datetime.datetime.now())
+                else:
+                    obj = subacc.ipn_ipinuse
+                    obj.disabled=datetime.datetime.now()
+                    obj.save()
+                    subacc.ipn_ipinuse = None
+                
+                    
+                
+            elif subacc.vpn_ip_address in ['0.0.0.0','',None]:
+                print 5
+                obj = subacc.ipn_ipinuse
+                obj.disabled=datetime.datetime.now()
+                obj.save()
+                subacc.ipn_ipinuse=None
+        elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and vpn_pool:
+            print 6
+            if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
+                return {"success": False, 'msg':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
+            print 7
+            ip=IPInUse(pool=ipn_pool, ip=subacc.ipn_ip_address, datetime=datetime.datetime.now())
+            ip.save()
+            subacc.ipn_ipinuse = ip 
+       
+        try:
+            subacc.save()
+            print 99
             res={"success": True}
         except Exception, e:
             print e
@@ -767,4 +889,18 @@ def actions_set(request):
         return {'success':sended}
     return {'success':False}
             
+
+@ajax_request
+@login_required
+def contracttemplate(request):
+    items = ContractTemplate.objects.all()
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append({"template":item.template})
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res}
             

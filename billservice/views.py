@@ -30,9 +30,7 @@ from django import template
 from django.contrib.auth.decorators import login_required
 
 from lib.http import JsonResponse
-
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
-
 from billservice.models import SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime, SuspendedPeriod, GroupStat
 
 from billservice.forms import LoginForm, PasswordForm, EmailForm, SimplePasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm

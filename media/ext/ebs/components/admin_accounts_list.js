@@ -489,7 +489,7 @@ Ext.onReady(function(){
 													            items: [
 													                {
 													                    xtype: 'fieldset',
-													                    //width: '20%',
+													                    width: '30%',
 													                    height: 150,
 													                    columnWidth: 350,
 													                    
@@ -528,7 +528,45 @@ Ext.onReady(function(){
 													                                {
 													                                    xtype: 'combo',
 													                                    name:'contract',
-													                                    flex: 1
+													                                    flex: 1,
+												                                    
+								    	                                                anchor: '100%',
+								    	                                     		    
+								    	                                     		    displayField: 'template',
+								    	                                     		    valueField: 'template', 
+								    	                                     		    mode: 'remote',
+								    	                                     		    editable:false,
+								    	                                                loadingText  : 'Searching...',
+								    	                                                pageSize     : 25,
+								    	                                     		    triggerAction: 'all',
+								    	                                     		    typeAhead: false,
+								    	                                     		    // ref:
+																						// 'store/p',
+								    	                                     		    listeners:{
+									                                     		        	focus:function(obj, options){
+									                                     		        		
+									                                     		        	},
+									                                     		        	// scope:this.ownerCt,
+									                                     		        	
+									                                     		        },
+									                                     		        
+								    	                                     		    store:new Ext.data.Store({
+								    	                                     		    	
+								    	                                     		    	
+								    	                                     		        proxy: new Ext.data.HttpProxy({
+								    	                                     		            url: '/ebsadmin/contracttemplate/',
+								    	                                     		            method:'POST',
+								    	                                     		            
+								    	                                     		        }),
+								    	                                     		        
+								    	                                     		        reader: new Ext.data.JsonReader({
+								    	                                     		        	totalProperty: 'totalCount',
+								    	                                     		            root: 'records'
+								    	                                     		        }, [{
+								    	                                     		            name: 'template'
+								    	                                     		        }])
+								    	                                     		    }),
+									    	                                            
 													                                },
 													                                {
 													                                    xtype: 'button',
@@ -541,7 +579,7 @@ Ext.onReady(function(){
 													                },
 													                {
 													                    xtype: 'fieldset',
-													                    //autoWidth: true,
+													                    width: '30%',
 													                    columnWidth: 350,
 													                    height: 150,
 													                    title: 'Баланс',
@@ -571,6 +609,7 @@ Ext.onReady(function(){
 													                {
 													                    xtype: 'fieldset',
 													                    columnWidth: 350,
+													                    width: '30%',
 													                    height: 150,
 													                    title: 'Параметры',
 													                   
@@ -719,27 +758,17 @@ Ext.onReady(function(){
 																		    icon: media+'icons/16/arrow_refresh.png',
 																	        text: 'Обновить',
 																	        handler: function(){
-																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-																	     	   //var account_id;
 																	     	   
-																	     	  //account_id = this.findParentByType('xinstancecontainer').parent_id;
 																	        	this.ownerCt.ownerCt.store.load();
-																	     	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+																	     	   
 																	        }
 																	    },{
 																	        iconCls: 'icon-user-add',
 																	        text: 'Добавить',
 																	        handler: function(){
-																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
 																	     	   var account_id;
 																	     	   
-																	     	  account_id = this.findParentByType('xinstancecontainer').parent_id;
-																	     	   
-																	     	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'));
+   																	     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
 																	     	   EBS.displayForm('ebs_accountsPanel', 'accountaddonservice',{'account_id':account_id,id:null}, this.findParentByType('grid'))
 																	     	   
 																	        }
@@ -747,9 +776,6 @@ Ext.onReady(function(){
 																	        iconCls: 'icon-user-edit',
 																	        text: 'Редактировать',
 																	        handler: function(){
-																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
 																	     	   var id;
 																	     	   var account_id;
 																	     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
@@ -778,27 +804,14 @@ Ext.onReady(function(){
 													        			    icon: media+'icons/16/arrow_refresh.png',
 													        		        text: 'Обновить',
 													        		        handler: function(){
-													        		     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-													        		     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-													        		     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-													        		     	   //var account_id;
-													        		     	   
-													        		     	  //account_id = this.findParentByType('xinstancecontainer').parent_id;
 													        		        	this.ownerCt.ownerCt.store.load();
-													        		     	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
 													        		        }
 													        		    },{
 																	        iconCls: 'icon-user-add',
 																	        text: 'Добавить',
 																	        handler: function(){
-																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
 																	     	   var account_id;
-																	     	   
-																	     	  account_id = this.findParentByType('xinstancecontainer').parent_id;
-																	     	   
-																	     	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'));
+																	     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
 																	     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:null}, this.findParentByType('grid'))
 																	     	   
 																	        }
@@ -806,14 +819,11 @@ Ext.onReady(function(){
 																	        iconCls: 'icon-user-edit',
 																	        text: 'Редактировать',
 																	        handler: function(){
-																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
 																	     	   var id;
 																	     	   var account_id;
-																	     	  account_id = this.findParentByType('xinstancecontainer').parent_id;
+																	     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
 																	     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
-																	     	  EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:id}, this.findParentByType('grid'))
+																	     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:id}, this.findParentByType('grid'))
 																	        }
 																	    },{
 																	        //ref: '../removeBtn',
@@ -838,22 +848,14 @@ Ext.onReady(function(){
 																	        iconCls: 'icon-user-add',
 																	        text: 'Добавить',
 																	        handler: function(){
-																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
 																	     	   var account_id;
-																	     	   
 																	     	   account_id = this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value;
-																	     	   
 																	     	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
 																	        }
 																	    },{
 																	        iconCls: 'icon-user-edit',
 																	        text: 'Редактировать',
 																	        handler: function(){
-																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
 																	     	   var id;
 																	     	   var account_id;
 																	     	   account_id = this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value;
@@ -1813,7 +1815,7 @@ Ext.onReady(function(){
 			    root: 'records',             
 			    fields: [
 			        {name: 'switch_port',  type:'int'},
-			    	{name: 'vpn_ipv6_ipinuse',  type:'int'},
+			    	
 			    	{name: 'ipn_speed', type:'string'},
 			    	{name: 'allow_dhcp', type:'string'},
 			    	{name: 'vpn_ip_address', type:'string'},
@@ -1825,7 +1827,7 @@ Ext.onReady(function(){
 			        {name: 'ipn_mac_address', type:'string'},
 		             {name: 'allow_dhcp_with_minus', type:'boolean'},
 		             {name: 'ipn_enabled', type:'boolean'},
-		             {name: 'vpn_ipinuse',  type:'int'},
+		             
 		             {name: 'ipv4_vpn_pool',  type:'int'},
 		             {name: 'nas',  type:'int'},
 		             {name: 'ipv4_ipn_pool',  type:'int'},
@@ -1847,7 +1849,7 @@ Ext.onReady(function(){
 		             {name: 'password', type:'string'},
 		             {name: 'ipn_added', type:'boolean'},
 		             {name: 'account', type:'string'},
-		             {name: 'ipn_ipinuse',  type:'int'},
+		             
 		             {name: 'switch',  type:'int'},
 		             {name: 'allow_vpn_with_block', type:'boolean'},
 		             {name: 'need_resync', type:'boolean'},
@@ -1926,6 +1928,7 @@ Ext.onReady(function(){
     	                                xtype: 'fieldset',
     	                                width: 533,
     	                                title: 'RADIUS авторизация',
+    	                                collapsible:true,
     	                                items: [
 											{
 											    xtype: 'container',
@@ -2154,6 +2157,7 @@ Ext.onReady(function(){
     	                                xtype: 'fieldset',
     	                                width: 533,
     	                                title: 'IPN авторизация',
+    	                                collapsible:true,
     	                                items: [
     	                                    {
     	                                        xtype: 'container',
