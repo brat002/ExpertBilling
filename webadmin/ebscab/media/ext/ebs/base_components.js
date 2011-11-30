@@ -120,6 +120,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
      * @cfg {Number} timeWidth Width of time field in pixels (defaults to 100)
      */
     ,timeWidth:100
+    ,buttonWidth: 20
     /**
      * @cfg {String} dateFormat Format of DateField. Can be localized. (defaults to 'm/y/d')
      */
@@ -175,7 +176,154 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         this.tf = new Ext.form.TimeField(timeConfig);
         this.tf.ownerCt = this;
         delete(this.timeFormat);
+        
+        this.bt = new Ext.Button({
+        	id:this.id+'-button'
+        	,width: this.buttonWidth
+        	,text:'...'
+        });
+        this.bt.ownerCt = this;
+        this.bt.on('click', function(){
+            // create the window on the first click and reuse on subsequent clicks
+            
+                win = new Ext.Window({
+                    
+                    layout:'fit',
+                    closeAction:'hide',
+                    applyTo:Ext.get('body'),
+		            modal: true
+		            ,title:'Выберите дату'    
+	                ,closable:true
+	                ,border:false
+	                ,height: 330
+	                //,autoHeight: true
+	                ,width: 500
+	                ,items:{
+	                    xtype: 'form',
+	                    
+	                    layout: 'table',
+	             	   layoutConfig:{ 
+	             	       columns: 4,
+	             	   }, 
+                       //baseCls:'x-plain',
+                       defaults:{
+                           margins:'0 5 0 0',  
+                           padding:5,
+ 	             	       height:30, 
+	             	       width:150,
 
+	             	   },
+	                    columns: 4,
+	                    items: [
+	                        {
+	                            xtype: 'radio',
+	                            boxLabel: 'Квартал',
+	                            name:'type',
+	                            inputValue:'Quart'
+	                        },
+	                        {
+	                            xtype: 'combo',
+	                            padding:'5px',
+
+	                        },
+	                        {
+	                            xtype: 'combo',
+
+	                        },
+	                        {
+	                            xtype: 'label',
+
+	                            text: 'года',
+	                        },
+	                        {
+	                            xtype: 'radio',
+	                            boxLabel: 'Месяц',
+	                            name:'type',
+	                            inputValue:'Month'
+	                            	
+	                        },
+	                        {
+	                            xtype: 'combo',
+
+	                        },
+	                        {
+	                            xtype: 'combo',
+
+	                        },
+	                        {
+	                            xtype: 'label',
+	                            text: 'года'
+	                        },
+	                        {
+	                            xtype: 'radio',
+	                            boxLabel: 'День',
+	                            name:'type',
+	                            inputValue:'day'
+	                            
+	                        },
+	                        {
+	                            xtype: 'datefield',
+	                            colspan:3,
+	                        },
+	                      
+	                        {
+	                            xtype: 'radio',
+	                            boxLabel: 'Период',
+	                            name:'type',
+	                            inputValue:'period'
+	                            
+	                        },
+	                        {
+	                            xtype: 'datefield'
+	                        },
+	                        {
+	                            xtype: 'datefield',
+	                            colspan:2,
+	                         	   
+	                        },
+	                        {
+	                            xtype: 'radio',
+	                            boxLabel: 'Этот месяц',
+	                            colspan:4,
+	                            name:'type',
+	                            inputValue:'ThisMonth'
+	                            
+	                        },
+	                        {
+	                            xtype: 'radio',
+	                            boxLabel: 'Эта неделя',
+	                            colspan:4,
+	                            name:'type',
+	                            inputValue:'ThisWeek'
+
+	                         	   
+	                        },
+	                        {
+	                            xtype: 'radio',
+	                            boxLabel: 'Сейчас',
+	                            colspan:4,
+	                            name:'type',
+	                            inputValue:'Now'
+	                         	   
+	                         	   
+	                        },
+	                     
+	                        {
+	                            xtype: 'button',
+	                            text: 'Выбрать',
+	                            handler: function(button){
+	                            	var type = button.findParentByType('form').getForm().getValues()['type'];
+	                            	alert(type);
+	                            }
+	                        }
+	                    ]
+	                }
+	            });
+            
+            //win.render();
+            //win.center();
+            win.show(this);
+        });
         // relay events
         this.relayEvents(this.df, ['focus', 'specialkey', 'invalid', 'valid']);
         this.relayEvents(this.tf, ['focus', 'specialkey', 'invalid', 'valid']);
@@ -210,7 +358,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         else {
             t = Ext.DomHelper.append(ct, {tag:'table',style:'border-collapse:collapse',children:[
                 {tag:'tr',children:[
-                    {tag:'td',style:'padding-right:4px', cls:'ux-datetime-date'},{tag:'td', cls:'ux-datetime-time'}
+                    {tag:'td',style:'padding-right:4px', cls:'ux-datetime-date'},{tag:'td', cls:'ux-datetime-time'},{tag:'td', cls:'ux-datetime-button'}
                 ]}
             ]}, true);
         }
@@ -223,7 +371,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         // render DateField & TimeField
         this.df.render(t.child('td.ux-datetime-date'));
         this.tf.render(t.child('td.ux-datetime-time'));
-
+        this.bt.render(t.child('td.ux-datetime-button'));
         // workaround for IE trigger misalignment bug
         // see http://extjs.com/forum/showthread.php?p=341075#post341075
 //        if(Ext.isIE && Ext.isStrict) {
@@ -232,6 +380,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
 
         this.df.el.swallowEvent(['keydown', 'keypress']);
         this.tf.el.swallowEvent(['keydown', 'keypress']);
+        this.bt.el.swallowEvent(['keydown', 'keypress']);
 
         // create icon for side invalid errorIcon
         if('side' === this.msgTarget) {
@@ -247,6 +396,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
             };
             Ext.apply(this.df, o);
             Ext.apply(this.tf, o);
+            Ext.apply(this.bt, o);
 //            this.df.errorIcon = this.errorIcon;
 //            this.tf.errorIcon = this.errorIcon;
         }
@@ -257,6 +407,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         // prevent helper fields from being submitted
         this.df.el.dom.removeAttribute("name");
         this.tf.el.dom.removeAttribute("name");
+        this.bt.el.dom.removeAttribute("name");
 
         // we're rendered flag
         this.isRendered = true;
@@ -321,6 +472,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
             this.tableEl.remove();
             this.df.destroy();
             this.tf.destroy();
+            this.bt.destroy();
         }
     } // eo function beforeDestroy
     // }}}
@@ -334,10 +486,12 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
             this.df.disabled = this.disabled;
             this.df.onDisable();
             this.tf.onDisable();
+            this.bt.onDisable();
         }
         this.disabled = true;
         this.df.disabled = true;
         this.tf.disabled = true;
+        this.bt.disabled = true;
         this.fireEvent("disable", this);
         return this;
     } // eo function disable
@@ -351,10 +505,12 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         if(this.rendered){
             this.df.onEnable();
             this.tf.onEnable();
+            this.bt.onEnable();
         }
         this.disabled = false;
         this.df.disabled = false;
         this.tf.disabled = false;
+        this.bt.disabled = false;
         this.fireEvent("enable", this);
         return this;
     } // eo function enable
@@ -534,18 +690,22 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         if('below' === this.timePosition) {
             this.df.setSize(w, h);
             this.tf.setSize(w, h);
+            this.bt.setSize(w, h);
             if(Ext.isIE) {
                 this.df.el.up('td').setWidth(w);
                 this.tf.el.up('td').setWidth(w);
+                this.bt.el.up('td').setWidth(w);
             }
         }
         else {
-            this.df.setSize(w - this.timeWidth - 4, h);
+            this.df.setSize(w - this.timeWidth - 4 - this.buttonWidth, h);
             this.tf.setSize(this.timeWidth, h);
+            this.bt.setSize(this.buttonWidth, h);
 
             if(Ext.isIE) {
-                this.df.el.up('td').setWidth(w - this.timeWidth - 4);
+                this.df.el.up('td').setWidth(w - this.timeWidth - 4 - this.buttonWidth);
                 this.tf.el.up('td').setWidth(this.timeWidth);
+                this.bt.el.up('td').setWidth(this.buttonWidth);
             }
         }
     } // eo function setSize
@@ -602,9 +762,11 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         if(visible) {
             this.df.show();
             this.tf.show();
+            this.bt.show();
         }else{
             this.df.hide();
             this.tf.hide();
+            this.bt.hide();
         }
         return this;
     } // eo function setVisible
