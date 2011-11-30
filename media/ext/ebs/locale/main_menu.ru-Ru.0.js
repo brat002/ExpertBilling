@@ -80,6 +80,7 @@ var mainMenu = [
         text:'Монитор сессий',
         id:'sessionmonitor',
         type:'ebs_sessionmonitorPanel',
+        singleton: true,
         leaf:true
     },{
         text:'Логи авторизацией',
