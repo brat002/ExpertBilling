@@ -35,12 +35,12 @@ EBS.sessionRenderer = function pctChange(val){
 
 EBS.moneyRenderer = function pctChange(val){
     if(val > 0){
-        return '<span style="background-color:green;color:#ffdc51;">' + val.toFixed(2) + ' руб.</span>';
+        return '<div style="background-color:green;color:#ffdc51;text-align:center;font-weight:bold;">' + val.toFixed(2) + ' руб.</div>';
     }else if(val == 0){
-        return '<span style="background-color:lightyellow;">' + val.toFixed(2) + ' руб.</span>';
+        return '<div style="background-color:lightyellow;text-align:center;font-weight:bold;">' + val.toFixed(2) + ' руб.</div>';
     }
     else if(val < 0){
-        return '<span style="background-color:red;color:#ffffff;">' + val.toFixed(2) + ' руб.</span>';
+        return '<div style="background-color:red;color:#ffffff;text-align:center;font-weight:bold;">' + val.toFixed(2) + ' руб.</div>';
     }
     return val;
 }
