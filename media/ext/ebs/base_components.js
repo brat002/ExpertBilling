@@ -222,10 +222,49 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                     {
                         xtype: 'combo',
                         padding:'5px',
+                        xtype: 'combo',
+                        name: 'quarter',
+                        local:true,
+                        displayField:'name',
+                        hiddenName:'quarter',
+                        valueField:'quarter',
+                        typeAhead: true,
+                        mode: 'local',
+                        forceSelection: true,
+                        triggerAction: 'all',
+                        editable:false,
+                        store:  new Ext.data.ArrayStore({
+                            fields: ['name','quarter'],
+                            data : [['1 квартал','1'], 
+                                    ['2 квартал','2'],
+                                    ['3 квартал','3'],
+                                    ['4 квартал','4'],] 
+                        })
 
                     },
                     {
+                    	xtype: 'combo',
+                        padding:'5px',
                         xtype: 'combo',
+                        name: 'quarter_year',
+                        local:true,
+                        displayField:'year',
+                        hiddenName:'year',
+                        valueField:'year',
+                        typeAhead: true,
+                        mode: 'local',
+                        forceSelection: true,
+                        triggerAction: 'all',
+                        editable:false,
+                        store:  new Ext.data.ArrayStore({
+                            fields: ['year'],
+                            data : [['2010'], 
+                                    ['2011'], 
+                                    ['2012'],
+                                    ['2013'],
+                                    ['2014'],] 
+                        })
+                        
 
                     },
                     {
@@ -245,7 +284,28 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
 
                     },
                     {
+                    	xtype: 'combo',
+                        padding:'5px',
                         xtype: 'combo',
+                        name: 'month_year',
+                        local:true,
+                        displayField:'year',
+                        hiddenName:'year',
+                        valueField:'year',
+                        typeAhead: true,
+                        mode: 'local',
+                        forceSelection: true,
+                        triggerAction: 'all',
+                        editable:false,
+                        store:  new Ext.data.ArrayStore({
+                            fields: ['year'],
+                            data : [['2010'], 
+                                    ['2011'], 
+                                    ['2012'],
+                                    ['2013'],
+                                    ['2014'],] 
+                        })
+                        
 
                     },
                     {
@@ -320,6 +380,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         
         this.win.on('hide', function(){
         	//alert('cracaca');
+        	alert(Date.today());
             this.setDateTimeFromWin(this.win.title);
         }, this);
         this.bt.on('click', function(obj, ev){

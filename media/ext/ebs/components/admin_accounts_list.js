@@ -44,13 +44,13 @@ Ext.onReady(function(){
 						{
 						    icon: media+'icons/16/add.png',
 						    height:16,width:16,
-						    text: i18n.edit,
+						    text: 'Добавить',
 						    handler: this.tbNewFormInTabCallBack.createCallback(this, 'edit_user')
 						},
                          {
                             icon: media+'icons/16/pencil.png',
                             height:16,width:16,
-                            text: i18n.edit,
+                            text: 'Редактировать',
                             handler: this.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
                         },{
                             text: i18n.print,

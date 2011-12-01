@@ -1670,6 +1670,129 @@ Ext.onReady(function(){
 
   Ext.reg('xaccountaddonservicesgrid', EBS.AccountAddonServiceGrid);
 
+  EBS.AccountHardwareGrid = Ext.extend(Ext.grid.GridPanel, {
+      initComponent:function() {
+         var config = {
+          	   xtype:'grid',
+                 stateful: true,
+                 stateId: 'stateAccountAddonServiceGrid',
+                 collapsible: true,
+                 unstyled:true,
+          	   	  store:new Ext.data.JsonStore({
+     		        	paramsAsHash: true,
+
+     		        	//autoLoad: {params:{start:0, limit:100,'account_id': this.findParentByType('xinstancecontainer').instance_id}},
+     		        	proxy: new Ext.data.HttpProxy({
+     		        		url: '/ebsadmin/accountaddonservices/',
+     		        		method:'POST',
+     		        	}),    
+     		        	fields: [{name: 'service', type:'string'},
+     		        		{name: 'account', type:'int'},
+     		        		{name: 'id', type:'int'},
+     		        		{name: 'subaccount', type:'int'},
+     		        		{name: 'activated', type: 'date', dateFormat: Date.patterns.ISO8601Long},
+     		        		{name: 'deactivated',  type: 'date', dateFormat: Date.patterns.ISO8601Long},
+     		        		{name: 'action_status', type:'boolean'},
+     		        		{name: 'speed_status', type:'boolean'},
+     		        		{name: 'temporary_blocked', type: 'date', dateFormat: Date.patterns.ISO8601Long},
+     		        		{name: 'last_checkout', type: 'date', dateFormat: Date.patterns.ISO8601Long},],
+     		        	root: 'records',
+     		        	remoteSort:true,
+     		        	sortInfo:{
+     		        		field:'username',
+     		        		direction:'ASC'
+     		        	},
+
+
+
+          	   }),
+          	   plugins:['msgbus'],	
+          	
+	     	   onChange:function(subject, message) {
+	     		   //Ext.Msg.alert(message);
+	     		   var me;
+	     		   me=this;
+	     	       me.store.load();
+	     	       
+	     	    },
+              selModel : new Ext.grid.RowSelectionModel({
+                   singleSelect : true
+                      }),
+          	   //autoHeight: true,
+          	   //autoWidth: true,
+          	   listeners: {
+			          render:function(){
+			             // console.info('load',this,arguments);
+			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
+			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
+			        	  if (this.findParentByType('xinstancecontainer').instance_id){
+			        		  this.store.load();
+			        	  }
+			        	  var me;
+	            		  me=this;
+			        	  me.subscribe('ebs.accountaddonservice.change', {fn:this.onChange, single:false});
+			          }
+          	   },
+                 
+          	   autoScroll: true,
+          	   columns:[
+          	            {
+          	            	header:'id',
+          	            	dataIndex:'id',
+          	            	sortable:true
+          	            },
+          	            {
+          	            	header:'Услуга',
+          	            	dataIndex:'service',
+          	            	sortable:true
+          	            },
+          	            {
+          	            	header:'Активирована',
+          	            	dataIndex:'activated',
+          	            	sortable:true,
+          	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+          	            	
+          	            },
+          	            {
+          	            	header:'Отключена',
+          	            	dataIndex:'deactivated',
+          	            	sortable:true,
+          	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+          	            },
+          	            {
+          	            	header:'Последнее списание',
+          	            	dataIndex:'last_checkout',
+          	            	sortable:true,
+          	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+          	            },
+          	            {
+          	            	header:'Команда активации выполнена',
+          	            	dataIndex:'action_status',
+          	            	sortable:true
+          	            },
+          	            {
+          	            	header:'Команда установки скорости выполнена',
+          	            	dataIndex:'speed_status',
+          	            	sortable:true
+          	            },
+          	            ]
+          		   
+          		  
+             }
+
+      		
+         // apply config
+         Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+  
+         EBS.AccountHardwareGrid.superclass.initComponent.apply(this, arguments);
+     } // eo function initComponent
+  
+
+
+ });
+
+ Ext.reg('xaccounthardwaregrid', EBS.AccountHardwareGrid);
+ 
   
   EBS.AccountTariffsGrid = Ext.extend(Ext.grid.GridPanel, {
       initComponent:function() {
