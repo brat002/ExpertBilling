@@ -280,7 +280,35 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                         	
                     },
                     {
+                    	boxLabel:'Месяц',
                         xtype: 'combo',
+                        padding:'5px',
+                        name: 'this_month',
+                        local:true,
+                        displayField:'name',
+                        hiddenName:'month',
+                        valueField:'month',
+                        typeAhead: true,
+                        mode: 'local',
+                        forceSelection: true,
+                        triggerAction: 'all',
+                        editable:false,
+                        store:  new Ext.data.ArrayStore({
+                            fields: ['name','month'],
+                            data : [['Январь','1'], 
+                                    ['Февраль','2'],
+                                    ['Март','3'],
+                                    ['Апрель','4'],
+                                    ['Май','5'],
+                                    ['Июнь','6'],
+                                    ['Июль','7'],
+                                    ['Август','8'],
+                                    ['Сентябрь','9'],
+                                    ['Октябрь','10'],
+                                    ['Ноябрь','11'],
+                                    ['Декабрь','12'],
+                                    ] 
+                        })
 
                     },
                     {
@@ -341,7 +369,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                     },
                     {
                         xtype: 'radio',
-                        boxLabel: 'Этот месяц',
+                        boxLabel: 'Текущий месяц',
                         colspan:4,
                         name:'type',
                         inputValue:'ThisMonth'
@@ -349,7 +377,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                     },
                     {
                         xtype: 'radio',
-                        boxLabel: 'Эта неделя',
+                        boxLabel: 'Начало недели',
                         colspan:4,
                         name:'type',
                         inputValue:'ThisWeek'
@@ -380,7 +408,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         
         this.win.on('hide', function(){
         	//alert('cracaca');
-        	alert(Date.today());
+        	//alert(Date.today());
             this.setDateTimeFromWin(this.win.title);
         }, this);
         this.bt.on('click', function(obj, ev){
