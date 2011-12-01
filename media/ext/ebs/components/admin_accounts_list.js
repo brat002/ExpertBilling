@@ -387,11 +387,10 @@ Ext.onReady(function(){
 										               }
 										           },{
 										               //ref: '../removeBtn',
-										               iconCls: 'icon-user-delete',
+										               iconCls: 'icon-user-close',
 										               text: 'Закрыть',
-										               disabled: true,
 										               handler: function(){
-										            	   EBS.closeForm(this)
+										            	   EBS.closeForm(this.ownerCt.ownerCt)
 										               }
 										           }],
 													reader: new Ext.data.JsonReader({
@@ -442,223 +441,448 @@ Ext.onReady(function(){
 															{name: 'allow_ipn_with_block', type:'boolean'},
 													    ]
 													}), 
-												items:[{
-		                                            //id:'edit_user_form',
-		                                            xtype: 'tabpanel',
-		                                            activeTab: 0,
-		                                            //width: 600,
-		                                            height: '100%',
-		                                            plain: true,
-		                                            
-		                                            //autoHeight:true,
-		                                            deferredRender:false,
-		                                            defaults:{
-		                                            	hideMode:'offsets',
-		                                            },
-		                                            items: [
-													{
-													    xtype: 'panel',
-													    autoHeight: true,
-													    height:'100%',
-													    width: '100%',
-													    title: 'Общее',
-													    padding:5,
-													    //bodyStyle:'padding:10px 10px 10px 10px',
-													    items: [
-													        {
-													            xtype: 'container',
-													            autoHeight:true,
-													            //autoHeight:true,
-													            
-													            //height:'100%',
-													            //autoWidth: true,
-													            layout: 'hbox',
-													            layoutConfig : {
-													                pack : 'center',
-													               align : 'middle'
-													            },
-													            defaults:{
-					    	                                        margins:'0 5 5 0',    	                                        
-					    	                                    },
-					    	                                    baseCls:'x-plain',
-													            viewConfig: {
-									                                forceFit: true,
-									                                
-									                            },
-									                            //bodyStyle:'padding:10px 10px 10px 10px',
-													            items: [
-													                {
-													                    xtype: 'fieldset',
-													                    width: '30%',
-													                    height: 150,
-													                    columnWidth: 350,
-													                    
-													                    title: 'Учётные данные',
-													                    
-													                    items: [
-													                        {
-													                            xtype: 'hidden',
-													                            name:'id'
-													                        },{
-													                            xtype: 'textfield',
-													                            name: 'username',
-													                            anchor: '100%',
-													                            fieldLabel: 'Логин'
-													                        },
-													                        {
-													                            xtype: 'textfield',
-													                            name: 'password',
-													                            anchor: '100%',
-													                            fieldLabel: 'Пароль'
-													                        },
-													                        {
-													                        	xtype: 'xdatetime',
-													                            name: 'created',
-													                            anchor: '100%',
-													                            fieldLabel: 'Дата создания'
-													                        },
-													                        {
-													                            xtype: 'container',
-													                            forceLayout: true,
-													                            layout: 'hbox',
-													                            anchor: '100%',
-													                            fieldLabel: 'Номер договора',
-													                            pack: 'center',
-													                            items: [
-													                                {
-													                                    xtype: 'combo',
-													                                    name:'contract',
-													                                    flex: 1,
-												                                    
-								    	                                                anchor: '100%',
-								    	                                     		    
-								    	                                     		    displayField: 'template',
-								    	                                     		    valueField: 'template', 
-								    	                                     		    mode: 'remote',
-								    	                                     		    editable:false,
-								    	                                                loadingText  : 'Searching...',
-								    	                                                pageSize     : 25,
-								    	                                     		    triggerAction: 'all',
-								    	                                     		    typeAhead: false,
-								    	                                     		    // ref:
-																						// 'store/p',
-								    	                                     		    listeners:{
-									                                     		        	focus:function(obj, options){
-									                                     		        		
-									                                     		        	},
-									                                     		        	// scope:this.ownerCt,
-									                                     		        	
-									                                     		        },
-									                                     		        
-								    	                                     		    store:new Ext.data.Store({
-								    	                                     		    	
-								    	                                     		    	
-								    	                                     		        proxy: new Ext.data.HttpProxy({
-								    	                                     		            url: '/ebsadmin/contracttemplate/',
-								    	                                     		            method:'POST',
-								    	                                     		            
-								    	                                     		        }),
-								    	                                     		        
-								    	                                     		        reader: new Ext.data.JsonReader({
-								    	                                     		        	totalProperty: 'totalCount',
-								    	                                     		            root: 'records'
-								    	                                     		        }, [{
-								    	                                     		            name: 'template'
-								    	                                     		        }])
-								    	                                     		    }),
-									    	                                            
-													                                },
-													                                {
-													                                    xtype: 'button',
-													                                    text: 'Печать',
-													                                    flex: 1
-													                                }
-													                            ]
-													                        }
-													                    ]
-													                },
-													                {
-													                    xtype: 'fieldset',
-													                    width: '30%',
-													                    columnWidth: 350,
-													                    height: 150,
-													                    title: 'Баланс',
-													                    
-													                    items: [
-													                        {
-													                            xtype: 'textfield',
-													                            name: 'ballance',
-													                            anchor: '100%',
-													                            disabled:true,
-													                            fieldLabel: 'Баланс'
-													                        },
-													                        {
-													                            xtype: 'textfield',
-													                            name: 'credit',
-													                            anchor: '100%',
-													                            fieldLabel: 'Кредит'
-													                        },
-													                        {
-													                            xtype: 'textfield',
-													                            name: 'max_credit',
-													                            anchor: '100%',
-													                            fieldLabel: 'Кредит доверия'
-													                        }
-													                    ]
-													                },
-													                {
-													                    xtype: 'fieldset',
-													                    columnWidth: 350,
-													                    width: '30%',
-													                    height: 150,
-													                    title: 'Параметры',
-													                   
-													                    items: [
-													                        {
-		                                                                        xtype: 'xcomboaccountstatus',
-		                                                                        name: 'status',
-		                                                                        hiddenName: "status",
-		                                                                        anchor: '100%',
-		                                                                        fieldLabel: 'Статус',
-		                                                                       
-		                                                                    },
-		                                                                    {
-		                                                                        xtype: 'xcombosystemuser',
-		                                                                        name: 'systemuser',
-		                                                                        hiddenName: "systemuser",
-		                                                                        anchor: '100%',
-		                                                                        fieldLabel: 'Персональный менеджер'
-		                                                                    },
-													                        {
-													                            xtype: 'combo',
-													                            name: 'group',
-													                            anchor: '100%',
-													                            fieldLabel: 'Группа'
-													                        }
-													                    ]
-													                }
-													            ]
-													        },
-													        {
-													            xtype: 'container',
-													            autoHeight: true,
-													            //layout: 'fit',
-													            autoWidth:true,
-													            //height:900,
-													            width: '100%',
-													            defaults:{
-					    	                                        margins:'0 5 5 0',    	                                        
-					    	                                    },
-					    	                                    baseCls:'x-plain',
-															    bodyStyle:'margins:0 5 5 0',
-													            items: [
-																	{
+												items:[
+{
+    xtype: 'tabpanel',
+    height: '100%',
+    plain: true,
+    
+    //autoHeight:true,
+    deferredRender:false,
+    defaults:{
+    	hideMode:'offsets',
+    },
+    activeTab: 0,
+    items: [
+        {
+            xtype: 'panel',
+            autoHeight: true,
+		    height:'100%',
+		    width: '100%',
+		    title: 'Общее',
+		    padding:5,
+		    autoScroll:true,
+            items: [
+                {
+                	xtype: 'container',
+		            autoHeight:true,
+		            //autoHeight:true,
+		            
+		            //height:'100%',
+		            //autoWidth: true,
+		            layout: 'hbox',
+		            layoutConfig : {
+		                pack : 'center',
+		               align : 'middle'
+		            },
+		            defaults:{
+                        margins:'0 5 5 0',    	                                        
+                    },
+                    baseCls:'x-plain',
+		            viewConfig: {
+                        forceFit: true,
+                        
+                    },
+                    items: [
+                        {
+                            xtype: 'container',
+                            items: [
+                                {
+                                    xtype: 'fieldset',
+                                    width: 402,
+                                    title: 'Учётные данные',
+                                    items: [
+					                        {
+					                            xtype: 'hidden',
+					                            name:'id'
+					                        },{
+											    xtype: 'container',
+											    layout: 'hbox',
+											    align: 'middle',
+											    fieldLabel: 'Логин',
+											    defaults:{
+	    	                                        margins:'0 5 5 0',    	                                        
+	    	                                    },
+	    	                                    baseCls:'x-plain',
+											    anchor: '100%',
+											    items: [
+			    	                                    {
+			    	                                        xtype: 'textfield',
+			    	                                        name: 'username',
+			    	                                        anchor: '90%',
+			    	                                        //fieldLabel: 'Логин'
+			    	                                    },{
+			    	                                        xtype: 'button',
+			    	                                        anchor: '10%',
+			    	                                        text: 'Сгенерировать',
+			    	                                        handler:function(button, event){
+			    	                                        	Ext.Ajax.request({
+			    	                	                            params: {'action':'login'},
+			    	                	                            url: '/ebsadmin/credentials/gen/',
+			    	                	                            success: function (resp) {
+			    	                	                                var data;
+			    	                	                                data = Ext.decode(resp.responseText);
+			    	                	                                if (data.success === true) {
+			    	                	                                	button.findParentByType('form').getForm().findField('username').setValue(data.generated);
+			    	                	                                    
+			    	                	                                } else {
+			    	                	                                    Ext.MessageBox.alert('Ошибка', 'Неверный запрос. ');
+			    	                	                                }
+			    	                	                            },
+			    	                	                            failure: function () {
+			    	                	                            	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
+			    	                	                            }
+			    	                	                        });
+			    	                                        }
+			    	                                    }
+			    	                                    ]
+	    	                                    },
+	    	                                    {
+												    xtype: 'container',
+												    layout: 'hbox',
+												    align: 'middle',
+												    fieldLabel: 'Пароль',
+												    defaults:{
+		    	                                        margins:'0 5 5 0',    	                                        
+		    	                                    },
+		    	                                    baseCls:'x-plain',
+												    anchor: '100%',
+												    items: [
+			    	                                    
+			    	                                    {
+			    	                                        xtype: 'textfield',
+			    	                                        name: 'password',
+			    	                                        anchor: '100%',
+			    	                                        fieldLabel: 'Пароль'
+			    	                                    },{
+			    	                                        xtype: 'button',
+			    	                                        anchor: '10%',
+			    	                                        text: 'Сгенерировать',
+			    	                                        handler:function(button, event){
+			    	                                        	Ext.Ajax.request({
+			    	                	                            params: {'action':'password'},
+			    	                	                            url: '/ebsadmin/credentials/gen/',
+			    	                	                            success: function (resp) {
+			    	                	                                var data;
+			    	                	                                data = Ext.decode(resp.responseText);
+			    	                	                                if (data.success === true) {
+			    	                	                                	button.findParentByType('form').getForm().findField('password').setValue(data.generated);
+			    	                	                                    
+			    	                	                                } else {
+			    	                	                                    Ext.MessageBox.alert('Ошибка', 'Неверный запрос. ');
+			    	                	                                }
+			    	                	                            },
+			    	                	                            failure: function () {
+			    	                	                            	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
+			    	                	                            }
+			    	                	                        });
+			    	                                        }
+			    	                                    }
+			    	                                    ]
+		    	                                    },
+					                        {
+					                        	xtype: 'xdatetime',
+					                            name: 'created',
+					                            anchor: '100%',
+					                            fieldLabel: 'Дата создания'
+					                        },
+					                        {
+					                            xtype: 'container',
+					                            forceLayout: true,
+					                            layout: 'hbox',
+					                            anchor: '100%',
+					                            fieldLabel: 'Номер договора',
+					                            pack: 'center',
+					                            items: [
+					                                {
+					                                    xtype: 'combo',
+					                                    name:'contract',
+					                                    flex: 1,
+				                                    
+    	                                                anchor: '100%',
+    	                                     		    
+    	                                     		    displayField: 'template',
+    	                                     		    valueField: 'template', 
+    	                                     		    mode: 'remote',
+    	                                     		    editable:false,
+    	                                                loadingText  : 'Searching...',
+    	                                                pageSize     : 25,
+    	                                     		    triggerAction: 'all',
+    	                                     		    typeAhead: false,
+    	                                     		    // ref:
+														// 'store/p',
+    	                                     		    listeners:{
+	                                     		        	focus:function(obj, options){
+	                                     		        		
+	                                     		        	},
+	                                     		        	// scope:this.ownerCt,
+	                                     		        	
+	                                     		        },
+	                                     		        
+    	                                     		    store:new Ext.data.Store({
+    	                                     		    	
+    	                                     		    	
+    	                                     		        proxy: new Ext.data.HttpProxy({
+    	                                     		            url: '/ebsadmin/contracttemplate/',
+    	                                     		            method:'POST',
+    	                                     		            
+    	                                     		        }),
+    	                                     		        
+    	                                     		        reader: new Ext.data.JsonReader({
+    	                                     		        	totalProperty: 'totalCount',
+    	                                     		            root: 'records'
+    	                                     		        }, [{
+    	                                     		            name: 'template'
+    	                                     		        }])
+    	                                     		    }),
+	    	                                            
+					                                },
+					                                {
+					                                    xtype: 'button',
+					                                    text: 'Печать',
+					                                    flex: 1
+					                                }
+					                            ]
+					                        }
+					                    ]
+                                },
+                                {
+                                    xtype: 'fieldset',
+                                    autoWidth: true,
+                                    height: 85,
+                                    padding: '',
+                                    title: 'Баланс',
+                                    items: [
+                                        {
+                                            xtype: 'textfield',
+                                            name: 'ballance',
+                                            anchor: '100%',
+                                            disabled:true,
+                                            fieldLabel: 'Баланс'
+                                        },
+                                        {
+                                            xtype: 'textfield',
+                                            name: 'credit',
+                                            anchor: '100%',
+                                            fieldLabel: 'Кредит'
+                                        }
+                                    ]
+                                },
+                                {
+                                    xtype: 'fieldset',
+                                    height: 105,
+                                    width: 394,
+                                    title: 'Параметры',
+                                    items: [
+					                        {
+                                                xtype: 'xcomboaccountstatus',
+                                                name: 'status',
+                                                hiddenName: "status",
+                                                anchor: '100%',
+                                                fieldLabel: 'Статус',
+                                               
+                                            },
+                                            {
+                                                xtype: 'xcombosystemuser',
+                                                name: 'systemuser',
+                                                hiddenName: "systemuser",
+                                                anchor: '100%',
+                                                fieldLabel: 'Персональный менеджер'
+                                            }
+					                    ]
+                                }
+                            ]
+                        },
+                        {
+                            xtype: 'fieldset',
+                            height: 351,
+                            width: 376,
+                            title: 'Данные аккаунта',
+                            labelWidth: 140,
+                            items: [
+                                {
+                                    xtype: 'textfield',
+                                    name: 'contactperson',
+                                    anchor: '100%',
+                                    fieldLabel: 'Контактное лицо'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'contactphone',
+                                    anchor: '100%',
+                                    fieldLabel: 'Контактный телефон'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'fullname',
+                                    anchor: '100%',
+                                    fieldLabel: 'ФИО'
+                                },
+                                {
+                                    xtype: 'fieldset',
+                                    height: 214,
+                                    animCollapse: true,
+                                    collapsible: true,
+                                    title: 'Подробно',
+                                    items: [
+                                        {
+                                            xtype: 'textfield',
+                                            name: 'email',
+                                            anchor: '100%',
+                                            fieldLabel: 'E-mail'
+                                        },
+                                        {
+                                            xtype: 'textfield',
+                                            name: 'phone_h',
+                                            anchor: '100%',
+                                            fieldLabel: 'Дом. телефон'
+                                        },
+                                        {
+                                            xtype: 'textfield',
+                                            name: 'phone_m',
+                                            anchor: '100%',
+                                            fieldLabel: 'Моб. телефон'
+                                        },
+                                        {
+                                            xtype: 'textfield',
+                                            name: 'passport',
+                                            anchor: '100%',
+                                            fieldLabel: 'Паспорт №'
+                                        },
+                                        {
+                                            xtype: 'textfield',
+                                            name: 'private_passport_number',
+                                            anchor: '100%',
+                                            fieldLabel: 'Личный номер'
+                                        },
+                                        {
+                                            xtype: 'textfield',
+                                            name: 'passport_given',
+                                            anchor: '100%',
+                                            fieldLabel: 'Кем выдан'
+                                        },
+                                        {
+                                            xtype: 'datefield',
+                                            name: 'passport_date',
+                                            anchor: '100%',
+                                            fieldLabel: 'Когда выдан'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            xtype: 'fieldset',
+                            height: 351,
+                            width: 315,
+                            title: 'Адрес',
+                            items: [
+                                {
+																    xtype: 'xcombocity',
+																    name: 'city',
+																    hiddenName: "city",
+																    anchor: '100%',
+																    fieldLabel: 'Город',
+																    listeners:{
+																    	select: function(combo, record, index) {
+																    		
+																    		this.findParentByType('form').getForm().findField('street').clearValue();
+																			this.findParentByType('form').getForm().findField('street').store.load({params:{city_id: this.value}});
+																    		
+																          },
+																    },
+																},
+                                    	                        {
+                                    	                            xtype: 'textfield',
+                                    	                            name: 'region',
+                                    	                            anchor: '100%',
+                                    	                            fieldLabel: 'Подъезд'
+                                    	                        },
+                                    	                        {
+                                    	                            xtype: 'textfield',
+                                    	                            name: 'postcode',
+                                    	                            anchor: '100%',
+                                    	                            fieldLabel: 'Район'
+                                    	                        },
+                                    	                        {
+                                                                    xtype: 'xcombostreet',
+                                                                    name: 'street',
+                                                                    //id:'street',
+                                                                    hiddenName: "street",
+                                                                    anchor: '100%',
+                                                                    fieldLabel: 'Улица',
+                                                                    listeners:{
+                                                                    	select: function(combo, record, index) {
+                                                                    		
+                                                                    		this.findParentByType('form').getForm().findField("house").clearValue();
+																			this.findParentByType('form').getForm().findField("house").store.load({params:{street_id: this.value}});                                                                              },
+                                                                   
+
+                                                                    },
+	                                                                  
+                                                                },
+                                                                {
+                                                                    xtype: 'xcombohouse',
+                                                                    name: 'house',
+                                                                    //id:'house',
+                                                                    hiddenName: "house",
+                                                                    anchor: '100%',
+                                                                    fieldLabel: 'Дом'
+                                                                },
+                                    	                        {
+                                    	                            xtype: 'textfield',
+                                    	                            name: 'house_bulk',
+                                    	                            anchor: '100%',
+                                    	                            fieldLabel: 'Корпус'
+                                    	                        },
+                                    	                        {
+                                    	                            xtype: 'textfield',
+                                    	                            name: 'entrance_code',
+                                    	                            anchor: '100%',
+                                    	                            fieldLabel: 'Код домофона'
+                                    	                        },
+                                    	                        {
+                                    	                            xtype: 'textfield',
+                                    	                            name: 'row',
+                                    	                            anchor: '100%',
+                                    	                            fieldLabel: 'Этаж'
+                                    	                        },
+                                    	                        {
+                                    	                            xtype: 'textfield',
+                                    	                            name: 'elevator_direction',
+                                    	                            anchor: '100%',
+                                    	                            fieldLabel: 'Направление от лифта'
+                                    	                        },
+                                    	                        {
+                                    	                            xtype: 'textfield',
+                                    	                            name: 'room',
+                                    	                            anchor: '100%',
+                                    	                            fieldLabel: 'Квартира'
+                                    	                        },
+                                    	                        {
+                                    	                            xtype: 'textfield',
+                                    	                            anchor: '100%',
+                                    	                            fieldLabel: 'Подъезд'
+                                    	                        }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    xtype: 'container',
+                    height:600,
+                    width:'100%',
+                    autoScroll:false,
+                    layout: 'vbox',
+                    pack: 'center',
+                    items: [
+                        {
 																		   xtype:'xsubaccountsgrid',
 																		   //autoHeight:true,
 																		   title:'Субаккаунты',
 																		   authHeight: true,
 																		   height:300,
-																		   width:'100%',
+																		   autoWidth:true,
 																		   //autoScroll:true,
 																		   tbar: [{
 																			    icon: media+'icons/16/arrow_refresh.png',
@@ -681,10 +905,10 @@ Ext.onReady(function(){
 																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
 																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
 																	     	   var account_id;
-																	     	   
-																	     	  account_id = this.findParentByType('xinstancecontainer').parent_id;
+																	     	   //alert(this.findParentByType('xinstancecontainer').ids.id);
+																	     	  account_id = this.findParentByType('xinstancecontainer').ids.id;
 																	     	  if (!account_id){
-																	     		  Ext.Msg.alert('Действие не может быть выполнено','Сохраните аккаут.');
+																	     		  Ext.Msg.alert('Действие не может быть выполнено','Сохраните аккаунт.');
 																	     	  }else{
 																	     		  EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
 																	     	  }
@@ -748,7 +972,7 @@ Ext.onReady(function(){
 																	        }
 																	    }],
 																	},
-													                {
+																	{
 													                    xtype: 'xaccountaddonservicesgrid',
 													                    authHeight: true,
 													                    width: '100%',
@@ -837,426 +1061,239 @@ Ext.onReady(function(){
 																	    }],
 													                    
 													                },
-													                {
-													                    xtype: 'grid',
-													                    authHeight: true,
-													                    width: '100%',
-													                    store: new Ext.data.JsonStore({}),
-													                    title: 'Оборудование на руках',
-													                    height:300,
-													                    tbar: [{
-																	        iconCls: 'icon-user-add',
-																	        text: 'Добавить',
-																	        handler: function(){
-																	     	   var account_id;
-																	     	   account_id = this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value;
-																	     	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
-																	        }
-																	    },{
-																	        iconCls: 'icon-user-edit',
-																	        text: 'Редактировать',
-																	        handler: function(){
-																	     	   var id;
-																	     	   var account_id;
-																	     	   account_id = this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value;
-																	     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
-																	     	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
-																	        }
-																	    },{
-																	        //ref: '../removeBtn',
-																	        iconCls: 'icon-user-delete',
-																	        text: 'Remove',
-																	        disabled: true,
-																	        handler: function(){
-																	     	   
-																	        }
-																	    }],
-													                    columns: [
-													                        {
-													                            xtype: 'gridcolumn',
-													                            dataIndex: 'string',
-													                            header: 'String',
-													                            sortable: true,
-													                            width: 100
-													                        },
-													                        {
-													                            xtype: 'numbercolumn',
-													                            align: 'right',
-													                            dataIndex: 'number',
-													                            header: 'Number',
-													                            sortable: true,
-													                            width: 100
-													                        },
-													                        {
-													                            xtype: 'datecolumn',
-													                            dataIndex: 'date',
-													                            header: 'Date',
-													                            sortable: true,
-													                            width: 100
-													                        },
-													                        {
-													                            xtype: 'booleancolumn',
-													                            dataIndex: 'bool',
-													                            header: 'Boolean',
-													                            sortable: true,
-													                            width: 100
-													                        }
-													                    ]
-													                }
-													            ]
-													        },
-													        {
-													            xtype: 'container',
-													            layout: 'column',
-													            padding:10,
-															    bodyStyle:'padding:10px 10px 10px 10px',
-													            items: [
-													                {
-													                    xtype: 'container',
-													                    layout: 'form',
-													                    items: [
-													                        {
-													                            xtype: 'textarea',
-													                            height: 113,
-													                            width: 300,
-													                            name: 'comment',
-													                            fieldLabel: 'Комментарий'
-													                        }
-													                    ]
-													                },
-													                {
-													                    xtype: 'fieldset',
-													                    height: 115,
-													                    width: 574,
-													                    title: 'Опции',
-													                    padding:10,
-													                    items: [
-													                        {
-													                            xtype: 'checkbox',
-													                            boxLabel: 'Разрешить активацию подключаемых услуг',
-													                            anchor: '100%',
-													                            fieldLabel: 'Label',
-													                            hideLabel: true
-													                        },
-													                        {
-													                            xtype: 'checkbox',
-													                            boxLabel: 'Разрешить вход в веб-кабинет',
-													                            anchor: '100%',
-													                            fieldLabel: 'Label',
-													                            hideLabel: true
-													                        }
-													                    ]
-													                }
-													            ]
-													        }
-													    ]
-													}
-												      ,{
-                                    	    xtype: 'container',
-                                    	    autoScroll: true,
-                                    	    layout: 'column',
-                                    	    height:'1000',
-                                    	    title: 'Информация',
-                                    	    items: [
-                                    	        {
-                                    	            xtype: 'container',
-                                    	            layout: 'anchor',
-                                    	            columnWidth:0.7,
-                                    	            autoHeight:true,
-                                    	            items: [
-                                    	                {
-                                    	                    xtype: 'grid',
-                                    	                    //height: '100%',
-                                    	                    store:new Ext.data.JsonStore({}),
-                                    	                    title: 'Документы',
-                                    	                    columns: [
-                                    	                        {
-                                    	                            xtype: 'gridcolumn',
-                                    	                            dataIndex: 'string',
-                                    	                            header: 'String',
-                                    	                            sortable: true,
-                                    	                            width: 100
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'numbercolumn',
-                                    	                            align: 'right',
-                                    	                            dataIndex: 'number',
-                                    	                            header: 'Number',
-                                    	                            sortable: true,
-                                    	                            width: 100
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'datecolumn',
-                                    	                            dataIndex: 'date',
-                                    	                            header: 'Date',
-                                    	                            sortable: true,
-                                    	                            width: 100
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'booleancolumn',
-                                    	                            dataIndex: 'bool',
-                                    	                            header: 'Boolean',
-                                    	                            sortable: true,
-                                    	                            width: 100
-                                    	                        }
-                                    	                    ]
-                                    	                }
-                                    	            ]
-                                    	        },
-                                    	        {
-                                    	            xtype: 'container',
-                                    	            height: '100%',
-                                    	            width: 350,
-                                    	            items: [{
-                                	                    xtype: 'fieldset',
-                                	                    autoWidth: true,
-                                	                    title: 'Данные аккаунта',
-                                	                    labelWidth: 140,
-                                	                    items: [
-                                	                        {
-                                	                            xtype: 'textfield',
-                                	                            name: 'contactperson',
-                                	                            anchor: '100%',
-                                	                            fieldLabel: 'Контактное лицо'
-                                	                        },
-                                	                        {
-                                	                            xtype: 'textfield',
-                                	                            anchor: '100%',
-                                	                            fieldLabel: 'Контактный телефон'
-                                	                        },
-                                	                        {
-                                	                            xtype: 'textfield',
-                                	                            name: 'fullname',
-                                	                            anchor: '100%',
-                                	                            fieldLabel: 'ФИО'
-                                	                        },
-                                	                        {
-                                	                            xtype: 'textfield',
-                                	                            name: 'email',
-                                	                            anchor: '100%',
-                                	                            fieldLabel: 'E-mail'
-                                	                        },
-                                	                        {
-                                	                            xtype: 'textfield',
-                                	                            name: 'phone_h',
-                                	                            anchor: '100%',
-                                	                            fieldLabel: 'Дом. телефон'
-                                	                        },
-                                	                        {
-                                	                            xtype: 'textfield',
-                                	                            name: 'phone_m',
-                                	                            anchor: '100%',
-                                	                            fieldLabel: 'Моб. телефон'
-                                	                        },
-                                	                        {
-                                	                            xtype: 'textfield',
-                                	                            name: 'passport',
-                                	                            anchor: '100%',
-                                	                            fieldLabel: 'Паспорт №'
-                                	                        },
-                                	                        {
-                                	                            xtype: 'textfield',
-                                	                            name: 'private_passport_number',
-                                	                            anchor: '100%',
-                                	                            fieldLabel: 'Личный номер'
-                                	                        },
-                                	                        {
-                                	                            xtype: 'textfield',
-                                	                            name: 'passport_given',
-                                	                            anchor: '100%',
-                                	                            fieldLabel: 'Кем выдан'
-                                	                        },
-                                	                        {
-                                	                            xtype: 'datefield',
-                                	                            name: 'passport_date',
-                                	                            anchor: '100%',
-                                	                            fieldLabel: 'Когда выдан'
-                                	                        }
-                                	                    ]
-                                	                },
-                                    	                {
-                                    	                    xtype: 'fieldset',
-                                    	                    width: 345,
-                                    	                    title: 'Адрес',
-                                    	                    items: [
-																{
-																    xtype: 'xcombocity',
-																    name: 'city',
-																    hiddenName: "city",
-																    anchor: '100%',
-																    fieldLabel: 'Город',
-																    listeners:{
-																    	select: function(combo, record, index) {
-																    		
-																    		this.findParentByType('form').getForm().findField('street').clearValue();
-																			this.findParentByType('form').getForm().findField('street').store.load({params:{city_id: this.value}});
-																    		
-																          },
-																    },
-																},
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'region',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Подъезд'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'postcode',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Район'
-                                    	                        },
-                                    	                        {
-                                                                    xtype: 'xcombostreet',
-                                                                    name: 'street',
-                                                                    //id:'street',
-                                                                    hiddenName: "street",
-                                                                    anchor: '100%',
-                                                                    fieldLabel: 'Улица',
-                                                                    listeners:{
-                                                                    	select: function(combo, record, index) {
-                                                                    		
-                                                                    		this.findParentByType('form').getForm().findField("house").clearValue();
-																			this.findParentByType('form').getForm().findField("house").store.load({params:{street_id: this.value}});                                                                              },
-                                                                   
-
-                                                                    },
-	                                                                  
-                                                                },
-                                                                {
-                                                                    xtype: 'xcombohouse',
-                                                                    name: 'house',
-                                                                    //id:'house',
-                                                                    hiddenName: "house",
-                                                                    anchor: '100%',
-                                                                    fieldLabel: 'Дом'
-                                                                },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'house_bulk',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Корпус'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'entrance_code',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Код домофона'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'row',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Этаж'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'elevator_direction',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Направление от лифта'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'room',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Квартира'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Подъезд'
-                                    	                        }
-                                    	                    ]
-                                    	                },
-                                    	                {
-                                    	                    xtype: 'fieldset',
-                                    	                    stateful: true,
-                                    	                    
-                                    	                    width: 345,
-                                    	                    animCollapse: true,
-                                    	                    collapsible: true,
-                                    	                    title: 'Юр. лицо',
-                                    	                    items: [
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'organization_name',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Название'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'uraddress',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Юр. адрес'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'okpo',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'ОКПО'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'unp',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'УНП'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'organization_phone',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Телефон'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'organization_fax',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Факс'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'organization_kpp',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'КПП'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'kor_s',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Корр. счёт'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'bank_name',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Банк'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'bankcode',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Код банка'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'rs',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Расчётный счёт'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'currency',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Валюта'
-                                    	                        }
-                                    	                    ]
-                                    	                },
-                                    	                
-                                    	            ]
-                                    	        }
-                                    	    ]
-                                    	} ]
-			                                      }]}]};
+                    ]
+                },
+                {
+                    xtype: 'container',
+                    layout: 'column',
+                    items: [
+                        {
+                            xtype: 'container',
+                            layout: 'form',
+                            items: [
+                                {
+                                    xtype: 'textarea',
+                                    height: 113,
+                                    width: 300,
+                                    name: 'comment',
+                                    fieldLabel: 'Комментарий'
+                                }
+                            ]
+                        },
+                        {
+                            xtype: 'fieldset',
+                            height: 112,
+                            width: 574,
+                            title: 'Опции',
+                            items: [
+                                {
+                                    xtype: 'checkbox',
+                                    boxLabel: 'Разрешить активацию подключаемых услуг',
+                                    anchor: '100%',
+                                    
+                                    hideLabel: true
+                                },
+                                {
+                                    xtype: 'checkbox',
+                                    boxLabel: 'Разрешить вход в веб-кабинет',
+                                    anchor: '100%',
+                                    
+                                    hideLabel: true
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            xtype: 'panel',
+            autoScroll: true,
+            layout: 'vbox',
+            height:1024,
+            width:'100%',
+            title: 'Информация',
+            items: [
+                {
+                    xtype: 'container',
+                    height: 352,
+                    //width: 1038,
+                    layout: 'hbox',
+                    pack: 'center',
+                    items: [
+                        {
+                            xtype: 'fieldset',
+                            stateful: true,
+                            width: 366,
+                            animCollapse: true,
+                            collapsible: true,
+                            title: 'Юр. лицо',
+                            items: [
+                                {
+                                    xtype: 'textfield',
+                                    name: 'organization_name',
+                                    anchor: '100%',
+                                    fieldLabel: 'Название'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'uraddress',
+                                    anchor: '100%',
+                                    fieldLabel: 'Юр. адрес'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'okpo',
+                                    anchor: '100%',
+                                    fieldLabel: 'ОКПО'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'unp',
+                                    anchor: '100%',
+                                    fieldLabel: 'УНП'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'organization_phone',
+                                    anchor: '100%',
+                                    fieldLabel: 'Телефон'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'organization_fax',
+                                    anchor: '100%',
+                                    fieldLabel: 'Факс'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'organization_kpp',
+                                    anchor: '100%',
+                                    fieldLabel: 'КПП'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'kor_s',
+                                    anchor: '100%',
+                                    fieldLabel: 'Корр. счёт'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'bank_name',
+                                    anchor: '100%',
+                                    fieldLabel: 'Банк'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'bankcode',
+                                    anchor: '100%',
+                                    fieldLabel: 'Код банка'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'rs',
+                                    anchor: '100%',
+                                    fieldLabel: 'Расчётный счёт'
+                                },
+                                {
+                                    xtype: 'textfield',
+                                    name: 'currency',
+                                    anchor: '100%',
+                                    fieldLabel: 'Валюта'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    xtype: 'container',
+                    width: 1070,
+                    layout: 'hbox',
+                    flex: 1,
+                    items: [
+                        {
+                            xtype: 'grid',
+                            height: 241,
+                            width: 512,
+                            title: 'Документы',
+                            store: new Ext.data.JsonStore(),
+                            columns: [
+                                {
+                                    xtype: 'gridcolumn',
+                                    dataIndex: 'string',
+                                    header: 'String',
+                                    sortable: true,
+                                    width: 100
+                                },
+                                {
+                                    xtype: 'numbercolumn',
+                                    align: 'right',
+                                    dataIndex: 'number',
+                                    header: 'Number',
+                                    sortable: true,
+                                    width: 100
+                                },
+                                {
+                                    xtype: 'datecolumn',
+                                    dataIndex: 'date',
+                                    header: 'Date',
+                                    sortable: true,
+                                    width: 100
+                                },
+                                {
+                                    xtype: 'booleancolumn',
+                                    dataIndex: 'bool',
+                                    header: 'Boolean',
+                                    sortable: true,
+                                    width: 100
+                                }
+                            ]
+                        },
+                        {
+                            xtype: 'grid',
+                            height: 241,
+                            //width: 1053,
+                            store: new Ext.data.JsonStore(),
+                            title: 'Оборудование на руках',
+                            columns: [
+                                {
+                                    xtype: 'gridcolumn',
+                                    dataIndex: 'string',
+                                    header: 'String',
+                                    sortable: true,
+                                    width: 100
+                                },
+                                {
+                                    xtype: 'numbercolumn',
+                                    align: 'right',
+                                    dataIndex: 'number',
+                                    header: 'Number',
+                                    sortable: true,
+                                    width: 100
+                                },
+                                {
+                                    xtype: 'datecolumn',
+                                    dataIndex: 'date',
+                                    header: 'Date',
+                                    sortable: true,
+                                    width: 100
+                                },
+                                {
+                                    xtype: 'booleancolumn',
+                                    dataIndex: 'bool',
+                                    header: 'Boolean',
+                                    sortable: true,
+                                    width: 100
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+												       ]}]};
                                         
     /*EBS.forms.ebs_accountsPanel.edit_user_submitAction =  function(object, event){
         //form = object.ownerCt;
@@ -1803,11 +1840,13 @@ Ext.onReady(function(){
                }
            },{
                //ref: '../removeBtn',
-               iconCls: 'icon-user-delete',
+               iconCls: 'icon-user-close',
                text: 'Закрыть',
                //disabled: true,
                handler: function(){
-            	   EBS.closeForm(this)
+            	   winCmp = this.ownerCt.ownerCt.ownerCt;
+                   winCmp.hide().destroy();
+                   delete EBS.windows[winCmp.id];
                }
            }],
 			reader: new Ext.data.JsonReader({
@@ -1933,7 +1972,6 @@ Ext.onReady(function(){
 											{
 											    xtype: 'container',
 											    layout: 'hbox',
-											    fieldLabel: 'IPv4 VPN IP',
 											    align: 'middle',
 											    fieldLabel: 'Логин',
 											    defaults:{
@@ -1976,7 +2014,6 @@ Ext.onReady(function(){
 	    	                                    {
 												    xtype: 'container',
 												    layout: 'hbox',
-												    fieldLabel: 'IPv4 VPN IP',
 												    align: 'middle',
 												    fieldLabel: 'Пароль',
 												    defaults:{

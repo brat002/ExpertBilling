@@ -424,7 +424,7 @@ def subaccount_save(request):
     if ipv4_ipn_pool:
         ipn_pool = IPPool.objects.get(id=ipv4_ipn_pool)
         
-    
+    cc=None
     if id:
         cc = SubAccount.objects.get(id=id)
         
@@ -436,8 +436,8 @@ def subaccount_save(request):
     p=request.POST
     res=[]
     
-    print instance_dict(cc)
-    print "cc1",cc.vpn_ipinuse
+    #print instance_dict(cc)
+    #print "cc1",cc.vpn_ipinuse
     
     if a.is_valid():
         try:
@@ -450,9 +450,9 @@ def subaccount_save(request):
             return res
         print 1
         
-        print "cc.vpn_ipinuse11",cc.vpn_ipinuse
+       # print "cc.vpn_ipinuse11",cc.vpn_ipinuse
        
-        if cc.vpn_ipinuse:
+        if cc and cc.vpn_ipinuse:
             print 2
             #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
             
@@ -491,7 +491,7 @@ def subaccount_save(request):
             ip.save()
             subacc.vpn_ipinuse = ip 
             
-        if cc.ipn_ipinuse:
+        if cc and cc.ipn_ipinuse:
             print 2
             #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
             
@@ -521,7 +521,7 @@ def subaccount_save(request):
                 obj.disabled=datetime.datetime.now()
                 obj.save()
                 subacc.ipn_ipinuse=None
-        elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and vpn_pool:
+        elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and ipn_pool:
             print 6
             if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
                 return {"success": False, 'msg':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}

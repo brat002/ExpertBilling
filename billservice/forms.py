@@ -97,6 +97,7 @@ class AccountTariffForm(ModelForm):
 class AccountForm(ModelForm):
     class Meta:
         model = Account
+        exclude = ('ballance',)
 
 class SubAccountForm(ModelForm):
     class Meta:

@@ -1257,7 +1257,7 @@ Ext.onReady(function(){
                    collapsible: true,
                    stateId: 'stateSubaccountsGrid',
                    plugins:['msgbus'],
-                   unstyled:true,
+                   //unstyled:true,
             	   store:new Ext.data.JsonStore({
        		        	paramsAsHash: true,
     			    //	autoLoad: {params:{start:0, limit:100}},
@@ -1278,7 +1278,13 @@ Ext.onReady(function(){
             		   //Ext.Msg.alert(message);
             		   var me;
             		   me=this;
-            	       me.store.load();
+            		   account_id=this.findParentByType('xinstancecontainer').ids.id;
+            		   
+			        	  if (account_id){
+			        		  //alert(account_id)
+			        		  this.store.setBaseParam('account_id',account_id);
+			        		  this.store.load();
+			        	  }
             	       //Ext.Msg.alert(message);
             	    },
             	   bbar: new Ext.PagingToolbar({
@@ -1299,9 +1305,9 @@ Ext.onReady(function(){
  			             // console.info('load',this,arguments);
  			        	  var account_id;
  			        	  //account_id=this.findParentByType('form').getForm().findField('id').value;
- 			        	  account_id=this.findParentByType('xinstancecontainer').instance_id;
+ 			        	  account_id=this.findParentByType('xinstancecontainer').ids.id;
  			        	  //alert(account_id);
- 			        	  
+ 			        	  account_id=this.findParentByType('xinstancecontainer').ids.id;
  			        	  if (account_id){
  			        		  //alert(account_id)
  			        		  this.store.setBaseParam('account_id',account_id);
@@ -1554,7 +1560,7 @@ Ext.onReady(function(){
                   stateful: true,
                   stateId: 'stateAccountAddonServiceGrid',
                   collapsible: true,
-                  unstyled:true,
+                  //unstyled:true,
            	   	  store:new Ext.data.JsonStore({
       		        	paramsAsHash: true,
 
@@ -1677,7 +1683,7 @@ Ext.onReady(function(){
                  stateful: true,
                  stateId: 'stateAccountAddonServiceGrid',
                  collapsible: true,
-                 unstyled:true,
+                 //unstyled:true,
           	   	  store:new Ext.data.JsonStore({
      		        	paramsAsHash: true,
 
@@ -1800,7 +1806,7 @@ Ext.onReady(function(){
           	   xtype:'grid',
                  stateful: true,
                  collapsible: true,
-                 unstyled:true,
+                 //unstyled:true,
                  plugins:['msgbus'],
                  stateId: 'stateAccountTariffsGrid',
           	   	  store:new Ext.data.JsonStore({
