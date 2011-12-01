@@ -183,146 +183,153 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         	,text:'...'
         });
         this.bt.ownerCt = this;
-        this.bt.on('click', function(){
+        
+        this.win = new Ext.Window({
+            
+            layout:'fit',
+            closeAction:'hide',
+            applyTo:Ext.get('body'),
+            modal: true
+            ,title:'Выберите дату'    
+            ,closable:true
+            ,border:false
+            ,height: 330
+            //,autoHeight: true
+            ,width: 500
+            ,items:{
+                xtype: 'form',
+                
+                layout: 'table',
+         	   layoutConfig:{ 
+         	       columns: 4,
+         	   }, 
+               //baseCls:'x-plain',
+               defaults:{
+                   margins:'0 5 0 0',  
+                   padding:5,
+          	       height:30, 
+         	       width:150,
+
+         	   },
+                columns: 4,
+                items: [
+                    {
+                        xtype: 'radio',
+                        boxLabel: 'Квартал',
+                        name:'type',
+                        inputValue:'Quart'
+                    },
+                    {
+                        xtype: 'combo',
+                        padding:'5px',
+
+                    },
+                    {
+                        xtype: 'combo',
+
+                    },
+                    {
+                        xtype: 'label',
+
+                        text: 'года',
+                    },
+                    {
+                        xtype: 'radio',
+                        boxLabel: 'Месяц',
+                        name:'type',
+                        inputValue:'Month'
+                        	
+                    },
+                    {
+                        xtype: 'combo',
+
+                    },
+                    {
+                        xtype: 'combo',
+
+                    },
+                    {
+                        xtype: 'label',
+                        text: 'года'
+                    },
+                    {
+                        xtype: 'radio',
+                        boxLabel: 'День',
+                        name:'type',
+                        inputValue:'day'
+                        
+                    },
+                    {
+                        xtype: 'datefield',
+                        colspan:3,
+                    },
+                  
+                    {
+                        xtype: 'radio',
+                        boxLabel: 'Период',
+                        name:'type',
+                        inputValue:'period'
+                        
+                    },
+                    {
+                        xtype: 'datefield'
+                    },
+                    {
+                        xtype: 'datefield',
+                        colspan:2,
+                     	   
+                    },
+                    {
+                        xtype: 'radio',
+                        boxLabel: 'Этот месяц',
+                        colspan:4,
+                        name:'type',
+                        inputValue:'ThisMonth'
+                        
+                    },
+                    {
+                        xtype: 'radio',
+                        boxLabel: 'Эта неделя',
+                        colspan:4,
+                        name:'type',
+                        inputValue:'ThisWeek'
+
+                     	   
+                    },
+                    {
+                        xtype: 'radio',
+                        boxLabel: 'Сейчас',
+                        colspan:4,
+                        name:'type',
+                        inputValue:'Now'
+                     	   
+                     	   
+                    },
+                 
+                    {
+                        xtype: 'button',
+                        text: 'Выбрать',
+                        handler: function(button){
+                        	var type = button.findParentByType('form').getForm().getValues()['type'];
+                        	alert(type);
+                        }
+                    }
+                ]
+            }
+        });
+        
+        this.win.on('hide', function(){
+        	//alert('cracaca');
+            this.setDateTimeFromWin(this.win.title);
+        }, this);
+        this.bt.on('click', function(obj, ev){
             // create the window on the first click and reuse on subsequent clicks
             
-                win = new Ext.Window({
-                    
-                    layout:'fit',
-                    closeAction:'hide',
-                    applyTo:Ext.get('body'),
-		            modal: true
-		            ,title:'Выберите дату'    
-	                ,closable:true
-	                ,border:false
-	                ,height: 330
-	                //,autoHeight: true
-	                ,width: 500
-	                ,items:{
-	                    xtype: 'form',
-	                    
-	                    layout: 'table',
-	             	   layoutConfig:{ 
-	             	       columns: 4,
-	             	   }, 
-                       //baseCls:'x-plain',
-                       defaults:{
-                           margins:'0 5 0 0',  
-                           padding:5,
- 	             	       height:30, 
-	             	       width:150,
-
-	             	   },
-	                    columns: 4,
-	                    items: [
-	                        {
-	                            xtype: 'radio',
-	                            boxLabel: 'Квартал',
-	                            name:'type',
-	                            inputValue:'Quart'
-	                        },
-	                        {
-	                            xtype: 'combo',
-	                            padding:'5px',
-
-	                        },
-	                        {
-	                            xtype: 'combo',
-
-	                        },
-	                        {
-	                            xtype: 'label',
-
-	                            text: 'года',
-	                        },
-	                        {
-	                            xtype: 'radio',
-	                            boxLabel: 'Месяц',
-	                            name:'type',
-	                            inputValue:'Month'
-	                            	
-	                        },
-	                        {
-	                            xtype: 'combo',
-
-	                        },
-	                        {
-	                            xtype: 'combo',
-
-	                        },
-	                        {
-	                            xtype: 'label',
-	                            text: 'года'
-	                        },
-	                        {
-	                            xtype: 'radio',
-	                            boxLabel: 'День',
-	                            name:'type',
-	                            inputValue:'day'
-	                            
-	                        },
-	                        {
-	                            xtype: 'datefield',
-	                            colspan:3,
-	                        },
-	                      
-	                        {
-	                            xtype: 'radio',
-	                            boxLabel: 'Период',
-	                            name:'type',
-	                            inputValue:'period'
-	                            
-	                        },
-	                        {
-	                            xtype: 'datefield'
-	                        },
-	                        {
-	                            xtype: 'datefield',
-	                            colspan:2,
-	                         	   
-	                        },
-	                        {
-	                            xtype: 'radio',
-	                            boxLabel: 'Этот месяц',
-	                            colspan:4,
-	                            name:'type',
-	                            inputValue:'ThisMonth'
-	                            
-	                        },
-	                        {
-	                            xtype: 'radio',
-	                            boxLabel: 'Эта неделя',
-	                            colspan:4,
-	                            name:'type',
-	                            inputValue:'ThisWeek'
-
-	                         	   
-	                        },
-	                        {
-	                            xtype: 'radio',
-	                            boxLabel: 'Сейчас',
-	                            colspan:4,
-	                            name:'type',
-	                            inputValue:'Now'
-	                         	   
-	                         	   
-	                        },
-	                     
-	                        {
-	                            xtype: 'button',
-	                            text: 'Выбрать',
-	                            handler: function(button){
-	                            	var type = button.findParentByType('form').getForm().getValues()['type'];
-	                            	alert(type);
-	                            }
-	                        }
-	                    ]
-	                }
-	            });
+                
             
             //win.render();
             //win.center();
-            win.show(this);
+            obj.ownerCt.win.show(obj.ownerCt);
         });
         // relay events
         this.relayEvents(this.df, ['focus', 'specialkey', 'invalid', 'valid']);
@@ -418,6 +425,8 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
     } // eo function onRender
     // }}}
     // {{{
+    
+    ,setDateTimeFromWin:function(value){alert(value)}
     /**
      * @private
      */
