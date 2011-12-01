@@ -1306,7 +1306,7 @@ class HandleHotSpotAuth(HandleSAuth):
         user_name = str(self.packetobject['User-Name'][0])
         mac=str(self.packetobject['Calling-Station-Id'][0]).lower() or str(self.packetobject['User-Name'][0]).lower()
         ip=str(self.packetobject['Mikrotik-Host-IP'][0])
-        self.cursor.execute("SELECT pin FROM billservice_card WHERE sold IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
+        self.cursor.execute("SELECT pin FROM billservice_card WHERE activated is NULL and sold IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
         pin = self.cursor.fetchone()
         acc=None
         if pin:
@@ -1426,8 +1426,13 @@ class HandleHotSpotAuth(HandleSAuth):
             subacc_id=subacc.id
         else:
             subacc_id = acc.subaccount_id
+            subacc=acc
+            
         if not acstatus:
-            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (user_name,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
+            if subacc:
+                logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (user_name,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
+            else:
+                logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (user_name,subacc.allow_vpn_with_null,acc.ballance, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
             sqlloggerthread.add_message(nas=acc.nas_id, subaccount=subacc_id, account=acc.account_id, type="AUTH_HOTSPOT_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
             return self.auth_NA(authobject)     
         
