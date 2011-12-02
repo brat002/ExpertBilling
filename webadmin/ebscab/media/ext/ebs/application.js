@@ -1278,7 +1278,7 @@ Ext.onReady(function(){
             		   //Ext.Msg.alert(message);
             		   var me;
             		   me=this;
-            		   account_id=this.findParentByType('xinstancecontainer').ids.id;
+            		   account_id=this.findParentByType('xinstancecontainer').ids.account_id;
             		   
 			        	  if (account_id){
 			        		  //alert(account_id)
@@ -1305,9 +1305,9 @@ Ext.onReady(function(){
  			             // console.info('load',this,arguments);
  			        	  var account_id;
  			        	  //account_id=this.findParentByType('form').getForm().findField('id').value;
- 			        	  account_id=this.findParentByType('xinstancecontainer').ids.id;
- 			        	  //alert(account_id);
- 			        	  account_id=this.findParentByType('xinstancecontainer').ids.id;
+ 			        	  account_id=this.findParentByType('xinstancecontainer').ids.account_id;
+ 			        	  
+ 			        	  
  			        	  if (account_id){
  			        		  //alert(account_id)
  			        		  this.store.setBaseParam('account_id',account_id);
@@ -1718,6 +1718,7 @@ Ext.onReady(function(){
 	     		   //Ext.Msg.alert(message);
 	     		   var me;
 	     		   me=this;
+	     		   this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.account_id);
 	     	       me.store.load();
 	     	       
 	     	    },
@@ -1730,8 +1731,8 @@ Ext.onReady(function(){
 			          render:function(){
 			             // console.info('load',this,arguments);
 			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
-			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
-			        	  if (this.findParentByType('xinstancecontainer').instance_id){
+			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.account_id);
+			        	  if (this.findParentByType('xinstancecontainer').ids.account_id){
 			        		  this.store.load();
 			        	  }
 			        	  var me;
@@ -1832,6 +1833,7 @@ Ext.onReady(function(){
 	     		   //Ext.Msg.alert(message);
 	     		   var me;
 	     		   me=this;
+	     		   this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.account_id);
 	     	       me.store.load();
 	     	       
 	     	    },
@@ -1848,8 +1850,8 @@ Ext.onReady(function(){
 			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
 			        	  //this.store.setBaseParam('subaccount_id', this.findParentByType('form').findParentByType('panel').instance_id);
 			        	  //alert();
-			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
-			        	  if (this.findParentByType('xinstancecontainer').instance_id){
+			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.account_id);
+			        	  if (this.findParentByType('xinstancecontainer').ids.account_id){
 			        		  this.store.load();
 			        	  }
 			        	  var me;
