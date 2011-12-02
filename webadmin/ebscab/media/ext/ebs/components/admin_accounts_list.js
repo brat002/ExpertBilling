@@ -131,12 +131,18 @@ Ext.onReady(function(){
                                 closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
+                                stateId:'accounts_list_',
+                                defaults: {
+                                    sortable: true,
+                                    menuDisabled: false,
+                                    //width: 20
+                                },
                                 columns : [
                                     {
                                         header   : '#',
                                         sortable : true,
                                         //width    : 85,
-                                        locked: true,
+                                        //locked: true,
                                         dataIndex: 'id',
                                         filter: {
                                             type: 'numeric'
@@ -328,7 +334,7 @@ Ext.onReady(function(){
                                 stripeRows: false,
                                 title: i18n.accounts.accounts,
                                 stateful: true,
-                                stateId: 'accountsgrid',
+                                //stateId: 'accountsgrid',
                                 
                             //bbar:this.pagination
                 });
@@ -373,7 +379,7 @@ Ext.onReady(function(){
 					                                        form = this.ownerCt.ownerCt.getForm();
 					                                        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, 
 					                                        	success: function(form,action) {        
-					                                        		form.ownerCt.findParentByType('xinstancecontainer').ids={'id':action.result.account_id};
+					                                        		form.ownerCt.findParentByType('xinstancecontainer').ids={'account_id':action.result.account_id};
 					                                        	
 					                                        	Ext.Msg.alert('Данные были успешно сохранены', 'Данные были успешно сохранены' )
 					                                        	form.load({url:form.url,method:form.method,params:{'id':action.result.account_id}});
@@ -462,7 +468,33 @@ Ext.onReady(function(){
 		    title: 'Общее',
 		    padding:5,
 		    autoScroll:true,
-            items: [
+            items: [{
+            	 	xtype:'container',
+                	layout:'hbox',
+                	pack:'left',
+                	layoutConfig : {
+		                pack : 'center',
+		               align : 'middle'
+		            },
+		            defaults:{
+                        margins:'0 5 5 0',    	                                        
+                    },
+                    baseCls:'x-plain',
+		            viewConfig: {
+                        forceFit: true,
+                        
+                    },
+                	items:[
+                        {
+                        	xtype:'label',
+                        	text:'Тарифный план',
+                        },
+                        {
+                        	xtype:'xcombotariff',
+                        	
+                        },
+                        ]
+                },
                 {
                 	xtype: 'container',
 		            autoHeight:true,
@@ -870,7 +902,7 @@ Ext.onReady(function(){
                 },
                 {
                     xtype: 'container',
-                    height:600,
+                    height:900,
                     width:'100%',
                     autoScroll:false,
                     layout: 'vbox',

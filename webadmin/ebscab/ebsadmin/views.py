@@ -379,14 +379,23 @@ def account_save(request):
     #from django.http import HttpResponse
     print request
     id = request.POST.get('id')
+    contract = request.POST.get('contract','')
+    newcontract=False
     if id:
         acc = Account.objects.get(id=id)
+        
+        if acc.contract=='' and contract:
+            #new
+            newcontract=True
         a=AccountForm(request.POST, instance=acc)
     else:
+        if contract!='':
+            #new
+            newcontract=True
         a=AccountForm(request.POST)
     p=request.POST
     res=[]
-    print "a.is_valid()",a.is_valid()
+    #print "a.is_valid()",a.is_valid()
     print a._errors
     #print a.clean()
     
@@ -394,6 +403,31 @@ def account_save(request):
     #acc.password=p.get("password")
     #acc.fullllname=p.get("fullname")
     if a.is_valid():
+        if contract:
+            contr = ContractTemplate.objects.get(template=contract)
+            if acc:
+                pass
+        if False and newcontract and contr:
+
+            contract_template = contr.template
+            contract_counter = contr.counter
+            cur.execute("SELECT access_type FROM billservice_accessparameters WHERE id=(SELECT access_parameters_id FROM billservice_tariff WHERE id=%s)", (tarif_id, ))
+            tarif_type = cur.fetchone()['access_type']
+            year=model.created.year
+            month=model.created.month
+            day=model.created.day
+            hour=model.created.hour
+            minute=model.created.minute
+            second=model.created.second
+            contract_num=contract_counter
+            
+            
+            d={'tarif_id':tarif_id, 'account_id':id,'year':year,'month':month, 'day':day, 'hour':hour, 'minute':minute,'second':second, 'tarif_type':tarif_type, 'contract_num':contract_num}
+            d.update(model.__dict__)
+
+            contract = contract_template % d
+            cur.execute("UPDATE billservice_account SET contract=%s WHERE id=%s", (contract, id))
+            cur.execute("UPDATE billservice_contracttemplate SET counter=counter+1 WHERE id=%s", (template_id,))
         try:
             item = a.save(commit=False)
             item.save()
