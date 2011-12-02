@@ -1274,6 +1274,7 @@ class RadiusTrafficNode(models.Model):
 
 class ContractTemplate(models.Model):
     template = models.TextField()
+    counter = models.IntegerField()
 
 class Manufacturer(models.Model):
     name = models.TextField()
