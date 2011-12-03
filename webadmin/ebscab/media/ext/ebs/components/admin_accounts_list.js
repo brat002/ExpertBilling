@@ -349,6 +349,105 @@ Ext.onReady(function(){
          } //initComponent
      });
 
+    	
+    EBS.forms.ebs_accountsPanel.document = {
+    	    xtype: 'form',
+    	    width: 905,
+    	    height: 580,
+    	    title: 'Документ',
+    	    layout:'fit',
+    	    items: [
+    	        {
+    	            xtype: 'fieldset',
+    	            title: 'Параметры документа',
+    	            items: [
+    	                {
+    	                    xtype: 'xcombotemplate',
+    	                    name: 'type',
+    	                    anchor: '50%',
+    	                    fieldLabel: 'Тип документа'
+    	                },
+    	                {
+    	                    xtype: 'combo',
+    	                    name: 'contractnumber',
+    	                    anchor: '50%',
+    	                    fieldLabel: 'Номер/шаблон',
+    	                    
+                     		    
+                     		    displayField: 'template',
+                     		    valueField: 'template', 
+                     		    mode: 'remote',
+                     		    editable:false,
+                                loadingText  : 'Searching...',
+                                pageSize     : 25,
+                     		    triggerAction: 'all',
+                     		    typeAhead: false,
+                     		    // ref:
+								// 'store/p',
+                     		    listeners:{
+                 		        	focus:function(obj, options){
+                 		        		
+                 		        	},
+                 		        	// scope:this.ownerCt,
+                 		        	
+                 		        },
+                 		        
+                     		    store:new Ext.data.Store({
+                     		    	
+                     		    	
+                     		        proxy: new Ext.data.HttpProxy({
+                     		            url: '/ebsadmin/contracttemplate/',
+                     		            method:'POST',
+                     		            
+                     		        }),
+                     		        
+                     		        reader: new Ext.data.JsonReader({
+                     		        	totalProperty: 'totalCount',
+                     		            root: 'records'
+                     		        }, [{
+                     		            name: 'template'
+                     		        }])
+                     		    }),
+                                
+                            
+    	                },
+    	                {
+    	                    xtype: 'datefield',
+    	                    name: 'date_start',
+    	                    anchor: '25%',
+    	                    fieldLabel: 'Начало'
+    	                },
+    	                {
+    	                    xtype: 'button',
+    	                    text: 'Сгенерировать',
+    	                    anchor: '50%',
+    	                    fieldLabel: '&nbsp'
+    	                    
+    	                },
+    	                {
+    	                    xtype: 'htmleditor',
+    	                    
+    	                    
+    	                    name: 'body',
+    	                    anchor: '100%',
+    	                    fieldLabel: 'Текст'
+    	                },
+    	                {
+    	                    xtype: 'datefield',
+    	                    name: 'date_end',
+    	                    anchor: '25%',
+    	                    fieldLabel: 'Окончание'
+    	                },
+    	                {
+    	                    xtype: 'textarea',
+    	                    name: 'comment',
+    	                    anchor: '50%',
+    	                    fieldLabel: 'Комментарий'
+    	                }
+    	            ]
+    	        }
+    	    ]
+    	}
 
 /* ACCOUNTS FORMS*/
     EBS.forms.ebs_accountsPanel.edit_user = {
@@ -485,14 +584,14 @@ Ext.onReady(function(){
                         
                     },
                 	items:[
-                        {
+                        /*{
                         	xtype:'label',
                         	text:'Тарифный план',
                         },
                         {
                         	xtype:'xcombotariff',
                         	
-                        },
+                        },*/
                         ]
                 },
                 {
@@ -1050,49 +1149,62 @@ Ext.onReady(function(){
 													                    
 													                },
 													                {
-													                    xtype: 'xaccounttariffsgrid',
-													                    authHeight: true,
-													                    width: '100%',
-													                    title: 'Тарифные планы',
-													                    height:300,
-													                    
-													                    tbar: [{
-													        			    icon: media+'icons/16/arrow_refresh.png',
-													        		        text: 'Обновить',
-													        		        handler: function(){
-													        		        	this.ownerCt.ownerCt.store.load();
-													        		        }
-													        		    },{
-																	        iconCls: 'icon-user-add',
-																	        text: 'Добавить',
-																	        handler: function(){
-																	     	   var account_id;
-																	     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
-																	     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:null}, this.findParentByType('grid'))
-																	     	   
-																	        }
-																	    },{
-																	        iconCls: 'icon-user-edit',
-																	        text: 'Редактировать',
-																	        handler: function(){
-																	     	   var id;
-																	     	   var account_id;
-																	     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
-																	     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
-																	     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:id}, this.findParentByType('grid'))
-																	        }
-																	    },{
-																	        //ref: '../removeBtn',
-																	        iconCls: 'icon-delete',
-																	        text: 'Remove',
-																	        //disabled: true,
-																	        ref: '../removeButton',
-																	        handler: function(){
-																	     	   
-																	        }
-																	    }],
-													                    
-													                },
+													                	xtype:'container',
+													                	layout:'hbox',
+													                	height:300,
+													                	width:'100%',
+													                	items:[
+														                {
+														                    xtype: 'xaccounttariffsgrid',
+														                    authHeight: true,
+														                    width: '50%',
+														                    title: 'Тарифные планы',
+														                    height:300,
+														                    
+														                    tbar: [{
+														        			    icon: media+'icons/16/arrow_refresh.png',
+														        		        text: 'Обновить',
+														        		        handler: function(){
+														        		        	this.ownerCt.ownerCt.store.load();
+														        		        }
+														        		    },{
+																		        iconCls: 'icon-user-add',
+																		        text: 'Добавить',
+																		        handler: function(){
+																		     	   var account_id;
+																		     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+																		     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:null}, this.findParentByType('grid'))
+																		     	   
+																		        }
+																		    },{
+																		        iconCls: 'icon-user-edit',
+																		        text: 'Редактировать',
+																		        handler: function(){
+																		     	   var id;
+																		     	   var account_id;
+																		     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+																		     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
+																		     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:id}, this.findParentByType('grid'))
+																		        }
+																		    },{
+																		        //ref: '../removeBtn',
+																		        iconCls: 'icon-delete',
+																		        text: 'Remove',
+																		        //disabled: true,
+																		        ref: '../removeButton',
+																		        handler: function(){
+																		     	   
+																		        }
+																		    }],
+														                    
+														                },
+														                {
+												                            xtype: 'xdocumentsgrid',
+												                            height:300,
+												                            width: '50%',
+												                            title: 'Документы'
+												                        },
+													                ]},
                     ]
                 },
                 {
@@ -1332,105 +1444,7 @@ Ext.onReady(function(){
         //console.log(form);
     }*/
     
-    var win = new Ext.Window({
-        id:'popcombo-win'
-       ,title:''
-       ,layout:'fit'
-       ,closable:true
-       ,border:false
-       ,height: 226
-       ,width: 420
-       ,items:{
-           xtype: 'form',
-           
-           layout: 'table',
-    	   layoutConfig:{ 
-    	       columns: 4,
-    	       tableStyle: 'border-spacing: 25px;'
-    	   }, 
-    	   defaults : {                                                        
-    	      height:30, 
-    	       width:150,
 
-    	   },
-           title: 'Выберите период',
-           columns: 4,
-           items: [
-               {
-                   xtype: 'radio',
-                   boxLabel: 'Квартал'
-               },
-               {
-                   xtype: 'combo',
-                   padding:'5px',
-
-               },
-               {
-                   xtype: 'combo',
-
-               },
-               {
-                   xtype: 'label',
-
-                   text: 'года',
-               },
-               {
-                   xtype: 'radio',
-                   boxLabel: 'Месяц'
-               },
-               {
-                   xtype: 'combo',
-
-               },
-               {
-                   xtype: 'combo',
-
-               },
-               {
-                   xtype: 'label',
-                   text: 'года'
-               },
-               {
-                   xtype: 'radio',
-                   boxLabel: 'День'
-               },
-               {
-                   xtype: 'datefield',
-                   colspan:3,
-               },
-             
-               {
-                   xtype: 'radio',
-                   boxLabel: 'Период'
-               },
-               {
-                   xtype: 'datefield'
-               },
-               {
-                   xtype: 'datefield',
-                   colspan:2,
-                	   
-               },
-               {
-                   xtype: 'radio',
-                   boxLabel: 'Этот месяц',
-                   colspan:4,
-               },
-               {
-                   xtype: 'radio',
-                   boxLabel: 'Эта неделя',
-                   colspan:4,
-                	   
-                	   
-               },
-            
-               {
-                   xtype: 'button',
-                   text: 'Выбрать'
-               }
-           ]
-       }
-   });
 
    //win.show();
     EBS.forms.ebs_accountsPanel.accountaddonservice = {

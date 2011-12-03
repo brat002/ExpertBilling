@@ -17,7 +17,7 @@
     "components": [
         {
             "id": "ExtBox1-ext-gen60607",
-            "type": "panel",
+            "type": "form",
             "reference": {
                 "name": "items",
                 "type": "array"
@@ -45,7 +45,7 @@
                     "codeClass": null,
                     "userConfig": {
                         "height": 444,
-                        "activeTab": 1,
+                        "activeTab": 0,
                         "designer|userClassName": "MyTabPanel"
                     },
                     "cn": [
@@ -58,8 +58,9 @@
                             },
                             "codeClass": null,
                             "userConfig": {
+                                "autoScroll": true,
                                 "height": 692,
-                                "width": 4999,
+                                "width": null,
                                 "title": "Общее",
                                 "designer|userClassName": "MyPanel1"
                             },
@@ -73,75 +74,26 @@
                                     },
                                     "codeClass": null,
                                     "userConfig": {
-                                        "autoHeight": true,
-                                        "layout": "table",
+                                        "height": null,
+                                        "layout": "hbox",
                                         "designer|userClassName": "MyContainer"
                                     },
                                     "cn": [
                                         {
-                                            "id": "ExtBox1-ext-gen60837",
-                                            "type": "fieldset",
+                                            "id": "ExtBox1-ext-gen13025",
+                                            "type": "container",
                                             "reference": {
                                                 "name": "items",
                                                 "type": "array"
                                             },
                                             "codeClass": null,
                                             "userConfig": {
-                                                "height": null,
-                                                "width": 402,
-                                                "title": "Учётные данные",
-                                                "designer|userClassName": "MyFieldSet",
-                                                "layout|columnWidth": null
+                                                "designer|userClassName": "MyContainer7"
                                             },
                                             "cn": [
                                                 {
-                                                    "id": "ExtBox1-ext-gen61889",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "login",
-                                                        "designer|userClassName": "MyTextField",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Логин"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen65204",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "password",
-                                                        "designer|userClassName": "MyTextField1",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Пароль"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen66113",
-                                                    "type": "datefield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "created",
-                                                        "designer|userClassName": "MyDateField",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Дата создания"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen75071",
-                                                    "type": "container",
+                                                    "id": "ExtBox1-ext-gen60837",
+                                                    "type": "fieldset",
                                                     "reference": {
                                                         "name": "items",
                                                         "type": "array"
@@ -149,17 +101,174 @@
                                                     "codeClass": null,
                                                     "userConfig": {
                                                         "height": null,
-                                                        "width": null,
-                                                        "forceLayout": true,
-                                                        "layout": "hbox",
-                                                        "designer|userClassName": "MyContainer",
-                                                        "container|pack": "center",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Номер договора"
+                                                        "width": 402,
+                                                        "title": "Учётные данные",
+                                                        "designer|userClassName": "MyFieldSet"
                                                     },
                                                     "cn": [
                                                         {
-                                                            "id": "ExtBox1-ext-gen75081",
+                                                            "id": "ExtBox1-ext-gen61889",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "login",
+                                                                "designer|userClassName": "MyTextField",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Логин"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "ExtBox1-ext-gen65204",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "password",
+                                                                "designer|userClassName": "MyTextField1",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Пароль"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "ExtBox1-ext-gen66113",
+                                                            "type": "datefield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "created",
+                                                                "designer|userClassName": "MyDateField",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Дата создания"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "ExtBox1-ext-gen75071",
+                                                            "type": "container",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "height": null,
+                                                                "width": null,
+                                                                "forceLayout": true,
+                                                                "layout": "hbox",
+                                                                "designer|userClassName": "MyContainer",
+                                                                "container|pack": "center",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Номер договора"
+                                                            },
+                                                            "cn": [
+                                                                {
+                                                                    "id": "ExtBox1-ext-gen75081",
+                                                                    "type": "combobox",
+                                                                    "reference": {
+                                                                        "name": "items",
+                                                                        "type": "array"
+                                                                    },
+                                                                    "codeClass": null,
+                                                                    "userConfig": {
+                                                                        "width": null,
+                                                                        "designer|userClassName": "MyCombo3",
+                                                                        "layout|flex": 1
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "id": "ExtBox1-ext-gen75086",
+                                                                    "type": "button",
+                                                                    "reference": {
+                                                                        "name": "items",
+                                                                        "type": "array"
+                                                                    },
+                                                                    "codeClass": null,
+                                                                    "userConfig": {
+                                                                        "width": null,
+                                                                        "text": "Печать",
+                                                                        "designer|userClassName": "MyButton",
+                                                                        "layout|flex": 1
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen84651",
+                                                    "type": "fieldset",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "autoWidth": true,
+                                                        "height": 85,
+                                                        "width": null,
+                                                        "padding": "",
+                                                        "title": "Баланс",
+                                                        "designer|userClassName": "MyFieldSet1"
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "ExtBox1-ext-gen85564",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "balance",
+                                                                "designer|userClassName": "MyTextField3",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Баланс"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "ExtBox1-ext-gen85846",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "credit",
+                                                                "designer|userClassName": "MyTextField4",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Кредит"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen120431",
+                                                    "type": "fieldset",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "height": 105,
+                                                        "width": 394,
+                                                        "title": "Параметры",
+                                                        "designer|userClassName": "MyFieldSet4"
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "ExtBox1-ext-gen120940",
                                                             "type": "combobox",
                                                             "reference": {
                                                                 "name": "items",
@@ -167,24 +276,25 @@
                                                             },
                                                             "codeClass": null,
                                                             "userConfig": {
-                                                                "width": null,
-                                                                "designer|userClassName": "MyCombo3",
-                                                                "layout|flex": 1
+                                                                "name": "status",
+                                                                "designer|userClassName": "MyCombo5",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Статус"
                                                             }
                                                         },
                                                         {
-                                                            "id": "ExtBox1-ext-gen75086",
-                                                            "type": "button",
+                                                            "id": "ExtBox1-ext-gen121549",
+                                                            "type": "combobox",
                                                             "reference": {
                                                                 "name": "items",
                                                                 "type": "array"
                                                             },
                                                             "codeClass": null,
                                                             "userConfig": {
-                                                                "width": null,
-                                                                "text": "Печать",
-                                                                "designer|userClassName": "MyButton",
-                                                                "layout|flex": 1
+                                                                "name": "manager",
+                                                                "designer|userClassName": "MyCombo6",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Персональный менеджер"
                                                             }
                                                         }
                                                     ]
@@ -192,7 +302,7 @@
                                             ]
                                         },
                                         {
-                                            "id": "ExtBox1-ext-gen84651",
+                                            "id": "ExtBox1-ext-gen87970",
                                             "type": "fieldset",
                                             "reference": {
                                                 "name": "items",
@@ -200,16 +310,15 @@
                                             },
                                             "codeClass": null,
                                             "userConfig": {
-                                                "autoWidth": true,
-                                                "height": 140,
-                                                "width": null,
-                                                "padding": "",
-                                                "title": "Баланс",
-                                                "designer|userClassName": "MyFieldSet1"
+                                                "height": 351,
+                                                "width": 376,
+                                                "title": "Данные аккаунта",
+                                                "designer|userClassName": "MyFieldSet2",
+                                                "container|labelWidth": 140
                                             },
                                             "cn": [
                                                 {
-                                                    "id": "ExtBox1-ext-gen85564",
+                                                    "id": "ExtBox1-ext-gen88765",
                                                     "type": "textfield",
                                                     "reference": {
                                                         "name": "items",
@@ -217,14 +326,14 @@
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "balance",
-                                                        "designer|userClassName": "MyTextField3",
+                                                        "name": "contactperson",
+                                                        "designer|userClassName": "MyTextField6",
                                                         "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Баланс"
+                                                        "layout|fieldLabel": "Контактное лицо"
                                                     }
                                                 },
                                                 {
-                                                    "id": "ExtBox1-ext-gen85846",
+                                                    "id": "ExtBox1-ext-gen89241",
                                                     "type": "textfield",
                                                     "reference": {
                                                         "name": "items",
@@ -232,14 +341,14 @@
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "credit",
-                                                        "designer|userClassName": "MyTextField4",
+                                                        "name": "contactphone",
+                                                        "designer|userClassName": "MyTextField7",
                                                         "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Кредит"
+                                                        "layout|fieldLabel": "Контактный телефон"
                                                     }
                                                 },
                                                 {
-                                                    "id": "ExtBox1-ext-gen86293",
+                                                    "id": "ExtBox1-ext-gen89538",
                                                     "type": "textfield",
                                                     "reference": {
                                                         "name": "items",
@@ -247,16 +356,139 @@
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "max_credit",
-                                                        "designer|userClassName": "MyTextField5",
+                                                        "name": "fullname",
+                                                        "designer|userClassName": "MyTextField8",
                                                         "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Кредит доверия"
+                                                        "layout|fieldLabel": "ФИО"
                                                     }
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen14674",
+                                                    "type": "fieldset",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "height": 214,
+                                                        "animCollapse": true,
+                                                        "collapsible": true,
+                                                        "title": "Подробно",
+                                                        "designer|userClassName": "MyFieldSet7"
+                                                    },
+                                                    "cn": [
+                                                        {
+                                                            "id": "ExtBox1-ext-gen89875",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "email",
+                                                                "designer|userClassName": "MyTextField9",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "E-mail"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "ExtBox1-ext-gen90737",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "phone_h",
+                                                                "designer|userClassName": "MyTextField10",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Дом. телефон"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "ExtBox1-ext-gen91096",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "phone_m",
+                                                                "designer|userClassName": "MyTextField11",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Моб. телефон"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "ExtBox1-ext-gen91505",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "passport",
+                                                                "designer|userClassName": "MyTextField12",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Паспорт №"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "ExtBox1-ext-gen91961",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "private_passport_number",
+                                                                "designer|userClassName": "MyTextField13",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Личный номер"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "ExtBox1-ext-gen92338",
+                                                            "type": "textfield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "passport_given",
+                                                                "designer|userClassName": "MyTextField14",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Кем выдан"
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": "ExtBox1-ext-gen92758",
+                                                            "type": "datefield",
+                                                            "reference": {
+                                                                "name": "items",
+                                                                "type": "array"
+                                                            },
+                                                            "codeClass": null,
+                                                            "userConfig": {
+                                                                "name": "passport_date",
+                                                                "designer|userClassName": "MyDateField1",
+                                                                "layout|anchor": "100%",
+                                                                "layout|fieldLabel": "Когда выдан"
+                                                            }
+                                                        }
+                                                    ]
                                                 }
                                             ]
                                         },
                                         {
-                                            "id": "ExtBox1-ext-gen120431",
+                                            "id": "ExtBox1-ext-gen27278",
                                             "type": "fieldset",
                                             "reference": {
                                                 "name": "items",
@@ -264,14 +496,14 @@
                                             },
                                             "codeClass": null,
                                             "userConfig": {
-                                                "height": 139,
-                                                "width": 394,
-                                                "title": "Параметры",
-                                                "designer|userClassName": "MyFieldSet4"
+                                                "height": 351,
+                                                "width": 315,
+                                                "title": "Адрес",
+                                                "designer|userClassName": "MyFieldSet5"
                                             },
                                             "cn": [
                                                 {
-                                                    "id": "ExtBox1-ext-gen120940",
+                                                    "id": "ExtBox1-ext-gen93140",
                                                     "type": "combobox",
                                                     "reference": {
                                                         "name": "items",
@@ -279,29 +511,44 @@
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "status",
-                                                        "designer|userClassName": "MyCombo5",
+                                                        "name": "city",
+                                                        "designer|userClassName": "MyCombo1",
                                                         "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Статус"
+                                                        "layout|fieldLabel": "Город"
                                                     }
                                                 },
                                                 {
-                                                    "id": "ExtBox1-ext-gen121549",
-                                                    "type": "combobox",
+                                                    "id": "ExtBox1-ext-gen96794",
+                                                    "type": "textfield",
                                                     "reference": {
                                                         "name": "items",
                                                         "type": "array"
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "manager",
-                                                        "designer|userClassName": "MyCombo6",
+                                                        "name": "region",
+                                                        "designer|userClassName": "MyTextField17",
                                                         "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Персональный менеджер"
+                                                        "layout|fieldLabel": "Подъезд"
                                                     }
                                                 },
                                                 {
-                                                    "id": "ExtBox1-ext-gen123548",
+                                                    "id": "ExtBox1-ext-gen94893",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "name": "postcode",
+                                                        "designer|userClassName": "MyTextField16",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Район"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen93512",
                                                     "type": "combobox",
                                                     "reference": {
                                                         "name": "items",
@@ -309,10 +556,114 @@
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "group",
-                                                        "designer|userClassName": "MyCombo7",
+                                                        "name": "street",
+                                                        "designer|userClassName": "MyCombo2",
                                                         "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Группа"
+                                                        "layout|fieldLabel": "Улица"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen93922",
+                                                    "type": "combobox",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "name": "house",
+                                                        "designer|userClassName": "MyCombo4",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Дом"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen94376",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "name": "house_bulk",
+                                                        "designer|userClassName": "MyTextField15",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Корпус"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen110997",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "name": "entrance_code",
+                                                        "designer|userClassName": "MyTextField19",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Код домофона"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen111458",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "name": "row",
+                                                        "designer|userClassName": "MyTextField20",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Этаж"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen112206",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "name": "elevator_direction",
+                                                        "designer|userClassName": "MyTextField21",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Направление от лифта"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen112764",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "name": "room",
+                                                        "designer|userClassName": "MyTextField22",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Квартира"
+                                                    }
+                                                },
+                                                {
+                                                    "id": "ExtBox1-ext-gen98599",
+                                                    "type": "textfield",
+                                                    "reference": {
+                                                        "name": "items",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "designer|userClassName": "MyTextField18",
+                                                        "layout|anchor": "100%",
+                                                        "layout|fieldLabel": "Подъезд"
                                                     }
                                                 }
                                             ]
@@ -328,10 +679,11 @@
                                     },
                                     "codeClass": null,
                                     "userConfig": {
-                                        "autoHeight": true,
-                                        "height": 559,
-                                        "width": 5005,
-                                        "designer|userClassName": "MyContainer3"
+                                        "height": 367,
+                                        "width": 4990,
+                                        "layout": "vbox",
+                                        "designer|userClassName": "MyContainer3",
+                                        "container|pack": "center"
                                     },
                                     "cn": [
                                         {
@@ -345,7 +697,8 @@
                                             "userConfig": {
                                                 "height": 119,
                                                 "title": "Субаккаунты",
-                                                "designer|userClassName": "MyGrid"
+                                                "designer|userClassName": "MyGrid",
+                                                "layout|flex": 1
                                             },
                                             "cn": [
                                                 {
@@ -578,88 +931,6 @@
                                                     }
                                                 }
                                             ]
-                                        },
-                                        {
-                                            "id": "ExtBox1-ext-gen22165",
-                                            "type": "grid",
-                                            "reference": {
-                                                "name": "items",
-                                                "type": "array"
-                                            },
-                                            "codeClass": null,
-                                            "userConfig": {
-                                                "height": 118,
-                                                "width": 5001,
-                                                "title": "Оборудование на руках",
-                                                "designer|userClassName": "MyGrid3"
-                                            },
-                                            "cn": [
-                                                {
-                                                    "id": "ExtBox1-ext-gen22172",
-                                                    "type": "gridcolumn",
-                                                    "reference": {
-                                                        "name": "columns",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "dataIndex": "string",
-                                                        "header": "String",
-                                                        "sortable": true,
-                                                        "width": 100,
-                                                        "designer|userClassName": "MyColumn3"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen22184",
-                                                    "type": "numbercolumn",
-                                                    "reference": {
-                                                        "name": "columns",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "align": "right",
-                                                        "dataIndex": "number",
-                                                        "header": "Number",
-                                                        "sortable": true,
-                                                        "width": 100,
-                                                        "designer|userClassName": "MyNumberColumn3"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen22197",
-                                                    "type": "datecolumn",
-                                                    "reference": {
-                                                        "name": "columns",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "dataIndex": "date",
-                                                        "header": "Date",
-                                                        "sortable": true,
-                                                        "width": 100,
-                                                        "designer|userClassName": "MyDateColumn3"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen22209",
-                                                    "type": "booleancolumn",
-                                                    "reference": {
-                                                        "name": "columns",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "dataIndex": "bool",
-                                                        "header": "Boolean",
-                                                        "sortable": true,
-                                                        "width": 100,
-                                                        "designer|userClassName": "MyBooleanColumn3"
-                                                    }
-                                                }
-                                            ]
                                         }
                                     ]
                                 },
@@ -716,7 +987,7 @@
                                             },
                                             "codeClass": null,
                                             "userConfig": {
-                                                "height": 115,
+                                                "height": 112,
                                                 "width": 574,
                                                 "title": "Опции",
                                                 "designer|userClassName": "MyFieldSet6"
@@ -770,108 +1041,11 @@
                             "codeClass": null,
                             "userConfig": {
                                 "autoScroll": true,
-                                "layout": "hbox",
+                                "layout": "vbox",
                                 "title": "Информация",
                                 "designer|userClassName": "MyPanel2"
                             },
                             "cn": [
-                                {
-                                    "id": "ExtBox1-ext-gen35090",
-                                    "type": "container",
-                                    "reference": {
-                                        "name": "items",
-                                        "type": "array"
-                                    },
-                                    "codeClass": null,
-                                    "userConfig": {
-                                        "layout": "anchor",
-                                        "designer|userClassName": "MyContainer3"
-                                    },
-                                    "cn": [
-                                        {
-                                            "id": "ExtBox1-ext-gen35615",
-                                            "type": "grid",
-                                            "reference": {
-                                                "name": "items",
-                                                "type": "array"
-                                            },
-                                            "codeClass": null,
-                                            "userConfig": {
-                                                "height": 740,
-                                                "width": null,
-                                                "title": "Документы",
-                                                "designer|userClassName": "MyGrid4"
-                                            },
-                                            "cn": [
-                                                {
-                                                    "id": "ExtBox1-ext-gen35622",
-                                                    "type": "gridcolumn",
-                                                    "reference": {
-                                                        "name": "columns",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "dataIndex": "string",
-                                                        "header": "String",
-                                                        "sortable": true,
-                                                        "width": 100,
-                                                        "designer|userClassName": "MyColumn4"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen35634",
-                                                    "type": "numbercolumn",
-                                                    "reference": {
-                                                        "name": "columns",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "align": "right",
-                                                        "dataIndex": "number",
-                                                        "header": "Number",
-                                                        "sortable": true,
-                                                        "width": 100,
-                                                        "designer|userClassName": "MyNumberColumn4"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen35647",
-                                                    "type": "datecolumn",
-                                                    "reference": {
-                                                        "name": "columns",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "dataIndex": "date",
-                                                        "header": "Date",
-                                                        "sortable": true,
-                                                        "width": 100,
-                                                        "designer|userClassName": "MyDateColumn4"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen35659",
-                                                    "type": "booleancolumn",
-                                                    "reference": {
-                                                        "name": "columns",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "dataIndex": "bool",
-                                                        "header": "Boolean",
-                                                        "sortable": true,
-                                                        "width": 100,
-                                                        "designer|userClassName": "MyBooleanColumn4"
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
                                 {
                                     "id": "ExtBox1-ext-gen34063",
                                     "type": "container",
@@ -881,191 +1055,13 @@
                                     },
                                     "codeClass": null,
                                     "userConfig": {
-                                        "height": 1002,
-                                        "width": 499,
-                                        "designer|userClassName": "MyContainer5"
+                                        "height": 352,
+                                        "width": 1038,
+                                        "layout": "hbox",
+                                        "designer|userClassName": "MyContainer5",
+                                        "container|pack": "center"
                                     },
                                     "cn": [
-                                        {
-                                            "id": "ExtBox1-ext-gen27278",
-                                            "type": "fieldset",
-                                            "reference": {
-                                                "name": "items",
-                                                "type": "array"
-                                            },
-                                            "codeClass": null,
-                                            "userConfig": {
-                                                "autoWidth": true,
-                                                "title": "Адрес",
-                                                "designer|userClassName": "MyFieldSet5"
-                                            },
-                                            "cn": [
-                                                {
-                                                    "id": "ExtBox1-ext-gen93140",
-                                                    "type": "combobox",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "city",
-                                                        "designer|userClassName": "MyCombo1",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Город"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen96794",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "region",
-                                                        "designer|userClassName": "MyTextField17",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Подъезд"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen94893",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "postcode",
-                                                        "designer|userClassName": "MyTextField16",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Район"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen93512",
-                                                    "type": "combobox",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "street",
-                                                        "designer|userClassName": "MyCombo2",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Улица"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen93922",
-                                                    "type": "combobox",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "house",
-                                                        "designer|userClassName": "MyCombo4",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Дом"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen94376",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "house_bulk",
-                                                        "designer|userClassName": "MyTextField15",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Корпус"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen110997",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "entrance_code",
-                                                        "designer|userClassName": "MyTextField19",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Код домофона"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen111458",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "row",
-                                                        "designer|userClassName": "MyTextField20",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Этаж"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen112206",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "elevator_direction",
-                                                        "designer|userClassName": "MyTextField21",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Направление от лифта"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen112764",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "room",
-                                                        "designer|userClassName": "MyTextField22",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Квартира"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen98599",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "designer|userClassName": "MyTextField18",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Подъезд"
-                                                    }
-                                                }
-                                            ]
-                                        },
                                         {
                                             "id": "ExtBox1-ext-gen113407",
                                             "type": "fieldset",
@@ -1076,9 +1072,8 @@
                                             "codeClass": null,
                                             "userConfig": {
                                                 "stateful": true,
-                                                "autoWidth": true,
                                                 "height": null,
-                                                "width": 286,
+                                                "width": 366,
                                                 "animCollapse": true,
                                                 "collapsible": true,
                                                 "title": "Юр. лицо",
@@ -1266,171 +1261,184 @@
                                                     }
                                                 }
                                             ]
-                                        },
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "ExtBox1-ext-gen35090",
+                                    "type": "container",
+                                    "reference": {
+                                        "name": "items",
+                                        "type": "array"
+                                    },
+                                    "codeClass": null,
+                                    "userConfig": {
+                                        "width": 1070,
+                                        "layout": "hbox",
+                                        "designer|userClassName": "MyContainer3",
+                                        "layout|flex": 1
+                                    },
+                                    "cn": [
                                         {
-                                            "id": "ExtBox1-ext-gen87970",
-                                            "type": "fieldset",
+                                            "id": "ExtBox1-ext-gen35615",
+                                            "type": "grid",
                                             "reference": {
                                                 "name": "items",
                                                 "type": "array"
                                             },
                                             "codeClass": null,
                                             "userConfig": {
-                                                "autoWidth": true,
-                                                "height": null,
-                                                "width": null,
-                                                "title": "Данные аккаунта",
-                                                "designer|userClassName": "MyFieldSet2",
-                                                "container|labelWidth": 140
+                                                "height": 241,
+                                                "width": 512,
+                                                "title": "Документы",
+                                                "designer|userClassName": "MyGrid4"
                                             },
                                             "cn": [
                                                 {
-                                                    "id": "ExtBox1-ext-gen88765",
-                                                    "type": "textfield",
+                                                    "id": "ExtBox1-ext-gen35622",
+                                                    "type": "gridcolumn",
                                                     "reference": {
-                                                        "name": "items",
+                                                        "name": "columns",
                                                         "type": "array"
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "contactperson",
-                                                        "designer|userClassName": "MyTextField6",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Контактное лицо"
+                                                        "dataIndex": "string",
+                                                        "header": "String",
+                                                        "sortable": true,
+                                                        "width": 100,
+                                                        "designer|userClassName": "MyColumn4"
                                                     }
                                                 },
                                                 {
-                                                    "id": "ExtBox1-ext-gen89241",
-                                                    "type": "textfield",
+                                                    "id": "ExtBox1-ext-gen35634",
+                                                    "type": "numbercolumn",
                                                     "reference": {
-                                                        "name": "items",
+                                                        "name": "columns",
                                                         "type": "array"
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "designer|userClassName": "MyTextField7",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Контактный телефон"
+                                                        "align": "right",
+                                                        "dataIndex": "number",
+                                                        "header": "Number",
+                                                        "sortable": true,
+                                                        "width": 100,
+                                                        "designer|userClassName": "MyNumberColumn4"
                                                     }
                                                 },
                                                 {
-                                                    "id": "ExtBox1-ext-gen89538",
-                                                    "type": "textfield",
+                                                    "id": "ExtBox1-ext-gen35647",
+                                                    "type": "datecolumn",
                                                     "reference": {
-                                                        "name": "items",
+                                                        "name": "columns",
                                                         "type": "array"
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "fullname",
-                                                        "designer|userClassName": "MyTextField8",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "ФИО"
+                                                        "dataIndex": "date",
+                                                        "header": "Date",
+                                                        "sortable": true,
+                                                        "width": 100,
+                                                        "designer|userClassName": "MyDateColumn4"
                                                     }
                                                 },
                                                 {
-                                                    "id": "ExtBox1-ext-gen89875",
-                                                    "type": "textfield",
+                                                    "id": "ExtBox1-ext-gen35659",
+                                                    "type": "booleancolumn",
                                                     "reference": {
-                                                        "name": "items",
+                                                        "name": "columns",
                                                         "type": "array"
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "email",
-                                                        "designer|userClassName": "MyTextField9",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "E-mail"
+                                                        "dataIndex": "bool",
+                                                        "header": "Boolean",
+                                                        "sortable": true,
+                                                        "width": 100,
+                                                        "designer|userClassName": "MyBooleanColumn4"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "ExtBox1-ext-gen22165",
+                                            "type": "grid",
+                                            "reference": {
+                                                "name": "items",
+                                                "type": "array"
+                                            },
+                                            "codeClass": null,
+                                            "userConfig": {
+                                                "height": 241,
+                                                "width": 1053,
+                                                "title": "Оборудование на руках",
+                                                "designer|userClassName": "MyGrid3"
+                                            },
+                                            "cn": [
+                                                {
+                                                    "id": "ExtBox1-ext-gen22172",
+                                                    "type": "gridcolumn",
+                                                    "reference": {
+                                                        "name": "columns",
+                                                        "type": "array"
+                                                    },
+                                                    "codeClass": null,
+                                                    "userConfig": {
+                                                        "dataIndex": "string",
+                                                        "header": "String",
+                                                        "sortable": true,
+                                                        "width": 100,
+                                                        "designer|userClassName": "MyColumn3"
                                                     }
                                                 },
                                                 {
-                                                    "id": "ExtBox1-ext-gen90737",
-                                                    "type": "textfield",
+                                                    "id": "ExtBox1-ext-gen22184",
+                                                    "type": "numbercolumn",
                                                     "reference": {
-                                                        "name": "items",
+                                                        "name": "columns",
                                                         "type": "array"
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "phone_h",
-                                                        "designer|userClassName": "MyTextField10",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Дом. телефон"
+                                                        "align": "right",
+                                                        "dataIndex": "number",
+                                                        "header": "Number",
+                                                        "sortable": true,
+                                                        "width": 100,
+                                                        "designer|userClassName": "MyNumberColumn3"
                                                     }
                                                 },
                                                 {
-                                                    "id": "ExtBox1-ext-gen91096",
-                                                    "type": "textfield",
+                                                    "id": "ExtBox1-ext-gen22197",
+                                                    "type": "datecolumn",
                                                     "reference": {
-                                                        "name": "items",
+                                                        "name": "columns",
                                                         "type": "array"
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "phone_m",
-                                                        "designer|userClassName": "MyTextField11",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Моб. телефон"
+                                                        "dataIndex": "date",
+                                                        "header": "Date",
+                                                        "sortable": true,
+                                                        "width": 100,
+                                                        "designer|userClassName": "MyDateColumn3"
                                                     }
                                                 },
                                                 {
-                                                    "id": "ExtBox1-ext-gen91505",
-                                                    "type": "textfield",
+                                                    "id": "ExtBox1-ext-gen22209",
+                                                    "type": "booleancolumn",
                                                     "reference": {
-                                                        "name": "items",
+                                                        "name": "columns",
                                                         "type": "array"
                                                     },
                                                     "codeClass": null,
                                                     "userConfig": {
-                                                        "name": "passport",
-                                                        "designer|userClassName": "MyTextField12",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Паспорт №"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen91961",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "private_passport_number",
-                                                        "designer|userClassName": "MyTextField13",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Личный номер"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen92338",
-                                                    "type": "textfield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "passport_given",
-                                                        "designer|userClassName": "MyTextField14",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Кем выдан"
-                                                    }
-                                                },
-                                                {
-                                                    "id": "ExtBox1-ext-gen92758",
-                                                    "type": "datefield",
-                                                    "reference": {
-                                                        "name": "items",
-                                                        "type": "array"
-                                                    },
-                                                    "codeClass": null,
-                                                    "userConfig": {
-                                                        "name": "passport_date",
-                                                        "designer|userClassName": "MyDateField1",
-                                                        "layout|anchor": "100%",
-                                                        "layout|fieldLabel": "Когда выдан"
+                                                        "dataIndex": "bool",
+                                                        "header": "Boolean",
+                                                        "sortable": true,
+                                                        "width": 100,
+                                                        "designer|userClassName": "MyBooleanColumn3"
                                                     }
                                                 }
                                             ]
@@ -1438,19 +1446,6 @@
                                     ]
                                 }
                             ]
-                        },
-                        {
-                            "id": "ExtBox1-ext-gen6793",
-                            "type": "panel",
-                            "reference": {
-                                "name": "items",
-                                "type": "array"
-                            },
-                            "codeClass": null,
-                            "userConfig": {
-                                "title": "Tab 3",
-                                "designer|userClassName": "MyPanel3"
-                            }
                         }
                     ]
                 }
