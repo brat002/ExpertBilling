@@ -889,7 +889,7 @@ Ext.onReady(function(){
 								                        }),    
 								                        fields: ['tariff', 'name'],
 								                        root: 'records',
-								                        remoteSort:true,
+								                        remoteSort:false,
 								                        
 								                      }
 								                    ),
@@ -1255,7 +1255,7 @@ Ext.onReady(function(){
             	   xtype:'grid',
                    stateful: true,
                    collapsible: true,
-                   stateId: 'stateSubaccountsGrid',
+                   stateId: 'stateSubaccountsGrid_',
                    plugins:['msgbus'],
                    //unstyled:true,
             	   store:new Ext.data.JsonStore({
@@ -1267,7 +1267,7 @@ Ext.onReady(function(){
        		        	}),    
        		        	fields: ['switch_port', 'ipn_speed', 'allow_dhcp', 'vpn_ip_address', 'allow_dhcp_with_block', 'ipn_sleep', 'speed', 'id', 'allow_addonservice', 'ipn_mac_address', 'allow_dhcp_with_minus', 'ipn_enabled', 'ipv4_vpn_pool', 'nas', 'ipv4_ipn_pool', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'username', 'allow_dhcp_with_null', 'associate_pptp_ipn_ip', 'ipn_ip_address', 'associate_pppoe_ipn_mac', 'allow_ipn_with_block', 'vlan', 'allow_mac_update', 'allow_vpn_with_null', 'ipn_ipv6_ip_address', 'vpn_speed', 'allow_vpn_with_minus', 'password', 'ipn_added', 'account', 'switch', 'allow_vpn_with_block', 'need_resync', 'vpn_ipv6_ip_address'],
        		        	root: 'records',
-       		        	remoteSort:true,
+       		        	remoteSort:false,
        		        	sortInfo:{
        		        		field:'username',
        		        		direction:'ASC'
@@ -1580,7 +1580,7 @@ Ext.onReady(function(){
       		        		{name: 'temporary_blocked', type: 'date', dateFormat: Date.patterns.ISO8601Long},
       		        		{name: 'last_checkout', type: 'date', dateFormat: Date.patterns.ISO8601Long},],
       		        	root: 'records',
-      		        	remoteSort:true,
+      		        	remoteSort:false,
       		        	sortInfo:{
       		        		field:'username',
       		        		direction:'ASC'
@@ -1676,6 +1676,151 @@ Ext.onReady(function(){
 
   Ext.reg('xaccountaddonservicesgrid', EBS.AccountAddonServiceGrid);
 
+  EBS.DocumentsGrid = Ext.extend(Ext.grid.GridPanel, {
+      initComponent:function() {
+         var config = {
+          	   xtype:'grid',
+                 stateful: true,
+                 stateId: 'stateDocumentsGrid',
+                 collapsible: true,
+                 //unstyled:true,
+          	   	  store:new Ext.data.JsonStore({
+     		        	paramsAsHash: true,
+
+     		        	//autoLoad: {params:{start:0, limit:100,'account_id': this.findParentByType('xinstancecontainer').instance_id}},
+     		        	proxy: new Ext.data.HttpProxy({
+     		        		url: '/ebsadmin/document/',
+     		        		method:'POST',
+     		        	}),    
+     		        	fields: [{name: 'id', type:'int'},
+     		        		{name: 'contractnumber', type:'string'},
+     		        		{name: 'type', type:'string'},
+     		        		
+     		        		{name: 'date_start', type: 'date', dateFormat: Date.patterns.ISO8601Long},
+     		        		{name: 'date_end',  type: 'date', dateFormat: Date.patterns.ISO8601Long},
+     		        		],
+     		        	root: 'records',
+     		        	remoteSort:false,
+     		        	sortInfo:{
+     		        		field:'date_start',
+     		        		direction:'DESC'
+     		        	},
+
+
+
+          	   }),
+          	   plugins:['msgbus'],	
+          	   tbar: [{
+ 			    icon: media+'icons/16/arrow_refresh.png',
+ 		        text: 'Обновить',
+ 		        handler: function(){
+ 		        	this.ownerCt.ownerCt.store.load();
+ 		        }
+ 		       },{
+			        iconCls: 'icon-user-add',
+			        text: 'Добавить',
+			        handler: function(){
+			     	   var account_id;
+			     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+			     	   EBS.displayForm('ebs_accountsPanel', 'document',{'account_id':account_id,id:null}, this.findParentByType('grid'))
+			     	   
+			        }
+			    },{
+			        iconCls: 'icon-user-edit',
+			        text: 'Редактировать',
+			        handler: function(){
+			     	   var id;
+			     	   var account_id;
+			     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+			     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
+			     	   EBS.displayForm('ebs_accountsPanel', 'document',{'account_id':account_id,id:id}, this.findParentByType('grid'))
+			        }
+			    },{
+			        //ref: '../removeBtn',
+			        iconCls: 'icon-delete',
+			        text: 'Remove',
+			        //disabled: true,
+			        ref: '../removeButton',
+			        handler: function(){
+			     	   
+			        }
+			    }],
+          	
+	     	   onChange:function(subject, message) {
+	     		   //Ext.Msg.alert(message);
+	     		   var me;
+	     		   me=this;
+	     	       me.store.load();
+	     	       
+	     	    },
+              selModel : new Ext.grid.RowSelectionModel({
+                   singleSelect : true
+                      }),
+          	   //autoHeight: true,
+          	   //autoWidth: true,
+          	   listeners: {
+			          render:function(){
+			             // console.info('load',this,arguments);
+			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
+			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
+			        	  if (this.findParentByType('xinstancecontainer').instance_id){
+			        		  this.store.load();
+			        	  }
+			        	  var me;
+	            		  me=this;
+			        	  me.subscribe('ebs.accountdocument.change', {fn:this.onChange, single:false});
+			          }
+          	   },
+                 
+          	   autoScroll: true,
+          	   columns:[
+          	            {
+          	            	header:'id',
+          	            	dataIndex:'id',
+          	            	sortable:true
+          	            },
+          	            {
+          	            	header:'Номер договора',
+          	            	dataIndex:'contractnumber',
+          	            	sortable:true
+          	            },
+          	            {
+          	            	header:'Тип',
+          	            	dataIndex:'type',
+          	            	sortable:true
+          	            },
+          	            {
+          	            	header:'Начало',
+          	            	dataIndex:'date_start',
+          	            	sortable:true,
+          	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+          	            	
+          	            },
+          	            {
+          	            	header:'Отключена',
+          	            	dataIndex:'date_end',
+          	            	sortable:true,
+          	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+          	            },
+          	            
+          	            ]
+          		   
+          		  
+             }
+
+      		
+         // apply config
+         Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+  
+         EBS.DocumentsGrid.superclass.initComponent.apply(this, arguments);
+     } // eo function initComponent
+  
+
+
+ });
+
+ Ext.reg('xdocumentsgrid', EBS.DocumentsGrid);
+ 
   EBS.AccountHardwareGrid = Ext.extend(Ext.grid.GridPanel, {
       initComponent:function() {
          var config = {
@@ -1703,7 +1848,7 @@ Ext.onReady(function(){
      		        		{name: 'temporary_blocked', type: 'date', dateFormat: Date.patterns.ISO8601Long},
      		        		{name: 'last_checkout', type: 'date', dateFormat: Date.patterns.ISO8601Long},],
      		        	root: 'records',
-     		        	remoteSort:true,
+     		        	remoteSort:false,
      		        	sortInfo:{
      		        		field:'username',
      		        		direction:'ASC'
@@ -2173,6 +2318,46 @@ Ext.reg('xcomboenabledlocal', EBS.ComboEnabledLocal);
 });
  
 Ext.reg('xcombohouse', EBS.ComboHouse);
+
+EBS.ComboTemplate = Ext.extend(Ext.form.ComboBox, {
+    initComponent:function() {
+       var config = {
+    		    displayField: 'name',
+    		    valueField: 'id', 
+    		    mode: 'remote',
+    		    editable:false,
+    		    triggerAction: 'all',
+    		    typeAhead: true,
+    		    store:new Ext.data.Store({
+    		    	autoLoad:true,
+    		        proxy: new Ext.data.HttpProxy({
+    		            url: '/ebsadmin/template/',
+    		            method:'POST',
+    		            
+    		        }),
+    		        
+    		        reader: new Ext.data.JsonReader({
+    		            root: 'records'
+    		        }, [{
+    		            name: 'id'
+    		        }, {
+    		            name: 'name'
+    		        }])
+    		    }),
+
+    		}
+       // apply config
+       Ext.apply(this, Ext.apply(this.initialConfig, config));
+
+       EBS.ComboHouse.superclass.initComponent.apply(this, arguments);
+   } // eo function initComponent
+
+
+ 
+
+});
+
+Ext.reg('xcombotemplate', EBS.ComboTemplate);
 
 EBS.SystemUser = Ext.extend(Ext.form.ComboBox, {
     initComponent:function() {
