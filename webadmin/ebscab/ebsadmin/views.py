@@ -1,7 +1,8 @@
 #-*-coding:utf-8 -*-
 
 from lib.decorators import render_to, ajax_request
-from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate
+from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
+from billservice.models import Template
 from nas.models import Nas
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
@@ -119,6 +120,41 @@ def subaccounts(request):
     for acc in accounts:
         #print instance_dict(acc).keys()
         res.append(instance_dict(acc,normal_fields=True))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res}
+
+@ajax_request
+@login_required
+def document(request):
+    account_id = request.POST.get('account_id')
+    print "subaccount", account_id
+    items = Document.objects.filter(account__id=account_id)
+    #print accounts
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item,normal_fields=True))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res}
+
+@ajax_request
+@login_required
+def template(request):
+
+    items = Template.objects.all().order_by('name')
+    #print accounts
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append({'id':item.id,'name':item.name})
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
@@ -381,6 +417,7 @@ def account_save(request):
     id = request.POST.get('id')
     contract = request.POST.get('contract','')
     newcontract=False
+    acc = None
     if id:
         acc = Account.objects.get(id=id)
         
@@ -403,34 +440,41 @@ def account_save(request):
     #acc.password=p.get("password")
     #acc.fullllname=p.get("fullname")
     if a.is_valid():
+        contr = None
         if contract:
             contr = ContractTemplate.objects.get(template=contract)
             if acc:
                 pass
-        if False and newcontract and contr:
-
+        if newcontract and contr:
+            if not acc:
+                id=Account.objects.all().order_by("-id")[0].id+1
+            else:
+                id = acc.id
             contract_template = contr.template
             contract_counter = contr.counter
-            cur.execute("SELECT access_type FROM billservice_accessparameters WHERE id=(SELECT access_parameters_id FROM billservice_tariff WHERE id=%s)", (tarif_id, ))
-            tarif_type = cur.fetchone()['access_type']
-            year=model.created.year
-            month=model.created.month
-            day=model.created.day
-            hour=model.created.hour
-            minute=model.created.minute
-            second=model.created.second
-            contract_num=contract_counter
+            year=a.created.year
+            month=a.created.month
+            day=a.created.day
+            hour=a.created.hour
+            minute=a.created.minute
+            second=a.created.second
+            contract_num=contr.count+1
             
             
-            d={'tarif_id':tarif_id, 'account_id':id,'year':year,'month':month, 'day':day, 'hour':hour, 'minute':minute,'second':second, 'tarif_type':tarif_type, 'contract_num':contract_num}
+            d={'account_id':id,'year':year,'month':month, 'day':day, 'hour':hour, 'minute':minute,'second':second, 'tarif_type':tarif_type, 'contract_num':contract_num}
             d.update(model.__dict__)
 
             contract = contract_template % d
-            cur.execute("UPDATE billservice_account SET contract=%s WHERE id=%s", (contract, id))
-            cur.execute("UPDATE billservice_contracttemplate SET counter=counter+1 WHERE id=%s", (template_id,))
+            contr.count = contr.count+1 
+            #cur.execute("UPDATE billservice_account SET contract=%s WHERE id=%s", (contract, id))
+            #cur.execute("UPDATE billservice_contracttemplate SET counter=counter+1 WHERE id=%s", (template_id,))
         try:
             item = a.save(commit=False)
             item.save()
+            if contr:
+                item.contract = contract
+                item.save()
+                contr.save()
             res={"success": True, 'account_id':item.id}
         except Exception, e:
             print e

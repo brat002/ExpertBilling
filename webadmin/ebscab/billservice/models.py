@@ -1004,6 +1004,9 @@ class Document(models.Model):
     account = models.ForeignKey(Account, blank=True, null=True)
     type = models.ForeignKey(DocumentType)
     body = models.TextField()
+    contractnumber = models.CharField(max_length=1024)
+    date_start = models.DateTimeField(blank=True)
+    date_end = models.DateTimeField(blank=True, null=True)
 
 class SuspendedPeriod(models.Model):
     account = models.ForeignKey(Account)
