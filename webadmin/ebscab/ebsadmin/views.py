@@ -2,13 +2,13 @@
 
 from lib.decorators import render_to, ajax_request
 from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
-from billservice.models import Template, AccountHardware
+from billservice.models import Template, AccountHardware, SuspendedPeriod
 from nas.models import Nas
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
-from billservice.forms import DocumentModelForm
+from billservice.forms import DocumentModelForm, SuspendedPeriodModelForm
 from utilites import cred
 import IPy
 from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
@@ -818,6 +818,48 @@ def systemuser(request):
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res}
 
+@ajax_request
+@login_required
+def suspendedperiod(request):
+    account_id = request.POST.get('account_id')
+    items = SuspendedPeriod.objects.filter(account__id=account_id)
+    res=[]
+    for item in items:
+        res.append(instance_dict(item,normal_fields=True))
+    return {"records": res}
+
+@ajax_request
+@login_required
+def suspendedperiod_get(request):
+    id = request.POST.get('id')
+    item = SuspendedPeriod.objects.get(id=id)
+
+    return {"records": instance_dict(item)}
+
+@ajax_request
+@login_required
+def suspendedperiod_set(request):
+    id = request.POST.get('id')
+    if id:
+        item = SuspendedPeriod.objects.get(id=id)
+        form = SuspendedPeriodModelForm(request.POST, instance=item)
+    else:
+        form = SuspendedPeriodModelForm(request.POST)
+        
+    if form.is_valid():
+        try:
+            form.save()
+            res={"success": True}
+        except Exception, e:
+            print e
+            res={"success": False, "message": str(e)}
+    else:
+        res={"success": False, "errors": form._errors}
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return res
+
 def instance_dict(instance, key_format=None, normal_fields=False):
     """
     Returns a dictionary containing field names and values for the given
@@ -871,6 +913,7 @@ def account(request):
     res=[]
     #data = serializers.serialize("json", [acc], ensure_ascii=False, fields=['username'])
     data=instance_dict(acc)
+    data['tariff']=acc.tariff
     #print data
     #res.append({"id":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname,'vpn_ip_address':'',
     #                'status':acc.status,'ipn_ip_address':'','city':'','street':'','nas_id':'','email':'','comment':'',

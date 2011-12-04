@@ -183,7 +183,7 @@
                                     },
                                     "codeClass": null,
                                     "userConfig": {
-                                        "height": 315,
+                                        "height": 318,
                                         "width": 402,
                                         "title": "Данные аккаунта",
                                         "designer|userClassName": "MyFieldSet2",
@@ -664,6 +664,7 @@
                                     "codeClass": null,
                                     "userConfig": {
                                         "height": 215,
+                                        "width": 4652,
                                         "title": "Субаккаунты",
                                         "designer|userClassName": "MyGrid",
                                         "layout|flex": 1
@@ -1010,7 +1011,7 @@
                     "codeClass": null,
                     "userConfig": {
                         "autoScroll": true,
-                        "layout": "vbox",
+                        "layout": "column",
                         "title": "Информация",
                         "designer|userClassName": "MyPanel2"
                     },
@@ -1025,7 +1026,7 @@
                             "codeClass": null,
                             "userConfig": {
                                 "height": 352,
-                                "width": 1038,
+                                "width": 367,
                                 "layout": "hbox",
                                 "designer|userClassName": "MyContainer5",
                                 "container|pack": "center"
@@ -1044,7 +1045,6 @@
                                         "height": null,
                                         "width": 366,
                                         "animCollapse": true,
-                                        "collapsible": true,
                                         "title": "Юр. лицо",
                                         "designer|userClassName": "MyFieldSet3"
                                     },
@@ -1242,8 +1242,9 @@
                             },
                             "codeClass": null,
                             "userConfig": {
-                                "width": 1070,
-                                "layout": "hbox",
+                                "height": 560,
+                                "width": 739,
+                                "layout": "vbox",
                                 "designer|userClassName": "MyContainer3",
                                 "layout|flex": 1
                             },
@@ -1258,7 +1259,7 @@
                                     "codeClass": null,
                                     "userConfig": {
                                         "height": 241,
-                                        "width": 512,
+                                        "width": null,
                                         "title": "Документы",
                                         "designer|userClassName": "MyGrid4"
                                     },
@@ -1340,7 +1341,7 @@
                                     "codeClass": null,
                                     "userConfig": {
                                         "height": 241,
-                                        "width": 1053,
+                                        "width": null,
                                         "title": "Оборудование на руках",
                                         "designer|userClassName": "MyGrid3"
                                     },

@@ -233,8 +233,8 @@ COMPRESS_JS = {
      #EXTJS Production
     'scripts_js_ext': {
         'source_filenames': (
-            "ext/resources/adapter/ext/ext-base.js",
-            "ext/resources/ext-all-debug.js"
+            "ext/adapter/ext/ext-base.js",
+            "ext/ext-all-debug.js"
         ),
         'output_filename': 'p/ext.?.js',
     },

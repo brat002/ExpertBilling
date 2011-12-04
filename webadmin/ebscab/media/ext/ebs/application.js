@@ -127,9 +127,11 @@ Ext.onReady(function(){
                             applyTo:Ext.get('body'),
                             //width:500,
                             //height:300,
-                            layout:'fit',
+                            //layout:'fit',
+                            stateful:false,
                             title:form_data.windowTitle,
                             autoHeight: true,
+                            autoWidth: true,
                             modal:true,
                             closable:true,
                             viewConfig: {
@@ -138,8 +140,9 @@ Ext.onReady(function(){
                             
                             plain: true,
                             items: [form_data],
+                            buttonAlign:'center',
                             buttons: [{
-                                    text:'Submit',
+                                    text:'Ok',
                                     handler: function(obj, e){
                                     	form = this.ownerCt.ownerCt.items.items[0].getForm();
                                     	//alert(form.findField('service').getValue());
@@ -157,7 +160,7 @@ Ext.onReady(function(){
                                         //delete EBS.windows[winCmp.id];
                                     }
                                 },{
-                                    text: 'Close',
+                                    text: 'Закрыть',
                                     handler: function(){
                                         EBS.closeForm(this)
                                     }
@@ -1680,7 +1683,147 @@ Ext.onReady(function(){
   
 
   
-  
+   EBS.SuspendedPeriodGrid = Ext.extend(Ext.grid.GridPanel, {
+	      initComponent:function() {
+	         var config = {
+	          	   xtype:'grid',
+	                 stateful: true,
+	                 stateId: 'stateSuspendedPeriodGrid',
+	                 collapsible: true,
+	                 //unstyled:true,
+	          	   	  store:new Ext.data.JsonStore({
+	     		        	paramsAsHash: true,
+
+	     		        	//autoLoad: {params:{start:0, limit:100,'account_id': this.findParentByType('xinstancecontainer').instance_id}},
+	     		        	proxy: new Ext.data.HttpProxy({
+	     		        		url: '/ebsadmin/suspendedperiod/',
+	     		        		method:'POST',
+	     		        	}),    
+	     		        	fields: [{name: 'id', type:'int'},
+	     		        		
+	     		        		{name: 'activated_by_account', type:'bool'},
+	     		        		
+	     		        		{name: 'start_date', type: 'date', dateFormat: Date.patterns.ISO8601Long},
+	     		        		{name: 'end_date',  type: 'date', dateFormat: Date.patterns.ISO8601Long},
+	     		        		],
+	     		        	root: 'records',
+	     		        	remoteSort:false,
+	     		        	sortInfo:{
+	     		        		field:'start_date',
+	     		        		direction:'DESC'
+	     		        	},
+
+
+
+	          	   }),
+	          	 plugins:['msgbus'],	
+	           	
+		     	   onChange:function(subject, message) {
+		     		   //Ext.Msg.alert(message);
+		     		   var me;
+		     		   me=this;
+		     		   this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.id);
+		     	       me.store.load();
+		     	       
+		     	    },
+	          	   tbar: [{
+	 			    icon: media+'icons/16/arrow_refresh.png',
+	 		        text: 'Обновить',
+	 		        handler: function(){
+	 		        	this.ownerCt.ownerCt.store.load();
+	 		        }
+	 		       },{
+				        iconCls: 'icon-user-add',
+				        text: 'Новый',
+				        handler: function(){
+				     	   var account_id;
+				     	   account_id = this.findParentByType('xinstancecontainer').ids.id;
+				     	   EBS.displayForm('ebs_accountsPanel', 'suspendedperiod',{'account_id':account_id,id:null}, this.findParentByType('grid'))
+				     	   
+				        }
+				    },{
+				        iconCls: 'icon-user-edit',
+				        text: 'Редактировать',
+				        handler: function(){
+				     	   var id;
+				     	   var account_id;
+				     	   account_id = this.findParentByType('xinstancecontainer').ids.id;
+				     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
+				     	   EBS.displayForm('ebs_accountsPanel', 'suspendedperiod',{'account_id':account_id,id:id}, this.findParentByType('grid'))
+				        }
+				    },{
+				        //ref: '../removeBtn',
+				        iconCls: 'icon-delete',
+				        text: 'Remove',
+				        //disabled: true,
+				        ref: '../removeButton',
+				        handler: function(){
+				     	   
+				        }
+				    }],
+	          	
+		     	  
+	              selModel : new Ext.grid.RowSelectionModel({
+	                   singleSelect : true
+	                      }),
+	          	   //autoHeight: true,
+	          	   //autoWidth: true,
+	          	   listeners: {
+				          render:function(){
+				             // console.info('load',this,arguments);
+				        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
+				        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.id);
+				        	  if (this.findParentByType('xinstancecontainer').ids.id){
+				        		  this.store.load();
+				        	  }
+				        	  var me;
+		            		  me=this;
+				        	  me.subscribe('ebs.suspendedperiod.change', {fn:this.onChange, single:false});
+				          }
+	          	   },
+	                 
+	          	   autoScroll: true,
+	          	   columns:[
+	          	            {
+	          	            	header:'id',
+	          	            	dataIndex:'id',
+	          	            	sortable:true
+	          	            },
+	          	            {
+	          	            	header:'Начало',
+	          	            	dataIndex:'start_date',
+	          	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+	          	            	sortable:true
+	          	            },
+	          	            {
+	          	            	header:'Конец',
+	          	            	dataIndex:'end_date',
+	          	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+	          	            	sortable:true
+	          	            },
+	          	            {
+	          	            	header:'Включено пользователем',
+	          	            	dataIndex:'activated_by_account',
+	          	            	sortable:true,
+	          	            },
+	          	            
+	          	            ]
+	          		   
+	          		  
+	             }
+
+	      		
+	         // apply config
+	         Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+	  
+	         EBS.SuspendedPeriodGrid.superclass.initComponent.apply(this, arguments);
+	     } // eo function initComponent
+	  
+
+
+	 });
+
+	 Ext.reg('xsuspendedperiodgrid', EBS.SuspendedPeriodGrid);
 
 
  
@@ -1723,7 +1866,7 @@ Ext.onReady(function(){
 	     		   //Ext.Msg.alert(message);
 	     		   var me;
 	     		   me=this;
-	     		   this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.account_id);
+	     		   this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.id);
 	     	       me.store.load();
 	     	       
 	     	    },
@@ -1995,7 +2138,7 @@ Ext.onReady(function(){
 	     		   //Ext.Msg.alert(message);
 	     		   var me;
 	     		   me=this;
-	     		   this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.account_id);
+	     		   this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.id);
 	     	       me.store.load();
 	     	       
 	     	    },
@@ -2012,8 +2155,8 @@ Ext.onReady(function(){
 			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
 			        	  //this.store.setBaseParam('subaccount_id', this.findParentByType('form').findParentByType('panel').instance_id);
 			        	  //alert();
-			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.account_id);
-			        	  if (this.findParentByType('xinstancecontainer').ids.account_id){
+			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.id);
+			        	  if (this.findParentByType('xinstancecontainer').ids.id){
 			        		  this.store.load();
 			        	  }
 			        	  var me;
