@@ -24,7 +24,7 @@ Ext.onReady(function(){
                 		id=self.selModel.selections.items[0].id;
                 		//alert(self.selModel.selections.items[0]);
                 	
-                	EBS.displayFormInTab(self.xtype, action,id, {'account_id':id}, self)
+                	EBS.displayFormInTab(self.xtype, action,id, {'id':id}, self)
                 	}
                 this.tbWindowCallBack = function(self, action){EBS.displayWindow(self.xtype, action, self)}
                 this.tbCommandCallBack = function(self, a,b,c){
@@ -523,6 +523,7 @@ Ext.onReady(function(){
     	    ]
     	}
 
+    
     EBS.forms.ebs_accountsPanel.document_submitAction =  function(object, event, form, window){
     	
     	
@@ -587,7 +588,58 @@ Ext.onReady(function(){
 										               handler: function(){
 										            	   EBS.closeForm(this.ownerCt.ownerCt)
 										               }
-										           }],
+										           },{
+										               //ref: '../removeBtn',
+										               iconCls: 'icon-moneyadd',
+										               text: 'Пополнить баланс',
+										               handler: function(){
+										            	   EBS.closeForm(this.ownerCt.ownerCt)
+										               }
+										           },
+										           {
+										               //ref: '../removeBtn',
+										               iconCls: 'icon-user-radauths',
+										               text: 'История RADIUS авторизаций',
+										               handler: function(){
+										            	   EBS.closeForm(this.ownerCt.ownerCt)
+										               }
+										           },{
+										               //ref: '../removeBtn',
+										               iconCls: 'icon-user-radauths',
+										               text: 'RADIUS сессии',
+										               handler: function(){
+										            	   EBS.closeForm(this.ownerCt.ownerCt)
+										               }
+										           },{
+										               //ref: '../removeBtn',
+										               iconCls: 'icon-user-money',
+										               text: 'История платежей и списаний',
+										               handler: function(){
+										            	   EBS.closeForm(this.ownerCt.ownerCt)
+										               }
+										           },{
+										               //ref: '../removeBtn',
+										               iconCls: 'icon-user-money',
+										               text: 'История изменения баланса',
+										               handler: function(){
+										            	   EBS.closeForm(this.ownerCt.ownerCt)
+										               }
+										           },{
+										               //ref: '../removeBtn',
+										               iconCls: 'icon-user-trafinfo',
+										               text: 'Остаток предоплаченного трафика',
+										               handler: function(){
+										            	   EBS.closeForm(this.ownerCt.ownerCt)
+										               }
+										           },{
+										               //ref: '../removeBtn',
+										               iconCls: 'icon-user-trafinfo',
+										               text: 'Остаток предоплаченного времени',
+										               handler: function(){
+										            	   EBS.closeForm(this.ownerCt.ownerCt)
+										               }
+										           }
+										           ],
 													reader: new Ext.data.JsonReader({
 													    idProperty: 'id',          
 													    root: 'records',             
@@ -634,6 +686,7 @@ Ext.onReady(function(){
 															{name: 'allow_ipn_with_null', type:'boolean'},
 															{name: 'allow_ipn_with_minus', type:'boolean'},
 															{name: 'allow_ipn_with_block', type:'boolean'},
+															{name: 'tariff', type:'string'},
 													    ]
 													}), 
 												items:[
@@ -649,66 +702,21 @@ Ext.onReady(function(){
     },
     activeTab: 0,
     items: [
-        {
-            xtype: 'panel',
-            autoHeight: true,
-		    height:'100%',
-		    width: '100%',
-		    title: 'Общее',
-		    padding:5,
-		    autoScroll:true,
-            items: [{
-            	 	xtype:'container',
-                	layout:'hbox',
-                	pack:'left',
-                	layoutConfig : {
-		                pack : 'center',
-		               align : 'middle'
-		            },
-		            defaults:{
-                        margins:'0 5 5 0',    	                                        
-                    },
-                    baseCls:'x-plain',
-		            viewConfig: {
-                        forceFit: true,
-                        
-                    },
-                	items:[
-                        /*{
-                        	xtype:'label',
-                        	text:'Тарифный план',
-                        },
-                        {
-                        	xtype:'xcombotariff',
-                        	
-                        },*/
-                        ]
-                },
-                {
-                	xtype: 'container',
-		            autoHeight:true,
-		            //autoHeight:true,
-		            
-		            //height:'100%',
-		            //autoWidth: true,
-		            layout: 'hbox',
-		            layoutConfig : {
-		                pack : 'center',
-		               align : 'middle'
-		            },
-		            defaults:{
-                        margins:'0 5 5 0',    	                                        
-                    },
-                    baseCls:'x-plain',
-		            viewConfig: {
-                        forceFit: true,
-                        
-                    },
-                    items: [
-                        {
-                            xtype: 'container',
-                            items: [
-                                {
+                   {
+                       xtype: 'panel',
+                       autoScroll: true,
+                       layout: 'hbox',
+                       title: 'Общее',
+                       autoHeight: true,
+
+                       items: [
+                           {
+                               xtype: 'container',
+                               height: 817,
+                               width: 412,
+                               layout: 'vbox',
+                               items: [
+                                   {
                                     xtype: 'fieldset',
                                     width: 402,
                                     title: 'Учётные данные',
@@ -867,606 +875,719 @@ Ext.onReady(function(){
 					                        }
 					                    ]
                                 },
-                                {
-                                    xtype: 'fieldset',
-                                    autoWidth: true,
-                                    height: 85,
-                                    padding: '',
-                                    title: 'Баланс',
-                                    items: [
-                                        {
-                                            xtype: 'textfield',
-                                            name: 'ballance',
-                                            anchor: '100%',
-                                            disabled:true,
-                                            fieldLabel: 'Баланс'
-                                        },
-                                        {
-                                            xtype: 'textfield',
-                                            name: 'credit',
-                                            anchor: '100%',
-                                            fieldLabel: 'Кредит'
-                                        }
-                                    ]
-                                },
-                                {
-                                    xtype: 'fieldset',
-                                    height: 105,
-                                    width: 394,
-                                    title: 'Параметры',
-                                    items: [
-					                        {
-                                                xtype: 'xcomboaccountstatus',
-                                                name: 'status',
-                                                hiddenName: "status",
-                                                anchor: '100%',
-                                                fieldLabel: 'Статус',
-                                               
-                                            },
-                                            {
-                                                xtype: 'xcombosystemuser',
-                                                name: 'systemuser',
-                                                hiddenName: "systemuser",
-                                                anchor: '100%',
-                                                fieldLabel: 'Персональный менеджер'
-                                            }
-					                    ]
-                                }
-                            ]
-                        },
-                        {
-                            xtype: 'fieldset',
-                            height: 351,
-                            width: 376,
-                            title: 'Данные аккаунта',
-                            labelWidth: 140,
-                            items: [
-                                {
-                                    xtype: 'textfield',
-                                    name: 'contactperson',
-                                    anchor: '100%',
-                                    fieldLabel: 'Контактное лицо'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'contactphone',
-                                    anchor: '100%',
-                                    fieldLabel: 'Контактный телефон'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'fullname',
-                                    anchor: '100%',
-                                    fieldLabel: 'ФИО'
-                                },
-                                {
-                                    xtype: 'fieldset',
-                                    height: 214,
-                                    animCollapse: true,
-                                    collapsible: true,
-                                    title: 'Подробно',
-                                    items: [
-                                        {
-                                            xtype: 'textfield',
-                                            name: 'email',
-                                            anchor: '100%',
-                                            fieldLabel: 'E-mail'
-                                        },
-                                        {
-                                            xtype: 'textfield',
-                                            name: 'phone_h',
-                                            anchor: '100%',
-                                            fieldLabel: 'Дом. телефон'
-                                        },
-                                        {
-                                            xtype: 'textfield',
-                                            name: 'phone_m',
-                                            anchor: '100%',
-                                            fieldLabel: 'Моб. телефон'
-                                        },
-                                        {
-                                            xtype: 'textfield',
-                                            name: 'passport',
-                                            anchor: '100%',
-                                            fieldLabel: 'Паспорт №'
-                                        },
-                                        {
-                                            xtype: 'textfield',
-                                            name: 'private_passport_number',
-                                            anchor: '100%',
-                                            fieldLabel: 'Личный номер'
-                                        },
-                                        {
-                                            xtype: 'textfield',
-                                            name: 'passport_given',
-                                            anchor: '100%',
-                                            fieldLabel: 'Кем выдан'
-                                        },
-                                        {
-                                            xtype: 'datefield',
-                                            name: 'passport_date',
-                                            anchor: '100%',
-                                            fieldLabel: 'Когда выдан'
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            xtype: 'fieldset',
-                            height: 351,
-                            width: 315,
-                            title: 'Адрес',
-                            items: [
-                                {
-																    xtype: 'xcombocity',
-																    name: 'city',
-																    hiddenName: "city",
-																    anchor: '100%',
-																    fieldLabel: 'Город',
-																    listeners:{
-																    	select: function(combo, record, index) {
-																    		
-																    		this.findParentByType('form').getForm().findField('street').clearValue();
-																			this.findParentByType('form').getForm().findField('street').store.load({params:{city_id: this.value}});
-																    		
-																          },
-																    },
-																},
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'region',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Подъезд'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'postcode',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Район'
-                                    	                        },
-                                    	                        {
-                                                                    xtype: 'xcombostreet',
-                                                                    name: 'street',
-                                                                    //id:'street',
-                                                                    hiddenName: "street",
-                                                                    anchor: '100%',
-                                                                    fieldLabel: 'Улица',
-                                                                    listeners:{
-                                                                    	select: function(combo, record, index) {
-                                                                    		
-                                                                    		this.findParentByType('form').getForm().findField("house").clearValue();
-																			this.findParentByType('form').getForm().findField("house").store.load({params:{street_id: this.value}});                                                                              },
-                                                                   
+                                   {
+                                       xtype: 'fieldset',
+                                       height: 318,
+                                       width: 402,
+                                       title: 'Данные аккаунта',
+                                       labelWidth: 140,
+                                       items: [
+                                           {
+                                               xtype: 'textfield',
+                                               name: 'contactperson',
+                                               anchor: '100%',
+                                               fieldLabel: 'Контактное лицо'
+                                           },
+                                           {
+                                               xtype: 'textfield',
+                                               name: 'contactphone',
+                                               anchor: '100%',
+                                               fieldLabel: 'Контактный телефон'
+                                           },
+                                           {
+                                               xtype: 'textfield',
+                                               name: 'fullname',
+                                               anchor: '100%',
+                                               fieldLabel: 'ФИО'
+                                           },
+                                           {
+                                               xtype: 'textfield',
+                                               name: 'email',
+                                               anchor: '100%',
+                                               fieldLabel: 'E-mail'
+                                           },
+                                           {
+                                               xtype: 'textfield',
+                                               name: 'phone_h',
+                                               anchor: '100%',
+                                               fieldLabel: 'Дом. телефон'
+                                           },
+                                           {
+                                               xtype: 'textfield',
+                                               name: 'phone_m',
+                                               anchor: '100%',
+                                               fieldLabel: 'Моб. телефон'
+                                           },
+                                           {
+                                               xtype: 'textfield',
+                                               name: 'passport',
+                                               anchor: '100%',
+                                               fieldLabel: '№ паспорта'
+                                           },
+                                           {
+                                               xtype: 'textfield',
+                                               name: 'private_passport_number',
+                                               anchor: '100%',
+                                               fieldLabel: 'Индив. номер'
+                                           },
+                                           {
+                                               xtype: 'textfield',
+                                               name: 'passport_given',
+                                               anchor: '100%',
+                                               fieldLabel: 'Паспорт выдан'
+                                           },
+                                           {
+                                               xtype: 'datefield',
+                                               name: 'passport_date',
+                                               anchor: '100%',
+                                               fieldLabel: 'Когда'
+                                           }
+                                       ]
+                                   },
+                                   {
+                                       xtype: 'fieldset',
+                                       height: 351,
+                                       width: 402,
+                                       title: 'Адрес',
+                                       items: [
+                                               {
+												    xtype: 'xcombocity',
+												    name: 'city',
+												    hiddenName: "city",
+												    anchor: '100%',
+												    fieldLabel: 'Город',
+												    listeners:{
+												    	select: function(combo, record, index) {
+												    		
+												    		this.findParentByType('form').getForm().findField('street').clearValue();
+															this.findParentByType('form').getForm().findField('street').store.load({params:{city_id: this.value}});
+												    		
+												          },
+												    },
+												},
+                   	                        {
+                   	                            xtype: 'textfield',
+                   	                            name: 'region',
+                   	                            anchor: '100%',
+                   	                            fieldLabel: 'Подъезд'
+                   	                        },
+                   	                        {
+                   	                            xtype: 'textfield',
+                   	                            name: 'postcode',
+                   	                            anchor: '100%',
+                   	                            fieldLabel: 'Район'
+                   	                        },
+                   	                        {
+                                                   xtype: 'xcombostreet',
+                                                   name: 'street',
+                                                   //id:'street',
+                                                   hiddenName: "street",
+                                                   anchor: '100%',
+                                                   fieldLabel: 'Улица',
+                                                   listeners:{
+                                                   	select: function(combo, record, index) {
+                                                   		
+                                                   		this.findParentByType('form').getForm().findField("house").clearValue();
+															this.findParentByType('form').getForm().findField("house").store.load({params:{street_id: this.value}});                                                                              },
+                                                  
 
-                                                                    },
-	                                                                  
-                                                                },
-                                                                {
-                                                                    xtype: 'xcombohouse',
-                                                                    name: 'house',
-                                                                    //id:'house',
-                                                                    hiddenName: "house",
-                                                                    anchor: '100%',
-                                                                    fieldLabel: 'Дом'
-                                                                },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'house_bulk',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Корпус'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'entrance_code',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Код домофона'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'row',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Этаж'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'elevator_direction',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Направление от лифта'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            name: 'room',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Квартира'
-                                    	                        },
-                                    	                        {
-                                    	                            xtype: 'textfield',
-                                    	                            anchor: '100%',
-                                    	                            fieldLabel: 'Подъезд'
-                                    	                        }
-                            ]
-                        }
-                    ]
-                },
+                                                   },
+                                                     
+                                               },
+                                               {
+                                                   xtype: 'xcombohouse',
+                                                   name: 'house',
+                                                   //id:'house',
+                                                   hiddenName: "house",
+                                                   anchor: '100%',
+                                                   fieldLabel: 'Дом'
+                                               },
+                   	                        {
+                   	                            xtype: 'textfield',
+                   	                            name: 'house_bulk',
+                   	                            anchor: '100%',
+                   	                            fieldLabel: 'Корпус'
+                   	                        },
+                   	                        {
+                   	                            xtype: 'textfield',
+                   	                            name: 'entrance_code',
+                   	                            anchor: '100%',
+                   	                            fieldLabel: 'Код домофона'
+                   	                        },
+                   	                        {
+                   	                            xtype: 'textfield',
+                   	                            name: 'row',
+                   	                            anchor: '100%',
+                   	                            fieldLabel: 'Этаж'
+                   	                        },
+                   	                        {
+                   	                            xtype: 'textfield',
+                   	                            name: 'elevator_direction',
+                   	                            anchor: '100%',
+                   	                            fieldLabel: 'Направление от лифта'
+                   	                        },
+                   	                        {
+                   	                            xtype: 'textfield',
+                   	                            name: 'room',
+                   	                            anchor: '100%',
+                   	                            fieldLabel: 'Квартира'
+                   	                        },
+                   	                        {
+                   	                            xtype: 'textfield',
+                   	                            anchor: '100%',
+                   	                            fieldLabel: 'Подъезд'
+                   	                        }
+                   	                        ]
+                                   }
+                               ]
+                           },
+                           {
+                               xtype: 'container',
+                               height: 1000,
+                               width: 700,
+                               layout: 'vbox',
+                               items: [
+                                   {
+                                       xtype: 'container',
+                                       height: 105,
+                                       width:'100%',
+                                       layout: 'hbox',
+                                       flex: 1,
+                                       items: [
+                                           {
+                                               xtype: 'fieldset',
+                                               height: 104,
+                                               width: 291,
+                                               padding: '',
+                                               title: 'Баланс',
+                                               items: [
+                                                       {
+                                                           xtype: 'textfield',
+                                                           name: 'ballance',
+                                                           anchor: '100%',
+                                                           disabled:true,
+                                                           fieldLabel: 'Баланс'
+                                                       },
+                                                       {
+                                                           xtype: 'textfield',
+                                                           name: 'credit',
+                                                           anchor: '100%',
+                                                           fieldLabel: 'Кредит'
+                                                       }
+                                                   ]
+                                           },
+                                           {
+                                               xtype: 'fieldset',
+                                               height: 105,
+                                               width: 394,
+                                               title: 'Параметры',
+                                               items: [
+           					                        {
+                                                        xtype: 'xcomboaccountstatus',
+                                                        name: 'status',
+                                                        hiddenName: "status",
+                                                        anchor: '100%',
+                                                        fieldLabel: 'Статус',
+                                                       
+                                                    },
+                                                    {
+                                                        xtype: 'xcombosystemuser',
+                                                        name: 'systemuser',
+                                                        hiddenName: "systemuser",
+                                                        anchor: '100%',
+                                                        fieldLabel: 'Персональный менеджер'
+                                                    }
+        					                    ]
+                                           }
+                                       ]
+                                   },
+                                   {
+                                	 xtype:'fieldset',
+                                	 title:'Информация',
+                                	 
+                                	 items:[
+                                	        {
+                                	        	xtype:'displayfield',
+                                	        	fieldLabel:'Тарифный план',
+                                	        	name:'tariff'
+                                	        }
+                                	        ]
+                                   },
+                                   {
+									   xtype:'xsubaccountsgrid',
+									   //autoHeight:true,
+									   title:'Субаккаунты',
+									   authHeight: true,
+									   height:300,
+									   autoWidth:true,
+									   autoScroll:true,
+									   tbar: [{
+										    icon: media+'icons/16/arrow_refresh.png',
+									        text: 'Обновить',
+									        handler: function(){
+									     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
+									     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
+									     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+									     	   //var account_id;
+									     	   
+									     	  //account_id = this.findParentByType('xinstancecontainer').parent_id;
+									        	this.ownerCt.ownerCt.store.load();
+									     	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+									        }
+									    },{
+								        iconCls: 'icon-user-add',
+								        text: 'Добавить',
+								        handler: function(){
+								     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
+								     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
+								     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+								     	   var account_id;
+								     	   //alert(this.findParentByType('xinstancecontainer').ids.id);
+								     	  account_id = this.findParentByType('xinstancecontainer').ids.id;
+								     	  if (!account_id){
+								     		  Ext.Msg.alert('Действие не может быть выполнено','Сохраните аккаунт.');
+								     	  }else{
+								     		  EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+								     	  }
+								     	  //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+								        }
+								    },{
+								        iconCls: 'icon-user-edit',
+								        text: 'Редактировать',
+								        handler: function(){
+								     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
+								     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
+								     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+								     	   var id;
+								     	   var account_id;
+								     	   account_id = this.findParentByType('form').getForm().findField('id').value;
+								     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
+								     	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':id}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+								     	   //EBS.displayForm('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':id}, this.findParentByType('grid'))
+								        }
+								    },{
+								        //ref: '../removeBtn',
+								        iconCls: 'icon-user-delete',
+								        text: 'Remove',
+								        disabled: false,
+								        handler: function(){
+								        	id = this.findParentByType('grid').selModel.selections.items[0].id;
+								        	store = this.findParentByType('grid').store;
+								        	if(id){
+								        		Ext.Ajax.request({
+		            	                            params: {id: id},
+		            	                            url: '/ebsadmin/subaccounts/delete/',
+		            	                            success: function (resp) {
+		            	                                var data;
+		            	                                data = Ext.decode(resp.responseText);
+		            	                                if (data.success === true) {
+		            	                                    
+		            	                                	store.load();
+		            	                                    
+		            	                                } else {
+		            	                                    Ext.MessageBox.alert('Ошибка', 'Субаккаунт не удалён. '+data.msg);
+		            	                                }
+		            	                            },
+		            	                            failure: function () {
+		            	                            	Ext.MessageBox.alert('Ошибка', 'Субаккаунт не удалён. ');
+		            	                            }
+		            	                        });
+								        	}
+								        }
+								    },{
+								        iconCls: 'icon-user-add',
+								        text: 'Добавить подключаемую услугу',
+								        handler: function(){
+								     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
+								     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
+								     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
+								     	   var account_id;
+								     	   
+								     	   account_id = this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value;
+								     	   
+								     	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+								        }
+								    }],
+								},
+								{
+				                    xtype: 'xaccountaddonservicesgrid',
+				                    authHeight: true,
+				                    autoWidth:true,
+				                    autoScroll:true,
+				                    height:300,
+				                    title: 'Подключаемые услуги',
+				                    tbar: [{
+									    icon: media+'icons/16/arrow_refresh.png',
+								        text: 'Обновить',
+								        handler: function(){
+								     	   
+								        	this.ownerCt.ownerCt.store.load();
+								     	   
+								        }
+								    },{
+								        iconCls: 'icon-user-add',
+								        text: 'Добавить',
+								        handler: function(){
+								     	   var account_id;
+								     	   
+									     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+								     	   EBS.displayForm('ebs_accountsPanel', 'accountaddonservice',{'account_id':account_id,id:null}, this.findParentByType('grid'))
+								     	   
+								        }
+								    },{
+								        iconCls: 'icon-user-edit',
+								        text: 'Редактировать',
+								        handler: function(){
+								     	   var id;
+								     	   var account_id;
+								     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+								     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
+								     	   EBS.displayForm('ebs_accountsPanel', 'accountaddonservice',{'account_id':account_id,id:id}, this.findParentByType('grid'))
+								        }
+								    },{
+								        //ref: '../removeBtn',
+								        iconCls: 'icon-user-delete',
+								        text: 'Отключить',
+								        disabled: true,
+								        handler: function(){
+								     	   
+								        }
+								    }],
+				                    
+				                },
+				                {
+				                	xtype:'container',
+				                	layout:'hbox',
+				                	height:300,
+				                	width:'100%',
+				                	items:[
+					                {
+					                    xtype: 'xaccounttariffsgrid',
+					                    authHeight: true,
+					                    width: '50%',
+					                    title: 'Тарифные планы',
+					                    height:300,
+					                    
+					                    tbar: [{
+					        			    icon: media+'icons/16/arrow_refresh.png',
+					        		        text: 'Обновить',
+					        		        handler: function(){
+					        		        	this.ownerCt.ownerCt.store.load();
+					        		        }
+					        		    },{
+									        iconCls: 'icon-user-add',
+									        text: 'Новый',
+									        handler: function(){
+									     	   var account_id;
+									     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+									     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:null}, this.findParentByType('grid'))
+									     	   
+									        }
+									    },{
+									        iconCls: 'icon-user-edit',
+									        text: 'Редактировать',
+									        handler: function(){
+									     	   var id;
+									     	   var account_id;
+									     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+									     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
+									     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:id}, this.findParentByType('grid'))
+									        }
+									    },{
+									        //ref: '../removeBtn',
+									        iconCls: 'icon-delete',
+									        text: 'Удалить',
+									        //disabled: true,
+									        ref: '../removeButton',
+									        handler: function(){
+									     	   
+									        }
+									    }],
+					                    
+					                },
+					                {
+			                            xtype: 'xdocumentsgrid',
+			                            height:300,
+			                            width: '50%',
+			                            title: 'Документы'
+			                        },
+				                ]},
+                           {
+                               xtype: 'container',
+                               layout: 'column',
+                               flex: 1,
+                               items: [
+                                   {
+                                       xtype: 'container',
+                                       layout: 'form',
+                                       items: [
+                                           {
+                                               xtype: 'textarea',
+                                               height: 113,
+                                               width: 300,
+                                               name: 'comment',
+                                               fieldLabel: 'Комментарий'
+                                           }
+                                       ]
+                                   },
+                                   {
+                                       xtype: 'fieldset',
+                                       height: 112,
+                                       width: 574,
+                                       title: 'Опции',
+                                       items: [
+                                           {
+                                               xtype: 'checkbox',
+                                               boxLabel: 'Разрешить активацию подключаемых услуг',
+                                               anchor: '100%',
+                                               fieldLabel: 'Label',
+                                               hideLabel: true
+                                           },
+                                           {
+                                               xtype: 'checkbox',
+                                               boxLabel: 'Разрешить вход в веб-кабинет',
+                                               anchor: '100%',
+                                               fieldLabel: 'Label',
+                                               hideLabel: true
+                                           }
+                                       ]
+                                   }
+                               ]
+                           }
+                       ]
+                   },
+                   
+               ]
+},{
+    xtype: 'panel',
+    autoScroll: true,
+    layout: 'column',
+    title: 'Информация',
+    items: [
+        {
+            xtype: 'container',
+            height: 352,
+            width: 367,
+            layout: 'hbox',
+            pack: 'center',
+            items: [
                 {
-                    xtype: 'container',
-                    height:900,
-                    width:'100%',
-                    autoScroll:false,
-                    layout: 'vbox',
-                    pack: 'center',
+                    xtype: 'fieldset',
+                    stateful: true,
+                    width: 366,
+                    animCollapse: true,
+                    title: 'Юр. лицо',
                     items: [
                         {
-																		   xtype:'xsubaccountsgrid',
-																		   //autoHeight:true,
-																		   title:'Субаккаунты',
-																		   authHeight: true,
-																		   height:300,
-																		   autoWidth:true,
-																		   //autoScroll:true,
-																		   tbar: [{
-																			    icon: media+'icons/16/arrow_refresh.png',
-																		        text: 'Обновить',
-																		        handler: function(){
-																		     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																		     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																		     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-																		     	   //var account_id;
-																		     	   
-																		     	  //account_id = this.findParentByType('xinstancecontainer').parent_id;
-																		        	this.ownerCt.ownerCt.store.load();
-																		     	   //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
-																		        }
-																		    },{
-																	        iconCls: 'icon-user-add',
-																	        text: 'Добавить',
-																	        handler: function(){
-																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-																	     	   var account_id;
-																	     	   //alert(this.findParentByType('xinstancecontainer').ids.id);
-																	     	  account_id = this.findParentByType('xinstancecontainer').ids.id;
-																	     	  if (!account_id){
-																	     		  Ext.Msg.alert('Действие не может быть выполнено','Сохраните аккаунт.');
-																	     	  }else{
-																	     		  EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
-																	     	  }
-																	     	  //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
-																	        }
-																	    },{
-																	        iconCls: 'icon-user-edit',
-																	        text: 'Редактировать',
-																	        handler: function(){
-																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-																	     	   var id;
-																	     	   var account_id;
-																	     	   account_id = this.findParentByType('form').getForm().findField('id').value;
-																	     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
-																	     	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':id}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
-																	     	   //EBS.displayForm('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':id}, this.findParentByType('grid'))
-																	        }
-																	    },{
-																	        //ref: '../removeBtn',
-																	        iconCls: 'icon-user-delete',
-																	        text: 'Remove',
-																	        disabled: false,
-																	        handler: function(){
-																	        	id = this.findParentByType('grid').selModel.selections.items[0].id;
-																	        	store = this.findParentByType('grid').store;
-																	        	if(id){
-																	        		Ext.Ajax.request({
-											            	                            params: {id: id},
-											            	                            url: '/ebsadmin/subaccounts/delete/',
-											            	                            success: function (resp) {
-											            	                                var data;
-											            	                                data = Ext.decode(resp.responseText);
-											            	                                if (data.success === true) {
-											            	                                    
-											            	                                	store.load();
-											            	                                    
-											            	                                } else {
-											            	                                    Ext.MessageBox.alert('Ошибка', 'Субаккаунт не удалён. '+data.msg);
-											            	                                }
-											            	                            },
-											            	                            failure: function () {
-											            	                            	Ext.MessageBox.alert('Ошибка', 'Субаккаунт не удалён. ');
-											            	                            }
-											            	                        });
-																	        	}
-																	        }
-																	    },{
-																	        iconCls: 'icon-user-add',
-																	        text: 'Добавить подключаемую услугу',
-																	        handler: function(){
-																	     	   //this.findParentByType('tabpanel').add(this.findParentByType('grid'))
-																	     	   //EBS.displayCustomForm('ebs_accountsPanel', 'subaccounts', this.findParentByType('grid'))
-																	     	   //self.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-																	     	   var account_id;
-																	     	   
-																	     	   account_id = this.findParentByType('tabpanel').items.items[0].getForm().findField('id').value;
-																	     	   
-																	     	   EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
-																	        }
-																	    }],
-																	},
-																	{
-													                    xtype: 'xaccountaddonservicesgrid',
-													                    authHeight: true,
-													                    width: '100%',
-													                    height:300,
-													                    title: 'Подключаемые услуги',
-													                    tbar: [{
-																		    icon: media+'icons/16/arrow_refresh.png',
-																	        text: 'Обновить',
-																	        handler: function(){
-																	     	   
-																	        	this.ownerCt.ownerCt.store.load();
-																	     	   
-																	        }
-																	    },{
-																	        iconCls: 'icon-user-add',
-																	        text: 'Добавить',
-																	        handler: function(){
-																	     	   var account_id;
-																	     	   
-   																	     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
-																	     	   EBS.displayForm('ebs_accountsPanel', 'accountaddonservice',{'account_id':account_id,id:null}, this.findParentByType('grid'))
-																	     	   
-																	        }
-																	    },{
-																	        iconCls: 'icon-user-edit',
-																	        text: 'Редактировать',
-																	        handler: function(){
-																	     	   var id;
-																	     	   var account_id;
-																	     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
-																	     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
-																	     	   EBS.displayForm('ebs_accountsPanel', 'accountaddonservice',{'account_id':account_id,id:id}, this.findParentByType('grid'))
-																	        }
-																	    },{
-																	        //ref: '../removeBtn',
-																	        iconCls: 'icon-user-delete',
-																	        text: 'Отключить',
-																	        disabled: true,
-																	        handler: function(){
-																	     	   
-																	        }
-																	    }],
-													                    
-													                },
-													                {
-													                	xtype:'container',
-													                	layout:'hbox',
-													                	height:300,
-													                	width:'100%',
-													                	items:[
-														                {
-														                    xtype: 'xaccounttariffsgrid',
-														                    authHeight: true,
-														                    width: '50%',
-														                    title: 'Тарифные планы',
-														                    height:300,
-														                    
-														                    tbar: [{
-														        			    icon: media+'icons/16/arrow_refresh.png',
-														        		        text: 'Обновить',
-														        		        handler: function(){
-														        		        	this.ownerCt.ownerCt.store.load();
-														        		        }
-														        		    },{
-																		        iconCls: 'icon-user-add',
-																		        text: 'Добавить',
-																		        handler: function(){
-																		     	   var account_id;
-																		     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
-																		     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:null}, this.findParentByType('grid'))
-																		     	   
-																		        }
-																		    },{
-																		        iconCls: 'icon-user-edit',
-																		        text: 'Редактировать',
-																		        handler: function(){
-																		     	   var id;
-																		     	   var account_id;
-																		     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
-																		     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
-																		     	   EBS.displayForm('ebs_accountsPanel', 'tpchange',{'account_id':account_id,id:id}, this.findParentByType('grid'))
-																		        }
-																		    },{
-																		        //ref: '../removeBtn',
-																		        iconCls: 'icon-delete',
-																		        text: 'Remove',
-																		        //disabled: true,
-																		        ref: '../removeButton',
-																		        handler: function(){
-																		     	   
-																		        }
-																		    }],
-														                    
-														                },
-														                {
-												                            xtype: 'xdocumentsgrid',
-												                            height:300,
-												                            width: '50%',
-												                            title: 'Документы'
-												                        },
-													                ]},
-                    ]
-                },
-                {
-                    xtype: 'container',
-                    layout: 'column',
-                    items: [
-                        {
-                            xtype: 'container',
-                            layout: 'form',
-                            items: [
-                                {
-                                    xtype: 'textarea',
-                                    height: 113,
-                                    width: 300,
-                                    name: 'comment',
-                                    fieldLabel: 'Комментарий'
-                                }
-                            ]
+                            xtype: 'textfield',
+                            name: 'organization_name',
+                            anchor: '100%',
+                            fieldLabel: 'Название'
                         },
                         {
-                            xtype: 'fieldset',
-                            height: 112,
-                            width: 574,
-                            title: 'Опции',
-                            items: [
-                                {
-                                    xtype: 'checkbox',
-                                    boxLabel: 'Разрешить активацию подключаемых услуг',
-                                    anchor: '100%',
-                                    
-                                    hideLabel: true
-                                },
-                                {
-                                    xtype: 'checkbox',
-                                    boxLabel: 'Разрешить вход в веб-кабинет',
-                                    anchor: '100%',
-                                    
-                                    hideLabel: true
-                                }
-                            ]
+                            xtype: 'textfield',
+                            name: 'uraddress',
+                            anchor: '100%',
+                            fieldLabel: 'Юр. адрес'
+                        },
+                        {
+                            xtype: 'textfield',
+                            name: 'okpo',
+                            anchor: '100%',
+                            fieldLabel: 'ОКПО'
+                        },
+                        {
+                            xtype: 'textfield',
+                            name: 'unp',
+                            anchor: '100%',
+                            fieldLabel: 'УНП'
+                        },
+                        {
+                            xtype: 'textfield',
+                            name: 'organization_phone',
+                            anchor: '100%',
+                            fieldLabel: 'Телефон'
+                        },
+                        {
+                            xtype: 'textfield',
+                            name: 'organization_fax',
+                            anchor: '100%',
+                            fieldLabel: 'Факс'
+                        },
+                        {
+                            xtype: 'textfield',
+                            name: 'organization_kpp',
+                            anchor: '100%',
+                            fieldLabel: 'КПП'
+                        },
+                        {
+                            xtype: 'textfield',
+                            name: 'kor_s',
+                            anchor: '100%',
+                            fieldLabel: 'Корр. счёт'
+                        },
+                        {
+                            xtype: 'textfield',
+                            name: 'bank_name',
+                            anchor: '100%',
+                            fieldLabel: 'Банк'
+                        },
+                        {
+                            xtype: 'textfield',
+                            name: 'bankcode',
+                            anchor: '100%',
+                            fieldLabel: 'Код банка'
+                        },
+                        {
+                            xtype: 'textfield',
+                            name: 'rs',
+                            anchor: '100%',
+                            fieldLabel: 'Расчётный счёт'
+                        },
+                        {
+                            xtype: 'textfield',
+                            name: 'currency',
+                            anchor: '100%',
+                            fieldLabel: 'Валюта'
                         }
                     ]
                 }
             ]
         },
         {
-            xtype: 'panel',
-            autoScroll: true,
+            xtype: 'container',
+            height: 560,
+            width: 739,
             layout: 'vbox',
-            height:1024,
-            width:'100%',
-            title: 'Информация',
+            flex: 1,
             items: [
                 {
-                    xtype: 'container',
-                    height: 352,
-                    //width: 1038,
-                    layout: 'hbox',
-                    pack: 'center',
-                    items: [
-                        {
-                            xtype: 'fieldset',
-                            stateful: true,
-                            width: 366,
-                            animCollapse: true,
-                            collapsible: true,
-                            title: 'Юр. лицо',
-                            items: [
-                                {
-                                    xtype: 'textfield',
-                                    name: 'organization_name',
-                                    anchor: '100%',
-                                    fieldLabel: 'Название'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'uraddress',
-                                    anchor: '100%',
-                                    fieldLabel: 'Юр. адрес'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'okpo',
-                                    anchor: '100%',
-                                    fieldLabel: 'ОКПО'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'unp',
-                                    anchor: '100%',
-                                    fieldLabel: 'УНП'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'organization_phone',
-                                    anchor: '100%',
-                                    fieldLabel: 'Телефон'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'organization_fax',
-                                    anchor: '100%',
-                                    fieldLabel: 'Факс'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'organization_kpp',
-                                    anchor: '100%',
-                                    fieldLabel: 'КПП'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'kor_s',
-                                    anchor: '100%',
-                                    fieldLabel: 'Корр. счёт'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'bank_name',
-                                    anchor: '100%',
-                                    fieldLabel: 'Банк'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'bankcode',
-                                    anchor: '100%',
-                                    fieldLabel: 'Код банка'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'rs',
-                                    anchor: '100%',
-                                    fieldLabel: 'Расчётный счёт'
-                                },
-                                {
-                                    xtype: 'textfield',
-                                    name: 'currency',
-                                    anchor: '100%',
-                                    fieldLabel: 'Валюта'
-                                }
-                            ]
-                        }
-                    ]
+                    xtype: 'xsuspendedperiodgrid',
+                    height: 241,
+                    title: 'Периоды паузы',
+                    
                 },
                 {
-                    xtype: 'container',
-                    width:'100%',
-                    layout: 'hbox',
-                    flex: 1,
-                    items: [
-                        
-                        {
-                            xtype: 'xaccounthardwaregrid',
-                            height: 241,
-                            title: 'Оборудование на руках',
-                            
-                        }
-                    ]
+                    xtype: 'xaccounthardwaregrid',
+                    height: 241,
+                    title: 'Оборудование на руках',
+                    
                 }
             ]
         }
     ]
 }
-												       ]}]};
+]}]}]};
                                         
     /*EBS.forms.ebs_accountsPanel.edit_user_submitAction =  function(object, event){
         //form = object.ownerCt;
         //console.log(form);
     }*/
     
+    EBS.forms.ebs_accountsPanel.suspendedperiod = {
+    	    xtype: 'form',
+    	    height: 150,
+    	    width: 610,
+    	    layout: 'fit',
+    	    url:'/ebsadmin/suspendedperiod/get/',
+    	    save_url:'/ebsadmin/suspendedperiod/set/',
+    	    method:'POST',
+    	    plugins:['msgbus'],
+    	    closeForm:function(instance_id)
+    	    {
+    	    	owner = this.ownerCt;
+    	    	owner.hide().destroy();
+    	    	delete EBS.windows[owner.id];
+    	    },
+    	    listeners:{
+    			'render': function(){
+    				
+    				this.getForm().findField('account').setValue(this.findParentByType('xinstancewindow').ids.account_id);
+    			}
+    		},
+    	    
+    	    
+    	    reader: new Ext.data.JsonReader({
+			    idProperty: 'id',          
+			    root: 'records',             
+			    fields: [{name: 'id', type:'int'},
+			             {name: 'account', type:'int'},
+  		        		{name: 'activated_by_account', type:'bool'},
+  		        		
+  		        		{name: 'start_date', type: 'date', dateFormat: Date.patterns.ISO8601Long},
+  		        		{name: 'end_date',  type: 'date', dateFormat: Date.patterns.ISO8601Long},
+  		        		],
+			      
+			}), 
+    	    padding: 5,
+    	    windowTitle: 'Параметры паузы',
+    	    items: [
+    	        {
+    	            xtype: 'fieldset',
+    	            height: 116,
+    	            width:'100%',
+    	            title: 'Параметры паузы',
+    	            items: [
+    	                {
+    	                    xtype: 'hidden',
+    	                    name:'account'
+    	                },{
+    	                    xtype: 'hidden',
+    	                    name:'id'
+    	                },{
+    	                    xtype: 'combo',
+    	                    anchor: '100%',
+    	                    fieldLabel: 'Тип паузы'
+    	                },
+    	                {
+    	                    xtype: 'compositefield',
+    	                    anchor: '100%',
+    	                    fieldLabel: 'Период',
+    	                    items: [
+    	                        {
+    	                            xtype: 'displayfield',
+    	                            value: 'c',
+    	                            
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'xdatetime',
+    	                            flex: 1,
+    	                            name:'start_date'
+    	                        },
+    	                        {
+    	                            xtype: 'displayfield',
+    	                            value: 'по',
+    	                            
+    	                            fieldLabel: 'Label'
+    	                        },
+    	                        {
+    	                            xtype: 'xdatetime',
+    	                            flex: 1,
+    	                            name:'end_date'
+    	                        }
+    	                    ]
+    	                }
+    	            ]
+    	        }
+    	    ]
+    	}
 
+    EBS.forms.ebs_accountsPanel.suspendedperiod_submitAction =  function(object, event, form, window){
+    	
+    	
+ 	    f=form;
+ 	    pub = function(){window.items.items[0].publish('ebs.suspendedperiod.change', 'msg');	}
+        
+        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
+        	
+        	pub();
+        	window.hide().destroy()
+            delete EBS.windows[window.id];
 
+        },failure: function(form,action) {        
+         	Ext.Msg.alert('Ошибка', action.result.msg )}});
+    }
    //win.show();
     EBS.forms.ebs_accountsPanel.accountaddonservice = {
     	    xtype: 'form',

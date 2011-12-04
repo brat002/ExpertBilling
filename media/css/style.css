@@ -454,6 +454,21 @@ a.selector-search { padding:2px 0 0 5px;}
 .icon-user-close {
     background-image: url(/media/icons/16/cancel.png) !important;
 }
+.icon-user-radauths {
+    background-image: url(/media/icons/16/new/key.png) !important;
+}
+.icon-user-monitor {
+    background-image: url(/media/icons/16/new/monitor.png) !important;
+}
+.icon-user-money {
+    background-image: url(/media/icons/16/new/money.png) !important;
+}
+.icon-user-trafinfo {
+    background-image: url(/media/icons/16/new/folder_explore.png) !important;
+}
+.icon-moneyadd {
+    background-image: url(/media/icons/16/new/money_add.png) !important;
+}
 
 .x-action-col-cell img.enable-col {
             height: 16px;
