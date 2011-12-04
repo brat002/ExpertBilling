@@ -924,9 +924,12 @@ class TemplateType(models.Model):
         
 class Template(models.Model):
     name = models.CharField(max_length=255)
-    type = models.ForeignKey(DocumentType)
+    type = models.ForeignKey(TemplateType)
     body = models.TextField()    
 
+    def __unicode__(self):
+        return u"%s" % (self.name)
+    
 class Card(models.Model):
     series = models.IntegerField()
     pin = models.CharField(max_length=255)
@@ -1002,12 +1005,16 @@ class DealerPay(models.Model):
     
 class Document(models.Model):
     account = models.ForeignKey(Account, blank=True, null=True)
-    type = models.ForeignKey(DocumentType)
+    type = models.ForeignKey(Template)
     body = models.TextField()
     contractnumber = models.CharField(max_length=1024)
     date_start = models.DateTimeField(blank=True)
     date_end = models.DateTimeField(blank=True, null=True)
 
+
+    def __unicode__(self):
+        return u"%s %s" % (self.type, self.date_start)
+    
 class SuspendedPeriod(models.Model):
     account = models.ForeignKey(Account)
     start_date = models.DateTimeField()

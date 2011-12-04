@@ -10,7 +10,7 @@ Ext.onReady(function(){
                  *Будут перенесены в базовый компонент. менять сразу во всех компонентах!
                  **/
                 this.tbFormCallBack = function(self, action){EBS.displayForm(self.xtype, action, self)}
-                this.tbCustomFormCallBack = function(self, action){EBS.displayCustomForm(self.xtype, action, self)}
+                this.tbCustomFormCallBack = function(self, action){EBS.displayCustomForm(self.xtype, action,{}, self)}
 
                 this.tbNewFormInTabCallBack = function(self, action){
                 	id=null;
@@ -67,7 +67,7 @@ Ext.onReady(function(){
                             height:16,width:16,
                             menu: [
                                 {
-                                    text : "Редактировать кредит",
+                                    text : "Пополнить баланс",
                                     icon: media+'icons/16/new/cog.png',
                                     handler: this.tbCustomFormCallBack.createCallback(this,'edit_credit')
                                 },{
@@ -356,6 +356,40 @@ Ext.onReady(function(){
     	    height: 580,
     	    title: 'Документ',
     	    layout:'fit',
+    	    plugins:['msgbus'],
+    	    url:'/ebsadmin/document/get/', 
+			save_url:'/ebsadmin/document/set/',
+			method:'POST',
+			tbar: [{
+ 			    icon: media+'icons/16/printer.png',
+ 		        text: 'Распечатать',
+ 		        handler: function(){
+ 		        	//alert(this.ownerCt.ownerCt.url);
+ 		        	Ext.ux.Printer.print(this.ownerCt.ownerCt.getForm().findField('body'));
+ 		        	
+ 		        }
+ 		       }],
+			
+			listeners:{
+				'render': function(){
+					//alert(this.findParentByType('xinstancewindow').ids.account_id);
+					this.getForm().findField('account').setValue(this.findParentByType('xinstancewindow').ids.account_id);
+				}
+			},
+			reader: new Ext.data.JsonReader({
+			    idProperty: 'id',          
+			    root: 'records',             
+			    fields: [
+					{name: 'id', type:'int'},
+					{name: 'account', type:'int'},
+					{name: 'type', type:'int'},
+					{name: 'body', type:'string'},
+					{name: 'contractnumber', type:'string'},
+					{name: 'comment', type:'string'},
+					{name: 'date_end', type:'date', dateFormat: Date.patterns.ISO8601Long},
+					{name: 'date_start', type:'date', dateFormat: Date.patterns.ISO8601Long},
+			    ]
+			}),
     	    items: [
     	        {
     	            xtype: 'fieldset',
@@ -364,9 +398,18 @@ Ext.onReady(function(){
     	                {
     	                    xtype: 'xcombotemplate',
     	                    name: 'type',
+    	                    hiddenName: 'type',
     	                    anchor: '50%',
     	                    fieldLabel: 'Тип документа'
     	                },
+    	                {
+    	                    xtype: 'hidden',
+    	                    name: 'id',
+    	                },
+    	                {
+    	                    xtype: 'hidden',
+    	                    name: 'account',
+    	                },    	                
     	                {
     	                    xtype: 'combo',
     	                    name: 'contractnumber',
@@ -377,7 +420,7 @@ Ext.onReady(function(){
                      		    displayField: 'template',
                      		    valueField: 'template', 
                      		    mode: 'remote',
-                     		    editable:false,
+                     		    editable:true,
                                 loadingText  : 'Searching...',
                                 pageSize     : 25,
                      		    triggerAction: 'all',
@@ -412,30 +455,61 @@ Ext.onReady(function(){
                             
     	                },
     	                {
-    	                    xtype: 'datefield',
+    	                    xtype: 'xdatetime',
     	                    name: 'date_start',
-    	                    anchor: '25%',
+    	                    anchor: '50%',
     	                    fieldLabel: 'Начало'
     	                },
     	                {
     	                    xtype: 'button',
     	                    text: 'Сгенерировать',
     	                    anchor: '50%',
-    	                    fieldLabel: '&nbsp'
+    	                    fieldLabel: '&nbsp',
+    	                    handler: function(button, evt){
+    	                    	parentwindow = button.findParentByType('xinstancewindow');
+	                    		form = button.findParentByType('form').getForm();
+	                    	    account = parentwindow.ids.account_id;
+	                    	    contractnumber = form.findField('contractnumber').getValue();
+	                    	    template = form.findField('type').getValue();
+	                    	    date_start = form.findField('date_start').getValue();
+	                    	    date_end = form.findField('date_end').getValue();
+	                    	    if (date_end){
+	                    	    	date_end=date_end.format(Date.patterns.ISO8601Long)
+	                    	    }
+    	                    	Ext.Ajax.request({
+    	                            params: {account: account,contractnumber:contractnumber, template:template,date_start: date_start.format(Date.patterns.ISO8601Long),date_end:date_end},
+    	                            url: '/ebsadmin/documentrender/',
+    	                            success: function (resp) {
+    	                                var data;
+    	                                data = Ext.decode(resp.responseText);
+    	                                if (data.success === true) {
+    	                                    
+    	                                	form.findField('body').setValue(data.body);
+    	                                    
+    	                                } else {
+    	                                    Ext.MessageBox.alert('Ошибка', 'Состояние не изменено. '+data.msg);
+    	                                }
+    	                            },
+    	                            failure: function () {
+    	                            	Ext.MessageBox.alert('Ошибка', 'Состояние не изменено');
+    	                            }
+    	                        });
+    	                    }
+    	                    
     	                    
     	                },
     	                {
     	                    xtype: 'htmleditor',
     	                    
-    	                    
+    	                    ref:'../editor',
     	                    name: 'body',
     	                    anchor: '100%',
     	                    fieldLabel: 'Текст'
     	                },
     	                {
-    	                    xtype: 'datefield',
+    	                    xtype: 'xdatetime',
     	                    name: 'date_end',
-    	                    anchor: '25%',
+    	                    anchor: '50%',
     	                    fieldLabel: 'Окончание'
     	                },
     	                {
@@ -449,6 +523,22 @@ Ext.onReady(function(){
     	    ]
     	}
 
+    EBS.forms.ebs_accountsPanel.document_submitAction =  function(object, event, form, window){
+    	
+    	
+ 	    f=form;
+ 	    pub = function(){window.items.items[0].publish('ebs.accountdocument.change', 'msg');	}
+        
+        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
+        	
+        	pub();
+        	window.hide().destroy()
+            delete EBS.windows[window.id];
+
+        },failure: function(form,action) {        
+         	Ext.Msg.alert('Ошибка', action.result.msg )}});
+    }
+    
 /* ACCOUNTS FORMS*/
     EBS.forms.ebs_accountsPanel.edit_user = {
                                         xtype: 'panel',
@@ -478,7 +568,7 @@ Ext.onReady(function(){
 					                                        form = this.ownerCt.ownerCt.getForm();
 					                                        form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, 
 					                                        	success: function(form,action) {        
-					                                        		form.ownerCt.findParentByType('xinstancecontainer').ids={'account_id':action.result.account_id};
+					                                        		form.ownerCt.findParentByType('xinstancecontainer').ids={'id':action.result.account_id};
 					                                        	
 					                                        	Ext.Msg.alert('Данные были успешно сохранены', 'Данные были успешно сохранены' )
 					                                        	form.load({url:form.url,method:form.method,params:{'id':action.result.account_id}});
@@ -1351,85 +1441,16 @@ Ext.onReady(function(){
                 },
                 {
                     xtype: 'container',
-                    width: 1070,
+                    width:'100%',
                     layout: 'hbox',
                     flex: 1,
                     items: [
+                        
                         {
-                            xtype: 'grid',
+                            xtype: 'xaccounthardwaregrid',
                             height: 241,
-                            width: 512,
-                            title: 'Документы',
-                            store: new Ext.data.JsonStore(),
-                            columns: [
-                                {
-                                    xtype: 'gridcolumn',
-                                    dataIndex: 'string',
-                                    header: 'String',
-                                    sortable: true,
-                                    width: 100
-                                },
-                                {
-                                    xtype: 'numbercolumn',
-                                    align: 'right',
-                                    dataIndex: 'number',
-                                    header: 'Number',
-                                    sortable: true,
-                                    width: 100
-                                },
-                                {
-                                    xtype: 'datecolumn',
-                                    dataIndex: 'date',
-                                    header: 'Date',
-                                    sortable: true,
-                                    width: 100
-                                },
-                                {
-                                    xtype: 'booleancolumn',
-                                    dataIndex: 'bool',
-                                    header: 'Boolean',
-                                    sortable: true,
-                                    width: 100
-                                }
-                            ]
-                        },
-                        {
-                            xtype: 'grid',
-                            height: 241,
-                            //width: 1053,
-                            store: new Ext.data.JsonStore(),
                             title: 'Оборудование на руках',
-                            columns: [
-                                {
-                                    xtype: 'gridcolumn',
-                                    dataIndex: 'string',
-                                    header: 'String',
-                                    sortable: true,
-                                    width: 100
-                                },
-                                {
-                                    xtype: 'numbercolumn',
-                                    align: 'right',
-                                    dataIndex: 'number',
-                                    header: 'Number',
-                                    sortable: true,
-                                    width: 100
-                                },
-                                {
-                                    xtype: 'datecolumn',
-                                    dataIndex: 'date',
-                                    header: 'Date',
-                                    sortable: true,
-                                    width: 100
-                                },
-                                {
-                                    xtype: 'booleancolumn',
-                                    dataIndex: 'bool',
-                                    header: 'Boolean',
-                                    sortable: true,
-                                    width: 100
-                                }
-                            ]
+                            
                         }
                     ]
                 }
@@ -1718,19 +1739,12 @@ Ext.onReady(function(){
                                         xtype: 'form',
                                         id: 'account-credit',
                                         windowTitle:'Платёж',
-                                        layout: 'anchor',
+                                        layout: 'fit',
+                                        buttonAlign:'center',
+                                        padding:5,
                                         //autoHeight:true,
-                                        items:{
-                                            xtype: 'panel',
-                                            //autoHeight: true,
-                                            //height: 316,
-                                            //width: 462,
-                                            padding:'5px',
-                                            layout: 'anchor',
-                                            autoHeight:true,
-                                            //title: 'Проведение платежа',
-                                            items: [
-                                                {
+                                        items:[
+                                               {
                                                     xtype: 'fieldset',
                                                     autoHeight: false,
                                                     autoWidth: false,
@@ -1762,7 +1776,7 @@ Ext.onReady(function(){
                                                             fieldLabel: 'Комментарий'
                                                         },
                                                         {
-                                                            xtype: 'datefield',
+                                                            xtype: 'xdatetime',
                                                             name: 'created',
                                                             anchor: '100%',
                                                             fieldLabel: 'Дата'
@@ -1779,7 +1793,7 @@ Ext.onReady(function(){
                                                             fieldLabel: 'Истекает',
                                                             items: [
                                                                 {
-                                                                    xtype: 'datefield',
+                                                                    xtype: 'xdatetime',
                                                                     width: 212
                                                                 },
                                                                 {
@@ -1791,13 +1805,8 @@ Ext.onReady(function(){
                                                         }
                                                         
                                                     ]
-                                                },
-                                                {
-                                                    xtype: 'container',
-                                                    height: 29,
-                                                    width: 449,
-                                                    layout: 'column',
-                                                    items: [
+                                                }],
+                                                buttons:[                                 
                                                         {
                                                             xtype: 'button',
                                                             width: 131,
@@ -1805,6 +1814,7 @@ Ext.onReady(function(){
                                                         },
                                                         {
                                                             xtype: 'button',
+                                                            icon: media+'icons/16/printer.png',
                                                             width: 157,
                                                             text: 'Печать'
                                                         },
@@ -1816,13 +1826,13 @@ Ext.onReady(function(){
                                                             	//EBS.closeForm(this);
                                                             }
                                                         }
-                                                    ]
-                                                }
+                                                   
+                                                
                                                 
                                                 
                                             ]
     
-                                        }
+                                        
     									
                                       }
     EBS.forms.ebs_accountsPanel.edit_credit_submitAction =  function(object, event){

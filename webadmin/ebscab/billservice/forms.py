@@ -2,7 +2,7 @@
 from django import forms
 from datetime import datetime, date
 from django.forms import ModelForm
-from billservice.models import Tariff, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService
+from billservice.models import Tariff, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -86,9 +86,22 @@ class AccountAddonForm(forms.Form):
     deactivated = forms.DateTimeField(required=False)
     temporary_blocked = forms.CheckboxInput()
     
+class DocumentRenderForm(forms.Form):
+    account = forms.IntegerField(required=True)
+    #subaccount = forms.IntegerField(required=False)
+    contractnumber = forms.CharField(required=False)    
+    template = forms.IntegerField(required=True)
+    date_start = forms.DateTimeField(required=True)
+    date_end = forms.DateTimeField(required=False)
+
+    
 class AccountAddonServiceModelForm(ModelForm):
     class Meta:
         model = AccountAddonService
+      
+class DocumentModelForm(ModelForm):
+    class Meta:
+        model = Document
         
 class AccountTariffForm(ModelForm):
     class Meta:

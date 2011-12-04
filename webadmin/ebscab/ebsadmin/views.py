@@ -2,19 +2,20 @@
 
 from lib.decorators import render_to, ajax_request
 from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
-from billservice.models import Template
+from billservice.models import Template, AccountHardware
 from nas.models import Nas
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
 from django.db import connection
-from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm
+from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
+from billservice.forms import DocumentModelForm
 from utilites import cred
 import IPy
 from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
 from IPy import IP
 from utilites import rosClient
 import datetime
-
+from mako.template import Template as mako_template
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
         for key in result:
@@ -145,6 +146,13 @@ def document(request):
 
 @ajax_request
 @login_required
+def document_get(request):
+    id = request.POST.get('id')
+    item = Document.objects.get(id=id)
+    return {"records": instance_dict(item)}
+
+@ajax_request
+@login_required
 def template(request):
 
     items = Template.objects.all().order_by('name')
@@ -196,6 +204,24 @@ def addonservices(request):
     print instance_dict(item,normal_fields=True).keys()
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res}
+
+@ajax_request
+@login_required
+def accounthardware(request):
+    account_id = request.POST.get('account_id')
+    #print "subaccount", account_id
+    if account_id:
+        items = AccountHardware.objects.filter(account__id=account_id)
+    else:
+        return {"records": []}
+
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item,normal_fields=True))
+    #print instance_dict(item,normal_fields=True).keys()
 
     return {"records": res}
 
@@ -308,6 +334,31 @@ def tpchange_save(request):
         form = AccountTariffForm(request.POST, instance=item)
     else:
         form = AccountTariffForm(request.POST)
+        
+    if form.is_valid():
+        try:
+            form.save()
+            res={"success": True}
+        except Exception, e:
+            print e
+            res={"success": False, "message": str(e)}
+    else:
+        res={"success": False, "errors": form._errors}
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return res
+
+@ajax_request
+@login_required
+def document_save(request):
+    
+    id = request.POST.get('id')
+    if id:
+        item = Document.objects.get(id=id)
+        form = DocumentModelForm(request.POST, instance=item)
+    else:
+        form = DocumentModelForm(request.POST)
         
     if form.is_valid():
         try:
@@ -442,16 +493,18 @@ def account_save(request):
     if a.is_valid():
         contr = None
         if contract:
-            contr = ContractTemplate.objects.get(template=contract)
+            contr = ContractTemplate.objects.filter(template=contract)
+            if contr:
+                contr=contr[0]
             if acc:
                 pass
-        if newcontract and contr:
+        if newcontract:
             if not acc:
                 id=Account.objects.all().order_by("-id")[0].id+1
             else:
                 id = acc.id
-            contract_template = contr.template
-            contract_counter = contr.counter
+            contract_template = contr.template if contr else contract
+            contract_counter = contr.counter if contr else 0
             year=a.created.year
             month=a.created.month
             day=a.created.day
@@ -465,7 +518,8 @@ def account_save(request):
             d.update(model.__dict__)
 
             contract = contract_template % d
-            contr.count = contr.count+1 
+            if contr:
+                contr.count = contr.count+1 
             #cur.execute("UPDATE billservice_account SET contract=%s WHERE id=%s", (contract, id))
             #cur.execute("UPDATE billservice_contracttemplate SET counter=counter+1 WHERE id=%s", (template_id,))
         try:
@@ -981,4 +1035,40 @@ def contracttemplate(request):
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res}
-            
+      
+@ajax_request
+@login_required 
+def documentrender(request):
+    form = DocumentRenderForm(request.POST)
+    if form.is_valid():
+        template = Template.objects.get(id=form.cleaned_data.get('template'))
+        templ = mako_template(unicode(template.body), input_encoding='utf-8')
+        data=''
+        print "form.cleaned_data.get('template')",form.cleaned_data.get('template')
+        if template.type.id==1:
+    
+            account = Account.objects.get(id=form.cleaned_data.get('account'))
+            print account
+            #tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+            try:
+                data=templ.render_unicode(account=account)
+            except Exception, e:
+                data=u"Error %s" % str(e)
+        if template.type.id==2:
+            account = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0].id
+            #organization = self.connection.sql("SELECT * FROM billservice_organization LIMIT 1" )[0]
+            #bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
+            operator = self.connection.get("SELECT * FROM billservice_operator LIMIT 1")
+            try:
+                data=templ.render_unicode(account=account, operator=operator,  connection=self.connection)
+            except Exception, e:
+                data=u"Error %s" % str(e)
+    
+
+                       
+
+        res = {'success': True, 'body':data.encode("utf-8", 'replace')}
+    else:
+        res={"success": False, "errors": form._errors}
+    #print instance_dict(item).keys()
+    return res
