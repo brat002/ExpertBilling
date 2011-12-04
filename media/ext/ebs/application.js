@@ -125,10 +125,12 @@ Ext.onReady(function(){
                             ids:ids,
                             parent_id:account_id,
                             applyTo:Ext.get('body'),
-                            width:500,
-                            height:300,
+                            //width:500,
+                            //height:300,
+                            layout:'fit',
                             title:form_data.windowTitle,
                             autoHeight: true,
+                            modal:true,
                             closable:true,
                             viewConfig: {
                                 forceFit: true
@@ -144,6 +146,7 @@ Ext.onReady(function(){
                                     	//form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: false, success: function(form,action) {        
                                         //	form.closeForm()}})	
                                         form_callback(obj, e, form,this.ownerCt.ownerCt);
+                                        
                                         //
                                         //form.updateRecord(form.rec);
                                         //Update server data
@@ -212,23 +215,22 @@ Ext.onReady(function(){
            //if(!EBS.windows[window_key]){
            winCmp = Ext.get(window_key);
            if(!winCmp){
-                        winCmp = new ExInstancePanel({
-                            id:window_key+id,
+        	   		//alert('craca');
+                        winCmp = new ExInstanceWindow({
+                            id:window_key,
                             applyTo:Ext.get('body'),
                             instance_id:id,
                             ids:ids,
                             closable: true,
-                            parent_id:account_id,
-                            layout:'anchor',
+                            layout:'fit',
                             title:form_data.windowTitle,
                             autoHeight: false,
-                            closable:true,
                             viewConfig: {
                                 forceFit: true
                             },
                             
 
-                            plain: true,
+                            plain: false,
                             items: [form_data],
                         });
                         EBS.windows[window_key] = winCmp;
@@ -242,6 +244,7 @@ Ext.onReady(function(){
              form.load({url:form.url, method:'POST',params:{'id':id}} );
            }
              //form.load({url:'/account/', method:'GET',params:{'id':selection.items[0].id}} );
+           
              winCmp.show();
     }
     
@@ -1278,7 +1281,7 @@ Ext.onReady(function(){
             		   //Ext.Msg.alert(message);
             		   var me;
             		   me=this;
-            		   account_id=this.findParentByType('xinstancecontainer').ids.account_id;
+            		   account_id=this.findParentByType('xinstancecontainer').ids.id;
             		   
 			        	  if (account_id){
 			        		  //alert(account_id)
@@ -1305,7 +1308,7 @@ Ext.onReady(function(){
  			             // console.info('load',this,arguments);
  			        	  var account_id;
  			        	  //account_id=this.findParentByType('form').getForm().findField('id').value;
- 			        	  account_id=this.findParentByType('xinstancecontainer').ids.account_id;
+ 			        	  account_id=this.findParentByType('xinstancecontainer').ids.id;
  			        	  
  			        	  
  			        	  if (account_id){
@@ -1558,7 +1561,7 @@ Ext.onReady(function(){
           var config = {
            	   xtype:'grid',
                   stateful: true,
-                  stateId: 'stateAccountAddonServiceGrid',
+                  stateId: 'stateAccountAddonServiceGrid_',
                   collapsible: true,
                   //unstyled:true,
            	   	  store:new Ext.data.JsonStore({
@@ -1582,8 +1585,8 @@ Ext.onReady(function(){
       		        	root: 'records',
       		        	remoteSort:false,
       		        	sortInfo:{
-      		        		field:'username',
-      		        		direction:'ASC'
+      		        		field:'activated',
+      		        		direction:'DESC'
       		        	},
 
 
@@ -1674,8 +1677,13 @@ Ext.onReady(function(){
 
   });
 
-  Ext.reg('xaccountaddonservicesgrid', EBS.AccountAddonServiceGrid);
+  
 
+  
+  
+
+
+ 
   EBS.DocumentsGrid = Ext.extend(Ext.grid.GridPanel, {
       initComponent:function() {
          var config = {
@@ -1709,7 +1717,16 @@ Ext.onReady(function(){
 
 
           	   }),
-          	   plugins:['msgbus'],	
+          	 plugins:['msgbus'],	
+           	
+	     	   onChange:function(subject, message) {
+	     		   //Ext.Msg.alert(message);
+	     		   var me;
+	     		   me=this;
+	     		   this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.account_id);
+	     	       me.store.load();
+	     	       
+	     	    },
           	   tbar: [{
  			    icon: media+'icons/16/arrow_refresh.png',
  		        text: 'Обновить',
@@ -1721,7 +1738,7 @@ Ext.onReady(function(){
 			        text: 'Добавить',
 			        handler: function(){
 			     	   var account_id;
-			     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+			     	   account_id = this.findParentByType('xinstancecontainer').ids.id;
 			     	   EBS.displayForm('ebs_accountsPanel', 'document',{'account_id':account_id,id:null}, this.findParentByType('grid'))
 			     	   
 			        }
@@ -1731,7 +1748,7 @@ Ext.onReady(function(){
 			        handler: function(){
 			     	   var id;
 			     	   var account_id;
-			     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+			     	   account_id = this.findParentByType('xinstancecontainer').ids.id;
 			     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
 			     	   EBS.displayForm('ebs_accountsPanel', 'document',{'account_id':account_id,id:id}, this.findParentByType('grid'))
 			        }
@@ -1790,14 +1807,14 @@ Ext.onReady(function(){
           	            	sortable:true
           	            },
           	            {
-          	            	header:'Начало',
+          	            	header:'С',
           	            	dataIndex:'date_start',
           	            	sortable:true,
           	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
           	            	
           	            },
           	            {
-          	            	header:'Отключена',
+          	            	header:'По',
           	            	dataIndex:'date_end',
           	            	sortable:true,
           	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
@@ -2323,7 +2340,8 @@ EBS.ComboTemplate = Ext.extend(Ext.form.ComboBox, {
     initComponent:function() {
        var config = {
     		    displayField: 'name',
-    		    valueField: 'id', 
+    		    valueField: 'id',
+    		    
     		    mode: 'remote',
     		    editable:false,
     		    triggerAction: 'all',
@@ -2347,9 +2365,9 @@ EBS.ComboTemplate = Ext.extend(Ext.form.ComboBox, {
 
     		}
        // apply config
-       Ext.apply(this, Ext.apply(this.initialConfig, config));
+       Ext.apply(this, Ext.applyIf(this.initialConfig, config));
 
-       EBS.ComboHouse.superclass.initComponent.apply(this, arguments);
+       EBS.ComboTemplate.superclass.initComponent.apply(this, arguments);
    } // eo function initComponent
 
 
@@ -2396,7 +2414,7 @@ EBS.SystemUser = Ext.extend(Ext.form.ComboBox, {
    ,onRender:function() {
        var me = this;
        this.store.on('load',function(store) {
-         me.setValue(null, true);
+         me.setValue(null);
        })
        this.store.load();
        EBS.SystemUser.superclass.onRender.apply(this, arguments);
@@ -2618,6 +2636,154 @@ EBS.ComboSwitch = Ext.extend(Ext.form.ComboBox, {
 });
 
 Ext.reg('xcomboswitch', EBS.ComboSwitch);
+
+
+EBS.AccountHardwareGrid = Ext.extend(Ext.grid.GridPanel, {
+    initComponent:function() {
+       var config = {
+        	   xtype:'grid',
+               stateful: true,
+               stateId: 'stateAccountHardwareGrid_',
+               collapsible: false,
+               //unstyled:true,
+        	   	  store:new Ext.data.JsonStore({
+   		        	paramsAsHash: true,
+
+   		        	//autoLoad: {params:{start:0, limit:100,'account_id': this.findParentByType('xinstancecontainer').instance_id}},
+   		        	proxy: new Ext.data.HttpProxy({
+   		        		url: '/ebsadmin/accounthardware/',
+   		        		method:'POST',
+   		        	}),    
+   		        	fields: [{name: 'account', type:'id'},
+   		        		{name: 'hardware', type:'int'},
+   		        		{name: 'id', type:'int'},
+   		        		{name: 'datetime', type: 'date', dateFormat: Date.patterns.ISO8601Long},
+   		        		{name: 'returned',  type: 'date', dateFormat: Date.patterns.ISO8601Long},
+   		        		{name: 'comment', type:'string'},
+   		        		],
+   		        	root: 'records',
+   		        	remoteSort:false,
+   		        	sortInfo:{
+   		        		field:'datetime',
+   		        		direction:'DESC'
+   		        	},
+
+
+
+        	   }),
+        	   plugins:['msgbus'],	
+        	
+      	   onChange:function(subject, message) {
+      		   //Ext.Msg.alert(message);
+      		   var me;
+      		   me=this;
+      		   account_id=this.findParentByType('xinstancecontainer').ids.account_id;
+      		   
+		        	  if (account_id){
+		        		  //alert(account_id)
+		        		  this.store.setBaseParam('account_id',account_id);
+		        		  this.store.load();
+		        	  }
+      	       //Ext.Msg.alert(message);
+      	    },
+            selModel : new Ext.grid.RowSelectionModel({
+                 singleSelect : true
+                    }),
+        	   //autoHeight: true,
+        	   //autoWidth: true,
+        	   listeners: {
+			          render:function(){
+			             // console.info('load',this,arguments);
+			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
+			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
+			        	  if (this.findParentByType('xinstancecontainer').instance_id){
+			        		  this.store.load();
+			        	  }
+			        	  var me;
+	            		  me=this;
+			        	  me.subscribe('ebs.accounthardware.change', {fn:this.onChange, single:false});
+			          }
+        	   },
+               
+        	   autoScroll: true,
+        	 tbar: [{
+			    icon: media+'icons/16/arrow_refresh.png',
+		        text: 'Обновить',
+		        handler: function(){
+		        	this.ownerCt.ownerCt.store.load();
+		        }
+		       },{
+			        iconCls: 'icon-user-add',
+			        text: 'Добавить',
+			        handler: function(){
+			     	   var account_id;
+			     	   account_id = this.findParentByType('xinstancecontainer').ids.account_id;
+			     	   EBS.displayForm('ebs_accountsPanel', 'accounthardware',{'account_id':account_id,id:null}, this.findParentByType('grid'))
+			     	   
+			        }
+			    },{
+			        iconCls: 'icon-user-edit',
+			        text: 'Редактировать',
+			        handler: function(){
+			     	   var id;
+			     	   var account_id;
+			     	   account_id = this.findParentByType('xinstancecontainer').ids.account_id;
+			     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
+			     	   EBS.displayForm('ebs_accountsPanel', 'accounthardware',{'account_id':account_id,id:id}, this.findParentByType('grid'))
+			        }
+			    },{
+			        //ref: '../removeBtn',
+			        iconCls: 'icon-delete',
+			        text: 'Remove',
+			        //disabled: true,
+			        ref: '../removeButton',
+			        handler: function(){
+			     	   
+			        }
+			    }],
+        	   columns:[
+        	            {
+        	            	header:'id',
+        	            	dataIndex:'id',
+        	            	sortable:true
+        	            },
+        	            {
+        	            	header:'Оборудование',
+        	            	dataIndex:'hardware',
+        	            	sortable:true
+        	            },
+        	            {
+        	            	header:'Выдано',
+        	            	dataIndex:'datetime',
+        	            	sortable:true,
+        	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+        	            	
+        	            },
+        	            {
+        	            	header:'Возвращено',
+        	            	dataIndex:'deactivated',
+        	            	sortable:true,
+        	            	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
+        	            },
+        	            
+        	            ]
+        		   
+        		  
+           }
+
+    		
+       // apply config
+       Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+
+       EBS.AccountHardwareGrid.superclass.initComponent.apply(this, arguments);
+   } // eo function initComponent
+
+
+
+});
+
+Ext.reg('xaccounthardwaregrid', EBS.AccountHardwareGrid);
+Ext.reg('xaccountaddonservicesgrid', EBS.AccountAddonServiceGrid);
 /* EOF BASE Components*/
 
 
