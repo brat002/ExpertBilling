@@ -124,7 +124,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
     /**
      * @cfg {String} dateFormat Format of DateField. Can be localized. (defaults to 'm/y/d')
      */
-    ,dateFormat:'m/d/y'
+    ,dateFormat:'d.m.y'
     /**
      * @cfg {String} timeFormat Format of TimeField. Can be localized. (defaults to 'g:i A')
      */
@@ -192,18 +192,19 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
             modal: true
             ,title:'Выберите дату'    
             ,closable:true
-            ,border:false
+            ,border:true
             ,height: 330
             //,autoHeight: true
             ,width: 500
+            ,padding:1
             ,items:{
                 xtype: 'form',
-                
+                padding:5,
                 layout: 'table',
          	   layoutConfig:{ 
          	       columns: 4,
          	   }, 
-               //baseCls:'x-plain',
+               baseCls:'x-plain',
                defaults:{
                    margins:'0 5 0 0',  
                    padding:5,
@@ -217,16 +218,17 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                         xtype: 'radio',
                         boxLabel: 'Квартал',
                         name:'type',
-                        inputValue:'Quart'
+                        inputValue:'Quarter'
                     },
                     {
                         xtype: 'combo',
-                        padding:'5px',
+                        padding:'5px 5px 5px 5px',
                         xtype: 'combo',
                         name: 'quarter',
                         local:true,
                         displayField:'name',
                         hiddenName:'quarter',
+                        ref:'../quarter',
                         valueField:'quarter',
                         typeAhead: true,
                         mode: 'local',
@@ -235,11 +237,16 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                         editable:false,
                         store:  new Ext.data.ArrayStore({
                             fields: ['name','quarter'],
-                            data : [['1 квартал','1'], 
-                                    ['2 квартал','2'],
-                                    ['3 квартал','3'],
-                                    ['4 квартал','4'],] 
-                        })
+                            data : [['1 квартал',1], 
+                                    ['2 квартал',2],
+                                    ['3 квартал',3],
+                                    ['4 квартал',4],] 
+                        }),
+                        listeners:{
+                        	'render':function(){
+                        		this.setValue('1');
+                        	}
+                        }
 
                     },
                     {
@@ -247,6 +254,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                         padding:'5px',
                         xtype: 'combo',
                         name: 'quarter_year',
+                        ref:'../quarter_year',
                         local:true,
                         displayField:'year',
                         hiddenName:'year',
@@ -263,7 +271,12 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                                     ['2012'],
                                     ['2013'],
                                     ['2014'],] 
-                        })
+                        }),
+                        listeners:{
+                        	'render':function(){
+                        		this.setValue((new Date()).getFullYear());
+                        	}
+                        }
                         
 
                     },
@@ -284,6 +297,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                         xtype: 'combo',
                         padding:'5px',
                         name: 'this_month',
+                        ref:'../this_month',
                         local:true,
                         displayField:'name',
                         hiddenName:'month',
@@ -308,7 +322,12 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                                     ['Ноябрь','11'],
                                     ['Декабрь','12'],
                                     ] 
-                        })
+                        }),
+                        listeners:{
+                        	'render':function(){
+                        		this.setValue('1');
+                        	}
+                        }
 
                     },
                     {
@@ -316,6 +335,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                         padding:'5px',
                         xtype: 'combo',
                         name: 'month_year',
+                        ref:'../month_year',
                         local:true,
                         displayField:'year',
                         hiddenName:'year',
@@ -332,7 +352,12 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                                     ['2012'],
                                     ['2013'],
                                     ['2014'],] 
-                        })
+                        }),
+                        listeners:{
+                        	'render':function(){
+                        		this.setValue((new Date()).getFullYear());
+                        	}
+                        }
                         
 
                     },
@@ -349,22 +374,35 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                     },
                     {
                         xtype: 'datefield',
+                        name:'day',
                         colspan:3,
+                        ref:'../day',
+                        //steteful:true,
+                        //stateId:'xdatetime-day-state'
                     },
                   
                     {
                         xtype: 'radio',
                         boxLabel: 'Период',
                         name:'type',
-                        inputValue:'period'
+                        inputValue:'period',
+                        //disabled:true
                         
                     },
                     {
-                        xtype: 'datefield'
+                        xtype: 'datefield',
+                        name:'period_start',
+                        //steteful:true,
+                        //stateId:'xdatetime-day-state',
+                        //disabled:true
                     },
                     {
                         xtype: 'datefield',
                         colspan:2,
+                        name:'period_end',
+                        //steteful:true,
+                        //stateId:'xdatetime-day-state',
+                        //disabled:true
                      	   
                     },
                     {
@@ -389,7 +427,8 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                         boxLabel: 'Сейчас',
                         colspan:4,
                         name:'type',
-                        inputValue:'Now'
+                        inputValue:'Now',
+                        checked: true,
                      	   
                      	   
                     },
@@ -398,8 +437,8 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
                         xtype: 'button',
                         text: 'Выбрать',
                         handler: function(button){
-                        	var type = button.findParentByType('form').getForm().getValues()['type'];
-                        	alert(type);
+                        	button.findParentByType('window').hide()
+                        	
                         }
                     }
                 ]
@@ -407,9 +446,48 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         });
         
         this.win.on('hide', function(){
-        	//alert('cracaca');
-        	//alert(Date.today());
-            this.setDateTimeFromWin(this.win.title);
+        	me=this;
+        	form = me.win.items.items[0].getForm()
+        	selectedtype = form.getValues()['type'];
+        	//alert(me.win.this_month);
+        	if (selectedtype[0]=='Quarter'){
+        		
+        		
+        		if(me.win.quarter.getValue()==1){
+        			quarter=1
+        		}else{
+        			quarter=(me.win.quarter.getValue()-1)*3
+        		}
+        		
+        		this.setValue(new Date(me.win.quarter_year.getValue(),quarter,1));
+        	}
+        	if (selectedtype[2]=='day'){
+        		
+        		this.setValue(me.win.day.getValue());
+        	}
+        	if (selectedtype[4]=='ThisMonth'){
+        		
+        		var dt = new Date();
+        		
+        		//alert(dt.getYear());
+        		this.setValue(new Date(dt.getFullYear(),dt.getMonth(),1));
+        	}
+        	
+
+        	if (selectedtype[5]=='ThisWeek'){
+            	var dif, d = new Date(); // Today's date
+            	dif = (d.getDay() + 6) % 7; // Number of days to subtract
+            	
+        		this.setValue(new Date(d - dif * 24*60*60*1000));
+        	}
+        	if (selectedtype[6]=='Now'){
+        		this.setValue(new Date());
+        	}
+        	if (selectedtype[1]=='Month'){
+        		this.setValue(new Date(me.win.month_year.getValue(), me.win.this_month.getValue(), 1));
+        	}
+        	//new Date('1/10/2007 03:05:01 PM GMT-0600')
+            //this.setDateTimeFromWin(getSelectedDate());
         }, this);
         this.bt.on('click', function(obj, ev){
             // create the window on the first click and reuse on subsequent clicks
