@@ -596,7 +596,7 @@ Ext.onReady(function(){
 										               iconCls: 'icon-moneyadd',
 										               text: 'Пополнить баланс',
 										               handler: function(){
-										            	   
+										            	    id = this.findParentByType('xinstancecontainer').ids.id;
 										                	EBS.displayCustomForm('ebs_accountsPanel', 'edit_credit',{'account_id':id}, this)
 										               }
 										           },
@@ -1861,9 +1861,18 @@ Ext.onReady(function(){
                                         windowTitle:'Платёж',
                                         layout: 'anchor',
                                         buttonAlign:'center',
+                                        url:'/ebsadmin/transaction/',
+                                        save_url:'/ebsadmin/transaction/set/',
+                                        listeners:{
+                            				'render': function(){
+                            					alert(this.findParentByType('xinstancewindow').ids.account_id);
+                            					this.getForm().findField('account').setValue(this.findParentByType('xinstancewindow').ids.account_id);
+                            				},
+                                        },
                                         padding:5,
                                         width:600,
                                         heigth:250,
+                                        plugins:['msgbus'],
                                         anchor: '100% 100%',
                                         //autoHeight:true,
                                         items:[
@@ -1874,7 +1883,11 @@ Ext.onReady(function(){
                                                     height: 231,
                                                     title: 'Параметры платежа',
                                                     labelWidth: 150,
-                                                    items: [{
+                                                    items: [
+                                                        {
+                                                            xtype: 'hidden',
+                                                            name: 'account',
+                                                        },{
                                                     		xtype:'xtrtypecombo',
                                                     		name:'transaction_type_id',
                                                     		id:'transaction_type_id',
@@ -1911,7 +1924,8 @@ Ext.onReady(function(){
                                                             fieldLabel: 'Обещанный платёж',
                                                             listeners:{
                                                             	'check':function (cb,state){
-                                                            		cb.ownerCt.promise.setDisabled(false);
+                                                            		
+                                                            		Ext.getCmp('transactionid').setDisabled(!Ext.getCmp('transactionid').disabled);
                                                             	}
                                                             }
                                                             
@@ -1920,17 +1934,19 @@ Ext.onReady(function(){
                                                             xtype: 'compositefield',
                                                             anchor: '100%',
                                                             fieldLabel: 'Истекает',
+                                                            id:'transactionid',
                                                             disabled:true,
                                                             ref:'../promise',
                                                             items: [
                                                                 {
                                                                     xtype: 'xdatetime',
+                                                                    name:'end_promise',
                                                                     width: 212
                                                                 },
                                                                 {
                                                                     xtype: 'checkbox',
                                                                     boxLabel: 'Никогда',
-                                                                    fieldLabel: 'Label'
+                                                                    name:'promise_never_expire',
                                                                 }
                                                             ]
                                                         }
@@ -1941,7 +1957,19 @@ Ext.onReady(function(){
                                                         {
                                                             xtype: 'button',
                                                             width: 131,
-                                                            text: 'Зачислить'
+                                                            text: 'Зачислить',
+                                                            handler: function(button, evnt){
+                                                            	form=button.findParentByType('form').getForm();
+                                                          	    pub = function(){form.publish('ebs.ballance.change', 'msg');	}
+                                                                 
+                                                                 form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
+                                                                 	
+                                                                 	pub();
+                                                                 	//form.closeForm()
+                                                                 },failure: function(form,action) {        
+                                                                  	Ext.Msg.alert('Ошибка', action.result.msg )}});
+                                                             }
+                                                            
                                                         },
                                                         {
                                                             xtype: 'button',
@@ -1953,8 +1981,8 @@ Ext.onReady(function(){
                                                             xtype: 'button',
                                                             width: 158,
                                                             text: 'Закрыть',
-                                                            handler:{
-                                                            	//EBS.closeForm(this);
+                                                            handler:function(button, evnt){
+                                                            	EBS.closeForm(button);
                                                             }
                                                         }
                                                    
@@ -1966,9 +1994,9 @@ Ext.onReady(function(){
                                         
     									
                                       }
-    EBS.forms.ebs_accountsPanel.edit_credit_submitAction =  function(object, event){
-        form = object.ownerCt;
-        //console.log(form);
+
+EBS.forms.ebs_accountsPanel.edit_credit_submitAction =  function(object, event, form, window){
+    	 
     }
 /* EOF ACCOUNTS FORMS*/
 

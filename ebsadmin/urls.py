@@ -18,6 +18,7 @@ urlpatterns = patterns('ebsadmin.views',
      url(r'^suspendedperiod/$', 'suspendedperiod'),
      url(r'^suspendedperiod/get/$', 'suspendedperiod_get'),
      url(r'^suspendedperiod/set/$', 'suspendedperiod_set'),
+     url(r'^transaction/set/$', 'transaction_set'),
      
      url(r'^document/$', 'document'),
      url(r'^document/set/$', 'document_save'),
