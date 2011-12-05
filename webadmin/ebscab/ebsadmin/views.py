@@ -860,6 +860,30 @@ def suspendedperiod_set(request):
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return res
 
+@ajax_request
+@login_required
+def transaction_set(request):
+    account_id = request.POST.get('account_id')
+    if id:
+        item = SuspendedPeriod.objects.get(id=id)
+        form = SuspendedPeriodModelForm(request.POST, instance=item)
+    else:
+        form = SuspendedPeriodModelForm(request.POST)
+        
+    if form.is_valid():
+        try:
+            form.save()
+            res={"success": True}
+        except Exception, e:
+            print e
+            res={"success": False, "message": str(e)}
+    else:
+        res={"success": False, "errors": form._errors}
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return res
+
 def instance_dict(instance, key_format=None, normal_fields=False):
     """
     Returns a dictionary containing field names and values for the given

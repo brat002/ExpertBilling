@@ -1,1 +1,0 @@
-LOGIN_URL = '/helpdesk/login/'
