@@ -519,7 +519,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
 
         // render underlying hidden field
         Ext.ux.form.DateTime.superclass.onRender.call(this, ct, position);
-
+        this.initDateValue();
         // render DateField and TimeField
         // create bounding table
         var t;
