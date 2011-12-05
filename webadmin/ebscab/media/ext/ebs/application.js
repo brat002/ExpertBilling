@@ -459,6 +459,7 @@ Ext.onReady(function(){
                                                     
                                                     
                                                     EBS.windowCmp.add(cmp);
+                                                    cmp.show()
                                                     
                                                     
                                                 }
@@ -467,11 +468,13 @@ Ext.onReady(function(){
                                                     xtype:type
                                                     });
                                                 EBS.windowCmp.add(cmp);
+                                                cmp.show()
                                             }
 
                                         }
 
                                     }
+                                    
                         }
         }
     });

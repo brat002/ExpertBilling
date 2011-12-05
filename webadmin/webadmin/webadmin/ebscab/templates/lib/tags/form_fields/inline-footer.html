@@ -1,8 +1,0 @@
-{% extends 'lib/tags/form_fields/inline.html' %}
-{% block field-content %}
-{{ field }}
-{% if field.errors %}<div class="field-errors">{{ field.errors }}</div>{% endif %}
-{% endblock %}
-{% block footer %}
-{% if field.help_text %}<div class="field-notes">{{ field.help_text }}</div>{% endif %}
-{% endblock %}
