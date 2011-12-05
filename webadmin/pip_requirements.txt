@@ -1,0 +1,10 @@
+psycopg2
+dateutils
+pytils
+pycrypto
+simplejson
+#rrdtool
+pexpect
+django-compress
+django==1.2
+
