@@ -10,7 +10,10 @@ Ext.onReady(function(){
                  *Будут перенесены в базовый компонент. менять сразу во всех компонентах!
                  **/
                 this.tbFormCallBack = function(self, action){EBS.displayForm(self.xtype, action, self)}
-                this.tbCustomFormCallBack = function(self, action){EBS.displayCustomForm(self.xtype, action,{}, self)}
+                this.tbCustomFormCallBack = function(self, action){
+                	id=self.selModel.selections.items[0].id;
+                	EBS.displayCustomForm(self.xtype, action,{'account_id':id}, self)
+                	}
 
                 this.tbNewFormInTabCallBack = function(self, action){
                 	id=null;
@@ -593,7 +596,8 @@ Ext.onReady(function(){
 										               iconCls: 'icon-moneyadd',
 										               text: 'Пополнить баланс',
 										               handler: function(){
-										            	   EBS.closeForm(this.ownerCt.ownerCt)
+										            	   
+										                	EBS.displayCustomForm('ebs_accountsPanel', 'edit_credit',{'account_id':id}, this)
 										               }
 										           },
 										           {
@@ -712,7 +716,7 @@ Ext.onReady(function(){
                        items: [
                            {
                                xtype: 'container',
-                               height: 817,
+                               height: 1200,
                                width: 412,
                                layout: 'vbox',
                                items: [
@@ -1038,12 +1042,48 @@ Ext.onReady(function(){
                    	                            fieldLabel: 'Подъезд'
                    	                        }
                    	                        ]
+                                   },
+                                   {
+                                       xtype: 'container',
+                                       layout: 'form',
+                                       items: [
+												{
+												    xtype: 'textarea',
+												    height: 113,
+												    width: 300,
+												    name: 'comment',
+												    fieldLabel: 'Комментарий'
+												}
+                                       ]
+                                   },
+                                   {
+                                       xtype: 'fieldset',
+                                       height: 112,
+                                       width: 574,
+                                       title: 'Опции',
+                                       items: [
+                                           {
+                                               xtype: 'checkbox',
+                                               boxLabel: 'Разрешить активацию подключаемых услуг',
+                                               anchor: '100%',
+                                               fieldLabel: 'Label',
+                                               hideLabel: true
+                                           },
+                                           {
+                                               xtype: 'checkbox',
+                                               boxLabel: 'Разрешить вход в веб-кабинет',
+                                               anchor: '100%',
+                                               fieldLabel: 'Label',
+                                               hideLabel: true
+                                           }
+                                       ]
                                    }
+                                   
                                ]
                            },
                            {
                                xtype: 'container',
-                               height: 1000,
+                               height: 1400,
                                width: 700,
                                layout: 'vbox',
                                items: [
@@ -1312,48 +1352,7 @@ Ext.onReady(function(){
 			                            title: 'Документы'
 			                        },
 				                ]},
-                           {
-                               xtype: 'container',
-                               layout: 'column',
-                               flex: 1,
-                               items: [
-                                   {
-                                       xtype: 'container',
-                                       layout: 'form',
-                                       items: [
-                                           {
-                                               xtype: 'textarea',
-                                               height: 113,
-                                               width: 300,
-                                               name: 'comment',
-                                               fieldLabel: 'Комментарий'
-                                           }
-                                       ]
-                                   },
-                                   {
-                                       xtype: 'fieldset',
-                                       height: 112,
-                                       width: 574,
-                                       title: 'Опции',
-                                       items: [
-                                           {
-                                               xtype: 'checkbox',
-                                               boxLabel: 'Разрешить активацию подключаемых услуг',
-                                               anchor: '100%',
-                                               fieldLabel: 'Label',
-                                               hideLabel: true
-                                           },
-                                           {
-                                               xtype: 'checkbox',
-                                               boxLabel: 'Разрешить вход в веб-кабинет',
-                                               anchor: '100%',
-                                               fieldLabel: 'Label',
-                                               hideLabel: true
-                                           }
-                                       ]
-                                   }
-                               ]
-                           }
+                           
                        ]
                    },
                    
@@ -1860,9 +1859,12 @@ Ext.onReady(function(){
                                         xtype: 'form',
                                         id: 'account-credit',
                                         windowTitle:'Платёж',
-                                        layout: 'fit',
+                                        layout: 'anchor',
                                         buttonAlign:'center',
                                         padding:5,
+                                        width:600,
+                                        heigth:250,
+                                        anchor: '100% 100%',
                                         //autoHeight:true,
                                         items:[
                                                {
@@ -1906,12 +1908,20 @@ Ext.onReady(function(){
                                                             xtype: 'checkbox',
                                                             boxLabel: 'Да',
                                                             anchor: '100%',
-                                                            fieldLabel: 'Обещанный платёж'
+                                                            fieldLabel: 'Обещанный платёж',
+                                                            listeners:{
+                                                            	'check':function (cb,state){
+                                                            		cb.ownerCt.promise.setDisabled(false);
+                                                            	}
+                                                            }
+                                                            
                                                         },
                                                         {
                                                             xtype: 'compositefield',
                                                             anchor: '100%',
                                                             fieldLabel: 'Истекает',
+                                                            disabled:true,
+                                                            ref:'../promise',
                                                             items: [
                                                                 {
                                                                     xtype: 'xdatetime',
