@@ -195,13 +195,13 @@ Ext.onReady(function(){
            id=ids.id;
            account_id=ids.account_id;
             //Create edit window
-           selection = self.selModel.selections;
+           //selection = self.selModel.selections;
            /*if(selection.items.length!=1 ){
                Ext.Msg.alert(i18n.information,i18n.please_select_one_row);
                return;
             }
             */
-           rec = selection.items[0];
+           //rec = selection.items[0];
            //alert(rec.id);
            form = 'EBS.forms.'+xtype+'.'+action;
            //alert(form);
@@ -225,9 +225,12 @@ Ext.onReady(function(){
                             instance_id:id,
                             ids:ids,
                             closable: true,
-                            layout:'fit',
+                            autoHeight: true,
+                            autoWidth: true,
+                            
+                            modal:true,
+                            stateful:false,
                             title:form_data.windowTitle,
-                            autoHeight: false,
                             viewConfig: {
                                 forceFit: true
                             },
