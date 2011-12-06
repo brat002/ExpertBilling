@@ -2,13 +2,13 @@
 
 from lib.decorators import render_to, ajax_request
 from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
-from billservice.models import Template, AccountHardware, SuspendedPeriod
+from billservice.models import Template, AccountHardware, SuspendedPeriod, Operator, Transaction
 from nas.models import Nas
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
-from billservice.forms import DocumentModelForm, SuspendedPeriodModelForm
+from billservice.forms import DocumentModelForm, SuspendedPeriodModelForm, TransactionModelForm
 from utilites import cred
 import IPy
 from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
@@ -863,20 +863,21 @@ def suspendedperiod_set(request):
 @ajax_request
 @login_required
 def transaction_set(request):
-    account_id = request.POST.get('account_id')
-    if id:
-        item = SuspendedPeriod.objects.get(id=id)
-        form = SuspendedPeriodModelForm(request.POST, instance=item)
-    else:
-        form = SuspendedPeriodModelForm(request.POST)
+    account_id = request.POST.get('account')
+    
+    form = TransactionModelForm(request.POST)
         
     if form.is_valid():
         try:
-            form.save()
-            res={"success": True}
+            tr=form.save(commit=False)
+            #tr.update_ballance()
+            tr.summ=tr.summ*(-1)
+            tr.systemuser = request.user.account
+            tr.save()
+            res={"success": True, 'transaction_id':tr.id}
         except Exception, e:
             print e
-            res={"success": False, "message": str(e)}
+            res={"success": False, "msg": str(e)}
     else:
         res={"success": False, "errors": form._errors}
     
@@ -977,7 +978,7 @@ def transactiontypes(request):
     #from django.http import HttpResponse
     res=[]
     for item in items:
-        res.append({"id":item.id, "name":item.name})
+        res.append({"id":item.id, "name":item.name, "internal_name":item.internal_name})
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
@@ -1137,5 +1138,36 @@ def documentrender(request):
         res = {'success': True, 'body':data.encode("utf-8", 'replace')}
     else:
         res={"success": False, "errors": form._errors}
+    #print instance_dict(item).keys()
+    return res
+
+@ajax_request
+@login_required 
+def cheque_render(request):
+    id = request.POST.get('id')#transaction_id
+    transaction = Transaction.objects.get(id=id)
+    template = Template.objects.get(type__id=5)
+    templ = mako_template(unicode(template.body), input_encoding='utf-8')
+    data=''
+   
+   
+
+    account = transaction.account
+    #TODO:Сделать дефолтного оператора
+    
+    operator = Operator.objects.all()
+    if operator:
+        operator = operator[0]
+    try:
+        data=templ.render_unicode(account=account, transaction=transaction, operator=operator)
+        
+    except Exception, e:
+        data=u"Error %s" % str(e)
+
+
+                       
+    res = {'success': True, 'body':data.encode("utf-8", 'replace')}
+    
+
     #print instance_dict(item).keys()
     return res

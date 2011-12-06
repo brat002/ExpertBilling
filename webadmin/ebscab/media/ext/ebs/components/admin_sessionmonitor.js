@@ -41,12 +41,7 @@ Ext.onReady(function(){
              this.topToolbar = new Ext.Toolbar({
                     enableOverflow: true,
                     items:[
-						{
-						    icon: media+'icons/16/add.png',
-						    height:16,width:16,
-						    text: i18n.edit,
-						    handler: this.tbNewFormInTabCallBack.createCallback(this, 'edit_user')
-						},
+						
                          {
                             icon: media+'icons/16/pencil.png',
                             height:16,width:16,
@@ -61,54 +56,42 @@ Ext.onReady(function(){
                         },
                         {xtype: 'tbseparator'},
                         {
-                            xtype: 'tbbutton',
-                            text: 'Действия',
-                            icon: media+'icons/16/new/user.png',
+                            text: 'Сбросить сессию',
+                            icon: media+'icons/16/printer.png',
                             height:16,width:16,
-                            menu: [
-                                {
-                                    text : "Редактировать кредит",
-                                    icon: media+'icons/16/new/cog.png',
-                                    handler: this.tbCustomFormCallBack.createCallback(this,'edit_credit')
-                                },{
-                                    text : i18n.accounts.edit_server,
-                                    icon: media+'icons/16/new/cog.png',
-                                    handler: this.tbFormCallBack.createCallback(this,'edit_server')
-                                },{
-                                    text : i18n.accounts.set_ipn,
-                                    icon: media+'icons/16/new/cog.png',
-                                    handler: this.tbFormCallBack.createCallback(this,'set_ipn')
-                                },{
-                                    text : i18n.accounts.set_vpn,
-                                    icon: media+'icons/16/new/cog.png',
-                                    handler: this.tbFormCallBack.createCallback(this,'edit_server')
-                                },{
-                                    text : i18n.accounts.set_mac,
-                                    icon: media+'icons/16/new/cog.png',
-                                    handler: this.tbFormCallBack.createCallback(this,'set_mac')
-                                },{
-                                    text : i18n.accounts.set_ipn_from_pool,
-                                    icon: media+'icons/16/new/cog.png',
-                                    handler: this.tbFormCallBack.createCallback(this,'set_ipn_from_pool')
-                                },{
-                                    text : i18n.accounts.set_vpn_from_pool,
-                                    icon: media+'icons/16/new/cog.png',
-                                    handler: this.tbFormCallBack.createCallback(this,'set_vpn_from_pool')
-                                },{
-                                    text : i18n.accounts.set_flags,
-                                    icon: media+'icons/16/new/cog.png',
-                                    handler: this.tbFormCallBack.createCallback(this,'set_flags')
-                                }
-
-                            ]
-                        },{xtype: 'tbseparator'},{
-                            text: i18n.save,
-                            icon: media+'icons/16/accept.png',
-                            height:16,width:16,
-                            tooltip: i18n.saveToolTip,
-                            handler: EBS.store.accounts.save
-                        }
-                        ,{xtype: 'tbseparator'},{
+                            tooltip: i18n.printToolTip,
+                            handler: function(){Ext.ux.Printer.print(this.ownerCt.ownerCt)}
+                        },
+                        
+                        	       {
+                        	    	   xtype: 'checkbox',
+                        	    	   boxLabel:'Только активные',
+                        	    	   width:130,
+                        	    		   
+                        	       },
+                        	       {xtype: 'tbseparator'},
+                        	       {
+                        	    	   //xtype:'label',
+                        	    	   text:'c',
+                        	    	   width:10,
+                        	       },
+                        	       {
+                        	    	   xtype:'xdatetime',
+                        	    	   width:250,
+                        	    	   
+                        	       },
+                        	       {
+                        	    	   //xtype:'label',
+                        	    	   text:'по',
+                        	    	   width:10,
+                        	       },
+                        	       {
+                        	    	   xtype:'xdatetime',
+                        	    	   width:250,
+                        	    	   
+                        	       }
+                        	      
+                        ,{
                             text: 'Обновить',
                             icon: media+'icons/16/arrow_refresh.png',
                             height:24,width:24,

@@ -2,7 +2,7 @@
 from django.db import models
 from ebscab.nas.models import Nas, TrafficClass, TrafficClass, Switch
 from django.contrib.auth.models import User
-
+from django.db.models import F
 import datetime, time
 from django.contrib.contenttypes.models import ContentType
 
@@ -701,7 +701,7 @@ class Transaction(models.Model):
     
     approved = models.BooleanField(default=True)
     tarif=models.ForeignKey(Tariff, blank=True, null=True)
-    summ=models.FloatField(default=0, blank=True)
+    summ=models.DecimalField(default=0, blank=True, decimal_places=10,max_digits=20)
     description = models.TextField(default='', blank=True)
     created=models.DateTimeField(auto_now_add=True, default='')
     promise=models.BooleanField(default=False) 
@@ -709,6 +709,9 @@ class Transaction(models.Model):
     promise_expired = models.BooleanField(default=False)
     systemuser=models.ForeignKey(to='SystemUser')
 
+    #def update_ballance(self):
+    #    Account.objects.filter(id=self.account_id).update(ballance=F('ballance')+self.summ)
+        
 
     class Admin:
         list_display=('account',  'tarif', 'summ', 'description', 'created')

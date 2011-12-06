@@ -1,6 +1,7 @@
 Ext.onReady(function(){
     Ext.ns('EBS.forms.ebs_accountsPanel')
     EBS.conponents.accountsGrid = Ext.extend(EBS.base.GridPanel, {
+    	 
          initComponent: function() {
                 /*
                  *ф-я вызывается в менюшке. В качестве параметров идут self, вызываемая ф-я, если нужно - параметры.
@@ -9,6 +10,8 @@ Ext.onReady(function(){
                  *
                  *Будут перенесены в базовый компонент. менять сразу во всех компонентах!
                  **/
+        	 
+        	 	
                 this.tbFormCallBack = function(self, action){EBS.displayForm(self.xtype, action, self)}
                 this.tbCustomFormCallBack = function(self, action){
                 	id=self.selModel.selections.items[0].id;
@@ -126,7 +129,7 @@ Ext.onReady(function(){
 
 
 
-
+             
              Ext.apply(this, {
                                 id:'accounts_list',
                                 view: new Ext.grid.GroupingView(),
@@ -140,6 +143,13 @@ Ext.onReady(function(){
                                     menuDisabled: false,
                                     //width: 20
                                 },
+                                plugins:['msgbus'],
+                           	 	onChange:function(subject, message) {
+                         		   //Ext.Msg.alert(message);
+                         		   this.store.load();
+                         		   
+                         	       //Ext.Msg.alert(message);
+                         	    },
                                 columns : [
                                     {
                                         header   : '#',
@@ -342,22 +352,27 @@ Ext.onReady(function(){
                             //bbar:this.pagination
                 });
             this.bbar.store = this.store;
+            
             this.on('rowdblclick', function(eventGrid, rowIndex, e) {
             	this.tbFormInTabCallBack(this, 'edit_user',this.selModel.selections.items[0].id);
             	
             	}, this);            
+            this.on('render', function(){this.subscribe('ebs.ballance.change', {fn:this.onChange, single:false});}, this)
             EBS.conponents.accountsGrid.superclass.initComponent.apply(this, arguments);
+            
             //this.bbar.updateInfo();
+            
 
          } //initComponent
+  	  
      });
 
     	
     EBS.forms.ebs_accountsPanel.document = {
     	    xtype: 'form',
     	    width: 905,
-    	    height: 580,
-    	    title: 'Документ',
+    	    height: 680,
+    	    windowTitle: 'Документ',
     	    layout:'fit',
     	    plugins:['msgbus'],
     	    url:'/ebsadmin/document/get/', 
@@ -368,7 +383,10 @@ Ext.onReady(function(){
  		        text: 'Распечатать',
  		        handler: function(){
  		        	//alert(this.ownerCt.ownerCt.url);
- 		        	Ext.ux.Printer.print(this.ownerCt.ownerCt.getForm().findField('body'));
+ 		        	//Ext.ux.Printer.print();
+ 		        	var myWindow = window.open('', '', 'width=200,height=100');
+                    myWindow.document.write(this.ownerCt.ownerCt.getForm().findField('body').getValue());
+                    myWindow.print();
  		        	
  		        }
  		       }],
@@ -507,7 +525,11 @@ Ext.onReady(function(){
     	                    ref:'../editor',
     	                    name: 'body',
     	                    anchor: '100%',
-    	                    fieldLabel: 'Текст'
+    	                    fieldLabel: 'Текст',
+    	                    plugins: [
+    	                              new Ext.ux.form.HtmlEditor.Word(),  
+    	                              new Ext.ux.form.HtmlEditor.RemoveFormat() 
+    	                      ],
     	                },
     	                {
     	                    xtype: 'xdatetime',
@@ -820,14 +842,7 @@ Ext.onReady(function(){
 					                            fieldLabel: 'Дата создания'
 					                        },
 					                        {
-					                            xtype: 'container',
-					                            forceLayout: true,
-					                            layout: 'hbox',
-					                            anchor: '100%',
-					                            fieldLabel: 'Номер договора',
-					                            pack: 'center',
-					                            items: [
-					                                {
+					                        			fieldLabel: '№ базового договора',
 					                                    xtype: 'combo',
 					                                    name:'contract',
 					                                    flex: 1,
@@ -869,13 +884,7 @@ Ext.onReady(function(){
     	                                     		        }])
     	                                     		    }),
 	    	                                            
-					                                },
-					                                {
-					                                    xtype: 'button',
-					                                    text: 'Печать',
-					                                    flex: 1
-					                                }
-					                            ]
+					                                
 					                        }
 					                    ]
                                 },
@@ -1885,11 +1894,14 @@ Ext.onReady(function(){
                                                     items: [
                                                         {
                                                             xtype: 'hidden',
+                                                            name: 'id',
+                                                        },{
+                                                            xtype: 'hidden',
                                                             name: 'account',
                                                         },{
                                                     		xtype:'xtrtypecombo',
-                                                    		name:'transaction_type_id',
-                                                    		id:'transaction_type_id',
+                                                    		name:'type',
+                                                    		hiddenName:'type',
                                                     	},
                                                         
                                                         {
@@ -1959,12 +1971,14 @@ Ext.onReady(function(){
                                                             text: 'Зачислить',
                                                             handler: function(button, evnt){
                                                             	form=button.findParentByType('form').getForm();
-                                                          	    pub = function(){form.publish('ebs.ballance.change', 'msg');	}
+                                                          	    pub = function(){button.findParentByType('form').publish('ebs.ballance.change', {'account_id':form.findField('account').getValue()});	}
                                                                  
                                                                  form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
                                                                  	
                                                                  	pub();
                                                                  	//form.closeForm()
+                                                                 	button.setDisabled(true);
+                                                                 	form.findField('id').setValue(action.result.transaction_id)
                                                                  },failure: function(form,action) {        
                                                                   	Ext.Msg.alert('Ошибка', action.result.msg )}});
                                                              }
@@ -1974,7 +1988,30 @@ Ext.onReady(function(){
                                                             xtype: 'button',
                                                             icon: media+'icons/16/printer.png',
                                                             width: 157,
-                                                            text: 'Печать'
+                                                            text: 'Печать',
+                                                            handler:function(button, evnt){
+                                                            	form=button.findParentByType('form').getForm()
+                                                            	Ext.Ajax.request({
+                                    	                            params: {'id': form.findField('id').getValue()},
+                                    	                            url: '/ebsadmin/render/cheque/',
+                                    	                            success: function (resp) {
+                                    	                                var data;
+                                    	                                data = Ext.decode(resp.responseText);
+                                    	                                if (data.success === true) {
+                                    	                                    
+                                    	                                    
+                                    	                                    var myWindow = window.open('', '', 'width=200,height=100');
+                                    	                                    myWindow.document.write(data.body);
+                                    	                                    myWindow.print();
+                                    	                                } else {
+                                    	                                    Ext.MessageBox.alert('Ошибка', 'Состояние не изменено. '+data.msg);
+                                    	                                }
+                                    	                            },
+                                    	                            failure: function () {
+                                    	                            	Ext.MessageBox.alert('Ошибка', 'Состояние не изменено');
+                                    	                            }
+                                    	                        });
+                                                            }
                                                         },
                                                         {
                                                             xtype: 'button',
