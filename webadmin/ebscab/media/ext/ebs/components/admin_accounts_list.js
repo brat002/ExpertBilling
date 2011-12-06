@@ -1865,7 +1865,6 @@ Ext.onReady(function(){
                                         save_url:'/ebsadmin/transaction/set/',
                                         listeners:{
                             				'render': function(){
-                            					alert(this.findParentByType('xinstancewindow').ids.account_id);
                             					this.getForm().findField('account').setValue(this.findParentByType('xinstancewindow').ids.account_id);
                             				},
                                         },
@@ -1982,7 +1981,7 @@ Ext.onReady(function(){
                                                             width: 158,
                                                             text: 'Закрыть',
                                                             handler:function(button, evnt){
-                                                            	EBS.closeForm(button);
+                                                            	EBS.closeForm(button.ownerCt);
                                                             }
                                                         }
                                                    
