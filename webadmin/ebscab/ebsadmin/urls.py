@@ -11,6 +11,7 @@ urlpatterns = patterns('ebsadmin.views',
      url(r'^tpchange/$', 'tpchange'),
      url(r'^tpchange/set/$', 'tpchange_save'),
      url(r'^actions/set/$', 'actions_set'),
+     url(r'^render/cheque/$', 'cheque_render'),
      
      url(r'^accountaddonservices/$', 'accountaddonservices'),
      url(r'^accountaddonservices/get/$', 'accountaddonservices_get'),

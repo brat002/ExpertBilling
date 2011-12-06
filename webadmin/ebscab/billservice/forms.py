@@ -2,7 +2,7 @@
 from django import forms
 from datetime import datetime, date
 from django.forms import ModelForm
-from billservice.models import Tariff, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod
+from billservice.models import Tariff, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -107,7 +107,12 @@ class SuspendedPeriodModelForm(ModelForm):
     class Meta:
         model = SuspendedPeriod
         exclude = ('activated_by_account',)
-            
+
+class TransactionModelForm(ModelForm):
+    class Meta:
+        model = Transaction
+        exclude = ('systemuser',)
+        
 class AccountTariffForm(ModelForm):
     class Meta:
         model = AccountTarif
