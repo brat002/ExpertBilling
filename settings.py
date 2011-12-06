@@ -272,6 +272,7 @@ COMPRESS_JS = {
         #Main window tabs plugin support
         "ext/ux/TabScrollerMenu.js",
         "ext/ebs/plugins/msgbus.js",
+        "ext/ux/Ext.ux.HtmlEditor.Plugins-all-debug.js",
         #"ext/ebs/plugins/date.js",
         
         #plugins

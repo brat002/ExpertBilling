@@ -125,22 +125,22 @@ Ext.onReady(function(){
                             ids:ids,
                             parent_id:account_id,
                             applyTo:Ext.get('body'),
-                            //width:500,
-                            //height:300,
-                            //layout:'fit',
+                            width:form_data.width+10,
+                            height:form_data.height+10,
+                            layout:'anchor',
                             stateful:false,
                             title:form_data.windowTitle,
-                            autoHeight: true,
-                            autoWidth: true,
+                            //autoHeight: true,
+                            //autoWidth: true,
                             modal:true,
                             closable:true,
                             viewConfig: {
-                                forceFit: true
+                                forceFit: false
                             },
                             
                             plain: true,
                             items: [form_data],
-                            buttonAlign:'center',
+                            buttonAlign:'right',
                             buttons: [{
                                     text:'Ok',
                                     handler: function(obj, e){
@@ -1169,7 +1169,7 @@ Ext.onReady(function(){
         		    anchor: '100%',
         		    fieldLabel: 'Тип платежа',
         		    displayField: 'name',
-        		    valueField: 'id', 
+        		    valueField: 'internal_name', 
         		    mode: 'remote',
         		    editable:false,
         		    triggerAction: 'all',
@@ -1188,6 +1188,8 @@ Ext.onReady(function(){
         		            name: 'id'
         		        }, {
         		            name: 'name'
+        		        }, {
+        		            name: 'internal_name'
         		        }])
         		    }),
 
@@ -1201,7 +1203,7 @@ Ext.onReady(function(){
        ,onRender:function() {
            var me = this;
            this.store.on('load',function(store) {
-             me.setValue('7', true);
+             me.setValue('MANUAL_TRANSACTION', true);
            })
            EBS.TrTypeCombo.superclass.onRender.apply(this, arguments);
        } // eo function onRender
