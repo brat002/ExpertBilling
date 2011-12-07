@@ -137,7 +137,7 @@ Ext.onReady(function(){
                                 closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
-                                stateId:'accounts_list_',
+                                stateId:'accounts_list_state_',
                                 defaults: {
                                     sortable: true,
                                     menuDisabled: false,
@@ -549,17 +549,17 @@ Ext.onReady(function(){
     	}
 
     
-    EBS.forms.ebs_accountsPanel.document_submitAction =  function(object, event, form, window){
+    EBS.forms.ebs_accountsPanel.document_submitAction =  function(object, event, form, win){
     	
     	
  	    f=form;
- 	    pub = function(){window.items.items[0].publish('ebs.accountdocument.change', 'msg');	}
+ 	    pub = function(){win.items.items[0].publish('ebs.accountdocument.change', 'msg');	}
         
         form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
         	
         	pub();
-        	window.hide().destroy()
-            delete EBS.windows[window.id];
+        	win.hide().destroy()
+            delete EBS.windows[win.id];
 
         },failure: function(form,action) {        
          	Ext.Msg.alert('Ошибка', action.result.msg )}});
@@ -1581,17 +1581,17 @@ Ext.onReady(function(){
     	    ]
     	}
 
-    EBS.forms.ebs_accountsPanel.suspendedperiod_submitAction =  function(object, event, form, window){
+    EBS.forms.ebs_accountsPanel.suspendedperiod_submitAction =  function(object, event, form, win){
     	
     	
  	    f=form;
- 	    pub = function(){window.items.items[0].publish('ebs.suspendedperiod.change', 'msg');	}
+ 	    pub = function(){win.items.items[0].publish('ebs.suspendedperiod.change', 'msg');	}
         
         form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
         	
         	pub();
-        	window.hide().destroy()
-            delete EBS.windows[window.id];
+        	win.hide().destroy()
+            delete EBS.windows[win.id];
 
         },failure: function(form,action) {        
          	Ext.Msg.alert('Ошибка', action.result.msg )}});
@@ -1750,7 +1750,7 @@ Ext.onReady(function(){
     	        }
     	    ]
     	}
-    EBS.forms.ebs_accountsPanel.accountaddonservice_submitAction =  function(object, event, form, window){
+    EBS.forms.ebs_accountsPanel.accountaddonservice_submitAction =  function(object, event, form, win){
     	
     	var acc_id;
     	acc_id = form.findField('account').getValue();
@@ -1767,7 +1767,7 @@ Ext.onReady(function(){
     	
     	//form = this.ownerCt.ownerCt.getForm();
  	    f=form;
- 	    pub = function(){window.items.items[0].publish('ebs.accountaddonservice.change', 'msg');	}
+ 	    pub = function(){win.items.items[0].publish('ebs.accountaddonservice.change', 'msg');	}
         
         form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
         	
@@ -1850,11 +1850,11 @@ Ext.onReady(function(){
     	    
     	};
 
-    EBS.forms.ebs_accountsPanel.tpchange_submitAction =  function(object, event, form, window){
+    EBS.forms.ebs_accountsPanel.tpchange_submitAction =  function(object, event, form, win){
     	
     	
  	    f=form;
- 	    pub = function(){window.items.items[0].publish('ebs.accounttarif.change', 'msg');	}
+ 	    pub = function(){win.items.items[0].publish('ebs.accounttarif.change', 'msg');	}
         
         form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
         	
@@ -2031,7 +2031,7 @@ Ext.onReady(function(){
     									
                                       }
 
-EBS.forms.ebs_accountsPanel.edit_credit_submitAction =  function(object, event, form, window){
+EBS.forms.ebs_accountsPanel.edit_credit_submitAction =  function(object, event, form, win){
     	 
     }
 /* EOF ACCOUNTS FORMS*/

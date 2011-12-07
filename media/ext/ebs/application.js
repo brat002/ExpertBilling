@@ -635,25 +635,34 @@ Ext.onReady(function(){
         constructor: function(config) {
 
                Ext.apply(this, {
-            	   plugins: [new Ext.ux.grid.Search({
+            	   /*plugins: [new Ext.ux.grid.Search({
                      				iconCls:'icon-zoom'
-                     				,readonlyIndexes:['note']
-                     				,disableIndexes:['pctChange']
+                     				//,readonlyIndexes:['note']
+                     				//,disableIndexes:['pctChange']
                      				,minChars:2
                      				,autoFocus:true
                      				,mode:'local'
                      				,position:'top'
                      				,width:200
               //       			,menuStyle:'radio'
-                     			})],
+                     			})],*/
                     bbar: new Ext.PagingToolbar({
-                           pageSize: 100,
-                          // store: this.store,
+                           pageSize: 10,
+                           //store: this.store,
                            displayInfo: true,
                            dispalyMsg: i18n.paginatorDispalyMsg,
                            emptyMsg: i18n.paginatorEmptyMsg
                            //plugins: [new Ext.ux.SlidingPager(), this.filters],
                         }),
+                    listeners: 
+                    	{
+                    	'beforerender' : {
+                    		fn:function(){ 
+                    			this.getBottomToolbar().bindStore(this.store);
+                    			
+                    			}
+                    		}
+               },
                     selModel : new Ext.grid.RowSelectionModel({
                          singleSelect : true
                             })
@@ -1270,7 +1279,7 @@ Ext.onReady(function(){
                    stateful: true,
                    collapsible: true,
                    stateId: 'stateSubaccountsGrid_',
-                   plugins:['msgbus'],
+                   plugins: ['msgbus'],
                    //unstyled:true,
             	   store:new Ext.data.JsonStore({
        		        	paramsAsHash: true,
@@ -1303,7 +1312,7 @@ Ext.onReady(function(){
             	    },
             	   bbar: new Ext.PagingToolbar({
                        pageSize: 100,
-                      // store: this.store,
+                       store: this.store,
                        displayInfo: true,
                        dispalyMsg: i18n.paginatorDispalyMsg,
                        emptyMsg: i18n.paginatorEmptyMsg

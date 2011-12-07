@@ -34,10 +34,10 @@ EBS.writer.accounts = new Ext.data.JsonWriter({
 
 EBS.store.accounts = new Ext.data.GroupingStore({
     paramsAsHash: true,
-    autoLoad: {params:{start:0, limit:100}},
+    autoLoad: {params:{start:0, limit:10}},
     proxy: new Ext.data.HttpProxy({
         url: '/ebsadmin/accounts/',
-        method:'GET',
+        method:'POST',
     }),    
     reader:new Ext.data.JsonReader({
         root: 'records',
@@ -48,7 +48,7 @@ EBS.store.accounts = new Ext.data.GroupingStore({
     //fields: ['comment', 'status', 'allow_webcab', 'house', 'street', 'postcode', 'suspended', 'id', 'row', 'city', 'systemuser', 'contactperson_phone', 'ipn_status', 'nas', 'entrance_code', 'elevator_direction', 'passport', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'last_balance_null', 'email', 'username', 'entrance', 'phone_m', 'phone_h', 'allow_ipn_with_block', 'allow_expresscards', 'contract', 'address', 'private_passport_number', 'password', 'disabled_by_limit', 'balance_blocked', 'room', 'created', 'region', 'contactperson', 'credit', 'ballance', 'house_bulk', 'fullname', 'passport_given'],
     //root: 'records
 
-    remoteSort:false,
+    remoteSort:true,
     sortInfo:{
          field:'username',
          direction:'ASC'
@@ -77,7 +77,7 @@ EBS.store.sessions = new Ext.data.GroupingStore({
     }),
     //fields: ['comment', 'status', 'allow_webcab', 'house', 'street', 'postcode', 'suspended', 'id', 'row', 'city', 'systemuser', 'contactperson_phone', 'ipn_status', 'nas', 'entrance_code', 'elevator_direction', 'passport', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'last_balance_null', 'email', 'username', 'entrance', 'phone_m', 'phone_h', 'allow_ipn_with_block', 'allow_expresscards', 'contract', 'address', 'private_passport_number', 'password', 'disabled_by_limit', 'balance_blocked', 'room', 'created', 'region', 'contactperson', 'credit', 'ballance', 'house_bulk', 'fullname', 'passport_given'],
     //root: 'records',
-    remoteSort:false,
+    remoteSort:true,
     sortInfo:{
          field:'account',
          direction:'ASC'
@@ -140,7 +140,7 @@ EBS.store.nas = new Ext.data.DirectStore({
               storeId:'nas',
               paramsAsHash: true,
               directFn: EBS.nas.getNasList,
-              autoLoad: {params:{start:0, limit:100}},
+              autoLoad: false,
               fields: ['id','name', 'identify', 'ipaddress', 'secret'],
               root: 'records',
               remoteSort:false,
