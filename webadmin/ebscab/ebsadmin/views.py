@@ -16,6 +16,8 @@ from IPy import IP
 from utilites import rosClient
 import datetime
 from mako.template import Template as mako_template
+from extdirect.django import ExtDirectStore
+
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
         for key in result:
@@ -26,8 +28,15 @@ class Object(object):
 @ajax_request
 @login_required
 def jsonaccounts(request):
+    extra={'start':int(request.POST.get('start',0)), 'limit':int(request.POST.get('limit',100))}
+    if request.POST.get('sort',''):
+        extra['sort'] = request.POST.get('sort','')
+        extra['dir'] = request.POST.get('dir','asc')
+        
     if request.GET.get('action')!='search':
-        items = Account.objects.all()
+        #items = Account.objects.all()
+        items = ExtDirectStore(Account)
+        items, totalcount = items.query(**extra)
     else:
         f=SearchAccountForm(request.GET)
         print f.errors
@@ -38,6 +47,10 @@ def jsonaccounts(request):
                 query[k]=f.cleaned_data.get(k)
             
         items = Account.objects.filter(**query)
+    
+    print items
+    #return items
+    
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
@@ -48,8 +61,8 @@ def jsonaccounts(request):
     #print instance_dict(item).keys()
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res, 'total':len(res)}
-
+    return {"records": res, 'total':str(totalcount)}
+    
 @ajax_request
 @login_required
 def account_livesearch(request):
