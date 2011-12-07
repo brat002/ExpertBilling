@@ -1,4 +1,5 @@
-from django.core.serializers import serialize
+#from django.core.serializers import serialize
+from extdirect.django.serializer import Serializer
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 class ExtDirectStore(object):
@@ -35,6 +36,7 @@ class ExtDirectStore(object):
             
             if dir == 'DESC':
                 sort = '-' + sort
+        print start,limit,sort,dir,order,paginate
                 
         if not qs is None:
             # Don't use queryset = qs or self.model.objects
@@ -45,7 +47,7 @@ class ExtDirectStore(object):
             queryset = self.model.objects
             
         queryset = queryset.filter(**kw)
-        
+        print 'len(queryset)',len(queryset)
         if order:
             queryset = queryset.order_by(sort)
                 
@@ -57,19 +59,21 @@ class ExtDirectStore(object):
             total = paginator.count
             
             try:                
-                page = paginator.page(start + 1)
-            except (EmptyPage, InvalidPage):
+                page = paginator.page(int(start/limit) + 1)
+            except (EmptyPage, InvalidPage), e:
+                print e
                 #out of range, deliver last page of results.
                 page = paginator.page(paginator.num_pages)
             
             objects = page.object_list
             
-        return self.serialize(objects, total)
+        #return self.serialize(objects, total)
+        return objects, total
         
     def serialize(self, queryset, total=None):        
         meta = {
             'root': self.root,
             'total' : self.total
         }
-        res = serialize('extdirect', queryset, meta=meta, extras=self.extras, total=total)
+        res = Serializer().serialize(queryset, meta=meta, extras=self.extras, total=total)
         return res

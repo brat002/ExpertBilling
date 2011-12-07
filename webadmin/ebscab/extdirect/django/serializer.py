@@ -2,6 +2,7 @@ from django.core.serializers import python
 from StringIO import StringIO
 from django.utils.encoding import smart_str, smart_unicode
 from django.utils import datetime_safe
+from django.db.models.fields import DecimalField, DateField
 
 class Serializer(python.Serializer):
     """    
@@ -22,15 +23,23 @@ class Serializer(python.Serializer):
     def end_object(self, obj):
         rec = self._current
         rec['id'] = smart_unicode(obj._get_pk_val(), strings_only=True)
-        
+
         for extra in self.extras:
                 rec[extra[0]] = extra[1](obj)
-                
+
         self.objects[self.meta['root']].append(rec)
         self._current = None        
         
     def handle_field(self, obj, field):
-        self._current[field.name] = smart_unicode(getattr(obj, field.name), strings_only=True)
+        
+        if isinstance(field, DecimalField):
+            self._current[field.name] = float(str(getattr(obj, field.name) or 0))
+        elif isinstance(field, DateField):
+            val = getattr(obj, field.name)
+            val = val.strftime('%Y-%m-%d %H:%M:%S') if val else ''
+            self._current[field.name] = smart_unicode(val, strings_only=True)
+        else:
+            self._current[field.name] = smart_unicode(getattr(obj, field.name), strings_only=True)
 
     def handle_fk_field(self, obj, field):
         related = getattr(obj, field.name)
@@ -64,7 +73,7 @@ class Serializer(python.Serializer):
         
         total = options.get("total", queryset.count())        
         self.start_serialization(total)
-                        
+                            
         for obj in queryset:
             if self.local_fields:
                 fields = obj._meta.local_fields
