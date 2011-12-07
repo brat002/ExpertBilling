@@ -12,7 +12,7 @@ from helpers import connlogin
 from helpers import setFirstActive
 from helpers import tableHeight
 from helpers import HeaderUtil, SplitterUtil, transip
-from helpers import AccountsFilterThread, AccountsRefreshThread
+#from helpers import AccountsFilterThread, AccountsRefreshThread
 from types import BooleanType
 import copy
 
@@ -3464,18 +3464,18 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.tableWidget.clearContents()  
         self.tableWidget.setRowCount(0)
         if self.sql:
-            #accounts = self.connection.get_accounts_for_tilter(self.sql)
+            accounts = self.connection.get_accounts_for_tilter(self.sql)
             #AccountsFilterThread, AccountsRefreshThread
-            self.genericThread = AccountsFilterThread(self.connection, self.sql)
-            self.connect(self.genericThread, QtCore.SIGNAL("accountsRefresh(QVariant)"), self.fix)
-            self.genericThread.start()            
+            #self.genericThread = AccountsFilterThread(self.connection, self.sql)
+            #self.connect(self.genericThread, QtCore.SIGNAL("accountsRefresh(QVariant)"), self.fix)
+            #self.genericThread.start()            
             self.sql=''
         elif id!=-2000:
             print "account for tarif", id
-            #accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
-            self.genericThread = AccountsRefreshThread(self.connection, self.getTarifId())
-            self.connect(self.genericThread, QtCore.SIGNAL("accountsRefresh(QVariant)"), self.fix)
-            self.genericThread.start()              
+            accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
+            #self.genericThread = AccountsRefreshThread(self.connection, self.getTarifId())
+            #self.connect(self.genericThread, QtCore.SIGNAL("accountsRefresh(QVariant)"), self.fix)
+            #self.genericThread.start()              
         else:
             return
         
@@ -3488,12 +3488,12 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
 
         #print "after acc"
         
-    def fix(self, accounts):
+
         self.connection.commit()
         
         self.treeWidget.setDisabled(False)
         id=self.getTarifId()
-        accounts=accounts.toList()
+        #accounts=accounts.toList()
         self.tableWidget.setRowCount(len(accounts))
         
 
@@ -3502,7 +3502,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         now = datetime.datetime.now()
         i=0
         for a in accounts:    
-            a=a.toPyObject()
+            
             print dir(a)
             self.addrow(i, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
