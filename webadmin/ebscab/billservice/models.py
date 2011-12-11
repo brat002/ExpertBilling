@@ -165,7 +165,7 @@ class PeriodicalService(models.Model):
     tarif             = models.ForeignKey('Tariff')
     name              = models.CharField(max_length=255, verbose_name=u'Название услуги')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период')
-    cost              = models.FloatField(verbose_name=u'Стоимость услуги', default=0, blank=True)
+    cost              = models.DecimalField(verbose_name=u'Стоимость услуги', default=0, blank=True, decimal_places=10, max_digits=30)
     cash_method       = models.CharField(verbose_name=u'Способ снятия', max_length=255, choices=CASH_METHODS, default='AT_START', blank=True)
     condition         = models.IntegerField() # 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
 
@@ -492,7 +492,7 @@ class Tariff(models.Model):
     allow_express_pay = models.BooleanField(verbose_name=u'Оплата экспресс картами', blank=True, default=False)
     require_tarif_cost = models.BooleanField(default=False, blank=True)
     allow_userblock   =models.BooleanField(default=False)
-    userblock_cost = models.DecimalField(decimal_places=10, max_digits=60)  
+    userblock_cost = models.DecimalField(decimal_places=10, max_digits=30)  
     userblock_max_days = models.IntegerField()
     userblock_require_balance = models.DecimalField(decimal_places=10, max_digits=60)  
     allow_ballance_transfer = models.BooleanField()
@@ -1118,7 +1118,7 @@ class AddonService(models.Model):
     sp_type = models.CharField(max_length=32, choices=((u"В начале расчётного периода","AT_START"),(u"В конце расчётного периода","AT_END"),(u"На протяжении расчётного периода","GRADUAL"),))    
     sp_period = models.ForeignKey(SettlementPeriod, related_name="addonservice_spperiod")    
     timeperiod = models.ForeignKey(TimePeriod)    
-    cost = models.DecimalField(decimal_places=10, max_digits=60)    
+    cost = models.DecimalField(decimal_places=10, max_digits=30)    
     cancel_subscription = models.BooleanField(default = True)    
     wyte_period = models.ForeignKey(SettlementPeriod, related_name="addonservice_wyteperiod")    
     wyte_cost = models.DecimalField(decimal_places=10, max_digits=60)    

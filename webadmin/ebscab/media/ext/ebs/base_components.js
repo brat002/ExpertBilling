@@ -119,7 +119,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
     /**
      * @cfg {Number} timeWidth Width of time field in pixels (defaults to 100)
      */
-    ,timeWidth:100
+    ,timeWidth:90
     ,buttonWidth: 20
     /**
      * @cfg {String} dateFormat Format of DateField. Can be localized. (defaults to 'm/y/d')
@@ -1176,3 +1176,48 @@ Ext.apply(Ext.form.Action.ACTION_TYPES, {
     'jsonsubmit' : Ext.ux.Action.JsonSubmit
 });
 
+Ext.ux.form.CheckBoxList = Ext.extend(Ext.DataView, {
+	displayField:'name',
+	valueField:'id',
+	oncheck:function(str) {
+        if (Ext.fly('box' + str).hasClass('checked')) {
+            Ext.fly('box' + str).removeClass('checked');
+            document.getElementById('check'+str).checked = false;
+        } else {
+            Ext.fly('box' + str).addClass('checked');
+            document.getElementById('check'+str).checked = true;
+        }
+    },
+    initComponent:function() {
+       var config = {
+    		   autoScroll: true, 
+    		   tpl: new Ext.XTemplate(
+    		            '<tpl for=".">',
+    	                '<div class="databox" id="box{'+this.valueField+'}" onclick="oncheck({'+this.valueField+'})">',
+    	                '<input type="checkbox" id="check{'+this.valueField+'}" value="c{'+this.valueField+'}"> ',
+    	                '&nbsp;{'+this.displayField+'}</div>',
+    	            '</tpl>',
+    	            '<div class="x-clear"></div>'
+    	        ),
+               autoHeight: false, 
+               height: 265,
+               multiSelect: true, 
+               itemSelector: 'div.thumb-wrap',
+               emptyText: 'No data to display',
+               loadingText: 'Please Wait...',
+               style: 'border:1px solid #99BBE8;background:#fff;'
+
+    		   
+
+    		}
+       // apply config
+       Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+
+       Ext.ux.form.CheckBoxList.superclass.initComponent.apply(this, arguments);
+   } // eo function initComponent
+
+   
+ 
+
+});
+Ext.reg('xcheckboxlist', Ext.ux.form.CheckBoxList);
