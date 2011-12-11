@@ -1279,7 +1279,7 @@ Ext.onReady(function(){
 								        handler: function(){
 								     	   var account_id;
 								     	   
-									     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+									     	   account_id = this.findParentByType('xinstancecontainer').ids.id;
 								     	   EBS.displayForm('ebs_accountsPanel', 'accountaddonservice',{'account_id':account_id,id:null}, this.findParentByType('grid'))
 								     	   
 								        }
@@ -1289,7 +1289,7 @@ Ext.onReady(function(){
 								        handler: function(){
 								     	   var id;
 								     	   var account_id;
-								     	   account_id = this.findParentByType('xinstancecontainer').parent_id;
+								     	   account_id = this.findParentByType('xinstancecontainer').ids.id;
 								     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
 								     	   EBS.displayForm('ebs_accountsPanel', 'accountaddonservice',{'account_id':account_id,id:id}, this.findParentByType('grid'))
 								        }
@@ -1756,7 +1756,7 @@ Ext.onReady(function(){
     	acc_id = form.findField('account').getValue();
     	if (!acc_id)
     		{
-    		form.findField('account').setValue(window.ids.account_id);
+    		form.findField('account').setValue(win.ids.account_id);
     		
     		
     		}

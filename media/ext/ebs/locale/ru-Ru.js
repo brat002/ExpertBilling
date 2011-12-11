@@ -6,6 +6,7 @@
 // TODO: мультиязычность
 
 Ext.onReady(function(){
+
     Date.patterns = {
         ISO8601Long: "Y-m-d H:i:s",
         ISO8601Short: "Y-m-d",

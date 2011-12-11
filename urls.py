@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls.defaults import *
 from django.contrib import admin
 from helpdesk import admin as helpdesk_admin
-from extjs import direct
+
 
 admin.autodiscover()
 
@@ -71,10 +71,7 @@ urlpatterns = urlpatterns + patterns('helpdesk.views.account',
     url(r'^account/helpdesk/add$', 'create_ticket', name='helpdesk_account_tickets_add'), # create new ticket
     url(r'^account/helpdesk/(?P<ticket_id>[\d]+)/$', 'view_ticket', name='helpdesk_account_tickets_view'), #change/post comment,
 )
-urlpatterns += patterns('service_monitor.views',
-                        #(?P<id>\d+)
-    (r'^service_data/$', 'service_data'),
-)
+
 
 urlpatterns += patterns('statistics.views',
                         #(?P<id>\d+)

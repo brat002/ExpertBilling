@@ -1,8 +1,8 @@
 #-*-coding:utf-8 -*-
 
-from lib.decorators import render_to, ajax_request
+from ebscab.lib.decorators import render_to, ajax_request
 from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
-from billservice.models import Template, AccountHardware, SuspendedPeriod, Operator, Transaction
+from billservice.models import Template, AccountHardware, SuspendedPeriod, Operator, Transaction, PeriodicalService, AddonService
 from nas.models import Nas
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
@@ -16,7 +16,7 @@ from IPy import IP
 from utilites import rosClient
 import datetime
 from mako.template import Template as mako_template
-from extdirect.django import ExtDirectStore
+from ebsadmin.lib import ExtDirectStore
 
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
@@ -65,8 +65,51 @@ def jsonaccounts(request):
     
 @ajax_request
 @login_required
+def periodicalservice(request):
+    extra={'start':int(request.POST.get('start',0)), 'limit':int(request.POST.get('limit',100))}
+    if request.POST.get('sort',''):
+        extra['sort'] = request.POST.get('sort','')
+        extra['dir'] = request.POST.get('dir','asc')
+        
+    
+    items = ExtDirectStore(PeriodicalService)
+    items, totalcount = items.query(**extra)
+
+    res=[]
+    for item in items:
+        r=instance_dict(item,normal_fields=True)
+        res.append(r)
+    #print instance_dict(item).keys()
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'total':str(totalcount)}
+
+@ajax_request
+@login_required
+def addonservice(request):
+    extra={'start':int(request.POST.get('start',0)), 'limit':int(request.POST.get('limit',100))}
+    if request.POST.get('sort',''):
+        extra['sort'] = request.POST.get('sort','')
+        extra['dir'] = request.POST.get('dir','asc')
+        
+    
+    items = ExtDirectStore(AddonService)
+    items, totalcount = items.query(**extra)
+
+    res=[]
+    for item in items:
+        r=instance_dict(item,normal_fields=True)
+        res.append(r)
+    #print instance_dict(item).keys()
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'total':str(totalcount)}
+
+
+@ajax_request
+@login_required
 def account_livesearch(request):
-    from extdirect.django.store import ExtDirectStore
+
     query=request.POST.get('query')
     field=request.POST.get('field')
     if not (query and field):return {"records": [], 'total':0}

@@ -3,6 +3,9 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('ebsadmin.views',
      url(r'^accounts/$', 'jsonaccounts'),
+     url(r'^periodicalservice/$', 'periodicalservice'),
+     url(r'^addonservice/$', 'addonservice'),
+     
      url(r'^nasses/$', 'nasses'),
      #url(r'^nasses1/$', 'nasses1'),
      url(r'^nas/$', 'nas'),
