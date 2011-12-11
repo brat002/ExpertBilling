@@ -22,7 +22,9 @@ var mainMenu = [
         leaf:true
     },{
         text:'История операций нал л/с',
-        id:'transactions',
+        id:'xtransactionreportpanel',
+        type:'xtransactionreportpanel',
+        singleton: true,
         leaf:true
     },{
         text:'Сообщения',

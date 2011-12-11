@@ -66,23 +66,25 @@ Ext.onReady(function(){
     Ext.reg('xinstancecontainer', ExInstancePanel);
     
     ExInstanceWindow = Ext.extend(Ext.Window,{
-    	
-    	instance_id: 0,
-    	parent_id:0,
-    	ids:{},
 
-    	initComponent: function() {     
+    	ids:{},
+    	closable: true,
+    	initComponent: function() {
 
     	    // Component Configuration...   
     	    var config = {
-    	    		closable: true
+    	    		
     	    
     	    };  
 
     	    Ext.applyIf(this, Ext.applyIf(this.initialConfig, config));
-    	    ExInstancePanel.superclass.initComponent.apply(this, arguments);       
+    	    ExInstanceWindow.superclass.initComponent.apply(this, arguments);       
 
     	},
+    	
+    onRender:function() { 
+    	ExInstanceWindow.superclass.onRender.apply(this, arguments);
+    		},
     	
     });
     
@@ -98,7 +100,7 @@ Ext.onReady(function(){
 
            console.log(action, self);
            var id, account_id;
-           id=ids.id;
+           //id=ids.id;
            
            account_id=ids.account_id;
             //Create edit window
@@ -121,9 +123,9 @@ Ext.onReady(function(){
            if(!winCmp){
                         winCmp = new ExInstanceWindow({
                             id:window_key,
-                            instance_id:id,
+                            //instance_id:id,
                             ids:ids,
-                            parent_id:account_id,
+                            //parent_id:account_id,
                             applyTo:Ext.get('body'),
                             width:form_data.width+10,
                             height:form_data.height+10,
@@ -132,10 +134,10 @@ Ext.onReady(function(){
                             title:form_data.windowTitle,
                             //autoHeight: true,
                             //autoWidth: true,
-                            modal:true,
-                            closable:true,
+                            modal:false,
+
                             viewConfig: {
-                                forceFit: false
+                                forceFit: true
                             },
                             
                             plain: true,
@@ -161,8 +163,10 @@ Ext.onReady(function(){
                                     }
                                 },{
                                     text: 'Закрыть',
-                                    handler: function(){
-                                        EBS.closeForm(this)
+                                    handler: function(btn){
+                                        cmp = btn.ownerCt.ownerCt;
+                                        cmp.hide().destroy();
+                                        delete EBS.windows[cmp.id];
                                     }
                                 }]
                         });
@@ -228,7 +232,7 @@ Ext.onReady(function(){
                             autoHeight: true,
                             autoWidth: true,
                             
-                            modal:true,
+                            modal:false,
                             stateful:false,
                             title:form_data.windowTitle,
                             viewConfig: {
@@ -236,7 +240,7 @@ Ext.onReady(function(){
                             },
                             
 
-                            plain: false,
+                            plain: true,
                             items: [form_data],
                         });
                         EBS.windows[window_key] = winCmp;
@@ -507,7 +511,7 @@ Ext.onReady(function(){
                             items:[
                             //Header
                                 {
-                                    height  : 100,
+                                    height  : 10,
                                     id      : 'header',
                                     baseCls : 'header-line',
                                     region  :'north',
@@ -562,9 +566,9 @@ Ext.onReady(function(){
                                 {
                                     id:'help_menu',
                                     region: 'east',
-                                    title: 'Title for Panel',
+                                    //title: 'Title for Panel',
                                     collapsible: true,
-                                    html: i18n.helpMenuInnerText,
+                                    //html: i18n.helpMenuInnerText,
                                     split: true,
                                     width: 100,
                                     minWidth: 100
@@ -632,27 +636,28 @@ Ext.onReady(function(){
 
 /* BASE Components*/
     EBS.base.GridPanel = Ext.extend(Ext.grid.GridPanel, {
+    	plugins: [new Ext.ux.grid.Search({
+				iconCls:'icon-zoom'
+				,readonlyIndexes:['note']
+				,disableIndexes:['pctChange']
+				,minChars:2
+				,autoFocus:true
+				,mode:'local'
+				,position:'top'
+				,width:200
+//       			,menuStyle:'radio'
+			})],
         constructor: function(config) {
 
                Ext.apply(this, {
-            	   /*plugins: [new Ext.ux.grid.Search({
-                     				iconCls:'icon-zoom'
-                     				//,readonlyIndexes:['note']
-                     				//,disableIndexes:['pctChange']
-                     				,minChars:2
-                     				,autoFocus:true
-                     				,mode:'local'
-                     				,position:'top'
-                     				,width:200
-              //       			,menuStyle:'radio'
-                     			})],*/
+            	   
                     bbar: new Ext.PagingToolbar({
-                           pageSize: 10,
+                           pageSize: 100,
                            //store: this.store,
                            displayInfo: true,
                            dispalyMsg: i18n.paginatorDispalyMsg,
-                           emptyMsg: i18n.paginatorEmptyMsg
-                           //plugins: [new Ext.ux.SlidingPager(), this.filters],
+                           emptyMsg: i18n.paginatorEmptyMsg,
+                           //plugins: [new Ext.ux.SlidingPager()],
                         }),
                     listeners: 
                     	{

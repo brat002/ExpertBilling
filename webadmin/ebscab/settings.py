@@ -100,13 +100,10 @@ INSTALLED_APPS = (
     'nas',
     'billservice',
     'lib',
-    'service_monitor',
-    'testcases',
     'statistics',
     'paymentgateways.webmoney',
     'paymentgateways.qiwi',
     'helpdesk',
-    'notify',
     'compress',
     
 )
@@ -271,7 +268,11 @@ COMPRESS_JS = {
 
         #Main window tabs plugin support
         "ext/ux/TabScrollerMenu.js",
+        "ext/ux/Ext.ux.util.js",
+        
         "ext/ebs/plugins/msgbus.js",
+        "ext/ebs/plugins/Ext.ux.form.LovCombo.js",
+        
         "ext/ux/Ext.ux.HtmlEditor.Plugins-all-debug.js",
         #"ext/ebs/plugins/date.js",
         
@@ -291,15 +292,18 @@ COMPRESS_JS = {
     'scripts_js_ebs_user_group_0': {
         'source_filenames': (
     # Describe application
+            u"ext/ebs/application.js",
+            u"ext/ebs/base_components.js",
+            
             u"ext/ebs/locale/" + LANGUAGE_CODE + u".js",
             u"ext/ebs/locale/main_menu." + LANGUAGE_CODE + u".0.js",
-            u"ext/ebs/base_components.js",
-            u"ext/ebs/application.js",
+            
             u"ext/ebs/datastore.js",
     # Application components
             u"ext/ebs/components/admin_accounts_list.js",
             u"ext/ebs/components/admin_nasses_list.js",
             u"ext/ebs/components/admin_sessionmonitor.js",
+            u"ext/ebs/components/admin_transactionreport.js",
             #u"ext/ebs/components/admin_session_monitor_list.js",
             #u"ext/ebs/components/admin_settlement_period_list.js",
     # Main run script

@@ -34,7 +34,7 @@ EBS.writer.accounts = new Ext.data.JsonWriter({
 
 EBS.store.accounts = new Ext.data.GroupingStore({
     paramsAsHash: true,
-    autoLoad: {params:{start:0, limit:10}},
+    autoLoad: false,
     proxy: new Ext.data.HttpProxy({
         url: '/ebsadmin/accounts/',
         method:'POST',
@@ -115,7 +115,7 @@ EBS.store.subaccounts = new Ext.data.JsonStore({
 //EBS.store.subaccounts = 
 // EOF Accounts
 
-
+/*
 EBS.store.session_monitor = new Ext.data.DirectStore({
               storeId:'radius',
               paramsAsHash: true,
@@ -174,6 +174,6 @@ EBS.store.settlement_periods = new Ext.data.DirectStore({
             }
 
         });
-
+*/
 
 });
