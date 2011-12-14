@@ -67,12 +67,9 @@ EBS.store.transactionreport = new Ext.data.GroupingStore({
         url: '/ebsadmin/transactions/',
         method:'POST',
     }),    
-    reader:new Ext.data.DynamicJsonReader({ root: 'records' }),
-    remoteSort:true,
-    sortInfo:{
-         field:'username',
-         direction:'ASC'
-    },
+    reader:new Ext.data.JsonReader(),
+    remoteSort:false,
+
     listeners: {
           load:function(){
              // console.info('load',this,arguments);

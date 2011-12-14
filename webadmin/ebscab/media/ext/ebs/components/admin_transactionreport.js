@@ -154,179 +154,9 @@ Ext.onReady(function(){
                                 closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
-                                columns : [
-                                    {
-                                        header   : '#',
-                                        sortable : true,
-                                        //width    : 85,
-                                        locked: true,
-                                        dataIndex: 'id',
-                                        filter: {
-                                            type: 'numeric'
-                                        }
-
-                                    },{
-                                        header   : 'Session ID',
-                                        sortable : true,
-                                        //width    : 85,
-                                        //locked: true,
-                                        dataIndex: 'sessionid',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },                                
-                                    {
-                                        header   : 'Аккаунт',
-                                        sortable : true,
-                                        //width    : 85,
-                                        //locked: true,
-                                        dataIndex: 'account',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },
-                                    {
-                                        header   : 'Субаккаунт',
-                                        sortable : true,
-                                        //width    : 85,
-                                        //locked: true,
-                                        dataIndex: 'subaccount',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },      
-                                    {
-                                        header   : 'NAS',
-                                        sortable : true,
-                                        //width    : 85,
-                                        //locked: true,
-                                        dataIndex: 'nas_id',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },      
-                                    {
-                                        header   : 'Caller ID',
-                                        sortable : true,
-                                        //width    : 85,
-                                        //locked: true,
-                                        dataIndex: 'caller_id',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    }, 
-                                    {
-                                        header   : "Called ID",
-                                        sortable : true,
-                                        autoexpand:true,
-                                        width:200,
-                                        dataIndex: 'called_id',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },
-                                    {
-                                        header   : 'Framed Protocol',
-                                        sortable : true,
-                                        //autoexpand:true,
-                                        width:200,
-                                        dataIndex: 'framed_protocol',
-                                        
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },  
-                                    
-
-                                   {
-                                        header   : 'Framed IP Address',
-                                        sortable : true,
-                                        //autoexpand:true,
-                                        //width:200,
-                                        dataIndex: 'framed_ip_address',
-                                        
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },
-                                   {
-                                        header   : 'Начало',
-                                        sortable : true,
-                                        //autoexpand:true,
-                                        //width:200,
-                                        dataIndex: 'date_start',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },
-                                    {
-                                        header   : 'Последний пакет',
-                                        sortable : true,
-                                        //autoexpand:true,
-                                        //width:200,
-                                        dataIndex: 'interrim_update',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },                                    
-                                    {
-                                        header   : 'Конец',
-                                        sortable : true,
-                                        //autoexpand:true,
-                                        //width:200,
-                                        dataIndex: 'date_end',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },
-                                    {
-                                        header   : 'Время',
-                                        sortable : true,
-                                        //autoexpand:true,
-                                        //width:200,
-                                        dataIndex: 'session_time',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },
-                                    {
-                                        header   : 'Данные',
-                                        sortable : true,
-                                        //autoexpand:true,
-                                        //width:200,
-                                        //dataIndex: 'contactperson',
-                                        renderer: function(value, p, r)
-                                        {return bytesToSize(r.data['bytes_in']) + '/' + bytesToSize(r.data['bytes_out'])},
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },
-
-                                    {
-                                        header   : 'Статус',
-                                        //width    : 115,
-                                        renderer: EBS.sessionRenderer,
-                                        sortable : true,
-                                        dataIndex: 'session_status',
-                                        filter: {
-                                            type: 'string'
-                                        }
-
-                                    },
-                                ],
+                                cm: new Ext.grid.ColumnModel({}),
+                                //columns:[],
+                                
                                 listeners: {/*
                                     render:function(){
                                      this.bbar.updateInfo();
@@ -334,7 +164,7 @@ Ext.onReady(function(){
                                 },
                                 stripeRows: false,
                                 stateful: true,
-                                stateId: 'sessionmonitorgrid',
+                                stateId: 'transactionreportgrid',
                                 
                             //bbar:this.pagination
                 });
@@ -342,8 +172,37 @@ Ext.onReady(function(){
             this.on('rowdblclick', function(eventGrid, rowIndex, e) {
             	//this.tbFormInTabCallBack(this, 'edit_user',this.selModel.selections.items[0].id);
             	
-            	}, this);            
+            	}, this);    
+            
             EBS.conponents.transactionreportGrid.superclass.initComponent.apply(this, arguments);
+            this.store.on('load', function(){
+            	/**
+            	* Thats the magic! <img src="http://erhanabay.com/wp-includes/images/smilies/icon_smile.gif" alt=":)" class="wp-smiley">
+            	*
+            	* JSON data returned from server has the column definitions
+            	*/
+            	if(typeof(this.store.reader.jsonData.metaData.fields) === 'object') {
+            	var columns = [];
+            	/**
+            	* Adding RowNumberer or setting selection model as CheckboxSelectionModel
+            	* We need to add them before other columns to display first
+            	*/
+
+            	Ext.each(this.store.reader.jsonData.metaData.fields, function(column){
+            	columns.push(column);
+            	});
+            	/**
+            	* Setting column model configuration
+            	*/
+            	
+            	this.getColumnModel().setConfig(columns);
+            	}
+            	/**
+            	* Unmasking grid
+            	*/
+            	
+            	}, this);
+            	
             //this.bbar.updateInfo();
 
          } //initComponent
@@ -454,7 +313,8 @@ Ext.onReady(function(){
 						                                        {
 												                    xtype: 'xaccountslivesearchcombo',
 												                    name: 'account',
-												                    field:'id',
+												                    hiddenName: 'account',
+												                    field:'account',
 												                    valueField:'id',
 												                    editable:false,
 												                    displayField:'username',
@@ -726,10 +586,28 @@ Ext.onReady(function(){
 					        			
 					        			//EBS.store.transactionreport.setBaseParam('systemuser',systemusers);
 					        			//EBS.store.transactionreport.setBaseParam('transactiontype', transactiontypes);
-					        			d=f.getValues()
-					        			d.systemuser=systemusers;
-					        			d.transactiontype=transactiontypes;
-					        			EBS.store.transactionreport.load({params:d});
+					        			
+					        			d=f.getValues();
+					        			var res={};
+					        			res.start_date=d.start_date;
+					        			res.end_date=d.end_date;
+					        			res.account = d.account;
+					        			if (systemusers.length>0){
+					        				res.systemusers=systemusers;
+					        			}
+					        			if (transactiontypes.length>0){
+					        				res.transactiontype=transactiontypes;
+					        			}
+					        			if (d.tarif){
+					        				res.tarif = d.tarif.split(',');
+					        			}
+					        			if (d.addonservice){
+					        				res.addonservice=d.addonservice.split(',');
+					        			}
+					        			if (d.periodicalservice){
+					        				res.periodicalservice=d.periodicalservice.split(',');
+					        			}
+					        			EBS.store.transactionreport.load({params:res});
 					        			/*f.submit({url:f.save_url, params:{'systemuser':systemusers,'transactiontype':transactiontypes},waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
 					                       	Ext.Msg.alert('Данные были успешно сохранены', 'Данные были успешно сохранены' );
 					                       

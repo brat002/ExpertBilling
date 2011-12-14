@@ -2,24 +2,41 @@
 from billservice.forms import TransactionReportForm
 from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib.auth.decorators import login_required
-from billservice.models import Transaction
+from billservice.models import Transaction,PeriodicalServiceHistory
 from views import instance_dict
 
 @ajax_request
 @login_required
 def transactionreport(request):
-    items = Transaction.objects.all()
-    #print accounts
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    for item in items:
-        #print instance_dict(acc).keys()
-        res.append(instance_dict(item,normal_fields=True))
-    return {"records": res}
+
 
     form = TransactionReportForm(request.POST)
     if form.is_valid():
+        #items = PeriodicalServiceHistory.objects.all()[0:200]
+        account = form.cleaned_data.get('account')
+        systemusers = form.cleaned_data.get('systemuser')
+        res=[]
+        #for x in form.cleaned_data.get('transactiontype'):
+        items = Transaction.objects.all()
+        if account:
+            items = items.filter(account=account)    
+        if systemusers:
+            items = items.filter(systemuser__in=systemusers)
+            
+        for item in items:
+            #print instance_dict(acc).keys()
+            res.append(instance_dict(item,normal_fields=True))
+        
+        return {"records": res,   'metaData':{'root': 'records',
+                               
+                                             'fields':[({'header':x, 'name':x} for x in res[0]) if res else []]
+                                             },
+                "sortInfo":{
+                "field": "account",
+                "direction": "ASC"
+               },
+                                 
+                }        
         start_date = self.date_start.currentDate()
         end_date = self.date_end.currentDate()
     
@@ -395,7 +412,7 @@ def transactionreport(request):
             traffictransaction_items = self.connection.sql(sql)
             return {}
     else:
-        print "form not valid"
+        print "form not valid".length>0
         print [form._errors.get(x) for x in form._errors][0][0]
             
         return {'success':False, 'msg':form._errors}
