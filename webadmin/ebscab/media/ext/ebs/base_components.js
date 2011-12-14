@@ -19,13 +19,23 @@ Ext.apply(Ext.form.VTypes, {
     IPv6AddressMask: /[\d\.]/i
 });
 
+Ext.override(Ext.grid.ColumnModel, {
+    destroy : function(){
+        for(var i = 0, len = this.config.length; i < len; i++){
+            Ext.destroy(this.config[i]);
+        }
+        this.purgeListeners();
+    }
+});
+
 function bytesToSize(bytes, precision)
 {  
     var kilobyte = 1024;
     var megabyte = kilobyte * 1024;
     var gigabyte = megabyte * 1024;
     var terabyte = gigabyte * 1024;
-   
+    
+    if (bytes==null){return 0}
     if ((bytes >= 0) && (bytes < kilobyte)) {
         return bytes + ' B';
  
@@ -180,6 +190,7 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         this.bt = new Ext.Button({
         	id:this.id+'-button'
         	,width: this.buttonWidth
+        	
         	,text:'...'
         });
         this.bt.ownerCt = this;
@@ -519,7 +530,9 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
 
         // render underlying hidden field
         Ext.ux.form.DateTime.superclass.onRender.call(this, ct, position);
-        this.initDateValue();
+        if (this.otherToNow){
+        	this.initDateValue();
+        }
         // render DateField and TimeField
         // create bounding table
         var t;
@@ -1176,48 +1189,93 @@ Ext.apply(Ext.form.Action.ACTION_TYPES, {
     'jsonsubmit' : Ext.ux.Action.JsonSubmit
 });
 
-Ext.ux.form.CheckBoxList = Ext.extend(Ext.DataView, {
-	displayField:'name',
-	valueField:'id',
-	oncheck:function(str) {
-        if (Ext.fly('box' + str).hasClass('checked')) {
-            Ext.fly('box' + str).removeClass('checked');
-            document.getElementById('check'+str).checked = false;
-        } else {
-            Ext.fly('box' + str).addClass('checked');
-            document.getElementById('check'+str).checked = true;
-        }
-    },
-    initComponent:function() {
-       var config = {
-    		   autoScroll: true, 
-    		   tpl: new Ext.XTemplate(
-    		            '<tpl for=".">',
-    	                '<div class="databox" id="box{'+this.valueField+'}" onclick="oncheck({'+this.valueField+'})">',
-    	                '<input type="checkbox" id="check{'+this.valueField+'}" value="c{'+this.valueField+'}"> ',
-    	                '&nbsp;{'+this.displayField+'}</div>',
-    	            '</tpl>',
-    	            '<div class="x-clear"></div>'
-    	        ),
-               autoHeight: false, 
-               height: 265,
-               multiSelect: true, 
-               itemSelector: 'div.thumb-wrap',
-               emptyText: 'No data to display',
-               loadingText: 'Please Wait...',
-               style: 'border:1px solid #99BBE8;background:#fff;'
+//*****************************************
+//ExtJS method for dynamic columns
+//*****************************************
+Ext.data.DynamicJsonReader = function(config)
+{
+  Ext.data.DynamicJsonReader.superclass.constructor.call(this, config, []);
+};
 
-    		   
+Ext.extend(Ext.data.DynamicJsonReader, Ext.data.JsonReader, {
+  getRecordType: function(data)
+  {
+      var i = 0, arr = [];
+      for (var name in data[0]) { arr[i++] = name; } // is there a built-in to do this?
 
-    		}
-       // apply config
-       Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+      this.recordType = Ext.data.Record.create(arr);
+      return this.recordType;
+  },
 
-       Ext.ux.form.CheckBoxList.superclass.initComponent.apply(this, arguments);
-   } // eo function initComponent
+  readRecords: function(o)
+  { // this is just the same as base class, with call to getRecordType injected
+      this.jsonData = o;
+      var s = this.meta;
+      var sid = s.id;
 
-   
- 
+      var totalRecords = 0;
+      if (s.totalProperty)
+      {
+          var v = parseInt(eval("o." + s.totalProperty), 10);
+          if (!isNaN(v))
+          {
+              totalRecords = v;
+          }
+      }
+      var root = s.root ? eval("o." + s.root) : o;
 
+      var recordType = this.getRecordType(root);
+      var fields = recordType.prototype.fields;
+
+      var records = [];
+      for (var i = 0; i < root.length; i++)
+      {
+          var n = root[i];
+          var values = {};
+          var id = (n[sid] !== undefined && n[sid] !== "" ? n[sid] : null);
+          for (var j = 0, jlen = fields.length; j < jlen; j++)
+          {
+              var f = fields.items[j];
+              var map = f.mapping || f.name;
+              var v = n[map] !== undefined ? n[map] : f.defaultValue;
+              v = f.convert(v);
+              values[f.name] = v;
+          }
+          var record = new recordType(values, id);
+          record.json = n;
+          records[records.length] = record;
+      }
+      return {
+          records: records,
+          totalRecords: totalRecords || records.length,
+          totalProperty: 'totalRecords'
+      };
+  }
 });
-Ext.reg('xcheckboxlist', Ext.ux.form.CheckBoxList);
+
+Ext.grid.DynamicColumnModel = function(store)
+{
+  var cols = [];
+  var recordType = store.recordType;
+  var fields = recordType.prototype.fields;
+
+  //for dynamic columns we need to return the columnInfo from server so we can build the columns here.
+  //in this example, the ResultData is a JSON object, returned from the server which contains a ColumnInfo
+  //object with "fields" collection. Each Field in Fields Collection holds the information column
+  //we are using the "renderer" here as well to show one important feature of displaying the MVC JSon Date
+  $.each(store.reader.jsonData.ResultData.columnInfo.fields, function(index, metaValue)
+  {
+      cols[index] = { header: metaValue.header, dataIndex: metaValue.dataIndex, width: metaValue.width,
+          sortable: metaValue.sortable, hidden: metaValue.hidden,
+          renderer: function(dtData) { if (metaValue.renderer) { return eval(metaValue.renderer + "('" + dtData + "')"); } else return dtData; }
+      };
+  });
+
+  Ext.grid.DynamicColumnModel.superclass.constructor.call(this, cols);
+};
+Ext.extend(Ext.grid.DynamicColumnModel, Ext.grid.ColumnModel, {});
+//*****************************************
+//End of dynamic columns
+//*****************************************
+
+

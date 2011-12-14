@@ -60,9 +60,29 @@ EBS.store.accounts = new Ext.data.GroupingStore({
   }
 });
 
+EBS.store.transactionreport = new Ext.data.GroupingStore({
+    paramsAsHash: true,
+    autoLoad: false,
+    proxy: new Ext.data.HttpProxy({
+        url: '/ebsadmin/transactions/',
+        method:'POST',
+    }),    
+    reader:new Ext.data.DynamicJsonReader({ root: 'records' }),
+    remoteSort:true,
+    sortInfo:{
+         field:'username',
+         direction:'ASC'
+    },
+    listeners: {
+          load:function(){
+             // console.info('load',this,arguments);
+          }
+  }
+});
+
 EBS.store.sessions = new Ext.data.GroupingStore({
     paramsAsHash: true,
-    autoLoad: {params:{start:0, limit:100}},
+    autoLoad: false,
     proxy: new Ext.data.HttpProxy({
         url: '/ebsadmin/sessions/',
         method:'GET',

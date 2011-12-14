@@ -1,7 +1,10 @@
 from django.conf.urls.defaults import *
 
+urlpatterns = patterns('ebsadmin.transactionreport',
+                       url(r'^transactions/$', 'transactionreport'),
+                       )
 
-urlpatterns = patterns('ebsadmin.views',
+urlpatterns += patterns('ebsadmin.views',
      url(r'^accounts/$', 'jsonaccounts'),
      url(r'^periodicalservice/$', 'periodicalservice'),
      url(r'^addonservice/$', 'addonservice'),
@@ -30,6 +33,7 @@ urlpatterns = patterns('ebsadmin.views',
      url(r'^template/$', 'template'),
      url(r'^documentrender/$', 'documentrender'),
      url(r'^accounthardware/$', 'accounthardware'),
+     
      
      url(r'^accounttariffs/$', 'accounttariffs'),
      url(r'^account/$', 'account'),

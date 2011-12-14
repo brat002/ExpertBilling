@@ -163,13 +163,43 @@ html, body {
     border-bottom:1px solid silver;   
 }
 
-        .databox {
-            background: #f9f9f9;
-            font-size: 13px;
-            color: #333;
-            border-bottom: 1px solid #e3e3e3;
-            padding: 10px;
-        }
-        .checked {
-            background: #999;
-            co
+.redGridCell {
+
+    background-color:red;
+    color:#ffffff;
+    text-align:right;
+    font-weight:bold;    
+}
+.greenGridCell {
+
+    background-color:green;
+    color:#ffffff;
+    text-align:right;
+    font-weight:bold;    
+}
+.yellowGridCell {
+
+    background-color:lightyellow;
+    color:black;
+    text-align:right;
+    font-weight:bold;    
+}
+
+.greenSessionGridCell {
+
+background-color:green;
+color:#ffdc51;
+text-align:center;
+}
+.lightyellowSessionGridCell {
+
+background-color:lightyellow;
+text-align:center;
+}
+
+.lightblueSessionGridCell {
+
+background-color:lightblue;
+color:#00;
+text-align:center;
+}
