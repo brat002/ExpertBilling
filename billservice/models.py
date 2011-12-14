@@ -186,7 +186,7 @@ class PeriodicalServiceHistory(models.Model):
     #transaction = models.ForeignKey(to='Transaction')
     accounttarif = models.ForeignKey(to='AccountTarif')
     datetime  = models.DateTimeField(auto_now_add=True)
-    summ = models.FloatField()
+    summ = models.DecimalField(decimal_places=10, max_digits=30)
     account = models.ForeignKey('Account')
     type_id   = models.CharField(max_length=32, default='')
 

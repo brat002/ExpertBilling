@@ -47,7 +47,7 @@ class ExtDirectStore(object):
             queryset = self.model.objects
             
         queryset = queryset.filter(**kw)
-        print 'len(queryset)',len(queryset)
+
         if order:
             queryset = queryset.order_by(sort)
                 

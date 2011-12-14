@@ -1120,7 +1120,7 @@ Ext.onReady(function(){
         		    mode: 'remote',
         		    editable:true,
         		    triggerAction: 'all',
-        		    typeAhead: false,
+        		    typeAhead: true,
         		    minChars:2,
         		    blankText:'Укажите слово или часть слова для поиска',
         		    //field:'username',

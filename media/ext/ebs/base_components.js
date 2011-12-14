@@ -1258,19 +1258,19 @@ Ext.grid.DynamicColumnModel = function(store)
   var cols = [];
   var recordType = store.recordType;
   var fields = recordType.prototype.fields;
-
-  //for dynamic columns we need to return the columnInfo from server so we can build the columns here.
-  //in this example, the ResultData is a JSON object, returned from the server which contains a ColumnInfo
-  //object with "fields" collection. Each Field in Fields Collection holds the information column
-  //we are using the "renderer" here as well to show one important feature of displaying the MVC JSon Date
-  $.each(store.reader.jsonData.ResultData.columnInfo.fields, function(index, metaValue)
-  {
-      cols[index] = { header: metaValue.header, dataIndex: metaValue.dataIndex, width: metaValue.width,
-          sortable: metaValue.sortable, hidden: metaValue.hidden,
-          renderer: function(dtData) { if (metaValue.renderer) { return eval(metaValue.renderer + "('" + dtData + "')"); } else return dtData; }
-      };
-  });
-
+  if (store.reader.jsonData){
+	  //for dynamic columns we need to return the columnInfo from server so we can build the columns here.
+	  //in this example, the ResultData is a JSON object, returned from the server which contains a ColumnInfo
+	  //object with "fields" collection. Each Field in Fields Collection holds the information column
+	  //we are using the "renderer" here as well to show one important feature of displaying the MVC JSon Date
+	  $.each(store.reader.jsonData.ResultData.columnInfo.fields, function(index, metaValue)
+	  {
+	      cols[index] = { header: metaValue.header, dataIndex: metaValue.dataIndex, width: metaValue.width,
+	          sortable: metaValue.sortable, hidden: metaValue.hidden,
+	          renderer: function(dtData) { if (metaValue.renderer) { return eval(metaValue.renderer + "('" + dtData + "')"); } else return dtData; }
+	      };
+	  });
+}
   Ext.grid.DynamicColumnModel.superclass.constructor.call(this, cols);
 };
 Ext.extend(Ext.grid.DynamicColumnModel, Ext.grid.ColumnModel, {});
