@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import F
 import datetime, time
 from django.contrib.contenttypes.models import ContentType
-
+from django.contrib.contenttypes import generic
 # Create your models here.
 # choiCe
 
@@ -185,7 +185,7 @@ class PeriodicalServiceHistory(models.Model):
     service = models.ForeignKey(to=PeriodicalService)
     #transaction = models.ForeignKey(to='Transaction')
     accounttarif = models.ForeignKey(to='AccountTarif')
-    datetime  = models.DateTimeField(auto_now_add=True)
+    created  = models.DateTimeField(auto_now_add=True)
     summ = models.DecimalField(decimal_places=10, max_digits=30)
     account = models.ForeignKey('Account')
     type_id   = models.CharField(max_length=32, default='')
@@ -225,11 +225,11 @@ class OneTimeService(models.Model):
         
 class OneTimeServiceHistory(models.Model):
     onetimeservice = models.ForeignKey(OneTimeService)
-    datetime  = models.DateTimeField(auto_now_add=True)
+    created  = models.DateTimeField(auto_now_add=True)
     summ = models.IntegerField()
     account=models.ForeignKey('Account')
     accounttarif = models.ForeignKey('AccountTarif')
-    transaction = models.ForeignKey('Transaction')
+    
 
 
 class TimeAccessService(models.Model):
@@ -681,7 +681,9 @@ class Organization(models.Model):
 class TransactionType(models.Model):
     name = models.CharField(max_length=255, unique=True)
     internal_name = models.CharField(max_length=32, unique=True)
-
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey('content_type', 'object_id')
     def __unicode__(self):
         return u"%s %s" % (self.name, self.internal_name)
 
@@ -697,6 +699,7 @@ class TransactionType(models.Model):
 class Transaction(models.Model):
     bill = models.CharField(blank=True, default = "", max_length=255)
     account=models.ForeignKey(Account)
+    accounttarif=models.ForeignKey('AccountTarif')
     type = models.ForeignKey(to=TransactionType, to_field='internal_name')
     
     approved = models.BooleanField(default=True)
@@ -851,14 +854,7 @@ class SheduleLog(models.Model):
         verbose_name = u"Периодическая операция"
         verbose_name_plural = u"Периодиеские операции"
 
-class OneTimeServiceHistory(models.Model):
-    accounttarif = models.ForeignKey(AccountTarif)
-    onetimeservice = models.ForeignKey(OneTimeService)
-    datetime = models.DateTimeField()
-    
-    class Admin:
-        pass
-    
+
     
 """
     Для SystemGroup есть 3 предопределенные группы
@@ -1081,7 +1077,7 @@ class TrafficTransaction(models.Model):
     traffictransmitservice = models.ForeignKey(TrafficTransmitService) # ON DELETE SET NULL
     account = models.ForeignKey(Account)
     summ = models.FloatField()
-    datetime = models.DateTimeField()
+    created = models.DateTimeField()
     account = models.ForeignKey(Account)
     accounttarif = models.ForeignKey(AccountTarif)
     
