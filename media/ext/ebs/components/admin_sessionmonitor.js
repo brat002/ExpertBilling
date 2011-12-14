@@ -111,6 +111,11 @@ Ext.onReady(function(){
                                 id:'sessionmonitor_list',
                                 view: new Ext.grid.GroupingView(),
                                 store   : EBS.store.sessions,
+                                listeners:{
+                            		'afterrender':function(){
+                            			this.store.load();
+                            		} 
+                            	 },
                                 title: 'Монитор',
                                 closable:false,
                               //  plugins : [this.filters],

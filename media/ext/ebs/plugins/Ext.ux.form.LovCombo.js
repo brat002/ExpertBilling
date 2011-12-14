@@ -284,6 +284,7 @@ Ext.ux.form.LovCombo = Ext.extend(Ext.form.ComboBox, {
 	 * Selects all items
 	 */
 	,selectAll:function() {
+		//this.store.load();
         this.store.each(function(record){
             // toggle checked field
             record.set(this.checkField, true);

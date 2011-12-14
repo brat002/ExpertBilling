@@ -2,7 +2,7 @@
 
 from ebscab.lib.decorators import render_to, ajax_request
 from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
-from billservice.models import Template, AccountHardware, SuspendedPeriod, Operator, Transaction, PeriodicalService, AddonService
+from billservice.models import Template, AccountHardware, SuspendedPeriod, Operator, Transaction, PeriodicalService, AddonService, Tariff
 from nas.models import Nas
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
@@ -112,8 +112,11 @@ def account_livesearch(request):
 
     query=request.POST.get('query')
     field=request.POST.get('field')
-    if not (query and field):return {"records": [], 'total':0}
-    items = Account.objects.filter(**{'%s__icontains' % field:query})
+    #if not (query and field):return {"records": [], 'total':0}
+    if query:
+        items = Account.objects.filter(**{'%s__icontains' % field:query})
+    else:
+        items = Account.objects.all()
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
@@ -168,8 +171,12 @@ def get_mac_for_ip(request):
 @login_required
 def subaccounts(request):
     account_id = request.POST.get('account_id')
+    subaccount_id = request.POST.get('subaccount_id')
     print "subaccount", account_id
-    accounts = SubAccount.objects.filter(account__id=account_id)
+    if account_id:
+        accounts = SubAccount.objects.filter(account__id=account_id)
+    else:
+        accounts = SubAccount.objects.filter(subaccount__id=subaccount_id)
     #print accounts
     #from django.core import serializers
     #from django.http import HttpResponse
@@ -337,7 +344,7 @@ def nasses(request):
 @ajax_request
 @login_required
 def tariffs(request):
-    from billservice.models import Tariff
+    
     items = Tariff.objects.all()
     #from django.core import serializers
     #from django.http import HttpResponse

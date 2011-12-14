@@ -21,29 +21,37 @@ Ext.onReady(function(){
         YearMonth: "F, Y"
     };
 
-EBS.sessionRenderer = function pctChange(val){
+EBS.sessionRenderer = function pctChange(val, meta){
         if(val == 'ACTIVE'){
-            return '<div style="background-color:green;color:#ffdc51;text-align:center;">' + val + '</div>';
+        	meta.css="greenSessionGridCell";
+            return val;
         }else if(val == 'NACK'){
-            return '<div style="background-color:lightyellow;text-align:center;">' + val + '</div>';
+        	meta.css="lightyellowSessionGridCell";
+            return val;
         }
         else if(val == 'ACK'){
-            return '<div style="background-color:lightblue;color:#00;text-align:center;">' + val + '</div>';
+        	meta.css="lightblueSessionGridCell";
+            return val;
         }
         return val;
     }
 
 
-EBS.moneyRenderer = function pctChange(val){
-    if(val > 0){
-        return '<div style="background-color:green;color:#ffdc51;text-align:center;font-weight:bold;">' + val.toFixed(2) + ' руб.</div>';
-    }else if(val == 0){
-        return '<div style="background-color:lightyellow;text-align:center;font-weight:bold;">' + val.toFixed(2) + ' руб.</div>';
+EBS.moneyRenderer = function pctChange(val,meta,record){
+	
+	
+    if(record.get('ballance') > 0){
+    	meta.css='greenGridCell';
+    	return val.toFixed(2)
+    }else if(val == 0|| val==null){
+    	meta.css='yellowGridCell';
+    	return 0
     }
     else if(val < 0){
-        return '<div style="background-color:red;color:#ffffff;text-align:center;font-weight:bold;">' + val.toFixed(2) + ' руб.</div>';
+    	meta.css='redGridCell';
+    	return val.toFixed(2)
     }
-    return val;
+
 }
 });
 

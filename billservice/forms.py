@@ -2,7 +2,8 @@
 from django import forms
 from datetime import datetime, date
 from django.forms import ModelForm
-from billservice.models import Tariff, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
+from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
+from billservice.models import PeriodicalService, SystemUser, TransactionType
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -94,6 +95,17 @@ class DocumentRenderForm(forms.Form):
     date_start = forms.DateTimeField(required=True)
     date_end = forms.DateTimeField(required=False)
 
+class TransactionReportForm(forms.Form):
+    account = forms.IntegerField(required=False)
+    #subaccount = forms.IntegerField(required=False)
+    tarif = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False)
+    addonservice = forms.ModelMultipleChoiceField(queryset=AddonService.objects.all(), required=False)
+    systemuser = forms.ModelMultipleChoiceField(queryset=SystemUser.objects.all(), required=False)
+    periodicalservice = forms.ModelMultipleChoiceField(queryset=PeriodicalService.objects.all(), required=False)
+    transactiontype = forms.ModelMultipleChoiceField(queryset=TransactionType.objects.all(), required=False)
+    start_date = forms.DateTimeField(required=True)
+    end_date = forms.DateTimeField(required=False)
+    
     
 class AccountAddonServiceModelForm(ModelForm):
     class Meta:

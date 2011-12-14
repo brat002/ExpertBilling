@@ -74,11 +74,11 @@ Ext.onReady(function(){
                             menu: [
                                 {
                                     text : "Пополнить баланс",
-                                    icon: media+'icons/16/new/cog.png',
+                                    icon: media+'icons/16/new/money.png',
                                     handler: this.tbCustomFormCallBack.createCallback(this,'edit_credit')
                                 },{
-                                    text : i18n.accounts.edit_server,
-                                    icon: media+'icons/16/new/cog.png',
+                                    text : 'Перенести в архив',
+                                    icon: media+'icons/16/new/cart_remove.png',
                                     handler: this.tbFormCallBack.createCallback(this,'edit_server')
                                 },{
                                     text : i18n.accounts.set_ipn,
@@ -134,6 +134,11 @@ Ext.onReady(function(){
                                 id:'accounts_list',
                                 view: new Ext.grid.GroupingView(),
                                 store   : EBS.store.accounts,
+                                listeners:{
+                            		'afterrender':function(){
+                            			this.store.load();
+                            		} 
+                            	 },
                                 closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
@@ -1196,7 +1201,8 @@ Ext.onReady(function(){
 								     	  if (!account_id){
 								     		  Ext.Msg.alert('Действие не может быть выполнено','Сохраните аккаунт.');
 								     	  }else{
-								     		  EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+								     		  //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
+								     		 EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
 								     	  }
 								     	  //EBS.displayFormInSpecTab('ebs_accountsPanel', 'subaccounts', {'account_id':account_id, 'id':null}, this.findParentByType('tabpanel'), this.findParentByType('grid'))
 								        }
@@ -1264,7 +1270,7 @@ Ext.onReady(function(){
 				                    autoWidth:true,
 				                    autoScroll:true,
 				                    height:300,
-				                    title: 'Подключаемые услуги',
+				                    title: 'Дополнительные предоставляемые услуги',
 				                    tbar: [{
 									    icon: media+'icons/16/arrow_refresh.png',
 								        text: 'Обновить',
@@ -1707,7 +1713,8 @@ Ext.onReady(function(){
     	                                        {
     	                                            xtype: 'xdatetime',
     	                                            //width: 184
-    	                                            name:'deactivated'
+    	                                            name:'deactivated',
+    	                                            otherToNow:false
     	                                        }
     	                                    ]
     	                                },
@@ -1752,7 +1759,7 @@ Ext.onReady(function(){
     	}
     EBS.forms.ebs_accountsPanel.accountaddonservice_submitAction =  function(object, event, form, win){
     	
-    	var acc_id;
+    	var acc_id, subacc_id;
     	acc_id = form.findField('account').getValue();
     	if (!acc_id)
     		{
@@ -1760,12 +1767,14 @@ Ext.onReady(function(){
     		
     		
     		}
-    	/*form.submit({url:form.save_url, waitMsg:'Saving Data...', submitEmptyText: false, success: function(form,action) {        
-            	form.closeForm()},
-            	
-    	})*/
-    	
-    	//form = this.ownerCt.ownerCt.getForm();
+    	subacc_id = form.findField('subaccount').getValue();
+    	if (!subacc_id)
+    		{
+    		form.findField('subaccount').setValue(win.ids.subaccount_id);
+    		
+    		
+    		}    	
+
  	    f=form;
  	    pub = function(){win.items.items[0].publish('ebs.accountaddonservice.change', 'msg');	}
         
@@ -1838,7 +1847,7 @@ Ext.onReady(function(){
     	                    listeners: {
         	                    'render' : function(n){
         	                    	//alert(this.findParentByType('xinstancecontainer').parent_id);
-        	                    	this.setValue(this.findParentByType('xinstancewindow').parent_id);
+        	                    	this.setValue(this.findParentByType('xinstancewindow').ids.account_id);
         	                    	//alert(this.value);
         	                    }
         	                    }
@@ -2049,7 +2058,7 @@ EBS.forms.ebs_accountsPanel.edit_credit_submitAction =  function(object, event, 
     	    //frame:true,
     	    layout: 'auto',
     	    autoScroll: true,
-    	    bodyStyle:'padding:0 30% 0 30%',
+    	    //bodyStyle:'padding:0 30% 0 30%',
     	    plugins:['msgbus'],
      	    tbar: [{
                iconCls: 'icon-user-add',
@@ -2149,34 +2158,481 @@ EBS.forms.ebs_accountsPanel.edit_credit_submitAction =  function(object, event, 
     	    //padding: 10,
     	    //align: 'stretchmax',
     	    //padding: 10,
-    	    items: [
+    	    items: [{
+            	xtype:'hidden',
+            	name:'id',
+            },{
+            	xtype:'hidden',
+            	name:'account',
+            	listeners: {
+                    'afterrender' : function(n){
+                    	//alert(this.findParentByType('xinstancecontainer').parent_id);
+                    	this.setValue(this.findParentByType('xinstancecontainer').ids.account_id);
+                    	//alert(this.value);
+                    }
+                    }
+            },
+            {
+                xtype: 'container',
+                height: 302,
+                width: 972,
+                layout: 'hbox',
+                defaults:{
+			        margins:'0 5 5 0',    	                                        
+			    },
+			    baseCls:'x-plain',
+                align: 'middle',
+                items: [
+                    {
+                        xtype: 'fieldset',
+                        height: 290,
+                        width: 497,
+                        title: 'RADIUS авторизация',
+                        flex: 1,
+                        items: [
+								{
+								    xtype: 'container',
+								    layout: 'hbox',
+								    align: 'middle',
+								    fieldLabel: 'Логин',
+								    defaults:{
+								        margins:'0 5 5 0',    	                                        
+								    },
+								    baseCls:'x-plain',
+								    anchor: '100%',
+								    items: [
+								            {
+								                xtype: 'textfield',
+								                name: 'username',
+								                anchor: '90%',
+								                //fieldLabel: 'Логин'
+								            },{
+								                xtype: 'button',
+								                anchor: '10%',
+								                text: 'Сгенерировать',
+								                handler:function(button, event){
+								                	Ext.Ajax.request({
+								                        params: {'action':'login'},
+								                        url: '/ebsadmin/credentials/gen/',
+								                        success: function (resp) {
+								                            var data;
+								                            data = Ext.decode(resp.responseText);
+								                            if (data.success === true) {
+								                            	button.findParentByType('form').getForm().findField('username').setValue(data.generated);
+								                                
+								                            } else {
+								                                Ext.MessageBox.alert('Ошибка', 'Неверный запрос. ');
+								                            }
+								                        },
+								                        failure: function () {
+								                        	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
+								                        }
+								                    });
+								                }
+								            }
+								            ]
+								    },
+								    {
+									    xtype: 'container',
+									    layout: 'hbox',
+									    align: 'middle',
+									    fieldLabel: 'Пароль',
+									    defaults:{
+								            margins:'0 5 5 0',    	                                        
+								        },
+								        baseCls:'x-plain',
+									    anchor: '100%',
+									    items: [
+								            
+								            {
+								                xtype: 'textfield',
+								                name: 'password',
+								                anchor: '100%',
+								                fieldLabel: 'Пароль'
+								            },{
+								                xtype: 'button',
+								                anchor: '10%',
+								                text: 'Сгенерировать',
+								                handler:function(button, event){
+								                	Ext.Ajax.request({
+								                        params: {'action':'password'},
+								                        url: '/ebsadmin/credentials/gen/',
+								                        success: function (resp) {
+								                            var data;
+								                            data = Ext.decode(resp.responseText);
+								                            if (data.success === true) {
+								                            	button.findParentByType('form').getForm().findField('password').setValue(data.generated);
+								                                
+								                            } else {
+								                                Ext.MessageBox.alert('Ошибка', 'Неверный запрос. ');
+								                            }
+								                        },
+								                        failure: function () {
+								                        	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
+								                        }
+								                    });
+								                }
+								            }
+								            ]
+								        },
+								{
+								    xtype: 'container',
+								    layout: 'hbox',
+								    fieldLabel: 'IPv4 VPN IP',
+								    align: 'middle',
+								    items: [
+								        {
+								            xtype: 'combo',
+								            name: 'vpn_ip_address',
+								            vtype:'IPAddress',
+								            value:'0.0.0.0',
+								            flex: 1,
+								            anchor: '100%',
+								 		    
+								 		    displayField: 'ipaddress',
+								 		    valueField: 'ipaddress', 
+								 		    mode: 'remote',
+								 		    editable:true,
+								            loadingText  : 'Searching...',
+								            pageSize     : 25,
+								 		    triggerAction: 'all',
+								 		    typeAhead: false,
+								 		    //ref: 'store/p',
+								 		    listeners:{
+										        	focus:function(obj, options){
+										        		pool_id=this.findParentByType('form').getForm().findField('ipv4_vpn_pool').getValue();
+										        		//alert();
+										        		obj.store.setBaseParam('pool_id',pool_id);
+										        		if (pool_id){
+										        			obj.store.load()
+										        		}
+										        	},
+										        	//scope:this.ownerCt,
+										        	
+										        },
+										        
+								 		    store:new Ext.data.Store({
+								 		    	ref: '../st',
+								 		    	param:{pool_id:function (){return this.ownerCt.ownerCt.ipv4_vpn_pool.getValue()}},
+								 		        proxy: new Ext.data.HttpProxy({
+								 		            url: '/ebsadmin/ipaddress/getfrompool/',
+								 		            method:'POST',
+								 		            
+								 		        }),
+								 		        
+								 		        reader: new Ext.data.JsonReader({
+								 		        	totalProperty: 'totalCount',
+								 		            root: 'records'
+								 		        }, [{
+								 		            name: 'ipaddress'
+								 		        }])
+								 		    }),
+								        },
+								        {
+								            xtype: 'xcomboippool',
+								            name: 'ipv4_vpn_pool',
+								            hiddenName: 'ipv4_vpn_pool',
+								            type:0,
+								            flex: 1
+								        }
+								    ]
+								},
+								{
+								    xtype: 'container',
+								    layout: 'hbox',
+								    anchor: '100%',
+								    disabled:true,
+								    fieldLabel: 'IPv6 VPN IP',
+								    items: [
+								        {
+								            xtype: 'textfield',
+								            name: 'vpn_ipv6_ip_address',
+								            vtype:'IPv6Address',
+								            value:'::',
+								            flex: 1
+								        },
+								        {
+								            xtype: 'xcomboippool',
+								            pool_type:2,
+								            
+								            flex: 1
+								        }
+								    ]
+								},
+								{
+								    xtype: 'checkbox',
+								    name: 'allow_vpn_with_null',
+								    boxLabel: 'Разрешить RADIUS авторизацию при нулевом балансе',
+								    anchor: '100%',
+								
+								    hideLabel: true
+								},
+								{
+								    xtype: 'checkbox',
+								    name: 'allow_vpn_with_minus',
+								    boxLabel: 'Разрешить RADIUS авторизацию при отрицательном балансе',
+								    anchor: '100%',
+								
+								    hideLabel: true
+								},
+								{
+								    xtype: 'checkbox',
+								    name: 'allow_vpn_with_block',
+								    boxLabel: 'Разрешить RADIUS авторизацию при блокировке по балансу/лимитам трафика',
+								    anchor: '100%',
+								
+								    hideLabel: true
+								},
+								{
+								    xtype: 'checkbox',
+								    name: 'associate_pptp_ipn_ip',
+								    boxLabel: 'Привязать PPTP авторизацию к IPN IP',
+								    anchor: '100%',
+								
+								    hideLabel: true
+								},
+								{
+								    xtype: 'checkbox',
+								    name: 'associate_pppoe_ipn_mac',
+								    boxLabel: 'Привязать PPPOE авторизацию к IPN MAC',
+								    anchor: '100%',
+								
+								    hideLabel: true
+								},
+								{
+								    xtype: 'textfield',
+								    anchor: '100%',
+								    fieldLabel: 'Скорость'
+								}
+								]
+								},
+                        
+    	                    {
+    	                        xtype: 'fieldset',
+    	                        height: 290,
+    	                        title: 'IPN авторизация',
+    	                        flex: 1,
+    	                        items: [
+										{
+										    xtype: 'container',
+										    layout: 'hbox',
+										    anchor: '100%',
+										    fieldLabel: 'IPv4 IPN IP',
+										    align: 'middle',
+										    items: [
+										        {
+										            xtype: 'combo',
+										            name: 'ipn_ip_address',
+										            vtype:'IPAddress',
+										            value:'0.0.0.0',
+										            flex: 1,
+										            anchor: '100%',
+										 		    
+										 		    displayField: 'ipaddress',
+										 		    valueField: 'ipaddress', 
+										 		    mode: 'remote',
+										 		    editable:true,
+										            loadingText  : 'Searching...',
+										            pageSize     : 25,
+										 		    triggerAction: 'all',
+										 		    typeAhead: false,
+										 		    //ref: 'store/p',
+										 		    listeners:{
+												        	focus:function(obj, options){
+												        		pool_id=this.findParentByType('form').getForm().findField('ipv4_ipn_pool').getValue();
+												        		//alert();
+												        		obj.store.setBaseParam('pool_id',pool_id);
+												        		if (pool_id){
+												        			obj.store.load()
+												        		}
+												        	},
+												        	//scope:this.ownerCt,
+												        	
+												        },
+												        
+										 		    store:new Ext.data.Store({
+										 		    	ref: '../st',
+										 		    	param:{pool_id:function (){return this.ownerCt.ownerCt.ipv4_vpn_pool.getValue()}},
+										 		        proxy: new Ext.data.HttpProxy({
+										 		            url: '/ebsadmin/ipaddress/getfrompool/',
+										 		            method:'POST',
+										 		            
+										 		        }),
+										 		        
+										 		        reader: new Ext.data.JsonReader({
+										 		        	totalProperty: 'totalCount',
+										 		            root: 'records'
+										 		        }, [{
+										 		            name: 'ipaddress'
+										 		        }])
+										 		    }),
+										        },
+										        {
+										            xtype: 'xcomboippool',
+										            name: 'ipv4_ipn_pool',
+										            hiddenName: 'ipv4_ipn_pool',
+										            pool_type: 1,
+										            flex: 1
+										        }
+										    ]
+										},
+										{
+										    xtype: 'container',
+										    layout: 'hbox',
+										    anchor: '100%',
+										    fieldLabel: 'IPN MAC',
+										    items: [
+										        {
+										            xtype: 'textfield',
+										            width: 130,
+										            name: 'ipn_mac_address',
+										            flex: 1
+										        },
+										        {
+										            xtype: 'button',
+										            text: 'Определить',
+										            flex: 1,
+										            width:100,
+										            //getmacforip
+										            handler:function(button, event){
+										            	//button.disable();
+										            	button.setText('Подождите');
+										            	Ext.Ajax.request({
+										                    params: {'nas_id':button.findParentByType('form').getForm().findField('nas').getValue(),
+										                    	'ipn_ip_address':button.findParentByType('form').getForm().findField('ipn_ip_address').getValue()
+										                    	},
+										                    url: '/ebsadmin/getmacforip/',
+										                    success: function (resp) {
+										                        var data;
+										                        data = Ext.decode(resp.responseText);
+										                        //button.enable();
+										                        button.setText('Определить');
+										                        if (data.success === true) {
+										                        	button.findParentByType('form').getForm().findField('ipn_mac_address').setValue(data.mac);
+										                            
+										                        } else {
+										                            Ext.MessageBox.alert('Ошибка', 'Неверный запрос. '+data.msg);
+										                        }
+										                    },
+										                    failure: function () {
+										                    	button.setText('Определить');
+										                    	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
+										                    }
+										                });
+										            }
+										        }
+										    ]
+										},
+										{
+										    xtype: 'container',
+										    hidden:true,
+										    layout: 'hbox',
+										    anchor: '100%',
+										    fieldLabel: 'IPv6 IPN IP',
+										    items: [
+										        {
+										            xtype: 'textfield',
+										            name: 'ipn_ipv6_ip_address',
+										            vtype:'IPv6Address',
+										            value:'::',
+										            flex: 1
+										        },
+										        {
+										            xtype: 'combo',
+										            flex: 1
+										        }
+										    ]
+										},
+										{
+										    xtype: 'checkbox',
+										    name: 'allow_dhcp',
+										    boxLabel: 'Выдавать IPN IP адрес по DHCP',
+										    anchor: '100%',
+										    fieldLabel: 'Label',
+										    hideLabel: true
+										},
+										{
+										    xtype: 'checkbox',
+										    name: 'allow_dhcp_with_null',
+										    boxLabel: 'Выдавать IP адрес по DHCP при нулевом балансе',
+										    anchor: '100%',
+										    fieldLabel: 'Label',
+										    hideLabel: true
+										},
+										{
+										    xtype: 'checkbox',
+										    name: 'allow_dhcp_with_minus',
+										    boxLabel: 'Выдавать IP адрес по DHCP при отрицательном балансе',
+										    anchor: '100%',
+										    fieldLabel: 'Label',
+										    hideLabel: true
+										},
+										{
+										    xtype: 'checkbox',
+										    name: 'allow_dhcp_with_block',
+										    boxLabel: 'Выдавать IP адрес по DHCP при блокировке по балансу/лимитам трафика',
+										    anchor: '100%',
+										    fieldLabel: 'Label',
+										    hideLabel: true
+										},
+										{
+										    xtype: 'checkbox',
+										    name: 'allow_ipn_with_null',
+										    boxLabel: 'Разрешить IPN доступ при нулевом балансе',
+										    anchor: '100%',
+										    fieldLabel: 'Label',
+										    hideLabel: true
+										},
+										{
+										    xtype: 'checkbox',
+										    name: 'allow_ipn_with_minus',
+										    boxLabel: 'Разрешить IPN доступ при отрицательном балансе',
+										    anchor: '100%',
+										    fieldLabel: 'Label',
+										    hideLabel: true
+										},
+										{
+										    xtype: 'checkbox',
+										    name: 'allow_ipn_with_block',
+										    boxLabel: 'Разрешить IPN доступ при блокировке по балансу/лимитам трафика',
+										    anchor: '100%',
+										    fieldLabel: 'Label',
+										    hideLabel: true
+										},
+										{
+										    xtype: 'checkbox',
+										    name: 'allow_mac_update',
+										    boxLabel: 'Разрешить обновление IPN MAC адреса через веб-кабинет',
+										    anchor: '100%',
+										    fieldLabel: 'Label',
+										    hideLabel: true
+										},
+										{
+										    xtype: 'textfield',
+										    anchor: '100%',
+										    fieldLabel: 'Скорость'
+										}
+										]
+										}]
+            },
+    	               
     	            {
-    	            	xtype:'hidden',
-    	            	name:'id',
-    	            },{
-    	            	xtype:'hidden',
-    	            	name:'account',
-    	            	listeners: {
-    	                    'render' : function(n){
-    	                    	//alert(this.findParentByType('xinstancecontainer').parent_id);
-    	                    	this.setValue(this.findParentByType('xinstancecontainer').ids.account_id);
-    	                    	//alert(this.value);
-    	                    }
-    	                    }
-    	            },
-    	           
+    	                xtype: 'container',
+    	                layout: 'hbox',
+    	                items: [
     	                    {
     	                        xtype: 'container',
-    	                        autoHeight: true,
-    	                        width: '100%',
-    	                        
+    	                        height: 226,
+    	                        width: 422,
+    	                        layout: 'vbox',
+    	                        flex: 1,
     	                        items: [
     	                            {
     	                                xtype: 'fieldset',
     	                                autoHeight: true,
-    	                                width: 533,
     	                                padding: '10px',
     	                                title: 'Привязка к оборудованию',
+    	                                flex: 1,
     	                                items: [
     	                                    {
     	                                        xtype: 'xcombonas',
@@ -2206,462 +2662,16 @@ EBS.forms.ebs_accountsPanel.edit_credit_submitAction =  function(object, event, 
     	                                        fieldLabel: 'VLAN'
     	                                    }
     	                                ]
-    	                            }
-    	                        ]
-    	                    },
-    	                    {
-    	                        xtype: 'container',
-    	                        autoWidth: true,
-    	                        width: 757,
-    	                        items: [
+    	                            },
     	                            {
     	                                xtype: 'fieldset',
-    	                                width: 533,
-    	                                title: 'RADIUS авторизация',
-    	                                collapsible:true,
-    	                                items: [
-											{
-											    xtype: 'container',
-											    layout: 'hbox',
-											    align: 'middle',
-											    fieldLabel: 'Логин',
-											    defaults:{
-	    	                                        margins:'0 5 5 0',    	                                        
-	    	                                    },
-	    	                                    baseCls:'x-plain',
-											    anchor: '100%',
-											    items: [
-			    	                                    {
-			    	                                        xtype: 'textfield',
-			    	                                        name: 'username',
-			    	                                        anchor: '90%',
-			    	                                        //fieldLabel: 'Логин'
-			    	                                    },{
-			    	                                        xtype: 'button',
-			    	                                        anchor: '10%',
-			    	                                        text: 'Сгенерировать',
-			    	                                        handler:function(button, event){
-			    	                                        	Ext.Ajax.request({
-			    	                	                            params: {'action':'login'},
-			    	                	                            url: '/ebsadmin/credentials/gen/',
-			    	                	                            success: function (resp) {
-			    	                	                                var data;
-			    	                	                                data = Ext.decode(resp.responseText);
-			    	                	                                if (data.success === true) {
-			    	                	                                	button.findParentByType('form').getForm().findField('username').setValue(data.generated);
-			    	                	                                    
-			    	                	                                } else {
-			    	                	                                    Ext.MessageBox.alert('Ошибка', 'Неверный запрос. ');
-			    	                	                                }
-			    	                	                            },
-			    	                	                            failure: function () {
-			    	                	                            	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
-			    	                	                            }
-			    	                	                        });
-			    	                                        }
-			    	                                    }
-			    	                                    ]
-	    	                                    },
-	    	                                    {
-												    xtype: 'container',
-												    layout: 'hbox',
-												    align: 'middle',
-												    fieldLabel: 'Пароль',
-												    defaults:{
-		    	                                        margins:'0 5 5 0',    	                                        
-		    	                                    },
-		    	                                    baseCls:'x-plain',
-												    anchor: '100%',
-												    items: [
-			    	                                    
-			    	                                    {
-			    	                                        xtype: 'textfield',
-			    	                                        name: 'password',
-			    	                                        anchor: '100%',
-			    	                                        fieldLabel: 'Пароль'
-			    	                                    },{
-			    	                                        xtype: 'button',
-			    	                                        anchor: '10%',
-			    	                                        text: 'Сгенерировать',
-			    	                                        handler:function(button, event){
-			    	                                        	Ext.Ajax.request({
-			    	                	                            params: {'action':'password'},
-			    	                	                            url: '/ebsadmin/credentials/gen/',
-			    	                	                            success: function (resp) {
-			    	                	                                var data;
-			    	                	                                data = Ext.decode(resp.responseText);
-			    	                	                                if (data.success === true) {
-			    	                	                                	button.findParentByType('form').getForm().findField('password').setValue(data.generated);
-			    	                	                                    
-			    	                	                                } else {
-			    	                	                                    Ext.MessageBox.alert('Ошибка', 'Неверный запрос. ');
-			    	                	                                }
-			    	                	                            },
-			    	                	                            failure: function () {
-			    	                	                            	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
-			    	                	                            }
-			    	                	                        });
-			    	                                        }
-			    	                                    }
-			    	                                    ]
-		    	                                    },
-    	                                    {
-    	                                        xtype: 'container',
-    	                                        layout: 'hbox',
-    	                                        fieldLabel: 'IPv4 VPN IP',
-    	                                        align: 'middle',
-    	                                        items: [
-    	                                            {
-    	                                                xtype: 'combo',
-    	                                                name: 'vpn_ip_address',
-    	                                                vtype:'IPAddress',
-    	                                                value:'0.0.0.0',
-    	                                                flex: 1,
-    	                                                anchor: '100%',
-    	                                     		    
-    	                                     		    displayField: 'ipaddress',
-    	                                     		    valueField: 'ipaddress', 
-    	                                     		    mode: 'remote',
-    	                                     		    editable:true,
-    	                                                loadingText  : 'Searching...',
-    	                                                pageSize     : 25,
-    	                                     		    triggerAction: 'all',
-    	                                     		    typeAhead: false,
-    	                                     		    //ref: 'store/p',
-    	                                     		    listeners:{
-	                                     		        	focus:function(obj, options){
-	                                     		        		pool_id=this.findParentByType('form').getForm().findField('ipv4_vpn_pool').getValue();
-	                                     		        		//alert();
-	                                     		        		obj.store.setBaseParam('pool_id',pool_id);
-	                                     		        		if (pool_id){
-	                                     		        			obj.store.load()
-	                                     		        		}
-	                                     		        	},
-	                                     		        	//scope:this.ownerCt,
-	                                     		        	
-	                                     		        },
-	                                     		        
-    	                                     		    store:new Ext.data.Store({
-    	                                     		    	ref: '../st',
-    	                                     		    	param:{pool_id:function (){return this.ownerCt.ownerCt.ipv4_vpn_pool.getValue()}},
-    	                                     		        proxy: new Ext.data.HttpProxy({
-    	                                     		            url: '/ebsadmin/ipaddress/getfrompool/',
-    	                                     		            method:'POST',
-    	                                     		            
-    	                                     		        }),
-    	                                     		        
-    	                                     		        reader: new Ext.data.JsonReader({
-    	                                     		        	totalProperty: 'totalCount',
-    	                                     		            root: 'records'
-    	                                     		        }, [{
-    	                                     		            name: 'ipaddress'
-    	                                     		        }])
-    	                                     		    }),
-    	                                            },
-    	                                            {
-    	                                                xtype: 'xcomboippool',
-    	                                                name: 'ipv4_vpn_pool',
-    	                                                hiddenName: 'ipv4_vpn_pool',
-    	                                                type:0,
-    	                                                flex: 1
-    	                                            }
-    	                                        ]
-    	                                    },
-    	                                    {
-    	                                        xtype: 'container',
-    	                                        layout: 'hbox',
-    	                                        anchor: '100%',
-    	                                        hidden:true,
-    	                                        fieldLabel: 'IPv6 VPN IP',
-    	                                        items: [
-    	                                            {
-    	                                                xtype: 'textfield',
-    	                                                name: 'vpn_ipv6_ip_address',
-    	                                                vtype:'IPv6Address',
-    	                                                value:'::',
-    	                                                flex: 1
-    	                                            },
-    	                                            {
-    	                                                xtype: 'xcomboippool',
-    	                                                pool_type:2,
-    	                                                
-    	                                                flex: 1
-    	                                            }
-    	                                        ]
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_vpn_with_null',
-    	                                        boxLabel: 'Разрешить RADIUS авторизацию при нулевом балансе',
-    	                                        anchor: '100%',
-
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_vpn_with_minus',
-    	                                        boxLabel: 'Разрешить RADIUS авторизацию при отрицательном балансе',
-    	                                        anchor: '100%',
-
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_vpn_with_block',
-    	                                        boxLabel: 'Разрешить RADIUS авторизацию при блокировке по балансу/лимитам трафика',
-    	                                        anchor: '100%',
-
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'associate_pptp_ipn_ip',
-    	                                        boxLabel: 'Привязать PPTP авторизацию к IPN IP',
-    	                                        anchor: '100%',
-
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'associate_pppoe_ipn_mac',
-    	                                        boxLabel: 'Привязать PPPOE авторизацию к IPN MAC',
-    	                                        anchor: '100%',
-
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'textfield',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Скорость'
-    	                                    }
-    	                                ]
-    	                            }
-    	                        ]
-    	                    },
-    	                    {
-    	                        xtype: 'container',
-    	                        items: [
-    	                            {
-    	                                xtype: 'fieldset',
-    	                                width: 533,
-    	                                title: 'IPN авторизация',
-    	                                collapsible:true,
-    	                                items: [
-    	                                    {
-    	                                        xtype: 'container',
-    	                                        layout: 'hbox',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'IPv4 IPN IP',
-    	                                        align: 'middle',
-    	                                        items: [
-    	                                            {
-    	                                                xtype: 'combo',
-    	                                                name: 'ipn_ip_address',
-    	                                                vtype:'IPAddress',
-    	                                                value:'0.0.0.0',
-    	                                                flex: 1,
-    	                                                anchor: '100%',
-    	                                     		    
-    	                                     		    displayField: 'ipaddress',
-    	                                     		    valueField: 'ipaddress', 
-    	                                     		    mode: 'remote',
-    	                                     		    editable:true,
-    	                                                loadingText  : 'Searching...',
-    	                                                pageSize     : 25,
-    	                                     		    triggerAction: 'all',
-    	                                     		    typeAhead: false,
-    	                                     		    //ref: 'store/p',
-    	                                     		    listeners:{
-	                                     		        	focus:function(obj, options){
-	                                     		        		pool_id=this.findParentByType('form').getForm().findField('ipv4_ipn_pool').getValue();
-	                                     		        		//alert();
-	                                     		        		obj.store.setBaseParam('pool_id',pool_id);
-	                                     		        		if (pool_id){
-	                                     		        			obj.store.load()
-	                                     		        		}
-	                                     		        	},
-	                                     		        	//scope:this.ownerCt,
-	                                     		        	
-	                                     		        },
-	                                     		        
-    	                                     		    store:new Ext.data.Store({
-    	                                     		    	ref: '../st',
-    	                                     		    	param:{pool_id:function (){return this.ownerCt.ownerCt.ipv4_vpn_pool.getValue()}},
-    	                                     		        proxy: new Ext.data.HttpProxy({
-    	                                     		            url: '/ebsadmin/ipaddress/getfrompool/',
-    	                                     		            method:'POST',
-    	                                     		            
-    	                                     		        }),
-    	                                     		        
-    	                                     		        reader: new Ext.data.JsonReader({
-    	                                     		        	totalProperty: 'totalCount',
-    	                                     		            root: 'records'
-    	                                     		        }, [{
-    	                                     		            name: 'ipaddress'
-    	                                     		        }])
-    	                                     		    }),
-    	                                            },
-    	                                            {
-    	                                                xtype: 'xcomboippool',
-    	                                                name: 'ipv4_ipn_pool',
-    	                                                hiddenName: 'ipv4_ipn_pool',
-    	                                                pool_type: 1,
-    	                                                flex: 1
-    	                                            }
-    	                                        ]
-    	                                    },
-    	                                    {
-    	                                        xtype: 'container',
-    	                                        layout: 'hbox',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'IPN MAC',
-    	                                        items: [
-    	                                            {
-    	                                                xtype: 'textfield',
-    	                                                width: 130,
-    	                                                name: 'ipn_mac_address',
-    	                                                flex: 1
-    	                                            },
-    	                                            {
-    	                                                xtype: 'button',
-    	                                                text: 'Определить',
-    	                                                flex: 1,
-    	                                                width:100,
-    	                                                //getmacforip
-    	                                                handler:function(button, event){
-    	                                                	//button.disable();
-    	                                                	button.setText('Подождите');
-		    	                                        	Ext.Ajax.request({
-		    	                	                            params: {'nas_id':button.findParentByType('form').getForm().findField('nas').getValue(),
-		    	                	                            	'ipn_ip_address':button.findParentByType('form').getForm().findField('ipn_ip_address').getValue()
-		    	                	                            	},
-		    	                	                            url: '/ebsadmin/getmacforip/',
-		    	                	                            success: function (resp) {
-		    	                	                                var data;
-		    	                	                                data = Ext.decode(resp.responseText);
-		    	                	                                //button.enable();
-		    	                	                                button.setText('Определить');
-		    	                	                                if (data.success === true) {
-		    	                	                                	button.findParentByType('form').getForm().findField('ipn_mac_address').setValue(data.mac);
-		    	                	                                    
-		    	                	                                } else {
-		    	                	                                    Ext.MessageBox.alert('Ошибка', 'Неверный запрос. '+data.msg);
-		    	                	                                }
-		    	                	                            },
-		    	                	                            failure: function () {
-		    	                	                            	button.setText('Определить');
-		    	                	                            	Ext.MessageBox.alert('Ошибка', 'Ошибка передачи данных');
-		    	                	                            }
-		    	                	                        });
-		    	                                        }
-    	                                            }
-    	                                        ]
-    	                                    },
-    	                                    {
-    	                                        xtype: 'container',
-    	                                        hidden:true,
-    	                                        layout: 'hbox',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'IPv6 IPN IP',
-    	                                        items: [
-    	                                            {
-    	                                                xtype: 'textfield',
-    	                                                name: 'ipn_ipv6_ip_address',
-    	                                                vtype:'IPv6Address',
-    	                                                value:'::',
-    	                                                flex: 1
-    	                                            },
-    	                                            {
-    	                                                xtype: 'combo',
-    	                                                flex: 1
-    	                                            }
-    	                                        ]
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_dhcp',
-    	                                        boxLabel: 'Выдавать IPN IP адрес по DHCP',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Label',
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_dhcp_with_null',
-    	                                        boxLabel: 'Выдавать IP адрес по DHCP при нулевом балансе',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Label',
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_dhcp_with_minus',
-    	                                        boxLabel: 'Выдавать IP адрес по DHCP при отрицательном балансе',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Label',
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_dhcp_with_block',
-    	                                        boxLabel: 'Выдавать IP адрес по DHCP при блокировке по балансу/лимитам трафика',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Label',
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_ipn_with_null',
-    	                                        boxLabel: 'Разрешить IPN доступ при нулевом балансе',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Label',
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_ipn_with_minus',
-    	                                        boxLabel: 'Разрешить IPN доступ при отрицательном балансе',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Label',
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_ipn_with_block',
-    	                                        boxLabel: 'Разрешить IPN доступ при блокировке по балансу/лимитам трафика',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Label',
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'checkbox',
-    	                                        name: 'allow_mac_update',
-    	                                        boxLabel: 'Разрешить обновление IPN MAC адреса через веб-кабинет',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Label',
-    	                                        hideLabel: true
-    	                                    },
-    	                                    {
-    	                                        xtype: 'textfield',
-    	                                        anchor: '100%',
-    	                                        fieldLabel: 'Скорость'
-    	                                    }
-    	                                ]
-    	                            }
-    	                        ]
-    	                    },
-    	                    {
-    	                        xtype: 'container',
-    	                        width: 100,
-    	                        flex: 1,
-    	                        items: [
-    	                            {
-    	                                xtype: 'fieldset',
-    	                                width: 533,
+    	                                height: 66,
+    	                                width: 401,
     	                                defaults: {
     	                                    hideLabel: true
     	                                },
     	                                title: 'Опции',
+    	                                flex: 1,
     	                                items: [
     	                                    {
     	                                        xtype: 'checkbox',
@@ -2673,10 +2683,55 @@ EBS.forms.ebs_accountsPanel.edit_credit_submitAction =  function(object, event, 
     	                                ]
     	                            }
     	                        ]
+    	                    },
+    	                    {
+    	                        xtype: 'xaccountaddonservicesgrid',
+    	                        height: 224,
+    	                        width: 552,
+    	                        type: 'subaccount',
+    	                        title: 'Подключаемые услуги субаккаунта',
+    	                        flex: 1,
+    	                        tbar: [{
+								    icon: media+'icons/16/arrow_refresh.png',
+							        text: 'Обновить',
+							        handler: function(){
+							     	   
+							        	this.ownerCt.ownerCt.store.load();
+							     	   
+							        }
+							    },{
+							        iconCls: 'icon-user-add',
+							        text: 'Добавить',
+							        handler: function(){
+							     	   var subaccount_id;
+							     	   
+								     	   subaccount_id = this.findParentByType('xinstancecontainer').ids.id;
+							     	   EBS.displayForm('ebs_accountsPanel', 'accountaddonservice',{'subaccount_id':subaccount_id,id:null}, this.findParentByType('grid'))
+							     	   
+							        }
+							    },{
+							        iconCls: 'icon-user-edit',
+							        text: 'Редактировать',
+							        handler: function(){
+							     	   var id;
+							     	   var subaccount_id;
+							     	   subaccount_id = this.findParentByType('xinstancecontainer').ids.id;
+							     	   id = this.findParentByType('grid').selModel.selections.items[0].id;
+							     	   EBS.displayForm('ebs_accountsPanel', 'accountaddonservice',{'subaccount_id':subaccount_id,id:id}, this.findParentByType('grid'))
+							        }
+							    },{
+							        //ref: '../removeBtn',
+							        iconCls: 'icon-user-delete',
+							        text: 'Отключить',
+							        disabled: true,
+							        handler: function(){
+							     	   
+							        }
+							    }],
     	                    }
-    	        
-    	        
-    	    ]
+    	                ]
+    	            }
+    	        ]
     	}
     EBS.forms.ebs_accountsPanel.subaccounts.edit_submitAction =  function(object, event){
 form = object.ownerCt;

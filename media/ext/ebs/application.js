@@ -174,12 +174,12 @@ Ext.onReady(function(){
                     }
              //form = winCmp.items.items[0].getForm();
              //form.rec = selection.items[0];
-           if (id){
+           if (ids.id){
                form = winCmp.items.items[0].getForm();
                //form.rec = selection.items[0];
              
                //form.loadRecord(form.rec);
-               form.load({url:form.url, method:'POST',params:{'id':id}} );
+               form.load({url:form.url, method:'POST',params:{'id':ids.id}} );
              }
              //form.loadRecord(form.rec);
              //form.load({url:'/account/', method:'GET',params:{'id':selection.items[0].id}} );
@@ -1124,12 +1124,11 @@ Ext.onReady(function(){
         		    minChars:2,
         		    blankText:'Укажите слово или часть слова для поиска',
         		    //field:'username',
-        		    hideTrigger:true,
+        		    hideTrigger:false,
         		    pageSize:15,
         	        tpl: new Ext.XTemplate(
         	                '<tpl for="."><div class="search-item">',
-        	                '<h3>Логин:{username}, ФИО: {fullname}, Договор: {contract}<br />Создан:<span>{created:date("M j, Y")}</span></h3>',
-        	                '{excerpt}',
+        	                'Логин: <b>{username}</b>, <br />ФИО: {fullname}, Договор: {contract}<br />',
         	            '</div></tpl>'
         	        ),
         	        itemSelector: 'div.search-item',
@@ -1237,13 +1236,13 @@ Ext.onReady(function(){
         		    editable:false,
         		    triggerAction: 'all',
         		    typeAhead: true,
-        		    tpl: new Ext.XTemplate(
+        		    /*tpl: new Ext.XTemplate(
         	                '<tpl for="."><div class="search-item">',
         	                '<h4>{name}, Цена: {cost}, <br /> <span style="font-size:10px;">Комментарий: {comment}</span></h4>',
         	                '{excerpt}',
         	            '</div></tpl>'
         	        ),
-        	        itemSelector: 'div.search-item',
+        	        itemSelector: 'div.search-item',*/
         		    store:new Ext.data.Store({
         		    	//autoLoad:true,
         		        proxy: new Ext.data.HttpProxy({
@@ -1259,9 +1258,9 @@ Ext.onReady(function(){
 
         		}
            // apply config
-           Ext.apply(this, Ext.apply(this.initialConfig, config));
+           Ext.apply(this, Ext.applyIf(this.initialConfig, config));
     
-           EBS.TrTypeCombo.superclass.initComponent.apply(this, arguments);
+           EBS.AddonServicesCombo.superclass.initComponent.apply(this, arguments);
        } // eo function initComponent
     
        ,onRender:function() {
@@ -1279,12 +1278,56 @@ Ext.onReady(function(){
     
     EBS.SubAccountsGrid = Ext.extend(Ext.grid.GridPanel, {
         initComponent:function() {
+         this.action = new Ext.ux.grid.RowActions({
+	   			header:'Действия',
+	   		    //keepSelection:true,
+	   		    
+	   			actions:[{
+	   				//iconIndex:'action1'
+	   	                //qtipIndex:'qtip1'
+
+	   	                iconCls:'icon-user-delete'
+	   	                ,tooltip:'Remove'
+	   	                
+	   			}],callbacks:{
+	                'icon-user-delete':function(grid, record, action, row, col) {
+	                    //Ext.ux.Toast.msg('Callback: icon-plus', 'You have clicked row: <b>{0}</b>, action: <b>{0}</b>', row, action);
+	                    Ext.Msg.show({
+	                    	   title:'Удалить субаккаунт?',
+	                    	   msg: 'Удалить субаккаунт ?',
+	                    	   buttons: Ext.Msg.YESNO,
+	                    	   fn: function(btn){
+	                    		   if (btn=='no'){return}
+	                    		   Ext.Ajax.request({
+       	                            params: {'id': record.get('id')},
+       	                            url: '/ebsadmin/subaccounts/delete/',
+       	                            success: function (resp) {
+       	                                var data;
+       	                                data = Ext.decode(resp.responseText);
+       	                                if (data.success === true) {
+       	                                	grid.store.remove(record);
+       	                                } else {
+       	                                    Ext.MessageBox.alert('Ошибка', 'Субаккаунт не удалён. '+data.msg);
+       	                                }
+       	                            },
+       	                            failure: function () {
+       	                            	Ext.MessageBox.alert('Ошибка', 'Субаккаунт не удалён');
+       	                            }
+       	                        });
+	                    		   
+	                    		   },
+	                    	   animEl: 'elId',
+	                    	   icon: Ext.MessageBox.QUESTION
+	                    	});
+	                }
+	            }
+   			});
            var config = {
             	   xtype:'grid',
                    stateful: true,
                    collapsible: true,
                    stateId: 'stateSubaccountsGrid_',
-                   plugins: ['msgbus'],
+                   plugins: ['msgbus',this.action],
                    //unstyled:true,
             	   store:new Ext.data.JsonStore({
        		        	paramsAsHash: true,
@@ -1354,7 +1397,7 @@ Ext.onReady(function(){
             	   },
                    
             	   autoScroll: true,
-            	   columns:[
+            	   columns:[this.action,
             	            {
             	            	header:'id',
             	            	dataIndex:'id',
@@ -1582,13 +1625,14 @@ Ext.onReady(function(){
    Ext.reg('xsubaccountsgrid', EBS.SubAccountsGrid);
    
    EBS.AccountAddonServiceGrid = Ext.extend(Ext.grid.GridPanel, {
-       initComponent:function() {
+	   type:'account',
+	   initComponent:function() {
           var config = {
            	   xtype:'grid',
                   stateful: true,
                   stateId: 'stateAccountAddonServiceGrid_',
                   collapsible: true,
-                  //unstyled:true,
+                  
            	   	  store:new Ext.data.JsonStore({
       		        	paramsAsHash: true,
 
@@ -1621,9 +1665,7 @@ Ext.onReady(function(){
            	
 	     	   onChange:function(subject, message) {
 	     		   //Ext.Msg.alert(message);
-	     		   var me;
-	     		   me=this;
-	     	       me.store.load();
+	     	       this.store.load();
 	     	       
 	     	    },
                selModel : new Ext.grid.RowSelectionModel({
@@ -1635,8 +1677,13 @@ Ext.onReady(function(){
 			          render:function(){
 			             // console.info('load',this,arguments);
 			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
-			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
-			        	  if (this.findParentByType('xinstancecontainer').instance_id){
+			        	  
+			        	  if (this.type==='account'){
+			        		  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.id);
+			        	  }else{
+			        		  this.store.setBaseParam('subaccount_id', this.findParentByType('xinstancecontainer').ids.id);
+			        	  }
+			        	  if (this.findParentByType('xinstancecontainer').ids.id){
 			        		  this.store.load();
 			        	  }
 			        	  var me;
@@ -2131,7 +2178,6 @@ Ext.onReady(function(){
   EBS.AccountTariffsGrid = Ext.extend(Ext.grid.GridPanel, {
       initComponent:function() {
          var config = {
-          	   xtype:'grid',
                  stateful: true,
                  collapsible: true,
                  //unstyled:true,
@@ -2231,6 +2277,89 @@ Ext.onReady(function(){
 
  Ext.reg('xaccounttariffsgrid', EBS.AccountTariffsGrid);
  
+ EBS.CheckBoxListGrid = Ext.extend(Ext.grid.GridPanel, {
+     initComponent:function() {
+    	var sm=new Ext.grid.CheckboxSelectionModel({});
+        var config = {
+
+             selModel : sm,
+         	   //autoHeight: true,
+         	   //autoWidth: true,
+             enableColumnHide:false,
+                
+         	   autoScroll: true,
+         	   
+         	   columns:[sm,
+         	            {
+         	            	header:'Название',
+         	            	dataIndex:'name',
+         	            	sortable:true,
+         	            	
+         	            	}
+
+         	            ],
+         	   getSelectedId:function(){
+         		   sel_records=sm.getSelections();
+         		   var temp = [];
+         			for (i=0; i<=sel_records.length-1; i++) {
+         				temp[i] = sel_records[i].get('id')
+         			}
+         			return temp//.join(',')
+         	   }
+         		   
+         		  
+            }
+
+     		
+        // apply config
+        Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+ 
+        EBS.CheckBoxListGrid.superclass.initComponent.apply(this, arguments);
+    } // eo function initComponent
+ 
+
+
+});
+
+Ext.reg('xcheckboxlistgrid', EBS.CheckBoxListGrid);
+
+EBS.CheckBoxUsernameListGrid = Ext.extend(Ext.grid.GridPanel, {
+    initComponent:function() {
+   	var sm=new Ext.grid.CheckboxSelectionModel({});
+       var config = {
+
+            selModel : sm,
+        	   //autoHeight: true,
+        	   //autoWidth: true,
+        	   
+               
+        	   autoScroll: true,
+        	   
+        	   columns:[sm,
+        	            {
+        	            	header:'Название',
+        	            	dataIndex:'username',
+        	            	sortable:true,
+        	            	
+        	            	}
+
+        	            ]
+        		   
+        		  
+           }
+
+    		
+       // apply config
+       Ext.apply(this, Ext.applyIf(this.initialConfig, config));
+
+       EBS.CheckBoxUsernameListGrid.superclass.initComponent.apply(this, arguments);
+   } // eo function initComponent
+
+
+
+});
+
+Ext.reg('xcheckboxusernamelistgrid', EBS.CheckBoxUsernameListGrid);
    EBS.ComboCity = Ext.extend(Ext.form.ComboBox, {
        initComponent:function() {
           var config = {
@@ -2279,6 +2408,8 @@ Ext.onReady(function(){
    
   Ext.reg('xcombocity', EBS.ComboCity);
   
+
+ 
   EBS.ComboTariff = Ext.extend(Ext.form.ComboBox, {
       initComponent:function() {
          var config = {
