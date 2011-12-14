@@ -1278,4 +1278,35 @@ Ext.extend(Ext.grid.DynamicColumnModel, Ext.grid.ColumnModel, {});
 //End of dynamic columns
 //*****************************************
 
+Ext.Component.override({
+    initState : function(config){
+        if(Ext.state.Manager){
+            var id = this.getStateId();
+            if(id){
+                var state = Ext.state.Manager.get(id);
+                if(state){
+                    if(this.fireEvent('beforestaterestore', this, state) !== false){
+                        this.applyState(state);
+                        this.fireEvent('staterestore', this, state);
+                    }
+                }
+            }
+        }
+    },
+    saveState : function(){
+        if(Ext.state.Manager){
+            var id = this.getStateId();
+            if(id){
+                var state = this.getState();
+                if(this.fireEvent('beforestatesave', this, state) !== false){
+                    Ext.state.Manager.set(id, state);
+                    this.fireEvent('statesave', this, state);
+                }
+            }
+        }
+    },
+    getStateId : function(){
+        return this.stateId || ((this.id.indexOf('ext-comp-') == 0 || this.id.indexOf('ext-gen') == 0) ? null : this.id);
+    }
+});
 

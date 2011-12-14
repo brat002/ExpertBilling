@@ -14,22 +14,27 @@ def transactionreport(request):
     if form.is_valid():
         #items = PeriodicalServiceHistory.objects.all()[0:200]
         account = form.cleaned_data.get('account')
+        date_start = form.cleaned_data.get('date_start')
+        date_end = form.cleaned_data.get('date_end')
         systemusers = form.cleaned_data.get('systemuser')
+        tariffs = form.cleaned_data.get('tarif')
         res=[]
         #for x in form.cleaned_data.get('transactiontype'):
-        items = Transaction.objects.all()
+        items = Transaction.objects.filter(created__gte=date_start, created__lte=date_end)
+        
         if account:
             items = items.filter(account=account)    
         if systemusers:
             items = items.filter(systemuser__in=systemusers)
-            
+        if tariffs:
+            items = items.filter(accounttarif_tarif__in=tariffs)
         for item in items:
             #print instance_dict(acc).keys()
             res.append(instance_dict(item,normal_fields=True))
         
         return {"records": res,   'metaData':{'root': 'records',
                                
-                                             'fields':[({'header':x, 'name':x} for x in res[0]) if res else []]
+                                             'fields':[{'header':x, 'name':x} for x in res[0] ] if res else []
                                              },
                 "sortInfo":{
                 "field": "account",
