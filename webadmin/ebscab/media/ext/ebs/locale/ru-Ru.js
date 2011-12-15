@@ -36,6 +36,23 @@ EBS.sessionRenderer = function pctChange(val, meta){
         return val;
     }
 
+EBS.accountCellRenderer = function(v, meta, record){
+	val = record.get('status');
+    if(val == 1){
+    	meta.css="icon-user-active";
+        return v;
+    }else if(val == 2){
+    	meta.css="icon-user-inactive";
+        return v;
+    }
+    else if(val == 3){
+    	meta.css="icon-user-red ";
+        return v;
+    }
+
+    meta.css="icon-user";
+    return v;
+}
 
 EBS.moneyRenderer = function pctChange(val,meta,record){
 	
