@@ -154,8 +154,19 @@ Ext.onReady(function(){
                                 closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
-                                cm: new Ext.grid.ColumnModel({}),
-                                //columns:[],
+                                //cm: new Ext.grid.ColumnModel({}),
+                                columns:[{
+                                	header:'Id',
+                                	dataIndex:'id'
+                                },{
+                                	header:'Аккаунт',
+                                	dataIndex:'account',
+                                	renderer:EBS.accountCellRenderer
+                                },{
+                                	header:'Сумма',
+                                	dataIndex:'summ'
+                                }
+                                         ],
                                 
                                 listeners: {/*
                                     render:function(){
@@ -163,7 +174,7 @@ Ext.onReady(function(){
                                     }*/
                                 },
                                 stripeRows: false,
-                                stateful: true,
+                                stateful: false,
                                 stateId: 'transactionreportgrid',
                                 
                             //bbar:this.pagination
@@ -175,12 +186,13 @@ Ext.onReady(function(){
             	}, this);    
             
             EBS.conponents.transactionreportGrid.superclass.initComponent.apply(this, arguments);
-            this.store.on('load', function(){
+            this.store.on('metachangecracaca', function(store, meta){
             	/**
             	* Thats the magic! <img src="http://erhanabay.com/wp-includes/images/smilies/icon_smile.gif" alt=":)" class="wp-smiley">
             	*
             	* JSON data returned from server has the column definitions
             	*/
+            	
             	if(typeof(this.store.reader.jsonData.metaData.fields) === 'object') {
             	var columns = [];
             	/**
@@ -194,8 +206,9 @@ Ext.onReady(function(){
             	/**
             	* Setting column model configuration
             	*/
-            	
             	this.getColumnModel().setConfig(columns);
+            	//this.reconfigure(EBS.store.transactionreport, this.getColumnModel());
+            	
             	}
             	/**
             	* Unmasking grid

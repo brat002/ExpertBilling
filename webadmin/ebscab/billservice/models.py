@@ -681,9 +681,9 @@ class Organization(models.Model):
 class TransactionType(models.Model):
     name = models.CharField(max_length=255, unique=True)
     internal_name = models.CharField(max_length=32, unique=True)
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    #content_type = models.ForeignKey(ContentType)
+    #object_id = models.PositiveIntegerField()
+    #content_object = generic.GenericForeignKey('content_type', 'object_id')
     def __unicode__(self):
         return u"%s %s" % (self.name, self.internal_name)
 

@@ -175,7 +175,8 @@ Ext.onReady(function(){
                                         dataIndex: 'username',
                                         filter: {
                                             type: 'string'
-                                        }
+                                        },
+                                        renderer:EBS.accountCellRenderer
 
                                     },
                                     {

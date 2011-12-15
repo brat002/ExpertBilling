@@ -4,7 +4,40 @@ from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib.auth.decorators import login_required
 from billservice.models import Transaction,PeriodicalServiceHistory
 from views import instance_dict
+import billservice.models as bsmodels
+TRANSACTION_MODELS = {"PS_GRADUAL":'PeriodicalServiceHistory',
+                        "PS_AT_END":'PeriodicalServiceHistory',
+                        "PS_AT_START":'PeriodicalServiceHistory',
+                        "TIME_ACCESS"
+                        "NETFLOW_BILL":'TrafficTransaction',
+                        "END_PS_MONEY_RESET":'Transaction',
+                        "MANUAL_TRANSACTION":'Transaction',
+                        "ACTIVATION_CARD":'Transaction',
+                        "ONETIME_SERVICE":'OneTimeServiceHistory',
+                        "OSMP_BILL":'Transaction',
+                        "ADDONSERVICE_WYTE_PAY":'AddonServiceTransaction',
+                        "ADDONSERVICE_PERIODICAL_GRADUAL":'AddonServiceTransaction',
+                        "ADDONSERVICE_PERIODICAL_AT_START":'AddonServiceTransaction',
+                        "ADDONSERVICE_PERIODICAL_AT_END":'AddonServiceTransaction',
+                        "ADDONSERVICE_ONETIME":'AddonServiceTransaction',
+                        "PAY_CARD":'Transaction',
+                        "CASSA_TRANSACTION":'Transaction',
+                        "PAYMENTGATEWAY_BILL":'Transaction',
+                        "BELARUSBANK_PAYMENT_IMPORT":'Transaction',
+                        "WEBMONEY_PAYMENT_IMPORT":'Transaction',
+                        "EASYPAY_PAYMENT_IMPORT":'Transaction',
+                        "PRIORBANK_PAYMENT_IMPORT":'Transaction',
+                        "BELPOST_PAYMENT_IMPORT":'Transaction',
+                        "ERIP_PAYMENT_IMPORT":'Transaction',
+                        "SHTRAF_PAYMENT":'Transaction',
+                        "QUICKPAY_BILL":'Transaction',
+                        "OSMP_CUSTOM_BILL":'Transaction',
+                        "USERBLOCK_PAYMENT":'Transaction',
+                        "MONEY_TRANSFER_TO":'Transaction',
+                        "MONEY_TRANSFER_FROM":'Transaction',
 
+                      }
+#print bsmodels.__dict__
 @ajax_request
 @login_required
 def transactionreport(request):
@@ -14,27 +47,34 @@ def transactionreport(request):
     if form.is_valid():
         #items = PeriodicalServiceHistory.objects.all()[0:200]
         account = form.cleaned_data.get('account')
-        date_start = form.cleaned_data.get('date_start')
-        date_end = form.cleaned_data.get('date_end')
+        date_start = form.cleaned_data.get('start_date')
+        date_end = form.cleaned_data.get('end_date')
         systemusers = form.cleaned_data.get('systemuser')
         tariffs = form.cleaned_data.get('tarif')
         res=[]
-        #for x in form.cleaned_data.get('transactiontype'):
-        items = Transaction.objects.filter(created__gte=date_start, created__lte=date_end)
+        resitems = []
+        for x in form.cleaned_data.get('transactiontype'):
+            model = bsmodels.__dict__.get(TRANSACTION_MODELS.get(x.internal_name))
+            items = model.objects.filter(created__gte=date_start, created__lte=date_end)#.values('id','account','summ')
+
+            
+            if account:
+                items = items.filter(account=account)
+                
+            if TRANSACTION_MODELS.get(x.internal_name)=='Transaction':    
+                if systemusers:
+                    items = items.filter(systemuser__in=systemusers)
+                if tariffs:
+                    items = items.filter(accounttarif_tarif__in=tariffs)
+            for item in items:
+                #print instance_dict(acc).keys()
+                res.append(instance_dict(item,normal_fields=True))
+                #res.append(item)
         
-        if account:
-            items = items.filter(account=account)    
-        if systemusers:
-            items = items.filter(systemuser__in=systemusers)
-        if tariffs:
-            items = items.filter(accounttarif_tarif__in=tariffs)
-        for item in items:
-            #print instance_dict(acc).keys()
-            res.append(instance_dict(item,normal_fields=True))
-        
+        #print item._meta.get_all_field_names()
         return {"records": res,   'metaData':{'root': 'records',
                                
-                                             'fields':[{'header':x, 'name':x} for x in res[0] ] if res else []
+                                             'fields':[{'header':x, 'name':x, 'sortable':True} for x in res[0] ] if res else []
                                              },
                 "sortInfo":{
                 "field": "account",
@@ -417,7 +457,7 @@ def transactionreport(request):
             traffictransaction_items = self.connection.sql(sql)
             return {}
     else:
-        print "form not valid".length>0
+        print "form not valid"
         print [form._errors.get(x) for x in form._errors][0][0]
             
         return {'success':False, 'msg':form._errors}

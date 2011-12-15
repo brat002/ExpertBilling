@@ -2710,7 +2710,9 @@ EBS.SystemUser = Ext.extend(Ext.form.ComboBox, {
    ,onRender:function() {
        var me = this;
        this.store.on('load',function(store) {
-         me.setValue(null);
+    	   if (!me.getValue()){
+    		   me.setValue(null, true);
+    	   }
        })
        this.store.load();
        EBS.SystemUser.superclass.onRender.apply(this, arguments);
@@ -2758,7 +2760,9 @@ EBS.ComboAccountStatus = Ext.extend(Ext.form.ComboBox, {
    ,onRender:function() {
        var me = this;
        this.store.on('load',function(store) {
-         me.setValue(1, true);
+    	   if (!me.getValue()){
+    		   me.setValue(null, true);
+    	   }
         
        })
        this.store.load();
