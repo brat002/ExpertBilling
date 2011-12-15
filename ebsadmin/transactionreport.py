@@ -65,20 +65,21 @@ def transactionreport(request):
                 if systemusers:
                     items = items.filter(systemuser__in=systemusers)
                 if tariffs:
-                    items = items.filter(accounttarif_tarif__in=tariffs)
+                    items = items.filter(accounttarif__tarif__in=tariffs)
             for item in items:
                 #print instance_dict(acc).keys()
                 res.append(instance_dict(item,normal_fields=True))
                 #res.append(item)
         
         #print item._meta.get_all_field_names()
-        return {"records": res,   'metaData':{'root': 'records',
+        return {"records": res,   'totalProperty':'total', 'total':len(res), 'metaData':{'root': 'records',
                                
                                              'fields':[{'header':x, 'name':x, 'sortable':True} for x in res[0] ] if res else []
                                              },
                 "sortInfo":{
                 "field": "account",
-                "direction": "ASC"
+                "direction": "ASC",
+                
                },
                                  
                 }        

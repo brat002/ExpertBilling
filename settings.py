@@ -247,6 +247,7 @@ COMPRESS_JS = {
         "ext/ux/gridfilters/filter/StringFilter.js",
         "ext/ux/gridfilters/filter/DateFilter.js",
         "ext/ux/gridfilters/filter/ListFilter.js",
+        "ext/ux/BufferView.js",
 
         "ext/ux/gridfilters/filter/NumericFilter.js",
         "ext/ux/gridfilters/filter/BooleanFilter.js",
