@@ -148,7 +148,8 @@ Ext.onReady(function(){
              //['account', 'called_id', 'interrim_update', 'session_status', 'bytes_in', 'date_end', 'date_start', 'session_time', 'caller_id', 'bytes_out', 'sessionid', 'speed_string', 'nas_id', 'framed_protocol', 'framed_ip_address', 'id', 'subaccount']
              Ext.apply(this, {
                                 id:'transactionreport_list',
-                                view: new Ext.grid.GroupingView(),
+                                //view: new Ext.grid.GroupingView(),
+                                view: new Ext.ux.BufferedView(),
                                 store: EBS.store.transactionreport,
                                 title: 'Список операций',
                                 closable:false,
@@ -165,6 +166,33 @@ Ext.onReady(function(){
                                 },{
                                 	header:'Сумма',
                                 	dataIndex:'summ'
+                                },{
+                                	header:'Тип',
+                                	dataIndex:'type'
+                                },{
+                                	header:'Услуга',
+                                	dataIndex:'service'
+                                },{
+                                	header:'Основание',
+                                	dataIndex:'bill'
+                                },{
+                                	header:'Комментарий',
+                                	dataIndex:'description'
+                                },{
+                                	header:'Создан',
+                                	dataIndex:'created'
+                                },{
+                                	header:'Обещанный платёж',
+                                	dataIndex:'promise'
+                                },{
+                                	header:'Обещанный платёж истекает',
+                                	dataIndex:'end_promise'
+                                },{
+                                	header:'Обещанный платёж погашен',
+                                	dataIndex:'promise_expired'
+                                },{
+                                	header:'Автор операции',
+                                	dataIndex:'systemuser'
                                 }
                                          ],
                                 
@@ -602,25 +630,46 @@ Ext.onReady(function(){
 					        			
 					        			d=f.getValues();
 					        			var res={};
-					        			res.start_date=d.start_date;
-					        			res.end_date=d.end_date;
-					        			res.account = d.account;
+					        			//res.start_date=d.start_date;
+					        			EBS.store.transactionreport.baseParams = {};
+					        			EBS.store.transactionreport.setBaseParam('start_date',d.start_date);
+					        			//res.end_date=d.end_date;
+					        			EBS.store.transactionreport.setBaseParam('end_date',d.end_date);
+					        			//res.account = d.account;
+					        			EBS.store.transactionreport.setBaseParam('account',d.account);
 					        			if (systemusers.length>0){
-					        				res.systemusers=systemusers;
+					        				EBS.store.transactionreport.setBaseParam('systemusers',systemusers)
+					        				//res.systemusers=systemusers;
+					        			}else{
+					        				//EBS.store.transactionreport.setBaseParam('systemusers',[])
 					        			}
 					        			if (transactiontypes.length>0){
-					        				res.transactiontype=transactiontypes;
+					        				EBS.store.transactionreport.setBaseParam('transactiontype',transactiontypes)
+					        				//res.transactiontype=transactiontypes;
+					        			}else{
+					        				//EBS.store.transactionreport.setBaseParam('transactiontype',[])
 					        			}
-					        			if (d.tarif){
-					        				res.tarif = d.tarif.split(',');
+					        			if (d.tarif.split(',')!=''){
+					        				//res.tarif = d.tarif.split(',');
+					        				EBS.store.transactionreport.setBaseParam('tarif',d.tarif.split(','))
+					        			}else{
+					        				//EBS.store.transactionreport.setBaseParam('tarif',[])
 					        			}
-					        			if (d.addonservice){
-					        				res.addonservice=d.addonservice.split(',');
+					        			if (d.addonservice.split(',')!=''){
+					        				//res.addonservice=d.addonservice.split(',');
+					        				EBS.store.transactionreport.setBaseParam('addonservice',d.addonservice.split(','))
+					        			}else{
+					        				//EBS.store.transactionreport.setBaseParam('addonservice',[])
 					        			}
-					        			if (d.periodicalservice){
-					        				res.periodicalservice=d.periodicalservice.split(',');
+					        			if (d.periodicalservice!=''){
+					        				//res.periodicalservice=d.periodicalservice.split(',');
+					        				EBS.store.transactionreport.setBaseParam('periodicalservice',d.periodicalservice.split(','))
+					        			}else{
+					        				//EBS.store.transactionreport.setBaseParam('periodicalservice',[])
 					        			}
-					        			EBS.store.transactionreport.load({params:res});
+					        			
+					        			EBS.store.transactionreport.load();
+					        			
 					        			/*f.submit({url:f.save_url, params:{'systemuser':systemusers,'transactiontype':transactiontypes},waitMsg:'Saving Data...', submitEmptyText: true, success: function(obj,action) {        
 					                       	Ext.Msg.alert('Данные были успешно сохранены', 'Данные были успешно сохранены' );
 					                       
