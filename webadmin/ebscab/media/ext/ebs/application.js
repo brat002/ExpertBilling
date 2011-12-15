@@ -650,7 +650,7 @@ Ext.onReady(function(){
         constructor: function(config) {
 
                Ext.apply(this, {
-            	   
+            	   loadMask:true,
                     bbar: new Ext.PagingToolbar({
                            pageSize: 100,
                            //store: this.store,
