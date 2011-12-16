@@ -148,8 +148,8 @@ Ext.onReady(function(){
              //['account', 'called_id', 'interrim_update', 'session_status', 'bytes_in', 'date_end', 'date_start', 'session_time', 'caller_id', 'bytes_out', 'sessionid', 'speed_string', 'nas_id', 'framed_protocol', 'framed_ip_address', 'id', 'subaccount']
              Ext.apply(this, {
                                 id:'transactionreport_list',
-                                //view: new Ext.grid.GroupingView(),
-                                view: new Ext.ux.BufferedView(),
+                                view: new Ext.grid.GroupingView(),
+                                //view: new Ext.ux.grid.BufferView(),
                                 store: EBS.store.transactionreport,
                                 title: 'Список операций',
                                 closable:false,
@@ -158,41 +158,57 @@ Ext.onReady(function(){
                                 //cm: new Ext.grid.ColumnModel({}),
                                 columns:[{
                                 	header:'Id',
-                                	dataIndex:'id'
+                                	dataIndex:'id',
+                                	sortable : true,
                                 },{
                                 	header:'Аккаунт',
                                 	dataIndex:'account',
-                                	renderer:EBS.accountCellRenderer
+                                	sortable : true,
+                                	renderer:EBS.accountSimpleCellRenderer
+                                },{
+                                	header:'Тариф',
+                                	dataIndex:'accounttarif',
+                                	sortable : true,
                                 },{
                                 	header:'Сумма',
-                                	dataIndex:'summ'
+                                	dataIndex:'summ',
+                                	sortable : true,
                                 },{
                                 	header:'Тип',
-                                	dataIndex:'type'
+                                	dataIndex:'type',
+                                	sortable : true,
                                 },{
                                 	header:'Услуга',
-                                	dataIndex:'service'
+                                	dataIndex:'service',
+                                	sortable : true,
                                 },{
                                 	header:'Основание',
-                                	dataIndex:'bill'
+                                	dataIndex:'bill',
+                                	sortable : true,
                                 },{
                                 	header:'Комментарий',
-                                	dataIndex:'description'
+                                	dataIndex:'description',
+                                	sortable : true,
                                 },{
                                 	header:'Создан',
-                                	dataIndex:'created'
+                                	dataIndex:'created',
+                                	sortable : true,
                                 },{
                                 	header:'Обещанный платёж',
-                                	dataIndex:'promise'
+                                	dataIndex:'promise',
+                                	sortable : true,
                                 },{
                                 	header:'Обещанный платёж истекает',
-                                	dataIndex:'end_promise'
+                                	dataIndex:'end_promise',
+                                	sortable : true,
                                 },{
                                 	header:'Обещанный платёж погашен',
-                                	dataIndex:'promise_expired'
+                                	dataIndex:'promise_expired',
+                                	sortable : true,
                                 },{
                                 	header:'Автор операции',
-                                	dataIndex:'systemuser'
+                                	dataIndex:'systemuser',
+                                	sortable : true,
                                 }
                                          ],
                                 

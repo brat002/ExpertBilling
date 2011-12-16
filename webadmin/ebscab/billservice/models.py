@@ -188,7 +188,7 @@ class PeriodicalServiceHistory(models.Model):
     created  = models.DateTimeField(auto_now_add=True)
     summ = models.DecimalField(decimal_places=10, max_digits=30)
     account = models.ForeignKey('Account')
-    type_id   = models.CharField(max_length=32, default='')
+    type   = models.ForeignKey('TransactionType', to_field='internal_name')
 
     def __unicode__(self):
         return u"%s" % (self.service)

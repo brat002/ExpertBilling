@@ -82,7 +82,271 @@ var maskingAjax = new Ext.data.Connection({
     }
 });
 
+datePickerWin = new Ext.Window({
+    
+    layout:'fit',
+    closeAction:'hide',
+    applyTo:Ext.get('body'),
+    modal: true
+    ,title:'Выберите дату'    
+    ,closable:true
+    ,border:true
+    ,height: 330
+    //,autoHeight: true
+    ,width: 500
+    ,padding:1
+    ,items:{
+        xtype: 'form',
+        padding:5,
+        layout: 'table',
+        cls: 'datepickerwin_cls',
+ 	    layoutConfig:{ 
+ 	       columns: 4,
+ 	       
+ 	   }, 
+       baseCls:'x-plain',
+       defaults:{
+           margins:'0 5 0 0',  
+           padding:5,
+  	       height:30, 
+ 	       width:150,
+
+ 	   },
+        columns: 4,
+        items: [
+            {
+                xtype: 'radio',
+                boxLabel: 'Квартал',
+                name:'type',
+                inputValue:'Quarter'
+            },
+            {
+                xtype: 'combo',
+                padding:'5px 5px 5px 5px',
+                xtype: 'combo',
+                name: 'quarter',
+                local:true,
+                displayField:'name',
+                hiddenName:'quarter',
+                ref:'../quarter',
+                valueField:'quarter',
+                typeAhead: true,
+                mode: 'local',
+                forceSelection: true,
+                triggerAction: 'all',
+                editable:false,
+                store:  new Ext.data.ArrayStore({
+                    fields: ['name','quarter'],
+                    data : [['1 квартал',1], 
+                            ['2 квартал',2],
+                            ['3 квартал',3],
+                            ['4 квартал',4],] 
+                }),
+                listeners:{
+                	'render':function(){
+                		this.setValue('1');
+                	}
+                }
+
+            },
+            {
+            	xtype: 'combo',
+                padding:'5px',
+                xtype: 'combo',
+                name: 'quarter_year',
+                ref:'../quarter_year',
+                local:true,
+                displayField:'year',
+                hiddenName:'year',
+                valueField:'year',
+                typeAhead: true,
+                mode: 'local',
+                forceSelection: true,
+                triggerAction: 'all',
+                editable:false,
+                store:  new Ext.data.ArrayStore({
+                    fields: ['year'],
+                    data : [['2010'], 
+                            ['2011'], 
+                            ['2012'],
+                            ['2013'],
+                            ['2014'],] 
+                }),
+                listeners:{
+                	'render':function(){
+                		this.setValue((new Date()).getFullYear());
+                	}
+                }
+                
+
+            },
+            {
+                xtype: 'label',
+
+                text: 'года',
+            },
+            {
+                xtype: 'radio',
+                boxLabel: 'Месяц',
+                name:'type',
+                inputValue:'Month'
+                	
+            },
+            {
+            	boxLabel:'Месяц',
+                xtype: 'combo',
+                padding:'5px',
+                name: 'this_month',
+                ref:'../this_month',
+                local:true,
+                displayField:'name',
+                hiddenName:'month',
+                valueField:'month',
+                typeAhead: true,
+                mode: 'local',
+                forceSelection: true,
+                triggerAction: 'all',
+                editable:false,
+                store:  new Ext.data.ArrayStore({
+                    fields: ['name','month'],
+                    data : [['Январь','1'], 
+                            ['Февраль','2'],
+                            ['Март','3'],
+                            ['Апрель','4'],
+                            ['Май','5'],
+                            ['Июнь','6'],
+                            ['Июль','7'],
+                            ['Август','8'],
+                            ['Сентябрь','9'],
+                            ['Октябрь','10'],
+                            ['Ноябрь','11'],
+                            ['Декабрь','12'],
+                            ] 
+                }),
+                listeners:{
+                	'render':function(){
+                		this.setValue('1');
+                	}
+                }
+
+            },
+            {
+            	xtype: 'combo',
+                padding:'5px',
+                xtype: 'combo',
+                name: 'month_year',
+                ref:'../month_year',
+                local:true,
+                displayField:'year',
+                hiddenName:'year',
+                valueField:'year',
+                typeAhead: true,
+                mode: 'local',
+                forceSelection: true,
+                triggerAction: 'all',
+                editable:false,
+                store:  new Ext.data.ArrayStore({
+                    fields: ['year'],
+                    data : [['2010'], 
+                            ['2011'], 
+                            ['2012'],
+                            ['2013'],
+                            ['2014'],] 
+                }),
+                listeners:{
+                	'render':function(){
+                		this.setValue((new Date()).getFullYear());
+                	}
+                }
+                
+
+            },
+            {
+                xtype: 'label',
+                text: 'года'
+            },
+            {
+                xtype: 'radio',
+                boxLabel: 'День',
+                name:'type',
+                inputValue:'day'
+                
+            },
+            {
+                xtype: 'datefield',
+                name:'day',
+                colspan:3,
+                ref:'../day',
+                //steteful:true,
+                //stateId:'xdatetime-day-state'
+            },
+          
+            {
+                xtype: 'radio',
+                boxLabel: 'Период',
+                name:'type',
+                inputValue:'period',
+                //disabled:true
+                
+            },
+            {
+                xtype: 'datefield',
+                name:'period_start',
+                //steteful:true,
+                //stateId:'xdatetime-day-state',
+                //disabled:true
+            },
+            {
+                xtype: 'datefield',
+                colspan:2,
+                name:'period_end',
+                //steteful:true,
+                //stateId:'xdatetime-day-state',
+                //disabled:true
+             	   
+            },
+            {
+                xtype: 'radio',
+                boxLabel: 'Текущий месяц',
+                colspan:4,
+                name:'type',
+                inputValue:'ThisMonth'
+                
+            },
+            {
+                xtype: 'radio',
+                boxLabel: 'Начало недели',
+                colspan:4,
+                name:'type',
+                inputValue:'ThisWeek'
+
+             	   
+            },
+            {
+                xtype: 'radio',
+                boxLabel: 'Сейчас',
+                colspan:4,
+                name:'type',
+                inputValue:'Now',
+                checked: true,
+             	   
+             	   
+            },
+         
+            {
+                xtype: 'button',
+                text: 'Выбрать',
+                handler: function(button){
+                	button.findParentByType('window').hide()
+                	
+                }
+            }
+        ]
+    }
+});
+
 Ext.ns('Ext.ux.form');
+
 
 /**
  * Creates new DateTime
@@ -196,286 +460,27 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         });
         this.bt.ownerCt = this;
         
-        this.win = new Ext.Window({
-            
-            layout:'fit',
-            closeAction:'hide',
-            applyTo:Ext.get('body'),
-            modal: true
-            ,title:'Выберите дату'    
-            ,closable:true
-            ,border:true
-            ,height: 330
-            //,autoHeight: true
-            ,width: 500
-            ,padding:1
-            ,items:{
-                xtype: 'form',
-                padding:5,
-                layout: 'table',
-         	   layoutConfig:{ 
-         	       columns: 4,
-         	   }, 
-               baseCls:'x-plain',
-               defaults:{
-                   margins:'0 5 0 0',  
-                   padding:5,
-          	       height:30, 
-         	       width:150,
-
-         	   },
-                columns: 4,
-                items: [
-                    {
-                        xtype: 'radio',
-                        boxLabel: 'Квартал',
-                        name:'type',
-                        inputValue:'Quarter'
-                    },
-                    {
-                        xtype: 'combo',
-                        padding:'5px 5px 5px 5px',
-                        xtype: 'combo',
-                        name: 'quarter',
-                        local:true,
-                        displayField:'name',
-                        hiddenName:'quarter',
-                        ref:'../quarter',
-                        valueField:'quarter',
-                        typeAhead: true,
-                        mode: 'local',
-                        forceSelection: true,
-                        triggerAction: 'all',
-                        editable:false,
-                        store:  new Ext.data.ArrayStore({
-                            fields: ['name','quarter'],
-                            data : [['1 квартал',1], 
-                                    ['2 квартал',2],
-                                    ['3 квартал',3],
-                                    ['4 квартал',4],] 
-                        }),
-                        listeners:{
-                        	'render':function(){
-                        		this.setValue('1');
-                        	}
-                        }
-
-                    },
-                    {
-                    	xtype: 'combo',
-                        padding:'5px',
-                        xtype: 'combo',
-                        name: 'quarter_year',
-                        ref:'../quarter_year',
-                        local:true,
-                        displayField:'year',
-                        hiddenName:'year',
-                        valueField:'year',
-                        typeAhead: true,
-                        mode: 'local',
-                        forceSelection: true,
-                        triggerAction: 'all',
-                        editable:false,
-                        store:  new Ext.data.ArrayStore({
-                            fields: ['year'],
-                            data : [['2010'], 
-                                    ['2011'], 
-                                    ['2012'],
-                                    ['2013'],
-                                    ['2014'],] 
-                        }),
-                        listeners:{
-                        	'render':function(){
-                        		this.setValue((new Date()).getFullYear());
-                        	}
-                        }
-                        
-
-                    },
-                    {
-                        xtype: 'label',
-
-                        text: 'года',
-                    },
-                    {
-                        xtype: 'radio',
-                        boxLabel: 'Месяц',
-                        name:'type',
-                        inputValue:'Month'
-                        	
-                    },
-                    {
-                    	boxLabel:'Месяц',
-                        xtype: 'combo',
-                        padding:'5px',
-                        name: 'this_month',
-                        ref:'../this_month',
-                        local:true,
-                        displayField:'name',
-                        hiddenName:'month',
-                        valueField:'month',
-                        typeAhead: true,
-                        mode: 'local',
-                        forceSelection: true,
-                        triggerAction: 'all',
-                        editable:false,
-                        store:  new Ext.data.ArrayStore({
-                            fields: ['name','month'],
-                            data : [['Январь','1'], 
-                                    ['Февраль','2'],
-                                    ['Март','3'],
-                                    ['Апрель','4'],
-                                    ['Май','5'],
-                                    ['Июнь','6'],
-                                    ['Июль','7'],
-                                    ['Август','8'],
-                                    ['Сентябрь','9'],
-                                    ['Октябрь','10'],
-                                    ['Ноябрь','11'],
-                                    ['Декабрь','12'],
-                                    ] 
-                        }),
-                        listeners:{
-                        	'render':function(){
-                        		this.setValue('1');
-                        	}
-                        }
-
-                    },
-                    {
-                    	xtype: 'combo',
-                        padding:'5px',
-                        xtype: 'combo',
-                        name: 'month_year',
-                        ref:'../month_year',
-                        local:true,
-                        displayField:'year',
-                        hiddenName:'year',
-                        valueField:'year',
-                        typeAhead: true,
-                        mode: 'local',
-                        forceSelection: true,
-                        triggerAction: 'all',
-                        editable:false,
-                        store:  new Ext.data.ArrayStore({
-                            fields: ['year'],
-                            data : [['2010'], 
-                                    ['2011'], 
-                                    ['2012'],
-                                    ['2013'],
-                                    ['2014'],] 
-                        }),
-                        listeners:{
-                        	'render':function(){
-                        		this.setValue((new Date()).getFullYear());
-                        	}
-                        }
-                        
-
-                    },
-                    {
-                        xtype: 'label',
-                        text: 'года'
-                    },
-                    {
-                        xtype: 'radio',
-                        boxLabel: 'День',
-                        name:'type',
-                        inputValue:'day'
-                        
-                    },
-                    {
-                        xtype: 'datefield',
-                        name:'day',
-                        colspan:3,
-                        ref:'../day',
-                        //steteful:true,
-                        //stateId:'xdatetime-day-state'
-                    },
-                  
-                    {
-                        xtype: 'radio',
-                        boxLabel: 'Период',
-                        name:'type',
-                        inputValue:'period',
-                        //disabled:true
-                        
-                    },
-                    {
-                        xtype: 'datefield',
-                        name:'period_start',
-                        //steteful:true,
-                        //stateId:'xdatetime-day-state',
-                        //disabled:true
-                    },
-                    {
-                        xtype: 'datefield',
-                        colspan:2,
-                        name:'period_end',
-                        //steteful:true,
-                        //stateId:'xdatetime-day-state',
-                        //disabled:true
-                     	   
-                    },
-                    {
-                        xtype: 'radio',
-                        boxLabel: 'Текущий месяц',
-                        colspan:4,
-                        name:'type',
-                        inputValue:'ThisMonth'
-                        
-                    },
-                    {
-                        xtype: 'radio',
-                        boxLabel: 'Начало недели',
-                        colspan:4,
-                        name:'type',
-                        inputValue:'ThisWeek'
-
-                     	   
-                    },
-                    {
-                        xtype: 'radio',
-                        boxLabel: 'Сейчас',
-                        colspan:4,
-                        name:'type',
-                        inputValue:'Now',
-                        checked: true,
-                     	   
-                     	   
-                    },
-                 
-                    {
-                        xtype: 'button',
-                        text: 'Выбрать',
-                        handler: function(button){
-                        	button.findParentByType('window').hide()
-                        	
-                        }
-                    }
-                ]
-            }
-        });
         
-        this.win.on('hide', function(){
+        
+        this.processor = function(){
         	me=this;
-        	form = me.win.items.items[0].getForm()
+        	form = datePickerWin.items.items[0].getForm()
         	selectedtype = form.getValues()['type'];
         	//alert(me.win.this_month);
         	if (selectedtype[0]=='Quarter'){
         		
         		
-        		if(me.win.quarter.getValue()==1){
+        		if(datePickerWin.quarter.getValue()==1){
         			quarter=0
         		}else{
-        			quarter=(me.win.quarter.getValue()-1)*3
+        			quarter=(datePickerWin.quarter.getValue()-1)*3
         		}
         		
-        		this.setValue(new Date(me.win.quarter_year.getValue(),quarter,1));
+        		this.setValue(new Date(datePickerWin.quarter_year.getValue(),quarter,1));
         	}
         	if (selectedtype[2]=='day'){
         		
-        		this.setValue(me.win.day.getValue());
+        		this.setValue(datePickerWin.day.getValue());
         	}
         	if (selectedtype[4]=='ThisMonth'){
         		
@@ -496,19 +501,25 @@ Ext.ux.form.DateTime = Ext.extend(Ext.form.Field, {
         		this.setValue(new Date());
         	}
         	if (selectedtype[1]=='Month'){
-        		this.setValue(new Date(me.win.month_year.getValue(), me.win.this_month.getValue(), 1));
+        		this.setValue(new Date(datePickerWin.month_year.getValue(), datePickerWin.this_month.getValue()-1, 1));
         	}
         	//new Date('1/10/2007 03:05:01 PM GMT-0600')
             //this.setDateTimeFromWin(getSelectedDate());
-        }, this);
+        	datePickerWin.purgeListeners()
+        	
+        };
+        this.connectPickerWin = function(){datePickerWin.on('hide', this.processor, this);};
+        
+        //datePickerWin.on('afterhide',function(){datePickerWin.purgeListeners()});
         this.bt.on('click', function(obj, ev){
             // create the window on the first click and reuse on subsequent clicks
-            
+            this.ownerCt.connectPickerWin();
                 
-            
+        	
             //win.render();
             //win.center();
-            obj.ownerCt.win.show(obj.ownerCt);
+        	datePickerWin.show(obj.ownerCt);
+        	
         });
         // relay events
         this.relayEvents(this.df, ['focus', 'specialkey', 'invalid', 'valid']);
