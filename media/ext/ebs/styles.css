@@ -218,3 +218,8 @@ background-color:lightblue;
 color:#00;
 text-align:center;
 }
+
+.datepickerwin_cls tr:hover
+{
+        background-color:#f2e8da;
+}
