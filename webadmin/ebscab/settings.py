@@ -274,6 +274,8 @@ COMPRESS_JS = {
         "ext/ebs/plugins/msgbus.js",
         "ext/ebs/plugins/Ext.ux.form.LovCombo.js",
         "ext/ebs/plugins/Ext.ux.grid.RowActions.js",
+        "ext/ebs/plugins/Ext.ux.plugin.PagingToolbarResizer.js",
+        
         
         "ext/ux/Ext.ux.HtmlEditor.Plugins-all-debug.js",
         #"ext/ebs/plugins/date.js",
