@@ -5,9 +5,44 @@ from django.contrib.auth.decorators import login_required
 from billservice.models import Transaction,PeriodicalServiceHistory
 from views import instance_dict
 import billservice.models as bsmodels
-from lib import QuerySetSequence
+from lib import QuerySetSequence, ExtDirectStore,IableSequence
 import time
 from django.core import serializers
+from django.forms import model_to_dict
+from django.db import connection
+import psycopg2.extras
+import psycopg2
+from django.conf import settings
+# Очень важный момент, возврат результата из базы в виде словаря а не списка.
+from psycopg2.extras import RealDictCursor 
+from psycopg2 import IntegrityError, InternalError
+
+class DBWrap:
+    def __init__(self, dsn):
+        self.connection = None
+        self._cur = None
+        self.dsn = dsn
+
+    @property
+    def cursor(self):
+        if self.connection is None:
+            self.connection = psycopg2.connect(self.dsn)
+            # set autocmmit transations
+            self.connection.set_isolation_level(0)
+            self._cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        elif not self._cur:
+            self._cur = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        return self._cur
+
+dsn = 'host=%s port=%s dbname=%s user=%s password=%s' % (
+settings.DATABASE_HOST,
+settings.DATABASE_PORT,
+settings.DATABASE_NAME,
+settings.DATABASE_USER,
+settings.DATABASE_PASSWORD
+)
+
+db = DBWrap(dsn)
 
 TRANSACTION_MODELS = {"PS_GRADUAL":'PeriodicalServiceHistory',
                         "PS_AT_END":'PeriodicalServiceHistory',
@@ -56,6 +91,10 @@ def transactionreport(request):
         date_end = form.cleaned_data.get('end_date')
         systemusers = form.cleaned_data.get('systemuser')
         tariffs = form.cleaned_data.get('tarif')
+        extra={'start':int(request.POST.get('start',0)), 'limit':int(request.POST.get('limit',100))}
+        if request.POST.get('sort',''):
+            extra['sort'] = request.POST.get('sort','')
+            extra['dir'] = request.POST.get('dir','asc')
         res=[]
         resitems = []
         TYPES={}
@@ -70,7 +109,7 @@ def transactionreport(request):
             TYPES[key].append(model)
             TRTYPES[key].append(x)
                 
-        print TYPES
+        #print TYPES
         if 'Transaction' in TYPES:
             model = bsmodels.__dict__.get('Transaction')
             items = model.objects.filter(created__gte=date_start, created__lte=date_end).order_by('-created')#.values('id','account','summ')
@@ -91,6 +130,7 @@ def transactionreport(request):
             #    res.append(instance_dict(item,normal_fields=True))
                 #res.append(item)
         if 'PeriodicalServiceHistory' in TYPES:
+            
             model = bsmodels.__dict__.get('PeriodicalServiceHistory')
             items = model.objects.filter(created__gte=date_start, created__lte=date_end).order_by('-created')#.values('id','account','summ')
             items=items.filter(type__in=TRTYPES.get('PeriodicalServiceHistory'))
@@ -105,7 +145,36 @@ def transactionreport(request):
             periodicalservice = form.cleaned_data.get('periodicalservice')
             if periodicalservice:
                 items = items.filter(service__in=periodicalservice)
+            
+            
             res.append(items)
+            
+#===============================================================================
+#            if account:
+# 
+#                #cursor=db.cursor()
+#                db.cursor.execute("""
+#                SELECT psh.id, (SELECT name FROM billservice_periodicalservice WHERE id=psh.service_id) as name, psh.created, (SELECT name FROM billservice_tariff WHERE id=(SELECT tarif_id FROM billservice_accounttarif where id=psh.accounttarif_id) as tarif, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username,  
+#                (SELECT name FROM billservice_transactiontype WHERE internal_name=psh.type_id) as type 
+#                FROM billservice_periodicalservicehistory as psh 
+#                WHERE psh.created between %s and %s and psh.account_id=%s and type_id in %s::array ORDER BY psh.created DESC
+#                """, (date_start, date_end, account.id, [x.id for x in TRTYPES.get('PeriodicalServiceHistory')]))
+#            else:
+#                #cursor=connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+#                #cursor = db.cursor()
+#                db.cursor.execute("""
+#                SELECT psh.id, (SELECT name FROM billservice_periodicalservice WHERE id=psh.service_id) as name, psh.created, (SELECT name FROM billservice_tariff WHERE id=(SELECT tarif_id FROM billservice_accounttarif where id=psh.accounttarif_id)) as tarif, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username,  
+#                (SELECT name FROM billservice_transactiontype WHERE internal_name=psh.type_id) as type 
+#                FROM billservice_periodicalservicehistory as psh 
+#                WHERE psh.created between %s and %s and type_id in (%s) ORDER BY psh.created DESC
+#                """, (date_start, date_end,','.join([x.internal_name for x in TRTYPES.get('PeriodicalServiceHistory')])))
+#        
+#            res = db.cursor.fetchall()
+#===============================================================================
+
+            #print res[0]
+            #items=items.values('id','account__username', 'summ')
+            #print res
             
         if 'AddonServiceHistory' in TYPES:
             model = bsmodels.__dict__.get('AddonServiceHistory')
@@ -124,16 +193,20 @@ def transactionreport(request):
                 items = items.filter(periodicalservice__in=periodicalservice)
             res.append(items)
             
-        items = QuerySetSequence(*res)#.order_by('-created')
+        qs = QuerySetSequence(*res)#.order_by('-created')
+        #items = ExtDirectStore(None)
+        items = qs.filter(**extra)
         res=[]
         for item in items:
             #print instance_dict(acc).keys()
-            res.append(instance_dict(item,normal_fields=True))
+            res.append(instance_dict(item, normal_fields=True))
             
             
         #print item._meta.get_all_field_names()
-        return {"records": res,   'totalProperty':'total', 'total':len(res), 'metaData':{'root': 'records',
-                               
+        print len(res)
+        return {"records": res,  'total':totalcount, 'metaData':{'root': 'records',
+                                             'totalProperty':'total', 
+                                             
                                              'fields':[{'header':x, 'name':x, 'sortable':True} for x in res[0] ] if res else []
                                              },
                 "sortInfo":{

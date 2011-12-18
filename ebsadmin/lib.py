@@ -36,7 +36,7 @@ class ExtDirectStore(object):
                 sort = '-' + sort
 
                 
-        if not qs is None:
+        if  qs is not None:
             # Don't use queryset = qs or self.model.objects
             # because qs could be empty list (evaluate to False)
             # but it's actually an empty queryset that must have precedence
@@ -224,6 +224,7 @@ class QuerySetSequence(IableSequence):
     of the base models.
     '''
     def count(self):
+        print [type(qs) for qs in self.iables] 
         if not self._len:
             self._len = sum(qs.count() for qs in self.iables)
         return self._len
