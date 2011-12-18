@@ -84,58 +84,8 @@ Ext.onReady(function(){
                          {
                             icon: media+'icons/16/pencil.png',
                             height:16,width:16,
-                            text: i18n.edit,
+                            text: 'Отменить',
                             handler: this.tbFormInTabCallBack.createCallback(this, 'edit_user',null)
-                        },{
-                            text: i18n.print,
-                            icon: media+'icons/16/printer.png',
-                            height:16,width:16,
-                            tooltip: i18n.printToolTip,
-                            handler: function(){Ext.ux.Printer.print(this.ownerCt.ownerCt)}
-                        },
-                        {xtype: 'tbseparator'},
-                        {
-                            text: 'Сбросить сессию',
-                            icon: media+'icons/16/printer.png',
-                            height:16,width:16,
-                            tooltip: i18n.printToolTip,
-                            handler: function(){Ext.ux.Printer.print(this.ownerCt.ownerCt)}
-                        },
-                        
-                        	       {
-                        	    	   xtype: 'checkbox',
-                        	    	   boxLabel:'Только активные',
-                        	    	   width:130,
-                        	    		   
-                        	       },
-                        	       {xtype: 'tbseparator'},
-                        	       {
-                        	    	   //xtype:'label',
-                        	    	   text:'c',
-                        	    	   width:10,
-                        	       },
-                        	       {
-                        	    	   xtype:'xdatetime',
-                        	    	   width:250,
-                        	    	   
-                        	       },
-                        	       {
-                        	    	   //xtype:'label',
-                        	    	   text:'по',
-                        	    	   width:10,
-                        	       },
-                        	       {
-                        	    	   xtype:'xdatetime',
-                        	    	   width:250,
-                        	    	   
-                        	       }
-                        	      
-                        ,{
-                            text: 'Обновить',
-                            icon: media+'icons/16/arrow_refresh.png',
-                            height:24,width:24,
-                            tooltip: i18n.saveToolTip,
-                            handler: this.tbFormReloadCallBack.createCallback(this)
                         }
 
                     ]
