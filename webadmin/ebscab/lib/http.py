@@ -14,9 +14,11 @@ class MyJSONEncoder(simplejson.JSONEncoder):
         '''Convert object to JSON encodable type.'''
         if isinstance(obj, Decimal):
             return "%d" % obj
-        if isinstance(obj, datetime):
+        elif isinstance(obj, datetime):
             return obj.strftime('%Y-%m-%d %H:%M:%S')
-        return simplejson.JSONEncoder.default(self, obj)
+        else:
+            print type(obj)
+            return simplejson.JSONEncoder.default(self, obj)
     
 def render_response(request, tmpl, output):
     return render_to_response(tmpl, output, context_instance=RequestContext(request))

@@ -12,12 +12,12 @@ CREATE OR REPLACE FUNCTION get_tarif(acc_id integer, dt timestamp without time z
       LANGUAGE plpgsql VOLATILE
         COST 100;
         
-DROP VIEW billservice_totaltransactionreport;
-CREATE OR REPLACE VIEW billservice_totaltransactionreport(id, service,created,tariff,summ,account,type,systemuser,bill,descrition,end_promise, promise_expired) AS
+DROP VIEW IF EXISTS billservice_totaltransactionreport;
+CREATE OR REPLACE VIEW billservice_totaltransactionreport(id, service,created,tariff_id,summ,account_id,type_id,systemuser_id,bill,descrition,end_promise, promise_expired) AS
 SELECT psh.id, 
 	(SELECT name FROM billservice_periodicalservice WHERE id=psh.service_id) as name, 
 	psh.created, 
-	(SELECT name FROM billservice_tariff WHERE id=(SELECT tarif_id FROM billservice_accounttarif where id=psh.accounttarif_id)) as tarif,
+	(SELECT tarif_id FROM billservice_accounttarif where id=psh.accounttarif_id) as tarif,
 	psh.summ, 
 	(SELECT username FROM billservice_account WHERE id=psh.account_id) as username,
 	psh.type_id, 
@@ -27,7 +27,7 @@ UNION
 SELECT transaction.id,
 	'', 
 	transaction.created,  
-	(SELECT name FROM billservice_tariff WHERE id=(SELECT tarif_id FROM billservice_accounttarif where id=transaction.accounttarif_id)) as tarif,
+	(SELECT tarif_id FROM billservice_accounttarif where id=transaction.accounttarif_id) as tarif,
 	transaction.summ*(-1),
 	(SELECT username FROM billservice_account WHERE id=transaction.account_id) as username, 
 	transaction.type_id as type,
@@ -38,7 +38,7 @@ UNION
 	SELECT tr.id, 
 	'', 
 	tr.created, 
-	(SELECT name FROM billservice_tariff WHERE id=(SELECT tarif_id FROM billservice_accounttarif where id=tr.accounttarif_id)) as tarif, 
+	(SELECT tarif_id FROM billservice_accounttarif where id=tr.accounttarif_id) as tarif, 
 	tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username ,
 	'NETFLOW_BILL',
 	'','','',Null,Null
@@ -47,7 +47,7 @@ UNION
 SELECT addst.id, 
 	(SELECT name FROM billservice_addonservice WHERE id=addst.service_id) as name, 
 	addst.created, 
-	(SELECT name FROM billservice_tariff WHERE id=(SELECT tarif_id FROM billservice_accounttarif where id=addst.accounttarif_id)) as tarif,
+	(SELECT tarif_id FROM billservice_accounttarif where id=addst.accounttarif_id) as tarif,
 	addst.summ,
 	(SELECT username FROM billservice_account WHERE id=addst.account_id)
 	as username,addst.type_id,
@@ -57,7 +57,7 @@ UNION
 SELECT osh.id, 
 	(SELECT name FROM billservice_onetimeservice WHERE id=osh.onetimeservice_id) as name, 
         osh.created,
-        (SELECT name FROM billservice_tariff WHERE id=(SELECT tarif_id FROM billservice_accounttarif where id=osh.accounttarif_id)) as tarif,
+        (SELECT tarif_id FROM billservice_accounttarif where id=osh.accounttarif_id) as tarif,
         osh.summ, 
         (SELECT username FROM billservice_account WHERE id=osh.account_id) as username, 
         'ONETIME_SERVICE','','','',Null,Null
@@ -66,7 +66,7 @@ UNION
 SELECT tr.id, 
 	'', 
 	tr.created, 
-	(SELECT name FROM billservice_tariff WHERE id=(SELECT tarif_id FROM billservice_accounttarif where id=tr.accounttarif_id)) as tarif,
+	(SELECT tarif_id FROM billservice_accounttarif where id=tr.accounttarif_id) as tarif,
 	tr.summ, 
 	(SELECT username FROM billservice_account WHERE id=tr.account_id) as username, 
 	'TIME_ACCESS','','','',Null,Null
@@ -75,7 +75,7 @@ UNION
 SELECT qi.id as id, 
 	'',
 	qi.created,
-	(SELECT name FROM billservice_tariff WHERE id=(SELECT tarif_id FROM billservice_accounttarif where id=get_tarif(qi.account_id,qi.created))) as tarif,
+	get_tarif(qi.account_id,qi.created) as tarif,
 	qi.summ,
 	(SELECT username FROM billservice_account WHERE id=qi.account_id) as username,
 	'QIWI_PAYMENT','',qi.autoaccept::text, qi.date_accepted::text ,Null,Null
