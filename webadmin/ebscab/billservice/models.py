@@ -1308,3 +1308,17 @@ class AccountHardware(models.Model):
     returned = models.DateTimeField()
     comment = models.TextField()
     
+
+class TotalTransactionReport(models.Model):
+    service = models.TextField()
+    created = models.DateTimeField()
+    tariff = models.ForeignKey(Tariff)
+    summ = models.DecimalField(decimal_places=10, max_digits=30)
+    account = models.ForeignKey(Account)
+    type = models.ForeignKey(TransactionType, to_field='internal_name')
+    systemuser = models.ForeignKey(SystemUser)
+    bill = models.TextField()
+    descrition = models.TextField()
+    end_promise = models.DateTimeField()
+    promise_expired = models.BooleanField()
+    
