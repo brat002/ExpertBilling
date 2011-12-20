@@ -117,7 +117,7 @@ Ext.onReady(function(){
                                 	renderer:EBS.accountSimpleCellRenderer
                                 },{
                                 	header:'Тариф',
-                                	dataIndex:'accounttarif',
+                                	dataIndex:'tariff',
                                 	sortable : true,
                                 },{
                                 	header:'Сумма',
