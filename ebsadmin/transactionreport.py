@@ -2,7 +2,7 @@
 from billservice.forms import TransactionReportForm
 from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib.auth.decorators import login_required
-from billservice.models import Transaction,PeriodicalServiceHistory
+from billservice.models import Transaction,PeriodicalServiceHistory, TotalTransactionReport as TransactionReport
 from views import instance_dict
 import billservice.models as bsmodels
 from lib import QuerySetSequence, ExtDirectStore,IableSequence
@@ -16,6 +16,9 @@ from django.conf import settings
 # Очень важный момент, возврат результата из базы в виде словаря а не списка.
 from psycopg2.extras import RealDictCursor 
 from psycopg2 import IntegrityError, InternalError
+
+
+
 
 class DBWrap:
     def __init__(self, dsn):
@@ -113,13 +116,49 @@ def transactionreport(request):
                 
         #print TYPES
         print ','.join(["'%s'" % x for x in LTYPES])
-        db.cursor.execute("""
-                SELECT ttr.id, ttr.service,ttr.created,ttr.tariff,ttr.summ,ttr.account,ttr.systemuser,ttr.bill,ttr.descrition,ttr.end_promise, ttr.promise_expired,  
-                (SELECT name FROM billservice_transactiontype WHERE internal_name=ttr.type) as type 
-                FROM billservice_totaltransactionreport as ttr 
-                WHERE ttr.created between '%s' and '%s' and ttr.type in (%s) ORDER BY ttr.created DESC
-                """% (date_start, date_end, ','.join(["'%s'" % x for x in LTYPES])))        
-        res = db.cursor.fetchall()
+        items = TransactionReport.objects.filter(created__gte=date_start, created__lte=date_end).order_by('-created')
+        if account:
+            items = items.filter(account=account)
+
+        
+        if systemusers:
+            items = items.filter(systemuser__in=systemusers)
+        if tariffs:
+            items = items.filter(tariff__in=tariffs)
+        
+        if form.cleaned_data.get('transactiontype'):
+            print form.cleaned_data.get('transactiontype')
+            items = items.filter(type__in=LTYPES)
+        
+        ds = ExtDirectStore(TransactionReport)
+        items, totalcount = ds.query(items, **extra)
+        res = tuple(items.values('id', 'service','created','tariff__name','summ','account','type','type__name','systemuser','bill','descrition','end_promise', 'promise_expired')) 
+        #=======================================================================
+        # count_sql = """
+        #        SELECT count(*) as cnt 
+        #        FROM billservice_totaltransactionreport as ttr 
+        #        WHERE ttr.created between '%s' and '%s' and ttr.type in (%s) %%s
+        #        """% (date_start, date_end, ','.join(["'%s'" % x for x in LTYPES]))
+        #   
+        # sql = """
+        #        SELECT ttr.id, ttr.service,ttr.created,(SELECT name FROM billservice_tariff WHERE id=ttr.tariff) as tarif,ttr.summ,ttr.account,ttr.systemuser,ttr.bill,ttr.descrition,ttr.end_promise, ttr.promise_expired,  
+        #        (SELECT name FROM billservice_transactiontype WHERE internal_name=ttr.type) as type 
+        #        FROM billservice_totaltransactionreport as ttr 
+        #        WHERE ttr.created between '%s' and '%s' and ttr.type in (%s) %%s ORDER BY ttr.created DESC LIMIT %s OFFSET %s
+        #        """% (date_start, date_end, ','.join(["'%s'" % x for x in LTYPES]),extra.get('limit',0),extra.get('start',0))        
+        # if tariffs:
+        #    app=" and ttr.tariff in (%s)" % ','.join([str(x.id) for x in tariffs])
+        # else:
+        #    app=''
+        # sql=sql % app
+        # count_sql=count_sql % app
+        # db.cursor.execute(sql)
+        # res = db.cursor.fetchall()
+        # 
+        # db.cursor.execute(count_sql)        
+        # totalcount = db.cursor.fetchone()['cnt']    
+        #=======================================================================
+        
         """
         if 'Transaction' in TYPES:
             model = bsmodels.__dict__.get('Transaction')
@@ -169,7 +208,7 @@ def transactionreport(request):
 #                (SELECT name FROM billservice_transactiontype WHERE internal_name=psh.type_id) as type 
 #                FROM billservice_periodicalservicehistory as psh 
 #                WHERE psh.created between %s and %s and psh.account_id=%s and type_id in %s::array ORDER BY psh.created DESC
-#                """, (date_start, date_end, account.id, [x.id for x in TRTYPES.get('PeriodicalServiceHistory')]))
+#                """, (date_start, date_end, account.id, ','.join([x.internal_name for x in TRTYPES.get('PeriodicalServiceHistory')])))
 #            else:
 #                #cursor=connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
 #                #cursor = db.cursor()
@@ -217,7 +256,7 @@ def transactionreport(request):
         #print item._meta.get_all_field_names()
         """
         print len(res)
-        return {"records": res,  'total':len(res), 'metaData':{'root': 'records',
+        return {"records": res,  'total':totalcount, 'metaData':{'root': 'records',
                                              'totalProperty':'total', 
                                              
                                              'fields':[{'header':x, 'name':x, 'sortable':True} for x in res[0] ] if res else []

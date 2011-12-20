@@ -105,6 +105,9 @@ Ext.onReady(function(){
                                 closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
+                                viewConfig: {
+                                    forceFit:true
+                                },
                                 //cm: new Ext.grid.ColumnModel({}),
                                 columns:[{
                                 	header:'Id',
@@ -117,7 +120,7 @@ Ext.onReady(function(){
                                 	renderer:EBS.accountSimpleCellRenderer
                                 },{
                                 	header:'Тариф',
-                                	dataIndex:'tariff',
+                                	dataIndex:'tarif',
                                 	sortable : true,
                                 },{
                                 	header:'Сумма',
