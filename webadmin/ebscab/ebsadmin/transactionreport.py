@@ -99,6 +99,7 @@ def transactionreport(request):
         resitems = []
         TYPES={}
         TRTYPES={}
+        LTYPES=[]
         for x in form.cleaned_data.get('transactiontype'):
             key=TRANSACTION_MODELS.get(x.internal_name)
             model = bsmodels.__dict__.get(key)
@@ -108,8 +109,18 @@ def transactionreport(request):
                 TRTYPES[key]=[]
             TYPES[key].append(model)
             TRTYPES[key].append(x)
+            LTYPES.append(x.internal_name)
                 
         #print TYPES
+        print ','.join(["'%s'" % x for x in LTYPES])
+        db.cursor.execute("""
+                SELECT ttr.id, ttr.service,ttr.created,ttr.tariff,ttr.summ,ttr.account,ttr.systemuser,ttr.bill,ttr.descrition,ttr.end_promise, ttr.promise_expired,  
+                (SELECT name FROM billservice_transactiontype WHERE internal_name=ttr.type) as type 
+                FROM billservice_totaltransactionreport as ttr 
+                WHERE ttr.created between '%s' and '%s' and ttr.type in (%s) ORDER BY ttr.created DESC
+                """% (date_start, date_end, ','.join(["'%s'" % x for x in LTYPES])))        
+        res = db.cursor.fetchall()
+        """
         if 'Transaction' in TYPES:
             model = bsmodels.__dict__.get('Transaction')
             items = model.objects.filter(created__gte=date_start, created__lte=date_end).order_by('-created')#.values('id','account','summ')
@@ -148,7 +159,7 @@ def transactionreport(request):
             
             
             res.append(items)
-            
+            """
 #===============================================================================
 #            if account:
 # 
@@ -175,7 +186,7 @@ def transactionreport(request):
             #print res[0]
             #items=items.values('id','account__username', 'summ')
             #print res
-            
+        """
         if 'AddonServiceHistory' in TYPES:
             model = bsmodels.__dict__.get('AddonServiceHistory')
             items = model.objects.filter(created__gte=date_start, created__lte=date_end).order_by('-created')#.values('id','account','summ')
@@ -196,6 +207,7 @@ def transactionreport(request):
         qs = QuerySetSequence(*res)#.order_by('-created')
         #items = ExtDirectStore(None)
         items = qs.filter(**extra)
+        
         res=[]
         for item in items:
             #print instance_dict(acc).keys()
@@ -203,8 +215,9 @@ def transactionreport(request):
             
             
         #print item._meta.get_all_field_names()
+        """
         print len(res)
-        return {"records": res,  'total':totalcount, 'metaData':{'root': 'records',
+        return {"records": res,  'total':len(res), 'metaData':{'root': 'records',
                                              'totalProperty':'total', 
                                              
                                              'fields':[{'header':x, 'name':x, 'sortable':True} for x in res[0] ] if res else []
