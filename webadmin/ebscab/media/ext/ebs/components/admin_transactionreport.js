@@ -105,14 +105,16 @@ Ext.onReady(function(){
                                 closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
-                                viewConfig: {
-                                    forceFit:true
-                                },
+                                plugins:[new Ext.ux.grid.GridSummary()],
                                 //cm: new Ext.grid.ColumnModel({}),
                                 columns:[{
                                 	header:'Id',
                                 	dataIndex:'id',
                                 	sortable : true,
+                                	summaryType: 'count',
+                                	summaryRenderer: function(v, params, data){
+                                        return '<strong>Итого '+v+'</strong>';
+                                    },
                                 },{
                                 	header:'Аккаунт',
                                 	dataIndex:'account',
@@ -120,19 +122,20 @@ Ext.onReady(function(){
                                 	renderer:EBS.accountSimpleCellRenderer
                                 },{
                                 	header:'Тариф',
-                                	dataIndex:'tarif',
+                                	dataIndex:'tariff__name',
                                 	sortable : true,
                                 },{
                                 	header:'Сумма',
                                 	dataIndex:'summ',
                                 	sortable : true,
+                                	summaryType: 'sum',
                                 },{
                                 	header:'Тип',
-                                	dataIndex:'type',
+                                	dataIndex:'type__name',
                                 	sortable : true,
                                 },{
                                 	header:'Услуга',
-                                	dataIndex:'service',
+                                	dataIndex:'service_name',
                                 	sortable : true,
                                 },{
                                 	header:'Основание',
@@ -237,7 +240,9 @@ Ext.onReady(function(){
 						    height:600,
 						    layoutConfig: {
 		                    	pack: 'center',
-		                    	align: 'middle'
+		                    	align: 'middle',
+		                    	forceFit:true
+		                    		
 		                    	},
 						    items:[
 							{

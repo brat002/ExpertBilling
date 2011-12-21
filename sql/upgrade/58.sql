@@ -13,8 +13,10 @@ CREATE OR REPLACE FUNCTION get_tarif(acc_id integer, dt timestamp without time z
         COST 100;
         
 DROP VIEW IF EXISTS billservice_totaltransactionreport;
-CREATE OR REPLACE VIEW billservice_totaltransactionreport(id, service,created,tariff_id,summ,account_id,type_id,systemuser_id,bill,descrition,end_promise, promise_expired) AS
+DROP VIEW IF EXISTS billservice_totaltransactionreport;
+CREATE OR REPLACE VIEW billservice_totaltransactionreport(id, service_id, service_name, created,tariff_id,summ,account_id,type_id,systemuser_id,bill,descrition,end_promise, promise_expired) AS
 SELECT psh.id, 
+	psh.service_id,
 	(SELECT name FROM billservice_periodicalservice WHERE id=psh.service_id) as name, 
 	psh.created, 
 	(SELECT tarif_id FROM billservice_accounttarif where id=psh.accounttarif_id) as tarif,
@@ -25,6 +27,7 @@ SELECT psh.id,
 FROM billservice_periodicalservicehistory as psh
 UNION
 SELECT transaction.id,
+	NULL,
 	'', 
 	transaction.created,  
 	(SELECT tarif_id FROM billservice_accounttarif where id=transaction.accounttarif_id) as tarif,
@@ -35,7 +38,8 @@ SELECT transaction.id,
 	transaction.bill,transaction.description,end_promise,promise_expired
 FROM billservice_transaction as transaction
 UNION
-	SELECT tr.id, 
+SELECT tr.id, 
+	NULL,
 	'', 
 	tr.created, 
 	(SELECT tarif_id FROM billservice_accounttarif where id=tr.accounttarif_id) as tarif, 
@@ -45,6 +49,7 @@ UNION
 FROM billservice_traffictransaction as tr
 UNION
 SELECT addst.id, 
+	addst.service_id,
 	(SELECT name FROM billservice_addonservice WHERE id=addst.service_id) as name, 
 	addst.created, 
 	(SELECT tarif_id FROM billservice_accounttarif where id=addst.accounttarif_id) as tarif,
@@ -55,6 +60,7 @@ SELECT addst.id,
 FROM billservice_addonservicetransaction as addst
 UNION
 SELECT osh.id, 
+	osh.onetimeservice_id,
 	(SELECT name FROM billservice_onetimeservice WHERE id=osh.onetimeservice_id) as name, 
         osh.created,
         (SELECT tarif_id FROM billservice_accounttarif where id=osh.accounttarif_id) as tarif,
@@ -64,6 +70,7 @@ SELECT osh.id,
             FROM billservice_onetimeservicehistory as osh 
 UNION
 SELECT tr.id, 
+	NULL,
 	'', 
 	tr.created, 
 	(SELECT tarif_id FROM billservice_accounttarif where id=tr.accounttarif_id) as tarif,
@@ -73,6 +80,7 @@ SELECT tr.id,
             FROM billservice_timetransaction as tr 
 UNION
 SELECT qi.id as id, 
+	NULL,
 	'',
 	qi.created,
 	get_tarif(qi.account_id,qi.created) as tarif,

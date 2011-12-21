@@ -67,9 +67,9 @@ EBS.store.transactionreport = new Ext.data.GroupingStore({
         url: '/ebsadmin/transactions/',
         method:'POST',
     }),    
-    reader:new Ext.data.JsonReader({totalProperty:'total',}),
-    //remoteSort:true,
-
+    reader:new Ext.data.JsonReader(),
+    remoteSort:true,
+    remoteGroup:true,
     listeners: {
           load:function(){
              // console.info('load',this,arguments);
