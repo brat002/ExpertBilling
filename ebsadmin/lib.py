@@ -5,7 +5,7 @@ class ExtDirectStore(object):
     Implement the server-side needed to load an Ext.data.DirectStore
     """
     
-    def __init__(self, model, extras=[], root='records', total='total', start='start', limit='limit', sort='sort', dir='dir'):
+    def __init__(self, model, extras=[], root='records', total='total', start='start', limit='limit', sort='sort', dir='dir', groupby='groupby',groupdir='groupdir'):
         self.model = model        
         self.root = root
         self.total = total
@@ -16,12 +16,19 @@ class ExtDirectStore(object):
         self.limit = limit
         self.sort = sort
         self.dir = dir
+        self.groupby=groupby
+        self.groupdir=groupdir
         
     def query(self, qs=None, **kw):                
         paginate = False
         total = None
         order = False
-        
+        groupby = None 
+        if kw.has_key(self.groupby):
+            groupby = kw.pop(self.groupby)
+            groupdir = kw.pop(self.groupdir)
+
+            
         if kw.has_key(self.start) and kw.has_key(self.limit):
             start = kw.pop(self.start)
             limit = kw.pop(self.limit)
@@ -46,6 +53,8 @@ class ExtDirectStore(object):
             
         queryset = queryset.filter(**kw)
 
+        if groupby:
+            queryset = queryset.order_by("-%s" % groupby if groupdir=='asc' else groupby)
         if order:
             queryset = queryset.order_by(sort)
                 

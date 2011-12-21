@@ -98,6 +98,10 @@ def transactionreport(request):
         if request.POST.get('sort',''):
             extra['sort'] = request.POST.get('sort','')
             extra['dir'] = request.POST.get('dir','asc')
+        if request.POST.get('groupBy',''):
+            extra['groupby'] = request.POST.get('groupBy','')
+            extra['groupdir'] = request.POST.get('groupDir','asc')
+            
         res=[]
         resitems = []
         TYPES={}
@@ -127,12 +131,19 @@ def transactionreport(request):
             items = items.filter(tariff__in=tariffs)
         
         if form.cleaned_data.get('transactiontype'):
-            print form.cleaned_data.get('transactiontype')
+            #print form.cleaned_data.get('transactiontype')
             items = items.filter(type__in=LTYPES)
+        
+        if form.cleaned_data.get('addonservice'):
+            items = items.filter(service_id__in=[x.id for x in form.cleaned_data.get('addonservice')], type__in=['ADDONSERVICE_WYTE_PAY','ADDONSERVICE_PERIODICAL_GRADUAL','ADDONSERVICE_PERIODICAL_AT_START','ADDONSERVICE_PERIODICAL_AT_END','ADDONSERVICE_ONETIME'])
+            
+        if form.cleaned_data.get('periodicalservice'):
+            items = items.filter(service_id__in=[x.id for x in form.cleaned_data.get('periodicalservice')], type__in=['PS_GRADUAL','PS_AT_END','PS_AT_START'])
+            
         
         ds = ExtDirectStore(TransactionReport)
         items, totalcount = ds.query(items, **extra)
-        res = tuple(items.values('id', 'service','created','tariff__name','summ','account','type','type__name','systemuser','bill','descrition','end_promise', 'promise_expired')) 
+        res = tuple(items.values('id', 'service_name','created','tariff__name','summ','account','type','type__name','systemuser','bill','descrition','end_promise', 'promise_expired')) 
         #=======================================================================
         # count_sql = """
         #        SELECT count(*) as cnt 
@@ -256,10 +267,24 @@ def transactionreport(request):
         #print item._meta.get_all_field_names()
         """
         print len(res)
+        t=[{'name': 'id', 'sortable':True,'type':'integer'},
+           {'name': 'service_name', 'sortable':True,'type':'string'},
+           {'name': 'created', 'sortable':True,'type':'date'},
+           {'name': 'tariff__name', 'sortable':True,'type':'string'},
+           {'name': 'summ', 'sortable':True,'type':'float'},
+           {'name': 'account', 'sortable':True,'type':'string'},
+           {'name': 'type', 'sortable':True,'type':'string'},
+           {'name': 'type__name', 'sortable':True,'type':'string'},
+           {'name': 'systemuser', 'sortable':True,'type':'string'},
+           {'name': 'bill', 'sortable':True,'type':'string'},
+           {'name': 'descrition', 'sortable':True,'type':'string'},
+           {'name': 'end_promise',  'sortable':True,'type':'date'},
+           {'name': 'promise_expired', 'sortable':True,'type':'boolean'},]
+        
         return {"records": res,  'total':totalcount, 'metaData':{'root': 'records',
                                              'totalProperty':'total', 
                                              
-                                             'fields':[{'header':x, 'name':x, 'sortable':True} for x in res[0] ] if res else []
+                                             'fields':t
                                              },
                 "sortInfo":{
                 "field": "created",
