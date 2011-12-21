@@ -1310,7 +1310,8 @@ class AccountHardware(models.Model):
     
 
 class TotalTransactionReport(models.Model):
-    service = models.TextField()
+    service_id = models.IntegerField()
+    service_name = models.TextField()
     created = models.DateTimeField()
     tariff = models.ForeignKey(Tariff)
     summ = models.DecimalField(decimal_places=10, max_digits=30)
