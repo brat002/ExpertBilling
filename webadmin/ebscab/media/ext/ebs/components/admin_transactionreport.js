@@ -105,7 +105,7 @@ Ext.onReady(function(){
                                 closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
-                                plugins:[new Ext.ux.grid.GridSummary()],
+                                plugins:[new Ext.ux.grid.GroupSummary()],
                                 //cm: new Ext.grid.ColumnModel({}),
                                 columns:[{
                                 	header:'Id',
@@ -149,6 +149,7 @@ Ext.onReady(function(){
                                 	header:'Создан',
                                 	dataIndex:'created',
                                 	sortable : true,
+                                	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
                                 },{
                                 	header:'Обещанный платёж',
                                 	dataIndex:'promise',
@@ -157,6 +158,7 @@ Ext.onReady(function(){
                                 	header:'Обещанный платёж истекает',
                                 	dataIndex:'end_promise',
                                 	sortable : true,
+                                	renderer:Ext.util.Format.dateRenderer(Date.patterns.ISO8601Long),
                                 },{
                                 	header:'Обещанный платёж погашен',
                                 	dataIndex:'promise_expired',
