@@ -1156,7 +1156,7 @@ class TarifWindow(QtGui.QMainWindow):
         id = self.getIdFromtable(self.tableWidget_radius_traffic_trafficcost, current_row)
         
         if id!=-1:
-            self.connection.iddelete(id ,"billservice_radiustraffic")
+            self.connection.iddelete(id ,"billservice_radiustrafficnode")
             #TimeAccessNode.objects.get(id=id).delete()
     
         self.tableWidget_radius_traffic_trafficcost.removeRow(current_row)
@@ -2543,8 +2543,7 @@ class TarifWindow(QtGui.QMainWindow):
                         radius_traffic_node = self.connection.get_model(id, "billservice_radiustrafficnode")
                     else:
                         radius_traffic_node = Object()
-                    
-                    radius_traffic_node.radiustraffic_id=model.radius_traffic_transmit_service_id
+                        radius_traffic_node.radiustraffic_id=model.radius_traffic_transmit_service_id
                     
                     radius_traffic_node.value = unicode(self.tableWidget_radius_traffic_trafficcost.item(i,1).text())
                     radius_traffic_node.timeperiod_id = self.tableWidget_radius_traffic_trafficcost.item(i,2).id

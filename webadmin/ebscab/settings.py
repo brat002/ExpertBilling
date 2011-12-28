@@ -275,7 +275,7 @@ COMPRESS_JS = {
         "ext/ebs/plugins/Ext.ux.form.LovCombo.js",
         "ext/ebs/plugins/Ext.ux.grid.RowActions.js",
         "ext/ebs/plugins/Ext.ux.plugin.PagingToolbarResizer.js",
-        "ext/ebs/plugins/GridSummary.js",
+        "ext/ebs/plugins/GroupSummary.js",
         
         
         "ext/ux/Ext.ux.HtmlEditor.Plugins-all-debug.js",
