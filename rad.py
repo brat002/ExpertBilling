@@ -257,7 +257,7 @@ class SQLLoggerThread(Thread):
                     self.cursor.execute("""INSERT INTO radius_authlog(account_id, subaccount_id, nas_id, type, service, cause, datetime)
                                         VALUES(%s,%s,%s,%s,%s,%s,%s)""", (account, subaccount, nas, type, service, cause, datetime))
                     #print account, subaccount, nas, type, service, cause, datetime
-            self.dbconn.commit()
+            #self.dbconn.commit()
             time.sleep(vars.SQLLOG_FLUSH_TIMEOUT)
 
 
@@ -488,7 +488,7 @@ class AsyncAcctServ(AsyncUDPServer):
             del packetfromcore
             del coreconnect    
             logger.info("ACC: %s", (clock()-t))
-            dbCur.connection.commit()
+            #dbCur.connection.commit()
             dbCur.close()
         except Exception, ex:
             logger.error("Acc Server readfrom exception: %s \n %s", (repr(ex), traceback.format_exc()))
@@ -502,7 +502,7 @@ class AuthHandler(Thread):
         self.outbuf = deque()
         #AsyncUDPServer.__init__(self, host, port)
         self.dbconn = get_connection(vars.db_dsn)
-        #self.dbconn.set_isolation_level(0)
+        self.dbconn.set_isolation_level(0)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
         self.server = server
@@ -678,7 +678,7 @@ class AcctHandler(Thread):
                     del packetfromcore             
                  
                 logger.info("ACCT: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (clock()-acct_time, coreconnect.userName, coreconnect.nasip, coreconnect.access_type))
-                dbCur.connection.commit()
+                #dbCur.connection.commit()
                 dbCur.close()
                 del coreconnect 
             except Exception, ex:
@@ -1047,7 +1047,7 @@ class HandleSAuth(HandleSBase):
                 self.create_cursor()
                 try:
                     self.cursor.execute("""SELECT id from radius_activesession WHERE subaccount_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (subacc.id, nas.acct_interim_interval))
-                    self.cursor.connection.commit()
+                    #self.cursor.connection.commit()
                     if self.cursor.fetchone():
                         vars.cursor_lock.release()
                         logger.warning("Subaccount %s already have session on this NAS. If this error persist - check your nas settings and perform maintance radius_activesession table", (username,))
@@ -1077,7 +1077,7 @@ class HandleSAuth(HandleSBase):
                        if not vpn_ip_address:
                            pool_id, vpn_ip_address = self.find_free_ip(pool_id)
 
-                       self.cursor.connection.commit()
+                       #self.cursor.connection.commit()
                        if not vpn_ip_address:
                             logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id))
                             sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
@@ -1086,7 +1086,7 @@ class HandleSAuth(HandleSBase):
                        
                        self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
                        ipinuse_id=self.cursor.fetchone()[0]
-                       self.cursor.connection.commit()
+                       #self.cursor.connection.commit()
                        #vars.cursor.connection.commit()   
                        #vars.cursor_lock.release()
                                 
@@ -1106,7 +1106,7 @@ class HandleSAuth(HandleSBase):
                     try:
                         self.create_cursor()
                         self.cursor.execute("UPDATE billservice_subaccount SET ipn_mac_address=%s WHERE id=%s", (station_id, subacc.id,))
-                        self.cursor.connection.commit()
+                        #self.cursor.connection.commit()
                         logger.debug("Update subaccount %s with id %s ipn mac address to: %s was succefull", (str(user_name), subacc.id, station_id))
                     except Exception, ex:
                         logger.error("Error update subaccount %s with id %s ipn mac address to: %s %s", (str(user_name), subacc.id, station_id, repr(ex)))
@@ -1316,7 +1316,7 @@ class HandleHotSpotAuth(HandleSAuth):
                             """, (user_name, pin[0], ip,mac))
     
             acct_card = self.cursor.fetchone()
-            self.cursor.connection.commit()
+            #self.cursor.connection.commit()
             #self.cursor.close()
     
             acc = acct_card
@@ -1452,7 +1452,7 @@ class HandleHotSpotAuth(HandleSAuth):
                    if not vpn_ip_address:
                        pool_id, vpn_ip_address = self.find_free_ip(pool_id)
 
-                   self.cursor.connection.commit()
+                   #self.cursor.connection.commit()
                    if not vpn_ip_address:
                         logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc_id, pool_id))
                         sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc_id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
@@ -1463,7 +1463,7 @@ class HandleHotSpotAuth(HandleSAuth):
                    ipinuse_id=self.cursor.fetchone()[0]
                    #vars.cursor.connection.commit()   
                    #vars.cursor_lock.release()
-                   self.cursor.connection.commit()
+                   #self.cursor.connection.commit()
                             
                except Exception, ex:
                    #vars.cursor_lock.release()
@@ -1738,7 +1738,7 @@ class HandleSAcct(HandleSBase):
             return self.acct_NA()
         
         if acc is None:
-            self.cur.connection.commit()
+            #self.cur.connection.commit()
             #self.cur.close()
             logger.warning("Unknown User %s", self.userName)
             return self.acct_NA()
@@ -1861,7 +1861,7 @@ class CacheRoutine(Thread):
                         with queues.sessions_lock:
                             queues.sessions.get_data((cur, u_utilities_sql['get_sessions'], (cacheMaster.date,)), (([0], [1,2])))
                         first_time = False
-                    cur.connection.commit()
+                    #cur.connection.commit()
                     cur.close()
                     if counter == 0:
                         allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
