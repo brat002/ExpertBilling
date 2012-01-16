@@ -1769,7 +1769,8 @@ class HandleSAcct(HandleSBase):
         now = datetime.datetime.now()
         #print self.packetobject
         #packet_session = self.packetobject['Acct-Session-Id'][0]
-        if self.packetobject['Acct-Status-Type'][0]=='Start':
+        logger.warning("Session %s", (repr(self.packetobject),))
+        if self.packetobject['Acct-Status-Type']==['Start']:
             logger.warning("Starting session %s", (repr(self.packetobject),))
             if nas_int_id:
                 self.cur.execute("""SELECT id FROM radius_activesession
@@ -1834,7 +1835,7 @@ class HandleSAcct(HandleSBase):
             if ipinuse_id:
                 self.cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s", (ipinuse_id,))
         self.cur.connection.commit()
-        self.cur.close()       
+        #self.cur.close()       
         return self.replypacket
 
 
