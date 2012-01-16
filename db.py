@@ -360,8 +360,8 @@ def get_last_addon_checkout(cursor, ps_id, accounttarif, co_datetime=None):
 
     cursor.execute("""
                     SELECT date_trunc('second', created) FROM billservice_addonservicetransaction
-                    WHERE accountaddonservice_id=%s AND accounttarif_id=%s ORDER BY created DESC LIMIT 1
-                    """ , (ps_id, accounttarif))
+                    WHERE accountaddonservice_id=%s ORDER BY created DESC LIMIT 1
+                    """ , (ps_id,))
 
     try:
         return cursor.fetchone()[0]
