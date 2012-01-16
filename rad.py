@@ -1738,7 +1738,7 @@ class HandleSAcct(HandleSBase):
             return self.acct_NA()
         
         if acc is None:
-            #self.cur.connection.commit()
+            self.cur.connection.commit()
             #self.cur.close()
             logger.warning("Unknown User %s", self.userName)
             return self.acct_NA()
@@ -1769,7 +1769,8 @@ class HandleSAcct(HandleSBase):
         now = datetime.datetime.now()
         #print self.packetobject
         #packet_session = self.packetobject['Acct-Session-Id'][0]
-        if self.packetobject['Acct-Status-Type']==['Start']:
+        if self.packetobject['Acct-Status-Type'][0]=='Start':
+            logger.warning("Starting session %s", (repr(self.packetobject),))
             if nas_int_id:
                 self.cur.execute("""SELECT id FROM radius_activesession
                                 WHERE account_id=%s AND sessionid=%s AND
@@ -1832,7 +1833,8 @@ class HandleSAcct(HandleSBase):
                              """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0], acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None,))
             if ipinuse_id:
                 self.cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s", (ipinuse_id,))
-               
+        self.cur.connection.commit()
+        self.cur.close()       
         return self.replypacket
 
 
