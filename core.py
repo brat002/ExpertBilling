@@ -313,13 +313,16 @@ class periodical_service_bill(Thread):
         s_delta = datetime.timedelta(seconds=delta)
         
         if ps.cash_method == "GRADUAL":
-            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc.end_date)                                    
+            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc.end_date)  
+            logger.debug('%s: Periodical Service: GRADUAL last checkout %s for account: %s service:%s type:%s', ( last_checkout, acc.account_id, ps.ps_id, pss_type))                                  
             if last_checkout is None:
                 if pss_type == PERIOD:
                     last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
+                    
                 elif pss_type == ADDON:
                     last_checkout = ps.created
-
+                logger.debug('%s: Periodical Service: GRADUAL last checkout is None set last checkout=%s for account: %s service:%s type:%s', ( last_checkout, acc.account_id, ps.ps_id, pss_type))
+            
             if (self.NOW - last_checkout).seconds + (self.NOW - last_checkout).days*SECONDS_PER_DAY >= self.PER_DAY:
                 #Проверяем наступил ли новый период
                 if self.NOW - self.PER_DAY_DELTA <= period_start:
@@ -344,11 +347,11 @@ class periodical_service_bill(Thread):
                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                             new_summ=cur.fetchone()[0]
                             cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
-                            logger.debug('%s: Periodical Service: Gradual iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
+                            logger.debug('%s: Periodical Service: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
                         elif pss_type == ADDON:
                             cash_summ = cash_summ * susp_per_mlt
                             addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
-                            logger.debug('%s: Addon Service Checkout thread: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
+                            logger.debug('%s: Addon Service Checkout thread: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
                         cur.connection.commit()
                         chk_date += self.PER_DAY_DELTA
                 else:
