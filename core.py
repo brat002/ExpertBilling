@@ -314,14 +314,14 @@ class periodical_service_bill(Thread):
         
         if ps.cash_method == "GRADUAL":
             last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc.end_date)  
-            logger.debug('%s: Periodical Service: GRADUAL last checkout %s for account: %s service:%s type:%s', ( last_checkout, acc.account_id, ps.ps_id, pss_type))                                  
+            logger.debug('%s: Periodical Service: GRADUAL last checkout %s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))                                  
             if last_checkout is None:
                 if pss_type == PERIOD:
                     last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
                     
                 elif pss_type == ADDON:
                     last_checkout = ps.created
-                logger.debug('%s: Periodical Service: GRADUAL last checkout is None set last checkout=%s for account: %s service:%s type:%s', ( last_checkout, acc.account_id, ps.ps_id, pss_type))
+                logger.debug('%s: Periodical Service: GRADUAL last checkout is None set last checkout=%s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))
             
             if (self.NOW - last_checkout).seconds + (self.NOW - last_checkout).days*SECONDS_PER_DAY >= self.PER_DAY:
                 #Проверяем наступил ли новый период
