@@ -20,9 +20,9 @@
 				{% for service in periodical_service_history %}
 					<tr>
 						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ service.service.name }}&nbsp;</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ service.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ service.created|date:"d.m.Y H:i" }}&nbsp;</td>
 						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ service.summ }}&nbsp;{{ CURRENCY }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ transaction.type_id }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ service.type.name }}&nbsp;</td>
 					</tr>
 				{% endfor %}
 				{% if is_range %}

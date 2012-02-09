@@ -251,7 +251,7 @@
 					{% for service in periodical_service_history %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.service.name }}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.created|date:"d.m.Y H:i" }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ service.summ|format_sum|format_sum }}&nbsp;{{ CURRENCY }}</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.type_id }}&nbsp;</td>
 						</tr>
@@ -300,7 +300,7 @@
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.onetimeservice.name }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.summ|format_sum }}&nbsp;{{ CURRENCY }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ one_time.created|date:"d.m.Y H:i" }}&nbsp;</td>
 						</tr>
 					{% endfor %}
 					<tr>
@@ -391,7 +391,7 @@
 					</tr>
 					{% for transaction in traffic_transaction %}
 						<tr>
-							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y H:i" }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ|format_sum }}&nbsp;{{ CURRENCY }}</td>
 						</tr>
 					{% endfor %}
