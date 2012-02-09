@@ -555,7 +555,7 @@ class NetFlowRoutine(Thread):
                         if not acc:
                             self.cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.status   
                                                 FROM billservice_account as ba
-                                                LEFT JOIN billservice_accounttarif AS act ON act.id=%s
+                                                LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s ORDER BY datetime DESC LIMIT 1)
                                                 LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;
                                              """, (flow.account_id,))
                             acc = self.cur.fetchone()

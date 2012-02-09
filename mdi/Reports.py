@@ -331,9 +331,9 @@ class TransactionsReportEbs(ebsTableWindow):
                 t[x.id] = x.name
                                
             sql = """
-            SELECT psh.id, psh.service_id, psh.datetime, psh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=psh.accounttarif_id) as tarif_id, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=psh.account_id) as fullname, psh.type_id 
+            SELECT psh.id, psh.service_id, psh.created, psh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=psh.accounttarif_id) as tarif_id, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=psh.account_id) as fullname, psh.type_id 
             FROM billservice_periodicalservicehistory as psh 
-            WHERE psh.datetime between '%s' and '%s' %%s and type_id='%s' ORDER BY psh.datetime DESC
+            WHERE psh.created between '%s' and '%s' %%s and type_id='%s' ORDER BY psh.created DESC
             """ % (start_date, end_date,transaction_type)
             
             if account_id:
@@ -349,14 +349,14 @@ class TransactionsReportEbs(ebsTableWindow):
             ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u'Тип', u"Сумма", u"Дата"]
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_periodicalservicehistory")
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="billservice_periodicalservicehistory")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(t.get(item.tarif_id), i, 3)
                 self.addrow(s.get(item.service_id), i, 4)
                 self.addrow(item.type_id, i, 5)
                 self.addrow(item.summ, i, 6)
-                self.addrow(item.datetime, i, 7)
+                self.addrow(item.created, i, 7)
                 i+=1
                 sum+=item.summ
             self.statusBar().showMessage(u"Всего записей:%s. Итоговая сумма %.3f" % (i,sum))
@@ -373,9 +373,9 @@ class TransactionsReportEbs(ebsTableWindow):
                 t[x.id] = x.name
                                
             sql = """
-            SELECT osh.id, osh.onetimeservice_id, osh.datetime, osh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=osh.accounttarif_id) as tarif_id, osh.summ, (SELECT username FROM billservice_account WHERE id=osh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=osh.account_id) as fullname 
+            SELECT osh.id, osh.onetimeservice_id, osh.created, osh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=osh.accounttarif_id) as tarif_id, osh.summ, (SELECT username FROM billservice_account WHERE id=osh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=osh.account_id) as fullname 
             FROM billservice_onetimeservicehistory as osh 
-            WHERE osh.datetime between '%s' and '%s' %%s ORDER BY osh.datetime DESC
+            WHERE osh.created between '%s' and '%s' %%s ORDER BY osh.created DESC
             """ % (start_date, end_date,)
             
             if account_id:
@@ -391,13 +391,13 @@ class TransactionsReportEbs(ebsTableWindow):
             ['#', u'Аккаунт', u'Тарифный план', u'Услуга', u"Сумма", u"Дата"]
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_onetimeservicehistory")
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="billservice_onetimeservicehistory")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(t.get(item.tarif_id), i, 3)
                 self.addrow(s.get(item.onetimeservice_id), i, 4)
                 self.addrow(item.summ, i, 5)
-                self.addrow(item.datetime, i, 6)
+                self.addrow(item.created, i, 6)
                 i+=1
                 sum += item.summ
             self.statusBar().showMessage(u"Всего записей:%s. Итоговая сумма %.3f" % (i,sum))
@@ -409,9 +409,9 @@ class TransactionsReportEbs(ebsTableWindow):
                 t[x.id] = x.name
                                
             sql = """
-            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username , (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname
+            SELECT tr.id, tr.created, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username , (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname
             FROM billservice_traffictransaction as tr 
-            WHERE tr.datetime between '%s' and '%s' %%s ORDER BY tr.datetime DESC
+            WHERE tr.created between '%s' and '%s' %%s ORDER BY tr.created DESC
             """ % (start_date, end_date,)
             
             if account_id:
@@ -427,12 +427,12 @@ class TransactionsReportEbs(ebsTableWindow):
             ["#", u'Аккаунт', u'Тарифный план', u'Сумма', u'Дата']
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_traffictransaction")
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="billservice_traffictransaction")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(t.get(item.tarif_id), i, 3)
                 self.addrow(item.summ, i, 4)
-                self.addrow(item.datetime, i, 5)
+                self.addrow(item.created, i, 5)
                 i+=1
                 sum+=item.summ
                 
@@ -446,9 +446,9 @@ class TransactionsReportEbs(ebsTableWindow):
                 t[x.id] = x.name
                                
             sql = """
-            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname
+            SELECT tr.id, tr.created, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname
             FROM billservice_timetransaction as tr 
-            WHERE tr.datetime between '%s' and '%s' %%s ORDER BY tr.datetime DESC
+            WHERE tr.created between '%s' and '%s' %%s ORDER BY tr.created DESC
             """ % (start_date, end_date,)
             
             if account_id:
@@ -462,12 +462,12 @@ class TransactionsReportEbs(ebsTableWindow):
             i=0
             sum = 0
             for item in items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_timetransaction")
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="billservice_timetransaction")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(t.get(item.tarif_id), i, 3)
                 self.addrow(item.summ, i, 4)
-                self.addrow(item.datetime, i, 5)
+                self.addrow(item.created, i, 5)
                 i+=1
                 sum +=item.summ
             self.statusBar().showMessage(u"Всего записей:%s. Итоговая сумма %.3f" % (i,sum))                                
@@ -614,9 +614,9 @@ class TransactionsReportEbs(ebsTableWindow):
 
                                
             sql = """
-            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname
+            SELECT tr.id, tr.created, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname
             FROM billservice_timetransaction as tr 
-            WHERE tr.datetime between '%s' and '%s' %%s ORDER BY tr.datetime DESC
+            WHERE tr.created between '%s' and '%s' %%s ORDER BY tr.created DESC
             """ % (start_date, end_date,)
             
             if account_id:
@@ -630,9 +630,9 @@ class TransactionsReportEbs(ebsTableWindow):
             
                                
             sql = """
-            SELECT tr.id, tr.datetime, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username , (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname, tr.radiustraffictransmitservice_id
+            SELECT tr.id, tr.created, tr.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=tr.accounttarif_id) as tarif_id, tr.summ, (SELECT username FROM billservice_account WHERE id=tr.account_id) as username , (SELECT fullname FROM billservice_account WHERE id=tr.account_id) as fullname, tr.radiustraffictransmitservice_id
             FROM billservice_traffictransaction as tr 
-            WHERE tr.datetime between '%s' and '%s' %%s ORDER BY tr.datetime DESC
+            WHERE tr.created between '%s' and '%s' %%s ORDER BY tr.created DESC
             """ % (start_date, end_date,)
             
             if account_id:
@@ -648,9 +648,9 @@ class TransactionsReportEbs(ebsTableWindow):
  
                                
             sql = """
-            SELECT osh.id, osh.onetimeservice_id, osh.datetime, osh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=osh.accounttarif_id) as tarif_id, osh.summ, (SELECT username FROM billservice_account WHERE id=osh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=osh.account_id) as fullname 
+            SELECT osh.id, osh.onetimeservice_id, osh.created, osh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=osh.accounttarif_id) as tarif_id, osh.summ, (SELECT username FROM billservice_account WHERE id=osh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=osh.account_id) as fullname 
             FROM billservice_onetimeservicehistory as osh 
-            WHERE osh.datetime between '%s' and '%s' %%s ORDER BY osh.datetime DESC
+            WHERE osh.created between '%s' and '%s' %%s ORDER BY osh.created DESC
             """ % (start_date, end_date,)
             
             if account_id:
@@ -665,9 +665,9 @@ class TransactionsReportEbs(ebsTableWindow):
 
                                
             sql = """
-            SELECT psh.id, psh.service_id, psh.datetime, psh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=psh.accounttarif_id) as tarif_id, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=psh.account_id) as fullname, psh.type_id 
+            SELECT psh.id, psh.service_id, psh.created, psh.accounttarif_id, (SELECT tarif_id FROM billservice_accounttarif WHERE id=psh.accounttarif_id) as tarif_id, psh.summ, (SELECT username FROM billservice_account WHERE id=psh.account_id) as username, (SELECT fullname FROM billservice_account WHERE id=psh.account_id) as fullname, psh.type_id 
             FROM billservice_periodicalservicehistory as psh 
-            WHERE psh.datetime between '%s' and '%s' %%s  ORDER BY psh.datetime DESC
+            WHERE psh.created between '%s' and '%s' %%s  ORDER BY psh.created DESC
             """ % (start_date, end_date)
             
             if account_id:
@@ -738,13 +738,13 @@ class TransactionsReportEbs(ebsTableWindow):
                     neg_sum +=item.summ
                 
             for item in timetransaction_items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_timetransaction")
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="billservice_timetransaction")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(tariffs.get(item.tarif_id), i, 3) #!!!
                 self.addrow(u"Списание денег за время", i, 4) #!!!
                 self.addrow(item.summ, i, 6)
-                self.addrow(item.datetime, i, 7)
+                self.addrow(item.created, i, 7)
                 i+=1           
                 if item.summ>0:
                     pos_sum +=item.summ
@@ -752,7 +752,7 @@ class TransactionsReportEbs(ebsTableWindow):
                     neg_sum +=item.summ
                 
             for item in traffictransaction_items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_traffictransaction")
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="billservice_traffictransaction")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(tariff.get(item.tarif_id), i, 3)
@@ -762,7 +762,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 else:
                     self.addrow(u"Тарификация по NetFlow", i, 5)
                 self.addrow(item.summ, i, 6)
-                self.addrow(item.datetime, i, 7)
+                self.addrow(item.created, i, 7)
                 i+=1                
                 if item.summ>0:
                     pos_sum +=item.summ
@@ -770,14 +770,14 @@ class TransactionsReportEbs(ebsTableWindow):
                     neg_sum +=item.summ
                 
             for item in period_items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_periodicalservicehistory")
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="billservice_periodicalservicehistory")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(tariff.get(item.tarif_id), i, 3)
                 self.addrow(p_service.get(item.service_id), i, 4)
                 self.addrow(item.type_id, i, 5)
                 self.addrow(item.summ, i, 6)
-                self.addrow(item.datetime, i, 7)
+                self.addrow(item.created, i, 7)
                 i+=1
                 if item.summ>0:
                     pos_sum +=item.summ
@@ -785,13 +785,13 @@ class TransactionsReportEbs(ebsTableWindow):
                     neg_sum +=item.summ
                 
             for item in otsh_items:
-                self.addrow(i, i, 0, id = item.id, date = item.datetime, table="billservice_onetimeservicehistory")
+                self.addrow(i, i, 0, id = item.id, date = item.created, table="billservice_onetimeservicehistory")
                 self.addrow(item.username, i, 1)
                 self.addrow(item.fullname, i, 2)
                 self.addrow(tariff.get(item.tarif_id), i, 3)
                 self.addrow(ot_service.get(item.onetimeservice_id), i, 4)
                 self.addrow(item.summ, i, 6)
-                self.addrow(item.datetime, i, 7)
+                self.addrow(item.created, i, 7)
                 if item.summ>0:
                     pos_sum +=item.summ
                 else:
@@ -859,19 +859,19 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.connection.transaction_delete(ids=[(id,date)])       
             elif  table=="billservice_periodicalservicehistory":
 
-                self.connection.command("DELETE FROM billservice_periodicalservicehistory WHERE id=%s and datetime='%s'" % (id, date,))
+                self.connection.command("DELETE FROM billservice_periodicalservicehistory WHERE id=%s and created='%s'" % (id, date,))
                 self.connection.commit()
             elif  table=="billservice_onetimeservicehistory":
-                self.connection.command("DELETE FROM billservice_onetimeservicehistory WHERE id=%s and datetime='%s'" % (id, date,))
+                self.connection.command("DELETE FROM billservice_onetimeservicehistory WHERE id=%s and created='%s'" % (id, date,))
                 self.connection.commit()
             elif  table=="billservice_addonservicetransaction":
                 self.connection.command("DELETE FROM billservice_addonservicetransaction WHERE id=%s and created='%s'" % (id, date,))
                 self.connection.commit()
             elif  table=="billservice_traffictransaction":
-                self.connection.command("DELETE FROM billservice_traffictransaction WHERE id=%s and datetime='%s'" % (id, date,))
+                self.connection.command("DELETE FROM billservice_traffictransaction WHERE id=%s and created='%s'" % (id, date,))
                 self.connection.commit()
             elif  table=="billservice_timetransaction":
-                self.connection.command("DELETE FROM billservice_timetransaction WHERE id=%s and datetime='%s'" % (id, date,))
+                self.connection.command("DELETE FROM billservice_timetransaction WHERE id=%s and created='%s'" % (id, date,))
                 self.connection.commit()         
             elif  table=="qiwi_invoice":
                 self.connection.command("DELETE FROM qiwi_invoice WHERE id=%s and created='%s'" % (id, date,))

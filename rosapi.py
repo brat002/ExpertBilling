@@ -12,7 +12,7 @@ class ApiRos:
     def login(self, username, pwd):
         for repl, attrs in self.talk(["/login"]):
             chal = binascii.unhexlify(attrs['=ret'])
-        md = md5.new()
+        md = md5()
         md.update('\x00')
         md.update(pwd)
         md.update(chal)

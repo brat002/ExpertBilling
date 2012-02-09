@@ -1322,4 +1322,10 @@ class TotalTransactionReport(models.Model):
     descrition = models.TextField()
     end_promise = models.DateTimeField()
     promise_expired = models.BooleanField()
-    
+
+
+class PeriodicalServiceLog(models.Model):
+    service = models.ForeignKey(PeriodicalService)
+    accounttarif = models.ForeignKey(AccountTarif)
+    datetime = models.DateTimeField()
+        

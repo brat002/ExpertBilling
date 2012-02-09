@@ -20,7 +20,7 @@
 					<tr>
 						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.onetimeservice.name }}&nbsp;</td>
 						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.summ }}&nbsp;{{ CURRENCY }}</td>
-						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.datetime|date:"d.m.Y H:i" }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last and not is_range %}no_border{% endif %}">{{ one_time.created|date:"d.m.Y H:i" }}&nbsp;</td>
 					</tr>
 				{% endfor %}
 				{% if is_range %}
