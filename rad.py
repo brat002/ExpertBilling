@@ -1512,7 +1512,20 @@ class HandleSDHCP(HandleSAuth):
         #logger.debugfun('%s', show_packet, (packetobject,))
 
 
-
+    def auth_NA(self, authobject):
+        """
+        Deny access
+        """
+        if vars.DHCP_FRAMED_GUEST_POOL:
+            self.packetobject.AddAttribute('Framed-Pool', vars.DHCP_FRAMED_GUEST_POOL)
+            self.packetobject.AddAttribute('Session-Timeout',   vars.DHCP_GUEST_SESSION_TIMEOUT)
+            authobject.code = packet.AccessAccept
+        else:
+            self.packetobject.username=None
+            self.packetobject.password=None
+            # Access denided
+            authobject.code = packet.AccessReject
+        return authobject, self.packetobject
 
     def handle(self):
         global sqlloggerthread

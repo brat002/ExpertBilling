@@ -3414,12 +3414,13 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             return
         now = QtCore.QTime.currentTime()
         if item and ((now.second() + now.msec()) - (1000*self.last_click.second()+self.last_click.msec())  )<500:
-            print "doubleclick"
-            print ((1000*now.second() + now.msec()) - (1000*self.last_click.second()+self.last_click.msec()) )
+            #print "doubleclick"
+            #print ((1000*now.second() + now.msec()) - (1000*self.last_click.second()+self.last_click.msec()) )
             self.last_click = None
             return
         else:
-            print "singleclick"        
+            #print "singleclick"       
+            pass 
             
         
         self.tableWidget.setSortingEnabled(False)
@@ -3459,7 +3460,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             columns=[u'#', u'Аккаунт',  u"Договор", u'Баланс', u"Кредит", u'ФИО', u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'',  u"Комментарий"]
             makeHeaders(columns, self.tableWidget)
 
-        print "sql=", self.sql, id    
+        #print "sql=", self.sql, id    
         self.tableWidget.clearContents()  
         self.tableWidget.setRowCount(0)
         if self.sql:
@@ -3470,7 +3471,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #self.genericThread.start()            
             self.sql=''
         elif id!=-2000:
-            print "account for tarif", id
+            #print "account for tarif", id
             accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
             #self.genericThread = AccountsRefreshThread(self.connection, self.getTarifId())
             #self.connect(self.genericThread, QtCore.SIGNAL("accountsRefresh(QVariant)"), self.fix)
@@ -3502,7 +3503,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         i=0
         for a in accounts:    
             
-            print dir(a)
+            #print dir(a)
             self.addrow(i, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
             self.addrow(a.username, i,1, enabled=a.status)
             self.addrow(a.contract, i,2, enabled=a.status)
@@ -3510,8 +3511,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             disabled_accounts += 1 if a.status<>1 else 0
             if id==-1000 or id==-2000 or id==-4000 or id==-5000:
                 self.addrow(a.tarif_name, i,3, enabled=a.status, organization=a.org_id)
-                self.addrow(float(a.ballance), i,4, color="red", enabled=a.status)
-                self.addrow(float(a.credit), i,5, enabled=a.status)
+                self.addrow(float(a.ballance or 0), i,4, color="red", enabled=a.status)
+                self.addrow(float(a.credit or 0), i,5, enabled=a.status)
                 self.addrow(a.org_name if a.org_id else a.fullname, i,6, enabled=a.status)
                 self.addrow(u"%s %s" % (a.address, u"кв %s" % a.room if a.room else ""), i,7, enabled=a.status)
                 self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
@@ -3534,8 +3535,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 #self.addrow(a.created, i,11, enabled=a.status)
             else:
                 #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
-                self.addrow(float("%.2f" % float(a.ballance)), i,3, color="red", enabled=a.status)
-                self.addrow(float(a.credit), i,4, enabled=a.status)
+                self.addrow(float("%.2f" % float(a.ballance or 0)), i,3, color="red", enabled=a.status)
+                self.addrow(float(a.credit or 0), i,4, enabled=a.status)
                 self.addrow(a.org_name if a.org_id else a.fullname, i,5, enabled=a.status)
                 self.addrow(u"%s %s" % (a.address, u"кв %s" % a.room if a.room else ""), i,6, enabled=a.status)
                 self.addrow(self.format_array(a.vpn_ips), i,7, enabled=a.status)
@@ -3552,7 +3553,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 self.addrow(a.comment, i,11, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
                 
-            m_ballance += float(a.ballance)
+            m_ballance += float(a.ballance or 0)
             #self.tableWidget.setRowHeight(i, 17)
 
             if self.selected_account:

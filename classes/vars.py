@@ -355,6 +355,8 @@ class RadVars(Vars):
         self.cursor_lock = Lock()
         self.MPPE_SUPPORT = False
         self.GET_MAC_FROM_PPPOE = False
+        self.DHCP_FRAMED_GUEST_POOL = ''
+        self.DHCP_GUEST_SESSION_TIMEOUT = 0
         
     def get_dynamic(self, **kwargs):
         super(RadVars, self).get_dynamic(**kwargs)
@@ -389,6 +391,11 @@ class RadVars(Vars):
             self.EAP_ID_TYPE = config.get(name, 'eap_id_type').lower()
         if config.has_option(name, 'eap_access_type'):
             self.EAP_ACCESS_TYPE = dict((apply(lambda lst: (lst[0], lst[1].lower()), (fst.split(':'),)) for fst in config.get(name, 'eap_access_type').split(',')))
+        if config.has_option(name, 'dhcp_framed_guest_pool'):
+            self.DHCP_FRAMED_GUEST_POOL = config.get(name, 'dhcp_framed_guest_pool')
+        if config.has_option(name, 'guest_dhcp_session_timeout'):
+            self.DHCP_GUEST_SESSION_TIMEOUT = config.getint(name, 'guest_dhcp_session_timeout')
+        
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(RadVars, self).__slots__ + self.__slots__))
 

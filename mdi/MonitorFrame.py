@@ -144,7 +144,7 @@ class MonitorEbs(ebsTableWindow):
         Terminate thread
         """
         self.thread.terminate()
-        self.genericThread.terminate()
+        
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             settings.setValue("monitor_date_start", QtCore.QVariant(self.date_start.dateTime()))

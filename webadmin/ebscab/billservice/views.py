@@ -84,24 +84,9 @@ def login(request):
         user = request.POST.get('user')
         if pin:
             if user:
+                from ebsadmin.cardlib import activate_card
                 message = None
-                try:
-                    authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
-                    protocol = rpc_protocol.RPCProtocol(authenticator)
-                    connection_server = rpc_protocol.BasicClientConnection(protocol)
-                    transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
-                    transport.connect()
-                    connection_server.registerConsumer_(transport)
-                    auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD), ROLE)
-                    if not auth_result or not connection_server.protocol._check_status():
-                        raise Exception('Status = False!')
-                except Exception, e:
-                    if isinstance(e, client_networking.TCPException):
-                        error_message = u"Отказано в авторизации."
-                    else:
-                        error_message  = u"Невозможно подключиться к серверу."
-
-                message_type = connection_server.activate_card(user, pin)
+                message_type = activate_card(user, pin)
                 ok_message = False
                 if message_type == 1:
                     message = u'Карточка успешно активирована. <br>  Ваш логин %s <br> ваш пароль %s' % (user, pin)
@@ -873,17 +858,9 @@ def card_acvation(request):
         error_message = ''
         if form.is_valid():
             try:
-                authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
-                protocol = rpc_protocol.RPCProtocol(authenticator)
-                connection_server = rpc_protocol.BasicClientConnection(protocol)
-                transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
-                transport.connect()
-                connection_server.registerConsumer_(transport)
-                auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD), ROLE)
-                if not auth_result or not connection_server.protocol._check_status():
-                    raise Exception('Status = False!')
-                res = connection_server.activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
-                #print "res=", res
+                from ebsadmin.cardlib import activate_pay_card
+                res = activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
+
                 if res == 'CARD_NOT_FOUND':
                     error_message = u'Ошибка активации. Карта не найдена.'
                 elif res == 'CARD_NOT_SOLD':
@@ -941,34 +918,7 @@ def account_prepays_traffic(request):
             'account_tariff':account_tariff,
             }
 
-def client(request):
-    user = request.user.account
-    # CONNECTION TO RCP SERVER
-    try:
-        authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
-        protocol = rpc_protocol.RPCProtocol(authenticator)
-        connection_server = rpc_protocol.BasicClientConnection(protocol)
-        transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
-        transport.connect()
-        connection_server.registerConsumer_(transport)
-        auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD), ROLE)
-        if not auth_result or not connection_server.protocol._check_status():
-            raise Exception('Status = False!')
-    except Exception, e:
-        if isinstance(e, client_networking.TCPException):
-            error_message = u"Отказано в авторизации."
-        else:
-            error_message  = u"Невозможно подключиться к серверу."
-    # create image
-    from django.http import HttpResponse
-    t1 = datetime.timedelta(days = 30)
-    a1 = datetime.datetime.now() - t1
-    a2 = datetime.datetime.now()
-    cargs = ('gstat_multi', a1, a2)
-    ckwargs = {'return':{}, 'options':{'autoticks':False, 'antialias':True}, 'dcname': 'nfs_web', 'speed':True, 'by_col':'classes', 'users':[user.id], 'classes':[i.id for i in TrafficClass.objects.all()]}
-    imgs = connection_server.makeChart(*cargs, **ckwargs)
-    response = HttpResponse(imgs, content_type='image/png')
-    return response
+
 
 
 @render_to('accounts/traffic_limit.html')
@@ -989,10 +939,10 @@ def statistics(request):
     user = request.user.account
     transaction = Transaction.objects.filter(account=user).order_by('-created')[:8]
     active_session = ActiveSession.objects.filter(account=user).order_by('-date_start')[:8]
-    periodical_service_history = PeriodicalServiceHistory.objects.filter(account=user).order_by('-datetime')[:8]
+    periodical_service_history = PeriodicalServiceHistory.objects.filter(account=user).order_by('-created')[:8]
     addon_service_transaction = AddonServiceTransaction.objects.filter(account=user).order_by('-created')[:8]
-    one_time_history = OneTimeServiceHistory.objects.filter(account=user).order_by('-datetime')[:8]
-    traffic_transaction = TrafficTransaction.objects.filter(account=user).order_by('-datetime')[:8]
+    one_time_history = OneTimeServiceHistory.objects.filter(account=user).order_by('-created')[:8]
+    traffic_transaction = TrafficTransaction.objects.filter(account=user).order_by('-created')[:8]
     #groupstat = GroupStat.objects.filter(account=user).order_by('-datetime')[:8]
     cursor = connection.cursor()
     cursor.execute("""
@@ -1090,24 +1040,7 @@ def service_action(request, action, id):
     """
     user = request.user.account
 
-    try:
-        authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
-        protocol = rpc_protocol.RPCProtocol(authenticator)
-        connection_server = rpc_protocol.BasicClientConnection(protocol)
-        transport = client_networking.BlockingTcpClient(settings.RPC_ADDRESS, settings.RPC_PORT)
-        transport.connect()
-        connection_server.registerConsumer_(transport)
-        auth_result = connection_server.authenticate(str(settings.RPC_USER), str(settings.RPC_PASSWORD), ROLE)
-        if not auth_result or not connection_server.protocol._check_status():
-            raise Exception('Status = False!')
-        #connection_server.test()
-    except Exception, e:
-        if isinstance(e, client_networking.TCPException):
-            request.session['service_message'] = u"Ошибка при подключении к серверу"
-            return HttpResponseRedirect('/services/')
-        else:
-            request.session['service_message']  = u"Нет связи с сервером. Обратитесь в службу поддержки"
-            return HttpResponseRedirect('/services/')
+
 
     if action == u'set':
         try:
@@ -1176,7 +1109,7 @@ def periodical_service_history(request):
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'periodical_service_history')
     qs = PeriodicalServiceHistory.objects.filter(account=request.user.account, \
-                                       **addon_query).order_by('-datetime')
+                                       **addon_query).order_by('-created')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     summ_on_page = 0
@@ -1229,10 +1162,10 @@ def addon_service_transaction(request):
 @login_required
 def traffic_transaction(request):
     from lib.paginator import SimplePaginator
-    is_range, addon_query = addon_queryset(request, 'traffic_transaction', 'datetime')
+    is_range, addon_query = addon_queryset(request, 'traffic_transaction', 'created')
     #print addon_query
     qs = TrafficTransaction.objects.filter(account=request.user.account, \
-                                           **addon_query).order_by('-datetime')
+                                           **addon_query).order_by('-created')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     summ_on_page = 0
@@ -1259,7 +1192,7 @@ def traffic_transaction(request):
 def one_time_history(request):
     from lib.paginator import SimplePaginator
     is_range, addon_query = addon_queryset(request, 'one_time_history')
-    qs = OneTimeServiceHistory.objects.filter(account=request.user.account, **addon_query).order_by('-datetime')
+    qs = OneTimeServiceHistory.objects.filter(account=request.user.account, **addon_query).order_by('-created')
     paginator = SimplePaginator(request, qs, 100, 'page')
     summ = 0
     summ_on_page = 0
@@ -1358,106 +1291,3 @@ def userblock_action(request):
                 'message':message, 'result':result,
                 }
 
-def instance_dict(instance, key_format=None):
-    """
-    Returns a dictionary containing field names and values for the given
-    instance
-    """
-    from django.db.models.fields import DateField,DecimalField
-    from django.db.models.fields.related import ForeignKey
-    if key_format:
-        assert '%s' in key_format, 'key_format must contain a %s'
-    key = lambda key: key_format and key_format % key or key
-
-    pk = instance._get_pk_val()
-    d = {}
-    for field in instance._meta.fields:
-        attr = field.name
-        value = getattr(instance, attr)
-        if value is not None:
-            if isinstance(field, ForeignKey):
-                value = value._get_pk_val()
-            elif isinstance(field, DateField):
-                value = value.strftime('%Y-%m-%d %H:%M:%S')
-            elif isinstance(field, DecimalField):
-                value = float(value)
-
-        d[key(attr)] = value
-    for field in instance._meta.many_to_many:
-        if pk:
-            d[key(field.name)] = [
-                obj._get_pk_val()
-                for obj in getattr(instance, field.attname).all()]
-        else:
-            d[key(field.name)] = []
-    return d
-
-@ajax_request
-@login_required
-def jsonaccounts(request):
-    request.user.account.role
-    accounts = Account.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    for acc in accounts:
-        res.append({"id":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname,'vpn_ip_address':'',
-                    'status':acc.status,'ipn_ip_address':'','city':'','street':'','nas':'','email':'','comment':'',
-                    'ballance':float(acc.ballance),'credit':float(acc.credit),'created':'02.11.1984 00:00:00',
-                    })
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
-
-@ajax_request
-@login_required
-def nasses(request):
-    from nas.models import Nas
-    items = Nas.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    for item in items:
-        res.append({"nas_id":item.id, "name":item.name})
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
-
-@ajax_request
-@login_required
-def account(request):
-    id=request.GET.get('id')
-    acc = Account.objects.get(id=id)
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-
-    data=instance_dict(acc)
-
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": data}
-
-@ajax_request
-@login_required
-def transactiontypes(request):
-    items = TransactionType.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    for item in items:
-        res.append({"id":item.id, "name":item.name})
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
-        
-
-
-@render_to('jsongrid.html')
-@login_required
-def grid(request):
- 
-    return {}

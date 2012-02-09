@@ -347,6 +347,7 @@ class periodical_service_bill(Thread):
                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                             new_summ=cur.fetchone()[0]
                             cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
+                            
                             logger.debug('%s: Periodical Service: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
                         elif pss_type == ADDON:
                             cash_summ = cash_summ * susp_per_mlt
@@ -885,7 +886,7 @@ class RadiusAccessBill(Thread):
                                         #db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
                                         cur.execute("""INSERT INTO billservice_traffictransaction(
                                                         account_id, accounttarif_id, summ, 
-                                                        datetime, radiustraffictransmitservice_id)
+                                                        created, radiustraffictransmitservice_id)
                                                         VALUES ( %s, %s, %s, %s, 
                                                         %s);
                                                 """, (rs.account_id, rs.acctf_id, summ, now, rs.traccs_id))
