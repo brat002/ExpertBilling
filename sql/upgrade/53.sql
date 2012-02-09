@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION periodicaltr_fn(ps_id_ integer, acctf_id_ integer, ac
 $BODY$
 DECLARE
     new_summ_ decimal;
+    pslog_id integer;
 BEGIN
     SELECT INTO new_summ_ summ_*(NOT EXISTS (SELECT id FROM billservice_suspendedperiod WHERE account_id=account_id_ AND (created_ BETWEEN start_date AND end_date)))::int;
     IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
@@ -12,7 +13,14 @@ BEGIN
     ELSIF (ps_condition_type_ = 3) AND (new_summ_ > 0) THEN
         SELECT new_summ_*(ballance+credit > 0)::int INTO new_summ_ FROM billservice_account WHERE id=account_id_;
     END IF; 
-    INSERT INTO billservice_periodicalservicehistory (service_id, accounttarif_id,account_id, type_id, summ, datetime) VALUES (ps_id_, acctf_id_, account_id_, type_id_, new_summ_, created_);
+    IF (new_summ_<>0) THEN 
+      INSERT INTO billservice_periodicalservicehistory (service_id, accounttarif_id,account_id, type_id, summ, datetime) VALUES (ps_id_, acctf_id_, account_id_, type_id_, new_summ_, created_);
+    END IF;
+    SELECT INTO pslog_id SELECT id FROM billservice_periodicalservicelog WHERE service_id=ps_id_ and accounttarif_id=acctf_id_;
+    IF (pslog_id is Null) THEN
+      INSERT INTO billservice_periodicalservicelog(service_id, accounttarif_id, datetime) VALUES(ps_id_, acctf_id_, created_);
+    ELSE
+      UPDATE billservice_periodicalservicelog SET datetime=created_ WHERE id=pslog_id;  
     RETURN  new_summ_;
 END;
 $BODY$
