@@ -45,14 +45,17 @@
 	<tr>
 		<th class="blue_caption white s-11 bold main_table_left_border right_border">
 			АКТИВАЦИЯ КАРТОЧЕК
-			<div id="message_in_form"></div>
+			
 		</th>
 	</tr>
 	<tr>
 		<td>
 			<form method="post" onsubmit="return false;">
-				<div id="message" class="s-11"></div>
+				
 				<table class="card_activation enter_table">
+				<tr>
+				<td colspan="2"><div id="message_in_form"></div></td>
+				</tr>
 					{{ form }}
 					<tr>
 						<td colspan="2">

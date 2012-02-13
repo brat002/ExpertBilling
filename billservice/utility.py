@@ -7,7 +7,67 @@ from django.shortcuts import render_to_response
 from django import template
 from django.conf import settings
 from billservice.forms import LoginForm
+from dateutil.relativedelta import relativedelta
 
+import calendar
+
+
+def in_period(time_start, length, repeat_after, now=None):
+
+    if not now:
+        now=datetime.datetime.now()
+    #time_start=time_start.replace(tzinfo='UTC')
+    if repeat_after=='DAY':
+        delta_days=now - time_start
+
+        #Когда будет начало в текущем периоде.
+        nums,ost= divmod(delta_days.days*86400+delta_days.seconds, 86400)
+        tnc=now-datetime.timedelta(seconds=ost)
+        #Когда это закончится
+        tkc=tnc+datetime.timedelta(seconds=length)
+        if now>=tnc and now<=tkc:
+            return True
+        return False
+    elif repeat_after=='WEEK':
+        delta_days = now - time_start
+
+        #Когда будет начало в текущем периоде.
+        nums,ost = divmod(delta_days.days*86400+delta_days.seconds, 86400*7)
+        tnc=time_start+relativedelta(weeks=nums)
+        tkc=tnc+datetime.timedelta(seconds=length)
+
+        #print tnc, tkc
+        if now>=tnc and now<=tkc:
+            #print "WEEK TRUE"
+            return True
+        return False
+    elif repeat_after=='MONTH':
+        #Февраль!
+        rdelta = relativedelta(now, time_start)
+        tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
+        n_days=calendar.mdays[tnc.month]
+        tkc=tnc+relativedelta(months=1)
+        days=calendar.mdays[tkc.month]
+        if time_start.day>tkc.day and days>=tkc.day:
+            tkc=tkc.replace(day=days)
+        if now>=tnc and now<=tkc:
+            return True
+        return False
+    elif repeat_after=='YEAR':
+        #Февраль!
+        rdelta = relativedelta(now, time_start)
+        tnc=time_start+relativedelta(years = rdelta.years)
+        tkc=tnc+datetime.timedelta(seconds=length)
+        if now>=tnc and now<=tkc:
+            return True
+        return False
+    elif repeat_after=='DONT_REPEAT':
+        delta_days=now - time_start
+
+        tkc=time_start+datetime.timedelta(seconds=length)
+        if now>=time_start and now<=tkc:
+            return True
+        return False
 def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,  now=None, prev = False):
     """
         Функция возвращает дату начала и дату конца текущего периода

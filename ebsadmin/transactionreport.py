@@ -143,7 +143,7 @@ def transactionreport(request):
         
         ds = ExtDirectStore(TransactionReport)
         items, totalcount = ds.query(items, **extra)
-        res = tuple(items.values('id', 'service_name','created','tariff__name','summ','account','type','type__name','systemuser','bill','descrition','end_promise', 'promise_expired')) 
+        res = tuple(items.values('id', 'service','created','tariff__name','summ','account','type','type__name','systemuser','bill','descrition','end_promise', 'promise_expired')) 
         #=======================================================================
         # count_sql = """
         #        SELECT count(*) as cnt 
