@@ -44,7 +44,7 @@
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
             beforeSend: function(XMLHttpRequest){get_balance_button.style.visibility = 'hidden';qiwi_message.innerHTML=' Выполняется запрос на сервер.'},
             success: function(data, status){
-                var ret = eval('('+data+')');
+                var ret = data;
                 if (typeof ret['redirect'] != 'undefined') {
                     window.location.href = ret['redirect'];
                 } 
@@ -53,7 +53,7 @@
                 get_balance_button.style.visibility = '';
             },
             error: function(data, status){
-                var ret = eval('('+data+')'); 
+                var ret = data; 
                 qiwi_message.innerHTML = ret['status_message'];
                 //pin.value='';
                 //series.value=''; 
@@ -81,7 +81,7 @@
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
             beforeSend: function(XMLHttpRequest){send_button.style.visibility = 'hidden';qiwi_payment_message.innerHTML='Подождите. Идёт обработка.'},
             success: function(data, status){
-                var ret = eval('('+data+')');
+                var ret = data;
                 if (typeof ret['redirect'] != 'undefined') {
                     window.location.href = ret['redirect'];
                 } 
@@ -100,7 +100,7 @@
                 send_button.style.visibility = '';
             },
             error: function(data, status){
-                var ret = eval('('+data+')'); 
+                var ret = data; 
                 qiwi_message.innerHTML = ret['status_message'];
                 //pin.value='';
                 //series.value=''; 

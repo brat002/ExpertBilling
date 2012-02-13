@@ -649,6 +649,10 @@ class Account(models.Model):
         tariff = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[:1]
         return tariff[0]
     
+    def get_accounttariff(self):
+        accounttarif = AccountTarif.objects.filter(account=self, datetime__lte=datetime.datetime.now()).order_by("-datetime")[0]
+        return accounttarif[0]
+    
     def get_account_tariff_info(self):
         tariff_info = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[:1]
         for tariff in tariff_info:
@@ -699,7 +703,7 @@ class TransactionType(models.Model):
 class Transaction(models.Model):
     bill = models.CharField(blank=True, default = "", max_length=255)
     account=models.ForeignKey(Account)
-    accounttarif=models.ForeignKey('AccountTarif')
+    accounttarif=models.ForeignKey('AccountTarif', blank=True, null=True)
     type = models.ForeignKey(to=TransactionType, to_field='internal_name')
     
     approved = models.BooleanField(default=True)
@@ -941,6 +945,7 @@ class Card(models.Model):
     disabled= models.BooleanField(default=False, blank=True)
     created = models.DateTimeField()
     template = models.ForeignKey(Template)
+    type = models.IntegerField()
   
   
 class BankData(models.Model):
@@ -1112,11 +1117,11 @@ class AddonService(models.Model):
     allow_activation = models.BooleanField(default = False)    
     service_type = models.CharField(max_length=32, choices=((u"Разовая услуга","onetime"),(u"Периодическая услуга","periodical",),))    
     sp_type = models.CharField(max_length=32, choices=((u"В начале расчётного периода","AT_START"),(u"В конце расчётного периода","AT_END"),(u"На протяжении расчётного периода","GRADUAL"),))    
-    sp_period = models.ForeignKey(SettlementPeriod, related_name="addonservice_spperiod")    
+    sp_period = models.ForeignKey(SettlementPeriod, related_name="addonservice_spperiod", blank=True, null=True)    
     timeperiod = models.ForeignKey(TimePeriod)    
     cost = models.DecimalField(decimal_places=10, max_digits=30)    
     cancel_subscription = models.BooleanField(default = True)    
-    wyte_period = models.ForeignKey(SettlementPeriod, related_name="addonservice_wyteperiod")    
+    wyte_period = models.ForeignKey(SettlementPeriod, related_name="addonservice_wyteperiod", blank=True, null=True)    
     wyte_cost = models.DecimalField(decimal_places=10, max_digits=60)    
     action = models.BooleanField()    
     nas = models.ForeignKey(Nas)    
@@ -1311,7 +1316,7 @@ class AccountHardware(models.Model):
 
 class TotalTransactionReport(models.Model):
     service_id = models.IntegerField()
-    service_name = models.TextField()
+    service = models.TextField()
     created = models.DateTimeField()
     tariff = models.ForeignKey(Tariff)
     summ = models.DecimalField(decimal_places=10, max_digits=30)

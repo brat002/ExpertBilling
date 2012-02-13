@@ -39,3 +39,5 @@ $BODY$
   COST 100;
 
 INSERT INTO billservice_periodicalservicelog(service_id, accounttarif_id, datetime) SELECT service_id,accounttarif_id,max(created) FROM billservice_periodicalservicehistory GROUP BY service_id,accounttarif_id;
+
+ALTER TABLE billservice_radiustraffic ALTER prepaid_value TYPE numeric;
