@@ -45,6 +45,7 @@ import math
 logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename=settings.WEBCAB_LOG)
 #rpc_protocol.install_logger(logger)
 #client_networking.install_logger(logger)
+from ebsadmin.cardlib import add_addonservice, del_addonservice, activate_pay_card
 
 def addon_queryset(request, id_begin, field='datetime', field_to=None):
     if field_to == None:
@@ -103,41 +104,33 @@ def login(request):
                     }
         form = LoginForm(request.POST)
         if form.is_valid():
-            try:
-                user = authenticate(username=form.cleaned_data['username'], \
-                                    password=form.cleaned_data['password'])
-                if user and isinstance(user.account, Account) and not user.account.allow_webcab:
-                    form = LoginForm()
-                    error_message = u'У вас нет прав на вход в веб-кабинет'
-                    return {
-                            'error_message':error_message,
-                            'form':form,
-                            }
-                elif user:
-                    log_in(request, user)
-                    if isinstance(user.account, SystemUser):
-                        return HttpResponseRedirect(reverse("helpdesk_dashboard"))
-                    tariff = user.account.get_account_tariff()
-                    if tariff.allow_express_pay:
-                        request.session['express_pay']=True
-                    request.session.modified = True
-                    return HttpResponseRedirect('/')
-                else:
-                    form = LoginForm(initial={'username': form.cleaned_data['username']})
-                    error_message = u'Проверьте введенные данные'
-                    return {
-                            'error_message':error_message,
-                            'form':form,
-                            }
-            except Exception, e:
-                print e
-                log.debug("Login error: %r" % e)
-                form = LoginForm(initial={'username': form.cleaned_data['username']})
-                error_message = u'Произошла ошибка. Сообщите о ней вашему администратору.'
+            
+            user = authenticate(username=form.cleaned_data['username'], \
+                                password=form.cleaned_data['password'])
+            if user and isinstance(user.account, Account) and not user.account.allow_webcab:
+                form = LoginForm()
+                error_message = u'У вас нет прав на вход в веб-кабинет'
                 return {
                         'error_message':error_message,
                         'form':form,
                         }
+            elif user:
+                log_in(request, user)
+                if isinstance(user.account, SystemUser):
+                    return HttpResponseRedirect(reverse("helpdesk_dashboard"))
+                tariff = user.account.get_account_tariff()
+                if tariff.allow_express_pay:
+                    request.session['express_pay']=True
+                request.session.modified = True
+                return HttpResponseRedirect('/')
+            else:
+                form = LoginForm(initial={'username': form.cleaned_data['username']})
+                error_message = u'Проверьте введенные данные'
+                return {
+                        'error_message':error_message,
+                        'form':form,
+                        }
+
         else:
             form = LoginForm(initial={'username': request.POST.get('username', None)})
             error_message = u'Проверьте введенные данные'
@@ -357,7 +350,7 @@ def make_payment(request):
     if settings.ALLOW_QIWI:
         last_qiwi_invoice = None
         try:
-            last_qiwi_invoice = QiwiInvoice.objects.all().order_by('-created')[0]
+            last_qiwi_invoice = QiwiInvoice.objects.filter(account=request.user.account).order_by('-created')[0]
         except Exception, e:
             #print e
             pass
@@ -857,25 +850,22 @@ def card_acvation(request):
         form = CardForm(request.POST)
         error_message = ''
         if form.is_valid():
-            try:
-                from ebsadmin.cardlib import activate_pay_card
-                res = activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
 
-                if res == 'CARD_NOT_FOUND':
-                    error_message = u'Ошибка активации. Карта не найдена.'
-                elif res == 'CARD_NOT_SOLD':
-                    error_message = u'Ошибка активации. Карта не была продана.'
-                elif res == 'CARD_ALREADY_ACTIVATED':
-                    error_message = u'Ошибка активации. Карта была активирована раньше.'
-                elif res == 'CARD_EXPIRED':
-                    error_message = u'Ошибка активации. Срок действия карты истёк.'
-                elif res == 'CARD_ACTIVATED':
-                    error_message = u'Карта успешно активирована.'
-                elif res == 'CARD_ACTIVATION_ERROR':
-                    error_message = u'Ошибка активации карты.'
-            except Exception, e:
-                #print e
-                pass
+            res = activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
+            print res
+            if res == 'CARD_NOT_FOUND':
+                error_message = u'Ошибка активации. Карта не найдена.'
+            elif res == 'CARD_NOT_SOLD':
+                error_message = u'Ошибка активации. Карта не была продана.'
+            elif res == 'CARD_ALREADY_ACTIVATED':
+                error_message = u'Ошибка активации. Карта была активирована раньше.'
+            elif res == 'CARD_EXPIRED':
+                error_message = u'Ошибка активации. Срок действия карты истёк.'
+            elif res == 'CARD_ACTIVATED':
+                error_message = u'Карта успешно активирована.'
+            elif res == 'CARD_ACTIVATION_ERROR':
+                error_message = u'Ошибка активации карты.'
+
             #if int(cache_user['count']) <= settings.ACTIVATION_COUNT:
             #    cache.delete(user.id)
             #    count = int(int(cache_user['count']))
@@ -1048,7 +1038,8 @@ def service_action(request, action, id):
         except:
             request.session['service_message'] = u'Вы не можете подключить данную услугу'
             return HttpResponseRedirect('/services/')
-        result = connection_server.add_addonservice(account_id=user.id, service_id=id)
+        
+        result = add_addonservice(account_id=user.id, service_id=id)
         if result == True:
             request.session['service_message'] = u'Услуга подключена'
             return HttpResponseRedirect('/services/')
@@ -1080,7 +1071,7 @@ def service_action(request, action, id):
             request.session['service_message'] = u'Услугу не возможно подключить'
             return HttpResponseRedirect('/services/')
     elif action == u'del':
-        result = connection_server.del_addonservice(user.id, id)
+        result = del_addonservice(user.id, id)
         if result == True:
             request.session['service_message'] = u'Услуга отключена'
             return HttpResponseRedirect('/services/')

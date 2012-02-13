@@ -1,3 +1,18 @@
+CREATE OR REPLACE FUNCTION get_tarif(acc_id integer,dt timestamp without time zone)
+  RETURNS integer AS
+$BODY$
+declare
+xxx int;
+begin
+SELECT tarif_id INTO xxx
+  FROM billservice_accounttarif WHERE account_id=acc_id and datetime<dt ORDER BY datetime DESC LIMIT 1;
+RETURN xxx;
+end;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+
+
 CREATE OR REPLACE FUNCTION gpst_crt_pdb(datetx date)
   RETURNS integer AS
 $BODY$
@@ -591,3 +606,244 @@ DROP FUNCTION IF EXISTS return_ipinuse_to_pool_trg_fn();
 ALTER TABLE radius_activesession DROP CONSTRAINT account_id_refs_id_16c70393;
 
 DROP TABLE IF EXISTS radius_session;
+
+
+-- Function: psh_ins_trg_fn()
+
+-- DROP FUNCTION psh_ins_trg_fn();
+
+CREATE OR REPLACE FUNCTION psh_ins_trg_fn()
+  RETURNS trigger AS
+$BODY$
+DECLARE
+    cur_chk int;
+    prev_chk int;
+BEGIN
+    cur_chk := psh_cur_datechk(NEW.created);
+
+    IF cur_chk = 0 THEN
+        PERFORM psh_cur_ins(NEW);
+    ELSIF cur_chk = 1 THEN
+        BEGIN
+            PERFORM psh_crt_pdb(NEW.created::date);
+            PERFORM psh_crt_cur_ins(NEW.created::date);
+            EXECUTE psh_cur_ins(NEW);
+        EXCEPTION 
+          WHEN duplicate_table THEN
+             PERFORM psh_crt_cur_ins(NEW.created::date);
+             EXECUTE psh_cur_ins(NEW);
+        END;
+        
+        
+    ELSE 
+        prev_chk := psh_prev_datechk(NEW.created);
+        IF prev_chk = 0 THEN
+            PERFORM psh_prev_ins(NEW);
+        ELSE
+            BEGIN 
+                PERFORM psh_inserter(NEW);
+            EXCEPTION 
+              WHEN undefined_table THEN
+                PERFORM psh_crt_pdb(NEW.created::date);
+                PERFORM psh_inserter(NEW);
+            END;
+        END IF;      
+    END IF;
+    RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION psh_ins_trg_fn() OWNER TO ebs;
+
+DROP TRIGGER billservice_onetimeservice_trg ON billservice_onetimeservice;
+
+-- Function: traftrans_ins_trg_fn()
+
+-- DROP FUNCTION traftrans_ins_trg_fn();
+
+CREATE OR REPLACE FUNCTION traftrans_ins_trg_fn()
+  RETURNS trigger AS
+$BODY$
+DECLARE
+    cur_chk int;
+    prev_chk int;
+BEGIN
+    cur_chk := traftrans_cur_datechk(NEW.created);
+
+    IF cur_chk = 0 THEN
+        PERFORM traftrans_cur_ins(NEW);
+    ELSIF cur_chk = 1 THEN
+        BEGIN
+            PERFORM traftrans_crt_pdb(NEW.created::date);
+            PERFORM traftrans_crt_cur_ins(NEW.created::date);
+            EXECUTE traftrans_cur_ins(NEW);
+        EXCEPTION 
+          WHEN duplicate_table THEN
+             PERFORM traftrans_crt_cur_ins(NEW.created::date);
+             EXECUTE traftrans_cur_ins(NEW);
+        END;
+        
+        
+    ELSE 
+        prev_chk := traftrans_prev_datechk(NEW.created);
+        IF prev_chk = 0 THEN
+            PERFORM traftrans_prev_ins(NEW);
+        ELSE
+            BEGIN 
+                PERFORM traftrans_inserter(NEW);
+            EXCEPTION 
+              WHEN undefined_table THEN
+                PERFORM traftrans_crt_pdb(NEW.created::date);
+                PERFORM traftrans_inserter(NEW);
+            END;
+        END IF;      
+    END IF;
+    RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION traftrans_ins_trg_fn() OWNER TO postgres;
+
+
+-- Function: psh_inserter(billservice_periodicalservicehistory)
+
+-- DROP FUNCTION psh_inserter(billservice_periodicalservicehistory);
+
+CREATE OR REPLACE FUNCTION psh_inserter(pshr billservice_periodicalservicehistory)
+  RETURNS void AS
+$BODY$
+DECLARE
+    datetx_ text := to_char(pshr.created::date, 'YYYYMM01');
+    insq_   text;
+
+    ttrn_actfid_ text;    
+BEGIN
+    
+    IF pshr.accounttarif_id IS NULL THEN
+       ttrn_actfid_ := 'NULL';
+    ELSE
+       ttrn_actfid_ := pshr.accounttarif_id::text;
+    END IF;
+    insq_ := 'INSERT INTO psh' || datetx_ || ' (service_id, account_id, accounttarif_id, type_id, summ, created) VALUES (' 
+    || pshr.service_id || ',' || pshr.account_id || ',' || pshr.accounttarif_id || ','  || quote_literal(pshr.type_id) || ',' || pshr.summ || ','  || quote_literal(pshr.created) || ');';
+    EXECUTE insq_;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION psh_inserter(billservice_periodicalservicehistory) OWNER TO ebs;
+
+
+-- Function: psh_inserter(billservice_periodicalservicehistory)
+
+-- DROP FUNCTION psh_inserter(billservice_periodicalservicehistory);
+
+CREATE OR REPLACE FUNCTION psh_inserter(pshr billservice_periodicalservicehistory)
+  RETURNS void AS
+$BODY$
+DECLARE
+    datetx_ text := to_char(pshr.created::date, 'YYYYMM01');
+    insq_   text;
+
+    ttrn_actfid_ text;    
+BEGIN
+    
+    IF pshr.accounttarif_id IS NULL THEN
+       ttrn_actfid_ := 'NULL';
+    ELSE
+       ttrn_actfid_ := pshr.accounttarif_id::text;
+    END IF;
+    insq_ := 'INSERT INTO psh' || datetx_ || ' (service_id, account_id, accounttarif_id, type_id, summ, created) VALUES (' 
+    || pshr.service_id || ',' || pshr.account_id || ',' || pshr.accounttarif_id || ','  || quote_literal(pshr.type_id) || ',' || pshr.summ || ','  || quote_literal(pshr.created) || ');';
+    EXECUTE insq_;
+    RETURN;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION psh_inserter(billservice_periodicalservicehistory) OWNER TO ebs;
+
+
+CREATE OR REPLACE FUNCTION psh_ins_trg_fn()
+  RETURNS trigger AS
+$BODY$
+DECLARE
+    cur_chk int;
+    prev_chk int;
+BEGIN
+
+EXECUTE psh_inserter(NEW);
+
+BEGIN
+    
+    
+EXCEPTION 
+  WHEN undefined_table THEN
+     EXECUTE  psh_crt_pdb(NEW.created::date);
+     EXECUTE  psh_inserter(NEW);
+END;
+   
+    RETURN NULL;
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION psh_ins_trg_fn() OWNER TO ebs;
+
+ALTER TABLE billservice_radiustraffic
+	ALTER COLUMN prepaid_value TYPE numeric;
+	
+	
+	CREATE OR REPLACE FUNCTION psh_crt_pdb(datetx date)
+  RETURNS integer AS
+$BODY$
+DECLARE
+
+    datetx_ text := to_char(datetx, 'YYYYMM01');
+    datetx_e_ text := to_char((datetx + interval '1 month')::date, 'YYYYMM01');
+
+    qt_dtx_ text;
+    qt_dtx_e_ text;
+
+
+    chk_tx1_ text := 'CHECK ( created >= DATE #stdtx# AND created < DATE #eddtx# )';
+    ct_tx1_ text := 'CREATE TABLE psh#rpdate# (
+                     #chk#,
+                     CONSTRAINT psh#rpdate#_id_pkey PRIMARY KEY (id) ) 
+                     INHERITS (billservice_periodicalservicehistory) 
+                     WITH (OIDS=FALSE);                     
+                     CREATE INDEX psh#rpdate#_created_id ON psh#rpdate# USING btree (created);
+                     CREATE INDEX psh#rpdate#_service_id ON psh#rpdate# USING btree (service_id);
+                     CREATE INDEX psh#rpdate#_accounttarif_id ON psh#rpdate# USING btree (accounttarif_id);
+                     CREATE TRIGGER acc_psh_trg AFTER UPDATE OR DELETE ON trs#rpdate# FOR EACH ROW EXECUTE PROCEDURE account_transaction_trg_fn();
+                     ';
+                     
+
+    chk_       text;
+    seq_query_ text;
+    ct_query_  text;
+    seqn_      text;
+    at_query_  text;
+
+
+BEGIN    
+
+    qt_dtx_    := quote_literal(datetx_);
+    qt_dtx_e_  := quote_literal(datetx_e_);
+    chk_       := replace(chk_tx1_, '#stdtx#', qt_dtx_ );
+    chk_       := replace(chk_, '#eddtx#', qt_dtx_e_ );
+    ct_query_  := replace(ct_tx1_, '#rpdate#', datetx_);
+    ct_query_  := replace(ct_query_, '#chk#', chk_);
+    EXECUTE ct_query_;
+
+    RETURN 0;
+
+END;
+$BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION psh_crt_pdb(date) OWNER TO ebs;
+DROP TRIGGER IF EXISTS free_unused_account_ip_trg ON billservice_account;

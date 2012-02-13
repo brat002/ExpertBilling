@@ -288,7 +288,7 @@ Ext.onReady(function(){
 
            //if(!winCmp){
            if(true){
-                        winCmp = new ExInstancePanel({
+                        winCmp = new ExInstanceWindow({
                             id:window_key+id,
                             instance_id:id,
                             parent_id:id,
@@ -316,8 +316,8 @@ Ext.onReady(function(){
            		 form.load({url:form.url,method:form.method,params:{'id':id}});
            		 //form.loadRecord(form.rec);
            	 };
-             EBS.windowCmp.add(winCmp)
-             //winCmp.show();
+             //EBS.windowCmp.add(winCmp)
+             winCmp.show();
     }
 
     EBS.displayFormInSpecTab = function(xtype, action, ids, tab, self){
@@ -1376,7 +1376,7 @@ Ext.onReady(function(){
  			             // console.info('load',this,arguments);
  			        	  var account_id;
  			        	  //account_id=this.findParentByType('form').getForm().findField('id').value;
- 			        	  account_id=this.findParentByType('xinstancecontainer').ids.id;
+ 			        	  account_id=this.findParentByType('xinstancewindow').ids.id;
  			        	  
  			        	  
  			        	  if (account_id){
@@ -1679,11 +1679,11 @@ Ext.onReady(function(){
 			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
 			        	  
 			        	  if (this.type==='account'){
-			        		  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.id);
+			        		  this.store.setBaseParam('account_id', this.findParentByType('xinstancewindow').ids.id);
 			        	  }else{
-			        		  this.store.setBaseParam('subaccount_id', this.findParentByType('xinstancecontainer').ids.id);
+			        		  this.store.setBaseParam('subaccount_id', this.findParentByType('xinstancewindow').ids.id);
 			        	  }
-			        	  if (this.findParentByType('xinstancecontainer').ids.id){
+			        	  if (this.findParentByType('xinstancewindow').ids.id){
 			        		  this.store.load();
 			        	  }
 			        	  var me;
@@ -1841,8 +1841,8 @@ Ext.onReady(function(){
 				          render:function(){
 				             // console.info('load',this,arguments);
 				        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
-				        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.id);
-				        	  if (this.findParentByType('xinstancecontainer').ids.id){
+				        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancewindow').ids.id);
+				        	  if (this.findParentByType('xinstancewindow').ids.id){
 				        		  this.store.load();
 				        	  }
 				        	  var me;
@@ -1991,8 +1991,8 @@ Ext.onReady(function(){
 			          render:function(){
 			             // console.info('load',this,arguments);
 			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
-			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
-			        	  if (this.findParentByType('xinstancecontainer').instance_id){
+			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancewindow').instance_id);
+			        	  if (this.findParentByType('xinstancewindow').instance_id){
 			        		  this.store.load();
 			        	  }
 			        	  var me;
@@ -2223,8 +2223,8 @@ Ext.onReady(function(){
 			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
 			        	  //this.store.setBaseParam('subaccount_id', this.findParentByType('form').findParentByType('panel').instance_id);
 			        	  //alert();
-			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').ids.id);
-			        	  if (this.findParentByType('xinstancecontainer').ids.id){
+			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancewindow').ids.id);
+			        	  if (this.findParentByType('xinstancewindow').ids.id){
 			        		  this.store.load();
 			        	  }
 			        	  var me;
@@ -2995,8 +2995,8 @@ EBS.AccountHardwareGrid = Ext.extend(Ext.grid.GridPanel, {
 			          render:function(){
 			             // console.info('load',this,arguments);
 			        	  //alert(this.findParentByType('form').findParentByType('panel').instance_id);
-			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancecontainer').instance_id);
-			        	  if (this.findParentByType('xinstancecontainer').instance_id){
+			        	  this.store.setBaseParam('account_id', this.findParentByType('xinstancewindow').instance_id);
+			        	  if (this.findParentByType('xinstancewindow').instance_id){
 			        		  this.store.load();
 			        	  }
 			        	  var me;

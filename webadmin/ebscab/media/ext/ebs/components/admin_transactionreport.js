@@ -98,14 +98,14 @@ Ext.onReady(function(){
              //['account', 'called_id', 'interrim_update', 'session_status', 'bytes_in', 'date_end', 'date_start', 'session_time', 'caller_id', 'bytes_out', 'sessionid', 'speed_string', 'nas_id', 'framed_protocol', 'framed_ip_address', 'id', 'subaccount']
              Ext.apply(this, {
                                 id:'transactionreport_list',
-                                view: new Ext.grid.GroupingView(),
-                                //view: new Ext.ux.grid.BufferView(),
+                                //view: new Ext.grid.GroupingView(),
+                                view: new Ext.ux.grid.BufferView(),
                                 store: EBS.store.transactionreport,
                                 title: 'Список операций',
                                 closable:false,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
-                                plugins:[new Ext.ux.grid.GroupSummary()],
+                                //plugins:[new Ext.grid.HybridSummary()],
                                 //cm: new Ext.grid.ColumnModel({}),
                                 columns:[{
                                 	header:'Id',
