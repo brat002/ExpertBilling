@@ -82,6 +82,12 @@ Ext.onReady(function(){
                     items:[
 						
                          {
+                            text: i18n.print,
+                            icon: media+'icons/16/printer.png',
+                            height:16,width:16,
+                            tooltip: i18n.printToolTip,
+                            handler: function(){Ext.ux.Printer.print(this.ownerCt.ownerCt)}
+                        },{
                             icon: media+'icons/16/pencil.png',
                             height:16,width:16,
                             text: 'Отменить',
@@ -101,8 +107,8 @@ Ext.onReady(function(){
                                 //view: new Ext.grid.GroupingView(),
                                 view: new Ext.ux.grid.BufferView(),
                                 store: EBS.store.transactionreport,
-                                title: 'Список операций',
-                                closable:false,
+
+                                autoScroll: true,
                               //  plugins : [this.filters],
                                 tbar    : this.topToolbar,
                                 //plugins:[new Ext.grid.HybridSummary()],
@@ -237,9 +243,12 @@ Ext.onReady(function(){
 						//bodyStyle: 'padding:20px 20% 20px 20%',
 						items:[{
 						    xtype:'container',
-						    layout:'auto',
+						    layout:'anchor',
 						    title: 'Настройки отчёта',
-						    height:600,
+						    //height:600,
+						    anchor:'100% 100%',
+						    //autoHeight: true,
+						    autoScroll: true,
 						    layoutConfig: {
 		                    	pack: 'center',
 		                    	align: 'middle',
@@ -312,14 +321,15 @@ Ext.onReady(function(){
 						            items: [
 						                {
 						                    xtype: 'container',
-						                    height: 402,
+						                    height: 550,
 						                    width: 420,
 						                    layout: 'vbox',
-						                    flex: 1,
+						                    //flex: 1,
 						                    items: [
 						                        {
 						                            xtype: 'fieldset',
 						                            width: 416,
+						                            height: 80,
 						                            title: 'Аккаунты',
 						                            items: [
 						                                {
@@ -349,7 +359,7 @@ Ext.onReady(function(){
 						                        },
 						                        {
 						                            xtype: 'fieldset',
-						                            //height: 137,
+						                            height: 137,
 						                            width: 416,
 						                            title: 'Состав отчёта',
 						                            items: [
@@ -495,7 +505,7 @@ Ext.onReady(function(){
 						                            xtype: 'fieldset',
 						                            width: 416,
 						                            title: 'Параметры отчёта',
-						                            flex: 1,
+						                            //flex: 1,
 						                            items: [
 						                                {
 						                                    xtype: 'radiogroup',
@@ -518,13 +528,13 @@ Ext.onReady(function(){
 						                },
 						                {
 						                    xtype: 'container',
-						                    flex: 1,
-						                    //width:360,
+						                    //flex: 1,
+						                    height: 550,
 						                    items: [
 						                        {
 						                            xtype: 'fieldset',
-						                            //height: 395,
-						                            autoHeight:true,
+						                            height: 450,
+						                            //autoHeight:true,
 						                            //width: 1337,
 						                            width:450,
 						                            title: 'Типы операций',
@@ -673,9 +683,12 @@ Ext.onReady(function(){
 								],
 						}]},
 				    	{
+							
 				      		xtype :'ebs_transactionreportPanel',
-				    		//id    :'ebs_transactionreportPanel',
+				      		title: 'Отчёт',
+				    		id    :'ebs_transactionreportPanel_id',
 				    		closable:false
+							
 				    	},
 						
 						]

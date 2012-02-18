@@ -657,7 +657,7 @@ Ext.onReady(function(){
                            displayInfo: true,
                            dispalyMsg: i18n.paginatorDispalyMsg,
                            emptyMsg: i18n.paginatorEmptyMsg,
-                           plugins:  [new Ext.ux.plugin.PagingToolbarResizer( {options : [ 25,50,75,100,200,500,1000,5000,10000 ], prependCombo: true})],
+                           plugins:  [new Ext.ux.plugin.PagingToolbarResizer( {options : [ 25,50,75,100,200,500,1000,5000,10000,'all' ], prependCombo: true})],
                         }),
                     listeners: 
                     	{
