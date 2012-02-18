@@ -8,7 +8,8 @@ from django.conf.urls.defaults import *
 
 
 urlpatterns = patterns('extjs.views',
-                       (r'^$', 'index') # Ext Main page
+                       (r'^$', 'index'), # Ext Main page
+                       (r'^transactions/$', 'ext_transactions') # Ext Main page
                       )
 
 urlpatterns += patterns('extjs.ajax',

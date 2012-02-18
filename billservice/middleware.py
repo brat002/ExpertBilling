@@ -10,6 +10,7 @@ ADMIN_URLS = (
 'admin-media',
 '/accounts/logout',
 '/ext/',
+'/ext/transactions/',
 '/ebsadmin/'
 
 )
@@ -20,9 +21,10 @@ class UrlFilter(object):
             account_obj = request.user.account
             if isinstance(account_obj, SystemUser):
                 # we need to test user against a number of URLs
+
                 if not any([request.META['PATH_INFO'].startswith(a) for a in ADMIN_URLS]):
                     return HttpResponseRedirect(reverse("helpdesk_dashboard"))
-        except AttributeError:
+        except AttributeError, e:
             # assumed that user is Anonimous
             pass
 

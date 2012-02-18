@@ -29,10 +29,11 @@ class ExtDirectStore(object):
             groupdir = kw.pop(self.groupdir)
 
             
-        if kw.has_key(self.start) and kw.has_key(self.limit):
+        if kw.has_key(self.start) and kw.has_key(self.limit) and kw.get(self.limit)!=-1:
             start = kw.pop(self.start)
             limit = kw.pop(self.limit)
             paginate = True
+
             
         if kw.has_key(self.sort) and kw.has_key(self.dir):
             sort = kw.pop(self.sort)
