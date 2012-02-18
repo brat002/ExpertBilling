@@ -385,6 +385,16 @@ class MainWindow(QtGui.QMainWindow):
         child.show()
 
     @connlogin
+    def webTransactionReport(self):
+        child = RrdReportMainWindow(connection=connection, type='transactions')
+        for window in self.workspace.windowList():
+            if child.objectName()==window.objectName():
+                self.workspace.setActiveWindow(window)
+                return
+        self.workspace.addWindow(child)
+        child.show()
+        
+    @connlogin
     def rrdNassesReport(self):
         child = RrdReportMainWindow(connection=connection, type='nasses')
         for window in self.workspace.windowList():
@@ -667,6 +677,12 @@ class MainWindow(QtGui.QMainWindow):
 
         self.connect(self.rrdNassesAct, QtCore.SIGNAL("triggered()"), self.rrdNassesReport)
 
+        self.webTransactionReportAct = QtGui.QAction(QtGui.QIcon("images/moneybook.png"),
+                                      u"Отчёт по списаниям(веб)", self)
+        self.webTransactionReportAct.setStatusTip(u"Отчёт по списаниям(веб)")
+
+        self.connect(self.webTransactionReportAct, QtCore.SIGNAL("triggered()"), self.webTransactionReport)
+        
         self.transactiontypeAct = QtGui.QAction(QtGui.QIcon("images/moneybook.png"),
                                       u"Типы платежей", self)
         
@@ -823,6 +839,7 @@ class MainWindow(QtGui.QMainWindow):
         self.reportsMenu.addAction(self.netflowAct)
         self.reportsMenu.addAction(self.rrdAccountsAct)
         self.reportsMenu.addAction(self.rrdNassesAct)
+        self.reportsMenu.addAction(self.webTransactionReportAct)
         self.menuBar().addSeparator()
 
         self.helpMenu = self.menuBar().addMenu(u"&Справка")

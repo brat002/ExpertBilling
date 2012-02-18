@@ -46,6 +46,7 @@ logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webc
 #rpc_protocol.install_logger(logger)
 #client_networking.install_logger(logger)
 from ebsadmin.cardlib import add_addonservice, del_addonservice, activate_pay_card
+from ebsadmin.cardlib import activate_card
 
 def addon_queryset(request, id_begin, field='datetime', field_to=None):
     if field_to == None:
@@ -85,7 +86,7 @@ def login(request):
         user = request.POST.get('user')
         if pin:
             if user:
-                from ebsadmin.cardlib import activate_card
+                
                 message = None
                 message_type = activate_card(user, pin)
                 ok_message = False
@@ -116,7 +117,11 @@ def login(request):
                         }
             elif user:
                 log_in(request, user)
+                
                 if isinstance(user.account, SystemUser):
+                    if request.META.get("HTTP_REFERER"):
+                        if len(request.META.get("HTTP_REFERER").split('?next='))==2:
+                            return HttpResponseRedirect(request.META.get("HTTP_REFERER").split('?next=')[1])
                     return HttpResponseRedirect(reverse("helpdesk_dashboard"))
                 tariff = user.account.get_account_tariff()
                 if tariff.allow_express_pay:

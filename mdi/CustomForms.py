@@ -16,6 +16,9 @@ from customwidget import CustomDateTimeWidget
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 import datetime
 from decimal import Decimal
+from PyQt4.QtNetwork import QNetworkCookie, QNetworkAccessManager, QNetworkReply
+from PyQt4.QtNetwork import QNetworkCookieJar, QNetworkRequest
+from PyQt4.QtWebKit import QWebPage
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -256,7 +259,51 @@ class RRDPropertiesDialog(QtGui.QDialog):
         
         QtGui.QDialog.accept(self)  
               
+import pickle
+from PyQt4 import QtNetwork
+import os.path
+
+class Config:
+    "Manages configuration properties"
+    
+    __homePage = None
+    
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def configFolder():
+        "returns configuration folder"
+        return os.path.expanduser("d:/")
+
+    @staticmethod
+    def getCookies():
+        "return a list with cookies needed for skydrive account"
+        cookiesPath = os.path.join(Config.configFolder(), "cookies.txt")
+        if os.path.exists(cookiesPath):
+            cookiesFile = open(cookiesPath, "r")
+
+            try:
+                res = []
+                for cookieStr in pickle.load(cookiesFile):
+                    res.append(QtNetwork.QNetworkCookie.parseCookies(cookieStr))
+                return res
+            except:
+                pass
+                return []
+        return []
+
+
+class CookieJar(QNetworkCookieJar):
+        def __init__(self, parent=None):
+                QNetworkCookieJar.__init__(self, parent)
+
+        def allCookies(self):
+            return QNetworkCookieJar.allCookies(self)
         
+        def setAllCookies(self, cookieList):
+            QNetworkCookieJar.setAllCookies(self, cookieList)
+  
 class RrdReportMainWindow(QtGui.QMainWindow):
     def __init__(self, item_id=None, type='account',connection=None):
         self.item_id=item_id
@@ -281,6 +328,9 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         self.gridLayout.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.webView = QtWebKit.QWebView(self)
+        self.page = self.webView.page()
+        self.cookieJar = CookieJar()
+        self.page.networkAccessManager().setCookieJar( self.cookieJar )
         #sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
         #sizePolicy.setHorizontalStretch(0)
         #sizePolicy.setVerticalStretch(0)
@@ -291,7 +341,10 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         
         self.gridLayout.addWidget(self.webView, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
-        
+
+
+
+                
         self.configureAction = QtGui.QAction(self)
         self.configureAction.setIcon(QtGui.QIcon("images/configure.png"))
         self.configureAction.setObjectName("configureAction")
@@ -315,7 +368,78 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
+        self._restoreState()
         self.load_stat()
+        
+    def getCookiesForUrl(self, url):
+        "Retorna las cookies que el navegador mandaría al requerir una url dada"
+        url = QtCore.QUrl(url)
+        return self.page.networkAccessManager().cookieJar().cookiesForUrl(url)
+
+    def addCookiesForUrl(self, cookies, url):
+        """
+        Agrega las cookies de cookies para poder ser mandadas en un request a
+        url
+        """
+        return self.cookieJar.setCookiesFromUrl(cookies, QtCore.QUrl(url))
+    
+    def closeEvent(self, event):
+        """
+        Terminate thread
+        """
+        data=self._saveState()
+        
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("qwebkit_save_state", QtCore.QVariant(data))
+        except Exception, ex:
+            print "Monitor settings save error: ", ex
+            
+        event.accept()
+        
+    def _saveState(self):
+        cookieList = self.cookieJar.allCookies()
+        raw = []
+        for cookie in cookieList:
+            # We don't want to store session cookies
+            if cookie.isSessionCookie():
+                print "session cookie"
+            # Store cookies in a list as a dict would occupy
+            # more space and we want to minimize network bandwidth
+
+            raw.append( [
+                    str(cookie.name().toBase64()), 
+                    str(cookie.value().toBase64()), 
+                    unicode(cookie.path()).encode('utf-8'),
+                    unicode(cookie.domain()).encode('utf-8'),
+                    unicode(cookie.expirationDate().toString()).encode('utf-8'),
+                    str(False),
+                    str(cookie.isSecure()),
+            ])
+        return  raw
+
+    def _restoreState(self):
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            value = settings.value("qwebkit_save_state", QtCore.QVariant([]))
+        except Exception, ex:
+            print "cant load cookies: ", ex
+            
+        raw = value.toList()
+        cookieList = []
+        for cookie in raw:
+            cookie = cookie.toList()
+            print cookie
+            name = QtCore.QByteArray.fromBase64( str(cookie[0].toString()) )
+            value = QtCore.QByteArray.fromBase64( str(cookie[1].toString() ))
+            networkCookie = QtNetwork.QNetworkCookie( name, value )
+            networkCookie.setPath( unicode( cookie[2].toString(), 'utf-8' ) )
+            networkCookie.setDomain( unicode( cookie[3].toString(), 'utf-8' ) )
+            networkCookie.setExpirationDate( QtCore.QDateTime.fromString( unicode( cookie[4].toString(), 'utf-8' ) ) )
+            networkCookie.setSecure( False )
+            cookieList.append( networkCookie )
+        self.cookieJar.setAllCookies( cookieList )
+        self.page.networkAccessManager().setCookieJar( self.cookieJar )
         
     def load_stat(self):
         if self.type=='account':
@@ -334,7 +458,12 @@ class RrdReportMainWindow(QtGui.QMainWindow):
             print self.request_params
             #self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
             self.webView.load(QtCore.QUrl("http://%s%s" % (self.connection.server_ip, self.request_params)))
-
+        elif self.type=='transactions':
+            #self.webView.load(QtCore.QUrl.fromLocalFile(os.path.abspath('templates/loading.html')))
+            for cookie in Config.getCookies():
+                if not self.addCookiesForUrl(cookie, "http://%s:8000%s" % (self.connection.server_ip, '/ext/transactions/')):
+                    raise ValueError, "couldn't add cookie"
+            self.webView.load(QtCore.QUrl("http://%s:8000%s" % (self.connection.server_ip, '/ext/transactions/')))
         #self.reloadAction.setEnabled(True)
             
             

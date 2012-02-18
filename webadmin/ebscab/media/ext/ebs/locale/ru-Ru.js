@@ -38,7 +38,7 @@ EBS.sessionRenderer = function pctChange(val, meta){
 
 EBS.accountSimpleCellRenderer = function(v, meta){
 
-    meta.css="icon-user";
+    //meta.css="icon-user";
     return v;
 }
 EBS.accountCellRenderer = function(v, meta, record){
