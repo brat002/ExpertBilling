@@ -14,7 +14,7 @@ class RadiusAttrsData(tuple):
     def _make(cls, iterable, new=tuple.__new__, len=len):
         'Make a new RadiusAttrsData object from a sequence or iterable'
         result = new(cls, iterable)
-        if len(result) != 4:
+        if len(result) != 5:
             raise TypeError('Expected 5 arguments, got %d' % len(result))
         return result 
 
