@@ -3463,8 +3463,19 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         #print "sql=", self.sql, id    
         self.tableWidget.clearContents()  
         self.tableWidget.setRowCount(0)
+        import json
+
+        class AttrDict(dict):
+            def __getattr__(self, attr):
+                try:
+                    return self[attr]
+                except KeyError:
+                    raise AttributeError(attr)
+                
         if self.sql:
-            accounts = self.connection.get_accounts_for_tilter(self.sql)
+            bot=self.connection.bot
+            #accounts = self.connection.get_accounts_for_tilter(self.sql)
+            accounts =  json.loads(bot.POST('http://10.20.3.111:8080/ebsadmin/accounts/',{}), object_hook=AttrDict)['records']
             #AccountsFilterThread, AccountsRefreshThread
             #self.genericThread = AccountsFilterThread(self.connection, self.sql)
             #self.connect(self.genericThread, QtCore.SIGNAL("accountsRefresh(QVariant)"), self.fix)
@@ -3494,6 +3505,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.treeWidget.setDisabled(False)
         id=self.getTarifId()
         #accounts=accounts.toList()
+        print accounts
         self.tableWidget.setRowCount(len(accounts))
         
 
@@ -3510,21 +3522,21 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             #print "status", a
             disabled_accounts += 1 if a.status<>1 else 0
             if id==-1000 or id==-2000 or id==-4000 or id==-5000:
-                self.addrow(a.tarif_name, i,3, enabled=a.status, organization=a.org_id)
+                self.addrow(a.tariff, i,3, enabled=a.status, organization='')
                 self.addrow(float(a.ballance or 0), i,4, color="red", enabled=a.status)
                 self.addrow(float(a.credit or 0), i,5, enabled=a.status)
-                self.addrow(a.org_name if a.org_id else a.fullname, i,6, enabled=a.status)
+                #self.addrow(a.org_name if a.org_id else a.fullname, i,6, enabled=a.status)
                 self.addrow(u"%s %s" % (a.address, u"кв %s" % a.room if a.room else ""), i,7, enabled=a.status)
-                self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
-                self.addrow(self.format_array(a.ipn_ips), i,9, enabled=a.status)
-                self.addrow(self.format_array(a.ipn_macs), i,10, enabled=a.status)
+                #self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
+                #self.addrow(self.format_array(a.ipn_ips), i,9, enabled=a.status)
+               # self.addrow(self.format_array(a.ipn_macs), i,10, enabled=a.status)
                 #self.addrow(a.nas_name,i,7, enabled=a.status)
                 #self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
                 #self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
                 #self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
                 #self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                self.tableWidget.setCellWidget(i,11,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.account_online))
+                #self.tableWidget.setCellWidget(i,11,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.account_online))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 #if a.last_balance_null:
                 #    self.addrow((now-a.last_balance_null).days, i,8, enabled=a.status)

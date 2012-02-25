@@ -10,7 +10,52 @@ import ConfigParser
 #===============================================================================
 import threading
 #===============================================================================
+import urllib
+import urllib2
+import json
 
+class AttrDict(dict):
+    def __getattr__(self, attr):
+        try:
+            return self[attr]
+        except KeyError:
+            raise AttributeError(attr)
+class HttpBot:
+    """an HttpBot represents one browser session, with cookies."""
+    def __init__(self):
+        cookie_handler= urllib2.HTTPCookieProcessor()
+        redirect_handler= urllib2.HTTPRedirectHandler()
+        self._opener = urllib2.build_opener(redirect_handler, cookie_handler)
+
+    def GET(self, url):
+        return self._opener.open(url).read()
+
+    def POST(self, url, parameters):
+        try:
+            data=self._opener.open(url, urllib.urlencode(parameters)).read()
+        except urllib2.HTTPError, e:
+            print 'The server couldn\'t fulfill the request.'
+            print 'Error code: ', e.code
+            return 
+        except urllib2.URLError, e:
+            print 'We failed to reach a server.'
+            print 'Reason: ', e.reason
+            return 
+            
+        return self.parse(data)
+
+    
+    def parse(self, data):
+        if not data: return {}
+        
+        d = json.loads(data,  object_hook=AttrDict)
+        if d.hasattr('status') and d.status==True:
+            return d.records
+        elif d.hasattr('status') and d.status==False:
+            if d.hasattr('message'):
+                return d.message
+        else:
+            return d
 
 from rpc2 import rpc_protocol, client_networking
 from dateutil.relativedelta import relativedelta
@@ -999,7 +1044,7 @@ def login():
             return None
 
 if __name__ == "__main__":
-    global app
+    global app, bot
     app = QtGui.QApplication(sys.argv)
     #translator = QtCore.QTranslator(app)
     #translator.load('ebsadmin_en')
@@ -1024,7 +1069,10 @@ if __name__ == "__main__":
         #app.setStyle("cleanlooks")
         mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
         app.setStyleSheet(open("skins/style.qss","r").read())
-
+        bot = HttpBot()
+        connection.bot=bot
+        ignored_html = bot.POST('http://10.20.3.111:8080/login/', {'password':'admin','username':'admin'})
+        
    
         sys.exit(app.exec_())
         connection.commit()
