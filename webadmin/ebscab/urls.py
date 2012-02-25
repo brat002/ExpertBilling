@@ -17,10 +17,10 @@ urlpatterns = patterns('',
     ('^admin/(.*)', admin.site.root),
     #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
     #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
-    #(r'^ext/', include('extjs.urls')),
+    (r'^ext/', include('extjs.urls')),
     (r'^helpdesk/', include('helpdesk.urls')),
     (r'^webmoney/', include('paymentgateways.webmoney.urls')),
-    #(r'^ebsadmin/', include('ebsadmin.urls')),
+    (r'^ebsadmin/', include('ebsadmin.urls')),
     
 
 )
