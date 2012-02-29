@@ -1,8 +1,9 @@
 #-*-coding:utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
+from ebscab.lib.ssh_paramiko import ssh_client
 from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
-from billservice.models import Template, AccountHardware, SuspendedPeriod, Operator, Transaction, PeriodicalService, AddonService, Tariff
+from billservice.models import Organization, BankData, SettlementPeriod, Template, AccountHardware, SuspendedPeriod, Operator, Transaction, PeriodicalService, AddonService, Tariff
 from nas.models import Nas
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
@@ -17,6 +18,10 @@ from utilites import rosClient
 import datetime
 from mako.template import Template as mako_template
 from ebsadmin.lib import ExtDirectStore
+from billservice.forms import LoginForm, SettlementPeriodForm, OrganizationForm, BankDataForm
+from billservice import authenticate, log_in, log_out
+from nas.forms import NasForm
+
 
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
@@ -24,7 +29,24 @@ class Object(object):
             setattr(self, key, result[key])
         for key in kwargs:
             setattr(self, key, kwargs[key])  
-            
+
+@ajax_request
+def simple_login(request):
+    form = LoginForm(request.POST)
+    if form.is_valid():
+        try:
+            user = authenticate(username=form.cleaned_data['username'], \
+                                password=form.cleaned_data['password'])
+            if isinstance(user.account, SystemUser):
+                log_in(request, user)
+                return {"status":True,"message":"Login succeful"}
+            else:
+                return {"status":False, "message":"Login forbidden to this action"}
+                
+        except:
+            return {"status":False, "message":"Login can`t be authenticated"}
+    return {"status":False,"message":"Login not found"}
+
 @ajax_request
 @login_required
 def jsonaccounts(request):
@@ -170,24 +192,25 @@ def get_mac_for_ip(request):
 @ajax_request
 @login_required
 def subaccounts(request):
-    account_id = request.POST.get('account_id')
-    subaccount_id = request.POST.get('subaccount_id')
+    account_id = request.POST.get('account_id', None)
+    id = request.POST.get('id', None)
+    normal_fields = request.POST.get('normal_fields', True)
     print "subaccount", account_id
-    if account_id:
-        accounts = SubAccount.objects.filter(account__id=account_id)
+    if account_id and account_id!= 'None':
+        items = SubAccount.objects.filter(account__id=account_id)
     else:
-        accounts = SubAccount.objects.filter(subaccount__id=subaccount_id)
+        items = SubAccount.objects.filter(id=id)
     #print accounts
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
-    for acc in accounts:
+    for item in items:
         #print instance_dict(acc).keys()
-        res.append(instance_dict(acc,normal_fields=True))
+        res.append(instance_dict(item,normal_fields=normal_fields))
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
-    return {"records": res}
+    return {"records": res, 'status':True, 'totalCount':True}
 
 @ajax_request
 @login_required
@@ -272,13 +295,162 @@ def addonservices(request):
 
 @ajax_request
 @login_required
+def settlementperiods(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    if id and id!='None':
+        items = SettlementPeriod.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'SettlementPeriod item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = SettlementPeriod.objects.all()
+        
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item, fields=fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def systemusers(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    if id and id!='None':
+        items = SystemUser.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'SettlementPeriod item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = SystemUser.objects.all()
+        
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item, fields=fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def contracttemplates(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    if id and id!='None':
+        items = ContractTemplate.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'ContractTemplate item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = ContractTemplate.objects.all()
+        
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item, fields=fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def ipnforvpn(request):
+    id = request.POST.get('id',None)
+    res = False
+    if id and id!='None':
+        item = Account.objects.get(id=id)
+        if not item:
+            return {'status':False, 'message': 'Account item with id=%s not found' % id}
+       
+        res = item.get_account_tariff().access_parameters.ipn_for_vpn
+        return {"result": res, 'status':True}
+    
+    return {"result": res, 'status':False}
+
+@ajax_request
+@login_required
+def account_exists(request):
+    username = request.POST.get('username',None)
+    res = False
+    if username and username!='None':
+        item = Account.objects.filter(username=username)
+        if item:
+            return {'status':True, 'message': 'Account item with username=%s found' % username}
+  
+        return {'status':False}
+    
+    return {'status':False}
+
+@ajax_request
+@login_required
+def tariffs(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    if id and id!='None':
+        items = Tariff.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'Tariff item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = Tariff.objects.all().order_by('-name')
+        
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item, fields=fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def cities(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    if id and id!='None':
+        items = City.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'City item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = City.objects.all().order_by('name')
+        
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item, fields=fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
 def accounthardware(request):
     account_id = request.POST.get('account_id')
     #print "subaccount", account_id
     if account_id:
         items = AccountHardware.objects.filter(account__id=account_id)
     else:
-        return {"records": []}
+        return {"records": [],'status':False}
 
     res=[]
     for item in items:
@@ -286,14 +458,14 @@ def accounthardware(request):
         res.append(instance_dict(item,normal_fields=True))
     #print instance_dict(item,normal_fields=True).keys()
 
-    return {"records": res}
+    return {"records": res, 'status':True, 'totalCount': len(res)}
 
 @ajax_request
 @login_required
 def accounttariffs(request):
     account_id = request.POST.get('account_id')
     
-    items = AccountTarif.objects.filter(account__id=account_id)
+    items = AccountTarif.objects.filter(account__id=account_id).order_by('-datetime')
     #print accounts
     #from django.core import serializers
     #from django.http import HttpResponse
@@ -304,7 +476,7 @@ def accounttariffs(request):
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
-    return {"records": res}
+    return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
@@ -330,31 +502,79 @@ def subaccount(request):
 @login_required
 def nasses(request):
     from nas.models import Nas
-    items = Nas.objects.all()
+    
+    fields = request.GET.get('fields',[])
+    id = request.GET.get('id',None)
+    if id:
+        items = Nas.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'Nas item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = Nas.objects.all()
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
     for item in items:
-        res.append({"nas":item.id, "name":item.name})
+        res.append(instance_dict(item, fields=fields))
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
 
 @ajax_request
 @login_required
-def tariffs(request):
+def organizations(request):
+
     
-    items = Tariff.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+    fields = request.GET.get('fields',[])
+    id = request.GET.get('id',None)
+    account_id = request.GET.get('account_id',None)
+    if id:
+        items = Organization.objects.filter(id=id)
+        if not item:
+            return {'status':False, 'message': 'Organization item with id=%s not found' % id}
+    elif account_id:
+        items = Organization.objects.filter(account__id=account_id)
+        if not item:
+            return {'status':False, 'message': 'Organization item with account_id=%s not found' % account_id}
+    else:
+        items = Organization.objects.all()
+
+
     res=[]
     for item in items:
-        res.append({"tarif":item.id, "name":item.name})
+        res.append(instance_dict(item, fields=fields))
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+@ajax_request
+@login_required
+def banks(request):
+
+    
+    fields = request.GET.get('fields',[])
+    id = request.GET.get('id',None)
+    if id:
+        items = BankData.objects.filter(id=id)
+        if not item:
+            return {'status':False, 'message': 'Bank item with id=%s not found' % id}
+    else:
+        items = BankData.objects.all()
+
+
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields))
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
 
 @ajax_request
 @login_required
@@ -411,6 +631,121 @@ def tpchange_save(request):
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return res
+
+@ajax_request
+@login_required
+def nas_save(request):
+    id = request.POST.get('id')
+    print 'id',id
+    print request.POST
+    if id:
+        nas = Nas.objects.get(id=id)
+        form = NasForm(request.POST, instance = nas)
+    else:
+        form = NasForm(request.POST)
+        
+    
+    if form.is_valid():
+        form.save()
+        return {"status": True, "message": 'yes'}
+    else:
+        return {"status": False, "message": form._errors}
+
+@login_required
+@ajax_request
+def settlementperiod_save(request):
+    id = request.POST.get('id')
+    print id
+    print request
+    if id:
+        item = SettlementPeriod.objects.get(id=id)
+        form = SettlementPeriodForm(request.POST, instance = item)
+    else:
+        form = SettlementPeriodForm(request.POST)
+        
+    
+    if form.is_valid():
+        print "form valid"
+        d = form.save(commit=False)
+        d.save()
+        return {"status": True}
+    else:
+        print "form invalid"
+        return {"status": False, "message": form._errors}
+
+@ajax_request
+@login_required
+def settlementperiod_delete(request):
+    id = int(request.POST.get('id',0))
+    if id:
+        SettlementPeriod.objects.get(id=id).delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "Nas not found"}
+
+@ajax_request
+@login_required
+def get_tariffs(request):
+    items = Tariff.objects.all().order_by('name')
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append({'active':item.active,'id':item.id, 'access_type':item.access_parameters.access_type, 'name':item.name})
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def accounts_for_tarif(request):
+    
+    tarif_id = int(request.POST.get('tarif_id', -1000))
+    print 'tarif_id', tarif_id
+    if tarif_id==-3000:
+        #without tariff
+        items = Account.objects.extra(where=['get_tarif(id) is Null'])
+        
+    elif tarif_id==-1000:
+        #all users
+        items = Account.objects.all()
+        
+    elif tarif_id==-4000:#Физ лица
+        cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tarif_name, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address
+        FROM billservice_account AS acc 
+        LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
+        WHERE  get_tarif(acc.id) IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) and acc.id not IN (SELECT account_id FROM billservice_organization) ORDER BY acc.username ASC;""", (add_data['USER_ID'][1],) )
+
+    elif tarif_id==-5000:#Юр лица
+        cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tarif_name, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address
+        FROM billservice_account AS acc 
+        LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
+        WHERE get_tarif(acc.id) IN (SELECT id FROM billservice_tariff WHERE systemgroup_id is Null or systemgroup_id IN (SELECT systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s)) and acc.id IN (SELECT account_id FROM billservice_organization)  ORDER BY acc.username ASC;""", (add_data['USER_ID'][1],) )
+
+  
+    else:
+        items = Account.objects.extra(where=['get_tarif(id)=%s' % tarif_id])
+        
+    res=[]
+    print "len items", len(items)
+    for item in items:
+        vpn_ips, ipn_ips,ipn_macs = item._ips()
+        res.append({'id':item.id,'room':item.room, 'username':item.username, 'tariff':item.tariff, 'fullname':item.fullname, 'address':"%s %s" % (item.street or '', item.house or ''), 'email':item.email, 'suspended':item.suspended, 'created':item.created, 'ballance':item.ballance, 'credit':item.credit, 'contract':item.contract, 'disabled_by_limit':item.disabled_by_limit, 'balance_blocked':item.balance_blocked, 'comment':item.comment, 'status':item.status,  'org_name': item.organization_set.all()[0].name if len(item.organization_set.all())==1 else '','vpn_ips':vpn_ips,'ipn_ips':ipn_ips,'ipn_macs':ipn_macs,})
+        
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+    
+@ajax_request
+@login_required
+def nas_delete(request):
+    id = request.POST.get('id')
+    print 'id',id
+    print request.POST
+    if id:
+        Nas.objects.get(id=id).delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "Nas not found"}
 
 @ajax_request
 @login_required
@@ -487,22 +822,24 @@ def city(request):
 
 @ajax_request
 @login_required
-def street(request):
+def streets(request):
     city_id = request.GET.get('city_id')
+    id = request.GET.get('id')
     if city_id:
         items = Street.objects.filter(city__id=city_id)
+    elif id:
+        items = Street.objects.get(id=id)
     else:
         items = Street.objects.all()
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
-    res.append({"id":None, "name":u'-- Не указан --'})
     for item in items:
-        res.append({"id":item.id, "name":item.name})
+        res.append(instance_dict(item))
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
+    return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
@@ -529,7 +866,26 @@ def account_save(request):
     #from django.http import HttpResponse
     print request
     id = request.POST.get('id')
+    tarif_id = request.POST.get('tarif_id')
+    print "id=", id
     contract = request.POST.get('contract','')
+
+    bank_bank = request.POST.get('bank_bank')
+    bank_bankcode = request.POST.get('bankcode')
+    bank_rs = request.POST.get('rs')
+    bank_currency = request.POST.get('currency')
+    #model.bank_id = self.connection.save(bank, "billservice_bankdata")
+    #self.bank = bank
+    
+    org_name = request.POST.get('org_name')
+    org_uraddress = request.POST.get('uraddress')
+    org_phone = request.POST.get('phone')
+    org_fax = request.POST.get('fax')
+    org_okpo = request.POST.get('okpo')
+    org_unp = request.POST.get('unp')
+    org_kpp = request.POST.get('kpp')
+    org_kor_s = request.POST.get('kor_s')
+        
     newcontract=False
     acc = None
     if id:
@@ -585,20 +941,64 @@ def account_save(request):
                 contr.count = contr.count+1 
             #cur.execute("UPDATE billservice_account SET contract=%s WHERE id=%s", (contract, id))
             #cur.execute("UPDATE billservice_contracttemplate SET counter=counter+1 WHERE id=%s", (template_id,))
+        
+
+        
         try:
             item = a.save(commit=False)
             item.save()
+            bank = None
+            org = None
+            organization = Organization.objects.filter(account=item)
+            if organization:
+                org = organization[0]
+                bank = org.bank
+                if org and not (rg_name or org_uraddress or org_phone):
+                    bank.delete()
+                    org.delete()
+            elif org_name or org_uraddress or org_phone:
+                org = Organization()
+                if bank_bank:
+                    bank = BankData()
+            
+                    bank.name = bank
+                    bank.bankcode = bank_bankcode
+                    bank.rs = bank_rs
+                    bank.currency = bank_currency
+                    bank.save()
+            
+            if org:
+                org.name = org_name
+                org.okpo = org_okpo
+                org.uraddress = org_uraddress
+                org.phone = org_phone
+                org.kor_s = org_kor_s
+                org.kpp = org_kpp
+                org.unp = org_unp
+                org.fax = org_fax
+                org.account = item
+                if bank:
+                    org.bank = bank
+                org.save()
+            
+                
+            if not id and tarif_id and tarif_id>0:
+                accounttarif = AccountTarif()
+                accounttarif.account=item
+                accounttarif.tarif=Tariff.objects.get(id=tarif_id)
+                accounttarif.datetime = item.created
+                accounttarif.save()
             if contr:
                 item.contract = contract
                 item.save()
                 contr.save()
-            res={"success": True, 'account_id':item.id}
+            res={"status": True, 'account_id':item.id}
         except Exception, e:
             print e
-            res={"success": False, "errors": a._errors}
+            res={"status": False, "errors": [{'error':str(e)}]}
     else:
         
-        res={"success": False, "errors": a._errors, 'msg':u"Поля с ошибками:<br />"+unicode('<br />'.join([u'%s:%s' %(x,a._errors.get(x)) for x in a._errors]))}
+        res={"status": False, "errors": a._errors, 'msg':u"Поля с ошибками:<br />"+unicode('<br />'.join([u'%s:%s' %(x,a._errors.get(x)) for x in a._errors]))}
     return res
 
 
@@ -797,30 +1197,35 @@ def getipfrompool(request):
 
 @ajax_request
 @login_required
-def house(request):
+def houses(request):
     street_id = request.GET.get('street_id')
+    id = request.GET.get('id')
+    fields = request.GET.get('fields')
     if street_id:
         items = House.objects.filter(street__id=street_id)
+    elif id:
+        items = House.objects.get(id=id)
     else:
         items = House.objects.all()
     #from django.core import serializers
     #from django.http import HttpResponse
-    
     res=[]
-    res.append({"id":None, "name":u'-- Не указан --'})
     for item in items:
-        res.append({"id":item.id, "name":item.name})
+        res.append(instance_dict(item, fields = fields))
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
+    return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def accountaddonservices(request):
     from billservice.models import AccountAddonService
     account_id = request.POST.get('account_id')
-    items = AccountAddonService.objects.filter(account__id=account_id)
+    id = request.POST.get('id')
+    if account_id:
+        items = AccountAddonService.objects.filter(account__id=account_id)
+    
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
@@ -829,7 +1234,7 @@ def accountaddonservices(request):
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
+    return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
@@ -883,13 +1288,13 @@ def systemuser(request):
 
 @ajax_request
 @login_required
-def suspendedperiod(request):
+def suspendedperiods(request):
     account_id = request.POST.get('account_id')
     items = SuspendedPeriod.objects.filter(account__id=account_id)
     res=[]
     for item in items:
         res.append(instance_dict(item,normal_fields=True))
-    return {"records": res}
+    return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
@@ -926,7 +1331,6 @@ def suspendedperiod_set(request):
 @ajax_request
 @login_required
 def transaction_set(request):
-    account_id = request.POST.get('account')
     
     form = TransactionModelForm(request.POST)
         
@@ -937,18 +1341,18 @@ def transaction_set(request):
             tr.summ=tr.summ*(-1)
             tr.systemuser = request.user.account
             tr.save()
-            res={"success": True, 'transaction_id':tr.id}
+            res={"status": True, 'transaction_id':tr.id}
         except Exception, e:
             print e
-            res={"success": False, "msg": str(e)}
+            res={"status": False, "msg": str(e)}
     else:
-        res={"success": False, "errors": form._errors}
+        res={"status": False, "errors": form._errors}
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return res
 
-def instance_dict(instance, key_format=None, normal_fields=False):
+def instance_dict(instance, key_format=None, normal_fields=False, fields=[]):
     """
     Returns a dictionary containing field names and values for the given
     instance
@@ -962,7 +1366,10 @@ def instance_dict(instance, key_format=None, normal_fields=False):
     pk = instance._get_pk_val()
     d = {}
     for field in instance._meta.fields:
+        
         attr = field.name
+        #print "attr", attr
+        if fields and attr not in fields: continue
         #print attr
         try:
             value = getattr(instance, attr)
@@ -975,8 +1382,8 @@ def instance_dict(instance, key_format=None, normal_fields=False):
                 except Exception, e:
                     print e
                     
-            elif isinstance(field, DateField):
-                value = value.strftime('%Y-%m-%d %H:%M:%S')
+            #elif isinstance(field, DateField):
+            #    value = value.strftime('%Y-%m-%d %H:%M:%S')
             elif isinstance(field, DecimalField):
                 value = float(value)
                                
@@ -995,22 +1402,11 @@ def instance_dict(instance, key_format=None, normal_fields=False):
 def account(request):
     id=request.POST.get('id')
     acc = Account.objects.get(id=id)
-    from django.core import serializers
-    #from django.core import serializers
-    #from django.http import HttpResponse
     res=[]
-    #data = serializers.serialize("json", [acc], ensure_ascii=False, fields=['username'])
     data=instance_dict(acc)
-    data['tariff']=acc.tariff
-    #print data
-    #res.append({"id":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname,'vpn_ip_address':'',
-    #                'status':acc.status,'ipn_ip_address':'','city':'','street':'','nas_id':'','email':'','comment':'',
-    #                'ballance':float(acc.ballance),'credit':float(acc.credit),'created':'02.11.1984 00:00:00',
-    #                })
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": data}
+    #data['tariff']=acc.tariff
+    #print 'data', data
+    return {"records": [data], 'status':True}
 
 @login_required
 @ajax_request
@@ -1036,7 +1432,7 @@ def subaccount(request):
 @ajax_request
 @login_required
 def transactiontypes(request):
-    items = TransactionType.objects.all()
+    items = TransactionType.objects.all().order_by('name')
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
@@ -1045,7 +1441,7 @@ def transactiontypes(request):
     
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
+    return {"records": res, 'status':True}
 
 @render_to('jsongrid.html')
 @login_required
@@ -1234,3 +1630,16 @@ def cheque_render(request):
 
     #print instance_dict(item).keys()
     return res
+
+@login_required 
+@ajax_request
+def testCredentials(request):
+    host, login, password = request.POST.get('host'),request.POST.get('login'),request.POST.get('password')
+    try:
+        #print host, login, password
+        a=ssh_client(host, login, password, '')
+    except Exception, e:
+        
+        return {'status': False, 'message':str(e)}
+    return {'status': True}
+    

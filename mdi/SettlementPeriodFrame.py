@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from ebsWindow import ebsTableWindow
 from helpers import tableFormat
 import datetime, calendar
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
@@ -21,7 +21,7 @@ class AddSettlementPeriod(QtGui.QDialog):
         super(AddSettlementPeriod, self).__init__()
         self.model=model
         self.connection=connection
-        self.connection.commit()
+        #self.connection.commit()
 
         self.resize(464, 168)
         self.gridLayout = QtGui.QGridLayout(self)
@@ -145,9 +145,11 @@ class AddSettlementPeriod(QtGui.QDialog):
 
         if self.model:
             model=self.model
+            print 'model.id', model.id
+            print 'model.__dict__', model.__dict__
         else:
             #print 'New sp'
-            model=Object()
+            model=AttrDict()
 
         if unicode(self.name_edit.text())==u"":
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано название"))
@@ -167,15 +169,15 @@ class AddSettlementPeriod(QtGui.QDialog):
 
         model.autostart = self.autostart_checkbox.checkState() == 2
 
-        model.time_start=self.datetime_edit.currentDate()
-
-        try:
-            self.connection.save(model,"billservice_settlementperiod")
-            self.connection.commit()
-        except Exception, e:
-            print e
-            self.connection.rollback()
-            return
+        model.time_start=self.datetime_edit.toPyDateTime()
+        
+        #try:
+        d = self.connection.settlementperiod_save(model)
+        if d.status==False:
+            QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.message.get(x))) for x in d.message])))            
+        #except Exception, e:
+        #    print e
+        #    return
 
 
 
@@ -262,29 +264,29 @@ class SettlementPeriodEbs(ebsTableWindow):
         self.refresh()'''
         id=self.getSelectedId()
         if id>0:
-            if self.connection.get_models("billservice_tariff", where={"settlement_period_id":id}):
-                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Данный период используется в тарифных планах, удаление невозможно!!")
-                return
-            elif QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            if QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Проверьте, что этот равсчётный период не используется в ваших тарифных планах и не фигурирует в прочих настройках. Все связанные тарифные планы и статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                 try:
                     #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete(id, "billservice_settlementperiod")
-                    self.connection.commit()
-                    self.refresh()
+                    res = self.connection.settlementperiod_delete(id)
+                    if res.status==False:
+                        QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.message.get(x))) for x in d.message])))     
+
                 except Exception, e:
                     print e
-                    self.connection.rollback()
                     QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
 
 
     def edit_period(self):
         id=self.getSelectedId()
         try:
-            model=self.connection.get_model(id, "billservice_settlementperiod")
+            model=self.connection.get_settlementperiods(id)
+            print model
+            if not model.status:return
+            
+            model = model.records[0]
         except:
             return
 
-        self.connection.commit()
         child=AddSettlementPeriod(connection=self.connection, model=model)
         child.exec_()
 
@@ -301,16 +303,16 @@ class SettlementPeriodEbs(ebsTableWindow):
     def refresh(self):
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
-        periods = self.connection.get_models("billservice_settlementperiod")
-        self.connection.commit()
-        self.tableWidget.setRowCount(len(periods))
+        periods = self.connection.get_settlementperiods()
+        #self.connection.commit()
+        self.tableWidget.setRowCount(periods.totalCount)
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0
-        for period in periods:
+        for period in periods.records:
             self.addrow(period.id, i,0)
             self.addrow(period.name, i,1)
             self.addrow(period.autostart, i,2)
-            self.addrow(period.time_start.strftime(self.strftimeFormat), i,3)
+            self.addrow(period.time_start, i,3)
             self.addrow(period.length_in, i,4)            
             self.addrow(period.length, i,5)
             #self.tableWidget.setRowHeight(i, 17)

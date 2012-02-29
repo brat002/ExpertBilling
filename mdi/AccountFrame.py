@@ -3195,13 +3195,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.connection.commit()
         #self.connection.flush()
         id = self.getTarifId()
-        if self.getTarifId()!=-3000:
-            ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
-            JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
-            WHERE tarif.id=%s""" % id).ipn_for_vpn
-            self.connection.commit()
-        else:
-            ipn_for_vpn=False
+
+        ipn_for_vpn=False
             
         #child = AddAccountFrame(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn)
         child = AccountWindow(connection=self.connection, tarif_id=id, ttype=tarif_type, ipn_for_vpn=ipn_for_vpn, parent=self)
@@ -3215,7 +3210,9 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
 
     def makeTransation(self):
         id = self.getSelectedId()
-        account = self.connection.get_model(id, "billservice_account")
+        account = self.connection.get_account(id, ['id'])
+        if not account.status:return
+        account = account.records[0]
         child = TransactionForm(connection=self.connection, account = account)
         if child.exec_()==1:
             self.refresh()
@@ -3260,19 +3257,23 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         #print id
         if id == 0:
             return
-        try:
-            model = self.connection.get_model(id ,"billservice_account")
-        except Exception, e:
-            print e
-            return
+
+        model = self.connection.get_account(id=id)
+        print "model", model.records
+        model = model.records[0]
+
         #print 'model', model
 
         if self.getTarifId()!=-3000:
-            ipn_for_vpn = self.connection.get("""SELECT ap.ipn_for_vpn as ipn_for_vpn FROM billservice_accessparameters as ap 
-            JOIN billservice_tariff as tarif ON tarif.access_parameters_id=ap.id
-            WHERE tarif.id=get_tarif(%s)""" % model.id).ipn_for_vpn
+            res = self.connection.account_ipn_for_vpn(model.id)
+            if res.status==True:
+                ipn_for_vpn = res.result
+            else:
+                return 
         else:
             ipn_for_vpn=False
+            
+        
         tarif_type = str(self.tarif_treeWidget.currentItem().tarif_type) 
         #addf = AddAccountFrame(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn)
         child = AccountWindow(connection=self.connection,tarif_id=self.getTarifId(), ttype=tarif_type, model=model, ipn_for_vpn=ipn_for_vpn, parent=self)
@@ -3338,8 +3339,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.tarif_treeWidget.clear()
 
         #tariffs = self.connection.foselect("billservice_tariff")
-        tariffs = self.connection.get_tariffs()
-        self.connection.commit()
+        tariffs = self.connection.gettariffs()
+        #self.connection.commit()
         self.tableWidget.setColumnHidden(0, True)
         item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
         item.id = -2000
@@ -3366,11 +3367,11 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         item.setText(0, u"Юр. лица")
         item.setIcon(0,QtGui.QIcon("images/new_users.png"))   
         
-        for tarif in tariffs:
+        for tarif in tariffs.records:
             item = QtGui.QTreeWidgetItem(self.tarif_treeWidget)
             item.id = tarif.id
-            item.tarif_type = tarif.ttype
-            item.setText(0, u"%s %s" % (tarif.ttype, tarif.name))
+            item.tarif_type = tarif.access_type
+            item.setText(0, u"%s %s" % (tarif.access_type, tarif.name))
             item.setIcon(0,QtGui.QIcon("images/folder.png"))
             #tariff_type = self.connection.get("SELECT get_tariff_type(%d);" % tarif.id)
             #item.setText(1, tarif.ttype)
@@ -3465,13 +3466,6 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.tableWidget.setRowCount(0)
         import json
 
-        class AttrDict(dict):
-            def __getattr__(self, attr):
-                try:
-                    return self[attr]
-                except KeyError:
-                    raise AttributeError(attr)
-                
         if self.sql:
             bot=self.connection.bot
             #accounts = self.connection.get_accounts_for_tilter(self.sql)
@@ -3483,7 +3477,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             self.sql=''
         elif id!=-2000:
             #print "account for tarif", id
-            accounts = self.connection.get_accounts_for_tarif(self.getTarifId())
+            print "id===", id
+            accounts = self.connection.accountsfortariff(id)
             #self.genericThread = AccountsRefreshThread(self.connection, self.getTarifId())
             #self.connect(self.genericThread, QtCore.SIGNAL("accountsRefresh(QVariant)"), self.fix)
             #self.genericThread.start()              
@@ -3500,20 +3495,20 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         #print "after acc"
         
 
-        self.connection.commit()
+        #self.connection.commit()
         
         self.treeWidget.setDisabled(False)
         id=self.getTarifId()
         #accounts=accounts.toList()
-        print accounts
-        self.tableWidget.setRowCount(len(accounts))
+        #print accounts
+        self.tableWidget.setRowCount(accounts.totalCount)
         
 
         m_ballance = 0
         disabled_accounts = 0
         now = datetime.datetime.now()
         i=0
-        for a in accounts:    
+        for a in accounts.records:    
             
             #print dir(a)
             self.addrow(i, i,0, id=a.id, enabled=a.status, ctext=str(i+1), setdata=True)
@@ -3527,34 +3522,34 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 self.addrow(float(a.credit or 0), i,5, enabled=a.status)
                 #self.addrow(a.org_name if a.org_id else a.fullname, i,6, enabled=a.status)
                 self.addrow(u"%s %s" % (a.address, u"кв %s" % a.room if a.room else ""), i,7, enabled=a.status)
-                #self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
-                #self.addrow(self.format_array(a.ipn_ips), i,9, enabled=a.status)
-               # self.addrow(self.format_array(a.ipn_macs), i,10, enabled=a.status)
+                self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
+                self.addrow(self.format_array(a.ipn_ips), i,9, enabled=a.status)
+                self.addrow(self.format_array(a.ipn_macs), i,10, enabled=a.status)
                 #self.addrow(a.nas_name,i,7, enabled=a.status)
                 #self.addrow(a.vpn_ip_address, i,7, enabled=a.status)
                 #self.addrow(a.ipn_ip_address, i,8, enabled=a.status)
                 #self.addrow(a.ipn_mac_address, i,9, enabled=a.status)
-                #self.addrow(a.suspended, i,10, enabled=a.status)
+                self.addrow(a.suspended, i,10, enabled=a.status)
                 #self.addrow(a.balance_blocked, i,11, enabled=a.status)
-                #self.tableWidget.setCellWidget(i,11,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.account_online))
+                self.tableWidget.setCellWidget(i,11,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=False, ipn_added=False, online_status=False))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 #if a.last_balance_null:
                 #    self.addrow((now-a.last_balance_null).days, i,8, enabled=a.status)
                 #print self.format_array(a.ipn_ips)
 
-                #self.addrow(a.created, i,11, enabled=a.status)
+                self.addrow(a.created, i,11, enabled=a.status)
                 self.addrow(a.comment, i,12, enabled=a.status)
                 #self.addrow(a.created, i,11, enabled=a.status)
             else:
                 #self.addrow("%.2f" % a.ballance, i,2, color="red", enabled=a.status)
                 self.addrow(float("%.2f" % float(a.ballance or 0)), i,3, color="red", enabled=a.status)
                 self.addrow(float(a.credit or 0), i,4, enabled=a.status)
-                self.addrow(a.org_name if a.org_id else a.fullname, i,5, enabled=a.status)
+                #self.addrow(a.org_name if a.org_id else a.fullname, i,5, enabled=a.status)
                 self.addrow(u"%s %s" % (a.address, u"кв %s" % a.room if a.room else ""), i,6, enabled=a.status)
                 self.addrow(self.format_array(a.vpn_ips), i,7, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_ips), i,8, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_macs), i,9, enabled=a.status)
-                self.tableWidget.setCellWidget(i,10,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=a.ipn_status, ipn_added=a.ipn_added, online_status=a.account_online))
+                self.tableWidget.setCellWidget(i,10,simpleTableImageWidget(balance_blocked=a.balance_blocked, trafic_limit=a.disabled_by_limit, ipn_status=False, ipn_added=False, online_status=False))
                 #self.addrow(a.disabled_by_limit,i,12, enabled=a.status)
                 #if a.last_balance_null:
                 #    self.addrow((now-a.last_balance_null).days, i,7, enabled=a.status)
