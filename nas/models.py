@@ -9,6 +9,8 @@ NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
                 (u'mikrotik2.9',u'MikroTik 2.9'),
                 (u'mikrotik3',u'Mikrotik 3'),
+                (u'mikrotik4',u'Mikrotik 4'),
+                (u'mikrotik5',u'Mikrotik 5'),
                 (u'common_radius',u'Общий RADIUS интерфейс'),
                 (u'common_ssh',u'common_ssh'),
                 )
@@ -32,6 +34,7 @@ class Nas(models.Model):
     /ip firewall address-list remove $user_id
     """
     type = models.CharField(choices=NAS_LIST, max_length=32, default='mikrotik3')
+    identify = models.CharField(verbose_name=u'RADIUS идентификатор сервера доступа', max_length=255)
     name = models.CharField(verbose_name=u'Идентификатор сервера доступа', help_text=u"Используется дли идентификации сервера доступа. Смотрите настройки /system identity print", max_length=255, unique=True)
     ipaddress = models.CharField(verbose_name=u'IP адрес сервера доступа', max_length=255)
     secret = models.CharField(verbose_name=u'Секретная фраза', help_text=u"Смотрите вывод команды /radius print", max_length=255)
@@ -53,12 +56,17 @@ class Nas(models.Model):
     subacc_enable_action = models.TextField(blank=True, default="")
     subacc_add_action = models.TextField(blank=True, default="")
     subacc_delete_action = models.TextField(blank=True, default="")
-            
-    def save(self):
-        if self.configure_nas==True:
-            self.configure_nas=False
-            pass
-        super(Nas, self).save()
+    subacc_ipn_speed_action = models.TextField(blank=True, default="")
+    snmp_version = models.CharField(verbose_name=u'Версия SNMP', max_length=10, blank=True, null=True)
+    speed_vendor_1 = models.TextField(blank=True, default="")
+    speed_vendor_2 = models.TextField(blank=True, default="")
+    speed_attr_id1 = models.TextField(blank=True, default="")
+    speed_attr_id2 = models.TextField(blank=True, default="")
+    speed_value1 = models.TextField(blank=True, default="")
+    speed_value2 = models.TextField(blank=True, default="")
+    acct_interim_interval = models.IntegerField(default=60, blank=True, null=True)
+    
+
     class Admin:
           ordering = ['-name']
           list_display = ('name','ipaddress')

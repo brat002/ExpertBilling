@@ -279,6 +279,7 @@ class AccessParameters(models.Model):
     access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, default='PPTP', blank=True, verbose_name=u'Вид доступа')
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа')
     #ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
+    ipn_for_vpn     = models.BooleanField(blank=True, default=False)
     max_limit      = models.CharField(verbose_name=u"MAX (kbps)", max_length=64, blank=True, default="")
     min_limit      = models.CharField(verbose_name=u"MIN (kbps)", max_length=64, blank=True, default="")
     burst_limit    = models.CharField(verbose_name=u"Burst", max_length=64, blank=True, default="")
@@ -478,6 +479,7 @@ class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана', unique = True)
     description       = models.TextField(verbose_name=u'Описание тарифного плана', blank=True, default='')
     access_parameters = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа')
+    contracttemplate  = models.ForeignKey("ContractTemplate", blank=True, null=True)
     #traffic_limit     = models.ManyToManyField(to=TrafficLimit, verbose_name=u'Лимиты трафика', blank=True, null=True, help_text=u"Примеры: 200 мегабайт в расчётный период, 50 мегабайт за последнюю неделю")
     #periodical_services = models.ManyToManyField(to=PeriodicalService, verbose_name=u'периодические услуги', blank=True, null=True)
     #onetime_services  = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
@@ -555,6 +557,7 @@ class Account(models.Model):
     #ipn_pool = models.ForeignKey(to=IPAddressPool, related_name='ipn_pool', blank=True, null=True)
     #ipn_ip_address = models.IPAddressField(u'IP адрес клиента', help_text=u'Для IPN тарифных планов', blank=True, default='0.0.0.0')
     #ipn_mac_address = models.CharField(u'MAC адрес клиента', max_length=32, help_text=u'Для IPN тарифных планов', blank=True, default='')
+    ipn_added = models.BooleanField(verbose_name=u"Добавлен на сервере доступа", default=False, blank=True)
     ipn_status = models.BooleanField(verbose_name=u"Статус на сервере доступа", default=False, blank=True)
     status=models.IntegerField(verbose_name=u'Статус пользователя', default=1)
     suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
@@ -635,7 +638,20 @@ class Account(models.Model):
     class Meta:
         verbose_name = u"Аккаунт"
         verbose_name_plural = u"Аккаунты"
-        
+    def _ips(self):
+        vpn_ips=[]
+        ipn_ips=[]
+        macs = []
+        sas = SubAccount.objects.filter(account = self)
+        for sa in sas:
+            if sa.vpn_ip_address:
+                vpn_ips.append(sa.vpn_ip_address)  
+            if sa.ipn_ip_address:
+                ipn_ips.append(sa.ipn_ip_address)  
+            if sa.ipn_mac_address:
+                macs.append(sa.ipn_mac_address)  
+        return ', '.join(vpn_ips), ', '.join(ipn_ips), ', '.join(macs), 
+    
     @models.permalink
     def change_password_url_ajax(self):
         return ('billservice.views.change_password', (), {})
@@ -954,6 +970,8 @@ class BankData(models.Model):
     rs = models.CharField(max_length=60)
     currency = models.CharField(max_length=40)
 
+    def __unicode__(self):
+        return u"%s" % self.id
     
 class Operator(models.Model):
     organization = models.CharField(max_length=255)
