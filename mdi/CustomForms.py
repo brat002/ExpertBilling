@@ -8,6 +8,7 @@ from helpers import tableFormat
 from helpers import tableHeight
 from helpers import sqliteDbAccess, connectDBName , get_free_addreses_from_pool
 from db import Object as Object
+from db import AttrDict
 from helpers import dateDelim, settlement_period_info
 from mako.template import Template
 from template_higlight import Highlighter
@@ -3456,9 +3457,6 @@ class TransactionForm(QtGui.QDialog):
         
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
         self._name = settings.value("user", QtCore.QVariant("")).toString()
-        if self._name:
-            self.systemuser_id = self.connection.sql("SELECT id FROM billservice_systemuser WHERE username='%s'" % self._name)[0].id
-            self.connection.commit()
 
         self.fixtures()
         self.promise_actions()
@@ -3485,10 +3483,12 @@ class TransactionForm(QtGui.QDialog):
         self.dateTimeEdit_paymend_date.setDateTime(now)
         self.dateTimeEdit_end_promise.setDateTime(now)
     
-        items = self.connection.get_models("billservice_transactiontype", order={'name':'ASC'})
+        items = self.connection.get_transactiontypes("billservice_transactiontype")
+        if not items.status: return
+        
         self.comboBox_transactiontype.clear()
         i=0
-        for item in items:
+        for item in items.records:
             self.comboBox_transactiontype.addItem(item.name, userData=QtCore.QVariant(item.internal_name))
             if item.internal_name==u'MANUAL_TRANSACTION':
                 self.comboBox_transactiontype.setCurrentIndex(i)
@@ -3513,14 +3513,13 @@ class TransactionForm(QtGui.QDialog):
         
         self.result = Decimal("%s" % self.summ_edit.text()) * (-1)
         
-        transaction = Object()
-        transaction.account_id=self.account.id
-        transaction.type_id = unicode(self.comboBox_transactiontype.itemData(self.comboBox_transactiontype.currentIndex()).toString())
+        transaction = AttrDict()
+        transaction.account=self.account.id
+        transaction.type = unicode(self.comboBox_transactiontype.itemData(self.comboBox_transactiontype.currentIndex()).toString())
         transaction.approved = True
         transaction.description = unicode(self.lineEdit.text())
         transaction.summ=self.result
         transaction.bill=unicode(self.payed_document_edit.text())
-        transaction.systemuser_id = self.systemuser_id
         transaction.created = self.dateTimeEdit_paymend_date.currentDate()
         
         transaction.promise = self.checkBox_promise.isChecked()
@@ -3531,7 +3530,13 @@ class TransactionForm(QtGui.QDialog):
         try:
             
             
-            transaction.id = self.connection.save(transaction, "billservice_transaction")
+            
+            d = self.connection.make_transaction(transaction)
+            if d.status==False:
+                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.errors.get(x))) for x in d.errors])))
+                return
+            
+            transaction.id = d.transaction_id
             print "transaction.id",transaction.id
             self.transaction = transaction
             self.connection.commit()

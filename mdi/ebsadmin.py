@@ -13,16 +13,39 @@ import threading
 import urllib
 import urllib2
 import json
+import random
+import time
+import socket
+from json import JSONDecoder
+import datetime
 
-class AttrDict(dict):
-    def __getattr__(self, attr):
-        try:
-            return self[attr]
-        except KeyError:
-            raise AttributeError(attr)
-class HttpBot:
+from db import AttrDict
+    #===========================================================================
+    # def __iter__(self):
+    #    for key in self.__dict__:
+    #        print 123
+    #        yield self.__dict__[key]
+    #===========================================================================
+    
+def dict_to_object( d): 
+    if '__type__' not in d:
+        return d
+
+    type = d.pop('__type__')
+    if type == 'datetime':
+        return datetime(**d)
+    else:
+        # Oops... better put this back together.
+        d['__type__'] = type
+        return d
+        
+
+
+
+class HttpBot(object):
     """an HttpBot represents one browser session, with cookies."""
-    def __init__(self):
+    def __init__(self, host):
+        self.host = host
         cookie_handler= urllib2.HTTPCookieProcessor()
         redirect_handler= urllib2.HTTPRedirectHandler()
         self._opener = urllib2.build_opener(redirect_handler, cookie_handler)
@@ -30,34 +53,290 @@ class HttpBot:
     def GET(self, url):
         return self._opener.open(url).read()
 
-    def POST(self, url, parameters):
-        try:
-            data=self._opener.open(url, urllib.urlencode(parameters)).read()
-        except urllib2.HTTPError, e:
-            print 'The server couldn\'t fulfill the request.'
-            print 'Error code: ', e.code
-            return 
-        except urllib2.URLError, e:
-            print 'We failed to reach a server.'
-            print 'Reason: ', e.reason
-            return 
+    def get_id(self):
+        return random.randint(100000,999999999)
+    
+    def POST(self, url, parameters={}):
+        attempts=0
+        #print parameters
+        if parameters and '__dict__' in parameters:
+            for key in parameters.__dict__:
+                value = parameters[key]
+                    
+                print "key, value", key, value
+    
+                
+                if isinstance(value, unicode):
+                    parameters[key] = value.encode('utf-8')
+                elif isinstance(value, datetime.datetime):
+                    parameters[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    parameters[key] = value
+
+        else:
+            for key in parameters.keys():
+                value = parameters[key]
+                    
+                print "key, value", key, value
+    
+                
+                if isinstance(value, unicode):
+                    parameters[key] = value.encode('utf-8')
+                elif isinstance(value, datetime.datetime):
+                    parameters[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    parameters[key] = value
             
-        return self.parse(data)
+        #print 'parameters', parameters
+        print "parameters=", parameters         
+        while attempts<=3:
+            try:
+                data=self._opener.open(url+"?uniqid=%s" % self.get_id(), urllib.urlencode(parameters)).read()
+                return self.parse(data)
+            except urllib2.HTTPError, e:
+                print 'The server couldn\'t fulfill the request.'
+                print 'Error code: ', e.code
+                k = open("d:/trace.html", "w")
+                k.write('\n'.join(e.readlines()))
+                k.close()
+                attempts+=1
+                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(str(e)))
+            except urllib2.URLError, e:
+                print 'We failed to reach a server.'
+                print 'Reason: ', e.reason
+                attempts+=1
+            
+        
 
     
     def parse(self, data):
         if not data: return {}
-        
+        print "before parce=", data
         d = json.loads(data,  object_hook=AttrDict)
-        if d.hasattr('status') and d.status==True:
-            return d.records
-        elif d.hasattr('status') and d.status==False:
-            if d.hasattr('message'):
-                return d.message
+        print 'after parce', d
+        if hasattr(d, 'status') and d.status==True:
+
+            return d
+        elif hasattr(d, 'status') and d.status==False:
+            if hasattr(d, 'message'):
+                return d
+            else:
+                return d
         else:
             return d
+    
+    def log_in(self, name, password):
+        url='http://%s/ebsadmin/simple_login/' % self.host 
+        
+        d = self.POST(url, {'username':name, 'password':password})
+        return d
 
-from rpc2 import rpc_protocol, client_networking
+    def get_settlementperiods(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/settlementperiods/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        #print d
+        return d
+    def get_accounttariffs(self,account_id=None, fields=[]):
+        url='http://%s/ebsadmin/accounttariffs/' % self.host 
+        
+        d = self.POST(url,{ 'account_id':account_id})
+        #print d
+        return d
+
+    def get_suspendedperiods(self,account_id=None, fields=[]):
+        url='http://%s/ebsadmin/suspendedperiods/' % self.host 
+        
+        d = self.POST(url,{ 'account_id':account_id})
+        #print d
+        return d
+    
+    def get_subaccounts(self, id='', account_id='', fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/subaccounts/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id, 'normal_fields':normal_fields})
+        print 'data====', d
+        return d
+    def get_accountaddonservices(self, id=None, account_id=None, fields=[]):
+        url='http://%s/ebsadmin/accountaddonservices/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id})
+        print 'data====', d
+        return d   
+        
+    def get_accounthardware(self, id=None, account_id=None, fields=[]):
+        url='http://%s/ebsadmin/accounthardware/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id})
+        print 'data====', d
+        return d   
+    
+    def get_account(self, id=None, fields=[]):
+        url='http://%s/ebsadmin/account/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        print 'data====', d
+        return d
+            
+    def account_ipn_for_vpn(self, id):
+        url='http://%s/ebsadmin/account/ipnforvpn/' % self.host 
+        
+        d = self.POST(url,{'id':id})
+        #print d
+        return d
+
+    def check_account_exists(self, username):
+        url='http://%s/ebsadmin/account/exists/' % self.host 
+        
+        d = self.POST(url,{'username':username})
+        #print d
+        return d
+    
+    def account_save(self, model, tarif_id=None, template_id=None):
+        url='http://%s/ebsadmin/account/save/' % self.host 
+        #print model
+        model['tarif_id'] = tarif_id
+        model['template_id'] = template_id
+        #print a
+        #print dir(a)
+        d = self.POST(url,model)
+        #print d
+        return d
+    
+    def get_transactiontypes(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/transactiontypes/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        #print d
+        return d
+      
+    def settlementperiod_save(self, model):
+        url='http://%s/ebsadmin/settlementperiods/save/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        #print d
+        return d
+    
+    def commit(self):
+        pass
+    def rollback(self):
+        pass
+    
+    def sql(self, s):
+        return []
+    
+    def settlementperiod_delete(self,id):
+        url='http://%s/ebsadmin/settlementperiods/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        #print d
+        return d
+
+    def get_organizations(self,id=None, account_id=None, fields=[]):
+        url='http://%s/ebsadmin/organizations/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id})
+        #print d
+        return d
+
+    def get_banks(self,id=None,  fields=[]):
+        url='http://%s/ebsadmin/banks/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        #print d
+        return d
+    
+    def get_cities(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/cities/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        #print d
+        return d
+
+    def get_streets(self,id=None, city_id=None, fields=[]):
+        url='http://%s/ebsadmin/streets/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'city_id':city_id})
+        #print d
+        return d
+    
+    def get_houses(self,id=None, street_id=None, fields=[]):
+        url='http://%s/ebsadmin/houses/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'street_id':street_id})
+        #print d
+        return d
+    
+    def get_contracttemplates(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/contracttemplates/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        #print d
+        return d
+    
+    def get_tariffs(self,id=None, fields=[]):
+        
+        url='http://%s/ebsadmin/tariffs/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        #print d
+        return d
+    def get_nasses(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/nasses/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        #print d
+        return d
+    
+    def get_systemusers(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/systemusers/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        #print d
+        return d
+    
+    def gettariffs(self, fields=[]):
+        url='http://%s/ebsadmin/gettariffs/' % self.host 
+        
+        d = self.POST(url,{})
+        #print d
+        return d
+    
+    def accountsfortariff(self, tarif_id ):
+        url='http://%s/ebsadmin/accountsfortariff/' % self.host 
+        
+        d = self.POST(url,{'tarif_id':tarif_id})
+        #print d
+        return d
+    
+    def make_transaction(self, model ):
+        url='http://%s/ebsadmin/transaction/set/' % self.host 
+        
+        d = self.POST(url,model)
+        #print d
+        return d
+    
+    def nas_save(self,model):
+        url='http://%s/ebsadmin/nasses/save/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        #print d
+        return d
+    
+    def nas_delete(self,id):
+        url='http://%s/ebsadmin/nasses/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        #print d
+        return d
+    
+    def testCredentials(self, host, login, password):
+        url='http://%s/ebsadmin/test_credentials/' % self.host 
+        
+        d = self.POST(url,{'host':host, 'login':login, 'password':password,})
+        #print d
+        return d
+    
 from dateutil.relativedelta import relativedelta
 
 DEFAULT_PORT = 7771
@@ -999,46 +1278,24 @@ def login():
             # make sure Qt really display the splash screen
             global app
             app.processEvents()
-            try:
+
                 
                 #logger  = PrintLogger()
-                try:
-                    os.mkdir('log')
-                except:
-                    pass
-                logger = isdlogger.isdlogger('logging', loglevel=LOG_LEVEL, ident='mdi', filename='log/mdi_log')
-                rpc_protocol.install_logger(logger)
-                client_networking.install_logger(logger)
-                
-                authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
-                protocol = rpc_protocol.RPCProtocol(authenticator)
-                connection = rpc_protocol.BasicClientConnection(protocol)
-                connection.notifier = lambda x: QtGui.QMessageBox.warning(None, unicode(u"Exception"), unicode(x))
-                if ':' in child.address:
-                    host, port = str(child.address).split(':')
-                else:
-                    host, port = str(child.address), DEFAULT_PORT
-                transport = client_networking.BlockingTcpClient(host, port)
-                transport.connect()
-                connection.registerConsumer_(transport)
-                auth_result = connection.authenticate(str(child.name), str(child.password), ROLE)
-                if not auth_result or not connection.protocol._check_status():
-                    raise Exception('Status = False!')
-                username = str(child.name)
-                server_ip = unicode(child.address)
-                #connection._setIdentification("%s:%s:0" % (str(child.name), str(child.password.toHex())))
-                #connection.test()
-                #waitchild.hide()
-                return connection
+            try:
+                os.mkdir('log')
+            except:
+                pass
+            logger = isdlogger.isdlogger('logging', loglevel=LOG_LEVEL, ident='mdi', filename='log/mdi_log')
 
-            except Exception, e:
-                print repr(e), traceback.format_exc()
-                if not isinstance(e, client_networking.TCPException):
-                    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
-                else:
-                    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
-            #splash.hide()
-            #del waitchild
+            connection = HttpBot(host=unicode(child.address))
+            data = connection.log_in(unicode(child.name), unicode(child.password))
+            username = unicode(child.name)
+
+            if data.status:
+                return connection
+            else:
+                QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации.\n%s" % data.message))
+
         else:
             #splash.hide()
             return None
@@ -1056,7 +1313,6 @@ if __name__ == "__main__":
         sys.exit()
     #connection.commit()
     
-    connection.server_ip = server_ip
     try:
         global mainwindow
         mainwindow = MainWindow()
@@ -1065,15 +1321,11 @@ if __name__ == "__main__":
             
         splash.finish(mainwindow) 
         mainwindow.show()
-        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.4.%s-dev #%s - %s" % (version,username, server_ip))  
+        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.4.%s-dev #%s - %s" % (version,username, connection.host))  
         #app.setStyle("cleanlooks")
         mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
         app.setStyleSheet(open("skins/style.qss","r").read())
-        bot = HttpBot()
-        connection.bot=bot
-        ignored_html = bot.POST('http://10.20.3.111:8080/login/', {'password':'admin','username':'admin'})
-        
-   
+
         sys.exit(app.exec_())
         connection.commit()
     except Exception, ex:

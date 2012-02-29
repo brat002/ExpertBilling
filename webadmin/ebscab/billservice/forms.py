@@ -3,7 +3,8 @@ from django import forms
 from datetime import datetime, date
 from django.forms import ModelForm
 from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
-from billservice.models import PeriodicalService, SystemUser, TransactionType
+from billservice.models import PeriodicalService, SystemUser, TransactionType, SettlementPeriod
+from billservice.models import Organization, BankData
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -129,6 +130,18 @@ class AccountTariffForm(ModelForm):
     class Meta:
         model = AccountTarif
     
+class SettlementPeriodForm(ModelForm):
+    class Meta:
+        model = SettlementPeriod
+  
+class OrganizationForm(ModelForm):
+    class Meta:
+        model = Organization
+        
+class BankDataForm(ModelForm):
+    class Meta:
+        model = BankData
+              
 class AccountForm(ModelForm):
     class Meta:
         model = Account

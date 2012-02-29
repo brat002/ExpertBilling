@@ -5,6 +5,7 @@ from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
 from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import HeaderUtil
 from CustomForms import RrdReportMainWindow
@@ -279,7 +280,7 @@ class AddNasFrame(QtGui.QDialog):
         super(AddNasFrame, self).__init__()
         self.model = model
         self.connection = connection
-        self.connection.commit()
+        #self.connection.commit()
         self.setObjectName("AddNasFrame")
         self.resize(408, 520)
         self.gridLayout = QtGui.QGridLayout(self)
@@ -530,8 +531,9 @@ class AddNasFrame(QtGui.QDialog):
         
         
     def testNAS(self):
-        if not self.connection.testCredentials(str(self.nas_ip.text()), str(self.ssh_name_lineEdit.text()), str(self.ssh_password_lineEdit.text())):
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен."))
+        d = self.connection.testCredentials(str(self.nas_ip.text()), str(self.ssh_name_lineEdit.text()), str(self.ssh_password_lineEdit.text()))
+        if not d.status:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не верно указаны параметры для доступа, сервер доступа недоступен или неправильно настроен.\n %s" % d.message))
         else:
             QtGui.QMessageBox.information(self, u"Ok", unicode(u"Тестирование прошло успешно"))
          
@@ -566,9 +568,10 @@ class AddNasFrame(QtGui.QDialog):
             
         if self.model:
             model=self.model
+            model.id=self.model.id
         else:
             #print 'New nas'
-            model=Object()
+            model=AttrDict()
 
         if unicode(self.nas_name.text())==u"":
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указан идентификатор сервера доступа"))
@@ -603,9 +606,11 @@ class AddNasFrame(QtGui.QDialog):
         model.secret = unicode(self.nas_secret.text())
         model.acct_interim_interval = int(self.nas_interim_update.value())
         model.snmp_version = unicode(self.snmp_comboBox.itemData(self.snmp_comboBox.currentIndex()).toString())
+
+        
         for i in xrange(self.tableWidget.rowCount()):
             if self.tableWidget.item(i,1):
-                model.__dict__[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text())
+                setattr(model, self.tableInfo[i][0], unicode(self.tableWidget.item(i,1).text()))
             
         try:
             model.speed_vendor_1 = int(unicode(self.lineEdit_vendor1.text() or 0))
@@ -621,14 +626,17 @@ class AddNasFrame(QtGui.QDialog):
             return
         
 
-        
+        #print model
 
         try:
-            self.connection.save(model,"nas_nas")
-            self.connection.commit()
+            
+            d = self.connection.nas_save(model)
+            if d.status==False:
+                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.message.get(x))) for x in d.message])))
+            #self.connection.commit()
         except Exception, e:
             print e
-            self.connection.rollback()
+            return
 
         QtGui.QDialog.accept(self)
 
@@ -649,6 +657,7 @@ class AddNasFrame(QtGui.QDialog):
                 self.snmp_comboBox.setCurrentIndex(i)
             i+=1
 
+        print self.model
         if self.model:
             self.lineEdit_name.setText(unicode(self.model.name))
             self.nas_name.setText(unicode(self.model.identify))
@@ -658,7 +667,7 @@ class AddNasFrame(QtGui.QDialog):
             self.ssh_password_lineEdit.setText(unicode(self.model.password))
             
             for i in xrange(self.tableWidget.rowCount()):
-                self.addrow(self.tableWidget, unicode(self.model.__dict__.get(self.tableInfo[i][0],'')), i,1)
+                self.addrow(self.tableWidget, unicode(getattr(self.model,self.tableInfo[i][0],'')), i,1)
             
             self.tableWidget.resizeColumnsToContents()
             self.nas_comboBox.setCurrentIndex(self.nas_comboBox.findText(self.model.type, QtCore.Qt.MatchCaseSensitive))
@@ -780,23 +789,17 @@ class NasEbs(ebsTableWindow):
     def delete(self):
         id=self.getSelectedId()
         if id>0:
-            if self.connection.get_models("billservice_account", where={"nas_id":id}):
-                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Пожалуйста, отцепите сначала всех пользователей от сервера!")
-                return
-            elif (QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Все связанные с сервером доступа аккаунты \n и вся статистика будут удалены. \nВы уверены, что хотите это сделать?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
-                try:
+            if QtGui.QMessageBox.question(self, u"Удалить сервер доступа?" , u'''Это не безопасная операция. Проверьте не привязаны ли к этому серверу доступа аккаунты.\nВы уверены, что хотите это сделать?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+                
                     #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete(id, "nas_nas")
-                    self.connection.commit()
-                    self.refresh()
-                except Exception, e:
-                    print e
-                    self.connection.rollback()
-                    QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
-        
+                self.connection.nas_delete(id)
+                self.refresh()
+  
     def editframe(self):
         try:
-            model=self.connection.get_model(self.getSelectedId(), "nas_nas")
+            model=self.connection.get_nasses(id=self.getSelectedId())
+            if not model: return
+            model = model.records[0]
         except:
             model=None
 
@@ -815,11 +818,13 @@ class NasEbs(ebsTableWindow):
     def refresh(self):
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.clearContents()
-        nasses = self.connection.get_models(table="nas_nas")
-        self.connection.commit()
-        self.tableWidget.setRowCount(len(nasses))
+        nasses = self.connection.get_nasses(fields=['id','name', 'identify','type','ipaddress'])
+        #self.connection.commit()
+        self.tableWidget.setRowCount(nasses.totalCount)
+        #print nasses
         i=0
-        for nas in nasses:
+        for nas in nasses.records:
+            #print nas
             self.addrow(nas.id, i,0)
             self.addrow(nas.name, i,1)
             self.addrow(nas.identify, i,2)

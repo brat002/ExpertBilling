@@ -7,6 +7,7 @@ import traceback
 import psycopg2
 from ebsWindow import ebsTable_n_TreeWindow
 from db import Object as Object
+from db import AttrDict
 from helpers import dateDelim
 from helpers import connlogin
 from helpers import setFirstActive
@@ -595,11 +596,11 @@ class SubaccountLinkDialog(QtGui.QDialog):
             
         #print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
         if self.model:
-            if self.model.isnull('vpn_ipinuse_id')==False:
+            if self.model.vpn_ipinuse:
                 pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipinuse_id, return_response=True)[0]
 
             
-        pools = self.connection.get_models("billservice_ippool", where={'type':'0',})
+        pools = []#self.connection.get_models("billservice_ippool", where={'type':'0',})
         
         self.connection.commit()
         i=1
@@ -621,11 +622,11 @@ class SubaccountLinkDialog(QtGui.QDialog):
             i+=1
 
         if self.model:
-            if self.model.isnull('vpn_ipv6_ipinuse_id')==False:
+            if self.model.vpn_ipv6_ipinuse:
                 ipv6_pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipv6_ipinuse_id, return_response=True)[0]
 
             
-        pools = self.connection.get_models("billservice_ippool", where={'type':'2',})
+        pools = []#self.connection.get_models("billservice_ippool", where={'type':'2',})
         
         self.connection.commit()
         i=1
@@ -645,10 +646,10 @@ class SubaccountLinkDialog(QtGui.QDialog):
                         
         if not self.model: self.groupBox.setDisabled(True)
         if self.model:
-            if self.model.isnull('ipn_ipinuse_id')==False:
+            if self.model.ipn_ipinuse_id:
                 pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.ipn_ipinuse_id, return_response=True)[0]
             
-        pools = self.connection.get_models("billservice_ippool", where={'type':'1',})
+        pools = []#self.connection.get_models("billservice_ippool", where={'type':'1',})
         self.connection.commit()
         i=1
         self.comboBox_ipn_pool.clear()
@@ -1565,10 +1566,10 @@ class AccountWindow(QtGui.QMainWindow):
         makeHeaders(columns, self.tableWidget)
         #self.tableWidget.
         
-        cities = self.connection.sql("SELECT id, name FROM billservice_city ORDER BY name ASC;")
-        streets = self.connection.sql("SELECT id, name FROM billservice_street ORDER BY name ASC;")
-        houses = self.connection.sql("SELECT id, name FROM billservice_house ORDER BY name ASC;")
-        self.connection.commit()
+        #cities = self.connection.sql("SELECT id, name FROM billservice_city ORDER BY name ASC;")
+        #streets = self.connection.sql("SELECT id, name FROM billservice_street ORDER BY name ASC;")
+        #houses = self.connection.sql("SELECT id, name FROM billservice_house ORDER BY name ASC;")
+        #self.connection.commit()
         self.tableInfo=[
             #['ur', u'Юридическое лицо','checkbox'],
             ['contactperson', u'Контактное лицо',''],
@@ -1674,29 +1675,31 @@ class AccountWindow(QtGui.QMainWindow):
         if city_id==0:
             self.comboBox_street.clear()
         if not city_id: return
-        streets = self.connection.sql("SELECT id, name FROM billservice_street WHERE city_id=%s ORDER BY name ASC;" % city_id)
+        streets = self.connection.get_streets(city_id=city_id, fields=['id', 'name'])
+        if not streets.status: return
         self.connection.commit()
         self.comboBox_street.clear()
         self.comboBox_house.clear()
         i=0
-        for street in streets:
+        for street in streets.records:
             self.comboBox_street.addItem(street.name, QtCore.QVariant(street.id))
             if self.model:
-                if self.model.street_id==street.id:
+                if self.model.street==street.id:
                     self.comboBox_street.setCurrentIndex(i)
             i+=1
 
     def refresh_combo_house(self):
         street_id = self.comboBox_street.itemData(self.comboBox_street.currentIndex()).toInt()[0]
         if not street_id: return        
-        items = self.connection.sql("SELECT id, name FROM billservice_house WHERE street_id=%s ORDER BY name ASC;" % street_id)
+        items = self.connection.get_houses(street_id=street_id)
+        if not items.status: return
         self.connection.commit()
         self.comboBox_house.clear()
         i=0
-        for item in items:
+        for item in items.records:
             self.comboBox_house.addItem(item.name, QtCore.QVariant(item.id))
             if self.model:
-                if self.model.house_id==item.id:
+                if self.model.house==item.id:
                     self.comboBox_house.setCurrentIndex(i)
             i+=1
     def saveHeader(self, *args):
@@ -1802,48 +1805,49 @@ class AccountWindow(QtGui.QMainWindow):
 
         pools = []
 
-        nasses = self.connection.get_models("nas_nas")
+        nasses = self.connection.get_nasses(fields=['id', 'name'])
         self.connection.commit()
-        i=0
+        
         self.comboBox_nas.clear()
         self.comboBox_nas.addItem("---")
-        self.comboBox_nas.setItemData(i, QtCore.QVariant(0))
-        for nas in nasses:
+        self.comboBox_nas.setItemData(0, QtCore.QVariant(None))
+        i=1
+        for nas in nasses.records:
             self.comboBox_nas.addItem(nas.name)
-            self.comboBox_nas.setItemData(i+1, QtCore.QVariant(nas.id))
+            self.comboBox_nas.setItemData(i, QtCore.QVariant(nas.id))
             if self.model:
-                if nas.id==self.model.nas_id:
-                    self.comboBox_nas.setCurrentIndex(i+1)
+                if nas.id==self.model.nas:
+                    self.comboBox_nas.setCurrentIndex(i)
             
             i+=1
             
 
-        managers = self.connection.get_models("billservice_systemuser")
+        managers = self.connection.get_systemusers(fields=['id', 'username', 'fullname'])
         self.connection.commit()
         
         self.comboBox_manager.clear()
         self.comboBox_manager.addItem("---")
-        self.comboBox_manager.setItemData(0, QtCore.QVariant(0))
+        self.comboBox_manager.setItemData(0, QtCore.QVariant(None))
         i=1
-        for manager in managers:
+        for manager in managers.records:
             self.comboBox_manager.addItem( "%s, %s" % (manager.username,manager.fullname))
             self.comboBox_manager.setItemData(i, QtCore.QVariant(manager.id))
             if self.model:
-                if manager.id==self.model.systemuser_id:
+                if manager.id==self.model.systemuser:
                     self.comboBox_manager.setCurrentIndex(i)
             
             i+=1
                         
 
-        cities = self.connection.sql("SELECT id, name FROM billservice_city ORDER BY name ASC;")
+        cities = self.connection.get_cities(fields = ['id', 'name'])
         self.connection.commit()
         self.comboBox_city.clear()
-        self.comboBox_city.addItem(u'-Не указан-', QtCore.QVariant(0))
+        self.comboBox_city.addItem(u'-Не указан-', QtCore.QVariant(None))
         i=1
-        for city in cities:
+        for city in cities.records:
             self.comboBox_city.addItem(city.name, QtCore.QVariant(city.id))
             if self.model:
-                if self.model.city_id==city.id:
+                if self.model.city==city.id:
                     self.comboBox_city.setCurrentIndex(i)
             i+=1
                   
@@ -1859,13 +1863,13 @@ class AccountWindow(QtGui.QMainWindow):
             
         tarif_contracttemplate=None
         if self.tarif_id>0:
-            tarif_contracttemplate = self.connection.get_model(self.tarif_id, "billservice_tariff", fields=['contracttemplate_id',])
+            tarif_contracttemplate = self.connection.get_tariffs(id=self.tarif_id, fields=['contracttemplate',]).records[0]
         self.connection.commit()
         tarif_contracttemplate_id = None
         if tarif_contracttemplate:
-            tarif_contracttemplate_id = tarif_contracttemplate.contracttemplate_id
+            tarif_contracttemplate_id = tarif_contracttemplate.contracttemplate
          
-        templatecontracts = self.connection.get_models("billservice_contracttemplate")
+        templatecontracts = self.connection.get_contracttemplates(fields=['id', 'template']).records
         self.connection.commit()
         self.comboBox_agreement_num.clear()
         i=0
@@ -1899,6 +1903,7 @@ class AccountWindow(QtGui.QMainWindow):
         if self.model:
             self.checkActions()
             #self.comboBox_agreement_num.setText(unicode(self.model.contract))
+            print "self.model", self.model
             self.dateTimeEdit_agreement_date.setDateTime(self.model.created)
             if self.tarif_id!=-3000:            
                 self.dateTimeEdit_agreement_date.setDisabled(True)
@@ -1916,7 +1921,7 @@ class AccountWindow(QtGui.QMainWindow):
             self.lineEdit_password.setText(unicode(self.model.password))
             
             for i in xrange(self.tableWidget.rowCount()):
-                self.addrow(self.tableWidget, unicode(self.model.__dict__.get(self.tableInfo[i][0],'')), i,1)
+                self.addrow(self.tableWidget, unicode(self.model.get(self.tableInfo[i][0],'')), i,1)
 
 
             self.plainTextEdit_comment.setPlainText(unicode(self.model.comment))
@@ -1925,11 +1930,12 @@ class AccountWindow(QtGui.QMainWindow):
             self.lineEdit_balance.setText(unicode(self.model.ballance))
             self.lineEdit_credit.setText(unicode(self.model.credit))
             
-            organization = self.connection.get_models("billservice_organization", where={'account_id':self.model.id})
+            organization = self.connection.get_organizations(account_id=self.model.id)
+            #organization = None
             self.connection.commit()
-            if organization:
+            if organization.status and organization.totalCount==1:
                 
-                org = organization[0]
+                org = organization.records[0]
                 self.organization = org
                 self.groupBox_urdata.setChecked(True)
                 self.lineEdit_organization.setText(unicode(org.name))
@@ -1942,7 +1948,7 @@ class AccountWindow(QtGui.QMainWindow):
                 self.lineEdit_kor_s.setText(unicode(org.kor_s))
                 
                 #print "bank_id",org.bank_id
-                bank = self.connection.get_model(org.bank_id, "billservice_bankdata")
+                bank = self.connection.get_bank(id=org.bank)
                 self.connection.commit()
                 if bank:
                     self.lineEdit_bank.setText(unicode(bank.bank))
@@ -1977,24 +1983,24 @@ class AccountWindow(QtGui.QMainWindow):
                     model.created = self.dateTimeEdit_agreement_date.currentDate()
             else:
                 #print 'New account'
-                if self.connection.get("SELECT count(*) as count FROM billservice_account WHERE username='%s'" % unicode(self.lineEdit_username.text())).count > 0:
+                if self.connection.check_account_exists(username=unicode(self.lineEdit_username.text())).status:
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
                     self.connection.rollback()
                     return
 
-                model=Object()
+                model=AttrDict()
                 model.created = self.dateTimeEdit_agreement_date.currentDate()
-                print "contracttemplate_id", contracttemplate_id
-
-                #model.user_id=1
-                model.ipn_status = self.toolButton_ipn_enabled.isChecked()
-                model.ipn_added = self.toolButton_ipn_added.isChecked()
-                model.suspended = self.toolButton_ipn_sleep.isChecked()
                 model.disabled_by_limit = False
                 model.vpn_ipinuse_id = None
                 model.ipn_ipinuse_id = None
+
+                #model.user_id=1
+            model.ipn_status = self.toolButton_ipn_enabled.isChecked()
+            model.ipn_added = self.toolButton_ipn_added.isChecked()
+            model.suspended = self.toolButton_ipn_sleep.isChecked()
+
                 
-            if contracttemplate_id==0:
+            if contracttemplate_id==None:
                 model.contract=unicode(self.comboBox_agreement_num.currentText())
                 print "model.contract", model.contract
             else:
@@ -2011,14 +2017,14 @@ class AccountWindow(QtGui.QMainWindow):
             #model.contract = unicode(self.comboBox_agreement_num.text())
             model.status = self.comboBox_status.itemData(self.comboBox_status.currentIndex()).toInt()[0]
             for i in xrange(self.tableWidget.rowCount()):
-                model.__dict__[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text()) 
+                model[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text()) 
                 #self.tableWidget.item(i,1).setText(unicode(self.model.__dict__.get(self.tableInfo[i][0])))
                 
 
-            model.nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
-            model.systemuser_id = self.comboBox_manager.itemData(self.comboBox_manager.currentIndex()).toInt()[0]
+            model.nas = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0] or ''
+            model.systemuser = self.comboBox_manager.itemData(self.comboBox_manager.currentIndex()).toInt()[0] or ''
 
-            model.ballance = unicode(self.lineEdit_balance.text()) or 0
+            #model.ballance = unicode(self.lineEdit_balance.text()) or 0
             model.credit = unicode(self.lineEdit_credit.text()) or 0
             model.comment = unicode(self.plainTextEdit_comment.toPlainText())
             
@@ -2031,70 +2037,70 @@ class AccountWindow(QtGui.QMainWindow):
             
             city_id = self.comboBox_city.itemData(self.comboBox_city.currentIndex()).toInt()[0]
             if city_id:
-                model.city_id = city_id
+                model.city = city_id or ''
                 
             street_id = self.comboBox_street.itemData(self.comboBox_street.currentIndex()).toInt()[0]
             if street_id:
-                model.street_id = street_id
+                model.street = street_id or ''
                 
             house_id = self.comboBox_house.itemData(self.comboBox_house.currentIndex()).toInt()[0]
             if house_id:
-                model.house_id = house_id
+                model.house = house_id or ''
                 
-            #print model.__dict__                    
+            #print model.__dict__  
+            print "model======", model                  
             if self.model:
-                model.id = self.connection.account_save(model, "billservice_account", tarif_id=self.tarif_id,template_id=contracttemplate_id)
+                
+                d = self.connection.account_save(model, tarif_id=self.tarif_id,template_id=contracttemplate_id)
+                print d
+                if d.status==False:
+                    QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.errors.get(x))) for x in d.errors])))
+                    return
+                else:
+                    model.id = d.account_id
+                    self.model = model
             else:
                 #print 123
-                model.id = self.connection.account_save(model, "billservice_account", tarif_id=self.tarif_id,template_id=contracttemplate_id)
-                if self.tarif_id!=-3000:
-                    accounttarif = Object()
-                    accounttarif.account_id=model.id
-                    accounttarif.tarif_id=self.tarif_id
-                    accounttarif.datetime = model.created
-                    self.connection.save(accounttarif,"billservice_accounttarif")
+
+                d = self.connection.account_save(model, tarif_id=self.tarif_id,template_id=contracttemplate_id)
+                print d
+                if d.status==False:
+                    QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.errors.get(x))) for x in d.errors])))
+                    return
+                else:
+                    
+                    model.id = d.account_id
+                    self.model = model
 
             if self.groupBox_urdata.isChecked():
                 if unicode(self.lineEdit_organization.text())=="" or unicode(self.lineEdit_bank.text())=="":
                     QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указаны реквизиты юридического лица(название организации, банк)."))
                     return
-                if self.organization:
-                    org = self.organization
-                    bank = self.connection.get_model(org.bank_id, "billservice_bankdata")
-                else:
-                    org = Object()
-                    bank = Object()
+
+                model.bank_bank = unicode(self.lineEdit_bank.text())
+                model.bank_bankcode = unicode(self.lineEdit_bank_code.text())
+                model.bank_rs = unicode(self.lineEdit_rs.text())
+                model.bank_currency = ''
+                #model.bank_id = self.connection.save(bank, "billservice_bankdata")
+                #self.bank = bank
                 
-                bank.bank = unicode(self.lineEdit_bank.text())
-                bank.bankcode = unicode(self.lineEdit_bank_code.text())
-                bank.rs = unicode(self.lineEdit_rs.text())
-                bank.currency = ''
-                bank.id = self.connection.save(bank, "billservice_bankdata")
-                self.bank = bank
-                
-                org.name = unicode(self.lineEdit_organization.text())
-                org.uraddress = unicode(self.lineEdit_uraddress.text())
-                org.phone = unicode(self.lineEdit_urphone.text())
-                org.fax = unicode(self.lineEdit_fax.text())
-                org.okpo = unicode(self.lineEdit_okpo.text())
-                org.unp = unicode(self.lineEdit_unp.text())
-                org.kpp = unicode(self.lineEdit_kpp.text())
-                org.kor_s = unicode(self.lineEdit_kor_s.text())
-                org.account_id = model.id
-                org.bank_id = bank.id
-                org.id = self.connection.save(org, "billservice_organization")
-                self.organization = org
-                #print "save org.data"
-            else:
-                if self.organization:
-                    self.connection.iddelete(self.organization.id, "billservice_organization")    
+                model.org_name = unicode(self.lineEdit_organization.text())
+                model.org_uraddress = unicode(self.lineEdit_uraddress.text())
+                model.org_phone = unicode(self.lineEdit_urphone.text())
+                model.org_fax = unicode(self.lineEdit_fax.text())
+                model.org_okpo = unicode(self.lineEdit_okpo.text())
+                model.org_unp = unicode(self.lineEdit_unp.text())
+                model.org_kpp = unicode(self.lineEdit_kpp.text())
+                model.org_kor_s = unicode(self.lineEdit_kor_s.text())
+
+   
             
                     
             #x8021 = self.connection.get
             
-            self.model = self.connection.get_model(model.id, "billservice_account")
+            #self.model = self.connection.get_model(model.id, "billservice_account")
             self.connection.commit()
-            self.fixtures()
+            #self.fixtures()
             if self.parent_window:
                 self.parent_window.refresh()
             self.actionAdd.setDisabled(False)
@@ -2113,24 +2119,25 @@ class AccountWindow(QtGui.QMainWindow):
         
     def accountTarifRefresh(self):
         if self.model:
-            ac=self.connection.sql("""SELECT accounttarif.*, tarif.name as tarif_name, tarif.settlement_period_id FROM billservice_accounttarif as accounttarif 
-            JOIN billservice_tariff as tarif ON tarif.id=accounttarif.tarif_id
-            WHERE account_id=%d AND tarif.deleted IS NOT TRUE ORDER BY datetime ASC""" % self.model.id)
-            self.tableWidget_accounttarif.setRowCount(len(ac))
+            ac = self.connection.get_accounttariffs(self.model.id)
+            if not ac.status: return
+                
+            self.tableWidget_accounttarif.setRowCount(ac.totalCount)
+            ac = ac.records
             i=0
             #print ac
             for a in ac:
                 sp_start, sp_end,length = "","",""
-                if a.settlement_period_id:
-                    sp_start, sp_end,length = self.connection.sp_info(a.settlement_period_id, a.datetime)
+                #if a.settlement_period_id:
+                #    sp_start, sp_end,length = self.connection.sp_info(a.settlement_period_id, a.datetime)
                     
                 self.addrow(self.tableWidget_accounttarif, a.id, i,0)
-                self.addrow(self.tableWidget_accounttarif, a.tarif_name, i,1)
+                self.addrow(self.tableWidget_accounttarif, a.tarif, i,1)
                 self.addrow(self.tableWidget_accounttarif, a.datetime, i,2)
                 self.addrow(self.tableWidget_accounttarif, u"Да" if a.periodical_billed else u"Нет", i,3)
-                if sp_start and sp_end:
-                    self.addrow(self.tableWidget_accounttarif, sp_start, i,4)
-                    self.addrow(self.tableWidget_accounttarif, sp_end, i,5)
+                #if sp_start and sp_end:
+                #    self.addrow(self.tableWidget_accounttarif, sp_start, i,4)
+                #    self.addrow(self.tableWidget_accounttarif, sp_end, i,5)
                 i+=1
 
             self.tableWidget_accounttarif.setColumnHidden(0, True)
@@ -2143,11 +2150,12 @@ class AccountWindow(QtGui.QMainWindow):
             
     def suspendedPeriodRefresh(self):
         if self.model:
-            sp = self.connection.get_models("billservice_suspendedperiod", where={'account_id':self.model.id})
-            self.connection.commit()
-            self.tableWidget_suspended.setRowCount(len(sp))
+            sp = self.connection.get_suspendedperiods(account_id=self.model.id)
+            if not sp.status: return
+            
+            self.tableWidget_suspended.setRowCount(sp.totalCount)
             i=0
-            for a in sp:
+            for a in sp.records:
                 self.addrow(self.tableWidget_suspended, a.id, i, 0)
                 self.addrow(self.tableWidget_suspended, a.start_date, i, 1)
                 try:
@@ -2160,19 +2168,16 @@ class AccountWindow(QtGui.QMainWindow):
       
     def accountAddonServiceRefresh(self):
         if self.model:
-            sp = self.connection.sql("""
-            SELECT accadd.*, adds.name as addonservice_name, adds.id as addonservice_id, (SELECT username from billservice_subaccount WHERE id=accadd.subaccount_id) as subaccount_username FROM billservice_accountaddonservice as accadd
-            JOIN billservice_addonservice as adds ON adds.id=accadd.service_id
-            WHERE account_id=%s ORDER BY id DESC
-            """ % self.model.id)
+            sp = self.connection.get_accountaddonservices(account_id = self.model.id)
+            if not sp.status: return
             self.connection.commit()
             self.tableWidget_addonservice.clearContents()
-            self.tableWidget_addonservice.setRowCount(len(sp))
+            self.tableWidget_addonservice.setRowCount(sp.totalCount)
             i=0
-            for a in sp:
+            for a in sp.records:
                 self.addrow(self.tableWidget_addonservice, a.id, i, 0)
                 self.addrow(self.tableWidget_addonservice, a.addonservice_name, i, 1)
-                self.addrow(self.tableWidget_addonservice, a.subaccount_username, i, 2)
+                self.addrow(self.tableWidget_addonservice, a.subaccount, i, 2)
                 
                 self.addrow(self.tableWidget_addonservice, a.activated, i, 3)
                 try:
@@ -2200,14 +2205,17 @@ class AccountWindow(QtGui.QMainWindow):
             JOIN billservice_manufacturer as m ON m.id=model.manufacturer_id
             WHERE ahw.account_id=%s ORDER BY ahw.returned,ahw.datetime
             """ % self.model.id)
+            
+            sp = self.connection.get_accounthardware(account_id=self.model.id)
+            if not sp.status: return
             self.connection.commit()
             self.tableWidget_accounthardware.clearContents()
             self.tableWidget_accounthardware.setSortingEnabled(False)
-            self.tableWidget_accounthardware.setRowCount(len(sp))
+            self.tableWidget_accounthardware.setRowCount(sp.totalCount)
             i=0
-            for a in sp:
+            for a in sp.records:
                 self.addrow(self.tableWidget_accounthardware, a.id, i, 0)
-                self.addrow(self.tableWidget_accounthardware, a.hwtype_name, i, 1)
+                self.addrow(self.tableWidget_accounthardware, a.hwtype, i, 1)
                 self.addrow(self.tableWidget_accounthardware, a.manufacturer, i, 2)
                 self.addrow(self.tableWidget_accounthardware, a.model, i, 3)
                 self.addrow(self.tableWidget_accounthardware, a.sn, i, 4)
@@ -2224,23 +2232,19 @@ class AccountWindow(QtGui.QMainWindow):
             
     def subAccountLinkRefresh(self):
         if self.model:
-            sp = self.connection.get_models("billservice_subaccount", where={'account_id':self.model.id})
-            
-            sp = self.connection.sql("""
-            SELECT *, (SELECT name FROM nas_nas WHERE id=subaccount.nas_id) as nas_name FROM billservice_subaccount as subaccount
-            WHERE account_id=%s ORDER BY id DESC
-            """ % self.model.id)            
+            sp = self.connection.get_subaccounts(account_id=self.model.id)
+            if not sp.status: return
             self.connection.commit()
-            self.tableWidget_subaccounts.setRowCount(len(sp))
+            self.tableWidget_subaccounts.setRowCount(sp.totalCount)
             i=0
-            for a in sp:
+            for a in sp.records:
                 self.addrow(self.tableWidget_subaccounts, a.id, i, 0)
                 self.addrow(self.tableWidget_subaccounts, a.username, i, 1)
                 self.addrow(self.tableWidget_subaccounts, a.password, i, 2)
                 self.addrow(self.tableWidget_subaccounts, a.vpn_ip_address, i, 3)
                 self.addrow(self.tableWidget_subaccounts, a.ipn_ip_address, i, 4)
                 self.addrow(self.tableWidget_subaccounts, a.ipn_mac_address, i, 5)
-                self.addrow(self.tableWidget_subaccounts, a.nas_name, i, 6)
+                self.addrow(self.tableWidget_subaccounts, a.nas, i, 6)
                 self.tableWidget_subaccounts.setCellWidget(i,7,tableImageWidget(ipn_sleep=a.ipn_sleep, ipn_status=a.ipn_enabled, ipn_added=a.ipn_added))
                 #self.addrow(self.tableWidget_subaccounts, a.start_date.strftime(strftimeFormat), i, 1)
                 #try:
@@ -2357,7 +2361,7 @@ class AccountWindow(QtGui.QMainWindow):
     def editSubAccount(self):
         i=self.getSelectedId(self.tableWidget_subaccounts)
         try:
-            model = self.connection.get_model(i, "billservice_subaccount")
+            model = self.connection.get_subaccounts(id=i, normal_fields=False)
         except:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
             return

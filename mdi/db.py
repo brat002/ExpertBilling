@@ -7,6 +7,37 @@ import  datetime
 import os
 from re import escape
 from types import InstanceType, StringType, UnicodeType
+
+
+class AttrDict(dict):
+    
+    def __init__(self,data={}):
+        for key in data:
+            d = data[key]
+            if type(d)==AttrDict:
+                if '__type__' in d:
+                    t = d.pop('__type__')
+                    if t == 'datetime':
+                        self[key] = datetime.datetime(**d)
+                    else:
+                        # Oops... better put this back together.
+                        self[key]['__type__'] = t
+                else:
+                    self[key]=d 
+            else:
+                self[key]=d
+        super(AttrDict, self).__init__() 
+
+    
+    def __getattr__(self, attr):
+        return self[attr]
+
+    def __setattr__(self, attr, value):
+        self[attr] = value
+        
+        
+
+        
 def format_update (x,y):
     #print 'y', y, type(y)
     if y!=u'Null' and y!=u'None':
@@ -29,6 +60,7 @@ def format_insert(y):
     
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
+        self.__data__={}
         for key in result:
             setattr(self, key, result[key])
         """
