@@ -2,6 +2,7 @@
 
 #global connection
 import sys, traceback, os
+from types import NoneType
 sys.path.append(os.path.abspath('../'))
 from PyQt4 import QtCore, QtGui
 from helpers import Object as Object
@@ -44,8 +45,9 @@ def dict_to_object( d):
 
 class HttpBot(object):
     """an HttpBot represents one browser session, with cookies."""
-    def __init__(self, host):
+    def __init__(self, widget, host):
         self.host = host
+        self.widget = widget
         cookie_handler= urllib2.HTTPCookieProcessor()
         redirect_handler= urllib2.HTTPRedirectHandler()
         self._opener = urllib2.build_opener(redirect_handler, cookie_handler)
@@ -70,6 +72,10 @@ class HttpBot(object):
                     parameters[key] = value.encode('utf-8')
                 elif isinstance(value, datetime.datetime):
                     parameters[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                elif isinstance(value, NoneType):
+                    parameters[key] = ''
+                elif isinstance(value, list):
+                    parameters[key] = ','.join(map(str, value))
                 else:
                     parameters[key] = value
 
@@ -84,6 +90,10 @@ class HttpBot(object):
                     parameters[key] = value.encode('utf-8')
                 elif isinstance(value, datetime.datetime):
                     parameters[key] = value.strftime('%Y-%m-%d %H:%M:%S')
+                elif isinstance(value, NoneType):
+                    parameters[key] = ''
+                elif isinstance(value, list):
+                    parameters[key] = ','.join(map(str, value))
                 else:
                     parameters[key] = value
             
@@ -96,14 +106,15 @@ class HttpBot(object):
             except urllib2.HTTPError, e:
                 print 'The server couldn\'t fulfill the request.'
                 print 'Error code: ', e.code
-                k = open("d:/trace.html", "w")
+                k = open("trace.html", "w")
                 k.write('\n'.join(e.readlines()))
                 k.close()
                 attempts+=1
-                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(str(e)))
+                QtGui.QMessageBox.warning(self.widget, unicode(u"Ошибка"), unicode(str(e)))
             except urllib2.URLError, e:
                 print 'We failed to reach a server.'
                 print 'Reason: ', e.reason
+                QtGui.QMessageBox.warning(self.widget, unicode(u"Ошибка"), unicode(str(e)))
                 attempts+=1
             
         
@@ -125,18 +136,52 @@ class HttpBot(object):
         else:
             return d
     
+    def warning(self, title, message, errors=[]):
+            if errors:
+                QtGui.QMessageBox.warning(self.widget, unicode(u"Внимание"), unicode('\n'.join(["%s %s" % (x, ';'.join(errors.get(x))) for x in errors])))
+            if message:
+                QtGui.QMessageBox.warning(self.widget, unicode(u"Ошибка"), unicode("%s" % message))
+
+    def error(self, response, title=u'Ошибка!'):
+            if 'errors' in response:
+                QtGui.QMessageBox.critical(self.widget, unicode(u"Внимание"), unicode('\n'.join(["%s %s" % (x, ';'.join(response.errors.get(x))) for x in response.errors])))
+            if 'message' in response:
+                QtGui.QMessageBox.critical(self.widget, unicode(u"Ошибка"), unicode("%s" % response.message))
+                      
     def log_in(self, name, password):
         url='http://%s/ebsadmin/simple_login/' % self.host 
         
         d = self.POST(url, {'username':name, 'password':password})
         return d
 
-    def get_settlementperiods(self,id=None, fields=[]):
+    def get_settlementperiods(self,id=None, autostart=True, fields=[]):
         url='http://%s/ebsadmin/settlementperiods/' % self.host 
         
+        d = self.POST(url,{'data': json.dumps({'fields':fields, 'id':id, 'autostart':autostart}, ensure_ascii=False)})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+
+    def get_accessparameters(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/accessparameters/' % self.host 
+        
         d = self.POST(url,{'fields':fields, 'id':id})
-        #print d
-        return d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_timeperiods(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/timeperiods/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
     def get_accounttariffs(self,account_id=None, fields=[]):
         url='http://%s/ebsadmin/accounttariffs/' % self.host 
         
@@ -144,12 +189,31 @@ class HttpBot(object):
         #print d
         return d
 
-    def get_suspendedperiods(self,account_id=None, fields=[]):
+    def postprocess(self,response, id=None):
+        if id:
+            if response.totalCount==1:
+                return response.records[0]
+        if response.totalCount>0:
+            return response.records
+        if response.totalCount==0:
+            return response.records
+        return response
+    
+    def get_suspendedperiods(self,id=None, account_id=None, fields=[]):
         url='http://%s/ebsadmin/suspendedperiods/' % self.host 
         
-        d = self.POST(url,{ 'account_id':account_id})
+        d = self.POST(url,{'id':id,  'account_id':account_id})
         #print d
-        return d
+        return self.postprocess(d, id)
+    
+    def get_templates(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/templates/' % self.host 
+        
+        d = self.POST(url,{'id':id,  'fields':fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
     
     def get_subaccounts(self, id='', account_id='', fields=[], normal_fields=True):
         url='http://%s/ebsadmin/subaccounts/' % self.host 
@@ -157,10 +221,10 @@ class HttpBot(object):
         d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id, 'normal_fields':normal_fields})
         print 'data====', d
         return d
-    def get_accountaddonservices(self, id=None, account_id=None, fields=[]):
+    def get_accountaddonservices(self, id=None, account_id=None, subaccount_id=None, fields=[]):
         url='http://%s/ebsadmin/accountaddonservices/' % self.host 
         
-        d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id})
+        d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id, 'subaccount_id':subaccount_id})
         print 'data====', d
         return d   
         
@@ -184,7 +248,38 @@ class HttpBot(object):
         d = self.POST(url,{'id':id})
         #print d
         return d
+    
+    def change_tarif(self, ids,tarif,date):
+        url='http://%s/ebsadmin/accounttariffs/bathset/' % self.host 
+        
 
+        d = self.POST(url,{'accounts':ids, 'tariff':tarif, 'date':date})
+        if not d.status:
+            self.error(d)
+            return
+        #print d
+        return d
+    
+    def get_mac_for_ip(self, nas_id, ipn_ip):
+        url='http://%s/ebsadmin/getmacforip/' % self.host 
+        
+        d = self.POST(url,{'nas_id':nas_id, 'ipn_ip_address':ipn_ip})
+        #print d
+        return d
+        
+    def accountActions(self, account_id, subaccount_id, action):
+        url='http://%s/ebsadmin/actions/set/' % self.host 
+        
+        d = self.POST(url,{'account_id':account_id, 'subaccount_id':subaccount_id, 'action':action})
+        #print d
+        return d
+    
+    def get_pool_by_ipinuse(self, ipinuse):
+        url='http://%s/ebsadmin/pools/getbyipinuse/' % self.host 
+        
+        d = self.POST(url,{'ipinuse':ipinuse})
+        #print d
+        return d
     def check_account_exists(self, username):
         url='http://%s/ebsadmin/account/exists/' % self.host 
         
@@ -202,6 +297,18 @@ class HttpBot(object):
         d = self.POST(url,model)
         #print d
         return d
+
+    def subaccount_save(self, model):
+        url='http://%s/ebsadmin/subaccounts/set/' % self.host 
+        #print model
+
+        #print a
+        #print dir(a)
+        d = self.POST(url,model)
+        #print d
+        return d
+    
+    
     
     def get_transactiontypes(self,id=None, fields=[]):
         url='http://%s/ebsadmin/transactiontypes/' % self.host 
@@ -223,7 +330,13 @@ class HttpBot(object):
         pass
     
     def sql(self, s):
-        return []
+        url='http://%s/ebsadmin/sql/' % self.host 
+        
+        d = self.POST(url,{'sql':s})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
     
     def settlementperiod_delete(self,id):
         url='http://%s/ebsadmin/settlementperiods/delete/' % self.host 
@@ -271,18 +384,208 @@ class HttpBot(object):
         url='http://%s/ebsadmin/contracttemplates/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id})
-        #print d
-        return d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
     
-    def get_tariffs(self,id=None, fields=[]):
+    def get_tariffs(self,id=None, fields=[], normal_fields=False):
         
         url='http://%s/ebsadmin/tariffs/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id})
+        if not d.status:
+            self.error(message=d.message)
+            return
+
+        if id:
+            if d.totalCount==1:
+                return d.records[0]
+        if d.totalCount>0:
+            return d.records
+        if d.totalCount==0:
+            return d.records
+        return d
+    
+    def get_nasses(self, id=None, fields=[]):
+        url='http://%s/ebsadmin/nasses/' % self.host 
+        
+        d = self.POST(url, {'fields':fields, 'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+
+    def get_groups(self, id=None, fields=[], normal_fields=False):
+        url='http://%s/ebsadmin/groups/' % self.host 
+        
+        d = self.POST(url, {'fields':fields, 'id':id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    
+    def get_trafficclasses(self, id=None, fields=[]):
+        url='http://%s/ebsadmin/trafficclasses/' % self.host 
+        
+        d = self.POST(url, {'fields':fields, 'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+
+    def get_class_for_group(self, group=None, fields=[]):
+        url='http://%s/ebsadmin/classforgroup/' % self.host 
+        
+        d = self.POST(url, {'fields':fields, 'group':group})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
+                            
+    def get_ippools(self,id=None, fields=[], type=None):
+        url='http://%s/ebsadmin/ippools/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'type':type})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+
+    def get_periodicalservices(self, id=None, tarif_id=None, deleted=False, fields=[], normal_fields=False):
+        url='http://%s/ebsadmin/periodicalservices/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'tarif':tarif_id, 'deleted':deleted, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+        
+    def get_timeaccessservices(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/timeaccessservices/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id,})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    
+    def get_timespeeds(self,id=None, fields=[], access_parameters=None, normal_fields=True):
+        url='http://%s/ebsadmin/timespeeds/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'type':type, 'access_parameters':access_parameters, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_timeaccessservices_nodes(self, id=None, service_id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/timeaccessservices/nodes/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'service_id':service_id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_traffictransmitnodes(self, id=None, service_id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/traffictransmit/nodes/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'service_id':service_id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    
+    def get_traffictransmitservices(self, id=None,  fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/traffictransmitservices/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id,  'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_prepaidtraffic(self, id=None, service_id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/prepaidtraffic/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'service_id':service_id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    
+    
+    def get_radiustrafficservices(self, id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/radiustrafficservices/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_speedlimites(self, id=None, limit_id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/speedlimites/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'limit_id':limit_id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_addonservicetariff(self, id=None, tarif_id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/addonservicetariff/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'tarif_id':tarif_id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_onetimeservices(self, id=None, tarif_id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/onetimeservices/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'tarif_id':tarif_id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_trafficlimites(self, id=None, tarif_id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/trafficlimites/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'tarif_id':tarif_id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    
+    def get_radiustrafficservices_nodes(self, id=None, service_id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/radiustrafficservices/nodes/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'service_id':service_id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_ips_from_ippool(self,pool_id):
+        url='http://%s/ebsadmin/ipaddress/getfrompool/' % self.host 
+        
+        d = self.POST(url,{'pool_id':pool_id})
         #print d
         return d
-    def get_nasses(self,id=None, fields=[]):
-        url='http://%s/ebsadmin/nasses/' % self.host 
+    
+    
+    
+    def get_switches(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/switches/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id})
         #print d
@@ -295,12 +598,42 @@ class HttpBot(object):
         #print d
         return d
     
+    def get_addonservices(self,id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/addonservices/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'normal_fields':normal_fields})
+        
+        if not d.status:
+            self.error(message=d.message)
+            return
+
+        if id:
+            if d.totalCount==1:
+                return d.records[0]
+        if d.totalCount>0:
+            return d.records
+        if d.totalCount==0:
+            return d.records
+        return d
+    
+    def get_operator(self,id=None, fields=[], normal_fields=True):
+        url='http://%s/ebsadmin/operator/' % self.host 
+        
+        d = self.POST(url)
+        
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id=1)
+    
     def gettariffs(self, fields=[]):
         url='http://%s/ebsadmin/gettariffs/' % self.host 
         
         d = self.POST(url,{})
-        #print d
-        return d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
     
     def accountsfortariff(self, tarif_id ):
         url='http://%s/ebsadmin/accountsfortariff/' % self.host 
@@ -323,12 +656,116 @@ class HttpBot(object):
         #print d
         return d
     
+    def tariff_save(self, data):
+        url='http://%s/ebsadmin/tariffs/set/' % self.host 
+        #print model
+        print data
+        d = self.POST(url,{'data':json.dumps(data,  ensure_ascii=False)})
+        print "d.status", d.status, type(d.status)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+
+    def addonservice_save(self, data):
+        url='http://%s/ebsadmin/addonservices/set/' % self.host 
+        #print model
+
+        d = self.POST(url,{'data':json.dumps(data,  ensure_ascii=False)})
+
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def accountaddonservice_save(self, model):
+        url='http://%s/ebsadmin/accountaddonservices/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        print "d.status", d.status, type(d.status)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def accounttarif_save(self, model):
+        url='http://%s/ebsadmin/accounttariffs/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        print "d.status", d.status, type(d.status)
+        if not d.status:
+            self.error(errors=d.errors)
+            return
+        return True
+
+    def suspendedperiod_save(self, model):
+        url='http://%s/ebsadmin/suspendedperiod/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        print "d.status", d.status, type(d.status)
+        if not d.status:
+            self.error(response=d)
+            return
+        return True
+
+    def group_save(self, model):
+        url='http://%s/ebsadmin/groups/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
     def nas_delete(self,id):
         url='http://%s/ebsadmin/nasses/delete/' % self.host 
         #print model
         d = self.POST(url,{'id':id})
         #print d
         return d
+
+    def group_delete(self,id):
+        url='http://%s/ebsadmin/groups/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        #print d
+        return d
+    
+    def account_delete(self,id):
+        url='http://%s/ebsadmin/account/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def accounttariff_delete(self,id):
+        url='http://%s/ebsadmin/accounttariffs/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(message=d.message)
+            return
+        return d
+
+    def delete_suspendedperiod(self,id):
+        url='http://%s/ebsadmin/suspendedperiod/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.postprocess(d)
+            return
+        return d
+    
+    def subaccount_delete(self,id):
+        url='http://%s/ebsadmin/subaccount/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        #print d
+        return d
+    
     
     def testCredentials(self, host, login, password):
         url='http://%s/ebsadmin/test_credentials/' % self.host 
@@ -1287,7 +1724,7 @@ def login():
                 pass
             logger = isdlogger.isdlogger('logging', loglevel=LOG_LEVEL, ident='mdi', filename='log/mdi_log')
 
-            connection = HttpBot(host=unicode(child.address))
+            connection = HttpBot(widget=child, host=unicode(child.address))
             data = connection.log_in(unicode(child.name), unicode(child.password))
             username = unicode(child.name)
 

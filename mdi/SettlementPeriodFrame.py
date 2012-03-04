@@ -280,10 +280,6 @@ class SettlementPeriodEbs(ebsTableWindow):
         id=self.getSelectedId()
         try:
             model=self.connection.get_settlementperiods(id)
-            print model
-            if not model.status:return
-            
-            model = model.records[0]
         except:
             return
 
@@ -305,10 +301,10 @@ class SettlementPeriodEbs(ebsTableWindow):
         self.tableWidget.setSortingEnabled(False)
         periods = self.connection.get_settlementperiods()
         #self.connection.commit()
-        self.tableWidget.setRowCount(periods.totalCount)
+        self.tableWidget.setRowCount(len(periods))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0
-        for period in periods.records:
+        for period in periods:
             self.addrow(period.id, i,0)
             self.addrow(period.name, i,1)
             self.addrow(period.autostart, i,2)

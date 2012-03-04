@@ -685,7 +685,7 @@ class NetFlowRoutine(Thread):
                                     trafic_cost = self.get_actual_cost(octets_summ, stream_date, nodes) if nodes else 0
                                     summ = (trafic_cost * octets) / MEGABYTE
         
-                            if summ > 0:
+                            if summ != 0:
                                 with queues.pickerLock:
                                     queues.picker.add_summ(acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ)
 

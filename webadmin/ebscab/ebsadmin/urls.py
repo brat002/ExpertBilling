@@ -13,21 +13,59 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^gettariffs/$', 'get_tariffs'),
      url(r'^accountsfortariff/$', 'accounts_for_tarif'),
      
+     url(r'^timeperiods/$', 'timeperiods'),
+     url(r'^onetimeservices/$', 'onetimeservices'),
+     url(r'^trafficlimites/$', 'trafficlimites'),
+     url(r'^speedlimites/$', 'speedlimites'),
+     url(r'^addonservicetariff/$', 'addonservicetariff'),
+    
+     url(r'^sql/$', 'sql'),
+     url(r'^traffictransmitservices/$', 'traffictransmitservices'),
+     url(r'^radiustrafficservices/$', 'radiustrafficservices'),
+     url(r'^radiustrafficservices/nodes/$', 'radiustrafficservices_nodes'),
+     url(r'^prepaidtraffic/$', 'prepaidtraffic'),
      
+     url(r'^traffictransmit/nodes/$', 'traffictransmit_nodes'),
+     url(r'^timespeeds/$', 'timespeeds'),
+     url(r'^timeaccessservices/nodes/$', 'timeaccessservices_nodes'),
+     
+     url(r'^timeaccessservices/$', 'timeaccessservices'),
      url(r'^settlementperiods/$', 'settlementperiods'),
+     url(r'^accessparameters/$', 'accessparameters'),
+     
+     
      url(r'^settlementperiods/delete/$', 'settlementperiod_delete'),
      url(r'^settlementperiods/save/$', 'settlementperiod_save'),
      
      url(r'^cities/$', 'cities'),
      
      url(r'^nasses/$', 'nasses'),
+     url(r'^groups/$', 'groups'),
+     url(r'^groups/set/$', 'groups_save'),
+     url(r'^groups/delete/$', 'groups_delete'),
+     url(r'^periodicalservices/$', 'periodicalservices'),
+     
+     url(r'^trafficclasses/$', 'trafficclasses'),
+     url(r'^classforgroup/$', 'classforgroup'),
+     
+     
      url(r'^nasses/save/$', 'nas_save'),
      url(r'^nasses/delete/$', 'nas_delete'),
+     url(r'^subaccount/delete/$', 'subaccount_delete'),
      #url(r'^nasses1/$', 'nasses1'),
      url(r'^nas/$', 'nas'),
      
      url(r'^switch/$', 'switch'),
+     
+     url(r'^switches/$', 'switches'),
+     
+     
+     url(r'^pools/getbyipinuse/$', 'get_pool_by_ipinuse'),
      url(r'^ippool/$', 'ippool'),
+     url(r'^operator/$', 'operator'),
+     
+     
+     url(r'^ippools/$', 'ippools'),
      url(r'^tpchange/$', 'tpchange'),
      url(r'^tpchange/set/$', 'tpchange_save'),
      url(r'^actions/set/$', 'actions_set'),
@@ -39,29 +77,37 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^suspendedperiods/$', 'suspendedperiods'),
      url(r'^suspendedperiod/get/$', 'suspendedperiod_get'),
      url(r'^suspendedperiod/set/$', 'suspendedperiod_set'),
+     url(r'^suspendedperiod/delete/$', 'suspendedperiod_delete'),
      url(r'^transaction/set/$', 'transaction_set'),
      
      url(r'^document/$', 'document'),
      url(r'^document/set/$', 'document_save'),
      url(r'^document/get/$', 'document_get'),
-     url(r'^template/$', 'template'),
+     url(r'^templates/$', 'templates'),
      url(r'^documentrender/$', 'documentrender'),
      url(r'^accounthardware/$', 'accounthardware'),
      
      
      
      url(r'^accounttariffs/$', 'accounttariffs'),
+     url(r'^accounttariffs/set/$', 'accounttariffs_set'),
+     url(r'^accounttariffs/bathset/$', 'accounttariffs_bathset'),
+     
+     url(r'^accounttariffs/delete/$', 'accounttariffs_delete'),
      
      url(r'^account/ipnforvpn/$', 'ipnforvpn'),
      url(r'^account/save/$', 'account_save'),
+     url(r'^account/delete/$', 'account_delete'),
      url(r'^account/exists/$', 'account_exists'),
      url(r'^account/$', 'account'),
      url(r'^accounts/live/$', 'account_livesearch'),
      url(r'^subaccounts/$', 'subaccounts'),
      url(r'^addonservices/$', 'addonservices'),
+    url(r'^addonservices/set/$', 'addonservices_set'),
      url(r'^organizations/$', 'organizations'),
      url(r'^banks/$', 'banks'),
      
+     url(r'^tariffs/set/$', 'tariffs_set'),
      url(r'^tariffs/$', 'tariffs'),
      url(r'^subaccounts/get/$', 'subaccount'),
      url(r'^subaccounts/set/$', 'subaccount_save'),

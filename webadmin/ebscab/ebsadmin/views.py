@@ -2,13 +2,16 @@
 
 from ebscab.lib.decorators import render_to, ajax_request
 from ebscab.lib.ssh_paramiko import ssh_client
-from billservice.models import Account, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
-from billservice.models import Organization, BankData, SettlementPeriod, Template, AccountHardware, SuspendedPeriod, Operator, Transaction, PeriodicalService, AddonService, Tariff
-from nas.models import Nas
+from billservice.models import Account, AccessParameters, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
+from billservice.models import Organization, TimeSpeed, BankData, TimePeriod, SettlementPeriod, Template, AccountHardware, SuspendedPeriod, Operator, Transaction, PeriodicalService, AddonService, Tariff
+from billservice.models import OneTimeService, TimeSpeed, GroupTrafficClass, TrafficTransmitNodes, PrepaidTraffic, Group, PeriodicalService, OneTimeService, TrafficLimit, AddonServiceTarif
+from billservice.models import TrafficTransmitService, SpeedLimit,  RadiusTraffic, RadiusTrafficNode,TimeAccessNode,TimeAccessService
+
+from nas.models import Nas, Switch, TrafficClass
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
 from django.db import connection
-from billservice.forms import AccountForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
+from billservice.forms import AccountForm, TimeSpeedForm, GroupForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
 from billservice.forms import DocumentModelForm, SuspendedPeriodModelForm, TransactionModelForm
 from utilites import cred
 import IPy
@@ -17,11 +20,14 @@ from IPy import IP
 from utilites import rosClient
 import datetime
 from mako.template import Template as mako_template
-from ebsadmin.lib import ExtDirectStore
-from billservice.forms import LoginForm, SettlementPeriodForm, OrganizationForm, BankDataForm
+from ebsadmin.lib import ExtDirectStore, instance_dict
+from billservice.forms import LoginForm, RadiusTrafficForm, RadiusTrafficNodeForm, PrepaidTrafficForm, TrafficTransmitNodeForm,TrafficTransmitServiceForm, PeriodicalServiceForm, OneTimeServiceForm,  TariffForm, AccessParametersForm, SettlementPeriodForm, OrganizationForm, BankDataForm,AccountTariffBathForm
+from billservice.forms import TimeAccessNodeForm, TimeAccessServiceForm, TrafficLimitForm, SpeedLimitForm
 from billservice import authenticate, log_in, log_out
 from nas.forms import NasForm
-
+from django.db.models import Q
+from django.db import transaction
+import json
 
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
@@ -55,12 +61,12 @@ def jsonaccounts(request):
         extra['sort'] = request.POST.get('sort','')
         extra['dir'] = request.POST.get('dir','asc')
         
-    if request.GET.get('action')!='search':
+    if request.POST.get('action')!='search':
         #items = Account.objects.all()
         items = ExtDirectStore(Account)
         items, totalcount = items.query(**extra)
     else:
-        f=SearchAccountForm(request.GET)
+        f=SearchAccountForm(request.POST)
         print f.errors
         print f.cleaned_data
         query={}
@@ -164,16 +170,16 @@ def generate_credentials(request):
 def get_mac_for_ip(request):
     nas_id = request.POST.get('nas_id', None)
     if not nas_id:
-        return {'success':False, 'msg':u'Сервер доступа не указан'}
+        return {'status':False, 'message':u'Сервер доступа не указан'}
     ipn_ip_address = request.POST.get('ipn_ip_address')
     try:
         nas = Nas.objects.get(id=nas_id)
     except Exception, e:
-        return {'success':False, 'msg':str(e)}
+        return {'status':False, 'message':str(e)}
     try:
         IPy.IP(ipn_ip_address)
     except Exception, e:
-        return {'success':False, 'msg':str(e)}
+        return {'status':False, 'message':str(e)}
     try:
         apiros = rosClient(nas.ipaddress, nas.login, nas.password)
         command='/ping =address=%s =count=1' % ipn_ip_address
@@ -185,7 +191,7 @@ def get_mac_for_ip(request):
         del apiros
         del rosExecute
     except Exception, e:
-        return {'success':False, 'msg':str(e)}
+        return {'success':False, 'message':str(e)}
     
     return {'success':True, 'mac':mac}
     
@@ -194,7 +200,9 @@ def get_mac_for_ip(request):
 def subaccounts(request):
     account_id = request.POST.get('account_id', None)
     id = request.POST.get('id', None)
-    normal_fields = request.POST.get('normal_fields', True)
+    print "n fields", request.POST.get('normal_fields', True)
+    normal_fields = request.POST.get('normal_fields', True)=='True'
+    print "normal_fields",normal_fields, type(normal_fields)
     print "subaccount", account_id
     if account_id and account_id!= 'None':
         items = SubAccount.objects.filter(account__id=account_id)
@@ -210,7 +218,30 @@ def subaccounts(request):
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
-    return {"records": res, 'status':True, 'totalCount':True}
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def addonservices(request):
+    id = request.POST.get('id', None)
+    
+    normal_fields = request.POST.get('normal_fields', True)=='True'
+    print 'id', id, type(id), len(id)
+    if id and id!= '':
+        items = AddonService.objects.filter(id=id)
+    else:
+        items = AddonService.objects.all().order_by('name')
+    #print accounts
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item,normal_fields=normal_fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
@@ -239,20 +270,28 @@ def document_get(request):
 
 @ajax_request
 @login_required
-def template(request):
+def templates(request):
 
-    items = Template.objects.all().order_by('name')
-    #print accounts
-    #from django.core import serializers
-    #from django.http import HttpResponse
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    if id and id!='None':
+        items = Template.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'Template item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = Template.objects.all()
+        
     res=[]
     for item in items:
         #print instance_dict(acc).keys()
-        res.append({'id':item.id,'name':item.name})
+        res.append(instance_dict(item, fields=fields, normal_fields=False))
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
-    return {"records": res}
+    return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
@@ -274,44 +313,315 @@ def sessions(request):
 
     return {"records": res}
 
-@ajax_request
-@login_required
-def addonservices(request):
-    #account_id = request.POST.get('account_id')
-    #print "subaccount", account_id
-    items = AddonService.objects.all()
-    #print accounts
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    for item in items:
-        #print instance_dict(acc).keys()
-        res.append(instance_dict(item,normal_fields=True))
-    print instance_dict(item,normal_fields=True).keys()
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
-    return {"records": res}
 
 @ajax_request
 @login_required
 def settlementperiods(request):
-    fields = request.POST.get('fields',[])
-    id = request.POST.get('id',None)
+    
+    js = json.loads(request.POST.get('data','{}'))
+    fields = js.get('fields',[])
+    id = js.get('id',None)
+    autostart = js.get('autostart',None)
     if id and id!='None':
-        items = SettlementPeriod.objects.filter(id=id)
+        if autostart is not None:
+            items = SettlementPeriod.objects.filter(id=id, autostart=autostart)
+        else:
+            items = SettlementPeriod.objects.filter(id=id)
+            
         if not items:
             return {'status':False, 'message': 'SettlementPeriod item with id=%s not found' % id}
         if len(items)>1:
             return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
         
     else:
-        items = SettlementPeriod.objects.all()
+        if autostart is not None:
+            items = SettlementPeriod.objects.filter(autostart=autostart)
+        else:
+            items = SettlementPeriod.objects.all()
         
     res=[]
     for item in items:
         #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def accessparameters(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    if id and id!='None':
+        items = AccessParameters.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'AccessParameters item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = AccessParameters.objects.all()
+        
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item, fields=fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+
+
+@ajax_request
+@login_required
+def timeperiods(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    if id and id!='None':
+        items = TimePeriod.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'TimePeriod item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = TimePeriod.objects.all()
+        
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item, fields=fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+
+@ajax_request
+@login_required
+def timeaccessservices(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    if id and id!='None':
+        items = TimeAccessService.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'TimeAccessService item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'TimeAccessService >1 items with id=%s' % id}
+        
+    else:
+        items = TimeAccessService.objects.all()
+        
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item, fields=fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def radiustrafficservices(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    normal_fields = request.POST.get('normal_fields', False)=='True'
+    if id and id!='None':
+        items = RadiusTraffic.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'RadiusTraffic item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'RadiusTraffic >1 items with id=%s' % id}
+        
+    else:
+        items = RadiusTraffic.objects.all()
+        
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def traffictransmitservices(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    normal_fields = request.POST.get('normal_fields', False)=='True'
+    if id and id!='None':
+        items = TrafficTransmitService.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'TrafficTransmitService item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'TrafficTransmitService >1 items with id=%s' % id}
+        
+    else:
+        items = TrafficTransmitService.objects.all()
+        
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+def dictfetchall(cursor):
+    "Returns all rows from a cursor as a dict"
+    desc = cursor.description
+    return [
+        dict(zip([col[0] for col in desc], row))
+        for row in cursor.fetchall()
+    ]
+    
+@ajax_request
+@login_required
+def sql(request):
+    sql = request.POST.get('sql','')
+  
+    if not sql:
+        return {'status':False, 'message': 'SQL not defined'}
+        
+    from django.db import connection
+    
+    cur = connection.cursor()
+    
+    try:
+        cur.execute(sql)
+        
+        res = dictfetchall(cur)
+    except Exception, e:
+        return { 'status':False, 'message':str(e)}
+        
+  
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+
+
+@ajax_request
+@login_required
+def radiustrafficservices_nodes(request):
+    fields = request.POST.get('fields', [])
+    id = request.POST.get('id', None)
+    service_id = request.POST.get('service_id', None)
+    normal_fields = request.POST.get('normal_fields', False)=='True'
+    if id and id!='None':
+        items = RadiusTrafficNode.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'TimeAccessNode item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'TimeAccessNode >1 items with id=%s' % id}
+    elif service_id:
+        items = RadiusTrafficNode.objects.filter(radiustraffic__id=service_id)
+    else:
+        items = RadiusTrafficNode.objects.all()
+        
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def traffictransmit_nodes(request):
+    fields = request.POST.get('fields', [])
+    id = request.POST.get('id', None)
+    service_id = request.POST.get('service_id', None)
+    normal_fields = request.POST.get('normal_fields', False)=='True'
+    if id and id!='None':
+        items = TrafficTransmitNodes.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'TrafficTransmitNodes item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'TrafficTransmitNodes >1 items with id=%s' % id}
+    elif service_id:
+        items = TrafficTransmitNodes.objects.filter(traffic_transmit_service__id=service_id)
+    else:
+        items = TrafficTransmitNodes.objects.all()
+        
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+
+@ajax_request
+@login_required
+def prepaidtraffic(request):
+    fields = request.POST.get('fields', [])
+    id = request.POST.get('id', None)
+    service_id = request.POST.get('service_id', None)
+    normal_fields = request.POST.get('normal_fields', False)=='True'
+    if id and id!='None':
+        items = PrepaidTraffic.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'PrepaidTraffic item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'PrepaidTraffic >1 items with id=%s' % id}
+    elif service_id:
+        items = PrepaidTraffic.objects.filter(traffic_transmit_service__id=service_id)
+    else:
+        items = PrepaidTraffic.objects.all()
+        
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def timeaccessservices_nodes(request):
+    fields = request.POST.get('fields', [])
+    id = request.POST.get('id', None)
+    service_id = request.POST.get('service_id', None)
+    normal_fields = request.POST.get('normal_fields', False)=='True'
+    if id and id!='None':
+        items = TimeAccessNode.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'TimeAccessNode item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'TimeAccessNode >1 items with id=%s' % id}
+    elif service_id:
+        items = TimeAccessNode.objects.filter(time_access_service__id=service_id)
+    else:
+        items = TimeAccessNode.objects.all()
+        
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def timespeeds(request):
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    access_parameters = request.POST.get('access_parameters',None)
+    normal_fields = bool(request.POST.get('normal_fields',False))
+    if id and id!='None':
+        items = TimeSpeed.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'TimeSpeed item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+    elif access_parameters:
+        items = TimeSpeed.objects.filter(access_parameters__id=access_parameters)
+    else:
+        items = TimeSpeed.objects.all()
+        
+    res=[]
+    for item in items:
+        #print instance_dict(acc).keys()
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
@@ -382,6 +692,34 @@ def ipnforvpn(request):
 
 @ajax_request
 @login_required
+def operator(request):
+   
+    try:
+        item = Operator.objects.all()[0]
+        return {'status':True, "records":[istance_dict(item)]}
+   
+    except:
+        return {'status':False, 'message': u'Провайдер не найден. Задайте информацию о себе в меню Help'}
+
+
+@ajax_request
+@login_required
+def get_pool_by_ipinuse(request):
+    ipinuse = request.POST.get('ipinuse',None)
+    res = None
+    if ipinuse and ipinuse!='None':
+        item = IPInUse.objects.filter(id=ipinuse)
+        if not item:
+            return {'status':False, 'message': 'Pool id item with id=%s not found' % ipinuse}
+       
+        res = item[0].pool.id
+        return {"result": res, 'status':True}
+    
+    return {"result": res, 'status':False}
+
+
+@ajax_request
+@login_required
 def account_exists(request):
     username = request.POST.get('username',None)
     res = False
@@ -399,6 +737,8 @@ def account_exists(request):
 def tariffs(request):
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
+    normal_fields = bool(request.POST.get('normal_fields',False))
+    print 'normal_fields', normal_fields
     if id and id!='None':
         items = Tariff.objects.filter(id=id)
         if not items:
@@ -412,7 +752,7 @@ def tariffs(request):
     res=[]
     for item in items:
         #print instance_dict(acc).keys()
-        res.append(instance_dict(item, fields=fields))
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
@@ -503,8 +843,9 @@ def subaccount(request):
 def nasses(request):
     from nas.models import Nas
     
-    fields = request.GET.get('fields',[])
-    id = request.GET.get('id',None)
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+
     if id:
         items = Nas.objects.filter(id=id)
         if not items:
@@ -524,15 +865,290 @@ def nasses(request):
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
+@ajax_request
+@login_required
+def trafficclasses(request):
+    
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+
+    if id:
+        items = TrafficClass.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'TrafficClass item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = TrafficClass.objects.all()
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields))
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def classforgroup(request):
+    
+    fields = request.POST.get('fields',[])
+    group = request.POST.get('group',None)
+
+    if group:
+        items = GroupTrafficClass.objects.filter(id=group)
+        if not items:
+            return {'status':False, 'message': 'GroupTrafficClass item with id=%s not found' % id}
+
+        res = []
+        for item in items:
+            res.append(item.trafficclass.id)
+
+    else:
+        return { 'status':False, 'message': u"Group id not defined"}
+
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+
+
+@ajax_request
+@login_required
+def ippools(request):
+    from nas.models import Nas
+    
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    type = request.POST.get('type',None)
+    if id and id!='None':
+        items = IPPool.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'IPPool item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    elif type and type!='None':
+        items = IPPool.objects.filter(type=type)
+    else:
+        items = IPPool.objects.all()
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields))
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def periodicalservices(request):
+    
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    tarif_id = request.POST.get('tarif',None)
+    deleted = bool(request.POST.get('deleted',None)=='True')
+    normal_fields = bool(request.POST.get('normal_fields',None)=='True')
+    print tarif_id, deleted
+    if id and id!='None':
+        items = PeriodicalService.objects.filter(id=id, deleted=deleted)
+        if not items:
+            return {'status':False, 'message': 'PeriodicalService item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    elif tarif_id and tarif_id!='None':
+        items = PeriodicalService.objects.filter(tarif__id=tarif_id, deleted=deleted)
+    else:
+        items = PeriodicalService.objects.filter( deleted=deleted)
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+
+
+
+@ajax_request
+@login_required
+def groups(request):
+    
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    normal_fields = bool(request.POST.get('normal_fields',None)=='True')
+    if id and id!='None':
+        items = Group.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'Group item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Group >1 items with id=%s' % id}
+        
+    else:
+        items = Group.objects.all()
+
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+    
+ 
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+
+@ajax_request
+@login_required
+def onetimeservices(request):
+    
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    tarif_id = request.POST.get('tarif_id',None)
+    normal_fields = bool(request.POST.get('normal_fields',False)=='True')
+
+    if id and id!='None':
+        items = OneTimeService.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'OneTimeService item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    elif tarif_id and tarif_id!='None':
+        items = OneTimeService.objects.filter(tarif__id=tarif_id)
+    else:
+        items = OneTimeService.objects.all()
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def trafficlimites(request):
+    
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    tarif_id = request.POST.get('tarif_id',None)
+    normal_fields = bool(request.POST.get('normal_fields',False)=='True')
+
+    if id and id!='None':
+        items = TrafficLimit.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'TrafficLimit item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    elif tarif_id and tarif_id!='None':
+        items = TrafficLimit.objects.filter(tarif__id=tarif_id)
+    else:
+        items = TrafficLimit.objects.all()
+
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+   
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def speedlimites(request):
+    
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    limit_id = request.POST.get('limit_id',None)
+    normal_fields = bool(request.POST.get('normal_fields',False)=='True')
+    print "speedlimites_normal_fields", normal_fields
+    if id and id!='None':
+        items = SpeedLimit.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'SpeedLimit item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    elif limit_id and limit_id!='None':
+        items = SpeedLimit.objects.filter(limit__id=limit_id)
+    else:
+        items = SpeedLimit.objects.all()
+
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+   
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def addonservicetariff(request):
+    
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    tarif_id = request.POST.get('tarif_id',None)
+    normal_fields = bool(request.POST.get('normal_fields',False)=='True')
+
+    if id and id!='None':
+        items = AddonServiceTarif.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'AddonServiceTarif item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'AddonServiceTarif >1 items with id=%s' % id}
+        
+    elif tarif_id and tarif_id!='None':
+        items = AddonServiceTarif.objects.filter(tarif__id=tarif_id)
+    else:
+        items = AddonServiceTarif.objects.all()
+
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+   
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def switches(request):
+
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    if id:
+        items = Switch.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'Switch item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    else:
+        items = Switch.objects.all()
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields))
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def organizations(request):
 
     
-    fields = request.GET.get('fields',[])
-    id = request.GET.get('id',None)
-    account_id = request.GET.get('account_id',None)
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    account_id = request.POST.get('account_id',None)
     if id:
         items = Organization.objects.filter(id=id)
         if not item:
@@ -557,8 +1173,8 @@ def organizations(request):
 def banks(request):
 
     
-    fields = request.GET.get('fields',[])
-    id = request.GET.get('id',None)
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
     if id:
         items = BankData.objects.filter(id=id)
         if not item:
@@ -632,6 +1248,451 @@ def tpchange_save(request):
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return res
 
+
+
+#@transaction.commit_manually
+@login_required
+@ajax_request
+def tariffs_set(request):
+    
+    data = request.POST.get("data", {})
+    
+    js = json.loads(data)
+    print js
+
+    if js.get('model'):
+        if js.get('model').get('id'):
+            item = Tariff.objects.get(id=js['model']['id'])
+            form = TariffForm(js['model'], instance=item)
+            print "tarif instance"
+        else:
+            print "tarif frompost"
+            form = TariffForm(initial=js['model'])
+            
+        
+        if form.is_valid():
+            tariff = form.save(commit=False)
+            tariff.save()
+            print 'tarif save'
+        else:
+            print 'tarif errors'
+            print form._errors
+            transaction.rollback()
+            return {'status':False, 'errors': form._errors}
+        
+    if js['access_parameters']:
+        if 'id' in js['access_parameters']:
+            item = AccessParameters.objects.get(id=js['access_parameters']['id'])
+            form = AccessParametersForm(js['access_parameters'], instance=item)
+            print "instance"
+        else:
+            print "frompost"
+            form = AccessParametersForm(js['access_parameters'])
+            
+        
+        if form.is_valid():
+            print 'access parameters save pre'
+            access_parameters = form.save(commit=False)
+            access_parameters.save()
+            print 'access parameters save post'
+        else:
+            print form._errors
+            transaction.rollback()
+            return {'status':False, 'errors': form._errors}
+        
+        speeditem_ids = []
+        
+        for speed in js.get('speeds', []):
+            speed['access_parameters']=access_parameters.id
+            print speed
+            if speed.get('id'):
+                item = TimeSpeed.objects.get(id=speed.get('id'))
+                form = TimeSpeedForm(speed, instance=item)
+                print "instance"
+            else:
+                print "frompost"
+                form = TimeSpeedForm(speed)
+
+            if form.is_valid():
+                speeditem = form.save(commit=False)
+                speeditem.save()
+                
+            else:
+                print form._errors
+                transaction.rollback()
+                return {'status':False, 'errors': form._errors}
+            speeditem_ids.append(speeditem.id)
+        if speeditem_ids:
+            TimeSpeed.objects.filter(access_parameters=access_parameters).exclude(id__in=speeditem_ids).delete()
+        
+    
+    if js['periodicalservices']:
+        
+        periodicalservices_ids = []
+        for periodicalservice in js.get('periodicalservices', []):
+            periodicalservice['tarif']=tariff.id
+            if periodicalservice.get('id'):
+                
+                item = PeriodicalService.objects.get(id=periodicalservice.get('id'))
+                form = PeriodicalServiceForm(periodicalservice, instance=item)
+                print "instance"
+            else:
+                print "frompost"
+                form = PeriodicalServiceForm(periodicalservice)
+            
+        
+            if form.is_valid():
+                print "ps save"
+                periodicalservice_item = form.save(commit=False)
+                periodicalservice_item.save()
+                
+                print 'ps post save'
+            else:
+                print form._errors
+                transaction.rollback()
+                return {'status':False, 'errors': form._errors}
+            periodicalservices_ids.append(periodicalservice_item.id)
+        
+
+        if periodicalservices_ids:
+            PeriodicalService.objects.filter(tarif=tariff).exclude(id__in=periodicalservices_ids).delete()
+            
+    if js['addonservices']:
+        
+        addonservices_ids = []
+        for obj in js.get('addonservices', []):
+            obj['tarif']=tariff.id
+            if obj.get('id'):
+                
+                item = AddonserviceTarif.objects.get(id=obj.get('id'))
+                form = AddonserviceTarifForm(obj, instance=item)
+                print "instance"
+            else:
+                print "frompost"
+                form = AddonserviceTarifForm(obj)
+            
+        
+            if form.is_valid():
+                print "as save"
+                addonservice_item = form.save(commit=False)
+                addonservice_item.save()
+                
+                print 'as post save'
+            else:
+                print form._errors
+                transaction.rollback()
+                return {'status':False, 'errors': form._errors}
+            addonservices_ids.append(addonservice_item.id)
+        
+
+        if addonservices_ids:
+            AddonserviceTarif.objects.filter(tarif=tariff).exclude(id__in=addonservices_ids).delete()
+            
+
+    if js.get('onetimeservices'):
+        
+        onetimeservices_ids = []
+        for onetimeservice in js.get('onetimeservices', []):
+            onetimeservice['tarif']=tariff.id
+            if onetimeservice.get('id'):
+                
+                item = OneTimeService.objects.get(id=onetimeservice.get('id'))
+                form = OneTimeServiceForm(onetimeservice, instance=item)
+                print "instance"
+            else:
+                print "frompost"
+                form = OneTimeServiceForm(onetimeservice)
+            
+        
+            if form.is_valid():
+                print "os save"
+                onetimeservice_item = form.save(commit=False)
+                onetimeservice_item.save()
+                
+                print 'os post save'
+            else:
+                print form._errors
+                transaction.rollback()
+                return {'status':False, 'errors': form._errors}
+            onetimeservices_ids.append(onetimeservice_item.id)
+        
+
+        if onetimeservices_ids:
+            OneTimeService.objects.filter(tarif=tariff).exclude(id__in=onetimeservices_ids).delete()
+
+    if js.get('limites'):
+        
+        limites_ids = []
+        speedlimites_ids = []
+        for (limit, speedlimit) in js.get('limites', []):
+            limit['tarif']=tariff.id
+            if limit.get('id'):
+                print 'limit.id', limit.get("id")
+                item = TrafficLimit.objects.get(id=limit.get('id'))
+                form = TrafficLimitForm(limit, instance=item)
+                print "instance"
+            else:
+                print "frompost"
+                form = TrafficLimitForm(limit)
+            
+        
+            if form.is_valid():
+                print "limit save"
+                limit_item = form.save(commit=False)
+                limit_item.save()
+                
+                print 'limit post save'
+            else:
+                print form._errors
+                transaction.rollback()
+                return {'status':False, 'errors': form._errors}
+            limites_ids.append(limit_item.id)
+            
+            print "limit_item.action",limit_item.action, type(limit_item.action)
+            print "speedlimit", speedlimit
+            if limit_item.action ==0:
+                SpeedLimit.objects.filter(limit=limit_item).delete()
+            elif  limit_item.action ==1:
+                if speedlimit:
+                    speedlimit['limit']=limit_item.id
+                    if speedlimit.get('id'):
+                        
+                        item = SpeedLimit.objects.get(id=speedlimit.get('id'))
+                        form = SpeedLimitForm(speedlimit, instance=item)
+                        print "instance"
+                    else:
+                        print "frompost"
+                        form = SpeedLimitForm(speedlimit)
+    
+                    if form.is_valid():
+                        print "limit save"
+                        speedlimit_item = form.save(commit=False)
+                        speedlimit_item.save()
+                        
+                        print ' speed imit post save'
+                    else:
+                        print form._errors
+                        transaction.rollback()
+                        return {'status':False, 'errors': form._errors}
+                    speedlimites_ids.append(speedlimit_item.id)
+    
+            if speedlimites_ids:
+                SpeedLimit.objects.filter(limit=limit_item).exclude(id__in=speedlimites_ids).delete()
+            
+        if limites_ids:
+            TrafficLimit.objects.filter(tarif=tariff).exclude(id__in=limites_ids).delete()
+                
+
+            
+    if js.get('time_access_service'):
+        obj = js.get('time_access_service')
+        if obj.get('id'):
+            
+            item = TimeAccessService.objects.get(id=obj.get('id'))
+            form = TimeAccessServiceForm(obj, instance=item)
+            print "instance"
+        else:
+            print "frompost"
+            form = TimeAccessServiceForm(obj)
+        
+    
+        if form.is_valid():
+            print "os save"
+            timeaccessservice = form.save(commit=False)
+            timeaccessservice.save()
+            tariff.time_access_service = timeaccessservice
+            tariff.save()
+            print 'os post save'
+        else:
+            print form._errors
+            transaction.rollback()
+            return {'status':False, 'errors': form._errors}
+
+        
+        time_access_nodes_ids = []
+        
+        for timeaccessnode in js.get('timeaccessnodes', []):
+
+            timeaccessnode['time_access_service']=timeaccessservice.id
+            if timeaccessnode.get('id'):
+                item = TimeAccessNode.objects.get(id=timeaccessnode.get('id'))
+                form = TimeAccessNodeForm(timeaccessnode, instance=item)
+                print "instance"
+            else:
+                print "frompost"
+                form = TimeAccessNodeForm(timeaccessnode)
+
+            if form.is_valid():
+                timeaccessnode_item = form.save(commit=False)
+                timeaccessnode_item.save()
+                
+            else:
+                print form._errors
+                transaction.rollback()
+                return {'status':False, 'errors': form._errors}
+            time_access_nodes_ids.append(timeaccessnode_item.id)
+            
+        if time_access_nodes_ids:
+            TimeAccessNode.objects.filter(time_access_service=timeaccessservice).exclude(id__in=time_access_nodes_ids).delete()
+
+
+    if js.get('traffic_transmit_service'):
+        if 'id' in js.get('traffic_transmit_service'):
+            item = TrafficTransmitService.objects.get(id=js.get('traffic_transmit_service')['id'])
+            form = TrafficTransmitServiceForm(js.get('traffic_transmit_service'), instance=item)
+            print "instance"
+        else:
+            print "frompost"
+            form = TrafficTransmitServiceForm(js.get('traffic_transmit_service', {}))
+            
+        
+        if form.is_valid():
+            print 'tr transmit  save pre'
+            traffic_transmit_service = form.save(commit=False)
+            traffic_transmit_service.save()
+            tariff.traffic_transmit_service = traffic_transmit_service
+            tariff.save()
+            print 'tr transmit save post'
+        else:
+            print form._errors
+            transaction.rollback()
+            return {'status':False, 'errors': form._errors}
+        
+        traffictransmitnodes_ids = []
+        for traffictransmitnode in js.get('traffictransmitnodes', []):
+            print traffictransmitnode
+            traffictransmitnode['traffic_transmit_service']=traffic_transmit_service.id
+            if traffictransmitnode.get('id'):
+                item = TrafficTransmitNodes.objects.get(id=traffictransmitnode.get('id'))
+                form = TrafficTransmitNodeForm(traffictransmitnode, instance=item)
+                print "instance"
+            else:
+                print "frompost"
+                form = TrafficTransmitNodeForm(traffictransmitnode)
+
+            if form.is_valid():
+                traffictransmitnode_item = form.save(commit=False)
+                traffictransmitnode_item.save()
+                
+            else:
+                print form._errors
+                transaction.rollback()
+                return {'status':False, 'errors': form._errors}
+            traffictransmitnodes_ids.append(traffictransmitnode_item.id)
+            
+        if traffictransmitnodes_ids:
+            TrafficTransmitNodes.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=traffictransmitnodes_ids).delete()
+            
+        prepaidtraffic_ids = []
+        for prepaidtrafficnode in js.get('prepaidtrafficnodes', []):
+            print prepaidtrafficnode
+            prepaidtrafficnode['traffic_transmit_service']=traffic_transmit_service.id
+            if prepaidtrafficnode.get('id'):
+                item = PrepaidTraffic.objects.get(id=prepaidtrafficnode.get('id'))
+                form = PrepaidTrafficForm(prepaidtrafficnode, instance=item)
+                print "instance"
+            else:
+                print "frompost"
+                form = PrepaidTrafficForm(prepaidtrafficnode)
+
+            if form.is_valid():
+                prepaidtraffictransmitnode_item = form.save(commit=False)
+                prepaidtraffictransmitnode_item.save()
+                
+            else:
+                print form._errors
+                transaction.rollback()
+                return {'status':False, 'errors': form._errors}
+            prepaidtraffic_ids.append(prepaidtraffictransmitnode_item.id)
+        if traffictransmitnodes_ids:
+            PrepaidTraffic.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=prepaidtraffic_ids).delete()
+            
+    if js.get('radius_traffic_service'):
+        if 'id' in js.get('radius_traffic_service'):
+            item = RadiusTraffic.objects.get(id=js.get('radius_traffic_service')['id'])
+            form = RadiusTrafficForm(js.get('radius_traffic_service'), instance=item)
+            print "instance"
+        else:
+            print "frompost"
+            form = RadiusTrafficForm(js.get('radius_traffic_service', {}))
+            
+        
+        if form.is_valid():
+            print 'rad tr transmit  save pre'
+            radius_traffic_service = form.save(commit=False)
+            radius_traffic_service.save()
+            tariff.radius_traffic_transmit_service = radius_traffic_service
+            tariff.save()
+            print 'rad tr transmit save post'
+        else:
+            print form._errors
+            transaction.rollback()
+            return {'status':False, 'errors': form._errors}
+        
+        radiustraffictransmitnodes_ids = []
+        for radtraffictransmitnode in js.get('radiustrafficnodes', []):
+            print radtraffictransmitnode
+            radtraffictransmitnode['radiustraffic']=radius_traffic_service.id
+            if radtraffictransmitnode.get('id'):
+                item = RadiusTrafficNode.objects.get(id=radtraffictransmitnode.get('id'))
+                form = RadiusTrafficNodeForm(radtraffictransmitnode, instance=item)
+                print "instance"
+            else:
+                print "frompost"
+                form = RadiusTrafficNodeForm(radtraffictransmitnode)
+
+            if form.is_valid():
+                radtraffictransmitnode_item = form.save(commit=False)
+                radtraffictransmitnode_item.save()
+                
+            else:
+                print form._errors
+                transaction.rollback()
+                return {'status':False, 'errors': form._errors}
+            radiustraffictransmitnodes_ids.append(radtraffictransmitnode_item.id)
+            
+        if radiustraffictransmitnodes_ids:
+            RadiusTrafficNode.objects.filter(radiustraffic=radius_traffic_service).exclude(id__in=radiustraffictransmitnodes_ids).delete()
+            
+            
+    transaction.commit()
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {'status':True}
+
+@ajax_request
+@login_required
+def groups_save(request):
+    
+    id = request.POST.get('id')
+    traffic_classes = request.POST.get('traffic_classes','').split(',')
+    if id:
+        item = Group.objects.get(id=id)
+        form = GroupForm(request.POST, instance=item)
+    else:
+        form = GroupForm(request.POST)
+        
+    if form.is_valid():
+        try:
+            model = form.save(commit=False)
+            model.save()
+            if id:
+                GroupTrafficClass.objects.filter(group=model).delete()
+            print 
+            for item in traffic_classes:
+                print "item", item
+                GroupTrafficClass.objects.create(group=model, trafficclass = TrafficClass.objects.get(id=item))
+            res={"status": True}
+        except Exception, e:
+            print e
+            res={"status": False, "message": str(e)}
+    else:
+        res={"status": False, "errors": form._errors}
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return res
+
 @ajax_request
 @login_required
 def nas_save(request):
@@ -682,6 +1743,48 @@ def settlementperiod_delete(request):
         return {"status": True}
     else:
         return {"status": False, "message": "Nas not found"}
+
+
+@ajax_request
+@login_required
+def groups_delete(request):
+    id = int(request.POST.get('id',0))
+    if id:
+        Group.objects.get(id=id).delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "Group not found"}
+
+
+@ajax_request
+@login_required
+def accounttariffs_delete(request):
+    id = int(request.POST.get('id',0))
+    if id:
+        try:
+            item = AccountTarif.objects.get(id=id)
+        except Exception, e:
+            return {"status": False, "message": u"Указанный тарифный план не найден тарифный план %s" % str(e)}
+        if item.datetime<datetime.datetime.now():
+            return {"status": False, "message": u"Невозможно удалить вступивший в силу тарифный план"}
+        item.delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "AccountTarif not found"}
+  
+@ajax_request
+@login_required
+def suspendedperiod_delete(request):
+    id = int(request.POST.get('id',0))
+    if id:
+        try:
+            item = SuspendedPeriod.objects.get(id=id)
+        except Exception, e:
+            return {"status": False, "message": u"Указанный период не найден %s" % str(e)}
+        item.delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "SuspendedPeriod not found"} 
 
 @ajax_request
 @login_required
@@ -747,6 +1850,47 @@ def nas_delete(request):
     else:
         return {"status": False, "message": "Nas not found"}
 
+
+@ajax_request
+@login_required
+def subaccount_delete(request):
+    id = request.POST.get('id')
+    print 'id',id
+    print request.POST
+    if id:
+        
+        item = SubAccount.objects.get(id=id)
+        if item.vpn_ipinuse:
+            IPInUse.objects.filter(id=item.vpn_ipinuse).delete()
+        if item.ipn_ipinuse:
+            IPInUse.objects.filter(id=item.ipn_ipinuse).delete()
+        if item.vpn_ipv6_ipinuse:
+            IPInUse.objects.filter(id=item.vpn_ipv6_ipinuse).delete()
+        
+        item.delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "SubAccount not found"}
+
+@ajax_request
+@login_required
+def account_delete(request):
+    id = request.POST.get('id')
+    print 'id',id
+    print request.POST
+    if id:
+        
+        
+        
+        try:
+            item = Account.objects.get(id=id).delete()
+        except Exception, e:
+            return {"status": False, "message": "%s" % str(e)}
+        
+        return {"status": True}
+    else:
+        return {"status": False, "message": "Account not found"}
+    
 @ajax_request
 @login_required
 def document_save(request):
@@ -823,8 +1967,8 @@ def city(request):
 @ajax_request
 @login_required
 def streets(request):
-    city_id = request.GET.get('city_id')
-    id = request.GET.get('id')
+    city_id = request.POST.get('city_id')
+    id = request.POST.get('id')
     if city_id:
         items = Street.objects.filter(city__id=city_id)
     elif id:
@@ -1001,17 +2145,26 @@ def account_save(request):
         res={"status": False, "errors": a._errors, 'msg':u"Поля с ошибками:<br />"+unicode('<br />'.join([u'%s:%s' %(x,a._errors.get(x)) for x in a._errors]))}
     return res
 
-
-@ajax_request
 @login_required
+@ajax_request
 def subaccount_save(request):
     
     #from django.core import serializers
     #from django.http import HttpResponse
     #print request
-    id=request.POST.get('id')
-    ipv4_vpn_pool = request.POST.get('ipv4_vpn_pool')
-    ipv4_ipn_pool = request.POST.get('ipv4_ipn_pool')
+    """
+    #проверить существование такого юзернейма у дрегого аккаунта
+    в системе существует такой IPn ip адрес у дргого аккаунта
+    в системе существует такой VPN IP адрес у другого аккаунта
+     в системе существует такой IPv6 VPN IP адрес у другого аккаунта
+   # в системе существует такой мак у другого аккаунта
+    
+    """
+    id=None if request.POST.get('id')=='None' else request.POST.get('id')
+    ipv4_vpn_pool = None if request.POST.get('ipv4_vpn_pool')=='None' else request.POST.get('ipv4_vpn_pool')
+    ipv4_ipn_pool = None if request.POST.get('ipv4_ipn_pool')=='None' else request.POST.get('ipv4_ipn_pool')
+    account_id = None if request.POST.get('account')=='None' else request.POST.get('account')
+    print "account_id", account_id
     vpn_pool = None
     if ipv4_vpn_pool:
         vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
@@ -1045,8 +2198,49 @@ def subaccount_save(request):
             return res
         print 1
         
-       # print "cc.vpn_ipinuse11",cc.vpn_ipinuse
-       
+        # print "cc.vpn_ipinuse11",cc.vpn_ipinuse
+        subaccounts = 0
+        """
+        bug???
+        _wrapped_view() takes at least 1 argument (0 given)
+        if subacc.username:
+            if not id:
+                subaccounts = SubAccount.objects.filter(username = subacc.username ).exclude(account__id = account).count()
+            else:
+                subaccounts = SubAccount.objects.exclude(id = id).filter(account__id = account, username = subacc.username).count()
+            if subaccounts>0:
+                return {"status": False, 'message':u'Выбранное имя пользователя используется в другом аккаунте'}
+
+        """
+        """
+        if subacc.ipn_mac_address:    
+            if not id:
+                subaccounts = SubAccount.objects.exclude(account__id = account).filter(ipn_mac_address = subacc.ipn_mac_address).count()
+            else:
+                subaccounts = SubAccount.objects.exclude(id = id).exclude(account__id = account).filter(ipn_mac_address = subacc.ipn_mac_address).count()
+
+            if subaccounts>0:
+                return {"status": False, 'message':u'Выбранный мак-адрес используется в другом аккаунте'}
+
+        if subacc.vpn_ip_address and not subacc.vpn_ip_address.startswith('0.0.0.0'):    
+            if not id:
+                subaccounts = SubAccount.objects.exclude(account__id = account).filter(vpn_ip_address = subacc.vpn_ip_address).count()
+            else:
+                subaccounts = SubAccount.objects.exclude(id = id).exclude(account__id = account).filter(vpn_ip_address = subacc.vpn_ip_address).count()
+
+            if subaccounts>0:
+                return {"status": False, 'message':u'Выбранный vpn_ip_address используется в другом аккаунте'}
+
+        if subacc.ipn_ip_address and not subacc.ipn_ip_address.startswith('0.0.0.0'):    
+            if not id:
+                subaccounts = SubAccount.objects.exclude(account__id = account).filter(ipn_ip_address = subacc.ipn_ip_address, ).count()
+            else:
+                subaccounts = SubAccount.objects.exclude(~Q(id = id)).exclude(account__id = account).filter(ipn_ip_address = subacc.ipn_ip_address).count()
+
+            if subaccounts>0:
+                return {"status": False, 'message':u'Выбранный ipn_ip_address используется в другом аккаунте'}
+
+        """
         if cc and cc.vpn_ipinuse:
             print 2
             #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
@@ -1054,7 +2248,7 @@ def subaccount_save(request):
             if  subacc.vpn_ip_address not in ['0.0.0.0','',None]:
                 if vpn_pool:
                     if not IPy.IP(vpn_pool.start_ip).int()<=IPy.IP(subacc.vpn_ip_address).int()<=IPy.IP(vpn_pool.end_ip).int():
-                        return {"success": False, 'msg':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
+                        return {"status": False, 'message':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
                     
                 
                     if cc.vpn_ipinuse.ip!=subacc.vpn_ip_address:
@@ -1080,7 +2274,7 @@ def subaccount_save(request):
         elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and vpn_pool:
             print 6
             if not IPy.IP(vpn_pool.start_ip).int()<=IPy.IP(subacc.vpn_ip_address).int()<=IPy.IP(vpn_pool.end_ip).int():
-                return {"success": False, 'msg':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
+                return {"status": False, 'message':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
             print 7
             ip=IPInUse(pool=vpn_pool, ip=subacc.vpn_ip_address, datetime=datetime.datetime.now())
             ip.save()
@@ -1093,7 +2287,7 @@ def subaccount_save(request):
             if  subacc.ipn_ip_address not in ['0.0.0.0','',None]:
                 if vpn_pool:
                     if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
-                        return {"success": False, 'msg':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
+                        return {"status": False, 'message':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
                     
                 
                     if cc.ipn_ipinuse.ip!=subacc.ipn_ip_address:
@@ -1119,7 +2313,7 @@ def subaccount_save(request):
         elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and ipn_pool:
             print 6
             if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
-                return {"success": False, 'msg':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
+                return {"status": False, 'message':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
             print 7
             ip=IPInUse(pool=ipn_pool, ip=subacc.ipn_ip_address, datetime=datetime.datetime.now())
             ip.save()
@@ -1128,12 +2322,12 @@ def subaccount_save(request):
         try:
             subacc.save()
             print 99
-            res={"success": True}
+            res={"status": True,'account_id':subacc.account.id}
         except Exception, e:
             print e
-            res={"success": False, "errors": a._errors}
+            res={"status": False, "errors": a._errors}
     else:
-        res={"success": False, "errors": a._errors}
+        res={"status": False, "errors": a._errors}
     return res
 
 @ajax_request
@@ -1161,7 +2355,7 @@ def getipfrompool(request):
     start=int(request.POST.get("start", 0))
     print request
     if not pool_id:
-        return {'records':[]}
+        return {'records':[], 'status':False}
     pool = IPPool.objects.get(id=pool_id)
     #pool = IPPool.objects.all()[0]
     ipinuse = IPInUse.objects.filter(pool=pool, disabled__isnull=True)
@@ -1190,17 +2384,17 @@ def getipfrompool(request):
     #limit=20
     while x<=end_pool_ip:
         if x not in ipinuse_list and x!=default_ip:
-            res.append({'ipaddress':str(IPy.IP(x, ipversion = ipversion))})
+            res.append(str(IPy.IP(x, ipversion = ipversion)))
             i+=1
         x+=1
-    return {'totalCount':str(len(res)),'records':res[start:start+limit]}
+    return {'totalCount':str(len(res)),'records':res[start:start+limit], 'status':True}
 
 @ajax_request
 @login_required
 def houses(request):
-    street_id = request.GET.get('street_id')
-    id = request.GET.get('id')
-    fields = request.GET.get('fields')
+    street_id = request.POST.get('street_id')
+    id = request.POST.get('id')
+    fields = request.POST.get('fields')
     if street_id:
         items = House.objects.filter(street__id=street_id)
     elif id:
@@ -1222,10 +2416,20 @@ def houses(request):
 def accountaddonservices(request):
     from billservice.models import AccountAddonService
     account_id = request.POST.get('account_id')
+    subaccount_id = request.POST.get('subaccount_id')
     id = request.POST.get('id')
-    if account_id:
+    id = request.POST.get('id')
+    
+    if id and id!='None':
+        items = AccountAddonService.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'AccountAddon with id=%s not found' % id}
+        
+    elif account_id and account_id!='None':
         items = AccountAddonService.objects.filter(account__id=account_id)
     
+    elif subaccount_id and subaccount_id!='None':
+        items = AccountAddonService.objects.filter(subaccount__id=subaccount_id)
     #from django.core import serializers
     #from django.http import HttpResponse
     res=[]
@@ -1250,26 +2454,69 @@ def accountaddonservices_get(request):
 def accountaddonservices_set(request):
     id = request.POST.get('id')
     from billservice.models import AccountAddonService
-    form = AccountAddonForm(request.POST)
-    if form.is_valid():
-        print form.cleaned_data
-        if id:
-            #Если id найден - обновляем поля
-            item = AccountAddonService.objects.filter(id=id).update(**form.cleaned_data)
-            #print dir(item)
-            res={"success": True}
-        else:
-            #Если id _не_ найден - создаём модельформ и сохраняем её.
-            form = AccountAddonServiceModelForm(request.POST)
-            if form.is_valid():
-                form.save()
-                res={"success": True}
-            else:
-                res={"success": False, "errors": form._errors}
+    
+    if id:
+        item = AccountAddonService.objects.get(id=id)
+        form = AccountAddonServiceModelForm(request.POST, instance=item)
     else:
-        res={"success": False, "errors": form._errors}
+        form = AccountAddonServiceModelForm(request.POST)
+        
+    if form.is_valid():
+        form.save()
+        res = {'status':True}
+    else:
+        res={"status": False, "errors": form._errors}
     #print instance_dict(item).keys()
     return res
+
+@ajax_request
+@login_required
+def accounttariffs_set(request):
+    id = request.POST.get('id')
+    
+    if id:
+        item = AccountTarif.objects.get(id=id)
+        form = AccountTariffForm(request.POST, instance=item)
+    else:
+        form = AccountTariffForm(request.POST)
+        
+    if form.is_valid():
+        form.save()
+        res = {'status':True}
+    else:
+        res={"status": False, "errors": form._errors}
+    #print instance_dict(item).keys()
+    return res
+
+@ajax_request
+@login_required
+def accounttariffs_bathset(request):
+    
+    form = AccountTariffBathForm(request.POST)
+    
+
+    if form.is_valid():
+        accounts = form.cleaned_data.get('accounts')
+        tariff =  form.cleaned_data.get('tariff')
+        date = form.cleaned_data.get('date')
+        
+        for account in accounts.split(','):
+            try:
+                item = AccountTarif()
+                item.account = Account.objects.get(id=account)
+                item.tarif = Tariff.objects.get(id=tariff)
+                item.datetime = date
+                item.save()
+            except Exception, e:
+                res={"status": False, "message": str(e)}
+            
+        
+        res = {'status':True}
+    else:
+        res={"status": False, "errors": form._errors}
+    #print instance_dict(item).keys()
+    return res
+
 
 @ajax_request
 @login_required
@@ -1290,7 +2537,11 @@ def systemuser(request):
 @login_required
 def suspendedperiods(request):
     account_id = request.POST.get('account_id')
-    items = SuspendedPeriod.objects.filter(account__id=account_id)
+    id = request.POST.get('id')
+    if id:
+        items = SuspendedPeriod.objects.filter(id=id)
+    elif account_id:
+        items = SuspendedPeriod.objects.filter(account__id=account_id)
     res=[]
     for item in items:
         res.append(instance_dict(item,normal_fields=True))
@@ -1317,10 +2568,10 @@ def suspendedperiod_set(request):
     if form.is_valid():
         try:
             form.save()
-            res={"success": True}
+            res={"status": True}
         except Exception, e:
             print e
-            res={"success": False, "message": str(e)}
+            res={"status": False, "message": str(e)}
     else:
         res={"success": False, "errors": form._errors}
     
@@ -1352,50 +2603,7 @@ def transaction_set(request):
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return res
 
-def instance_dict(instance, key_format=None, normal_fields=False, fields=[]):
-    """
-    Returns a dictionary containing field names and values for the given
-    instance
-    """
-    from django.db.models.fields import DateField,DecimalField
-    from django.db.models.fields.related import ForeignKey
-    if key_format:
-        assert '%s' in key_format, 'key_format must contain a %s'
-    key = lambda key: key_format and key_format % key or key
 
-    pk = instance._get_pk_val()
-    d = {}
-    for field in instance._meta.fields:
-        
-        attr = field.name
-        #print "attr", attr
-        if fields and attr not in fields: continue
-        #print attr
-        try:
-            value = getattr(instance, attr)
-        except:
-            value=None
-        if value is not None:
-            if isinstance(field, ForeignKey):
-                try:
-                    value = value._get_pk_val() if normal_fields==False else unicode(value)
-                except Exception, e:
-                    print e
-                    
-            #elif isinstance(field, DateField):
-            #    value = value.strftime('%Y-%m-%d %H:%M:%S')
-            elif isinstance(field, DecimalField):
-                value = float(value)
-                               
-        d[key(attr)] = value
-    for field in instance._meta.many_to_many:
-        if pk:
-            d[key(field.name)] = [
-                obj._get_pk_val()
-                for obj in getattr(instance, field.attname).all()]
-        else:
-            d[key(field.name)] = []
-    return d
 
 @login_required
 @ajax_request
@@ -1452,10 +2660,10 @@ def grid(request):
 @ajax_request
 @login_required
 def actions_set(request):
-    subaccount = request.POST.get('subaccounts_id')
+    subaccount = request.POST.get('subaccount_id')
     action = request.POST.get('action')
     if subaccount:          
-        cur = connection.cursor()
+
        
         print 'subaccount',subaccount
         #TODO: придумать что тут сделать с realdictcursor_ом
@@ -1467,11 +2675,11 @@ def actions_set(request):
         if action=='ipn_disable':
             sa.ipn_sleep=False
             sa.save()
-            return {'success':True}
+            return {'status':True, 'message':'Ok'}
         if action=='ipn_enable':
             sa.ipn_sleep=True
             sa.save()
-            return {'success':True}
+            return {'status':True, 'message':'Ok'}
 
         subacc = instance_dict(SubAccount.objects.get(id=subaccount))
 
@@ -1492,7 +2700,7 @@ def actions_set(request):
             n=sa.nas
             nas = instance_dict(n)
         except Exception, e:
-            return {'success':False,'msg':u'Не указан или не найден указанный сервер доступа'}
+            return {'status':False,'message':u'Не указан или не найден указанный сервер доступа'}
             
         #connection.commit()
         #print "actions", row
@@ -1545,8 +2753,8 @@ def actions_set(request):
         #connection.commit()
 
         
-        return {'success':sended}
-    return {'success':False}
+        return {'status':sended, 'message':'Ok'}
+    return {'status':False, 'message':'Ok'}
             
 
 @ajax_request

@@ -3,7 +3,7 @@
 from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import HeaderUtil
 from decimal import Decimal
@@ -352,7 +352,7 @@ class AddServiceFrame(QtGui.QDialog):
         self.comboBox_sp_type.addItem(u"GRADUAL")
         self.comboBox_sp_type.setItemData(2, QtCore.QVariant("GRADUAL"))
 
-        settlementperiods = self.connection.get_models("billservice_settlementperiod", where={'autostart':True})
+        settlementperiods = self.connection.get_settlementperiods( autostart=True)
         self.connection.commit()
         i=0
         self.comboBox_wyte_period.addItem(u"---Нет---")
@@ -365,7 +365,7 @@ class AddServiceFrame(QtGui.QDialog):
            i+=1 
         
         
-        timeperiods = self.connection.get_models("billservice_timeperiod")
+        timeperiods = self.connection.get_timeperiods(fields=['id', 'name'])
         self.connection.commit()
         i=0
         for tp in timeperiods:
@@ -373,11 +373,11 @@ class AddServiceFrame(QtGui.QDialog):
            self.comboBox_timeperiod.setItemData(i, QtCore.QVariant(tp.id))
            i+=1
            
-        nasses = self.connection.get_models("nas_nas")
+        nasses = self.connection.get_nasses(fields=['id', 'name'])
         self.connection.commit()
         
         self.comboBox_nas.addItem(unicode(u"-Сервер доступа абонента-"))
-        self.comboBox_nas.setItemData(i, QtCore.QVariant(0))
+        self.comboBox_nas.setItemData(i, QtCore.QVariant(None))
         
         i=1
         for nas in nasses:
@@ -429,7 +429,6 @@ class AddServiceFrame(QtGui.QDialog):
             if self.model.action:
                 self.groupBox_action.setChecked(True)
                 for i in xrange(self.comboBox_nas.count()):
-                    print self.comboBox_nas.itemData(i).toInt()[0]==self.model.nas_id, self.comboBox_nas.itemData(i).toInt()[0], self.model.nas_id
                     if self.comboBox_nas.itemData(i).toInt()[0]==self.model.nas_id:
                         self.comboBox_nas.setCurrentIndex(i)                
                 self.lineEdit_service_activation_action.setText(unicode(self.model.service_activation_action))
@@ -540,29 +539,29 @@ class AddServiceFrame(QtGui.QDialog):
         if self.model:
             model = self.model
         else:
-            model = Object()
+            model = AttrDict()
             
         
         model.name = unicode(self.lineEdit_name.text())
         model.comment = unicode(self.lineEdit_comment.text())
-        model.cost = Decimal(unicode(self.lineEdit_cost.text() or 0))
+        model.cost = float(unicode(self.lineEdit_cost.text() or 0))
         model.allow_activation = self.checkBox_allow_activation.isChecked()==True
         model.service_type = unicode(self.comboBox_service_type.itemData(self.comboBox_service_type.currentIndex()).toString())
         
         model.sp_type = unicode(self.comboBox_sp_type.itemData(self.comboBox_sp_type.currentIndex()).toString())
-        model.sp_period_id = self.comboBox_sp_period.itemData(self.comboBox_sp_period.currentIndex()).toInt()[0]
-        model.timeperiod_id = self.comboBox_timeperiod.itemData(self.comboBox_timeperiod.currentIndex()).toInt()[0]
+        model.sp_period_ = self.comboBox_sp_period.itemData(self.comboBox_sp_period.currentIndex()).toInt()[0]
+        model.timeperiod = self.comboBox_timeperiod.itemData(self.comboBox_timeperiod.currentIndex()).toInt()[0]
         model.cancel_subscription = self.groupBox_cancel_subscription.isChecked()==True
         
         if model.cancel_subscription==True:
-            model.wyte_period_id = None if self.comboBox_wyte_period.itemData(self.comboBox_wyte_period.currentIndex()).toInt()[0]==0 else self.comboBox_wyte_period.itemData(self.comboBox_wyte_period.currentIndex()).toInt()[0]
-            model.wyte_cost = Decimal(unicode(self.lineEdit_wyte_cost.text() or 0))
+            model.wyte_period = None if self.comboBox_wyte_period.itemData(self.comboBox_wyte_period.currentIndex()).toInt()[0]==0 else self.comboBox_wyte_period.itemData(self.comboBox_wyte_period.currentIndex()).toInt()[0]
+            model.wyte_cost = float(unicode(self.lineEdit_wyte_cost.text() or 0))
         
         model.action = self.groupBox_action.isChecked()==True
         
         if model.action == True:
             #print "nas_id=", self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
-            model.nas_id = None if self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0] == 0 else self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
+            model.nas = None if self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0] == 0 else self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
             model.service_activation_action = unicode(self.lineEdit_service_activation_action.text())
             model.service_deactivation_action = unicode(self.lineEdit_service_deactivation_action.text())
             model.deactivate_service_for_blocked_account = self.checkBox_deactivate_service_for_blocked_account.isChecked() == True
@@ -606,7 +605,7 @@ class AddServiceFrame(QtGui.QDialog):
 
                  
         #try:
-        self.connection.save(model, "billservice_addonservice")
+        self.connection.addonservice_save(model)
         self.connection.commit()       
 #===============================================================================
 #        except Exception, e:
@@ -694,7 +693,7 @@ class AddonServiceEbs(ebsTableWindow):
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.clearContents()
         self.statusBar().showMessage(u"Ожидание ответа")
-        addonservices = self.connection.get_models("billservice_addonservice")
+        addonservices = self.connection.get_addonservices(normal_fields=True,fields=['id', 'name', 'service_type', 'cost','cancel_subscription', 'action', 'change_speed'])
         self.connection.commit()
         self.tableWidget.setRowCount(len(addonservices))
         i=0

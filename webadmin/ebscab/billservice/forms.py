@@ -3,8 +3,9 @@ from django import forms
 from datetime import datetime, date
 from django.forms import ModelForm
 from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
-from billservice.models import PeriodicalService, SystemUser, TransactionType, SettlementPeriod
-from billservice.models import Organization, BankData
+from billservice.models import PeriodicalService, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode
+from billservice.models import Organization, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService
+from billservice.models import TimeAccessService, TimeAccessNode, TrafficLimit, SpeedLimit
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -107,6 +108,11 @@ class TransactionReportForm(forms.Form):
     start_date = forms.DateTimeField(required=True)
     end_date = forms.DateTimeField(required=False)
     
+
+class AccountTariffBathForm(forms.Form):
+    accounts = forms.CharField(required=True)
+    tariff = forms.IntegerField(required=True)
+    date = forms.DateTimeField(required=True)
     
 class AccountAddonServiceModelForm(ModelForm):
     class Meta:
@@ -147,8 +153,70 @@ class AccountForm(ModelForm):
         model = Account
         exclude = ('ballance',)
 
+class AccessParametersForm(ModelForm):
+    class Meta:
+        model = AccessParameters
+        
+class GroupForm(ModelForm):
+    class Meta:
+        model = Group
+
+class TariffForm(ModelForm):
+    class Meta:
+        model = Tariff
+
+class TimeSpeedForm(ModelForm):
+    class Meta:
+        model = TimeSpeed
+
+class PeriodicalServiceForm(ModelForm):
+    class Meta:
+        model = PeriodicalService
+
+class OneTimeServiceForm(ModelForm):
+    class Meta:
+        model = OneTimeService
+
+class TrafficTransmitServiceForm(ModelForm):
+    class Meta:
+        model = TrafficTransmitService
+
+class TrafficTransmitNodeForm(ModelForm):
+    class Meta:
+        model = TrafficTransmitNodes
+      
+class PrepaidTrafficForm(ModelForm):
+    class Meta:
+        model = PrepaidTraffic  
+
+class RadiusTrafficForm(ModelForm):
+    class Meta:
+        model = RadiusTraffic  
+
+class TimeAccessServiceForm(ModelForm):
+    class Meta:
+        model = TimeAccessService
+
+class TimeAccessNodeForm(ModelForm):
+    class Meta:
+        model = TimeAccessNode
+
+class RadiusTrafficNodeForm(ModelForm):
+    class Meta:
+        model = RadiusTrafficNode  
+        exclude = ('created','deleted')
+        
+class TrafficLimitForm(ModelForm):
+    class Meta:
+        model = TrafficLimit  
+ 
+class SpeedLimitForm(ModelForm):
+    class Meta:
+        model = SpeedLimit  
+
+#TO-DO: добавить exclude в periodicalservice
 class SubAccountForm(ModelForm):
     class Meta:
         model = SubAccount
-        exclude = ('ipn_ipinuse','vpn_ipinuse',)
+        #exclude = ('ipn_ipinuse','vpn_ipinuse',)
         
