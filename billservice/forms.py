@@ -5,7 +5,7 @@ from django.forms import ModelForm
 from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
 from billservice.models import PeriodicalService, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode
 from billservice.models import Organization, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService
-from billservice.models import TimeAccessService, TimeAccessNode, TrafficLimit, SpeedLimit
+from billservice.models import TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -214,6 +214,18 @@ class SpeedLimitForm(ModelForm):
     class Meta:
         model = SpeedLimit  
 
+class AddonServiceForm(ModelForm):
+    class Meta:
+        model = AddonService  
+
+class AddonServiceTarifForm(ModelForm):
+    class Meta:
+        model = AddonServiceTarif  
+        
+class ContractTemplateForm(ModelForm):
+    class Meta:
+        model = ContractTemplate  
+        
 #TO-DO: добавить exclude в periodicalservice
 class SubAccountForm(ModelForm):
     class Meta:

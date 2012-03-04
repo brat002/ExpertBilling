@@ -64,7 +64,7 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^ippool/$', 'ippool'),
      url(r'^operator/$', 'operator'),
      
-     
+     url(r'^templates/$', 'templates'),
      url(r'^ippools/$', 'ippools'),
      url(r'^tpchange/$', 'tpchange'),
      url(r'^tpchange/set/$', 'tpchange_save'),
@@ -103,7 +103,8 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^accounts/live/$', 'account_livesearch'),
      url(r'^subaccounts/$', 'subaccounts'),
      url(r'^addonservices/$', 'addonservices'),
-    url(r'^addonservices/set/$', 'addonservices_set'),
+     url(r'^addonservices/set/$', 'addonservices_set'),
+     url(r'^addonservices/delete/$', 'addonservices_delete'),
      url(r'^organizations/$', 'organizations'),
      url(r'^banks/$', 'banks'),
      
@@ -116,7 +117,12 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^credentials/gen/$', 'generate_credentials'),
      url(r'^getmacforip/$', 'get_mac_for_ip'),
      url(r'^contracttemplate/$', 'contracttemplate'),
+     url(r'^contracttemplate/set/$', 'contracttemplates_set'),
+     url(r'^contracttemplate/delete/$', 'contracttemplate_delete'),
+     
      url(r'^contracttemplates/$', 'contracttemplates'),
+     
+     
      url(r'^sessions/$', 'sessions'),
      
      #url(r'^simplelogin/$', 'simplelogin'),
