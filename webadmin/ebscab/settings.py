@@ -69,7 +69,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
-    'lib.threadlocals.ThreadLocalsMiddleware',
+    #'lib.threadlocals.ThreadLocalsMiddleware',
     'notify.middleware.NotificationsMiddleware',
     #'billservice.middleware.UrlFilter'
 

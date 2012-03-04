@@ -16,11 +16,12 @@ BEGIN
     IF (new_summ_<>0) THEN 
       INSERT INTO billservice_periodicalservicehistory (service_id, accounttarif_id,account_id, type_id, summ, datetime) VALUES (ps_id_, acctf_id_, account_id_, type_id_, new_summ_, created_);
     END IF;
-    SELECT INTO pslog_id SELECT id FROM billservice_periodicalservicelog WHERE service_id=ps_id_ and accounttarif_id=acctf_id_;
+    SELECT  id FROM billservice_periodicalservicelog WHERE service_id=ps_id_ and accounttarif_id=acctf_id_ INTO pslog_id;
     IF (pslog_id is Null) THEN
       INSERT INTO billservice_periodicalservicelog(service_id, accounttarif_id, datetime) VALUES(ps_id_, acctf_id_, created_);
     ELSE
       UPDATE billservice_periodicalservicelog SET datetime=created_ WHERE id=pslog_id;  
+    END IF;
     RETURN  new_summ_;
 END;
 $BODY$

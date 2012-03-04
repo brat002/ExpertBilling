@@ -704,37 +704,7 @@ def get_type(nas_id, tarif_id):
             
             
 def get_free_addreses_from_pool(connection, pool_id, count=-1, only_from_pool=True, default_ip=''):
-    if default_ip:
-        default_ip = IPy.IP(default_ip).int()
-    pool = connection.sql("SELECT * FROM billservice_ippool WHERE id=%s" % (pool_id))[0]
-    ipinuse = connection.sql("SELECT ip FROM billservice_ipinuse WHERE pool_id=%s and disabled is Null" % pool.id)
-    accounts_ip = connection.sql("SELECT ipn_ip_address, vpn_ip_address FROM billservice_subaccount")
-    connection.commit()
-    ipversion = 4 if pool.type<2 else  6
-    accounts_used_ip = []
-    for accip in accounts_ip:
-        accounts_used_ip.append(IPy.IP(accip.ipn_ip_address).int())
-        accounts_used_ip.append(IPy.IP(accip.vpn_ip_address).int())
-
-
-    start_pool_ip = IPy.IP(pool.start_ip).int()
-    end_pool_ip = IPy.IP(pool.end_ip).int()
-    
-    ipinuse_list = [IPy.IP(x.ip).int() for x in ipinuse]
-    if not only_from_pool:
-        ipinuse_list+= accounts_used_ip
-    if count!=-1:
-        if end_pool_ip-start_pool_ip-len(ipinuse_list)<count:
-            QtGui.QMessageBox.warning(None, u"Внимание!", unicode(u"В выбранном пуле недостаточно свободных IP-адресов. Выберите другой пул."))
-            return                    
-    find = False
-    res = []
-    x = start_pool_ip
-    i=0
-    while x<=end_pool_ip and i!=1000:
-        if x not in ipinuse_list and (len(res)<count or count==-1) and x!=default_ip:
-            res.append(str(IPy.IP(x, ipversion = ipversion)))
-            i+=1
-        x+=1
-    return res
+    d = connection.get_ips_from_ippool(pool_id)
+    if not d.status: return []
+    return d.records
         

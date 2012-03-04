@@ -2111,15 +2111,15 @@ class GroupsDialog(QtGui.QDialog):
             self.fixtures()
         
     def edit_group(self):
-        model = self.connection.get_model(self.getSelectedId(), "billservice_group")
-        self.connection.commit()
+        model = self.connection.get_groups(id=self.getSelectedId())
+
         child = GroupEditDialog(connection=self.connection, model=model)
         if child.exec_()==1:
             self.fixtures()
         
     def del_group(self):
         if QtGui.QMessageBox.question(self, u"Удалить группу?" , u"При удалении группы будут удалены все её связи с лимитами трафика.\nВы уверены что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.iddelete(self.getSelectedId(), "billservice_group")
+            self.connection.group_delete(id = self.getSelectedId())
             self.connection.commit()
             self.fixtures()
     
@@ -2203,9 +2203,8 @@ class GroupEditDialog(QtGui.QDialog):
         if self.model:
             self.setWindowTitle(u"Редактирование группы %s" % unicode(self.model.name))
             self.lineEdit_name.setText(unicode(self.model.name))
-            selected_classes = self.connection.sql("SELECT trafficclass_id as id FROM billservice_group_trafficclass WHERE group_id=%s" % self.model.id)
-            selected_classes = [x.id for x in selected_classes]
-        classes = self.connection.get_models("nas_trafficclass")
+            selected_classes = self.connection.get_class_for_group(group=self.model.id) #sql("SELECT trafficclass_id as id FROM billservice_group_trafficclass WHERE group_id=%s" % self.model.id)
+        classes = self.connection.get_trafficclasses()
         self.connection.commit()
         self.listWidget_classes.clear()
         for clas in classes:
@@ -2249,7 +2248,8 @@ class GroupEditDialog(QtGui.QDialog):
         if self.model:
             model = self.model
         else:
-            model = Object()
+            model = AttrDict()
+            
         traffic_classes=[]
         for i in xrange(self.listWidget_classes.count()):
             clas = self.listWidget_classes.item(i)
@@ -2261,19 +2261,18 @@ class GroupEditDialog(QtGui.QDialog):
         
         try:
             
+            
             model.name = u"%s" % self.lineEdit_name.text()
             model.direction = self.comboBox_directions.itemData(self.comboBox_directions.currentIndex()).toInt()[0]
             model.type = self.comboBox_grouptype.itemData(self.comboBox_grouptype.currentIndex()).toInt()[0]
-            model.id = self.connection.save(model, "billservice_group")
+            model.traffic_classes = traffic_classes
+            self.connection.group_save(model)
             
 
             #Удаляем старые связи и добавляем только нужные новые
-            self.connection.command("DELETE FROM billservice_group_trafficclass WHERE group_id=%s;" % model.id)
-            for tc in traffic_classes:
-                node = Object()
-                node.group_id = model.id
-                node.trafficclass_id = tc
-                self.connection.save(node, "billservice_group_trafficclass")
+            #self.connection.command("DELETE FROM billservice_group_trafficclass WHERE group_id=%s;" % model.id)
+
+
             self.connection.commit()
         except Exception, e:
             self.connection.rollback()
@@ -3217,7 +3216,8 @@ class AccountAddonServiceEdit(QtGui.QDialog):
         self.checkBox_temporary_blocked.setText(QtGui.QApplication.translate("Dialog", "Временная блокировка", None, QtGui.QApplication.UnicodeUTF8))
     
     def fixtures(self):
-        addonservices = self.connection.get_models("billservice_addonservice")
+        addonservices = self.connection.get_addonservices(normal_fields=False)
+        print "addonservices", addonservices
         self.connection.commit()
         i=0
         for adds in addonservices:
@@ -3227,7 +3227,7 @@ class AccountAddonServiceEdit(QtGui.QDialog):
         
         if self.model:
             for i in xrange(self.comboBox_service.count()):
-                if self.comboBox_service.itemData(i).toInt()[0]==self.model.service_id:
+                if self.comboBox_service.itemData(i).toInt()[0]==self.model.service:
                     self.comboBox_service.setCurrentIndex(i)
                        
 
@@ -3249,14 +3249,14 @@ class AccountAddonServiceEdit(QtGui.QDialog):
         if self.model:
             model = self.model
         else:
-            model = Object()
+            model = AttrDict()
         if self.account_model:    
-            model.account_id = self.account_model
+            model.account = self.account_model
         if self.subaccount_model:    
-            model.subaccount_id = self.subaccount_model.id
-            model.account_id = self.subaccount_model.account_id
+            model.subaccount = self.subaccount_model.id
+            model.account = self.subaccount_model.account
             
-        model.service_id = self.comboBox_service.itemData(self.comboBox_service.currentIndex()).toInt()[0]
+        model.service = self.comboBox_service.itemData(self.comboBox_service.currentIndex()).toInt()[0]
         date = self.dateTimeEdit_activation.currentDate()
         date = datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
         model.activated = date
@@ -3277,14 +3277,10 @@ class AccountAddonServiceEdit(QtGui.QDialog):
             date = datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second)
             model.deactivated = date
             
-        try:
-            self.connection.save(model, "billservice_accountaddonservice")
-            self.connection.commit()
-        except Exception, e:
-            print e
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Возникла непредвиденная ошибка"))
+
+        if not self.connection.accountaddonservice_save(model):
             return
-            
+
         
         QtGui.QDialog.accept(self)
     

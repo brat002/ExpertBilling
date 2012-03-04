@@ -465,15 +465,17 @@ class SubaccountLinkDialog(QtGui.QDialog):
         if not self.model: return
         state = True if self.toolButton_ipn_enabled.isChecked() else False
         if state:
-            if not self.connection.accountActions(None, self.model.id, 'enable'):
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+            res = self.connection.accountActions(None, self.model.id, 'enable')
+            if not res.status:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно. %s" % res.message))
                 self.toolButton_ipn_enabled.setChecked(QtCore.Qt.Unchecked)
                 self.toolButton_ipn_enabled.setText(unicode(u"Не активен"))
             else:
                 self.toolButton_ipn_enabled.setText(unicode(u"Активен"))
         else:
-             if not self.connection.accountActions(None, self.model.id, 'disable'):
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+             res = self.connection.accountActions(None, self.model.id, 'disable')
+             if not res.status:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно. %s" % res.message))
                 self.toolButton_ipn_enabled.setChecked(QtCore.Qt.Checked)
                 self.toolButton_ipn_enabled.setText(unicode(u"Активен"))
                 #self.toolButton_ipn_enabled.set
@@ -486,7 +488,11 @@ class SubaccountLinkDialog(QtGui.QDialog):
         ipn_ip = unicode(self.lineEdit_ipn_ip_address.text())
         mac =''
         if nas_id and ipn_ip:
-            mac = self.connection.get_mac_for_ip(nas_id, ipn_ip)
+            res = self.connection.get_mac_for_ip(nas_id, ipn_ip)
+            if not res.status:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Невозможно определить адрес %s." % res.message))
+                return
+            mac = res.mac
         if mac:
             self.lineEdit_link_ipn_mac_address.setText(unicode(mac))
             
@@ -494,15 +500,17 @@ class SubaccountLinkDialog(QtGui.QDialog):
         if not self.model: return
         state = True if self.toolButton_ipn_added.isChecked() else False
         if state==True:
-            if not self.connection.accountActions(None, self.model.id,  'create'):
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+            res = self.connection.accountActions(None, self.model.id,  'create')
+            if not res.status:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно.%s" % res.message))
                 self.toolButton_ipn_added.setChecked(QtCore.Qt.Unchecked)
                 self.toolButton_ipn_added.setText(unicode(u"Не добавлен"))
             else:
                 self.toolButton_ipn_added.setText(unicode(u"Добавлен"))
         else:
-            if not self.connection.accountActions(None, self.model.id,  'delete'):
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно."))
+            res = self.connection.accountActions(None, self.model.id,  'delete')
+            if not res.status:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Сервер доступа настроен неправильно. %s" % res.message))
                 self.toolButton_ipn_added.setChecked(QtCore.Qt.Checked)
                 self.toolButton_ipn_added.setText(unicode(u"Добавлен"))             
             else:
@@ -519,7 +527,9 @@ class SubaccountLinkDialog(QtGui.QDialog):
     def editAddonService(self):
         i=self.getSelectedId(self.tableWidget)
         try:
-            model = self.connection.get_model(i, "billservice_accountaddonservice")
+            res = self.connection.get_accountaddonservices(id=i)
+            if not res.status: return
+            model = res.records[0]
         except:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
             return
@@ -554,18 +564,18 @@ class SubaccountLinkDialog(QtGui.QDialog):
 
     def accountAddonServiceRefresh(self):
         if self.model:
-            sp = self.connection.sql("""
-            SELECT accadd.*, adds.name as addonservice_name, adds.id as addonservice_id FROM billservice_accountaddonservice as accadd
-            JOIN billservice_addonservice as adds ON adds.id=accadd.service_id
-            WHERE subaccount_id=%s ORDER BY id DESC
-            """ % self.model.id)
+
+            d = self.connection.get_accountaddonservices(subaccount_id=self.model.id)
+            if not d.status: return
+            
             self.connection.commit()
             self.tableWidget.clearContents()
-            self.tableWidget.setRowCount(len(sp))
+            self.tableWidget.setRowCount(d.totalCount)
+            sp = d.records
             i=0
             for a in sp:
                 self.addrow(self.tableWidget, a.id, i, 0)
-                self.addrow(self.tableWidget, a.addonservice_name, i, 1)
+                self.addrow(self.tableWidget, a.addonservice, i, 1)
                 self.addrow(self.tableWidget, a.activated, i, 2)
                 try:
                     self.addrow(self.tableWidget, a.deactivated, i, 3)
@@ -581,86 +591,110 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.tableWidget.resizeColumnsToContents()
                     
     def fixtures(self):
-        nasses=self.connection.sql("SELECT id, name FROM nas_nas ORDER BY name;")
+        nasses=self.connection.get_nasses(fields=['id', 'name'])
+        if not nasses.status: 
+            QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"%s" % nasses.message))
+            return
+        nasses = nasses.records
         self.connection.commit()
-        self.comboBox_nas.addItem(u"---Любой---", QtCore.QVariant(0))
+        self.comboBox_nas.addItem(u"---Любой---", QtCore.QVariant(''))
         for nas in nasses:
             self.comboBox_nas.addItem(nas.name, QtCore.QVariant(nas.id))
 
-        switches=self.connection.sql("SELECT id, name FROM nas_switch ORDER BY name;")
+        switches=self.connection.get_switches(fields=['id', 'name'])
+        if not switches.status:
+            QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"%s" % switches.message))
+            return
+        switches = switches.records
         self.connection.commit()
         
-        self.comboBox_link_switch_id.addItem(u"---Не указан---", QtCore.QVariant(0))
+        self.comboBox_link_switch_id.addItem(u"---Не указан---", QtCore.QVariant(''))
         for switch in switches:
             self.comboBox_link_switch_id.addItem(switch.name, QtCore.QVariant(switch.id))
             
         #print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
         if self.model:
             if self.model.vpn_ipinuse:
-                pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipinuse_id, return_response=True)[0]
+                d = self.connection.get_pool_by_ipinuse(ipinuse_id=self.model.vpn_ipinuse)
+                if not d.status:
+                     QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе не найден пул, из которого был выдан vpn ip адрес."))
+                pool_id = d.result
 
             
-        pools = []#self.connection.get_models("billservice_ippool", where={'type':'0',})
+        pools = self.connection.get_ippools(type=0)
+
+
+        #self.connection.get_models("billservice_ippool", where={'type':'0',})
         
         self.connection.commit()
         i=1
         self.comboBox_vpn_pool.clear()
         self.comboBox_vpn_pool.addItem('---')
-        self.comboBox_vpn_pool.setItemData(0, QtCore.QVariant(0))
+        self.comboBox_vpn_pool.setItemData(0, QtCore.QVariant(''))
         for pool in pools:
             self.comboBox_vpn_pool.addItem(pool.name)
             self.comboBox_vpn_pool.setItemData(i, QtCore.QVariant(pool.id))
             if self.model:
-                if self.model.ipv4_vpn_pool_id:
-                    if pool.id==self.model.ipv4_vpn_pool_id:
+                if self.model.ipv4_vpn_pool:
+                    if pool.id==self.model.ipv4_vpn_pool:
                         self.comboBox_vpn_pool.setCurrentIndex(i)
                         self.lineEdit_vpn_ip_address.setDisabled(True)  
-                elif self.model.isnull('vpn_ipinuse_id')==False:
-                    if pool.id==pool_id.pool_id:
+                elif self.model.vpn_ipinuse==False:
+                    if pool.id==pool_id.pool:
                         self.comboBox_vpn_pool.setCurrentIndex(i)
                         self.lineEdit_vpn_ip_address.setDisabled(True)
             i+=1
 
         if self.model:
             if self.model.vpn_ipv6_ipinuse:
-                ipv6_pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.vpn_ipv6_ipinuse_id, return_response=True)[0]
-
+                d = self.connection.get_pool_by_ipinuse(ipinuse_id=self.model.vpn_ipv6_ipinuse)
+                if not d.status:
+                     QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе не найден пул, из которого был выдан ipv6 vpn ip адрес."))
+                ipv6_pool_id = d.result
+                
             
-        pools = []#self.connection.get_models("billservice_ippool", where={'type':'2',})
+        pools = self.connection.get_ippools(type=2)
+
         
         self.connection.commit()
         i=1
         self.comboBox_vpn_ipv6_pool.clear()
         self.comboBox_vpn_ipv6_pool.addItem('---')
-        self.comboBox_vpn_ipv6_pool.setItemData(0, QtCore.QVariant(0))
+        self.comboBox_vpn_ipv6_pool.setItemData(0, QtCore.QVariant(''))
         for pool in pools:
             self.comboBox_vpn_ipv6_pool.addItem(pool.name)
             self.comboBox_vpn_ipv6_pool.setItemData(i, QtCore.QVariant(pool.id))
             if self.model:
-                if self.model.isnull('vpn_ipv6_ipinuse_id')==False:
-                    if pool.id==ipv6_pool_id.pool_id:
+                if self.model.vpn_ipv6_ipinuse==False:
+                    if pool.id==ipv6_pool_id.pool:
                         self.comboBox_vpn_ipv6_pool.setCurrentIndex(i)
                         self.lineEdit_vpn_ipv6_address.setDisabled(True)
             i+=1
                         
                         
         if not self.model: self.groupBox.setDisabled(True)
+
         if self.model:
-            if self.model.ipn_ipinuse_id:
-                pool_id = self.connection.sql("SELECT pool_id FROM billservice_ipinuse WHERE id=%s" % self.model.ipn_ipinuse_id, return_response=True)[0]
-            
-        pools = []#self.connection.get_models("billservice_ippool", where={'type':'1',})
+            if self.model.ipn_ipinuse:
+                d = self.connection.get_pool_by_ipinuse(ipinuse_id=self.model.ipn_ipinuse)
+                if not d.status:
+                     QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе не найден пул, из которого был выдан ipn ip адрес."))
+                pool_id = d.result
+        
+        pools = self.connection.get_ippools(type=1)
+
+
         self.connection.commit()
         i=1
         self.comboBox_ipn_pool.clear()
         self.comboBox_ipn_pool.addItem('---')
-        self.comboBox_ipn_pool.setItemData(i, QtCore.QVariant(0))
+        self.comboBox_ipn_pool.setItemData(i, QtCore.QVariant(''))
         for pool in pools:
             self.comboBox_ipn_pool.addItem(pool.name)
             self.comboBox_ipn_pool.setItemData(i, QtCore.QVariant(pool.id))
             if self.model:
-                if self.model.isnull('ipn_ipinuse_id')==False:
-                    if pool.id==pool_id.pool_id:
+                if self.model.ipn_ipinuse==False:
+                    if pool.id==pool_id.pool:
                         self.comboBox_ipn_pool.setCurrentIndex(i)
                         self.lineEdit_ipn_ip_address.setDisabled(True)
             i+=1
@@ -668,10 +702,10 @@ class SubaccountLinkDialog(QtGui.QDialog):
             
         if self.model:
             #print "NAS_ID", self.model.nas_id
-            if self.model.nas_id:
-                self.comboBox_nas.setCurrentIndex(self.comboBox_nas.findData(self.model.nas_id))
-            if self.model.switch_id:
-                self.comboBox_link_switch_id.setCurrentIndex(self.comboBox_link_switch_id.findData(self.model.switch_id))                
+            if self.model.nas:
+                self.comboBox_nas.setCurrentIndex(self.comboBox_nas.findData(self.model.nas))
+            if self.model.switch:
+                self.comboBox_link_switch_id.setCurrentIndex(self.comboBox_link_switch_id.findData(self.model.switch))                
             self.lineEdit_link_login.setText(unicode(self.model.username))
             self.lineEdit_link_password.setText(unicode(self.model.password))
             self.lineEdit_vpn_ip_address.setText(unicode(self.model.vpn_ip_address))
@@ -721,17 +755,18 @@ class SubaccountLinkDialog(QtGui.QDialog):
         if self.model:
             model=self.model
         else:
-            model = Object()
-            model.account_id = self.account.id
+            model = AttrDict()
+            model.account = self.account.id
+            
         if self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]!=0:
-            model.nas_id = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0]
+            model.nas = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0] or ''
         else:
-            model.nas_id = None
+            model.nas = None
         
         if self.comboBox_link_switch_id.itemData(self.comboBox_link_switch_id.currentIndex()).toInt()[0]!=0:
-            model.switch_id = self.comboBox_link_switch_id.itemData(self.comboBox_link_switch_id.currentIndex()).toInt()[0]
+            model.switch = self.comboBox_link_switch_id.itemData(self.comboBox_link_switch_id.currentIndex()).toInt()[0] or ''
         else:
-            model.switch_id = None
+            model.switch = None
         
         model.switch_port = int(self.spinBox_link_port.value() or 0)
         model.vlan = int(self.spinBox_vlan.value() or 0)
@@ -741,33 +776,13 @@ class SubaccountLinkDialog(QtGui.QDialog):
         #model.ipn_ip_address = unicode(self.lineEdit_ipn_ip_address.text()) or "0.0.0.0"
 
 
-        if self.lineEdit_link_login.text():
-            try:
-                subaccount_id = self.connection.get("SELECT id FROM billservice_subaccount WHERE username='%s'" % unicode(self.lineEdit_link_login.text())).id
-                if not self.model and subaccount_id:
-                    QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе уже существует такой username."))
-                    self.connection.rollback()
-                    return  
-                if subaccount_id!=model.id:
-                    QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе уже существует такой username."))
-                    self.connection.rollback()
-                    return                
-            except Exception, ex:
-                pass
             
         if self.lineEdit_ipn_ip_address.text():
 			if self.ipnValidator.validate(self.lineEdit_ipn_ip_address.text(), 0)[0]  != QtGui.QValidator.Acceptable:
 				QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте правильность написания IPN IP адреса."))
 				self.connection.rollback()
 				return
-			try:
-				ipn_address_account_id = self.connection.get("SELECT id FROM billservice_subaccount WHERE ipn_ip_address='%s'" % unicode(self.lineEdit_ipn_ip_address.text())).id
-				if ipn_address_account_id!=model.id and unicode(self.lineEdit_ipn_ip_address.text())!='0.0.0.0':
-					QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе уже существует такой IPN IP адрес."))
-					#self.connection.rollback()
-					#return  			  
-			except Exception, ex:
-				pass
+
         model.ipn_ip_address = unicode(self.lineEdit_ipn_ip_address.text()) or "0.0.0.0"
 		
 				
@@ -776,13 +791,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
 				QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте правильность написания VPN IP адреса."))
 				self.connection.rollback()
 				return
-			try:
-				vpn_address_account_id = self.connection.get("SELECT id FROM billservice_subaccount WHERE vpn_ip_address='%s'" % unicode(self.lineEdit_vpn_ip_address.text())).id
-				#print "vpn_address_account_id", vpn_address_account_id
-				if vpn_address_account_id!=model.id and unicode(self.lineEdit_vpn_ip_address.text())!='0.0.0.0':
-					QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе уже существует такой VPN IP адрес."))	  
-			except Exception, ex:
-				pass
+
 			
         model.vpn_ip_address = unicode(self.lineEdit_vpn_ip_address.text()) or "0.0.0.0"
 
@@ -791,27 +800,14 @@ class SubaccountLinkDialog(QtGui.QDialog):
                 QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте правильность написания IPv6 VPN IP адреса."))
                 self.connection.rollback()
                 return
-            try:
-                vpn_address_account_id = self.connection.get("SELECT id FROM billservice_subaccount WHERE vpn_ipv6_ip_address='%s'" % unicode(self.lineEdit_vpn_ipv6_address.text())).id
-                #print "vpn_address_account_id", vpn_address_account_id
-                if vpn_address_account_id!=model.id and unicode(self.lineEdit_vpn_ipv6_address.text())!='::':
-                    QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе уже существует такой IPv6 VPN IP адрес."))      
-            except Exception, ex:
-                pass
+
             
         model.vpn_ipv6_ip_address = unicode(self.lineEdit_vpn_ipv6_address.text()) or "::"
         
         #---------------
         if self.lineEdit_link_ipn_mac_address.text().isEmpty()==False:
 			if self.macValidator.validate(self.lineEdit_link_ipn_mac_address.text(), 0)[0]  == QtGui.QValidator.Acceptable:
-				try:
-					id = self.connection.get("SELECT id FROM billservice_subaccount WHERE ipn_mac_address='%s'" % unicode(self.lineEdit_ipn_mac_address.text()).upper()).id
-					if id!=model.id :
-						QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"В системе уже есть такой MAC."))
-						#self.connection.rollback()
-						return
-				except:
-					pass
+
 				model.ipn_mac_address = unicode(self.lineEdit_link_ipn_mac_address.text()).upper()
 			else:
 				QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Указан некорректный MAC адрес."))
@@ -853,94 +849,35 @@ class SubaccountLinkDialog(QtGui.QDialog):
                 model.ipn_enabled=False        
         model.speed=''
         #Операции с пулом    
-        try:
-            pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0]
-            if pool_id!=0 and model.ipn_ip_address==u'0.0.0.0':
-                QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPN пул, но не назначили ip адрес."))
-                self.connection.rollback()
-                return 
-            if  model.__dict__.get('ipn_ipinuse_id'):
-                ipninuse_model = self.connection.get_model(model.ipn_ipinuse_id, "billservice_ipinuse")
-                if ipninuse_model.pool_id != pool_id or ipninuse_model.ip!=model.ipn_ip_address:
-                    ipninuse_model.disabled="now()"
-                    self.connection.save(ipninuse_model, "billservice_ipinuse")
-                    model.ipn_ipinuse_id=None
-        
-            if pool_id!=0:
-                ipninuse_model= Object()
-                ipninuse_model.pool_id=pool_id
-                ipninuse_model.ip=model.ipn_ip_address
-                ipninuse_model.datetime='now()'
-                ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
-                model.ipn_ipinuse_id=ipninuse_model.id
-                #self.connection.save(model, "billservice_account")
-        except Exception, e:
-            print e
-            QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки IPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
-            self.connection.rollback()
+    
+        pool_id = self.comboBox_ipn_pool.itemData(self.comboBox_ipn_pool.currentIndex()).toInt()[0] or ''
+        if pool_id and model.ipn_ip_address==u'0.0.0.0':
+            QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPN пул, но не назначили ip адрес."))
             return 
+        
 
-		 #Операции с пулом    
-        try:
-            pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0]
-            if  model.__dict__.get('vpn_ipinuse_id'):
-                ipninuse_model = self.connection.get_model(model.vpn_ipinuse_id, "billservice_ipinuse")
-                if ipninuse_model.pool_id!=pool_id or ipninuse_model.ip!=model.vpn_ip_address:
-                    ipninuse_model.disabled='now()'
-                    self.connection.save(ipninuse_model, "billservice_ipinuse")
-                    model.vpn_ipinuse_id=None
-        
-        
-            if pool_id!=0:
-                model.ipv4_vpn_pool_id=pool_id
-                ipninuse_model= Object()
-                ipninuse_model.pool_id=pool_id
-                ipninuse_model.ip=model.vpn_ip_address
-                ipninuse_model.datetime='now()'
-                ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
-                model.vpn_ipinuse_id=ipninuse_model.id
-                #self.connection.save(model, "billservice_subaccount")
-        except Exception, e:
-            print e
-            QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки VPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
-            self.connection.rollback()
-            return 
                 
          #Операции с vpn ipv6 пулом    
-        try:
-            pool_id = self.comboBox_vpn_ipv6_pool.itemData(self.comboBox_vpn_ipv6_pool.currentIndex()).toInt()[0]
-            if pool_id!=0 and model.vpn_ipv6_ip_address=='::' and model.vpn_ipv6_ip_address=='':
-                QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPV6 VPN пул, но не назначили ip адрес."))
-                self.connection.rollback()
-                return             
-            if  model.__dict__.get('vpn_ipv6_ipinuse_id'):
-                ipninuse_model = self.connection.get_model(model.vpn_ipv6_ipinuse_id, "billservice_ipinuse")
-                
-                if ipninuse_model.id!=pool_id or ipninuse_model.ip!=model.vpn_ipv6_ip_address:
-                    self.connection.iddelete(ipninuse_model.id, "billservice_ipinuse")
-                    model.vpn_ipinuse_id=None
-                    
-            
-            if pool_id!=0:
-                ipninuse_model= Object()
-                ipninuse_model.pool_id=pool_id
-                ipninuse_model.ip=model.vpn_ipv6_ip_address
-                ipninuse_model.datetime='now()'
-                ipninuse_model.id = self.connection.save(ipninuse_model, "billservice_ipinuse")
-                model.vpn_ipv6_ipinuse_id=ipninuse_model.id
-                #self.connection.save(model, "billservice_account")
-        except Exception, e:
-            print e
-            QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Проверьте настройки IPv6 VPN IP адресов. Возможно выбранный IP адрес не принадлежит пулу."))
+
+        pool_id = self.comboBox_vpn_ipv6_pool.itemData(self.comboBox_vpn_ipv6_pool.currentIndex()).toInt()[0] or ''
+        if pool_id and model.vpn_ipv6_ip_address=='::' and model.vpn_ipv6_ip_address=='':
+            QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPV6 VPN пул, но не назначили ip адрес."))
             self.connection.rollback()
-            return 
-               
+            return             
+
+
             
-        try:
-            self.connection.save(model,"billservice_subaccount")
-            self.connection.commit()
-        except Exception, e:
-            print e
+
+        d = self.connection.subaccount_save(model)
+        if d.status==False:
+            if d.errors:
+                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.errors.get(x))) for x in d.errors])))
+            if d.message:
+                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode("%s" % d.message))
+            return
+        else:
+            model.id = d.account_id
+            self.model = model
             self.connection.rollback()
         QtGui.QDialog.accept(self)
 
@@ -1027,18 +964,16 @@ class AddAccountTarif(QtGui.QDialog):
                 model=self.model
                 model.datetime = date
             else:
-                model = Object()
-                model.account_id = self.account.id
-                model.tarif_id =self.comboBox_tarif.itemData(self.comboBox_tarif.currentIndex()).toInt()[0]
+                model = AttrDict()
+                model.account = self.account.id
+                model.tarif =self.comboBox_tarif.itemData(self.comboBox_tarif.currentIndex()).toInt()[0]
                 model.datetime = date
                 
                 #AccountTarif.objects.create(account=self.account, tarif=tarif, datetime=date)
-            try:
-                self.connection.save(model,"billservice_accounttarif")
-                self.connection.commit()
-            except Exception, e:
-                #print e
-                self.conection.rollback()
+
+            res = self.connection.accounttarif_save(model)
+            if not res:
+                return
         QtGui.QDialog.accept(self)
 
 
@@ -1050,7 +985,7 @@ class AddAccountTarif(QtGui.QDialog):
         self.label_accounttarif_start.setText(QtGui.QApplication.translate("AddAccountTarif", "-", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        tarifs=self.connection.sql("SELECT id, name FROM billservice_tariff WHERE deleted IS NOT TRUE ORDER BY name;")
+        tarifs=self.connection.get_tariffs(fields=['id', 'name'])
         self.connection.commit()
         for tarif in tarifs:
             self.comboBox_tarif.addItem(tarif.name, QtCore.QVariant(tarif.id))
@@ -1768,13 +1703,13 @@ class AccountWindow(QtGui.QMainWindow):
 
         #model_id=self.model
         
-        operator = self.connection.get("SELECT * FROM billservice_operator LIMIT 1")
+        operator = self.connection.get_operator()
         child = TemplateSelect(connection = self.connection)
         if child.exec_():
             template_id = child.id
         else:
             return
-        template = self.connection.get_model(template_id, "billservice_template")
+        template = self.connection.get_templates(id=template_id)
         templ = Template(template.body, input_encoding='utf-8')
         
         account = self.model
@@ -1863,18 +1798,18 @@ class AccountWindow(QtGui.QMainWindow):
             
         tarif_contracttemplate=None
         if self.tarif_id>0:
-            tarif_contracttemplate = self.connection.get_tariffs(id=self.tarif_id, fields=['contracttemplate',]).records[0]
+            tarif_contracttemplate = self.connection.get_tariffs(id=self.tarif_id, fields=['contracttemplate',])
         self.connection.commit()
         tarif_contracttemplate_id = None
         if tarif_contracttemplate:
             tarif_contracttemplate_id = tarif_contracttemplate.contracttemplate
          
-        templatecontracts = self.connection.get_contracttemplates(fields=['id', 'template']).records
+        templatecontracts = self.connection.get_contracttemplates(fields=['id', 'template'])
         self.connection.commit()
         self.comboBox_agreement_num.clear()
         i=0
         if not self.model:
-            self.comboBox_agreement_num.addItem('', QtCore.QVariant(0))
+            self.comboBox_agreement_num.addItem('', QtCore.QVariant(None))
             i+=1
             for item in templatecontracts:
                 self.comboBox_agreement_num.addItem(item.template, QtCore.QVariant(item.id))
@@ -2151,11 +2086,10 @@ class AccountWindow(QtGui.QMainWindow):
     def suspendedPeriodRefresh(self):
         if self.model:
             sp = self.connection.get_suspendedperiods(account_id=self.model.id)
-            if not sp.status: return
             
-            self.tableWidget_suspended.setRowCount(sp.totalCount)
+            self.tableWidget_suspended.setRowCount(len(sp))
             i=0
-            for a in sp.records:
+            for a in sp:
                 self.addrow(self.tableWidget_suspended, a.id, i, 0)
                 self.addrow(self.tableWidget_suspended, a.start_date, i, 1)
                 try:
@@ -2362,6 +2296,8 @@ class AccountWindow(QtGui.QMainWindow):
         i=self.getSelectedId(self.tableWidget_subaccounts)
         try:
             model = self.connection.get_subaccounts(id=i, normal_fields=False)
+            if not model.status: return
+            model = model.records[0]
         except:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
             return
@@ -2371,38 +2307,18 @@ class AccountWindow(QtGui.QMainWindow):
             
     def del_accounttarif(self):
         i=self.getSelectedId(self.tableWidget_accounttarif)
-        try:
-            model = self.connection.get_model(i, "billservice_accounttarif")
-        except:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
-            return
-        
-        if model.datetime<datetime.datetime.now():
-            QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Эту запись отредактировать или удалить нельзя,\n так как с ней уже связаны записи статистики и другая информация,\n необходимая для обеспечения целостности системы."))
-            return
 
-        if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.iddelete(i, "billservice_accounttarif")
-            self.accountTarifRefresh()
+        self.connection.accounttariff_delete(i)
+
+ 
+        self.accountTarifRefresh()
 
     def delSubAccountLink(self):
         i=self.getSelectedId(self.tableWidget_subaccounts)
-        try:
-            model = self.connection.get_model(i, "billservice_subaccount")
-        except:
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
-            return
-        a=(model.vpn_ipinuse_id, model.ipn_ipinuse_id,model.vpn_ipv6_ipinuse_id)
-        l=[]
-        for x in a:
-            if x:
-                l.append(str(x))
-        l.append('-10000000')
-        #print l
-        #print ','.join(l)
-        self.connection.sql("UPDATE billservice_ipinuse SET disabled=now() WHERE id in (%s)" % (','.join(l),),return_response=False)
+
         if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.iddelete(i, "billservice_subaccount")
+            d = self.connection.subaccount_delete(i)
+            if not d.status:return
             self.subAccountLinkRefresh()
             
     def delAccountHardware(self):
@@ -2422,25 +2338,25 @@ class AccountWindow(QtGui.QMainWindow):
         child=SuspendedPeriodForm()
 
         if child.exec_()==1:
-            model = Object()
-            model.account_id = self.model.id
+            model = AttrDict()
+            model.account = self.model.id
             model.start_date = child.start_date
             model.end_date = child.end_date
-            self.connection.save(model, "billservice_suspendedperiod")
+            self.connection.suspendedperiod_save(model)
             self.connection.commit()
             self.suspendedPeriodRefresh()
 
     def edit_suspendedperiod(self):
         
         i=self.getSelectedId(self.tableWidget_suspended)
-        model = self.connection.get_model(i, "billservice_suspendedperiod")
+        model = self.connection.get_suspendedperiods(id=i)
         self.connection.commit()
         child=SuspendedPeriodForm(model)
 
         if child.exec_()==1:
             model.start_date = child.start_date
             model.end_date = child.end_date
-            self.connection.save(model, "billservice_suspendedperiod")
+            self.connection.suspendedperiod_save(model)
             self.connection.commit()
             self.suspendedPeriodRefresh()
             
@@ -2449,7 +2365,7 @@ class AccountWindow(QtGui.QMainWindow):
         ###
 
         if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.iddelete(i, "billservice_suspendedperiod")
+            self.connection.delete_suspendedperiod(i)
             self.suspendedPeriodRefresh()
     
     def edit_accounttarif(self):

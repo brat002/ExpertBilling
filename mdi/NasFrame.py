@@ -721,7 +721,7 @@ class NasEbs(ebsTableWindow):
         self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
 
         actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete), ("actionRadiusAttrs", "RADIUS атрибуты", "images/configure.png", self.radius_attrs), ("rrdNasTrafficInfo", "График загрузки сервера доступа", "images/bandwidth.png", self.rrdtraffic_info),]
-        objDict = {self.tableWidget:["editAction", "addAction", "delAction", 'rrdReportAction'], self.toolBar:["addAction", "delAction", "actionRadiusAttrs","rrdNasTrafficInfo"]}
+        objDict = {self.tableWidget:["editAction", "addAction", "delAction"], self.toolBar:["addAction", "delAction", "actionRadiusAttrs","rrdNasTrafficInfo"]}
         self.actionCreator(actList, objDict)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.delNodeLocalAction()
@@ -796,13 +796,11 @@ class NasEbs(ebsTableWindow):
                 self.refresh()
   
     def editframe(self):
-        try:
-            model=self.connection.get_nasses(id=self.getSelectedId())
-            if not model: return
-            model = model.records[0]
-        except:
-            model=None
+        
+        
+        model=self.connection.get_nasses(id=self.getSelectedId())
 
+        print "model",  self.getSelectedId()
         addf = AddNasFrame(connection=self.connection, model=model)
         addf.exec_()
         self.refresh()
@@ -819,11 +817,12 @@ class NasEbs(ebsTableWindow):
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.clearContents()
         nasses = self.connection.get_nasses(fields=['id','name', 'identify','type','ipaddress'])
+        print "get nasses", len(nasses)
         #self.connection.commit()
-        self.tableWidget.setRowCount(nasses.totalCount)
+        self.tableWidget.setRowCount(len(nasses))
         #print nasses
         i=0
-        for nas in nasses.records:
+        for nas in nasses:
             #print nas
             self.addrow(nas.id, i,0)
             self.addrow(nas.name, i,1)

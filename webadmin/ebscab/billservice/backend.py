@@ -28,7 +28,7 @@ def check_password(obj, row_password):
         log.debug('Account obj found, try to compare %s == %s' % (obj.password, row_password))
         return str(obj.password) == str(row_password)
     else:
-        log.debug('SystemUser obj found, try to compare %s == %s' % (obj.password, _hash))
+        log.debug('SystemUser obj found, try to compare %s == %s' % (obj.text_password, row_password))
         return str(obj.text_password) == str(row_password) and obj.role in [0,3] #if password is correct and user role admin or member of support team
 
 class LoginUserBackend(object):

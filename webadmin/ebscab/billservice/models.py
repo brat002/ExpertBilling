@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 # Create your models here.
 # choiCe
-
+from ipyfield.models import IPyField
 PROTOCOLS = {'0':'-all-',
            '37':'ddp',
            '98':'encap', 
@@ -41,9 +41,16 @@ CASH_METHODS=(
                 )
 
 ACCESS_TYPE_METHODS=(
-                (u'IPN',u'IPN'),
-                (u'PPTP',u'PPTP'),
-                (u'PPPOE',u'PPPOE'),
+                      ("PPTP", "PPTP" ),
+                      ("PPPOE", "PPPOE"),
+                      ("IPN", "IPN"),
+                      ("HotSpot","HotSpot"),
+                      ('HotSpotIp+Mac', 'HotSpotIp+Mac'),
+                      ('HotSpotIp+Password', 'HotSpotIp+Password'),
+                      ('HotSpotMac','HotSpotMac'),
+                      ('HotSpotMac+Password','HotSpotMac+Password'),
+                      ('lISG', 'lISG'),
+                      ("DHCP", "DHCP")
                 )
 # choiCe
 ACTIVITY_CHOISES=(
@@ -168,7 +175,10 @@ class PeriodicalService(models.Model):
     cost              = models.DecimalField(verbose_name=u'Стоимость услуги', default=0, blank=True, decimal_places=10, max_digits=30)
     cash_method       = models.CharField(verbose_name=u'Способ снятия', max_length=255, choices=CASH_METHODS, default='AT_START', blank=True)
     condition         = models.IntegerField() # 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
-
+    deactivated     = models.DateTimeField(blank=True, null=True)
+    created     = models.DateTimeField(blank=True, null=True)
+    deleted     = models.BooleanField(blank=True, default=False)
+    
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -243,7 +253,7 @@ class TimeAccessService(models.Model):
     tarification_step = models.IntegerField()
     
     def __unicode__(self):
-        return u"%s" % self.name
+        return u"%s" % self.id
 
     class Admin:
         #ordering = ['name']
@@ -289,7 +299,7 @@ class AccessParameters(models.Model):
     priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, default=8)
 
     def __unicode__(self):
-        return u"%s" % self.name
+        return u"%s" % self.id
 
     class Admin:
         #ordering = ['name']
@@ -366,13 +376,14 @@ class TrafficTransmitService(models.Model):
 
 class TrafficTransmitNodes(models.Model):
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u"Услуга доступа по трафику", related_name="traffic_transmit_nodes")
-    traffic_class     = models.ManyToManyField(to=TrafficClass, verbose_name=u'Классы трафика')
-    time_nodes        = models.ManyToManyField(to=TimePeriod, verbose_name=u'Промежуток времени')
+    #traffic_class     = models.ManyToManyField(to=TrafficClass, verbose_name=u'Классы трафика')
+    timeperiod        = models.ForeignKey(to=TimePeriod, verbose_name=u'Промежуток времени')
+    group        = models.ForeignKey(to='Group', verbose_name=u'Группа трафика')
     cost              = models.FloatField(default=0, verbose_name=u'Цена трафика')
-    edge_start        = models.FloatField(default=0,verbose_name=u'Начальная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал больше указанного количество байт')
-    edge_end          = models.FloatField(default=0,verbose_name=u'Конечная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал меньше указанного количество байт')
-    in_direction      = models.BooleanField(default=True, blank=True)
-    out_direction      = models.BooleanField(default=True, blank=True)
+    edge_start        = models.FloatField(default=0,blank=True, null=True, verbose_name=u'Начальная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал больше указанного количество байт')
+    edge_end          = models.FloatField(default=0, blank=True, null=True, verbose_name=u'Конечная граница', help_text=u'Цена актуальна, если пользователь в текущем расчётном периоде наработал меньше указанного количество байт')
+    #in_direction      = models.BooleanField(default=True, blank=True)
+    #out_direction      = models.BooleanField(default=True, blank=True)
     #transit_direction      = models.BooleanField()
     
     def __unicode__(self):
@@ -461,7 +472,7 @@ class TrafficLimit(models.Model):
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
     group             = models.ForeignKey("Group")
     mode              = models.BooleanField(default=False, blank=True, verbose_name=u'За длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
-    #action            = models.IntegerField()
+    action            = models.IntegerField()
     
     def __unicode__(self):
         return u"%s" % self.name
@@ -485,6 +496,7 @@ class Tariff(models.Model):
     #onetime_services  = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
     time_access_service = models.ForeignKey(to=TimeAccessService, verbose_name=u'Доступ с учётом времени', blank=True, null=True)
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u'Доступ с учётом трафика', blank=True, null=True)
+    radius_traffic_transmit_service = models.ForeignKey(to="RadiusTraffic", verbose_name=u'RADIUS тарификация трафика', blank=True, null=True)
     cost              = models.FloatField(verbose_name=u'Стоимость пакета', default=0 ,help_text=u"Стоимость активации тарифного плана. Целесообразно указать с расчётным периодом. Если не указана-предоплаченный трафик и время не учитываются")
     reset_tarif_cost  = models.BooleanField(verbose_name=u'Производить доснятие', blank=True, default=False, help_text=u'Производить доснятие суммы до стоимости тарифного плана в конце расчётного периода')
     settlement_period = models.ForeignKey(to=SettlementPeriod, blank=True, null=True, verbose_name=u'Расчётный период')
@@ -498,6 +510,8 @@ class Tariff(models.Model):
     userblock_max_days = models.IntegerField()
     userblock_require_balance = models.DecimalField(decimal_places=10, max_digits=60)  
     allow_ballance_transfer = models.BooleanField()
+    vpn_ippool = models.ForeignKey("IPPool", blank=True, null=True, related_name='tariff_vpn_ippool_set')
+    vpn_guest_ippool = models.ForeignKey("IPPool", blank=True, null=True, related_name='tariff_guest_vpn_ippool_set')
     
     def __unicode__(self):
         return u"%s" % self.name
@@ -633,7 +647,7 @@ class Account(models.Model):
         #list_filter = ('username')
 
     def __str__(self):
-        return '%s' % self.username
+        return '%s' % self.id
 
     class Meta:
         verbose_name = u"Аккаунт"
@@ -1046,12 +1060,23 @@ class SuspendedPeriod(models.Model):
 class Group(models.Model):
     #make it an array
     name = models.CharField(max_length=255)
-    trafficclass = models.ManyToManyField(TrafficClass)
+    #trafficclass = models.ManyToManyField(TrafficClass)
     #1 - in, 2-out, 3 - sum, 4-max
     direction = models.IntegerField()
     # 1 -sum, 2-max
     type = models.IntegerField()
     
+    
+    def __unicode__(self):
+        return u"%s" % self.name
+class GroupTrafficClass(models.Model):
+    group = models.ForeignKey(Group)
+    trafficclass = models.ForeignKey(TrafficClass)
+    
+    
+    class Meta:
+        db_table = "billservice_group_trafficclass"
+        
 class GroupStat(models.Model):
     group = models.ForeignKey(Group)
     account = models.ForeignKey(Account)
@@ -1065,17 +1090,19 @@ class GroupStat(models.Model):
     
 class SpeedLimit(models.Model):
     limit = models.ForeignKey(TrafficLimit)
-    max_tx = models.IntegerField()
-    max_rx = models.IntegerField()
-    burst_tx = models.IntegerField()
-    burst_rx = models.IntegerField()
-    burst_treshold_tx = models.IntegerField()
-    burst_treshold_rx = models.IntegerField()
-    burst_time_tx = models.IntegerField()
-    burst_time_rx = models.IntegerField()
-    min_tx = models.IntegerField()
-    min_rx = models.IntegerField()
-    priority = models.IntegerField()
+    speed_units = models.CharField(max_length=10, blank=True)
+    change_speed_type = models.CharField(max_length=10, blank=True)
+    max_tx = models.IntegerField(blank=True)
+    max_rx = models.IntegerField(blank=True)
+    burst_tx = models.IntegerField(blank=True)
+    burst_rx = models.IntegerField(blank=True)
+    burst_treshold_tx = models.IntegerField(blank=True)
+    burst_treshold_rx = models.IntegerField(blank=True)
+    burst_time_tx = models.IntegerField(blank=True)
+    burst_time_rx = models.IntegerField(blank=True)
+    min_tx = models.IntegerField(blank=True)
+    min_rx = models.IntegerField(blank=True)
+    priority = models.IntegerField(blank=True)
     
 class AccountSpeedLimit(models.Model):
     account = models.ForeignKey(Account)
@@ -1228,9 +1255,9 @@ class SubAccount(models.Model):
     account = models.ForeignKey(Account, related_name='subaccounts')
     username = models.CharField(max_length=512, blank=True)
     password = models.CharField(max_length=512, blank=True)
-    ipn_ip_address = models.IPAddressField(blank=True,null=True, default=None)
-    ipn_mac_address = models.CharField(blank=True, max_length=17)
-    vpn_ip_address = models.IPAddressField(blank=True,null=True, default=None)
+    ipn_ip_address = models.IPAddressField(blank=True,null=True, default='0.0.0.0')
+    ipn_mac_address = models.CharField(blank=True, max_length=17, default='')
+    vpn_ip_address = models.IPAddressField(blank=True,null=True,  default='0.0.0.0')
     allow_mac_update = models.BooleanField(default=False)
     nas = models.ForeignKey(Nas, blank=True, null=True, default=None)
     ipn_added = models.BooleanField()
@@ -1257,9 +1284,9 @@ class SubAccount(models.Model):
     allow_addonservice = models.BooleanField(blank=True, default=False)
     vpn_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_vpn_ipinuse_set')
     ipn_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_ipn_ipinuse_set')
-    vpn_ipv6_ip_address = models.TextField(blank=True, null=True)
+    vpn_ipv6_ip_address = models.CharField(blank=True, null=True, max_length=128, default='::')
     vpn_ipv6_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_vpn_ipv6_ipinuse_set')
-    ipn_ipv6_ip_address = models.TextField(blank=True, null=True)
+    #ipn_ipv6_ip_address = models.TextField(blank=True, null=True)
     vlan = models.IntegerField(blank=True, null=True)
     allow_mac_update = models.BooleanField(blank=True, default=False)
     ipv4_ipn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_ipn_ippool_set')
@@ -1295,8 +1322,9 @@ class RadiusTraffic(models.Model):
     rounding = models.IntegerField()
     prepaid_direction = models.IntegerField()
     prepaid_value = models.IntegerField()
-    created = models.DateTimeField()
-    deleted = models.DateTimeField()
+    reset_prepaid_traffic = models.BooleanField(blank=True, default=False)
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    deleted = models.DateTimeField(blank=True, null=True)
     
 class RadiusTrafficNode(models.Model):
     radiustraffic = models.ForeignKey(RadiusTraffic)
