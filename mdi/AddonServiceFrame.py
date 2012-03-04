@@ -549,7 +549,7 @@ class AddServiceFrame(QtGui.QDialog):
         model.service_type = unicode(self.comboBox_service_type.itemData(self.comboBox_service_type.currentIndex()).toString())
         
         model.sp_type = unicode(self.comboBox_sp_type.itemData(self.comboBox_sp_type.currentIndex()).toString())
-        model.sp_period_ = self.comboBox_sp_period.itemData(self.comboBox_sp_period.currentIndex()).toInt()[0]
+        model.sp_period = self.comboBox_sp_period.itemData(self.comboBox_sp_period.currentIndex()).toInt()[0]
         model.timeperiod = self.comboBox_timeperiod.itemData(self.comboBox_timeperiod.currentIndex()).toInt()[0]
         model.cancel_subscription = self.groupBox_cancel_subscription.isChecked()==True
         
@@ -666,14 +666,14 @@ class AddonServiceEbs(ebsTableWindow):
     def delete(self):
         id=self.getSelectedId()
         if (QtGui.QMessageBox.question(self, u"Удалить подключаемую услугу?" , u'''Удалить подключаемую услугу?.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
-            self.connection.iddelete(id, 'billservice_addonservice')
+            self.connection.addonservice_delete(id)
             self.connection.commit()
             self.refresh()
     
         
     def editframe(self):
         try:
-            model=self.connection.get_model(self.getSelectedId(), "billservice_addonservice")
+            model=self.connection.get_addonservices(id=self.getSelectedId())
         except:
             model=None
 

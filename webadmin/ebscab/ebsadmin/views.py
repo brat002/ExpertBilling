@@ -5,14 +5,14 @@ from ebscab.lib.ssh_paramiko import ssh_client
 from billservice.models import Account, AccessParameters, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
 from billservice.models import Organization, TimeSpeed, BankData, TimePeriod, SettlementPeriod, Template, AccountHardware, SuspendedPeriod, Operator, Transaction, PeriodicalService, AddonService, Tariff
 from billservice.models import OneTimeService, TimeSpeed, GroupTrafficClass, TrafficTransmitNodes, PrepaidTraffic, Group, PeriodicalService, OneTimeService, TrafficLimit, AddonServiceTarif
-from billservice.models import TrafficTransmitService, SpeedLimit,  RadiusTraffic, RadiusTrafficNode,TimeAccessNode,TimeAccessService
+from billservice.models import TrafficTransmitService, SpeedLimit,  RadiusTraffic, RadiusTrafficNode,TimeAccessNode,TimeAccessService, AddonServiceTarif
 
 from nas.models import Nas, Switch, TrafficClass
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from billservice.forms import AccountForm, TimeSpeedForm, GroupForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
-from billservice.forms import DocumentModelForm, SuspendedPeriodModelForm, TransactionModelForm
+from billservice.forms import DocumentModelForm, SuspendedPeriodModelForm, TransactionModelForm, AddonServiceForm
 from utilites import cred
 import IPy
 from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
@@ -22,7 +22,7 @@ import datetime
 from mako.template import Template as mako_template
 from ebsadmin.lib import ExtDirectStore, instance_dict
 from billservice.forms import LoginForm, RadiusTrafficForm, RadiusTrafficNodeForm, PrepaidTrafficForm, TrafficTransmitNodeForm,TrafficTransmitServiceForm, PeriodicalServiceForm, OneTimeServiceForm,  TariffForm, AccessParametersForm, SettlementPeriodForm, OrganizationForm, BankDataForm,AccountTariffBathForm
-from billservice.forms import TimeAccessNodeForm, TimeAccessServiceForm, TrafficLimitForm, SpeedLimitForm
+from billservice.forms import TimeAccessNodeForm, ContractTemplateForm, TimeAccessServiceForm, TrafficLimitForm, SpeedLimitForm, AddonServiceTarifForm
 from billservice import authenticate, log_in, log_out
 from nas.forms import NasForm
 from django.db.models import Q
@@ -948,6 +948,34 @@ def ippools(request):
 
 @ajax_request
 @login_required
+def templates(request):
+
+    fields = request.POST.get('fields',[])
+    id = request.POST.get('id',None)
+    type = request.POST.get('type',None)
+    if id and id!='None':
+        items = Template.objects.filter(id=id)
+        if not items:
+            return {'status':False, 'message': 'Template item with id=%s not found' % id}
+        if len(items)>1:
+            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+        
+    elif type and type!='None':
+        items = Template.objects.filter(type=type)
+    else:
+        items = Template.objects.all()
+    #from django.core import serializers
+    #from django.http import HttpResponse
+    res=[]
+    for item in items:
+        res.append(instance_dict(item, fields=fields))
+    
+    #data = serializers.serialize('json', accounts, fields=('username','password'))
+    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
 def periodicalservices(request):
     
     fields = request.POST.get('fields',[])
@@ -1155,7 +1183,7 @@ def organizations(request):
             return {'status':False, 'message': 'Organization item with id=%s not found' % id}
     elif account_id:
         items = Organization.objects.filter(account__id=account_id)
-        if not item:
+        if not items:
             return {'status':False, 'message': 'Organization item with account_id=%s not found' % account_id}
     else:
         items = Organization.objects.all()
@@ -1250,9 +1278,10 @@ def tpchange_save(request):
 
 
 
-#@transaction.commit_manually
+
 @login_required
 @ajax_request
+@transaction.commit_manually
 def tariffs_set(request):
     
     data = request.POST.get("data", {})
@@ -1356,7 +1385,9 @@ def tariffs_set(request):
 
         if periodicalservices_ids:
             PeriodicalService.objects.filter(tarif=tariff).exclude(id__in=periodicalservices_ids).delete()
-            
+    else:
+        PeriodicalService.objects.filter(tarif=tariff).update(deleted=True, deactivated = datetime.datetime.now())
+        
     if js['addonservices']:
         
         addonservices_ids = []
@@ -1364,12 +1395,12 @@ def tariffs_set(request):
             obj['tarif']=tariff.id
             if obj.get('id'):
                 
-                item = AddonserviceTarif.objects.get(id=obj.get('id'))
-                form = AddonserviceTarifForm(obj, instance=item)
+                item = AddonServiceTarif.objects.get(id=obj.get('id'))
+                form = AddonServiceTarifForm(obj, instance=item)
                 print "instance"
             else:
                 print "frompost"
-                form = AddonserviceTarifForm(obj)
+                form = AddonServiceTarifForm(obj)
             
         
             if form.is_valid():
@@ -1386,9 +1417,10 @@ def tariffs_set(request):
         
 
         if addonservices_ids:
-            AddonserviceTarif.objects.filter(tarif=tariff).exclude(id__in=addonservices_ids).delete()
+            AddonServiceTarif.objects.filter(tarif=tariff).exclude(id__in=addonservices_ids).delete()
+    else:
+        AddonServiceTarif.objects.filter(tarif=tariff).delete()
             
-
     if js.get('onetimeservices'):
         
         onetimeservices_ids = []
@@ -1419,7 +1451,9 @@ def tariffs_set(request):
 
         if onetimeservices_ids:
             OneTimeService.objects.filter(tarif=tariff).exclude(id__in=onetimeservices_ids).delete()
-
+    else:
+        OneTimeService.objects.filter(tarif=tariff).delete()
+        
     if js.get('limites'):
         
         limites_ids = []
@@ -1448,8 +1482,6 @@ def tariffs_set(request):
                 return {'status':False, 'errors': form._errors}
             limites_ids.append(limit_item.id)
             
-            print "limit_item.action",limit_item.action, type(limit_item.action)
-            print "speedlimit", speedlimit
             if limit_item.action ==0:
                 SpeedLimit.objects.filter(limit=limit_item).delete()
             elif  limit_item.action ==1:
@@ -1482,7 +1514,10 @@ def tariffs_set(request):
         if limites_ids:
             TrafficLimit.objects.filter(tarif=tariff).exclude(id__in=limites_ids).delete()
                 
-
+    else:
+        for tl in TrafficLimit.objects.filter(tarif=tariff):
+             SpeedLimit.objects.filter(limit=tl).delete()
+             tl.delete()
             
     if js.get('time_access_service'):
         obj = js.get('time_access_service')
@@ -1534,7 +1569,10 @@ def tariffs_set(request):
             
         if time_access_nodes_ids:
             TimeAccessNode.objects.filter(time_access_service=timeaccessservice).exclude(id__in=time_access_nodes_ids).delete()
-
+    else:
+        if tariff.time_access_service:
+            TimeAccessNode.objects.filter(id=tariff.time_access_service).delete()
+            tariff.time_access_service.delete()
 
     if js.get('traffic_transmit_service'):
         if 'id' in js.get('traffic_transmit_service'):
@@ -1607,6 +1645,11 @@ def tariffs_set(request):
         if traffictransmitnodes_ids:
             PrepaidTraffic.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=prepaidtraffic_ids).delete()
             
+    else:
+        if tariff.traffic_transmit_service:
+            TrafficTransmitService.objects.filter(id=tariff.traffic_transmit_service.id).delete()
+            TrafficTransmitNodes.objects.filter(traffic_transmit_service=tariff.traffic_transmit_service).delete()
+            
     if js.get('radius_traffic_service'):
         if 'id' in js.get('radius_traffic_service'):
             item = RadiusTraffic.objects.get(id=js.get('radius_traffic_service')['id'])
@@ -1653,12 +1696,16 @@ def tariffs_set(request):
             
         if radiustraffictransmitnodes_ids:
             RadiusTrafficNode.objects.filter(radiustraffic=radius_traffic_service).exclude(id__in=radiustraffictransmitnodes_ids).delete()
-            
+        
+    else:
+        if tariff.radius_traffic_transmit_service:
+            RadiusTrafficNode.objects.filter(radiustraffic=tariff.radius_traffic_transmit_service).delete()
+            tariff.radius_traffic_transmit_service.delete()
             
     transaction.commit()
     #data = serializers.serialize('json', accounts, fields=('username','password'))
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {'status':True}
+    return {'status':True, 'tariff_id':tariff.id}
 
 @ajax_request
 @login_required
@@ -1712,6 +1759,35 @@ def nas_save(request):
     else:
         return {"status": False, "message": form._errors}
 
+@ajax_request
+@login_required
+def contracttemplates_set(request):
+    id = request.POST.get('id')
+
+    if id:
+        item = ContractTempalte.objects.get(id=id)
+        form = ContractTemplateForm(request.POST, instance = item)
+    else:
+        form = ContractTemplateForm(request.POST)
+        
+    
+    if form.is_valid():
+        form.save()
+        return {"status": True}
+    else:
+        return {"status": False, "message": form._errors}
+
+@ajax_request
+@login_required
+def contracttemplate_delete(request):
+    id = int(request.POST.get('id',0))
+    if id:
+        ContractTemplate.objects.get(id=id).delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "ContractTemplate not found"}
+    
+
 @login_required
 @ajax_request
 def settlementperiod_save(request):
@@ -1734,6 +1810,30 @@ def settlementperiod_save(request):
         print "form invalid"
         return {"status": False, "message": form._errors}
 
+
+@login_required
+@ajax_request
+def addonservices_set(request):
+    data = json.loads(request.POST.get('data', "{}"))
+    print data
+    id = data.get('id')
+    if id:
+        item = AddonService.objects.get(id=id)
+        form = AddonServiceForm(data, instance = item)
+    else:
+        form = AddonServiceForm(data)
+        
+    
+    if form.is_valid():
+        print "form valid"
+        d = form.save(commit=False)
+        d.save()
+        return {"status": True}
+    else:
+        print "form invalid"
+        print form
+        return {"status": False, "message": form._errors}
+    
 @ajax_request
 @login_required
 def settlementperiod_delete(request):
@@ -1743,6 +1843,17 @@ def settlementperiod_delete(request):
         return {"status": True}
     else:
         return {"status": False, "message": "Nas not found"}
+
+@ajax_request
+@login_required
+def addonservices_delete(request):
+    id = int(request.POST.get('id',0))
+    if id:
+        AddonService.objects.get(id=id).delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "AddonService not found"}
+
 
 
 @ajax_request

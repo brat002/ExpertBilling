@@ -2157,10 +2157,10 @@ class TarifWindow(QtGui.QMainWindow):
                 for node in nodes:
                     
                     self.addrow(self.tableWidget_addonservices, node.id,i, 0, id=node.id)
-                    self.addrow(self.tableWidget_addonservices, node.addonservice,i, 1, id=node.addonservice_id)
+                    self.addrow(self.tableWidget_addonservices, node.service,i, 1, id=node.service_id)
                     self.addrow(self.tableWidget_addonservices, addonservice_activation_types[node.type].name,i, 2, id=node.type)
                     self.addrow(self.tableWidget_addonservices, node.activation_count if node.activation_count!=0  else 'unlimited',i, 3, id = node.activation_count)
-                    self.addrow(self.tableWidget_addonservices, node.settlement_period,i, 4, id= node.settlementperiod)
+                    self.addrow(self.tableWidget_addonservices, node.activation_count_period,i, 4, id= node.activation_count_period_id)
                     
                     i+=1
                     self.tableWidget_addonservices.resizeColumnsToContents()
@@ -2709,15 +2709,11 @@ class TarifWindow(QtGui.QMainWindow):
                                                  'limites':limites, 
                                                  'onetimeservices': onetimeservices,
                                                  'addonservices': addonservices})
-         
+            
+            self.model = self.connection.get_tariffs(id=result.tariff_id)
             self.model=model
             self.connection.commit()
             
-            #Было ли изменено состояние ipn_for_vpn 
-            if previous_ipn_for_vpn_state!=access_parameters.ipn_for_vpn:
-                if self.model is not None and not self.accountActions(previous_ipn_for_vpn_state, access_parameters.ipn_for_vpn):
-                    QtGui.QMessageBox.warning(self, u"Ошибка", u"При синхронизации пользователей на сервере доступа возникли проблемы.\nПроверьте правильность указания IPN IP и синхронизируйте пользователей вручную через контекстное меню.")
-            #print True
             
         except Exception, e:
             print e

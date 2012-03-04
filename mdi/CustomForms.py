@@ -3026,18 +3026,18 @@ class RadiusAttrsDialog(QtGui.QDialog):
 #===============================================================================
         
     def save(self):
-        model = Object()
+        model = AttrDict()
         if self.tarif_id:
-            model.tarif_id = self.tarif_id
+            model.tarif = self.tarif_id
         elif self.nas_id:
-            model.nas_id = self.nas_id
+            model.nas = self.nas_id
         model.vendor = unicode(self.lineEdit_vendor.text()) or 0
         model.attrid = unicode(self.lineEdit_attrid.text())
         model.value = unicode(self.lineEdit_value.text())
         print "self.nas_id", self.nas_id
         try:
             
-            self.connection.save(model, "billservice_radiusattrs")
+            self.connection.radiusattr_save(model)
             self.connection.commit()
         except Exception, e:
             print e
@@ -3046,7 +3046,7 @@ class RadiusAttrsDialog(QtGui.QDialog):
       
     def delete(self):
         id = self.getSelectedId()
-        self.connection.iddelete(id, "billservice_radiusattrs")
+        self.connection.radiusattr_delete(id)
         self.connection.commit()
         self.fixtures()
               
@@ -3524,9 +3524,6 @@ class TransactionForm(QtGui.QDialog):
 
 
         try:
-            
-            
-            
             d = self.connection.make_transaction(transaction)
             if d.status==False:
                 QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.errors.get(x))) for x in d.errors])))
@@ -3619,7 +3616,7 @@ class TemplateSelect(QtGui.QDialog):
 
 
     def fixtures(self):
-        templates = self.connection.get_models("billservice_template")
+        templates = self.connection.get_templates(fields=['id', 'name'])
         
         self.listWidget.clear()
         for templ in templates:
@@ -3700,17 +3697,17 @@ class ContractTemplateEdit(QtGui.QDialog):
             if self.model:
                 model=self.model
             else:
-                model = Object()
+                model = AttrDict()
                 
             model.template=template
             model.counter=0
-            self.connection.save(model, "billservice_contracttemplate")
+            self.connection.contracttemplate_save(model)
             self.connection.commit()
         QtGui.QDialog.accept(self)
         
     def delete(self):
         if self.model:
-            self.connection.iddelete(self.model.id,"billservice_contracttemplate")
+            self.connection.contracttemplate_delete(self.model.id)
             self.connection.commit()
         QtGui.QDialog.accept(self)
         

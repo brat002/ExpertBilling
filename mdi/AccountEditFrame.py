@@ -1747,7 +1747,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_nas.addItem("---")
         self.comboBox_nas.setItemData(0, QtCore.QVariant(None))
         i=1
-        for nas in nasses.records:
+        for nas in nasses:
             self.comboBox_nas.addItem(nas.name)
             self.comboBox_nas.setItemData(i, QtCore.QVariant(nas.id))
             if self.model:
@@ -1764,7 +1764,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_manager.addItem("---")
         self.comboBox_manager.setItemData(0, QtCore.QVariant(None))
         i=1
-        for manager in managers.records:
+        for manager in managers:
             self.comboBox_manager.addItem( "%s, %s" % (manager.username,manager.fullname))
             self.comboBox_manager.setItemData(i, QtCore.QVariant(manager.id))
             if self.model:
