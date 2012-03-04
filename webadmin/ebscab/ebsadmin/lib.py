@@ -354,7 +354,7 @@ def instance_dict(instance, key_format=None, normal_fields=False, fields=[]):
             #elif isinstance(field, DateField):
             #    value = value.strftime('%Y-%m-%d %H:%M:%S')
         elif isinstance(field, DecimalField):
-            value = float(value)
+            value = float(value) if value else None
                                
         d[key(attr)] = value
     for field in instance._meta.many_to_many:

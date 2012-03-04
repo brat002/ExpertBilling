@@ -453,6 +453,15 @@ class HttpBot(object):
             return
         return self.postprocess(d, id)
 
+    def get_templates(self,id=None, fields=[], type=None):
+        url='http://%s/ebsadmin/templates/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'type':type})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
     def get_periodicalservices(self, id=None, tarif_id=None, deleted=False, fields=[], normal_fields=False):
         url='http://%s/ebsadmin/periodicalservices/' % self.host 
         
@@ -595,8 +604,10 @@ class HttpBot(object):
         url='http://%s/ebsadmin/systemusers/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id})
-        #print d
-        return d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
     
     def get_addonservices(self,id=None, fields=[], normal_fields=True):
         url='http://%s/ebsadmin/addonservices/' % self.host 
@@ -656,6 +667,22 @@ class HttpBot(object):
         #print d
         return d
     
+    def contracttemplate_save(self,model):
+        url='http://%s/ebsadmin/contracttemplate/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        #print d
+        return d
+    
+    def contracttemplate_delete(self,model):
+        url='http://%s/ebsadmin/contracttemplate/delete/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
     def tariff_save(self, data):
         url='http://%s/ebsadmin/tariffs/set/' % self.host 
         #print model
@@ -665,7 +692,7 @@ class HttpBot(object):
         if not d.status:
             self.error(d)
             return
-        return True
+        return d
 
     def addonservice_save(self, data):
         url='http://%s/ebsadmin/addonservices/set/' % self.host 
@@ -734,6 +761,15 @@ class HttpBot(object):
     
     def account_delete(self,id):
         url='http://%s/ebsadmin/account/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def addonservice_delete(self,id):
+        url='http://%s/ebsadmin/addonservices/delete/' % self.host 
         #print model
         d = self.POST(url,{'id':id})
         if not d.status:
