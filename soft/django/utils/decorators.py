@@ -1,25 +1,42 @@
 "Functions that help with dynamically creating decorators for views."
 
-import types
 try:
     from functools import wraps, update_wrapper, WRAPPER_ASSIGNMENTS
 except ImportError:
     from django.utils.functional import wraps, update_wrapper, WRAPPER_ASSIGNMENTS  # Python 2.4 fallback.
 
+class classonlymethod(classmethod):
+    def __get__(self, instance, owner):
+        if instance is not None:
+            raise AttributeError("This method is available only on the view class.")
+        return super(classonlymethod, self).__get__(instance, owner)
 
 def method_decorator(decorator):
     """
     Converts a function decorator into a method decorator
     """
+    # 'func' is a function at the time it is passed to _dec, but will eventually
+    # be a method of the class it is defined it.
     def _dec(func):
         def _wrapper(self, *args, **kwargs):
+            @decorator
             def bound_func(*args2, **kwargs2):
                 return func(self, *args2, **kwargs2)
             # bound_func has the signature that 'decorator' expects i.e.  no
             # 'self' argument, but it is a closure over self so it can call
             # 'func' correctly.
-            return decorator(bound_func)(*args, **kwargs)
-        return wraps(func)(_wrapper)
+            return bound_func(*args, **kwargs)
+        # In case 'decorator' adds attributes to the function it decorates, we
+        # want to copy those. We don't have access to bound_func in this scope,
+        # but we can cheat by using it on a dummy function.
+        @decorator
+        def dummy(*args, **kwargs):
+            pass
+        update_wrapper(_wrapper, dummy)
+        # Need to preserve any existing attributes of 'func', including the name.
+        update_wrapper(_wrapper, func)
+
+        return _wrapper
     update_wrapper(_dec, decorator)
     # Change the name to aid debugging.
     _dec.__name__ = 'method_decorator(%s)' % decorator.__name__
@@ -80,10 +97,17 @@ def make_middleware_decorator(middleware_class):
                         if result is not None:
                             return result
                     raise
-                if hasattr(middleware, 'process_response'):
-                    result = middleware.process_response(request, response)
-                    if result is not None:
-                        return result
+                if hasattr(response, 'render') and callable(response.render):
+                    if hasattr(middleware, 'process_template_response'):
+                        response = middleware.process_template_response(request, response)
+                    # Defer running of process_response until after the template
+                    # has been rendered:
+                    if hasattr(middleware, 'process_response'):
+                        callback = lambda response: middleware.process_response(request, response)
+                        response.add_post_render_callback(callback)
+                else:
+                    if hasattr(middleware, 'process_response'):
+                        return middleware.process_response(request, response)
                 return response
             return wraps(view_func, assigned=available_attrs(view_func))(_wrapped_view)
         return _decorator

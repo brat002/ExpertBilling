@@ -4,7 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 import IPy
 from helpers import tableFormat
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import HeaderUtil
 
@@ -85,7 +85,7 @@ class AddressEbs(ebsTableWindow):
         #self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
         #self.connect(self.tableWidget, QtCore.SIGNAL("cellClicked(int, int)"), self.delNodeLocalAction)
         
-        actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("editAction", "Настройки", "images/open.png", self.editframe), ("delAction", "Удалить", "images/del.png", self.delete)]
+        actList=[("addAction", "Добавить", "images/add.png", self.addframe), ("delAction", "Удалить", "images/del.png", self.delete)]
         objDict = {self.tableWidget:["editAction", "addAction", "delAction"], self.toolBar:["addAction", "delAction"]}
         self.actionCreator(actList, objDict)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -134,10 +134,10 @@ class AddressEbs(ebsTableWindow):
             #QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
             return            
         
-        model = Object()
+        model = AttrDict()
         model.id = id
         model.name = unicode(text[0])
-        self.connection.save(model, "billservice_city")
+        self.connection.city_save(model)
         self.refresh_city()
         print "city"
         #ce.setEnabled(False)
@@ -150,10 +150,11 @@ class AddressEbs(ebsTableWindow):
             #QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
             return            
         
-        model = Object()
+        model = AttrDict()
         model.id = id
+        model.street = item.city
         model.name = unicode(text[0])
-        self.connection.save(model, "billservice_street")
+        self.connection.street_save(model)
         self.refresh_street()
         print "street"
         #ce.setEnabled(False)
@@ -166,10 +167,11 @@ class AddressEbs(ebsTableWindow):
             #QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
             return            
         
-        model = Object()
+        model = AttrDict()
         model.id = id
+        model.street = item.street
         model.name = unicode(text[0])
-        self.connection.save(model, "billservice_house")
+        self.connection.house_save(model)
         self.refresh_street()
         print "house"
                 #ce.setEnabled(False)                
@@ -193,6 +195,9 @@ class AddressEbs(ebsTableWindow):
             selected_listwidget = self.listWidget_house
             parent = self.listWidget_street.currentItem().id
             type=3
+        else:
+            QtGui.QMessageBox.warning(self, unicode(u"Подсказка"), unicode(u"Кликните по полю, куда хотите добавить запись."))
+            return
         
         #print "yupe", type, selected_listwidget
         #if not selected_listwidget: print 123;return
@@ -209,38 +214,26 @@ class AddressEbs(ebsTableWindow):
             #QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
             return            
         
-        model = Object()
+        model = AttrDict()
         model.name = unicode(text[0])
         if type==1:
-            try:
-                self.connection.save(model, "billservice_city")
-            except Exception, e:
-                print e
-                QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"В названии не могут быть использованы спецсимволы."))
-                self.connection.rollback()
-                return 
+
+            self.connection.city_save(model)
+
             self.refresh_city()
             
         if type==2:
-            model.city_id=parent
-            try:
-                self.connection.save(model, "billservice_street")
-            except Exception, e:
-                print e
-                QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"В названии не могут быть использованы спецсимволы."))
-                self.connection.rollback()
-                return 
+            model.city=parent
+
+            self.connection.street_save(model)
+
             self.refresh_street()
             
         if type==3:
-            model.street_id=parent
-            try:
-                self.connection.save(model, "billservice_house")
-            except Exception, e:
-                print e
-                QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"В названии не могут быть использованы спецсимволы."))
-                self.connection.rollback()
-                return 
+            model.street=parent
+
+            self.connection.house_save(model)
+ 
             self.refresh_house()
                         
     def delete(self):
@@ -262,30 +255,18 @@ class AddressEbs(ebsTableWindow):
         id = selected_listwidget.currentItem().id    
         if (QtGui.QMessageBox.question(self, u"Удалить адрес?" , u'''Внимание! Во избежание удаления пользовательских аккаунтов, удостоверьтесь, что пользователи не используют удаляемые адреса.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
             if type==1:
-                self.connection.iddelete(id, 'billservice_city')
+                self.connection.city_delete(id)
+                self.refresh_city()
             if type==2:
-                self.connection.iddelete(id, 'billservice_street')
+                self.connection.street_delete(id)
+                self.refresh_street()
             if type==3:
-                self.connection.iddelete(id, 'billservice_house')
+                self.connection.house_delete(id)
+                self.refresh_house()
 
-            self.connection.commit()
-            #self.refresh()
-            self.refresh_house()
-            self.refresh_street()
-            self.refresh_city()
+
             
             
-    
-        
-    def editframe(self):
-        try:
-            model=self.connection.get_model(self.getSelectedId(), "billservice_ippool")
-        except:
-            model=None
-
-        addf = AddPoolFrame(connection=self.connection, model=model)
-        if addf.exec_()==1:
-            self.refresh()
 
     def addrow(self, value, x, y):
         headerItem = QtGui.QTableWidgetItem()
@@ -306,7 +287,7 @@ class AddressEbs(ebsTableWindow):
         self.listWidget_house.clear()
         
         
-        cities = self.connection.sql("SELECT id, name FROM billservice_city ORDER BY name ASC;")
+        cities = self.connection.get_cities()
         self.connection.commit()
         #self.tableWidget.setRowCount(len(pools))
 
@@ -329,14 +310,14 @@ class AddressEbs(ebsTableWindow):
             city_id = self.listWidget_city.currentItem().id
         except:
             return
-        streets = self.connection.sql("SELECT id, name FROM billservice_street WHERE city_id=%s ORDER BY name ASC;" % city_id)
+        streets = self.connection.get_streets(city_id= city_id)
         self.connection.commit()
         #self.tableWidget.setRowCount(len(pools))
 
         for street in streets:
             item =QtGui.QListWidgetItem( unicode(street.name))
             item.id = street.id
-            item.city_id=city_id
+            item.city=city_id
             self.listWidget_street.addItem(item)    
 
     def refresh_house(self):
@@ -348,14 +329,14 @@ class AddressEbs(ebsTableWindow):
             street_id = self.listWidget_street.currentItem().id
         except:
             return
-        houses = self.connection.sql("SELECT id, name FROM billservice_house WHERE street_id=%s ORDER BY name ASC;" % street_id)
+        houses = self.connection.get_houses(street_id = street_id)
         self.connection.commit()
         #self.tableWidget.setRowCount(len(pools))
 
         for house in houses:
             item =QtGui.QListWidgetItem( unicode(house.name))
             item.id = house.id
-            item.street_id=street_id
+            item.street=street_id
             self.listWidget_house.addItem(item)
             
     def delNodeLocalAction(self):

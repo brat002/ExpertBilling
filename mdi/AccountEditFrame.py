@@ -527,9 +527,8 @@ class SubaccountLinkDialog(QtGui.QDialog):
     def editAddonService(self):
         i=self.getSelectedId(self.tableWidget)
         try:
-            res = self.connection.get_accountaddonservices(id=i)
-            if not res.status: return
-            model = res.records[0]
+            model = self.connection.get_accountaddonservices(id=i)
+           
         except:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
             return
@@ -565,13 +564,12 @@ class SubaccountLinkDialog(QtGui.QDialog):
     def accountAddonServiceRefresh(self):
         if self.model:
 
-            d = self.connection.get_accountaddonservices(subaccount_id=self.model.id)
-            if not d.status: return
+            sp = self.connection.get_accountaddonservices(subaccount_id=self.model.id)
             
             self.connection.commit()
             self.tableWidget.clearContents()
-            self.tableWidget.setRowCount(d.totalCount)
-            sp = d.records
+            self.tableWidget.setRowCount(len(sp))
+
             i=0
             for a in sp:
                 self.addrow(self.tableWidget, a.id, i, 0)
@@ -592,20 +590,15 @@ class SubaccountLinkDialog(QtGui.QDialog):
                     
     def fixtures(self):
         nasses=self.connection.get_nasses(fields=['id', 'name'])
-        if not nasses.status: 
-            QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"%s" % nasses.message))
-            return
-        nasses = nasses.records
+
+
         self.connection.commit()
         self.comboBox_nas.addItem(u"---Любой---", QtCore.QVariant(''))
         for nas in nasses:
             self.comboBox_nas.addItem(nas.name, QtCore.QVariant(nas.id))
 
         switches=self.connection.get_switches(fields=['id', 'name'])
-        if not switches.status:
-            QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"%s" % switches.message))
-            return
-        switches = switches.records
+
         self.connection.commit()
         
         self.comboBox_link_switch_id.addItem(u"---Не указан---", QtCore.QVariant(''))
@@ -1611,12 +1604,12 @@ class AccountWindow(QtGui.QMainWindow):
             self.comboBox_street.clear()
         if not city_id: return
         streets = self.connection.get_streets(city_id=city_id, fields=['id', 'name'])
-        if not streets.status: return
+
         self.connection.commit()
         self.comboBox_street.clear()
         self.comboBox_house.clear()
         i=0
-        for street in streets.records:
+        for street in streets:
             self.comboBox_street.addItem(street.name, QtCore.QVariant(street.id))
             if self.model:
                 if self.model.street==street.id:
@@ -1627,11 +1620,11 @@ class AccountWindow(QtGui.QMainWindow):
         street_id = self.comboBox_street.itemData(self.comboBox_street.currentIndex()).toInt()[0]
         if not street_id: return        
         items = self.connection.get_houses(street_id=street_id)
-        if not items.status: return
+
         self.connection.commit()
         self.comboBox_house.clear()
         i=0
-        for item in items.records:
+        for item in items:
             self.comboBox_house.addItem(item.name, QtCore.QVariant(item.id))
             if self.model:
                 if self.model.house==item.id:
@@ -1779,7 +1772,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_city.clear()
         self.comboBox_city.addItem(u'-Не указан-', QtCore.QVariant(None))
         i=1
-        for city in cities.records:
+        for city in cities:
             self.comboBox_city.addItem(city.name, QtCore.QVariant(city.id))
             if self.model:
                 if self.model.city==city.id:
@@ -2055,10 +2048,10 @@ class AccountWindow(QtGui.QMainWindow):
     def accountTarifRefresh(self):
         if self.model:
             ac = self.connection.get_accounttariffs(self.model.id)
-            if not ac.status: return
+
                 
-            self.tableWidget_accounttarif.setRowCount(ac.totalCount)
-            ac = ac.records
+            self.tableWidget_accounttarif.setRowCount(len(ac))
+
             i=0
             #print ac
             for a in ac:
@@ -2102,15 +2095,14 @@ class AccountWindow(QtGui.QMainWindow):
       
     def accountAddonServiceRefresh(self):
         if self.model:
-            sp = self.connection.get_accountaddonservices(account_id = self.model.id)
-            if not sp.status: return
+            sp = self.connection.get_accountaddonservices(account_id = self.model.id, normal_fields=True)
             self.connection.commit()
             self.tableWidget_addonservice.clearContents()
-            self.tableWidget_addonservice.setRowCount(sp.totalCount)
+            self.tableWidget_addonservice.setRowCount(len(sp))
             i=0
-            for a in sp.records:
+            for a in sp:
                 self.addrow(self.tableWidget_addonservice, a.id, i, 0)
-                self.addrow(self.tableWidget_addonservice, a.addonservice_name, i, 1)
+                self.addrow(self.tableWidget_addonservice, a.service, i, 1)
                 self.addrow(self.tableWidget_addonservice, a.subaccount, i, 2)
                 
                 self.addrow(self.tableWidget_addonservice, a.activated, i, 3)
@@ -2140,14 +2132,14 @@ class AccountWindow(QtGui.QMainWindow):
             WHERE ahw.account_id=%s ORDER BY ahw.returned,ahw.datetime
             """ % self.model.id)
             
-            sp = self.connection.get_accounthardware(account_id=self.model.id)
-            if not sp.status: return
+            #sp = self.connection.get_accounthardware(account_id=self.model.id)
+
             self.connection.commit()
             self.tableWidget_accounthardware.clearContents()
             self.tableWidget_accounthardware.setSortingEnabled(False)
-            self.tableWidget_accounthardware.setRowCount(sp.totalCount)
+            self.tableWidget_accounthardware.setRowCount(len(sp))
             i=0
-            for a in sp.records:
+            for a in sp:
                 self.addrow(self.tableWidget_accounthardware, a.id, i, 0)
                 self.addrow(self.tableWidget_accounthardware, a.hwtype, i, 1)
                 self.addrow(self.tableWidget_accounthardware, a.manufacturer, i, 2)
@@ -2167,11 +2159,10 @@ class AccountWindow(QtGui.QMainWindow):
     def subAccountLinkRefresh(self):
         if self.model:
             sp = self.connection.get_subaccounts(account_id=self.model.id)
-            if not sp.status: return
             self.connection.commit()
-            self.tableWidget_subaccounts.setRowCount(sp.totalCount)
+            self.tableWidget_subaccounts.setRowCount(len(sp))
             i=0
-            for a in sp.records:
+            for a in sp:
                 self.addrow(self.tableWidget_subaccounts, a.id, i, 0)
                 self.addrow(self.tableWidget_subaccounts, a.username, i, 1)
                 self.addrow(self.tableWidget_subaccounts, a.password, i, 2)
@@ -2296,8 +2287,6 @@ class AccountWindow(QtGui.QMainWindow):
         i=self.getSelectedId(self.tableWidget_subaccounts)
         try:
             model = self.connection.get_subaccounts(id=i, normal_fields=False)
-            if not model.status: return
-            model = model.records[0]
         except:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Запись не найдена."))
             return

@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from ebsWindow import ebsTableWindow
 from helpers import tableFormat
 import datetime, calendar
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
@@ -126,7 +126,7 @@ class AccountHardwareDialog(QtGui.QDialog):
 
     def set_hardwaretype(self,index):
         id=self.comboBox_manufacturer.itemData(index).toInt()[0]
-        items = self.connection.get_models("billservice_hardwaretype", order={'name':'ASC'}, fields=['id', 'name'])
+        items = self.connection.get_hardwaretypes()
         self.connection.commit()
         self.comboBox_hardwaretype.clear()
         i=0
@@ -136,7 +136,7 @@ class AccountHardwareDialog(QtGui.QDialog):
 
         hardwaretype_id=self.comboBox_hardwaretype.itemData(0).toInt()[0]
         if hardwaretype_id:
-            items = self.connection.get_models("billservice_model", order={'name':'ASC'}, fields=['id', 'name'], where={'manufacturer_id':id, 'hardwaretype_id':hardwaretype_id})
+            items = self.connection.get_hwmodels( fields=['id', 'name'], manufacturer_id=id, hardwaretype_id = hardwaretype_id)
             self.connection.commit()
             self.comboBox_model.clear()
             i=0
@@ -147,7 +147,7 @@ class AccountHardwareDialog(QtGui.QDialog):
     def set_model(self, index):
         id=self.comboBox_hardwaretype.itemData(index).toInt()[0]
         manufacturer_id=self.comboBox_manufacturer.itemData(self.comboBox_manufacturer.currentIndex()).toInt()[0]
-        items = self.connection.get_models("billservice_model", order={'name':'ASC'}, fields=['id', 'name'], where={'manufacturer_id':manufacturer_id, 'hardwaretype_id':id})
+        items = self.connection.get_hwmodels(manufacturer_id = manufacturer_id, hardwaretype_id = id)
         self.connection.commit()
         self.comboBox_model.clear()
         i=0
@@ -158,7 +158,7 @@ class AccountHardwareDialog(QtGui.QDialog):
             
     def set_hardware(self, index):
         id=self.comboBox_model.itemData(index).toInt()[0]
-        items = self.connection.get_models("billservice_hardware", order={'sn':'ASC'}, fields=['id', 'name', 'sn'], where={'model_id':id})
+        items = self.connection.get_hardware(model_id = id)
         self.connection.commit()
         self.comboBox_hardware.clear()
         i=0
@@ -175,58 +175,50 @@ class AccountHardwareDialog(QtGui.QDialog):
     def fixtures(self):
         hw=None
         if self.model:
-            hw=self.connection.get("""
-            SELECT hw.id as hardware_id,model.id as model_id,hwtype.id as hwtype_id,m.id as manufacturer_id 
-            FROM billservice_accounthardware as ahw 
-            JOIN billservice_hardware as hw ON ahw.hardware_id=hw.id
-            JOIN billservice_model as model ON model.id=hw.model_id
-            JOIN billservice_hardwaretype as hwtype ON hwtype.id=model.hardwaretype_id
-            JOIN billservice_manufacturer as m ON m.id=model.manufacturer_id
-            WHERE ahw.id=%s        
-            """ % self.model.id)     
+            hw=self.connection.get_accounthardware(id = self.model.id)     
                
-        items = self.connection.get_models("billservice_manufacturer", order={'name':'ASC'}, fields=['id', 'name'])
+        items = self.connection.get_manufacturers()
         self.connection.commit()
         self.comboBox_model.clear()
         i=0
         for item in items:
             self.comboBox_manufacturer.addItem(item.name, QtCore.QVariant(item.id))
             if hw:
-                if hw.manufacturer_id==item.id:
+                if hw.manufacturer==item.id:
                     self.comboBox_model.setCurrentIndex(i)
             i+=1    
 
         if self.model:
-            items = self.connection.get_models("billservice_hardwaretype", order={'name':'ASC'}, fields=['id', 'name'])
+            items = self.connection.get_hardwaretypes()
             self.connection.commit()
             self.comboBox_hardwaretype.clear()
             i=0
             for item in items:
                 self.comboBox_hardwaretype.addItem(item.name, QtCore.QVariant(item.id))
                 if hw:
-                    if hw.hwtype_id==item.id:
+                    if hw.hwtype==item.id:
                         self.comboBox_hardwaretype.setCurrentIndex(i)
                 i+=1    
                 
-            items = self.connection.get_models("billservice_model", order={'name':'ASC'}, fields=['id', 'name'])
+            items = self.connection.get_hwmodels()
             self.connection.commit()
             self.comboBox_model.clear()
             i=0
             for item in items:
                 self.comboBox_model.addItem(item.name, QtCore.QVariant(item.id))
                 if hw:
-                    if hw.model_id==item.id:
+                    if hw.model==item.id:
                         self.comboBox_model.setCurrentIndex(i)
                 i+=1   
                 
-            items = self.connection.get_models("billservice_hardware", order={'name':'ASC'}, fields=['id', 'name', 'sn'])
+            items = self.connection.get_hardware(fields=['id', 'name', 'sn'])
             self.connection.commit()
             self.comboBox_hardware.clear()
             i=0
             for item in items:
                 self.comboBox_hardware.addItem(u"%s %s" % (item.name,item.sn), QtCore.QVariant(item.id))
                 if hw:
-                    if hw.hardware_id==item.id:
+                    if hw.hardware==item.id:
                         self.comboBox_hardware.setCurrentIndex(i)
                 i+=1 
                 
@@ -244,10 +236,10 @@ class AccountHardwareDialog(QtGui.QDialog):
         if self.model:
             model=self.model
         else:
-            model = Object()
-            model.account_id=self.account_model
-        model.hardware_id=self.comboBox_hardware.itemData(self.comboBox_hardware.currentIndex()).toInt()[0]
-        if not model.hardware_id:
+            model = AttrDict()
+            model.account=self.account_model
+        model.hardware=self.comboBox_hardware.itemData(self.comboBox_hardware.currentIndex()).toInt()[0]
+        if not model.hardware:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы должны выбрать оборудование, передаваемое аккаунту."))
             return
         model.datetime = self.dateTimeEdit_transfer_date.toPyDateTime()
@@ -258,7 +250,7 @@ class AccountHardwareDialog(QtGui.QDialog):
         model.comment=unicode(self.plainTextEdit.toPlainText())
         
         try:
-            self.connection.save(model, "billservice_accounthardware")
+            self.connection.accounthardware_save(model)
             self.connection.commit()
         except Exception, e:
             print e
@@ -346,14 +338,15 @@ class HardwareDialog(QtGui.QDialog):
         self.label_comment.setText(QtGui.QApplication.translate("HardwareDialog", "Комментарий", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        items = self.connection.sql("SELECT model.id, model.name as model_name, (SELECT name FROM billservice_manufacturer WHERE id=model.manufacturer_id) as manufacturer FROM billservice_model as model ORDER BY manufacturer, model_name")
+        items = self.connection.get_hwmodels(normal_fields=True)
         self.connection.commit()
         self.comboBox_model.clear()
         i=0
         for item in items:
-            self.comboBox_model.addItem(u"%s/%s" % (item.manufacturer, item.model_name), QtCore.QVariant(item.id))
+            print "item", item
+            self.comboBox_model.addItem(u"%s/%s/%s" % (item.manufacturer, item.hardwaretype, item.name), QtCore.QVariant(item.id))
             if self.model:
-                if self.model.model_id==item.id:
+                if self.model.model==item.id:
                     self.comboBox_model.setCurrentIndex(i)
             i+=1    
     
@@ -368,22 +361,18 @@ class HardwareDialog(QtGui.QDialog):
         if self.model:
             model=self.model
         else:
-            model=Object()
+            model=AttrDict()
             
-        model.model_id=self.comboBox_model.itemData(self.comboBox_model.currentIndex()).toInt()[0]
+        model.model=self.comboBox_model.itemData(self.comboBox_model.currentIndex()).toInt()[0]
         model.name=unicode(self.lineEdit_name.text())
         model.sn=unicode(self.lineEdit_sn.text())
         model.ipaddress=unicode(self.lineEdit_ipaddress.text())
         model.macaddress=unicode(self.lineEdit_macaddress.text())
         model.comment=unicode(self.lineEdit_comment.text())
         
-        try:
-            self.connection.save(model, "billservice_hardware")
-            self.connection.commit()
-        except Exception, e:
-            print e
-            self.connection.rollback()        
-        QtGui.QDialog.accept(self)
+
+        if self.connection.hardware_save(model):
+            QtGui.QDialog.accept(self)
     
 
 class ModelEditDialog(QtGui.QDialog):
@@ -443,7 +432,7 @@ class ModelEditDialog(QtGui.QDialog):
 
 
     def fixtures(self):
-        items = self.connection.get_models("billservice_manufacturer", order={'name':'ASC'})
+        items = self.connection.get_manufacturers()
         self.connection.commit()
         self.comboBox_manufacturer.clear()
         i=0
@@ -454,7 +443,7 @@ class ModelEditDialog(QtGui.QDialog):
                     self.comboBox_manufacturer.setCurrentIndex(i)
             i+=1        
 
-        items = self.connection.get_models("billservice_hardwaretype", order={'name':'ASC'})
+        items = self.connection.get_hardwaretypes()
         self.connection.commit()
         self.comboBox_hardwaretype.clear()
         i=0
@@ -472,13 +461,13 @@ class ModelEditDialog(QtGui.QDialog):
         if self.model:
             model=self.model
         else:
-            model=Object()
+            model=AttrDict()
         
-        model.manufacturer_id=self.comboBox_manufacturer.itemData(self.comboBox_manufacturer.currentIndex()).toInt()[0]
-        model.hardwaretype_id=self.comboBox_hardwaretype.itemData(self.comboBox_hardwaretype.currentIndex()).toInt()[0]
+        model.manufacturer=self.comboBox_manufacturer.itemData(self.comboBox_manufacturer.currentIndex()).toInt()[0]
+        model.hardwaretype=self.comboBox_hardwaretype.itemData(self.comboBox_hardwaretype.currentIndex()).toInt()[0]
         model.name = unicode(self.lineEdit_name.text())
         try:
-            self.connection.save(model, "billservice_model")
+            self.connection.hwmodels_save(model)
             self.connection.commit()
         except Exception, e:
             print e
@@ -527,9 +516,9 @@ class HardwareManufacturerEbs(ebsTableWindow):
         text=QtGui.QInputDialog.getText(self, u'Введите название производителя', u'Название', text="")
         #child.exec_()
         if text[1] and not text[0].isEmpty():
-            model = Object()
+            model = AttrDict()
             model.name=unicode(text[0])
-            self.connection.save(model, "billservice_manufacturer") 
+            self.connection.manufacturers_save(model) 
             self.connection.commit()
             self.refresh()
             
@@ -538,14 +527,14 @@ class HardwareManufacturerEbs(ebsTableWindow):
 
         id=self.getSelectedId()
         if id>0:
-            if self.connection.get_models("billservice_hardware", where={"manufacturer_id":id}, fields=['id']):
+            if self.connection.get_hwmodels(manufacturer_id=id, fields=['id']):
                 QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Этот производитель назначен оборудованию. Удаление невозможно!")
                 self.connection.commit()
                 return
             elif QtGui.QMessageBox.question(self, u"Удалить производителя?" , u"Действие необратимо.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                 try:
                     #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete(id, "billservice_manufacturer")
+                    self.connection.manufacturers_delete(id)
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:
@@ -557,12 +546,12 @@ class HardwareManufacturerEbs(ebsTableWindow):
     def edit_window(self):
         id=self.getSelectedId()
         if id>0:
-            model = self.connection.get_model(id, "billservice_manufacturer")
+            model = self.connection.get_manufacturers(id=id)
             text=QtGui.QInputDialog.getText(self, u'Введите название производителя', u'Название', text=unicode(model.name))
             #child.exec_()
             if text[1] and not text[0].isEmpty():
                 model.name=unicode(text[0])
-                self.connection.save(model, "billservice_manufacturer") 
+                self.connection.manufacturers_save(model) 
                 self.connection.commit()
                 self.refresh()
 
@@ -578,7 +567,7 @@ class HardwareManufacturerEbs(ebsTableWindow):
         
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
-        items = self.connection.get_models("billservice_manufacturer", order={'name':'ASC'})
+        items = self.connection.get_manufacturers()
         self.connection.commit()
         self.tableWidget.setRowCount(len(items))
         i=0
@@ -637,9 +626,9 @@ class HardwareTypeEbs(ebsTableWindow):
         text=QtGui.QInputDialog.getText(self, u'Введите тип оборудования', u'Название', text="")
         #child.exec_()
         if text[1] and not text[0].isEmpty():
-            model = Object()
+            model = AttrDict()
             model.name=unicode(text[0])
-            self.connection.save(model, "billservice_hardwaretype") 
+            self.connection.hardwaretypes_save(model) 
             self.refresh()
             
 
@@ -647,14 +636,14 @@ class HardwareTypeEbs(ebsTableWindow):
 
         id=self.getSelectedId()
         if id>0:
-            if self.connection.get_models("billservice_model", where={"hardwaretype_id":id}, fields=['id']):
+            if self.connection.get_hwmodels(hardwaretype_id=id, fields=['id']):
                 QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Этот тип назначен оборудованию. Удаление невозможно!")
                 self.connection.commit()
                 return
             elif QtGui.QMessageBox.question(self, u"Удалить тип?" , u"Действие необратимо.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                 try:
                     #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete(id, "billservice_hardwaretype")
+                    self.connection.hardwaretypes_delete(id)
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:
@@ -666,12 +655,12 @@ class HardwareTypeEbs(ebsTableWindow):
     def edit_window(self):
         id=self.getSelectedId()
         if id>0:
-            model = self.connection.get_model(id, "billservice_hardwaretype")
+            model = self.connection.get_hardwaretypes(id = id)
             text=QtGui.QInputDialog.getText(self, u'Введите тип оборудования', u'Название', text=unicode(model.name))
             #child.exec_()
             if text[1] and not text[0].isEmpty():
                 model.name=unicode(text[0])
-                self.connection.save(model, "billservice_hardwaretype") 
+                self.connection.hardwaretypes_save(model) 
                 self.refresh()
 
 
@@ -686,7 +675,7 @@ class HardwareTypeEbs(ebsTableWindow):
         
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
-        items = self.connection.get_models("billservice_hardwaretype", order={'name':'ASC'})
+        items = self.connection.get_hardwaretypes()
         self.connection.commit()
         self.tableWidget.setRowCount(len(items))
         i=0
@@ -752,14 +741,14 @@ class ModelWindowEbs(ebsTableWindow):
 
         id=self.getSelectedId()
         if id>0:
-            if self.connection.get_models("billservice_hardware", where={"model_id":id}, fields=['id']):
+            if self.connection.get_hardware(model_id=id, fields=['id']):
                 QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Эта модель назначена оборудованию. Удаление невозможно!")
                 self.connection.commit()
                 return
             elif QtGui.QMessageBox.question(self, u"Удалить модель?" , u"Действие необратимо.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                 try:
                     #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete(id, "billservice_model")
+                    self.connection.hwmodels_delete(id)
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:
@@ -771,7 +760,7 @@ class ModelWindowEbs(ebsTableWindow):
     def edit_window(self):
         id=self.getSelectedId()
         if id>0:
-            model = self.connection.get_model(id, "billservice_model")
+            model = self.connection.get_hwmodels(id)
             child=ModelEditDialog(connection=self.connection, model=model)
             if child.exec_()==1:
                 self.refresh()
@@ -788,7 +777,7 @@ class ModelWindowEbs(ebsTableWindow):
         
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
-        items = self.connection.sql("""SELECT model.id, model.name,(SELECT name FROM billservice_manufacturer WHERE id=model.manufacturer_id) as manufacturer,(SELECT name FROM billservice_hardwaretype WHERE id=model.hardwaretype_id) as hardwaretype FROM billservice_model as model ORDER BY name""")
+        items = self.connection.get_hwmodels(normal_fields=True)
         self.connection.commit()
         self.tableWidget.setRowCount(len(items))
         i=0
@@ -810,7 +799,7 @@ class ModelWindowEbs(ebsTableWindow):
 
 class HardwareWindowEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=['#', u'Производитель', u'Тип оборудования', u'Модель', u'Название', u's/n','uIP',  u'MAC', u'Комментарий']
+        columns=['#',  u'Модель', u'Название', u's/n','uIP',  u'MAC', u'Комментарий']
         initargs = {"setname":"HardwareWindowEbs_window_", "objname":"HardwareWindowEbs_", "winsize":(0,0,827,476), "wintitle":"Подотчётное оборудование", "tablecolumns":columns, "tablesize":(0,0,821,401)}
         super(HardwareWindowEbs, self).__init__(connection, initargs)
         
@@ -857,14 +846,14 @@ class HardwareWindowEbs(ebsTableWindow):
 
         id=self.getSelectedId()
         if id>0:
-            if self.connection.get_models("billservice_accounthardware", where={"hardware_id":id}, fields=['id']):
+            if self.connection.get_accounthardware(hardware_id=id, fields=['id']):
                 QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Это оборудование было выдано абонентам. Удаление невозможно!")
                 self.connection.commit()
                 return
             elif QtGui.QMessageBox.question(self, u"Удалить оборудование?" , u"Действие необратимо.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                 try:
                     #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete(id, "billservice_hardware")
+                    self.connection.accounthardware_delete(id)
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:
@@ -876,7 +865,7 @@ class HardwareWindowEbs(ebsTableWindow):
     def edit_window(self):
         id=self.getSelectedId()
         if id>0:
-            model = self.connection.get_model(id, "billservice_hardware")
+            model = self.connection.get_hardware(id)
             child=HardwareDialog(connection=self.connection, model=model)
             if child.exec_()==1:
                 self.refresh()
@@ -893,26 +882,20 @@ class HardwareWindowEbs(ebsTableWindow):
         ['#', u'Производитель', u'Тип оборудования', u'Модель', u'Название/Назначение',u'IP', u'MAC', u'Комментарий']
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
-        items = self.connection.sql("""
-        SELECT hw.id, hw.name,hw.comment as comment, hw.ipaddress,hw.macaddress, hw.sn, model.name as model_name, hwtype.name as hardwaretype, m.name as manufacturer
-        FROM billservice_hardware as hw
-        JOIN billservice_model as model ON model.id=hw.model_id
-        JOIN billservice_hardwaretype as hwtype ON hwtype.id=model.hardwaretype_id
-        JOIN billservice_manufacturer as m ON m.id=model.manufacturer_id 
-        ORDER BY hw.name""")
+        items = self.connection.get_hardware(normal_fields=True)
         self.connection.commit()
         self.tableWidget.setRowCount(len(items))
         i=0
         for item in items:
             self.addrow(item.id, i,0)
-            self.addrow(item.manufacturer, i,1)
-            self.addrow(item.hardwaretype, i,2)
-            self.addrow(item.model_name, i,3)
-            self.addrow(item.name, i,4)
-            self.addrow(item.sn, i,5)
-            self.addrow(item.ipaddress, i,6)
-            self.addrow(item.macaddress, i,7)
-            self.addrow(item.comment, i,8)
+            #self.addrow(item.manufacturer, i,1)
+            #self.addrow(item.hardwaretype, i,2)
+            self.addrow(item.model, i,1)
+            self.addrow(item.name, i,2)
+            self.addrow(item.sn, i,3)
+            self.addrow(item.ipaddress, i,4)
+            self.addrow(item.macaddress, i,5)
+            self.addrow(item.comment, i,6)
             i+=1
         self.tableWidget.setColumnHidden(0, True)
         #self.tableWidget.resizeColumnsToContents()

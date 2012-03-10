@@ -2,7 +2,7 @@
 
 from django.db import models
 #from ebscab.billservice.models import Account, Tariff
-
+from lib.fields import IPNetworkField
 # Create your models here.
 
 NAS_LIST=(
@@ -85,7 +85,7 @@ class TrafficClass(models.Model):
     и исходящие направления. Правило: Один класс на одно направление (вх/исх/межабонентский)
     """
     name = models.CharField(verbose_name=u'Навзание класса', max_length=255, unique=True)
-    weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', unique=True)
+    weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', blank=True, null=True)
     color = models.CharField(verbose_name=u'Цвет на графиках', max_length=16, blank=True, default='#FFFFFF')
     store    = models.BooleanField(verbose_name=u"Хранить всю статистику по классу", help_text=u"Хранить статистику, если она поступила от сервера доступа но под неё не попал ни один пользователь в базе", blank=True, default=True)
     passthrough = models.BooleanField(blank=True, default=True)
@@ -109,16 +109,22 @@ class TrafficNode(models.Model):
     direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
     protocol = models.CharField(max_length=10, blank=True, default='')
 
-    src_ip  = models.IPAddressField(verbose_name=u'Cеть источника', default='0.0.0.0')
+    src_ip  = IPNetworkField(verbose_name=u'Cеть источника', default='0.0.0.0/0')
 #    src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')
     src_port  = models.IntegerField(verbose_name=u'Порт источника', default=0)
 
-    dst_ip = models.IPAddressField(verbose_name=u'Сеть получателя', default='0.0.0.0')
+    dst_ip = IPNetworkField(verbose_name=u'Сеть получателя', default='0.0.0.0/0')
 #    dst_mask = models.IPAddressField(verbose_name=u'Маска сети получателя', default='0.0.0.0')
     dst_port  = models.IntegerField(verbose_name=u'Порт получетеля', default=0)
 
     next_hop = models.IPAddressField(verbose_name=u'Направление пакета (IP address)', default='0.0.0.0')
+    in_index  = models.IntegerField(verbose_name=u'SNMP IN порт', default=0)
+    out_index  = models.IntegerField(verbose_name=u'SNMP OUT порт', default=0)
+    
+    src_as  = models.IntegerField(verbose_name=u'src_as', default=0)
+    dst_as  = models.IntegerField(verbose_name=u'dst_as', default=0)
 
+  
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -130,35 +136,37 @@ class TrafficNode(models.Model):
         verbose_name_plural = u"Направления трафика"
         
 class Switch(models.Model):
-    manufacturer = models.CharField(max_length=250)
-    model = models.CharField(max_length=500)
-    name = models.CharField(max_length=500)
-    sn = models.CharField(max_length=500)
+    manufacturer = models.CharField(max_length=250, blank=True, default='')
+    model = models.CharField(max_length=500, blank=True, default='')
+    name = models.CharField(max_length=500, blank=True, default='')
+    sn = models.CharField(max_length=500, blank=True, default='')
     city = models.IntegerField(db_column='city_id')
     street = models.IntegerField(db_column='street_id')
     house = models.IntegerField(db_column='house_id')
-    place = models.TextField()#место установки
-    comment = models.TextField()#
-    ports_count = models.IntegerField()
-    broken_ports = models.TextField()#через запятую
-    uplink_ports = models.TextField()#через запятую
-    protected_ports = models.TextField()#через запятую
-    monitored_ports = models.TextField()
-    disabled_ports = models.TextField()
+    place = models.TextField(blank=True, default='')#место установки
+    comment = models.TextField(blank=True, default='')#
+    ports_count = models.IntegerField(blank=True, default=0)
+    broken_ports = models.TextField(blank=True, default='')#через запятую
+    uplink_ports = models.TextField(blank=True, default='')#через запятую
+    protected_ports = models.TextField(blank=True, default='')#через запятую
+    monitored_ports = models.TextField(blank=True, default='')
+    disabled_ports = models.TextField(blank=True, default='')
     snmp_support = models.BooleanField(default=False)
-    snmp_version = models.CharField(max_length=10)#version
-    snmp_community = models.CharField(max_length=128)#
-    ipaddress = models.IPAddressField()
-    macaddress = models.CharField(max_length=32)
-    management_method = models.CharField(max_length=32)
+    snmp_version = models.CharField(max_length=10, blank=True, default='v1')#version
+    snmp_community = models.CharField(max_length=128, blank=True, default='')#
+    ipaddress = models.IPAddressField(blank=True, default=None)
+    macaddress = models.CharField(max_length=32, blank=True, default='')
+    management_method = models.IntegerField(blank=True, default=1)
     option82 = models.BooleanField(default=False)
-    option82_auth_type = models.IntegerField()#1-port, 2 - mac+port, 3-mac
-    secret = models.CharField(max_length=128)
-    identify = models.CharField(max_length=128)
-    username = models.CharField(max_length=256)
-    password = models.CharField(max_length=256)
-    enable_port = models.TextField()
-    disable_port = models.TextField()
+    option82_auth_type = models.IntegerField( blank=True, null=True)#1-port, 2 - mac+port, 3-mac
+    secret = models.CharField(max_length=128, blank=True, default='')
+    identify = models.CharField(max_length=128, blank=True, default='')
+    username = models.CharField(max_length=256, blank=True, default='')
+    password = models.CharField(max_length=256, blank=True, default='')
+    enable_port = models.TextField(blank=True, default='')
+    disable_port = models.TextField(blank=True, default='')
+    option82_template = models.TextField(blank=True, default='')
+    remote_id = models.TextField(blank=True, default='')
     
     def __unicode__(self):
         return u"%s" % self.name

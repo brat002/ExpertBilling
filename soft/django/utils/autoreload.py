@@ -28,7 +28,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os, sys, time
+import os, sys, time, signal
 
 try:
     import thread
@@ -42,6 +42,10 @@ try:
 except ImportError:
     pass
 
+try:
+    import termios
+except ImportError:
+    termios = None
 
 RUN_RELOADER = True
 
@@ -67,7 +71,23 @@ def code_changed():
             return True
     return False
 
+def ensure_echo_on():
+    if termios:
+        fd = sys.stdin
+        if fd.isatty():
+            attr_list = termios.tcgetattr(fd)
+            if not attr_list[3] & termios.ECHO:
+                attr_list[3] |= termios.ECHO
+                if hasattr(signal, 'SIGTTOU'):
+                    old_handler = signal.signal(signal.SIGTTOU, signal.SIG_IGN)
+                else:
+                    old_handler = None
+                termios.tcsetattr(fd, termios.TCSANOW, attr_list)
+                if old_handler is not None:
+                    signal.signal(signal.SIGTTOU, old_handler)
+
 def reloader_thread():
+    ensure_echo_on()
     while RUN_RELOADER:
         if code_changed():
             sys.exit(3) # force reload

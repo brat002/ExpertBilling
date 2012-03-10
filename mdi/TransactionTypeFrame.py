@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from ebsWindow import ebsTableWindow
 from helpers import tableFormat
 import datetime, calendar
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
@@ -84,7 +84,7 @@ class AddTransactionType(QtGui.QDialog):
             model=self.model
         else:
             #print 'New sp'
-            model=Object()
+            model=AttrDict()
 
         if unicode(self.lineEdit_name.text())==u"":
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано название"))
@@ -101,7 +101,7 @@ class AddTransactionType(QtGui.QDialog):
       
 
         try:
-            self.connection.save(model,"billservice_transactiontype")
+            self.connection.transactiontypes_save(model)
             self.connection.commit()
         except Exception, e:
             print e
@@ -185,7 +185,7 @@ class TransactionTypeEbs(ebsTableWindow):
     def edit(self):
         id=self.getSelectedId()
         try:
-            model=self.connection.get_model(id, "billservice_transactiontype")
+            model=self.connection.get_transactiontypes(id=id)
         except:
             return
 
@@ -205,7 +205,7 @@ class TransactionTypeEbs(ebsTableWindow):
     def refresh(self):
         self.statusBar().showMessage(u"Идёт получение данных")
         #self.tableWidget.setSortingEnabled(False)
-        items = self.connection.get_models("billservice_transactiontype", order={'name':'ASC'})
+        items = self.connection.get_transactiontypes()
         self.connection.commit()
         self.tableWidget.setRowCount(len(items))
         i=0

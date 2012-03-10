@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from ebsWindow import ebsTableWindow
 from helpers import tableFormat
 import datetime, calendar
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
@@ -104,54 +104,39 @@ class MessageDialog(QtGui.QDialog):
         body = self.textEdit.toPlainText()
         #print body
         
-        if not body:
-            QtGui.QDialog.accept(self)
-            return
+
 
         if self.checkBox_agent.isChecked()==False and self.checkBox_public.isChecked()==False and self.checkBox_private.isChecked()==False:
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Выберите хотя бы один способ получения сообщения абонентами."))
+            return
+
+        if not body:
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Тело сообщения не должно быть пустым"))
             return
         
         if self.model:
             news_model = self.model
         else:
-            news_model = Object()
+            news_model = AttrDict()
             
         news_model.body = unicode(body)
-        if self.spinBox.value():
-            news_model.age = datetime.datetime.now()+datetime.timedelta(minutes=self.spinBox.value())
-        news_model.created = "now()"
-        if self.checkBox_public.isChecked()==True or (self.accounts and (self.checkBox_public.isChecked() or self.checkBox_private.isChecked())):
-            news_model.id = self.connection.save(news_model, "billservice_news")
-            
-        if self.checkBox_public.isChecked()==True:
-            news_model.public = True
-            self.connection.save(news_model, "billservice_news")
         
-        #if self.checkBox_agent.isChecked():
-        #    news_model.id=self.connection.save(news_model, "billservice_news")
+        news_model.age = (datetime.datetime.now()+datetime.timedelta(minutes=self.spinBox.value())).strftime('%Y-%m-%d %H:%M:%S')
+
+        if self.checkBox_public.isChecked()==True: 
+            news_model.public = True
+
+        if self.checkBox_private.isChecked()==True: 
+            news_model.private = True
             
-        if not self.model  and (self.checkBox_private.isChecked() or self.checkBox_agent.isChecked()):
-            if self.checkBox_private.isChecked()==True: 
-                news_model.private = True
-            if self.checkBox_agent.isChecked()==True:
-                news_model.agent = True
-            news_model.id=self.connection.save(news_model, "billservice_news")
-            if self.model:
-                QtGui.QDialog.accept(self)
-            if self.accounts:
-                account_model = Object()
-                account_model.news_id = news_model.id
-                account_model.viewed = False
-                for account in self.accounts:
-                    account_model.account_id = account
-                    self.connection.save(account_model, "billservice_accountviewednews")
-                    self.connection.commit()
-            else:
-                self.connection.createAccountViewedNews(news_model.id)
-        elif not self.accounts and (self.checkBox_private.isChecked() or self.checkBox_agent.isChecked()):
-            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Это сообщение будет помечено только как публичное. Для посылки приватных сообщений воспользуйтесь этой опцией из окна Пользователи и тарифы"))
-        QtGui.QDialog.accept(self)
+        if self.checkBox_agent.isChecked()==True:
+            news_model.agent = True
+            
+
+        if self.connection.news_save(news_model, accounts = self.accounts):
+            QtGui.QDialog.accept(self)
+                
+
 
 
 
@@ -201,13 +186,12 @@ class MessagesEbs(ebsTableWindow):
     def del_message(self):
         id=self.getSelectedId()
         if id>0:
-            try:
-                #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
-                self.connection.iddelete(id, "billservice_news")
+           
+            if self.connection.news_delete(id):
                 self.connection.commit()
                 self.refresh()
-            except Exception, e:
-                print e
+            else:
+
                 self.connection.rollback()
                 QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
 
@@ -215,7 +199,7 @@ class MessagesEbs(ebsTableWindow):
     def edit_message(self):
         id=self.getSelectedId()
         try:
-            model=self.connection.get_model(id, "billservice_news")
+            model=self.connection.get_news(id)
         except:
             return
 
@@ -236,7 +220,7 @@ class MessagesEbs(ebsTableWindow):
     def refresh(self):
         self.statusBar().showMessage(u"Идёт получение данных")
         #self.tableWidget.setSortingEnabled(False)
-        messages = self.connection.get_messages()
+        messages = self.connection.get_news()
 
         self.connection.commit()
         self.tableWidget.setRowCount(len(messages))

@@ -4,7 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 from helpers import tableFormat
 
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import setFirstActive
@@ -80,7 +80,7 @@ class TimePeriodSelect(QtGui.QDialog):
         self.tableWidget.setItem(x,y,headerItem)
                                  
     def fixtures(self):
-        nodes = self.connection.get_models("billservice_timeperiodnode")
+        nodes = self.connection.get_timenodes()
         self.connection.commit()
         #self.tableWidget.setRowCount(len(nodes))
         i=0
@@ -178,7 +178,7 @@ class AddTimePeriod(QtGui.QDialog):
         if self.nodemodel:
             model=self.nodemodel
         else:
-            model=Object()
+            model=AttrDict()
         try:
             
             model.name=unicode(self.name_edit.text())
@@ -191,11 +191,11 @@ class AddTimePeriod(QtGui.QDialog):
     
             if model.hasattr('id'):
                 #Update
-                self.connection.save(model,"billservice_timeperiodnode")
+                self.connection.timeperiodnode_save(model)
             else:
                 #Insert
                 self.nodemodel=model
-                self.nodemodel.id = self.connection.save(model, "billservice_timeperiodnode")
+                self.nodemodel.id = self.connection.timeperiodnode_save(model).id
                 #print self.nodemodel.id
             self.connection.commit()
         except Exception, e:
@@ -304,11 +304,12 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
         if child.exec_()==1:
             #print "nodes len", len(child.models)
             for node in child.models:
-                o = Object()
-                o.timeperiod_id=self.getTimeperiodId()
-                o.timeperiodnode_id = node
-                self.connection.save(o, "billservice_timeperiod_time_period_nodes")
+                o = AttrDict()
+                o.timeperiod=self.getTimeperiodId()
+                o.timeperiodnode = node
+                self.connection.timeperiodnode_m2m_save(o)
             self.refresh()
+            
     def addPeriod(self):        
         text = QtGui.QInputDialog.getText(self,u"Введите название периода", u"Название:", QtGui.QLineEdit.Normal);
         #print text        
@@ -318,12 +319,12 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
         elif text[1]==False:
             return
 
-        model = Object()
+        model = AttrDict()
         model.name=unicode(text[0])
         
         try:      
             self.connection.commit()
-            if not self.connection.save(model, "billservice_timeperiod"):
+            if not self.connection.timeperiod_save(model):
                 QtGui.QMessageBox.warning(self, u"Ошибка",
                             u"Вероятно, такое название уже есть в списке.")
             self.connection.commit()
@@ -344,22 +345,20 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
         id = self.getTimeperiodId()
         
         if id>0:
-            if self.connection.sql("SELECT access_time_id FROM billservice_accessparameters WHERE access_time_id=%d" % id):
-                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление невозможно, тарифный план используется!")
-                return
-            elif QtGui.QMessageBox.question(self, u"Удалить период тарификации?" , u"Удалить период тарификации?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+            if QtGui.QMessageBox.question(self, u"Удалить период тарификации?" , u"Пожалуйста, убедитесь, что с указанным периодом тарификации не связаны какие-либо сущности в системе. Удаление периода тарификации может привести к некорректному поведению системы!", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                 try:
                     #self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id='%d'" % model.id)
                     #self.connection.delete("DELETE FROM billservice_timeperiod WHERE id='%d'" % model.id)
                     #self.connection.sql("UPDATE billservice_timeperiod SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete(id, "billservice_timeperiod")
+                    self.connection.timeperiod_delete(id)
                     self.connection.commit()
+                    self.tableWidget.blockSignals(True)
                     self.refresh()
-                    try:
-                        setFirstActive(self.treeWidget)
-                        self.refreshTable()
-                    except Exception, ex:
-                        print ex
+                    self.tableWidget.blockSignals(False)
+                    
+                    setFirstActive(self.treeWidget)
+                        #self.refreshTable()
+
                 except Exception, e:
                     print e
                     self.connection.rollback()
@@ -368,7 +367,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
 
 
     def editPeriod(self):
-        model = self.connection.get_model(self.getTimeperiodId(), "billservice_timeperiod")
+        model = self.connection.get_timeperiods(id=self.getTimeperiodId())
 
         text = QtGui.QInputDialog.getText(self,unicode(u"Введите название периода"), unicode(u"Название:"), QtGui.QLineEdit.Normal,model.name)
 
@@ -379,9 +378,8 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
         if text[1]==False:
             return
         try:
-            model=self.connection.get_model(model.id, "billservice_timeperiod")
             model.name=unicode(text[0])
-            self.connection.save(model, 'billservice_timeperiod')    
+            self.connection.timeperiod_save(model)    
             self.connection.commit()            
         except Exception, e:
             QtGui.QMessageBox.warning(self, u"Ошибка",
@@ -393,17 +391,17 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
     def addNode(self):
 
         try:
-            model=self.connection.get("SELECT * FROM billservice_timeperiod WHERE id=%d" % self.getTimeperiodId())
+            model=self.connection.get_timeperiods(id=self.getTimeperiodId())
         except Exception, e:
             return
         #print model.id
         child=AddTimePeriod(connection=self.connection)
         if child.exec_()==1:
             try:
-                node = Object()
-                node.timeperiod_id = model.id
-                node.timeperiodnode_id = child.nodemodel.id
-                self.connection.save(node, "billservice_timeperiod_time_period_nodes")
+                node = AttrDict()
+                node.timeperiod = model.id
+                node.timeperiodnode = child.nodemodel.id
+                self.connection.timeperiodnode_m2m_save(node)
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -419,14 +417,9 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
                 #self.connection.delete("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%d" % id)
                 #self.connection.delete("DELETE FROM billservice_timeperiodnode WHERE id=%d" % id)
                 #self.connection.sql("UPDATE billservice_timeperiodnode SET deleted=TRUE WHERE id=%d" % id, False)
-                self.connection.command("DELETE FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%s and timeperiod_id=%s;" % (id, self.getTimeperiodId()))
                 #Проверяем используется ли ещё где-нибудь
-                nums = self.connection.sql("SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiodnode_id=%s;" % id)
-                self.connection.commit()
-                if not nums:
-                    #Если не используется-удаляем
-                    self.connection.iddelete(id, "billservice_timeperiodnode")
-                    self.connection.commit()
+                self.connection.timeperiodnodes_m2m_delete(period_id=self.getTimeperiodId(), node_id=id)
+                
                 self.refreshTable()
             except Exception, e:
                 print e
@@ -439,7 +432,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
         #print id
         
         try:
-            nodemodel = self.connection.get_model(unicode(self.getSelectedId()), "billservice_timeperiodnode")
+            nodemodel = self.connection.get_timenodes(unicode(self.getSelectedId()))
             #nodemodel = self.connection.sql("SELECT * FROM billservice_timeperiodnode WHERE id=%d;" % int(id))[0]
         except Exception, e:
             pass
@@ -448,7 +441,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
 
         
         #name=unicode(self.getSelectedName())
-        model=self.connection.get_model(self.getTimeperiodId(), "billservice_timeperiod")
+        model=self.connection.get_timeperiods(self.getTimeperiodId())
         if not model:
             return
         self.connection.commit()
@@ -459,6 +452,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
         
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).id)
+    
     def refreshTable(self, widget=None):
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
@@ -469,8 +463,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
             
         self.tableWidget.clearContents()
         
-        nodes = self.connection.sql("""SELECT * FROM billservice_timeperiodnode as timeperiodnode
-        WHERE id IN (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id=%s)""" % period_id)
+        nodes = self.connection.get_timenodes(period_id = period_id)
         self.connection.commit()
         self.tableWidget.setRowCount(len(nodes))
         i=0        
@@ -509,7 +502,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
         except Exception, ex:
             print ex
         self.treeWidget.clear()
-        periods=self.connection.get_models("billservice_timeperiod")
+        periods=self.connection.get_timeperiods()
         self.connection.commit()
         for period in periods:
             #item = QtGui.QListWidgetItem(self.timeperiod_list_edit)

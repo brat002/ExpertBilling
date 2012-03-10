@@ -65,6 +65,8 @@ NullSource = """
 function gettext(msgid) { return msgid; }
 function ngettext(singular, plural, count) { return (count == 1) ? singular : plural; }
 function gettext_noop(msgid) { return msgid; }
+function pgettext(context, msgid) { return msgid; }
+function npgettext(context, singular, plural, count) { return (count == 1) ? singular : plural; }
 """
 
 LibHead = """
@@ -95,6 +97,21 @@ function ngettext(singular, plural, count) {
 
 function gettext_noop(msgid) { return msgid; }
 
+function pgettext(context, msgid) {
+  var value = gettext(context + '\x04' + msgid);
+  if (value.indexOf('\x04') != -1) {
+    value = msgid;
+  }
+  return value;
+}
+
+function npgettext(context, singular, plural, count) {
+  var value = ngettext(context + '\x04' + singular, context + '\x04' + plural, count);
+  if (value.indexOf('\x04') != -1) {
+    value = ngettext(singular, plural, count);
+  }
+  return value;
+}
 """
 
 LibFormatHead = """
@@ -176,11 +193,15 @@ def javascript_catalog(request, domain='djangojs', packages=None):
     paths = []
     en_selected = locale.startswith('en')
     en_catalog_missing = True
-    # first load all english languages files for defaults
+    # paths of requested packages
     for package in packages:
         p = importlib.import_module(package)
         path = os.path.join(os.path.dirname(p.__file__), 'locale')
         paths.append(path)
+    # add the filesystem paths listed in the LOCALE_PATHS setting
+    paths.extend(list(reversed(settings.LOCALE_PATHS)))
+    # first load all english languages files for defaults
+    for path in paths:
         try:
             catalog = gettext_module.translation(domain, path, ['en'])
             t.update(catalog._catalog)
@@ -258,4 +279,3 @@ def javascript_catalog(request, domain='djangojs', packages=None):
     src.append(LibFormatFoot)
     src = ''.join(src)
     return http.HttpResponse(src, 'text/javascript')
-

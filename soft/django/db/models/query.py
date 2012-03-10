@@ -7,7 +7,9 @@ from itertools import izip
 from django.db import connections, router, transaction, IntegrityError
 from django.db.models.aggregates import Aggregate
 from django.db.models.fields import DateField
-from django.db.models.query_utils import Q, select_related_descend, CollectedObjects, CyclicDependency, deferred_class_factory, InvalidQuery
+from django.db.models.query_utils import (Q, select_related_descend,
+    deferred_class_factory, InvalidQuery)
+from django.db.models.deletion import Collector
 from django.db.models import signals, sql
 from django.utils.copycompat import deepcopy
 
@@ -79,7 +81,7 @@ class QuerySet(object):
             else:
                 self._result_cache = list(self.iterator())
         elif self._iter:
-            self._result_cache.extend(list(self._iter))
+            self._result_cache.extend(self._iter)
         return len(self._result_cache)
 
     def __iter__(self):
@@ -438,22 +440,9 @@ class QuerySet(object):
         del_query.query.select_related = False
         del_query.query.clear_ordering()
 
-        # Delete objects in chunks to prevent the list of related objects from
-        # becoming too long.
-        seen_objs = None
-        del_itr = iter(del_query)
-        while 1:
-            # Collect a chunk of objects to be deleted, and then all the
-            # objects that are related to the objects that are to be deleted.
-            # The chunking *isn't* done by slicing the del_query because we
-            # need to maintain the query cache on del_query (see #12328)
-            seen_objs = CollectedObjects(seen_objs)
-            for i, obj in izip(xrange(CHUNK_SIZE), del_itr):
-                obj._collect_sub_objects(seen_objs)
-
-            if not seen_objs:
-                break
-            delete_objects(seen_objs, del_query.db)
+        collector = Collector(using=del_query.db)
+        collector.collect(del_query)
+        collector.delete()
 
         # Clear the result cache, in case this QuerySet gets reused.
         self._result_cache = None
@@ -877,9 +866,9 @@ class ValuesQuerySet(QuerySet):
                     # we inspect the full extra_select list since we might
                     # be adding back an extra select item that we hadn't
                     # had selected previously.
-                    if self.query.extra.has_key(f):
+                    if f in self.query.extra:
                         self.extra_names.append(f)
-                    elif self.query.aggregate_select.has_key(f):
+                    elif f in self.query.aggregate_select:
                         self.aggregate_names.append(f)
                     else:
                         self.field_names.append(f)
@@ -892,7 +881,7 @@ class ValuesQuerySet(QuerySet):
         self.query.select = []
         if self.extra_names is not None:
             self.query.set_extra_mask(self.extra_names)
-        self.query.add_fields(self.field_names, False)
+        self.query.add_fields(self.field_names, True)
         if self.aggregate_names is not None:
             self.query.set_aggregate_mask(self.aggregate_names)
 
@@ -1012,12 +1001,7 @@ class DateQuerySet(QuerySet):
         self.query.clear_deferred_loading()
         self.query = self.query.clone(klass=sql.DateQuery, setup=True)
         self.query.select = []
-        field = self.model._meta.get_field(self._field_name, many_to_many=False)
-        assert isinstance(field, DateField), "%r isn't a DateField." \
-                % field.name
-        self.query.add_date_select(field, self._kind, self._order)
-        if field.null:
-            self.query.add_filter(('%s__isnull' % field.name, False))
+        self.query.add_date_select(self._field_name, self._kind, self._order)
 
     def _clone(self, klass=None, setup=False, **kwargs):
         c = super(DateQuerySet, self)._clone(klass, False, **kwargs)
@@ -1306,78 +1290,6 @@ def get_cached_row(klass, row, index_start, using, max_depth=0, cur_depth=0,
                                     pass
     return obj, index_end
 
-def delete_objects(seen_objs, using):
-    """
-    Iterate through a list of seen classes, and remove any instances that are
-    referred to.
-    """
-    connection = connections[using]
-    if not transaction.is_managed(using=using):
-        transaction.enter_transaction_management(using=using)
-        forced_managed = True
-    else:
-        forced_managed = False
-    try:
-        ordered_classes = seen_objs.keys()
-    except CyclicDependency:
-        # If there is a cyclic dependency, we cannot in general delete the
-        # objects.  However, if an appropriate transaction is set up, or if the
-        # database is lax enough, it will succeed. So for now, we go ahead and
-        # try anyway.
-        ordered_classes = seen_objs.unordered_keys()
-
-    obj_pairs = {}
-    try:
-        for cls in ordered_classes:
-            items = seen_objs[cls].items()
-            items.sort()
-            obj_pairs[cls] = items
-
-            # Pre-notify all instances to be deleted.
-            for pk_val, instance in items:
-                if not cls._meta.auto_created:
-                    signals.pre_delete.send(sender=cls, instance=instance)
-
-            pk_list = [pk for pk,instance in items]
-
-            update_query = sql.UpdateQuery(cls)
-            for field, model in cls._meta.get_fields_with_model():
-                if (field.rel and field.null and field.rel.to in seen_objs and
-                        filter(lambda f: f.column == field.rel.get_related_field().column,
-                        field.rel.to._meta.fields)):
-                    if model:
-                        sql.UpdateQuery(model).clear_related(field, pk_list, using=using)
-                    else:
-                        update_query.clear_related(field, pk_list, using=using)
-
-        # Now delete the actual data.
-        for cls in ordered_classes:
-            items = obj_pairs[cls]
-            items.reverse()
-
-            pk_list = [pk for pk,instance in items]
-            del_query = sql.DeleteQuery(cls)
-            del_query.delete_batch(pk_list, using=using)
-
-            # Last cleanup; set NULLs where there once was a reference to the
-            # object, NULL the primary key of the found objects, and perform
-            # post-notification.
-            for pk_val, instance in items:
-                for field in cls._meta.fields:
-                    if field.rel and field.null and field.rel.to in seen_objs:
-                        setattr(instance, field.attname, None)
-
-                if not cls._meta.auto_created:
-                    signals.post_delete.send(sender=cls, instance=instance)
-                setattr(instance, cls._meta.pk.attname, None)
-
-        if forced_managed:
-            transaction.commit(using=using)
-        else:
-            transaction.commit_unless_managed(using=using)
-    finally:
-        if forced_managed:
-            transaction.leave_transaction_management(using=using)
 
 class RawQuerySet(object):
     """

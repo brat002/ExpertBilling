@@ -4,7 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 from ebsWindow import ebsTabs_n_TablesWindow
 from helpers import tableFormat
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import HeaderUtil
 from helpers import dateDelim
@@ -19,7 +19,6 @@ class AddDealerFrame(QtGui.QMainWindow):
         self.model = model
         self.bank_model = None
         self.connection = connection
-        self.connection.commit()
 
         self.setObjectName("MainWindow")
         self.resize(915, 560)
@@ -395,10 +394,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             f.write("<xml>")
             for x in ids:
                 #card = unicode(self.tableWidget.item(x,0).text())
-                card = self.connection.get("""SELECT card.*, tarif.name as tarif_name FROM billservice_card as card
-                LEFT JOIN billservice_tariff as tarif ON tarif.id = card.tarif_id
-                WHERE card.id=%s
-                """ % x)
+                card = self.connection.get_cards(id=x)
                 self.connection.commit()
                 #print x,card
                 f.write("<card>")
@@ -409,8 +405,8 @@ class AddDealerFrame(QtGui.QMainWindow):
                 f.write(u"<nominal>%s</nominal>" % card.nominal)
                 f.write(u"<pin>%s</pin>" % card.pin)
                 f.write(u"<login>%s</login>" % card.login)
-                f.write(u"<template>%s</template>" % card.template_id)
-                f.write(u"<nas>%s</nas>" % card.nas_id)
+                f.write(u"<template>%s</template>" % card.template)
+                f.write(u"<nas>%s</nas>" % card.nas)
                 f.write(u"<ip>%s</ip>" % card.ip)
                 f.write(u"<date_start>%s</date_start>" % card.start_date)
                 f.write(u"<date_end>%s</date_end>" % card.end_date)
@@ -430,7 +426,7 @@ class AddDealerFrame(QtGui.QMainWindow):
         if self.model:
             model=self.model
         else:
-            model=Object()
+            model=AttrDict()
 
         if unicode(self.lineEdit_contactperson.text())==u"" and unicode(self.lineEdit_organization.text())==u"":
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указано контактное лицо или организация"))
@@ -439,7 +435,7 @@ class AddDealerFrame(QtGui.QMainWindow):
         if self.bank_model:
             bank_model = self.bank_model
         else:
-            bank_model = Object()
+            bank_model = AttrDict()
         
         bank_model.bank = unicode(self.lineEdit_bank.text())
         bank_model.bankcode = unicode(self.lineEdit_bankcode.text())
@@ -448,7 +444,7 @@ class AddDealerFrame(QtGui.QMainWindow):
         
         try:
             self.bank_model = bank_model
-            self.bank_model.id = self.connection.save(bank_model, "billservice_bankdata")
+            self.bank_model.id = self.connection.banks_save(bank_model).id
             """
             Защита от двойного обавления при создании записи
             """
@@ -458,7 +454,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             print e
             self.connection.rollback()
             QtGui.QMessageBox.warning(self, u"Ошибка!",
-                                u"Невозможно сохранить данные!")
+                                u"Ошибка сохранения банка. Банк должен быть указан!")
             return
 
     
@@ -477,12 +473,12 @@ class AddDealerFrame(QtGui.QMainWindow):
         model.paydeffer = unicode(self.spinBox_paydeffer.text())
 
         model.always_sell_cards = self.checkBox_always_sell_cards.checkState()==2
-        model.bank_id = self.bank_model.id
+        model.bank = self.bank_model.id
 
 
         try:
             self.model = model
-            self.model.id = self.connection.save(model,"billservice_dealer")
+            self.model.id = self.connection.dealers_save(model)
             self.connection.commit()
             """
             Защита от двойного обавления при создании записи
@@ -505,14 +501,9 @@ class AddDealerFrame(QtGui.QMainWindow):
             cards.append(int(unicode(self.tableWidget_not_activated.item(item.row(), 0).text())))
             
             
-        for card_id in cards:
-            #d = Object()
-            #d.card_id = card_id
-            self.connection.iddelete(card_id, "billservice_salecard_cards")
-            d = Object()
-            d.id = card_id
-            d.sold = None
-            self.connection.save(d, "billservice_card")
+        if self.model.id:
+            self.connection.return_cards(dealer_id=self.model.id, cards=cards)
+        
             
         self.connection.commit()
         self.fixtures()
@@ -542,20 +533,20 @@ class AddDealerFrame(QtGui.QMainWindow):
         sum = 0
         discount = 0
         for salecard in salecards:
-            if salecard.cardssum is None:
+            if not float(salecard.cardssum or 0):
                 continue
-            if salecard.discount==0:
-                sum+=salecard.cardssum
+            if float(salecard.discount)==0:
+                sum+=float(salecard.cardssum)
             else:
-                sum+=salecard.cardssum*(salecard.discount/100)
-                discount += salecard.cardssum*(salecard.discount/100)
+                sum+=float(salecard.cardssum)*(float(salecard.discount)/100)
+                discount += float(salecard.cardssum)*(float(salecard.discount)/100)
                 
         return sum, discount
 
     def fixtures(self):
 
         if self.model:
-            self.bank_model = self.connection.get_model(self.model.bank_id, "billservice_bankdata")
+            self.bank_model = self.connection.get_banks(self.model.bank)
             
             self.lineEdit_organization.setText(unicode(self.model.organization))
             self.lineEdit_unp.setText(unicode(self.model.unp))
@@ -568,9 +559,9 @@ class AddDealerFrame(QtGui.QMainWindow):
             self.lineEdit_uraddress.setText(unicode(self.model.uraddress))                                
             self.lineEdit_email.setText(unicode(self.model.email))
             
-            self.spinBox_prepayment.setValue(self.model.prepayment)
-            self.spinBox_discount.setValue(self.model.discount)
-            self.spinBox_paydeffer.setValue(self.model.paydeffer)
+            self.spinBox_prepayment.setValue(float(self.model.prepayment))
+            self.spinBox_discount.setValue(float(self.model.discount))
+            self.spinBox_paydeffer.setValue(float(self.model.paydeffer))
 
             self.checkBox_always_sell_cards.setChecked(self.model.always_sell_cards)
             
@@ -579,7 +570,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             self.lineEdit_rs.setText(unicode(self.bank_model.rs))
             
             ####Info
-            data = self.connection.get("""SELECT discount,(SELECT max(created) FROM billservice_salecard WHERE dealer_id=dealer.id) as last_sale,
+            data = self.connection.sql("""SELECT discount,(SELECT max(created) FROM billservice_salecard WHERE dealer_id=dealer.id) as last_sale,
             (SELECT count(*)
             FROM billservice_salecard_cards 
             WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id = dealer.id)) as cardcount,
@@ -589,7 +580,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             (SELECT sum(nominal) FROM billservice_card WHERE id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=dealer.id))) as nominals_sum,
             (SELECT sum(nominal) FROM billservice_card WHERE activated is not Null and id IN (SELECT id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=dealer.id))) as activated_nominals_sum
             FROM billservice_dealer as dealer WHERE id=%s;
-            """ % self.model.id)
+            """ % self.model.id)[0]
             self.connection.commit()
             try:
                 self.label_last_sale_date_z.setText(unicode(data.last_sale.strftime(strftimeFormat)))
@@ -611,12 +602,12 @@ class AddDealerFrame(QtGui.QMainWindow):
             ###END Info
             not_activated = self.connection.sql("SELECT * FROM billservice_card WHERE activated is Null and sold is not Null and id IN (SELECT card_id FROM billservice_salecard_cards WHERE salecard_id IN (SELECT id FROM billservice_salecard WHERE dealer_id=%s)) ORDER BY id ASC" % self.model.id)
 
-            tariffs = self.connection.get_models("billservice_tariff")
+            tariffs = self.connection.get_tariffs(fields=['id', 'name'])
             t={}
             for tar in tariffs:
                 t['%s' % tar.id] = tar.name
     
-            nasses = self.connection.get_models("nas_nas")
+            nasses = self.connection.get_nasses(fields=['id', 'name'])
             n = {}
             for nas in nasses:
                 n['%s' % nas.id] = nas.name            
@@ -676,7 +667,7 @@ class AddDealerFrame(QtGui.QMainWindow):
             #self.ipn_checkBox.setCheckState(self.model.allow_ipn == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             #self.multilink_checkBox.setChecked(self.model.multilink)
         else:
-            self.bank_model = Object()
+            self.bank_model = AttrDict()
 
 
 
@@ -735,12 +726,12 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
             return
         elif text[1]==False:
             return        
-        model = Object()
-        model.dealer_id = self.getSelectedId()
+        model = AttrDict()
+        model.dealer = self.getSelectedId()
         model.pay = text[0]
         model.created = datetime.datetime.now()
         try:
-            self.connection.save(model,"billservice_dealerpay")
+            self.connection.add_dealerpay(model)
             self.connection.commit()
         except:
             self.connection.rollback()
@@ -764,11 +755,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         if id>0:
             if (QtGui.QMessageBox.question(self, u"Удалить дилера?" , u'''Из соображений целостности данных, диллер будет помечен удалённым\nи не будет отображаться в этом окне,однако продолжит существовать в базе данных.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
                 try:
-                    #self.connection.sql("UPDATE nas_nas SET deleted=TRUE WHERE id=%d" % id, False)
-                    d = Object()
-                    d.id = id
-                    d.deleted = True
-                    self.connection.save(d, "billservice_dealer")
+                    self.connection.dealers_delete(d)
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:
@@ -780,7 +767,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
 
     def editframe(self):
         try:
-            model=self.connection.get_model(self.getSelectedId(), "billservice_dealer")
+            model=self.connection.get_dealers(id=self.getSelectedId())
             self.connection.commit()
         except:
             model=None
@@ -813,12 +800,12 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         self.connection.commit()
         sum = 0
         for salecard in salecards:
-            if salecard.cardssum is None:
+            if not float(salecard.cardssum or 0):
                 continue
-            if salecard.discount==0:
-                sum+=salecard.cardssum
+            if float(salecard.discount)==0:
+                sum+=float(salecard.cardssum)
             else:
-                sum+=salecard.cardssum*(salecard.discount/100)
+                sum+=float(salecard.cardssum)*(float(salecard.discount)/100)
                 
         return sum
 
@@ -829,13 +816,13 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
         sum = 0
         discount=0
         for salecard in salecards:
-            if salecard.cardssum is None:
+            if not float(salecard.cardssum or 0):
                 continue
-            if salecard.discount==0:
-                sum+=salecard.cardssum
+            if float(salecard.discount)==0:
+                sum+=float(salecard.cardssum)
             else:
-                sum+=salecard.cardssum*(salecard.discount/100)
-                discount = salecard.cardssum-salecard.cardssum*(salecard.discount/100)
+                sum+=float(salecard.cardssum)*(float(salecard.discount)/100)
+                discount = float(salecard.cardssum)-float(salecard.cardssum)*(float(salecard.discount)/100)
         return sum, discount
     
     def refresh(self):
@@ -862,8 +849,7 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
             self.addrow(self.tableWidget, d.activated, i,4)
             self.addrow(self.tableWidget, s, i,5)
             try:
-                print "discount=",d.discount, type(d.pay), type(d.discount)
-                self.addrow(self.tableWidget, (-1)*(d.pay - s*(100-d.discount)/decimal.Decimal("100")), i,6)
+                self.addrow(self.tableWidget, (-1)*(float(d.pay) - s*(100-float(d.discount))/decimal.Decimal("100")), i,6)
             except:
                 self.addrow(self.tableWidget, 0, i,6)
             self.addrow(self.tableWidget, d.discount, i,7)
@@ -903,14 +889,14 @@ class DealerMdiEbs(ebsTabs_n_TablesWindow):
     def refreshPays(self):
         self.tableWidget_pays.clearContents()
         id = self.getSelectedId()
-        data = self.connection.get_models(table="billservice_dealerpay", where={'dealer_id':id})
+        data = self.connection.get_dealerpays(dealer_id=id)
         self.connection.commit()
         self.tableWidget_pays.setRowCount(len(data))
         i=0
         for d in data:
             self.addrow(self.tableWidget_pays, d.id, i,0)
             self.addrow(self.tableWidget_pays, d.pay, i,1)
-            self.addrow(self.tableWidget_pays, d.salecard_id, i,2)
+            self.addrow(self.tableWidget_pays, d.salecard, i,2)
             self.addrow(self.tableWidget_pays, d.created.strftime(strftimeFormat), i,3)
             i+=1
        

@@ -3,16 +3,24 @@ import os
 import random
 import time
 from email import Charset, Encoders
+try:
+    from email.generator import Generator
+except ImportError:
+    from email.Generator import Generator # TODO: Remove when remove Python 2.4 support
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
 from email.Header import Header
-from email.Utils import formatdate, getaddresses, formataddr
+from email.Utils import formatdate, getaddresses, formataddr, parseaddr
 
 from django.conf import settings
 from django.core.mail.utils import DNS_NAME
 from django.utils.encoding import smart_str, force_unicode
-from email.Utils import parseaddr
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 # Don't BASE64-encode UTF-8 messages so that we avoid unwanted attention from
 # some spam filters.
@@ -119,6 +127,19 @@ class SafeMIMEText(MIMEText):
         name, val = forbid_multi_line_headers(name, val, self.encoding)
         MIMEText.__setitem__(self, name, val)
 
+    def as_string(self, unixfrom=False):
+        """Return the entire formatted message as a string.
+        Optional `unixfrom' when True, means include the Unix From_ envelope
+        header.
+
+        This overrides the default as_string() implementation to not mangle
+        lines that begin with 'From '. See bug #13433 for details.
+        """
+        fp = StringIO()
+        g = Generator(fp, mangle_from_ = False)
+        g.flatten(self, unixfrom=unixfrom)
+        return fp.getvalue()
+
 
 class SafeMIMEMultipart(MIMEMultipart):
 
@@ -130,6 +151,19 @@ class SafeMIMEMultipart(MIMEMultipart):
         name, val = forbid_multi_line_headers(name, val, self.encoding)
         MIMEMultipart.__setitem__(self, name, val)
 
+    def as_string(self, unixfrom=False):
+        """Return the entire formatted message as a string.
+        Optional `unixfrom' when True, means include the Unix From_ envelope
+        header.
+
+        This overrides the default as_string() implementation to not mangle
+        lines that begin with 'From '. See bug #13433 for details.
+        """
+        fp = StringIO()
+        g = Generator(fp, mangle_from_ = False)
+        g.flatten(self, unixfrom=unixfrom)
+        return fp.getvalue()
+
 
 class EmailMessage(object):
     """
@@ -140,7 +174,7 @@ class EmailMessage(object):
     encoding = None     # None => use settings default
 
     def __init__(self, subject='', body='', from_email=None, to=None, bcc=None,
-                 connection=None, attachments=None, headers=None):
+                 connection=None, attachments=None, headers=None, cc=None):
         """
         Initialize a single email message (which can be sent to multiple
         recipients).
@@ -154,6 +188,11 @@ class EmailMessage(object):
             self.to = list(to)
         else:
             self.to = []
+        if cc:
+            assert not isinstance(cc, basestring), '"cc" argument must be a list or tuple'
+            self.cc = list(cc)
+        else:
+            self.cc = []
         if bcc:
             assert not isinstance(bcc, basestring), '"bcc" argument must be a list or tuple'
             self.bcc = list(bcc)
@@ -180,6 +219,8 @@ class EmailMessage(object):
         msg['Subject'] = self.subject
         msg['From'] = self.extra_headers.get('From', self.from_email)
         msg['To'] = ', '.join(self.to)
+        if self.cc:
+            msg['Cc'] = ', '.join(self.cc)
 
         # Email header names are case-insensitive (RFC 2045), so we have to
         # accommodate that when doing comparisons.
@@ -197,9 +238,9 @@ class EmailMessage(object):
     def recipients(self):
         """
         Returns a list of all recipients of the email (includes direct
-        addressees as well as Bcc entries).
+        addressees as well as Cc and Bcc entries).
         """
-        return self.to + self.bcc
+        return self.to + self.cc + self.bcc
 
     def send(self, fail_silently=False):
         """Sends the email message."""
@@ -287,7 +328,8 @@ class EmailMultiAlternatives(EmailMessage):
     alternative_subtype = 'alternative'
 
     def __init__(self, subject='', body='', from_email=None, to=None, bcc=None,
-            connection=None, attachments=None, headers=None, alternatives=None):
+            connection=None, attachments=None, headers=None, alternatives=None,
+            cc=None):
         """
         Initialize a single email message (which can be sent to multiple
         recipients).
@@ -296,7 +338,7 @@ class EmailMultiAlternatives(EmailMessage):
         bytestrings). The SafeMIMEText class will handle any necessary encoding
         conversions.
         """
-        super(EmailMultiAlternatives, self).__init__(subject, body, from_email, to, bcc, connection, attachments, headers)
+        super(EmailMultiAlternatives, self).__init__(subject, body, from_email, to, bcc, connection, attachments, headers, cc)
         self.alternatives = alternatives or []
 
     def attach_alternative(self, content, mimetype):

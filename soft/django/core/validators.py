@@ -1,4 +1,6 @@
+import platform
 import re
+import urllib2
 import urlparse
 
 from django.core.exceptions import ValidationError
@@ -40,14 +42,15 @@ class RegexValidator(object):
 
 class URLValidator(RegexValidator):
     regex = re.compile(
-        r'^https?://' # http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|' #domain...
+        r'^(?:http|ftp)s?://' # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
         r'localhost|' #localhost...
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
         r'(?::\d+)?' # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
-    def __init__(self, verify_exists=False, validator_user_agent=URL_VALIDATOR_USER_AGENT):
+    def __init__(self, verify_exists=False,
+                 validator_user_agent=URL_VALIDATOR_USER_AGENT):
         super(URLValidator, self).__init__()
         self.verify_exists = verify_exists
         self.user_agent = validator_user_agent
@@ -71,8 +74,8 @@ class URLValidator(RegexValidator):
         else:
             url = value
 
+        #This is deprecated and will be removed in a future release.
         if self.verify_exists:
-            import urllib2
             headers = {
                 "Accept": "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5",
                 "Accept-Language": "en-us,en;q=0.5",
@@ -80,13 +83,42 @@ class URLValidator(RegexValidator):
                 "Connection": "close",
                 "User-Agent": self.user_agent,
             }
+            url = url.encode('utf-8')
+            broken_error = ValidationError(
+                _(u'This URL appears to be a broken link.'), code='invalid_link')
             try:
                 req = urllib2.Request(url, None, headers)
-                u = urllib2.urlopen(req)
+                req.get_method = lambda: 'HEAD'
+                #Create an opener that does not support local file access
+                opener = urllib2.OpenerDirector()
+
+                #Don't follow redirects, but don't treat them as errors either
+                error_nop = lambda *args, **kwargs: True
+                http_error_processor = urllib2.HTTPErrorProcessor()
+                http_error_processor.http_error_301 = error_nop
+                http_error_processor.http_error_302 = error_nop
+                http_error_processor.http_error_307 = error_nop
+
+                handlers = [urllib2.UnknownHandler(),
+                            urllib2.HTTPHandler(),
+                            urllib2.HTTPDefaultErrorHandler(),
+                            urllib2.FTPHandler(),
+                            http_error_processor]
+                try:
+                    import ssl
+                    handlers.append(urllib2.HTTPSHandler())
+                except:
+                    #Python isn't compiled with SSL support
+                    pass
+                map(opener.add_handler, handlers)
+                if platform.python_version_tuple() >= (2, 6):
+                    opener.open(req, timeout=10)
+                else:
+                    opener.open(req)
             except ValueError:
                 raise ValidationError(_(u'Enter a valid URL.'), code='invalid')
             except: # urllib2.URLError, httplib.InvalidURL, etc.
-                raise ValidationError(_(u'This URL appears to be a broken link.'), code='invalid_link')
+                raise broken_error
 
 
 def validate_integer(value):
