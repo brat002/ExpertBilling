@@ -7,7 +7,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from decimal import Decimal
 from datetime import datetime
-
+import ipaddr 
 
 class MyJSONEncoder(simplejson.JSONEncoder):
     """JSON encoder which understands decimals."""
@@ -28,7 +28,10 @@ class MyJSONEncoder(simplejson.JSONEncoder):
                 'microsecond' : obj.microsecond,
             }   
         else:
-            #print type(obj)
+            print type(obj)==ipaddr.IPv4Network
+            if type(obj)==ipaddr.IPv4Network or  type(obj)==ipaddr.IPAddress:
+                print "YESSS"
+                return str(obj)
             return simplejson.JSONEncoder.default(self, obj)
     
 def render_response(request, tmpl, output):

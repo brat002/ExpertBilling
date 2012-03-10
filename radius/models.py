@@ -94,6 +94,7 @@ class ActiveSession(models.Model):
     framed_ip_address = models.CharField(max_length=255, blank=True, default='')
     #Атрибут радиуса NAS-IP-Address
     nas_id=models.CharField(max_length=255, blank=True)
+    nas_int=models.ForeignKey(Nas, blank=True, null=True)
     #Атрибут радиуса Acct-Session-Time
     session_time=models.IntegerField(default=0, null=True,blank=True)
     #Нужно определить каким образом клиент подключился к серверу

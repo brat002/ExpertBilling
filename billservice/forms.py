@@ -3,9 +3,10 @@ from django import forms
 from datetime import datetime, date
 from django.forms import ModelForm
 from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
-from billservice.models import PeriodicalService, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode
+from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode
 from billservice.models import Organization, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService
-from billservice.models import TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
+from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
+from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -225,6 +226,102 @@ class AddonServiceTarifForm(ModelForm):
 class ContractTemplateForm(ModelForm):
     class Meta:
         model = ContractTemplate  
+
+class RadiusAttrsForm(ModelForm):
+    class Meta:
+        model = RadiusAttrs  
+
+class TemplateForm(ModelForm):
+    class Meta:
+        model = Template  
+
+class AccountPrepaysRadiusTraficForm(ModelForm):
+    class Meta:
+        model = AccountPrepaysRadiusTrafic     
+
+class AccountPrepaysTraficForm(ModelForm):
+    class Meta:
+        model = AccountPrepaysTrafic     
+
+class TransactionTypeForm(ModelForm):
+    class Meta:
+        model = TransactionType     
+
+class CityForm(ModelForm):
+    class Meta:
+        model = City     
+
+class StreetForm(ModelForm):
+    class Meta:
+        model = Street     
+
+class HouseForm(ModelForm):
+    class Meta:
+        model = House     
+   
+class SystemUserForm(ModelForm):
+    class Meta:
+        model = SystemUser     
+    
+class TimePeriodForm(ModelForm):
+    class Meta:
+        model = TimePeriod   
+     
+class TimePeriodNodeForm(ModelForm):
+    class Meta:
+        model = TimePeriodNode
+                       
+class IPPoolForm(ModelForm):
+    class Meta:
+        model = IPPool
+        
+class ManufacturerForm(ModelForm):
+    class Meta:
+        model = Manufacturer
+
+class AccountHardwareForm(ModelForm):
+    class Meta:
+        model = AccountHardware
+     
+class ModelHardwareForm(ModelForm):
+    class Meta:
+        model = Model
+           
+class HardwareTypeForm(ModelForm):
+    class Meta:
+        model = HardwareType
+        
+class HardwareForm(ModelForm):
+    class Meta:
+        model = Hardware 
+
+class TPChangeRuleForm(ModelForm):
+    class Meta:
+        model = TPChangeRule
+        
+class NewsForm(ModelForm):
+    class Meta:
+        model = News
+
+class CardForm(ModelForm):
+    class Meta:
+        model = Card
+    
+class DealerForm(ModelForm):
+    class Meta:
+        model = Dealer    
+
+class SaleCardForm(ModelForm):
+    class Meta:
+        model = SaleCard    
+
+class DealerPayForm(ModelForm):
+    class Meta:
+        model = DealerPay    
+
+class OperatorForm(ModelForm):
+    class Meta:
+        model = Operator    
         
 #TO-DO: добавить exclude в periodicalservice
 class SubAccountForm(ModelForm):
