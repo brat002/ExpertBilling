@@ -62,8 +62,6 @@ class DatabaseCreation(BaseDatabaseCreation):
 
         cursor = self.connection.cursor()
         if self._test_database_create():
-            if verbosity >= 1:
-                print 'Creating test database...'
             try:
                 self._execute_test_db_creation(cursor, parameters, verbosity)
             except Exception, e:
@@ -73,10 +71,8 @@ class DatabaseCreation(BaseDatabaseCreation):
                 if autoclobber or confirm == 'yes':
                     try:
                         if verbosity >= 1:
-                            print "Destroying old test database..."
+                            print "Destroying old test database '%s'..." % self.connection.alias
                         self._execute_test_db_destruction(cursor, parameters, verbosity)
-                        if verbosity >= 1:
-                            print "Creating test database..."
                         self._execute_test_db_creation(cursor, parameters, verbosity)
                     except Exception, e:
                         sys.stderr.write("Got an error recreating the test database: %s\n" % e)
@@ -113,16 +109,6 @@ class DatabaseCreation(BaseDatabaseCreation):
         self.connection.settings_dict["PASSWORD"] = TEST_PASSWD
 
         return self.connection.settings_dict['NAME']
-
-    def test_db_signature(self):
-        settings_dict = self.connection.settings_dict
-        return (
-            settings_dict['HOST'],
-            settings_dict['PORT'],
-            settings_dict['ENGINE'],
-            settings_dict['NAME'],
-            settings_dict['TEST_USER'],
-        )
 
     def _destroy_test_db(self, test_database_name, verbosity=1):
         """
@@ -265,3 +251,21 @@ class DatabaseCreation(BaseDatabaseCreation):
         except KeyError:
             pass
         return name
+
+    def _get_test_db_name(self):
+        """
+        We need to return the 'production' DB name to get the test DB creation
+        machinery to work. This isn't a great deal in this case because DB
+        names as handled by Django haven't real counterparts in Oracle.
+        """
+        return self.connection.settings_dict['NAME']
+
+    def test_db_signature(self):
+        settings_dict = self.connection.settings_dict
+        return (
+            settings_dict['HOST'],
+            settings_dict['PORT'],
+            settings_dict['ENGINE'],
+            settings_dict['NAME'],
+            self._test_database_user(),
+        )

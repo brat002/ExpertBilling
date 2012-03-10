@@ -332,7 +332,7 @@ def instance_dict(instance, key_format=None, normal_fields=False, fields=[]):
     for field in instance._meta.fields:
         
         attr = field.name
-        #print "attr", attr
+
         if fields and attr not in fields: continue
         #print attr
         try:

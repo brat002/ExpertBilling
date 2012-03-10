@@ -206,8 +206,8 @@ class Field(object):
         #
         # A Field class can implement the get_internal_type() method to specify
         # which *preexisting* Django Field class it's most similar to -- i.e.,
-        # an XMLField is represented by a TEXT column type, which is the same
-        # as the TextField Django field type, which means XMLField's
+        # a custom field might be represented by a TEXT column type, which is the
+        # same as the TextField Django field type, which means the custom field's
         # get_internal_type() returns 'TextField'.
         #
         # But the limitation of the get_internal_type() / data_types approach
@@ -1119,7 +1119,7 @@ class TimeField(Field):
 class URLField(CharField):
     description = _("URL")
 
-    def __init__(self, verbose_name=None, name=None, verify_exists=True, **kwargs):
+    def __init__(self, verbose_name=None, name=None, verify_exists=False, **kwargs):
         kwargs['max_length'] = kwargs.get('max_length', 200)
         CharField.__init__(self, verbose_name, name, **kwargs)
         self.validators.append(validators.URLValidator(verify_exists=verify_exists))
@@ -1136,6 +1136,9 @@ class XMLField(TextField):
     description = _("XML text")
 
     def __init__(self, verbose_name=None, name=None, schema_path=None, **kwargs):
+        import warnings
+        warnings.warn("Use of XMLField has been deprecated; please use TextField instead.",
+                      DeprecationWarning)
         self.schema_path = schema_path
         Field.__init__(self, verbose_name, name, **kwargs)
 

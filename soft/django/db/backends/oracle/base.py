@@ -72,7 +72,11 @@ class DatabaseFeatures(BaseDatabaseFeatures):
     uses_savepoints = True
     can_return_id_from_insert = True
     allow_sliced_subqueries = False
-
+    supports_subqueries_in_group_by = False
+    supports_timezones = False
+    supports_bitwise_or = False
+    can_defer_constraint_checks = True
+    ignores_nulls_in_unique_constraints = False
 
 class DatabaseOperations(BaseDatabaseOperations):
     compiler_module = "django.db.backends.oracle.compiler"
@@ -114,6 +118,20 @@ WHEN (new.%(col_name)s IS NULL)
             return "TO_CHAR(%s, 'D')" % field_name
         else:
             return "EXTRACT(%s FROM %s)" % (lookup_type, field_name)
+
+    def date_interval_sql(self, sql, connector, timedelta):
+        """
+        Implements the interval functionality for expressions
+        format for Oracle:
+        (datefield + INTERVAL '3 00:03:20.000000' DAY(1) TO SECOND(6))
+        """
+        minutes, seconds = divmod(timedelta.seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        days = str(timedelta.days)
+        day_precision = len(days)
+        fmt = "(%s %s INTERVAL '%s %02d:%02d:%02d.%06d' DAY(%d) TO SECOND(6))"
+        return fmt % (sql, connector, days, hours, minutes, seconds,
+                timedelta.microseconds, day_precision)
 
     def date_trunc_sql(self, lookup_type, field_name):
         # Oracle uses TRUNC() for both dates and numbers.
@@ -311,11 +329,24 @@ WHEN (new.%(col_name)s IS NULL)
         return "%sTABLESPACE %s" % ((inline and "USING INDEX " or ""),
             self.quote_name(tablespace))
 
+    def value_to_db_datetime(self, value):
+        # Oracle doesn't support tz-aware datetimes
+        if getattr(value, 'tzinfo', None) is not None:
+            raise ValueError("Oracle backend does not support timezone-aware datetimes.")
+
+        return super(DatabaseOperations, self).value_to_db_datetime(value)
+
     def value_to_db_time(self, value):
         if value is None:
             return None
+
         if isinstance(value, basestring):
             return datetime.datetime(*(time.strptime(value, '%H:%M:%S')[:6]))
+
+        # Oracle doesn't support tz-aware datetimes
+        if value.tzinfo is not None:
+            raise ValueError("Oracle backend does not support timezone-aware datetimes.")
+
         return datetime.datetime(1900, 1, 1, value.hour, value.minute,
                                  value.second, value.microsecond)
 
@@ -349,7 +380,7 @@ class _UninitializedOperatorsDescriptor(object):
 
 
 class DatabaseWrapper(BaseDatabaseWrapper):
-
+    vendor = 'oracle'
     operators = _UninitializedOperatorsDescriptor()
 
     _standard_operators = {
@@ -381,7 +412,9 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         super(DatabaseWrapper, self).__init__(*args, **kwargs)
 
         self.oracle_version = None
-        self.features = DatabaseFeatures()
+        self.features = DatabaseFeatures(self)
+        use_returning_into = self.settings_dict["OPTIONS"].get('use_returning_into', True)
+        self.features.can_return_id_from_insert = use_returning_into
         self.ops = DatabaseOperations()
         self.client = DatabaseClient(self)
         self.creation = DatabaseCreation(self)
@@ -408,7 +441,10 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         cursor = None
         if not self._valid_connection():
             conn_string = convert_unicode(self._connect_string())
-            self.connection = Database.connect(conn_string, **self.settings_dict['OPTIONS'])
+            conn_params = self.settings_dict['OPTIONS'].copy()
+            if 'use_returning_into' in conn_params:
+                del conn_params['use_returning_into']
+            self.connection = Database.connect(conn_string, **conn_params)
             cursor = FormatStylePlaceholderCursor(self.connection)
             # Set oracle date to ansi date format.  This only needs to execute
             # once when we create a new connection. We also set the Territory

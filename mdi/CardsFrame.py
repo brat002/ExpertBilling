@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
 
 from ebsWindow import ebsTableWindow
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders, dateDelim
 from time import mktime
 from CustomForms import ComboBoxDialog, CardPreviewDialog
@@ -219,22 +219,19 @@ class SaleCards(QtGui.QDialog):
             f.write("<xml>")
             for x in xrange(self.tableWidget.rowCount()):
                 #card = unicode(self.tableWidget.item(x,0).text())
-                card = self.connection.sql("""SELECT card.*, tarif.name as tarif_name FROM billservice_card as card
-                LEFT JOIN billservice_tariff as tarif ON tarif.id = card.tarif_id
-                WHERE card.id=%s
-                """ % unicode(self.tableWidget.item(x,0).text()))[0]
+                card = self.connection.get_cards(id= unicode(self.tableWidget.item(x,0).text()))[0]
                 self.connection.commit()
                 print card.tarif_name
                 f.write("<card>")
                 f.write("<id>%s</id>" % card.id)
                 #f.write(u"<tarif>"+unicode(card.tarif_name)+"</tarif>")
-                f.write(u"<tarif>%s</tarif>" % card.tarif_name)
+                f.write(u"<tarif>%s</tarif>" % card.tarif)
                 f.write(u"<series>%s</series>" % card.series)
                 f.write(u"<nominal>%s</nominal>" % card.nominal)
                 f.write(u"<pin>%s</pin>" % card.pin)
                 f.write(u"<login>%s</login>" % card.login)
-                f.write(u"<template>%s</template>" % card.template_id)
-                f.write(u"<nas>%s</nas>" % card.nas_id)
+                f.write(u"<template>%s</template>" % card.template)
+                f.write(u"<nas>%s</nas>" % card.nas)
                 f.write(u"<ip>%s</ip>" % card.ip)
                 f.write(u"<date_start>%s</date_start>" % card.start_date)
                 f.write(u"<date_end>%s</date_end>" % card.end_date)
@@ -255,7 +252,7 @@ class SaleCards(QtGui.QDialog):
             crd = "(0)" 
         
         cards = self.connection.get_notsold_cards(self.cards)
-        templates = self.connection.get_models("billservice_template")
+        templates = self.connection.get_templates()
         t={}
         #print templates
         for templ in templates:
@@ -273,7 +270,7 @@ class SaleCards(QtGui.QDialog):
         """; 
         
         try:
-            operator =self.connection.get_operator()[0]
+            operator =self.connection.get_operator()
             
         except Exception, e:
             print e
@@ -306,11 +303,11 @@ class SaleCards(QtGui.QDialog):
         dealer_id = self.comboBox_dealer.itemData(self.comboBox_dealer.currentIndex()).toInt()[0]
 
         cards = self.connection.get_notsold_cards(self.cards)
-        operator = self.connection.get_operator_info()
+        operator = self.connection.get_operator()
         
-        dealer = self.connection.get_dealer_info(dealer_id)
+        dealer = self.connection.get_dealers(dealer_id)
 
-        template = self.connection.get('SELECT body FROM billservice_template WHERE type_id=6')
+        template = self.connection.get_templates(type_id=6)
         self.connection.commit()
         
         templ = Template(unicode(template.body), input_encoding='utf-8')
@@ -346,14 +343,14 @@ class SaleCards(QtGui.QDialog):
         
     def fixtures(self):
         self.lineEdit_count_cards.setText(unicode(len(self.cards)))
-        dealers = self.connection.get_models(table="billservice_dealer", where={'deleted':False})
+        dealers = self.connection.get_dealers()
         self.connection.commit()
         i=0
         for dealer in dealers:
             self.comboBox_dealer.addItem(unicode(u"%s, %s" % (dealer.organization, dealer.contactperson)))
             self.comboBox_dealer.setItemData(i, QtCore.QVariant(dealer.id))
             if self.model:
-                if self.model.daler_id==dealer.id:
+                if self.model.daler==dealer.id:
                     self.model_dealer = dealer
                     self.comboBox_dealer.setCurrentIndex(i)
                     self.comboBox_dealer.setDisabled(True)
@@ -362,12 +359,12 @@ class SaleCards(QtGui.QDialog):
     def dealerInfo(self, index):
         id = self.comboBox_dealer.itemData(index).toInt()[0]
         #print id
-        dealer = self.connection.get_models(table="billservice_dealer", where={'deleted':False, 'id':id})[0]
+        dealer = self.connection.get_dealers(id=id)
         self.connection.commit()
         self.model_dealer = dealer
-        self.spinBox_discount.setValue(dealer.discount)
-        self.spinBox_paydeffer.setValue(dealer.paydeffer)
-        self.spinBox_prepay.setValue(dealer.prepayment)
+        self.spinBox_discount.setValue(float(dealer.discount))
+        self.spinBox_paydeffer.setValue(float(dealer.paydeffer))
+        self.spinBox_prepay.setValue(float(dealer.prepayment))
         self.recalculateAmount()
         #self.
         
@@ -376,20 +373,21 @@ class SaleCards(QtGui.QDialog):
             return
     
         try:
-            model = Object()
+            model = AttrDict()
             now = datetime.datetime.now()
-            model.dealer_id = self.comboBox_dealer.itemData(self.comboBox_dealer.currentIndex()).toInt()[0]
+            model.dealer = self.comboBox_dealer.itemData(self.comboBox_dealer.currentIndex()).toInt()[0]
             #model.pay = 
             model.sum_for_pay = unicode(self.lineEdit_for_pay.text())
             model.paydeffer = self.spinBox_paydeffer.value()
             model.discount = self.spinBox_discount.value()
             model.discount_sum = unicode(self.lineEdit_discount_amount.text())
             model.prepayment = unicode(self.spinBox_prepay.value())
-            model.created = now 
+            #model.created = now.strftime(strftimeFormat)
             
             #print model.save("billservice_salecard")
+            res = None
             try:
-                model.id = self.connection.save(model,"billservice_salecard")
+                res = self.connection.salecards_save(model, cards=[self.tableWidget.item(x,0).text().toInt()[0] for x in xrange(self.tableWidget.rowCount())])
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -398,24 +396,13 @@ class SaleCards(QtGui.QDialog):
             
             if float(unicode(self.lineEdit_pay.text()))>0:
                 if QtGui.QMessageBox.question(self, u"Зачислить сумму на счёт?" , u'''Произвести запись оплаты за эту партию карт?''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-                    pay = Object()
-                    pay.dealer_id = model.dealer_id
-                    pay.salecard_id = model.id
+                    pay = AttrDict()
+                    pay.dealer = model.dealer
+                    pay.salecard = model.id
                     pay.pay = unicode(self.lineEdit_pay.text() or 0)
                     pay.created = now
-                    self.connection.save(pay,"billservice_dealerpay")
-            #print [self.tableWidget.item(x,0).text().toInt()[0] for x in xrange(self.tableWidget.rowCount())]
-            #self.connection.rollback()
-            #return
-            for card_id in [self.tableWidget.item(x,0).text().toInt()[0] for x in xrange(self.tableWidget.rowCount())]:
-                salecard = Object()
-                salecard.card_id = card_id
-                salecard.salecard_id = model.id
-                card = Object()
-                card.id = card_id
-                card.sold = now
-                self.connection.save(salecard,"billservice_salecard_cards")
-                self.connection.save(card,"billservice_card")
+                    self.connection.add_dealerpay(pay)
+
     
                 
             self.connection.commit()
@@ -424,7 +411,9 @@ class SaleCards(QtGui.QDialog):
             self.connection.rollback()
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"К сожалению, произошла непредвиденная ошибка. Отмена продажи."))
             return 
-        QtGui.QDialog.accept(self)
+       
+        if res:
+            QtGui.QDialog.accept(self)
             
     
     def addrow(self, value, x, y):
@@ -465,7 +454,7 @@ class SaleCards(QtGui.QDialog):
             self.addrow(a.pin, i,3)
             self.addrow(a.start_date.strftime(strftimeFormat), i,4)
             self.addrow(a.end_date.strftime(strftimeFormat), i,5)
-            nominal += a.nominal
+            nominal += float(a.nominal)
             i+=1
             
         self.lineEdit_count_cards.setText(unicode(len(cards)))
@@ -484,8 +473,8 @@ class AddCards(QtGui.QDialog):
         self.connection = connection
         self.last_series=last_series
         self.connection.commit()
-        self.op_model   = Object()
-        self.bank_model = Object()
+        self.op_model   = AttrDict()
+        self.bank_model = AttrDict()
         self.resize(573, 475)
         self.gridLayout = QtGui.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
@@ -803,37 +792,36 @@ class AddCards(QtGui.QDialog):
             if bad>=1000:
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Было сгенерировано только %s карт.\nРасширьте условия генерации для уменьшения количества дублирующихся логинов." % i))
                 return   
-            model = Object()
-            #print x
-            #model.card_group_id = self.group
+            model = AttrDict()
+
             model.series = unicode(self.series_spinBox.text())
             model.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
             model.type = 0
             if self.radioButton_access.isChecked()==True:
                 model.login = "%s%s" % (model.series, GenPasswd2(length=randint(self.spinBox_login_from.value(), self.spinBox_login_to.value())-1,chars=login_mask))
-                model.tarif_id = tarif_id
-                model.ippool_id = pool_id
-                model.nas_id = nas_id
+                model.tarif = tarif_id
+                model.ippool = pool_id
+                model.nas = nas_id
                 model.type = 2
             if self.radioButton_hotspot.isChecked():
                 model.login = "%s%s" % (model.series, GenPasswd2(length=randint(self.spinBox_login_from.value(), self.spinBox_login_to.value())-1,chars=login_mask))
-                model.tarif_id = tarif_id
+                model.tarif = tarif_id
                 model.type = 1
                 model.ippool_id = pool_id or None
             if self.radioButton_phone.isChecked():
                 model.login = "%s%s" % (model.series, GenPasswd2(length=randint(self.spinBox_login_from.value(), self.spinBox_login_to.value())-1,chars=login_mask))
-                model.tarif_id = tarif_id
+                model.tarif = tarif_id
                 model.type = 3
                 
             model.nominal = unicode(self.spinBox_nominal.value())
             model.start_date = self.start_dateTimeEdit.currentDate()
             model.end_date = self.end_dateTimeEdit.currentDate()
-            model.template_id = template_id
+            model.template = template_id
             
             model.created = dnow
 
             try:
-                self.connection.save(model,"billservice_card")
+                self.connection.cards_save(model)
                 self.connection.commit()
                 i+=1
             except:
@@ -852,7 +840,7 @@ class AddCards(QtGui.QDialog):
     def fixtures(self):
         start=datetime.datetime.now()
         #end=datetime.datetime.now()
-        self.last_series = self.connection.get_next_cardseries()
+        self.last_series = self.connection.get_next_cardseries()[0]
         self.series_spinBox.setValue(self.last_series)
         self.start_dateTimeEdit.setMinimumDate(start)
         self.end_dateTimeEdit.setMinimumDate(start)
@@ -862,8 +850,8 @@ class AddCards(QtGui.QDialog):
         
 
             
-        tarifs = self.connection.get_models("billservice_tariff", where={'deleted':False,})
-        tarifs = self.connection.sql("SELECT id, name FROM billservice_tariff as tariff WHERE deleted=False and access_parameters_id not in (SELECT id FROM billservice_accessparameters WHERE access_type in ('IPN','lISG','DHCP'))")
+        tarifs = self.connection.get_tariffs(fields=['id', 'name'])
+        #???TODOtarifs = self.connection.sql("SELECT id, name FROM billservice_tariff as tariff WHERE deleted=False and access_parameters_id not in (SELECT id FROM billservice_accessparameters WHERE access_type in ('IPN','lISG','DHCP'))")
         self.connection.commit()
         self.comboBox_tarif.clear()
         i=0
@@ -873,7 +861,7 @@ class AddCards(QtGui.QDialog):
             self.comboBox_tarif.setItemData(i, QtCore.QVariant(tarif.id))
             i+=1
             
-        templates = self.connection.sql("SELECT id,name FROM billservice_template WHERE type_id=7 ORDER BY name ASC")
+        templates = self.connection.get_templates( type_id=7, fields=['id', 'name'])
         self.connection.commit()
         i=0
         for templ in templates:
@@ -881,17 +869,17 @@ class AddCards(QtGui.QDialog):
             self.comboBox_templates.setItemData(i, QtCore.QVariant(templ.id))
             i+=1
 
-        pools = self.connection.sql("SELECT id,name FROM billservice_ippool WHERE type=0 ORDER BY name ASC")
+        pools = self.connection.get_ippools(fields=['id', 'name'])
         self.connection.commit()
         i=0
-        self.comboBox_ippool.addItem('---',QtCore.QVariant(0))
+        self.comboBox_ippool.addItem('---',QtCore.QVariant(None))
         for pool in pools:
             self.comboBox_ippool.addItem(pool.name, QtCore.QVariant(pool.id))
             i+=1
             
-        nasses = self.connection.sql("SELECT id,name FROM nas_nas ORDER BY name ASC")
+        nasses = self.connection.get_nasses(fields=['id', 'name'])
         self.connection.commit()
-        self.comboBox_nas.addItem(u"--Не указан--", QtCore.QVariant(0))
+        self.comboBox_nas.addItem(u"--Не указан--", QtCore.QVariant(None))
         i=1
         for nas in nasses:
             self.comboBox_nas.addItem(nas.name)
@@ -900,7 +888,7 @@ class AddCards(QtGui.QDialog):
             
     def preView(self):
         try:
-            operator =self.connection.get_operator()[0]
+            operator =self.connection.get_operator()
             
         except Exception, e:
             print e
@@ -908,7 +896,7 @@ class AddCards(QtGui.QDialog):
             return
 
         try:
-            bank =self.connection.get_bank_for_operator(operator.id)
+            bank =self.connection.get_banks(operator.bank)
         except Exception, e:
             print e
             QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
@@ -929,9 +917,9 @@ class AddCards(QtGui.QDialog):
             login_mask+=string.letters
         if self.numbers_checkBox_login.checkState()==2:
             login_mask+=string.digits
-        card = Object()
+        card = AttrDict()
         card.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
-        card.login = GenPasswd2(length=self.spinBox_login.text().toInt()[0],chars=login_mask)
+        card.login = GenPasswd2(length=self.spinBox_login_from.text().toInt()[0],chars=login_mask)
         card.nominal = unicode(self.spinBox_nominal.text())
         card.start_date = self.start_dateTimeEdit.currentDate()
         card.end_date = self.end_dateTimeEdit.currentDate()
@@ -950,7 +938,7 @@ class AddCards(QtGui.QDialog):
         #print "====", self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0]
 
         
-        template = self.connection.get_model(self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0], "billservice_template")
+        template = self.connection.get_templates(self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0], "billservice_template")
         #print template.body
         templ = Template(template.body, input_encoding='utf-8')
         data+=templ.render_unicode(connection=self.connection, card=card, operator=operator, bank=bank)
@@ -1040,8 +1028,8 @@ class CardsChildEbs(ebsTableWindow):
         self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar_filter)
         self.insertToolBarBreak(self.toolBar_filter)
 
-        actList=[("actionGenerate_Cards", "Сгенерировать", "images/add.png", self.generateCards), ("actionDelete_Cards", "Удалить карты", "images/del.png", self.deleteCards), ("actionEnable_Card", "Активна", "images/enable.png", self.enableCard), ("actionDisable_Card", "Неактивна", "images/disable.png", self.disableCard), ("actionSell_Card", "Продать", "images/dollar.png", self.saleCard), ("actionExportXml", "Выгрузить выделенные в xml", "images/fileexport.png", self.export_cards)]
-        objDict = {self.tableWidget:["actionDelete_Cards", "actionEnable_Card", "actionDisable_Card"], self.toolBar:["actionGenerate_Cards", "actionDelete_Cards", "actionEnable_Card", "actionDisable_Card", "actionSell_Card", "actionExportXml"]}
+        actList=[("actionGenerate_Cards", "Сгенерировать", "images/add.png", self.generateCards), ("actionDelete_Cards", "Удалить карты", "images/del.png", self.deleteCards), ("actionEnable_Card", "Активна", "images/enable.png", self.enableCard), ("actionDisable_Card", "Неактивна", "images/disable.png", self.disableCard), ("actionSell_Card", "Продать", "images/dollar.png", self.saleCard), ("actionExportXml", "Выгрузить выделенные в xml", "images/fileexport.png", self.export_cards),  ("actionRefresh", "Обновить", "images/reload.png", self.refr)]
+        objDict = {self.tableWidget:['actionRefresh', "actionDelete_Cards", "actionEnable_Card", "actionDisable_Card"], self.toolBar:['actionRefresh', "actionGenerate_Cards", "actionDelete_Cards", "actionEnable_Card", "actionDisable_Card", "actionSell_Card", "actionExportXml"]}
         self.actionCreator(actList, objDict)
         
     def ebsPostInit(self, initargs):
@@ -1086,7 +1074,7 @@ class CardsChildEbs(ebsTableWindow):
         
         child = SaleCards(connection=self.connection, cards = cards)
         if child.exec_()==1:
-            self.refresh()
+            self.refr()
         
     def export_cards(self):
         ids=self.get_selected_ids(self.tableWidget)
@@ -1114,22 +1102,19 @@ class CardsChildEbs(ebsTableWindow):
             f.write("<xml>")
             for x in ids:
                 #card = unicode(self.tableWidget.item(x,0).text())
-                card = self.connection.get("""SELECT card.*, tarif.name as tarif_name FROM billservice_card as card
-                LEFT JOIN billservice_tariff as tarif ON tarif.id = card.tarif_id
-                WHERE card.id=%s
-                """ % x)
+                card = self.connection.get_cards(id=x)
                 self.connection.commit()
                 #print x,card
                 f.write("<card>")
                 f.write("<id>%s</id>" % card.id)
                 #f.write(u"<tarif>"+unicode(card.tarif_name)+"</tarif>")
-                f.write(u"<tarif>%s</tarif>" % card.tarif_name)
+                f.write(u"<tarif>%s</tarif>" % card.tarif)
                 f.write(u"<series>%s</series>" % card.series)
                 f.write(u"<nominal>%s</nominal>" % card.nominal)
                 f.write(u"<pin>%s</pin>" % card.pin)
                 f.write(u"<login>%s</login>" % card.login)
-                f.write(u"<template>%s</template>" % card.template_id)
-                f.write(u"<nas>%s</nas>" % card.nas_id)
+                f.write(u"<template>%s</template>" % card.template)
+                f.write(u"<nas>%s</nas>" % card.nas)
                 f.write(u"<ip>%s</ip>" % card.ip)
                 f.write(u"<date_start>%s</date_start>" % card.start_date)
                 f.write(u"<date_end>%s</date_end>" % card.end_date)
@@ -1144,7 +1129,7 @@ class CardsChildEbs(ebsTableWindow):
         self.connection.commit()
         self.comboBox_nominal.clear()
         for nom in nominals:            
-            self.comboBox_nominal.addItem(unicode(nom.nominal))
+            self.comboBox_nominal.addItem(unicode(nom[0]))
             
     def filterActions(self):
         if self.checkBox_filter.checkState()==2:
@@ -1170,43 +1155,26 @@ class CardsChildEbs(ebsTableWindow):
             #self.refresh()
             
     def enableCard(self):
+        ids = []
         for index in self.tableWidget.selectedIndexes():
-            if index.column()>1:
+            if index.column()>=1:
                 continue
-            i=unicode(self.tableWidget.item(index.row(), 0).text())
-            #print i
-            try:
-                #ids.append()
-                model=self.connection.get_model(int(i),"billservice_card")
-                model.disabled=False
-                self.connection.save(model,"billservice_card")
-                self.connection.commit()
- 
-            except Exception, e:
-                pass   
+            ids.append(unicode(self.tableWidget.item(index.row(), 0).text()))
+
+        self.connection.set_cardsstatus(ids, status=False)
         
-        self.refresh()
+        self.refr()
     
     def disableCard(self):
-        ids=[]
+        ids = []
         for index in self.tableWidget.selectedIndexes():
-            #print index.column()
-            if index.column()>1:
+            if index.column()>=1:
                 continue
-            i=unicode(self.tableWidget.item(index.row(), 0).text())
-            #print i
-            
-            try:
-                #ids.append()
-                model=self.connection.get_model(int(i),"billservice_card")
-                model.disabled=True
-                self.connection.save(model,"billservice_card")
-                self.connection.commit()
+            ids.append(unicode(self.tableWidget.item(index.row(), 0).text()))
 
-            except Exception, e:
-                pass        
+        self.connection.set_cardsstatus(ids, status=True)
         
-        self.refresh()
+        self.refr()
         
     def deleteCards(self):
         """
@@ -1214,28 +1182,30 @@ class CardsChildEbs(ebsTableWindow):
         ids=[]
         for index in self.tableWidget.selectedIndexes():
             #print index.column()
-            if index.column()>1:
+            if index.column()>=1:
                 continue
             i=unicode(self.tableWidget.item(index.row(), 0).text())
             #print i
             
             try:
                 #ids.append()
-                self.connection.delete_card(i)
+                self.connection.cards_delete(i)
             except Exception, e:
                 pass  
             
         self.connection.commit()    
-        self.refresh()     
+        self.refr()     
 
     def generateCards(self):
 
         #print model.id
         
-        last_series = self.connection.get_next_cardseries()
+        last_series = self.connection.get_next_cardseries()[0]
+        
+        print "last_series", last_series
         child=AddCards(connection=self.connection, last_series=last_series)
         if child.exec_()==1:
-            self.refresh()
+            self.refr()
             self.fixtures()
         
         
@@ -1281,12 +1251,12 @@ class CardsChildEbs(ebsTableWindow):
         self.connection.commit()
         nodes=nodes.toList()
         #print nodes
-        tariffs = self.connection.get_models("billservice_tariff",fields=['id', 'name'])
+        tariffs = self.connection.get_tariffs(fields=['id', 'name'])
         t={}
         for tar in tariffs:
             t['%s' % tar.id] = tar.name
 
-        nasses = self.connection.get_models("nas_nas",fields=['id','name'])
+        nasses = self.connection.get_nasses(fields=['id','name'])
         n = {}
         for nas in nasses:
             n['%s' % nas.id] = nas.name

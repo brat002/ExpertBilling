@@ -4,7 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 import IPy
 from helpers import tableFormat
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import HeaderUtil
 
@@ -114,7 +114,7 @@ class AddPoolFrame(QtGui.QDialog):
         self.comboBox_type.addItem("IPv6 IPN")
         self.comboBox_type.setItemData(3, QtCore.QVariant(3))
 
-        items = self.connection.get_models("billservice_ippool",fields=['id','name'])
+        items = self.connection.get_ippools(fields=['id','name'])
         self.connection.commit()
         i=0
         self.comboBox_next_pool_id.clear()
@@ -122,11 +122,11 @@ class AddPoolFrame(QtGui.QDialog):
         self.comboBox_next_pool_id.setItemData(i, QtCore.QVariant(0))
         for item in items:
             if self.model and item.id==self.model.id:continue
-                
+            
             self.comboBox_next_pool_id.addItem(item.name)
             self.comboBox_next_pool_id.setItemData(i+1, QtCore.QVariant(item.id))
             if self.model:
-                if item.id==self.model.next_ippool_id:
+                if item.id==self.model.next_ippool:
                     self.comboBox_next_pool_id.setCurrentIndex(i+1)
             
             i+=1
@@ -145,7 +145,7 @@ class AddPoolFrame(QtGui.QDialog):
         if self.model:
             model = self.model
         else:
-            model = Object()
+            model = AttrDict()
             
         
         model.name = unicode(self.lineEdit_name.text())
@@ -173,10 +173,10 @@ class AddPoolFrame(QtGui.QDialog):
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Конечный IP адрес должен быть больше первого и не равен ему"))
             return
         
-        pools = self.connection.get_models("billservice_ippool")
+        pools = self.connection.get_ippools()
         self.connection.commit()
         for pool in pools:
-            if model.isnull('id')==False:
+            if 'id' in model:
                 if model.id==pool.id:continue
             if not (IPy.IP(pool.end_ip)<IPy.IP(model.start_ip) or (IPy.IP(model.end_ip)<IPy.IP(pool.start_ip))):
                 QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Новый диапазон уже входит в пул адресов %s" % pool.name))
@@ -184,7 +184,7 @@ class AddPoolFrame(QtGui.QDialog):
         
         model.next_ippool_id = self.comboBox_next_pool_id.itemData(self.comboBox_next_pool_id.currentIndex()).toInt()[0]         
         try:
-            self.connection.save(model, "billservice_ippool")
+            self.connection.ippool_save(model)
             self.connection.commit()
         except:
             self.connection.rollback()
@@ -240,14 +240,14 @@ class PoolEbs(ebsTableWindow):
     def delete(self):
         id=self.getSelectedId()
         if (QtGui.QMessageBox.question(self, u"Удалить пул?" , u'''Внимание! Во избежание удаления пользовательских аккаунтов, удостоверьтесь, что пользователи не используют IP адреса из этого пула.''', QtGui.QMessageBox.Yes|QtGui.QMessageBox.No, QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes):
-            self.connection.iddelete(id, 'billservice_ippool')
+            self.connection.ippool_delete(id)
             self.connection.commit()
             self.refresh()
     
         
     def editframe(self):
         try:
-            model=self.connection.get_model(self.getSelectedId(), "billservice_ippool")
+            model=self.connection.get_ippools(self.getSelectedId())
         except:
             model=None
 

@@ -21,26 +21,6 @@ from json import JSONDecoder
 import datetime
 
 from db import AttrDict
-    #===========================================================================
-    # def __iter__(self):
-    #    for key in self.__dict__:
-    #        print 123
-    #        yield self.__dict__[key]
-    #===========================================================================
-    
-def dict_to_object( d): 
-    if '__type__' not in d:
-        return d
-
-    type = d.pop('__type__')
-    if type == 'datetime':
-        return datetime(**d)
-    else:
-        # Oops... better put this back together.
-        d['__type__'] = type
-        return d
-        
-
 
 
 class HttpBot(object):
@@ -182,12 +162,32 @@ class HttpBot(object):
             return
         return self.postprocess(d, id)
     
+    def get_timeperiods(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/timeperiods/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_timenodes(self,id=None, period_id=None, fields=[]):
+        url='http://%s/ebsadmin/timeperiodnodes/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'period_id':period_id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d,id)
+    
     def get_accounttariffs(self,account_id=None, fields=[]):
         url='http://%s/ebsadmin/accounttariffs/' % self.host 
         
         d = self.POST(url,{ 'account_id':account_id})
-        #print d
-        return d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
 
     def postprocess(self,response, id=None):
         if id:
@@ -206,8 +206,17 @@ class HttpBot(object):
         #print d
         return self.postprocess(d, id)
     
-    def get_templates(self,id=None, fields=[]):
+    def get_templates(self,id=None, type_id=None, fields=[]):
         url='http://%s/ebsadmin/templates/' % self.host 
+        
+        d = self.POST(url,{'id':id,  'fields':fields, 'type_id':type_id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_tariff_for_account(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/tariffforaccount/' % self.host 
         
         d = self.POST(url,{'id':id,  'fields':fields})
         if not d.status:
@@ -215,32 +224,140 @@ class HttpBot(object):
             return
         return self.postprocess(d, id)
     
+    def get_cards(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/cards/' % self.host 
+        
+        d = self.POST(url,{'id':id,  'fields':fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+
+    def get_model(self, id, table, fields=[], where={}):
+        url='http://%s/ebsadmin/api/getmodel/' % self.host 
+        
+        d = self.POST(url,{'data':json.dumps({'id':id,  'table':fields, 'fields': fields, 'where':where})})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_models(self, table, fields=[], where={}, order = {'id':'ASC',}):
+        url='http://%s/ebsadmin/api/getmodels/' % self.host 
+        
+        d = self.POST(url,{'data':json.dumps({'order':order,  'table':fields, 'fields': fields, 'where':where})})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
+    
+    def cards_save(self,model):
+        url='http://%s/ebsadmin/cards/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+
+    def cards_delete(self,id):
+        url='http://%s/ebsadmin/cards/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def set_cardsstatus(self, ids=[], status=True):
+        url='http://%s/ebsadmin/cards/status/set/' % self.host 
+        
+        d = self.POST(url,{'data':json.dumps({'ids':ids, 'status':status})})
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
     def get_subaccounts(self, id='', account_id='', fields=[], normal_fields=True):
         url='http://%s/ebsadmin/subaccounts/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id, 'normal_fields':normal_fields})
-        print 'data====', d
-        return d
-    def get_accountaddonservices(self, id=None, account_id=None, subaccount_id=None, fields=[]):
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_accountaddonservices(self, id=None, account_id=None, subaccount_id=None, normal_fields = False, fields=[]):
         url='http://%s/ebsadmin/accountaddonservices/' % self.host 
         
-        d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id, 'subaccount_id':subaccount_id})
-        print 'data====', d
-        return d   
+        d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id, 'subaccount_id':subaccount_id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
         
-    def get_accounthardware(self, id=None, account_id=None, fields=[]):
+    def get_accounthardware(self, id=None, account_id=None, hardware_id=None, fields=[]):
         url='http://%s/ebsadmin/accounthardware/' % self.host 
         
-        d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id})
-        print 'data====', d
-        return d   
+        d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id, 'hardware_id':hardware_id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
     
-    def get_account(self, id=None, fields=[]):
+    def accounthardware_save(self,model):
+        url='http://%s/ebsadmin/accounthardware/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def accounthardware_delete(self,id):
+        url='http://%s/ebsadmin/accounthardware/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def get_news(self, id=None, fields=[]):
+        url='http://%s/ebsadmin/news/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, })
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def news_save(self,model, accounts=[]):
+        url='http://%s/ebsadmin/news/set/' % self.host 
+        
+        d = self.POST(url,{'data':json.dumps({'model':model, 'accounts':accounts}, ensure_ascii=False)})
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def news_delete(self,id):
+        url='http://%s/ebsadmin/news/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def get_account(self, id=None, fields=[], limit=1):
         url='http://%s/ebsadmin/account/' % self.host 
         
-        d = self.POST(url,{'fields':fields, 'id':id})
-        print 'data====', d
-        return d
+        d = self.POST(url,{'data':json.dumps({'fields':fields, 'id':id, 'limit':limit})})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
             
     def account_ipn_for_vpn(self, id):
         url='http://%s/ebsadmin/account/ipnforvpn/' % self.host 
@@ -248,6 +365,16 @@ class HttpBot(object):
         d = self.POST(url,{'id':id})
         #print d
         return d
+    
+    def pod(self, session, id):
+        url='http://%s/ebsadmin/sessions/reset/' % self.host 
+        
+        d = self.POST(url,{'id':id, 'sessionod':sessionid})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+
     
     def change_tarif(self, ids,tarif,date):
         url='http://%s/ebsadmin/accounttariffs/bathset/' % self.host 
@@ -314,14 +441,88 @@ class HttpBot(object):
         url='http://%s/ebsadmin/transactiontypes/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+      
+    def get_transaction(self,id=None, normal_fields = False, limit=1, fields=[]):
+        url='http://%s/ebsadmin/transaction/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'normal_fields':normal_fields, 'limit':limit})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def transactiontypes_save(self, model):
+        url='http://%s/ebsadmin/transactiontypes/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
         #print d
         return d
-      
+
+    def timeperiod_save(self, model):
+        url='http://%s/ebsadmin/timeperiods/save/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def timeperiod_delete(self,id):
+        url='http://%s/ebsadmin/timeperiods/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def timeperiodnode_save(self, model):
+        url='http://%s/ebsadmin/timeperiodnodes/save/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+   
+    def timeperiodnode_delete(self,id):
+        url='http://%s/ebsadmin/timeperiodnodes/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+
+    def timeperiodnode_m2m_save(self, model):
+        url='http://%s/ebsadmin/timeperiodnodes/m2m/save/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+
+    def timeperiodnodes_m2m_delete(self, period_id, node_id):
+        url='http://%s/ebsadmin/timeperiodnodes/m2m/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'period_id':period_id, 'node_id':node_id})
+        if not d.status:
+            self.error(d)
+            return
+        return d    
+
     def settlementperiod_save(self, model):
         url='http://%s/ebsadmin/settlementperiods/save/' % self.host 
         #print model
         d = self.POST(url,model)
-        #print d
+        if not d.status:
+            self.error(d)
+            return
         return d
     
     def commit(self):
@@ -342,7 +543,9 @@ class HttpBot(object):
         url='http://%s/ebsadmin/settlementperiods/delete/' % self.host 
         #print model
         d = self.POST(url,{'id':id})
-        #print d
+        if not d.status:
+            self.error(d)
+            return
         return d
 
     def get_organizations(self,id=None, account_id=None, fields=[]):
@@ -356,28 +559,198 @@ class HttpBot(object):
         url='http://%s/ebsadmin/banks/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id})
-        #print d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def banks_save(self,model):
+        url='http://%s/ebsadmin/banks/set/' % self.host 
+
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def get_sessions(self,  id=None, account_id=None, date_start='', date_end='', only_active=True,  fields=[]):
+        url='http://%s/ebsadmin/sessions/' % self.host 
+        print 'acc_id', account_id
+        d = self.POST(url,{'fields':fields, 'id':id, 'account':account_id, 'date_start':date_start, 'date_end':date_end, 'only_active':only_active})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_salecards(self,id=None, dealer_id=None, fields=[]):
+        url='http://%s/ebsadmin/salecards/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'dealer_id':dealer_id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+
+    def get_dealerpays(self,id=None, dealer_id=None, fields=[]):
+        url='http://%s/ebsadmin/dealerpays/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'dealer_id':dealer_id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def add_dealerpay(self,model):
+        url='http://%s/ebsadmin/dealerpays/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+ 
+    def return_cards(self, dealer_id, cards=[]):
+        url='http://%s/ebsadmin/returncards/' % self.host 
+        
+        d = self.POST(url,{'data':json.dumps({'dealer_id':dealer_id, 'cards':cards})})
+        if not d.status:
+            self.error(d)
+            return
+        return True
+       
+    def salecards_save(self,model, cards=[]):
+        url='http://%s/ebsadmin/salecards/set/' % self.host 
+        
+        d = self.POST(url,{'data':json.dumps({'model':model, 'cards':cards})})
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def salecards_delete(self,id):
+        url='http://%s/ebsadmin/salecards/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
         return d
     
     def get_cities(self,id=None, fields=[]):
         url='http://%s/ebsadmin/cities/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id})
-        #print d
-        return d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
 
+    def city_save(self,model):
+        url='http://%s/ebsadmin/cities/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def city_delete(self,id):
+        url='http://%s/ebsadmin/cities/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
     def get_streets(self,id=None, city_id=None, fields=[]):
         url='http://%s/ebsadmin/streets/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id, 'city_id':city_id})
-        #print d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def street_save(self, model):
+        url='http://%s/ebsadmin/streets/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def street_delete(self,id):
+        url='http://%s/ebsadmin/streets/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
         return d
     
     def get_houses(self,id=None, street_id=None, fields=[]):
         url='http://%s/ebsadmin/houses/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id, 'street_id':street_id})
-        #print d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_classnodes(self,id=None, traffic_class_id=None, fields=[]):
+        url='http://%s/ebsadmin/trafficclassnodes/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'traffic_class_id':traffic_class_id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+
+    def classnodes_save(self, model):
+        url='http://%s/ebsadmin/trafficclassnodes/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def classnodes_delete(self,id):
+        url='http://%s/ebsadmin/trafficclassnodes/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def house_save(self, model):
+        url='http://%s/ebsadmin/houses/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+
+    def house_delete(self,id):
+        url='http://%s/ebsadmin/houses/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def template_delete(self,id):
+        url='http://%s/ebsadmin/houses/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
         return d
     
     def get_contracttemplates(self,id=None, fields=[]):
@@ -388,6 +761,115 @@ class HttpBot(object):
             self.error(d)
             return
         return self.postprocess(d, id)
+    
+    def get_hardware(self,id=None, model_id=None,  normal_fields=False, fields=[]):
+        url='http://%s/ebsadmin/hardware/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'normal_fields':normal_fields, 'model_id':model_id, })
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+
+    def hardware_save(self,model):
+        url='http://%s/ebsadmin/hardware/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def hardware_delete(self,id):
+        url='http://%s/ebsadmin/hardware/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def get_manufacturers(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/manufacturers/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+
+    def manufacturers_save(self,model):
+        url='http://%s/ebsadmin/manufacturers/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def manufacturers_delete(self,id):
+        url='http://%s/ebsadmin/manufacturers/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    
+    def get_hardwaretypes(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/hardwaretypes/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def hardwaretypes_save(self,model):
+        url='http://%s/ebsadmin/hardwaretypes/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def hardwaretypes_delete(self,id):
+        url='http://%s/ebsadmin/hardwaretypes/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def get_hwmodels(self,id=None, hardwaretype_id=None, manufacturer_id = None, normal_fields=False,  fields=[]):
+        url='http://%s/ebsadmin/hwmodels/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'hardwaretype_id':hardwaretype_id, 'manufacturer_id':manufacturer_id,  'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def hwmodels_save(self,model):
+        url='http://%s/ebsadmin/hwmodels/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def hwmodels_delete(self,id):
+        url='http://%s/ebsadmin/hwmodels/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
     
     def get_tariffs(self,id=None, fields=[], normal_fields=False):
         
@@ -416,6 +898,15 @@ class HttpBot(object):
             return
         return self.postprocess(d, id)
 
+    def accountsfilter(self, sql=None, fields=[]):
+        url='http://%s/ebsadmin/accountsfilter/' % self.host 
+        
+        d = self.POST(url, {'sql': sql})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
+    
     def get_groups(self, id=None, fields=[], normal_fields=False):
         url='http://%s/ebsadmin/groups/' % self.host 
         
@@ -434,7 +925,26 @@ class HttpBot(object):
             self.error(d)
             return
         return self.postprocess(d, id)
+    
 
+    def trafficclasses_save(self, model):
+        url='http://%s/ebsadmin/trafficclasses/set/' % self.host 
+        
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+
+    def trafficclasses_delete(self,id):
+        url='http://%s/ebsadmin/trafficclasses/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
     def get_class_for_group(self, group=None, fields=[]):
         url='http://%s/ebsadmin/classforgroup/' % self.host 
         
@@ -453,10 +963,130 @@ class HttpBot(object):
             return
         return self.postprocess(d, id)
 
-    def get_templates(self,id=None, fields=[], type=None):
-        url='http://%s/ebsadmin/templates/' % self.host 
+    def ippool_save(self,model):
+        url='http://%s/ebsadmin/ippools/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def ippool_delete(self,id):
+        url='http://%s/ebsadmin/ippools/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def get_radiusattrs(self, id=None, tarif_id=None, nas_id=None,fields=[]):
+        url='http://%s/ebsadmin/radiusattrs/' % self.host 
         
-        d = self.POST(url,{'fields':fields, 'id':id, 'type':type})
+        d = self.POST(url,{'fields':fields, 'id':id, 'tarif_id':tarif_id, 'nas_id':nas_id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def get_accountprepaysradiustrafic(self, id=None, fields=[]):
+        url='http://%s/ebsadmin/accountprepaysradiustrafic/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def accountprepaysradiustrafic_save(self,model):
+        url='http://%s/ebsadmin/accountprepaysradiustrafic/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    
+    def get_accountprepaystrafic(self, id=None, fields=[]):
+        url='http://%s/ebsadmin/accountprepaystrafic/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def accountprepaystrafic_save(self,model):
+        url='http://%s/ebsadmin/accountprepaystrafic/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def radiusattrs_save(self,model):
+        url='http://%s/ebsadmin/radiusattrs/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def radiusattrs_delete(self,id):
+        url='http://%s/ebsadmin/radiusattrs/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+
+    
+    def template_save(self,model):
+        url='http://%s/ebsadmin/templates/save/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+
+    def template_delete(self,id):
+        url='http://%s/ebsadmin/templstes/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def get_cards_nominal(self):
+        url='http://%s/ebsadmin/getcardsnominal/' % self.host 
+        
+        d = self.POST(url)
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
+    
+    def get_next_cardseries(self):
+    
+        url='http://%s/ebsadmin/getnextcardseries/' % self.host 
+        
+        d = self.POST(url)
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
+    
+    def get_templatetypes(self,id=None, fields=[]):
+        url='http://%s/ebsadmin/templatetypes/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id})
         if not d.status:
             self.error(d)
             return
@@ -592,13 +1222,50 @@ class HttpBot(object):
         return d
     
     
+    def get_ports_status(self, switch_id):
+        url='http://%s/ebsadmin/getportsstatus/' % self.host 
+        
+        d = self.POST(url,{ 'switch_id':switch_id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def set_portsstatus(self, switch_id):
+        url='http://%s/ebsadmin/setportsstatus/' % self.host 
+        
+        d = self.POST(url,{ 'switch_id':switch_id})
+        if not d.status:
+            self.error(d)
+            return
+        return d
     
     def get_switches(self,id=None, fields=[]):
         url='http://%s/ebsadmin/switches/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id})
-        #print d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def switches_save(self, model):
+        url='http://%s/ebsadmin/switches/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
         return d
+    
+    def switches_delete(self,id):
+        url='http://%s/ebsadmin/switches/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return True
     
     def get_systemusers(self,id=None, fields=[]):
         url='http://%s/ebsadmin/systemusers/' % self.host 
@@ -608,6 +1275,52 @@ class HttpBot(object):
             self.error(d)
             return
         return self.postprocess(d, id)
+    
+
+    def get_tpchangerules(self,id=None, normal_fields=False, fields=[]):
+        url='http://%s/ebsadmin/tpchangerules/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'normal_fields':normal_fields})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def tpchangerules_save(self, model):
+        url='http://%s/ebsadmin/tpchangerules/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def tpchangerules_delete(self,id):
+        url='http://%s/ebsadmin/tpchangerules/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def systemusers_save(self, model):
+        url='http://%s/ebsadmin/systemusers/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return True
+    
+    def systemuser_delete(self,id):
+        url='http://%s/ebsadmin/systemusers/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return True
     
     def get_addonservices(self,id=None, fields=[], normal_fields=True):
         url='http://%s/ebsadmin/addonservices/' % self.host 
@@ -637,6 +1350,17 @@ class HttpBot(object):
             return
         return self.postprocess(d, id=1)
     
+    def operator_save(self, op_model, bank_model):
+        url='http://%s/ebsadmin/operator/set/' % self.host 
+        #print model
+
+        d = self.POST(url,{'data':json.dumps({'op_model':op_model, 'bank_model':bank_model},  ensure_ascii=False)})
+
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
     def gettariffs(self, fields=[]):
         url='http://%s/ebsadmin/gettariffs/' % self.host 
         
@@ -646,12 +1370,50 @@ class HttpBot(object):
             return
         return self.postprocess(d)
     
+    def get_dealers(self, id=None, fields=[]):
+        url='http://%s/ebsadmin/dealers/' % self.host 
+        
+        d = self.POST(url,{'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+
+    def dealers_save(self,model):
+        url='http://%s/ebsadmin/dealers/set/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        #print d
+        return d
+    
+    def dealers_delete(self,model):
+        url='http://%s/ebsadmin/dealers/delete/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def get_notsold_cards(self, ids=[], fields=[]):
+        url='http://%s/ebsadmin/getnotsoldcards/' % self.host 
+        
+        d = self.POST(url,{'ids':ids})
+        print d
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
+    
     def accountsfortariff(self, tarif_id ):
         url='http://%s/ebsadmin/accountsfortariff/' % self.host 
         
         d = self.POST(url,{'tarif_id':tarif_id})
-        #print d
-        return d
+
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
     
     def make_transaction(self, model ):
         url='http://%s/ebsadmin/transaction/set/' % self.host 
@@ -676,6 +1438,15 @@ class HttpBot(object):
     
     def contracttemplate_delete(self,model):
         url='http://%s/ebsadmin/contracttemplate/delete/' % self.host 
+        #print model
+        d = self.POST(url,model)
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+    def tariff_delete(self, id):
+        url='http://%s/ebsadmin/tariffs/delete/' % self.host 
         #print model
         d = self.POST(url,model)
         if not d.status:
@@ -1732,8 +2503,58 @@ class rpcDispatcher(threading.Thread):
 #    def mungeIdent(self, ident):
 #        return ident
 #===============================================================================
-      
 
+
+ 
+class MyComboBox(QtGui.QComboBox):
+    def __init__(self, *arg, **kwarg):
+
+        QtGui.QComboBox.__init__(self)
+        #заменяем стандартный вьювер
+        self.m_listView = QtGui.QListView(self)
+        self.setView(self.m_listView)
+        #устанавливаем перехват событий
+        self.m_listView.viewport().installEventFilter(self)
+        #флаг открытия комбобокса
+        self.m_opening = False
+        
+        
+    def eventFilter(self, watched, event):
+        #проверка тика отловленного события
+
+        if  event.type() == QtCore.QEvent.MouseButtonRelease:
+            print "event inner"
+            #блокируем смену галочки при открытии
+            if  self.m_opening:
+        
+                self.m_opening = False;
+                return QtCore.QObject.eventFilter(self, watched, event);
+
+            #проверяем тип
+            
+            if  watched.parent().inherits("QListView"):
+            
+                #приводим к нужным типам
+                tmp = watched.parent();
+                mEvent = event;
+                ind = tmp.indexAt(mEvent.pos())
+                #меняем состояние cheched
+                checked = tmp.model().data(ind,QtCore.Qt.CheckStateRole).toBool()
+                tmp.model().setData(ind, not checked,QtCore.Qt.CheckStateRole)
+                #блокируем закрытие комбобокса
+                return True
+     
+
+        return QtCore.QObject.eventFilter(self, watched, event);
+
+
+    def showPopup(self):
+        
+        self.m_opening = True
+
+        QtGui.QComboBox.showPopup(self)
+
+        
 def login():
     child = ConnectDialog()
     while True:
@@ -1780,6 +2601,14 @@ if __name__ == "__main__":
     #translator.load('ebsadmin_en')
     #app.installTranslator(translator)
     global connection, username, server_ip
+    
+    kb = MyComboBox()
+    kb.addItem('123')
+    kb.addItem('3421')
+    kb.addItem('098764')
+    kb.addItem('394857')
+    kb.addItem('1111')
+    #kb.show()
     connection = login() 
        
     if connection is None:

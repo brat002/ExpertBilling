@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from ebsWindow import ebsTableWindow
 from helpers import tableFormat
 import datetime, calendar
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
@@ -344,7 +344,7 @@ class SwitchMainWindow(QtGui.QMainWindow):
         if city_id==0:
             self.comboBox_street.clear()
         if not city_id: return
-        streets = self.connection.sql("SELECT id, name FROM billservice_street WHERE city_id=%s ORDER BY name ASC;" % city_id)
+        streets = self.connection.get_streets(city_id= city_id)
         self.connection.commit()
         self.comboBox_street.clear()
         self.comboBox_house.clear()
@@ -352,21 +352,21 @@ class SwitchMainWindow(QtGui.QMainWindow):
         for street in streets:
             self.comboBox_street.addItem(street.name, QtCore.QVariant(street.id))
             if self.model:
-                if self.model.street_id==street.id:
+                if self.model.street==street.id:
                     self.comboBox_street.setCurrentIndex(i)
             i+=1
 
     def refresh_combo_house(self):
         street_id = self.comboBox_street.itemData(self.comboBox_street.currentIndex()).toInt()[0]
         if not street_id: return        
-        items = self.connection.sql("SELECT id, name FROM billservice_house WHERE street_id=%s ORDER BY name ASC;" % street_id)
+        items = self.connection.get_houses(street_id = street_id)
         self.connection.commit()
         self.comboBox_house.clear()
         i=0
         for item in items:
             self.comboBox_house.addItem(item.name, QtCore.QVariant(item.id))
             if self.model:
-                if self.model.house_id==item.id:
+                if self.model.house==item.id:
                     self.comboBox_house.setCurrentIndex(i)
             i+=1
     def addrow(self, value, x, y, checked=None):
@@ -408,15 +408,15 @@ class SwitchMainWindow(QtGui.QMainWindow):
         
         
     def fixtures(self):
-        cities = self.connection.sql("SELECT id, name FROM billservice_city ORDER BY name ASC;")
+        cities = self.connection.get_cities()
         self.connection.commit()
         self.comboBox_city.clear()
-        self.comboBox_city.addItem(u'-Не указан-', QtCore.QVariant(0))
+        self.comboBox_city.addItem(u'-Не указан-', QtCore.QVariant(None))
         i=1
         for city in cities:
             self.comboBox_city.addItem(city.name, QtCore.QVariant(city.id))
             if self.model:
-                if self.model.city_id==city.id:
+                if self.model.city==city.id:
                     self.comboBox_city.setCurrentIndex(i)
             i+=1
 
@@ -496,7 +496,7 @@ class SwitchMainWindow(QtGui.QMainWindow):
         if self.model:
             model=self.model
         else:
-            model=Object()
+            model=AttrDict()
 
         model.name= u"%s" % self.lineEdit_name.text()
         model.manufacturer= u"%s" % self.lineEdit_manufacturer.text()
@@ -513,9 +513,9 @@ class SwitchMainWindow(QtGui.QMainWindow):
         model.disable_port = u"%s" % self.lineEdit_disable_port_command.text()
         model.remote_id = u"%s" % self.lineEdit_remote_id.text()
         
-        model.city_id = self.comboBox_city.itemData(self.comboBox_city.currentIndex()).toInt()[0] or None
-        model.street_id = self.comboBox_street.itemData(self.comboBox_street.currentIndex()).toInt()[0] or None
-        model.house_id = self.comboBox_house.itemData(self.comboBox_house.currentIndex()).toInt()[0] or None
+        model.city = self.comboBox_city.itemData(self.comboBox_city.currentIndex()).toInt()[0] or None
+        model.street = self.comboBox_street.itemData(self.comboBox_street.currentIndex()).toInt()[0] or None
+        model.house = self.comboBox_house.itemData(self.comboBox_house.currentIndex()).toInt()[0] or None
         model.ports_count = self.spinBox_ports_num.value()
         model.management_method = self.comboBox_management_method.itemData(self.comboBox_management_method.currentIndex()).toInt()[0] or None
         model.option82_auth_type = self.comboBox_option82_auth_type.itemData(self.comboBox_option82_auth_type.currentIndex()).toInt()[0] or None
@@ -540,14 +540,16 @@ class SwitchMainWindow(QtGui.QMainWindow):
             if self.tableWidget.item(i,5).checkState()==QtCore.Qt.Checked:
                 broken_ports.append(i+1)
                 
-        print disabled_ports, uplink_ports,protected_ports,broken_ports
+
         model.disabled_ports=','.join(map(str,disabled_ports))
         model.uplink_ports=','.join(map(str,uplink_ports))
         model.protected_ports=','.join(map(str,protected_ports))
         model.broken_ports=','.join(map(str,broken_ports))
         try:
             self.model=model
-            self.model.id=self.connection.save(model, "nas_switch")
+            res = self.connection.switches_save(model)
+            if res.status:
+                self.model.id=res.id
             self.connection.commit()
         except Exception, e:
             print e
@@ -558,7 +560,7 @@ class SwitchMainWindow(QtGui.QMainWindow):
 
 class SwitchEbs(ebsTableWindow):
     def __init__(self, parent, connection):
-        columns=['#', u'Производитель', u'Идентификатор', u'Модель', u'IP', u'Место установки', u"Количество портов"]
+        columns=['#', u'Производитель', u'Идентификатор', u'Модель', u'IP', u'Место установки', u"Количество портов", u'Комментарий']
         initargs = {"setname":"switch_window", "objname":"SwitchEbs", "winsize":(0,0,827,476), "wintitle":"Коммутаторы", "tablecolumns":columns, "tablesize":(0,0,821,401)}
         super(SwitchEbs, self).__init__(connection, initargs)
         self.parent=parent
@@ -602,21 +604,13 @@ class SwitchEbs(ebsTableWindow):
         #self.refresh()
 
     def del_window(self):
-        '''id=self.getSelectedId()
-
-        if id>0 and QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
-            self.connection.delete("DELETE FROM billservice_settlementperiod WHERE id=%d" % id)
-
-        self.refresh()'''
         id=self.getSelectedId()
         if id>0:
-            if self.connection.get_models("billservice_tariff", where={"settlement_period_id":id}):
-                QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Данный период используется в тарифных планах, удаление невозможно!!")
-                return
-            elif QtGui.QMessageBox.question(self, u"Удалить расчётный период?" , u"Все связанные тарифные планы и вся статистика будут удалены.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
+
+            if QtGui.QMessageBox.question(self, u"Удалить коммутатор?" , u"Внимание, это не безопасная операция. Проверьте не привязаны ли субаккаунты к данному коммутатору!.\nВы уверены, что хотите это сделать?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
                 try:
                     #self.connection.sql("UPDATE billservice_settlementperiod SET deleted=TRUE WHERE id=%d" % id, False)
-                    self.connection.iddelete(id, "billservice_settlementperiod")
+                    self.connection.switches_delete(id)
                     self.connection.commit()
                     self.refresh()
                 except Exception, e:
@@ -628,7 +622,7 @@ class SwitchEbs(ebsTableWindow):
     def edit_window(self):
         id=self.getSelectedId()
         if id>0:
-            model = self.connection.get_model(id, "nas_switch")
+            model = self.connection.get_switches(id=id)
             child=SwitchMainWindow(parent=self,connection=self.connection, model=model)
             #child.exec_()
             self.parent.workspace.addWindow(child)
@@ -646,7 +640,7 @@ class SwitchEbs(ebsTableWindow):
         
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
-        items = self.connection.sql("SELECT id,manufacturer,model,name,ipaddress,ports_count,((SELECT name FROM billservice_street WHERE id=switch.street_id)||', ' ||(SELECT name FROM billservice_house WHERE id=switch.house_id)||' '||switch.place) as switch_place FROM nas_switch as switch", return_response=True)
+        items = self.connection.get_switches()
         self.connection.commit()
         self.tableWidget.setRowCount(len(items))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
@@ -658,8 +652,9 @@ class SwitchEbs(ebsTableWindow):
             self.addrow(item.model, i,2)
             self.addrow(item.name, i,3)
             self.addrow(item.ipaddress, i,4)
-            self.addrow(item.switch_place, i,5)
+            self.addrow(item.place, i,5)
             self.addrow(item.ports_count, i,6)
+            self.addrow(item.comment, i,7)
            
             
             #self.tableWidget.setRowHeight(i, 14)

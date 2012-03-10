@@ -11,20 +11,20 @@ nfroutine_sql = \
               {'accounts':"""SELECT ba.id, ba.ballance, ba.credit, date_trunc('second', act.datetime) as datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.status   
                                 FROM billservice_account as ba
                                 LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s ORDER BY datetime DESC LIMIT 1)
-                                LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;""",
+                                LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
+                                WHERE ba.deleted is Null;""",
                'tts'     :"""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""",
                'settlepd':"""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""",
                'period'  :"""SELECT date_trunc('seconds', tpn.time_start), tpn.length, tpn.repeat_after, ttns.traffic_transmit_service_id
                                 FROM billservice_timeperiodnode AS tpn
                                 JOIN billservice_timeperiod_time_period_nodes AS timeperiod_timenodes ON timeperiod_timenodes.timeperiodnode_id=tpn.id
-                                JOIN billservice_traffictransmitnodes_time_nodes AS ttntp ON ttntp.timeperiod_id=timeperiod_timenodes.timeperiod_id
-                                JOIN billservice_traffictransmitnodes AS ttns ON ttns.id=ttntp.traffictransmitnodes_id;""",
+                                JOIN billservice_traffictransmitnodes AS ttns ON ttns.timeperiod_id=timeperiod_timenodes.timeperiod_id;""",
                'nodes'   :"""SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after,
                                         ttsn.group_id, ttsn.traffic_transmit_service_id, ttsn.edge_value 
                                         FROM billservice_traffictransmitnodes as ttsn
-                                        JOIN billservice_timeperiodnode AS tpn on tpn.id IN 
-                                        (SELECT timeperiodnode_id FROM billservice_timeperiod_time_period_nodes WHERE timeperiod_id IN 
-                                        (SELECT timeperiod_id FROM billservice_traffictransmitnodes_time_nodes WHERE traffictransmitnodes_id=ttsn.id));""",
+                                        JOIN billservice_timeperiod_time_period_nodes as tptpn ON tptpn.timeperiod_id = ttsn.timeperiod_id
+                                        JOIN billservice_timeperiodnode AS tpn on tpn.id= tptpn.timeperiodnode_id
+                                        WHERE ttsn.group_id is not Null;""",
                'prepays' :"""SELECT prepais.id, prepais.size, prepais.account_tarif_id, prepaidtraffic.group_id, prepaidtraffic.traffic_transmit_service_id 
                                         FROM billservice_accountprepaystrafic as prepais
                                         JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id

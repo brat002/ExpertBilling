@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 from ebsWindow import ebsTableWindow
 from helpers import tableFormat
 import datetime, calendar
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
@@ -137,7 +137,7 @@ class TPRulesAdd(QtGui.QDialog):
             model=self.model
         else:
             #print 'New sp'
-            model=Object()
+            model=AttrDict()
 
         if unicode(self.lineEdit_cost.text())==u"":
             QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указана цена"))
@@ -157,27 +157,27 @@ class TPRulesAdd(QtGui.QDialog):
             model.on_next_sp = False
         model.disabled = self.checkBox_disable.checkState()==2
         sp_id = self.comboBox_oldtptime.itemData(self.comboBox_oldtptime.currentIndex()).toInt()[0]
-        model.settlement_period_id = None if sp_id==0 else sp_id 
+        model.settlement_period = None if sp_id==0 else sp_id 
         #print "model.settlement_period_id", model.settlement_period_id
         from_id = self.comboBox_from.itemData(self.comboBox_from.currentIndex()).toInt()[0]
         self.connection.commit()
         for i in xrange(self.listWidget_to.count()):
             x=self.listWidget_to.item(i)
             if x.checkState()==QtCore.Qt.Checked:
-                model.from_tariff_id = from_id
-                model.to_tariff_id = x.id
+                model.from_tariff = from_id
+                model.to_tariff = x.id
                 #print "save"
                 try:
-                    self.connection.save(model,"billservice_tpchangerule")
+                    self.connection.tpchangerules_save(model)
                 except Exception, e:
                     print e
                     self.connection.rollback()
 
                 if self.checkBox_bidirectional.isChecked():
-                    model.to_tariff_id=from_id
-                    model.from_tariff_id = x.id
+                    model.to_tariff=from_id
+                    model.from_tariff = x.id
                     try:
-                        self.connection.save(model,"billservice_tpchangerule")
+                        self.connection.tpchangerules_save(model)
                     except Exception, e:
                         print e
                         self.connection.rollback()                
@@ -195,7 +195,7 @@ class TPRulesAdd(QtGui.QDialog):
     def fixtures(self):
         self.refreshList(0)
         self.disconnect(self.comboBox_from,QtCore.SIGNAL("currentIndexChanged(int)"),self.refreshList)
-        tariffs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE deleted IS NOT TRUE ORDER BY NAME ASC;")
+        tariffs = self.connection.get_tariffs(fields=['id', 'name'])
         self.connection.commit()
         i=0
         self.comboBox_from.clear()
@@ -210,10 +210,10 @@ class TPRulesAdd(QtGui.QDialog):
             
         self.connect(self.comboBox_from,QtCore.SIGNAL("currentIndexChanged(int)"),self.refreshList)
 
-        items = self.connection.get_models("billservice_settlementperiod", where={'autostart':True,})
+        items = self.connection.get_settlementperiods(autostart=True)
         self.connection.commit()
         self.comboBox_oldtptime.addItem(u"--нет--")
-        self.comboBox_oldtptime.setItemData(0, QtCore.QVariant(0))
+        self.comboBox_oldtptime.setItemData(0, QtCore.QVariant(None))
         i = 1
         for item in items:
             self.comboBox_oldtptime.addItem(item.name)
@@ -229,7 +229,7 @@ class TPRulesAdd(QtGui.QDialog):
             
             self.checkBox_disable.setChecked(self.model.disabled)
             for i in xrange(self.comboBox_oldtptime.count()):
-                if self.comboBox_oldtptime.itemData(i).toInt()[0]==self.model.settlement_period_id:
+                if self.comboBox_oldtptime.itemData(i).toInt()[0]==self.model.settlement_period:
                     self.comboBox_oldtptime.setCurrentIndex(i)    
                     
         
@@ -237,7 +237,7 @@ class TPRulesAdd(QtGui.QDialog):
             
         
     def refreshList(self, i):
-        tariffs = self.connection.sql("SELECT id, name FROM billservice_tariff WHERE deleted IS NOT TRUE ORDER BY NAME ASC;")
+        tariffs = self.connection.get_tariffs(fields = ['id', 'name'])
         self.connection.commit()
         self.listWidget_to.clear()
         for tariff in tariffs:
@@ -246,9 +246,9 @@ class TPRulesAdd(QtGui.QDialog):
             item.id = tariff.id
             self.listWidget_to.addItem(item)
             if self.model:
-                if tariff.id==self.model.from_tariff_id:
+                if tariff.id==self.model.from_tariff:
                     item.setHidden(True)
-                if tariff.id == self.model.to_tariff_id:
+                if tariff.id == self.model.to_tariff:
                     item.setCheckState(QtCore.Qt.Checked)
                     
             if self.comboBox_from.itemData(self.comboBox_from.currentIndex()).toInt()[0]==tariff.id:
@@ -306,20 +306,18 @@ class TPRulesEbs(ebsTableWindow):
     def del_rule(self):
         id=self.getSelectedId()
         if id>0:
-            try:
-                self.connection.iddelete(id, "billservice_tpchangerule")
+            
+            if self.connection.tpchangerules_delete(id):
                 self.connection.commit()
                 self.refresh()
-            except Exception, e:
-                print e
-                self.connection.rollback()
+            else:
                 QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
 
 
     def edit_rule(self):
         id=self.getSelectedId()
         try:
-            model=self.connection.get_model(id, "billservice_tpchangerule")
+            model=self.connection.get_tpchangerules(id)
         except:
             return
 
@@ -340,19 +338,19 @@ class TPRulesEbs(ebsTableWindow):
     def refresh(self):
         self.statusBar().showMessage(u"Идёт получение данных")
         self.tableWidget.setSortingEnabled(False)
-        rules = self.connection.sql(" SELECT tpch.*,(SELECT name FROM billservice_tariff WHERE id=tpch.from_tariff_id and deleted IS NOT TRUE ) as from_tariff_name, (SELECT name FROM billservice_tariff WHERE id=tpch.to_tariff_id and deleted IS NOT TRUE ) as to_tariff_name, (SELECT name FROM billservice_settlementperiod WHERE id=tpch.settlement_period_id) as settlement_period_name FROM billservice_tpchangerule as tpch ORDER BY tpch.from_tariff_id")
+        rules = self.connection.get_tpchangerules(normal_fields=True)
         self.connection.commit()
         self.tableWidget.setRowCount(len(rules))
         #.values('id','user', 'username', 'ballance', 'credit', 'firstname','lastname', 'vpn_ip_address', 'ipn_ip_address', 'suspended', 'status')[0:cnt]
         i=0
         for rule in rules:
             self.addrow(rule.id, i,0)
-            self.addrow(rule.from_tariff_name, i,1)
-            self.addrow(rule.to_tariff_name, i,2)
+            self.addrow(rule.from_tariff, i,1)
+            self.addrow(rule.to_tariff, i,2)
             self.addrow(rule.disabled, i,3)
             self.addrow(rule.cost, i,4)
             self.addrow(rule.ballance_min, i,5)
-            self.addrow("" if rule.settlement_period_name == None else rule.settlement_period_name, i,6)
+            self.addrow("" if rule.settlement_period == None else rule.settlement_period, i,6)
             #self.addrow(period.time_start.strftime(self.strftimeFormat), i,3)
             #self.addrow(period.length_in, i,4)            
             #self.addrow(period.length, i,5)

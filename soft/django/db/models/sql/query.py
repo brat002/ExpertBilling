@@ -31,7 +31,6 @@ class RawQuery(object):
     """
 
     def __init__(self, sql, using, params=None):
-        self.validate_sql(sql)
         self.params = params or ()
         self.sql = sql
         self.using = using
@@ -61,11 +60,6 @@ class RawQuery(object):
         converter = connections[self.using].introspection.table_name_converter
         return [converter(column_meta[0])
                 for column_meta in self.cursor.description]
-
-    def validate_sql(self, sql):
-        if not sql.lower().strip().startswith('select'):
-            raise InvalidQuery('Raw queries are limited to SELECT queries. Use '
-                               'connection.cursor directly for other types of queries.')
 
     def __iter__(self):
         # Always execute a new query for a new iterator.
@@ -463,13 +457,30 @@ class Query(object):
             first = False
 
         # So that we don't exclude valid results in an "or" query combination,
-        # the first join that is exclusive to the lhs (self) must be converted
+        # all joins exclusive to either the lhs or the rhs must be converted
         # to an outer join.
         if not conjunction:
-            for alias in self.tables[1:]:
-                if self.alias_refcount[alias] == 1:
+            l_tables = set(self.tables)
+            r_tables = set(rhs.tables)
+            # Update r_tables aliases.
+            for alias in change_map:
+                if alias in r_tables:
+                    # r_tables may contain entries that have a refcount of 0
+                    # if the query has references to a table that can be
+                    # trimmed because only the foreign key is used.
+                    # We only need to fix the aliases for the tables that
+                    # actually have aliases.
+                    if rhs.alias_refcount[alias]:
+                        r_tables.remove(alias)
+                        r_tables.add(change_map[alias])
+            # Find aliases that are exclusive to rhs or lhs.
+            # These are promoted to outer joins.
+            outer_tables = (l_tables | r_tables) - (l_tables & r_tables)
+            for alias in outer_tables:
+                # Again, some of the tables won't have aliases due to
+                # the trimming of unnecessary tables.
+                if self.alias_refcount.get(alias) or rhs.alias_refcount.get(alias):
                     self.promote_alias(alias, True)
-                    break
 
         # Now relabel a copy of the rhs where-clause and add it to the current
         # one.
@@ -654,7 +665,7 @@ class Query(object):
         False, the join is only promoted if it is nullable, otherwise it is
         always promoted.
 
-        Returns True if the join was promoted.
+        Returns True if the join was promoted by this call.
         """
         if ((unconditional or self.alias_map[alias][NULLABLE]) and
                 self.alias_map[alias][JOIN_TYPE] != self.LOUTER):
@@ -1061,17 +1072,20 @@ class Query(object):
                     can_reuse)
             return
 
+        table_promote = False
+        join_promote = False
+
         if (lookup_type == 'isnull' and value is True and not negate and
                 len(join_list) > 1):
             # If the comparison is against NULL, we may need to use some left
             # outer joins when creating the join chain. This is only done when
             # needed, as it's less efficient at the database level.
             self.promote_alias_chain(join_list)
+            join_promote = True
 
         # Process the join list to see if we can remove any inner joins from
         # the far end (fewer tables in a query is better).
         col, alias, join_list = self.trim_joins(target, join_list, last, trim)
-
         if connector == OR:
             # Some joins may need to be promoted when adding a new filter to a
             # disjunction. We walk the list of new joins and where it diverges
@@ -1081,19 +1095,29 @@ class Query(object):
             join_it = iter(join_list)
             table_it = iter(self.tables)
             join_it.next(), table_it.next()
-            table_promote = False
-            join_promote = False
+            unconditional = False
             for join in join_it:
                 table = table_it.next()
+                # Once we hit an outer join, all subsequent joins must
+                # also be promoted, regardless of whether they have been
+                # promoted as a result of this pass through the tables.
+                unconditional = (unconditional or
+                    self.alias_map[join][JOIN_TYPE] == self.LOUTER)
                 if join == table and self.alias_refcount[join] > 1:
+                    # We have more than one reference to this join table.
+                    # This means that we are dealing with two different query
+                    # subtrees, so we don't need to do any join promotion.
                     continue
-                join_promote = self.promote_alias(join)
+                join_promote = join_promote or self.promote_alias(join, unconditional)
                 if table != join:
                     table_promote = self.promote_alias(table)
+                # We only get here if we have found a table that exists
+                # in the join list, but isn't on the original tables list.
+                # This means we've reached the point where we only have
+                # new tables, so we can break out of this promotion loop.
                 break
             self.promote_alias_chain(join_it, join_promote)
-            self.promote_alias_chain(table_it, table_promote)
-
+            self.promote_alias_chain(table_it, table_promote or join_promote)
 
         if having_clause or force_having:
             if (alias, col) not in self.group_by:
@@ -1212,11 +1236,10 @@ class Query(object):
         dupe_set = set()
         exclusions = set()
         extra_filters = []
+        int_alias = None
         for pos, name in enumerate(names):
-            try:
+            if int_alias is not None:
                 exclusions.add(int_alias)
-            except NameError:
-                pass
             exclusions.add(alias)
             last.append(len(joins))
             if name == 'pk':
@@ -1372,7 +1395,8 @@ class Query(object):
                         # In case of a recursive FK, use the to_field for
                         # reverse lookups as well
                         if orig_field.model is local_field.model:
-                            target = opts.get_field(field.rel.field_name)
+                            target = opts.get_field_by_name(
+                                field.rel.field_name)[0]
                         else:
                             target = opts.pk
                         orig_opts._join_cache[name] = (table, from_col, to_col,
@@ -1384,10 +1408,11 @@ class Query(object):
                     joins.append(alias)
 
             for (dupe_opts, dupe_col) in dupe_set:
-                try:
-                    self.update_dupe_avoidance(dupe_opts, dupe_col, int_alias)
-                except NameError:
-                    self.update_dupe_avoidance(dupe_opts, dupe_col, alias)
+                if int_alias is None:
+                    to_avoid = alias
+                else:
+                    to_avoid = int_alias
+                self.update_dupe_avoidance(dupe_opts, dupe_col, to_avoid)
 
         if pos != len(names) - 1:
             if pos == len(names) - 2:

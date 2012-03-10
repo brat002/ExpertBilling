@@ -255,43 +255,43 @@ class AccountFilterDialog(QtGui.QDialog):
         self.checkBox_ipn_added.setText(QtGui.QApplication.translate("Dialog", "Добавлен на сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
 
     def fixtures(self):
-        items=self.connection.sql("SELECT id, name FROM nas_nas ORDER BY name;")
+        items=self.connection.get_nasses(fields=['id', 'name'])
         self.connection.commit()
-        self.comboBox_nas.addItem(u"---Любой---", QtCore.QVariant(0))
-        self.comboBox_switch.addItem(u"---Любой---", QtCore.QVariant(0))
+        self.comboBox_nas.addItem(u"---Любой---", QtCore.QVariant(None))
+        self.comboBox_switch.addItem(u"---Любой---", QtCore.QVariant(None))
         for item in items:
             self.comboBox_nas.addItem(item.name, QtCore.QVariant(item.id))
             self.comboBox_switch.addItem(item.name, QtCore.QVariant(item.id))
 
 
 
-        items=self.connection.sql("SELECT id, name FROM billservice_tariff ORDER BY name;")
+        items=self.connection.get_tariffs(fields=['id', 'name'])
         self.connection.commit()
-        self.comboBox_tarif.addItem(u"---Любой---", QtCore.QVariant(0))
+        self.comboBox_tarif.addItem(u"---Любой---", QtCore.QVariant(None))
         for item in items:
             self.comboBox_tarif.addItem(item.name, QtCore.QVariant(item.id))
 
-        items=self.connection.sql("SELECT id, username FROM billservice_systemuser ORDER BY username;")
+        items=self.connection.get_systemusers(fields=['id', 'username'])
         self.connection.commit()
-        self.comboBox_manager.addItem(u"---Любой---", QtCore.QVariant(0))
+        self.comboBox_manager.addItem(u"---Любой---", QtCore.QVariant(None))
         for item in items:
             self.comboBox_manager.addItem(item.username, QtCore.QVariant(item.id))
 
 
         items=self.connection.sql("SELECT id, name FROM billservice_organization ORDER BY name;")
         self.connection.commit()
-        self.comboBox_ur_name.addItem(u"---Любой---", QtCore.QVariant(0))
+        self.comboBox_ur_name.addItem(u"---Любой---", QtCore.QVariant(None))
         for item in items:
             self.comboBox_ur_name.addItem(item.name, QtCore.QVariant(item.id))
 
-        items=self.connection.sql("SELECT id, name FROM billservice_city ORDER BY name;")
+        items=self.connection.get_cities()
         self.connection.commit()
-        self.comboBox_city.addItem(u"---Любой---", QtCore.QVariant(0))
+        self.comboBox_city.addItem(u"---Любой---", QtCore.QVariant(None))
         for item in items:
             self.comboBox_city.addItem(item.name, QtCore.QVariant(item.id))
 
         self.comboBox_status.addItem(u"---Любой---")
-        self.comboBox_status.setItemData(0, QtCore.QVariant(0))
+        self.comboBox_status.setItemData(0, QtCore.QVariant(None))
         self.comboBox_status.addItem(u"Активен")
         self.comboBox_status.setItemData(1, QtCore.QVariant(1))
         self.comboBox_status.addItem(u"Неактивен, не списывать периодические услуги")
@@ -376,11 +376,11 @@ class AccountFilterDialog(QtGui.QDialog):
     def refresh_combo_street(self):
         city_id = self.comboBox_city.itemData(self.comboBox_city.currentIndex()).toInt()[0]
         if not city_id: return
-        streets = self.connection.sql("SELECT id, name FROM billservice_street WHERE city_id=%s ORDER BY name ASC;" % city_id)
+        streets = self.connection.get_streets(city_id = city_id)
         self.connection.commit()
         self.comboBox_street.clear()
         self.comboBox_house.clear()
-        self.comboBox_street.addItem(u'---Любая---', QtCore.QVariant(0))
+        self.comboBox_street.addItem(u'---Любая---', QtCore.QVariant(None))
         i=0
         for street in streets:
             self.comboBox_street.addItem(street.name, QtCore.QVariant(street.id))
@@ -390,10 +390,10 @@ class AccountFilterDialog(QtGui.QDialog):
     def refresh_combo_house(self):
         street_id = self.comboBox_street.itemData(self.comboBox_street.currentIndex()).toInt()[0]
         if not street_id: return        
-        items = self.connection.sql("SELECT id, name FROM billservice_house WHERE street_id=%s ORDER BY name ASC;" % street_id)
+        items = self.connection.get_houses(street_id = street_id)
         self.connection.commit()
         self.comboBox_house.clear()
-        self.comboBox_house.addItem(u"---Любой---", QtCore.QVariant(0))
+        self.comboBox_house.addItem(u"---Любой---", QtCore.QVariant(None))
         i=0
         for item in items:
             self.comboBox_house.addItem(item.name, QtCore.QVariant(item.id))

@@ -3,25 +3,24 @@ Helper functions for creating Form classes from Django models
 and database field objects.
 """
 
-from django.db import connections
 from django.utils.encoding import smart_unicode, force_unicode
 from django.utils.datastructures import SortedDict
 from django.utils.text import get_text_list, capfirst
 from django.utils.translation import ugettext_lazy as _, ugettext
 
-from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS, \
+                                   FieldError
 from django.core.validators import EMPTY_VALUES
 from util import ErrorList
 from forms import BaseForm, get_declared_fields
 from fields import Field, ChoiceField
 from widgets import SelectMultiple, HiddenInput, MultipleHiddenInput
 from widgets import media_property
-from formsets import BaseFormSet, formset_factory, DELETION_FIELD_NAME
+from formsets import BaseFormSet, formset_factory
 
 __all__ = (
     'ModelForm', 'BaseModelForm', 'model_to_dict', 'fields_for_model',
-    'save_instance', 'form_for_fields', 'ModelChoiceField',
-    'ModelMultipleChoiceField',
+    'save_instance', 'ModelChoiceField', 'ModelMultipleChoiceField',
 )
 
 def construct_instance(form, instance, fields=None, exclude=None):
@@ -39,7 +38,7 @@ def construct_instance(form, instance, fields=None, exclude=None):
         if not f.editable or isinstance(f, models.AutoField) \
                 or not f.name in cleaned_data:
             continue
-        if fields and f.name not in fields:
+        if fields is not None and f.name not in fields:
             continue
         if exclude and f.name in exclude:
             continue
@@ -90,26 +89,6 @@ def save_instance(form, instance, fields=None, fail_message='saved',
         # saving of m2m data.
         form.save_m2m = save_m2m
     return instance
-
-def make_model_save(model, fields, fail_message):
-    """Returns the save() method for a Form."""
-    def save(self, commit=True):
-        return save_instance(self, model(), fields, fail_message, commit)
-    return save
-
-def make_instance_save(instance, fields, fail_message):
-    """Returns the save() method for a Form."""
-    def save(self, commit=True):
-        return save_instance(self, instance, fields, fail_message, commit)
-    return save
-
-def form_for_fields(field_list):
-    """
-    Returns a Form class for the given list of Django database field instances.
-    """
-    fields = SortedDict([(f.name, f.formfield())
-                         for f in field_list if f.editable])
-    return type('FormForFields', (BaseForm,), {'base_fields': fields})
 
 
 # ModelForms #################################################################
@@ -167,7 +146,7 @@ def fields_for_model(model, fields=None, exclude=None, widgets=None, formfield_c
     for f in opts.fields + opts.many_to_many:
         if not f.editable:
             continue
-        if fields and not f.name in fields:
+        if fields is not None and not f.name in fields:
             continue
         if exclude and f.name in exclude:
             continue
@@ -224,6 +203,15 @@ class ModelFormMetaclass(type):
             # If a model is defined, extract form fields from it.
             fields = fields_for_model(opts.model, opts.fields,
                                       opts.exclude, opts.widgets, formfield_callback)
+            # make sure opts.fields doesn't specify an invalid field
+            none_model_fields = [k for k, v in fields.iteritems() if not v]
+            missing_fields = set(none_model_fields) - \
+                             set(declared_fields.keys())
+            if missing_fields:
+                message = 'Unknown field(s) (%s) specified for %s'
+                message = message % (', '.join(missing_fields),
+                                     opts.model.__name__)
+                raise FieldError(message)
             # Override default model fields with any custom declared ones
             # (plus, include all the other declared fields).
             fields.update(declared_fields)
@@ -439,6 +427,9 @@ class BaseModelFormSet(BaseFormSet):
 
     def _construct_form(self, i, **kwargs):
         if self.is_bound and i < self.initial_form_count():
+            # Import goes here instead of module-level because importing
+            # django.db has side effects.
+            from django.db import connections
             pk_key = "%s-%s" % (self.add_prefix(i), self.model._meta.pk.name)
             pk = self.data[pk_key]
             pk_field = self.model._meta.pk
@@ -599,13 +590,10 @@ class BaseModelFormSet(BaseFormSet):
             pk_value = getattr(pk_value, 'pk', pk_value)
 
             obj = self._existing_object(pk_value)
-            if self.can_delete:
-                raw_delete_value = form._raw_value(DELETION_FIELD_NAME)
-                should_delete = form.fields[DELETION_FIELD_NAME].clean(raw_delete_value)
-                if should_delete:
-                    self.deleted_objects.append(obj)
-                    obj.delete()
-                    continue
+            if self.can_delete and self._should_delete_form(form):
+                self.deleted_objects.append(obj)
+                obj.delete()
+                continue
             if form.has_changed():
                 self.changed_objects.append((obj, form.changed_data))
                 saved_instances.append(self.save_existing(form, obj, commit=commit))
@@ -620,11 +608,8 @@ class BaseModelFormSet(BaseFormSet):
                 continue
             # If someone has marked an add form for deletion, don't save the
             # object.
-            if self.can_delete:
-                raw_delete_value = form._raw_value(DELETION_FIELD_NAME)
-                should_delete = form.fields[DELETION_FIELD_NAME].clean(raw_delete_value)
-                if should_delete:
-                    continue
+            if self.can_delete and self._should_delete_form(form):
+                continue
             self.new_objects.append(self.save_new(form, commit=commit))
             if not commit:
                 self.saved_forms.append(form)
@@ -1017,13 +1002,14 @@ class ModelMultipleChoiceField(ModelChoiceField):
             return []
         if not isinstance(value, (list, tuple)):
             raise ValidationError(self.error_messages['list'])
+        key = self.to_field_name or 'pk'
         for pk in value:
             try:
-                self.queryset.filter(pk=pk)
+                self.queryset.filter(**{key: pk})
             except ValueError:
                 raise ValidationError(self.error_messages['invalid_pk_value'] % pk)
-        qs = self.queryset.filter(pk__in=value)
-        pks = set([force_unicode(o.pk) for o in qs])
+        qs = self.queryset.filter(**{'%s__in' % key: value})
+        pks = set([force_unicode(getattr(o, key)) for o in qs])
         for val in value:
             if force_unicode(val) not in pks:
                 raise ValidationError(self.error_messages['invalid_choice'] % val)

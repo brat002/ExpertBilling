@@ -21,7 +21,7 @@ DEBUG_PROPAGATE_EXCEPTIONS = False
 USE_ETAGS = False
 
 # People who get code error notifications.
-# In the format (('Full Name', 'email@domain.com'), ('Full Name', 'anotheremail@domain.com'))
+# In the format (('Full Name', 'email@example.com'), ('Full Name', 'anotheremail@example.com'))
 ADMINS = ()
 
 # Tuple of IP addresses, as strings, that:
@@ -42,6 +42,7 @@ LANGUAGE_CODE = 'en-us'
 # should be the utf-8 encoded local name for the language.
 LANGUAGES = (
     ('ar', gettext_noop('Arabic')),
+    ('az', gettext_noop('Azerbaijani')),
     ('bg', gettext_noop('Bulgarian')),
     ('bn', gettext_noop('Bengali')),
     ('bs', gettext_noop('Bosnian')),
@@ -55,6 +56,8 @@ LANGUAGES = (
     ('en-gb', gettext_noop('British English')),
     ('es', gettext_noop('Spanish')),
     ('es-ar', gettext_noop('Argentinian Spanish')),
+    ('es-mx', gettext_noop('Mexican Spanish')),
+    ('es-ni', gettext_noop('Nicaraguan Spanish')),
     ('et', gettext_noop('Estonian')),
     ('eu', gettext_noop('Basque')),
     ('fa', gettext_noop('Persian')),
@@ -84,6 +87,7 @@ LANGUAGES = (
     ('no', gettext_noop('Norwegian')),
     ('nb', gettext_noop('Norwegian Bokmal')),
     ('nn', gettext_noop('Norwegian Nynorsk')),
+    ('pa', gettext_noop('Punjabi')),
     ('pl', gettext_noop('Polish')),
     ('pt', gettext_noop('Portuguese')),
     ('pt-br', gettext_noop('Brazilian Portuguese')),
@@ -100,6 +104,7 @@ LANGUAGES = (
     ('th', gettext_noop('Thai')),
     ('tr', gettext_noop('Turkish')),
     ('uk', gettext_noop('Ukrainian')),
+    ('ur', gettext_noop('Urdu')),
     ('vi', gettext_noop('Vietnamese')),
     ('zh-cn', gettext_noop('Simplified Chinese')),
     ('zh-tw', gettext_noop('Traditional Chinese')),
@@ -194,17 +199,13 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
     'django.core.context_processors.media',
+    'django.core.context_processors.static',
 #    'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
 )
 
 # Output to use in template system for invalid (e.g. misspelled) variables.
 TEMPLATE_STRING_IF_INVALID = ''
-
-# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
-# trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/'
 
 # Default e-mail address to use for various automated correspondence from
 # the site managers.
@@ -259,12 +260,20 @@ SECRET_KEY = ''
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
-# Example: "/home/media/media.lawrence.com/"
+# Example: "/home/media/media.lawrence.com/media/"
 MEDIA_ROOT = ''
 
 # URL that handles the media served from MEDIA_ROOT.
-# Example: "http://media.lawrence.com"
+# Example: "http://media.lawrence.com/media/"
 MEDIA_URL = ''
+
+# Absolute path to the directory that holds static files.
+# Example: "/home/media/media.lawrence.com/static/"
+STATIC_ROOT = ''
+
+# URL that handles the static files served from STATIC_ROOT.
+# Example: "http://media.lawrence.com/static/"
+STATIC_URL = None
 
 # List of upload handler classes to be applied in order.
 FILE_UPLOAD_HANDLERS = (
@@ -390,6 +399,8 @@ URL_VALIDATOR_USER_AGENT = "Django/%s (http://www.djangoproject.com)" % get_vers
 DEFAULT_TABLESPACE = ''
 DEFAULT_INDEX_TABLESPACE = ''
 
+USE_X_FORWARDED_HOST = False
+
 ##############
 # MIDDLEWARE #
 ##############
@@ -416,6 +427,7 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2               # Age of cookie, in seco
 SESSION_COOKIE_DOMAIN = None                            # A string like ".lawrence.com", or None for standard domain cookie.
 SESSION_COOKIE_SECURE = False                           # Whether the session cookie should be secure (https:// only).
 SESSION_COOKIE_PATH = '/'                               # The path of the session cookie.
+SESSION_COOKIE_HTTPONLY = False                         # Whether to use the non-RFC standard httpOnly flag (IE, FF3+, others)
 SESSION_SAVE_EVERY_REQUEST = False                      # Whether to save the session data on every request.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False                 # Whether a user's session cookie expires when the Web browser is closed.
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # The module to store session data
@@ -425,11 +437,14 @@ SESSION_FILE_PATH = None                                # Directory to store ses
 # CACHE #
 #########
 
+# New format
+CACHES = {
+}
 # The cache backend to use.  See the docstring in django.core.cache for the
 # possible values.
-CACHE_BACKEND = 'locmem://'
 CACHE_MIDDLEWARE_KEY_PREFIX = ''
 CACHE_MIDDLEWARE_SECONDS = 600
+CACHE_MIDDLEWARE_ALIAS = 'default'
 
 ####################
 # COMMENTS         #
@@ -439,7 +454,7 @@ COMMENTS_ALLOW_PROFANITIES = False
 
 # The profanities that will trigger a validation error in the
 # 'hasNoProfanities' validator. All of these should be in lowercase.
-PROFANITIES_LIST = ('asshat', 'asshead', 'asshole', 'cunt', 'fuck', 'gook', 'nigger', 'shit')
+PROFANITIES_LIST = ()
 
 # The group ID that designates which users are banned.
 # Set to None if you're not using it.
@@ -499,6 +514,34 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.user_messages.LegacyFallbackS
 # django.contrib.messages to avoid imports in this settings file.
 
 ###########
+# LOGGING #
+###########
+
+# The callable to use to configure logging
+LOGGING_CONFIG = 'django.utils.log.dictConfig'
+
+# The default logging configuration. This sends an email to
+# the site admins on every HTTP 500 error. All other log
+# records are sent to the bit bucket.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    }
+}
+
+###########
 # TESTING #
 ###########
 
@@ -522,3 +565,26 @@ TEST_DATABASE_COLLATION = None
 
 # The list of directories to search for fixtures
 FIXTURE_DIRS = ()
+
+###############
+# STATICFILES #
+###############
+
+# A list of locations of additional static files
+STATICFILES_DIRS = ()
+
+# The default file storage backend used during the build process
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+# List of finder classes that know how to find static files in
+# various locations.
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+)
+
+# URL prefix for admin media -- CSS, JavaScript and images.
+# Make sure to use a trailing slash.
+# Examples: "http://foo.com/static/admin/", "/static/admin/".
+ADMIN_MEDIA_PREFIX = '/static/admin/'

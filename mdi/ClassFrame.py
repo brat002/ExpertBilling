@@ -3,7 +3,7 @@
 
 from PyQt4 import QtCore, QtGui
 from helpers import tableFormat
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import setFirstActive
 from helpers import HeaderUtil, SplitterUtil
@@ -138,7 +138,7 @@ class NetworksImportDialog(QtGui.QDialog):
         self.tableWidget.resizeColumnsToContents()
         
     def accept(self):
-        nodes = self.connection.get_class_nodes(self.class_id)
+        nodes = self.connection.get_classnodes(traffic_class_id=self.class_id)
         self.connection.commit()
         nodes = [(s.src_ip, s.dst_ip) for s in nodes]
         
@@ -163,15 +163,24 @@ class NetworksImportDialog(QtGui.QDialog):
             net = unicode(self.tableWidget.item(x, 2).text())
             nn = "%s" % net_name
             for l in local_nets:
+                model = AttrDict()
+                model.traffic_class = self.class_id
+                model.name = nn                
+                
                 if (net, l) not in nodes: 
                     #self.connection.create_class_node(class_id, name, src_net, dst_net)
-                    print 'input', (net, l)
-                    self.connection.create_class_node(class_id=self.class_id, name=nn, direction='INPUT', src_net=net, dst_net=l)
+
+                    model.direction = 'INPUT'
+                    model.src_ip = net
+                    model.dst_ip = l
+                    
                 if (l, net) not in nodes:
                     #Создать ноду
                     print "output", (l, net)
-                    self.connection.create_class_node(class_id=self.class_id, name = nn, direction='OUTPUT', src_net=l, dst_net=net)
-                self.connection.commit()
+                    model.direction = 'OUTPUT'
+                    model.src_ip = l
+                    model.dst_ip = net
+                self.connection.classnodes_save(model)
                 
         QtGui.QDialog.accept(self)
         
@@ -281,12 +290,8 @@ class ClassEdit(QtGui.QDialog):
             model=self.model
         else:
             #print 'New class'
-            model=Object()
-            try:
-                maxweight = self.connection.get("SELECT MAX(weight) as weight FROM nas_trafficclass;").weight+1
-            except Exception, e:
-                maxweight = 0
-            model.weight = maxweight
+            model=AttrDict()
+            #model.weight = maxweight
             
         model.name=unicode(self.name_edit.text())
             
@@ -296,7 +301,7 @@ class ClassEdit(QtGui.QDialog):
         model.passthrough = self.passthrough_checkBox.checkState()==2
         #model.save()
         try:
-            self.connection.save(model,"nas_trafficclass")
+            self.connection.trafficclasses_save(model)
             self.connection.commit()
         except Exception, e:
             print e
@@ -510,7 +515,7 @@ class ClassNodeFrame(QtGui.QDialog):
         if self.model:
             model = self.model
         else:
-            model = Object()
+            model = AttrDict()
             
         model.name = unicode(self.name_edit.text())
         model.direction = unicode(self.group_edit.currentText())
@@ -652,6 +657,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         
     def retranslateUI(self, initargs):
         super(ClassChildEbs, self).retranslateUI(initargs)
+        
     def addClass(self):
         #QtCore.QObject.connect(self.buttonBox,QtCore.SIGNAL("accepted()"),Dialog.accept)
         child=ClassEdit(connection=self.connection)
@@ -662,7 +668,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
     def editClass(self, *args, **kwargs):
         
         try:
-            model=self.connection.get_model(self.treeWidget.currentItem().id, "nas_trafficclass")
+            model=self.connection.get_trafficclasses(self.treeWidget.currentItem().id)
         except Exception, e:
             print e
         
@@ -673,13 +679,12 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
             
     def delClass(self):
         
-        model = self.connection.get_model(self.getClassId(), "nas_trafficclass")
-        
+
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить класс трафика?" , u"Удалить класс трафика?\nВместе с ним будут удалены все его составляющие.", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
                 
                 #self.connection.delete("DELETE FROM nas_trafficnode WHERE traffic_class_id=%d" % model.id)
-                self.connection.iddelete(model.id, "nas_trafficclass")
+                self.connection.trafficclasses_delete(self.getClassId())
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -705,8 +710,8 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
             
         #print "item_swap_id=", item_swap_id
         
-        model1 = self.connection.get_model(item_changed_id, "nas_trafficclass")
-        model2 = self.connection.get_model(item_swap_id, "nas_trafficclass")
+        model1 = self.connection.get_trafficclasses(id=item_changed_id)
+        model2 = self.connection.get_trafficclasses(id=item_swap_id)
         #print model1.name, model2.name
         a=model1.weight+0
         b=model2.weight+0
@@ -714,14 +719,14 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         model1.weight=1000001
         try:
             
-            self.connection.save(model1,"nas_trafficclass")
+            self.connection.trafficclasses_save(model1)
             
             model2.weight=a
             model1.weight=b
             
-            self.connection.save(model2,"nas_trafficclass")
+            self.connection.trafficclasses_save(model2,"nas_trafficclass")
             
-            self.connection.save(model1,"nas_trafficclass")
+            self.connection.trafficclasses_save(model1,"nas_trafficclass")
             
             #self.connection.create(model2.save("nas_trafficclass"))
             self.connection.commit()
@@ -763,7 +768,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         except Exception, ex:
             print ex
         self.treeWidget.clear()
-        classes=self.connection.sql(" SELECT id,name,color,passthrough FROM nas_trafficclass ORDER BY weight ASC;")
+        classes=self.connection.get_trafficclasses()
         self.connection.commit()
         for clas in classes:
             item = QtGui.QTreeWidgetItem(self.treeWidget)
@@ -788,15 +793,15 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
     def addNode(self):
 
         try:
-            model=self.connection.get_model(self.getClassId(), "nas_trafficclass")
+            model=self.connection.get_trafficclasses(self.getClassId())
         except Exception, e:
             print e
 
         child=ClassNodeFrame(connection = self.connection)
         if child.exec_()==1:
-            child.model.traffic_class_id=model.id
+            child.model.traffic_class=model.id
             try:
-                self.connection.save(child.model,"nas_trafficnode")
+                self.connection.classnodes_save(child.model)
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -814,7 +819,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         for id in ids:
             if id>0:
                 try:
-                    self.connection.iddelete(id, "nas_trafficnode")
+                    self.connection.classnodes_delete(id)
                 except Exception, e:
                     print e
                     self.connection.rollback()
@@ -825,7 +830,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         
     def editNode(self):
         try:
-            model=self.connection.get_model(self.getSelectedId(), "nas_trafficnode")
+            model=self.connection.get_classnodes(self.getSelectedId())
         except Exception, e:
             print e
             #return
@@ -834,7 +839,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         child=ClassNodeFrame(connection=self.connection, model=model)
         if child.exec_()==1:
             try:
-                self.connection.save(child.model,"nas_trafficnode")
+                self.connection.classnodes_save(child.model)
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -851,7 +856,7 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         self.tableWidget.setColumnHidden(0, False)
         #print text
         #model = self.connection.get_model(class_id, "nas_trafficclass", fields=[''])
-        nodes = self.connection.get_models(table="nas_trafficnode", where={'traffic_class_id':class_id})
+        nodes = self.connection.get_classnodes(traffic_class_id=class_id)
         self.connection.commit()
         self.tableWidget.setRowCount(len(nodes))        
         i=0        

@@ -3,7 +3,7 @@
 import os, sys
 from PyQt4 import QtCore, QtGui, QtSql, QtWebKit
 from helpers import tableFormat
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import dateDelim
 from helpers import HeaderUtil
@@ -44,6 +44,70 @@ _chartopts = {\
             }
 
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
+
+
+class SelMunObrMolel(QtCore.QAbstractListModel):
+    
+    def __init__(self, parent):
+        super(SelMunObrMolel, self).__init__(parent)
+        self.objects = []
+        
+    def flags(self, index):
+        ret = super(SelMunObrMolel, self).flags(index)
+        
+        if ret != QtCore.Qt.ItemFlags():
+          return ret | QtCore.Qt.ItemIsUserCheckable
+    
+    def rowCount(self,e):
+
+        return len(self.objects)
+    
+    def data (self, index, role):
+        return self.objects[index.row()][0]
+    
+    def get_selected(self):
+        res = []
+        for item in self.objects:
+            if item[2]==2:
+                res.append(item[1])
+                
+        return res
+    
+    def data(self,index,role):
+        if not index.isValid: return QtCore.QVariant()
+        myname, internal_name, mystate = self.objects[index.row()]
+        if role == QtCore.Qt.DisplayRole:
+            return QtCore.QVariant(myname)
+        if role == QtCore.Qt.CheckStateRole:
+            if mystate == 0:
+                return QtCore.QVariant(QtCore.Qt.Unchecked)
+            elif mystate == 1:
+                return QtCore.QVariant(QtCore.Qt.PartiallyChecked)
+            elif mystate == 2:
+                return QtCore.QVariant(QtCore.Qt.Checked)
+        return QtCore.QVariant()
+
+    
+    def setData(self,index,value,role=QtCore.Qt.EditRole):
+        if index.isValid():
+            if index.row()==0 and self.objects[0][1]=='all':
+                for x in xrange(len(self.objects)):
+                    self.objects[x][2] = value.toInt()[0]     
+                self.emit(QtCore.SIGNAL("dataChanged(QModelIndex,QModelIndex)"),
+                          index, index)
+                return True
+            self.objects[index.row()][2] = value.toInt()[0]            
+            self.emit(QtCore.SIGNAL("dataChanged(QModelIndex,QModelIndex)"),
+                      index, index)
+            #print self.objects
+            return True
+        return False
+
+    def flags(self,index):
+        if not index.isValid():
+            return QtCore.Qt.ItemIsEditable
+        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable |     QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsTristate
+
 
 class TransactionsReportEbs(ebsTableWindow):
     def __init__(self, connection,account=None, parent=None, cassa=False):
@@ -192,20 +256,22 @@ class TransactionsReportEbs(ebsTableWindow):
         self.label_cashier.setText(QtGui.QApplication.translate("Dialog", "Кассир", None, QtGui.QApplication.UnicodeUTF8))
     
     def refresh(self):
-        systemusers = self.connection.get_models("billservice_systemuser")
+        systemusers = self.connection.get_systemusers()
         self.connection.commit()
         self.comboBox_cashier.addItem(unicode(u'--Все--'))
-        self.comboBox_cashier.setItemData(0, QtCore.QVariant(0))
+        self.comboBox_cashier.setItemData(0, QtCore.QVariant(None))
+        
+
         i=1
         for systemuser in systemusers:
            self.comboBox_cashier.addItem(unicode(systemuser.username))
            self.comboBox_cashier.setItemData(i, QtCore.QVariant(systemuser.id))
            i+=1
            
-        accounts = self.connection.sql("SELECT * FROM billservice_account ORDER BY username ASC")
+        accounts = self.connection.get_account(fields=['id', 'username'])
         self.connection.commit()
         self.user_edit.addItem(u"-Все клиенты-")
-        self.user_edit.setItemData(0, QtCore.QVariant(0))
+        self.user_edit.setItemData(0, QtCore.QVariant(None))
         i=1
         for account in accounts:
             self.user_edit.addItem(account.username)
@@ -217,16 +283,20 @@ class TransactionsReportEbs(ebsTableWindow):
             self.setWindowTitle(u"История операций над лицевым счётом пользователя %s" % self.account.username)
 
 
-        items = self.connection.get_models("billservice_transactiontype", order={'name':'ASC'})
+        items = self.connection.get_transactiontypes()
         self.connection.commit()
         
-        self.comboBox_transactions_type.addItem(u"Общий отчёт", QtCore.QVariant("TOTAL_TRANSACTIONS"))
+        sm=SelMunObrMolel(self)
+        self.comboBox_transactions_type.setModel(sm)
+        #self.comboBox_transactions_type.addItem(u"Общий отчёт", QtCore.QVariant("TOTAL_TRANSACTIONS"))
         i=1
+        sm.objects.append([u'Все', 'all',  0])
         for item in items:
+            sm.objects.append([item.name, item.internal_name,  0])
             #self.transactions_tables.insert(0, "billservice_transaction")
-            self.comboBox_transactions_type.addItem(item.name, QtCore.QVariant(item.internal_name))
-            if item.internal_name==u'MANUAL_TRANSACTION':
-                self.comboBox_transactions_type.setCurrentIndex(i)
+            #self.comboBox_transactions_type.addItem(item.name, QtCore.QVariant(item.internal_name))
+            #if item.internal_name==u'MANUAL_TRANSACTION':
+            #    self.comboBox_transactions_type.setCurrentIndex(i)
             i+=1 
             
         #for tr_type in self.transactions_types:
@@ -272,6 +342,7 @@ class TransactionsReportEbs(ebsTableWindow):
         end_date = self.date_end.currentDate()
 
         account_id = self.user_edit.itemData(self.user_edit.currentIndex()).toInt()[0]
+        print 'self.comboBox_transactions_type.model().get_selected()', self.comboBox_transactions_type.model().get_selected()
         transaction_type=unicode(self.comboBox_transactions_type.itemData(self.comboBox_transactions_type.currentIndex()).toString())
         #print transaction_type
         self.statusBar().showMessage(u"Выполняется обработка запроса. Подождите.")
@@ -311,7 +382,7 @@ class TransactionsReportEbs(ebsTableWindow):
                 self.addrow(item.summ*(-1), i, 8, promise = item.promise)
                 self.addrow(item.description, i, 9, promise = item.promise)
                 self.addrow(item.promise, i, 10, promise = item.promise)
-                sum+=item.summ*(-1)
+                sum+=float(item.summ)*(-1)
                 if item.promise:
                     try:
                         self.addrow(item.end_promise.strftime(self.strftimeFormat), i, 11, promise = item.promise)

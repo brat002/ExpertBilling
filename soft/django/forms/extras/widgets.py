@@ -29,7 +29,7 @@ def _parse_date_fmt():
         elif char in 'Yy':
             output.append('year')
             #if not self.first_select: self.first_select = 'year'
-        elif char in 'bFMmNn':
+        elif char in 'bEFMmNn':
             output.append('month')
             #if not self.first_select: self.first_select = 'month'
         elif char in 'dj':

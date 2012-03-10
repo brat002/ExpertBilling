@@ -181,7 +181,7 @@ class RRDPropertiesDialog(QtGui.QDialog):
         
     def fixtures(self):
         if self.report_type=='accounts':
-            accounts = self.connection.get_models("billservice_account", fields=['id', 'username'], order={'username':'ASC'})
+            accounts = self.connection.get_account(fields=['id', 'username'],)
             self.connection.commit()
             for account in accounts:
                 item = QtGui.QListWidgetItem()
@@ -189,7 +189,7 @@ class RRDPropertiesDialog(QtGui.QDialog):
                 item.id = account.id
                 self.listWidget_all.addItem(item)
         elif self.report_type=='nasses':
-            items = self.connection.get_models("nas_nas", fields=['id', 'name'], order={'name':'ASC'})
+            items = self.connection.get_nasses(fields=['id', 'name'])
             self.connection.commit()
             for item in items:
                 litem = QtGui.QListWidgetItem()
@@ -332,14 +332,7 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         self.page = self.webView.page()
         self.cookieJar = CookieJar()
         self.page.networkAccessManager().setCookieJar( self.cookieJar )
-        #sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Maximum)
-        #sizePolicy.setHorizontalStretch(0)
-        #sizePolicy.setVerticalStretch(0)
-        #sizePolicy.setHeightForWidth(self.webView.sizePolicy().hasHeightForWidth())
-        #self.webView.setSizePolicy(sizePolicy)        
-        #self.webView.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath("templates/tmp/temp.html")))
-        
-        
+
         self.gridLayout.addWidget(self.webView, 0, 0, 1, 1)
         self.setCentralWidget(self.centralwidget)
 
@@ -538,7 +531,7 @@ class ReportMainWindow(QtGui.QMainWindow):
         self.render()
         
     def render(self):
-        template = self.connection.get_model(self.template_id, "billservice_template")
+        template = self.connection.get_templates(self.template_id)
         templ = Template(unicode(template.body), input_encoding='utf-8')
         data = ''
         try:
@@ -812,9 +805,7 @@ class ConnectDialog(QtGui.QDialog):
         self.encryption_checkBox.setObjectName("encryption_checkBox")
         self.encryption_checkBox.setDisabled(True)
         self.encryption_checkBox.setChecked(True)
-        '''self.compress_checkbox = QtGui.QCheckBox(self.centralwidget)
-        self.compress_checkbox.setGeometry(QtCore.QRect(60,124,191,18))
-        self.compress_checkbox.setObjectName("compress_checkbox")'''
+
 
         self.connect_pushButton = QtGui.QPushButton(self.centralwidget)
         self.connect_pushButton.setGeometry(QtCore.QRect(260,10,75,24))
@@ -880,17 +871,13 @@ class ConnectDialog(QtGui.QDialog):
         self.address_label = QtGui.QLabel(self.centralwidget)
         self.address_label.setGeometry(QtCore.QRect(11,11,41,20))
         self.address_label.setObjectName("address_label")
-        #self.setCentralWidget(self.centralwidget)
 
-        #self.statusbar = QtGui.QStatusBar(self)
-        #self.statusbar.setObjectName("statusbar")
-        #self.setStatusBar(self.statusbar)
 
         self.setTabOrder(self.address_edit,self.name_edit)
         self.setTabOrder(self.name_edit,self.password_edit)
         self.setTabOrder(self.password_edit,self.encryption_checkBox)
-        #self.setTabOrder(self.encryption_checkBox,self.compress_checkbox)
-        #self.setTabOrder(self.compress_checkbox,self.save_checkBox)
+
+
         self.setTabOrder(self.encryption_checkBox, self.save_checkBox)
         self.setTabOrder(self.save_checkBox,self.connect_pushButton)
         self.setTabOrder(self.connect_pushButton,self.exit_pushButton)
@@ -908,12 +895,8 @@ class ConnectDialog(QtGui.QDialog):
         QtCore.QObject.connect(self.exit_pushButton, QtCore.SIGNAL("clicked()"), self.reject)
         QtCore.QObject.connect(self.save_pushButton, QtCore.SIGNAL("clicked()"), self.save)
         QtCore.QObject.connect(self.remove_pushButton, QtCore.SIGNAL("clicked()"), self.remove)
-        #QtCore.QObject.connect(self.tableSelection, QtCore.SIGNAL("selectionChanged(QModelIndex, QModelIndex)"), self.tableClicked)
-        #self.connect(self.tableWidget, QtCore.SIGNAL("currentChanged(previous, current)"), QtCore.SLOT("self.tableClicked(self, previous, current)"))
-        #QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("clicked(const QModelIndex&)"), self.tableClicked)
+
         QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("clicked(QModelIndex)"), self.tableClicked)
-        #QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("selectionChanged(const QModelIndex&, const QModelIndex&)"), )"), )"), self.tableClicked)
-        #QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Expert Billing Client", None, QtGui.QApplication.UnicodeUTF8))
@@ -941,9 +924,6 @@ class ConnectDialog(QtGui.QDialog):
             else: self.save_checkBox.setCheckState(QtCore.Qt.Unchecked)
             self.address_edit.setText(settings.value("ip", QtCore.QVariant("")).toString())
             self.name_edit.setText(settings.value("user", QtCore.QVariant("")).toString())
-            #self.address_edit.setText(self._address)
-            #self.name_edit.setText(self._name)
-            #self.password_edit.setText("*******")
         except Exception, ex:
             print ex
 
@@ -1192,11 +1172,12 @@ class OperatorDialog(QtGui.QDialog):
 
     def fixtures(self):
 #        self.op_model = self.connection.get_model(1, "billservice_operator")
-        try:
-            self.op_model =self.connection.get_operator()[0]
+
+        self.op_model =self.connection.get_operator()
+        if self.op_model:
             #print self.op_model
             try:
-                self.bank_model=self.connection.get_bank_for_operator(self.op_model.id)
+                self.bank_model=self.connection.get_banks(self.op_model.bank)
             except:
                 pass
             self.connection.commit()
@@ -1211,40 +1192,30 @@ class OperatorDialog(QtGui.QDialog):
             self.lineEdit_uraddress.setText(self.op_model.uraddress)
             self.lineEdit_email.setText(self.op_model.email)
             
-            self.lineEdit_bank.setText(self.bank_model.bank)
-            self.lineEdit_bankcode.setText(self.bank_model.bankcode)
-            self.lineEdit_rs.setText(self.bank_model.rs)
-            self.lineEdit_currency.setText(self.bank_model.currency)
+            if self.bank_model:
+                self.lineEdit_bank.setText(self.bank_model.bank)
+                self.lineEdit_bankcode.setText(self.bank_model.bankcode)
+                self.lineEdit_rs.setText(self.bank_model.rs)
+                self.lineEdit_currency.setText(self.bank_model.currency)
         
-        except Exception, e:
-            print e
+
             
     def accept(self):
         if self.op_model:
             op_model = self.op_model
         else:
-            op_model = Object()
+            op_model = AttrDict()
             
         if self.bank_model:
             bank_model = self.bank_model
         else:
-            bank_model = Object()
+            bank_model = AttrDict()
         
         bank_model.bank = unicode(self.lineEdit_bank.text())
         bank_model.bankcode = unicode(self.lineEdit_bankcode.text())
         bank_model.rs = unicode(self.lineEdit_rs.text())
         bank_model.currency = unicode(self.lineEdit_currency.text())
 
-        try:
-            bank_model.id = self.connection.save(bank_model,"billservice_bankdata")
-            self.bank_model = bank_model
-        except Exception, e:
-            print e
-            self.connection.rollback()
-            QtGui.QMessageBox.warning(self, u"Ошибка!",
-                                u"Невозможно сохранить данные!")
-            return
-        #print "bank_id", self.bank_model.id
         
         op_model.organization = unicode(self.lineEdit_organization.text())
         op_model.okpo = unicode(self.lineEdit_okpo.text())
@@ -1256,23 +1227,22 @@ class OperatorDialog(QtGui.QDialog):
         op_model.postaddress = unicode(self.lineEdit_postaddress.text())
         op_model.uraddress = unicode(self.lineEdit_uraddress.text())
         op_model.email = unicode(self.lineEdit_email.text())
-        op_model.bank_id = self.bank_model.id
+
         
         
 
 
-        try:
-            self.connection.save(op_model,"billservice_operator")
-            self.connection.commit()
-        except Exception, e:
-            print e
-            self.connection.rollback()
+
+        if self.connection.operator_save(op_model,bank_model):
+             QtGui.QDialog.accept(self)
+        else:
             QtGui.QMessageBox.warning(self, u"Ошибка!",
                                 u"Невозможно сохранить данные об организации!")
-            return
 
 
-        QtGui.QDialog.accept(self)
+
+
+       
         
 class ConnectionWaiting(QtGui.QDialog):
     def __init__(self):
@@ -1443,13 +1413,13 @@ class simpleTableImageWidget(QtGui.QWidget):
         self.toolButton_ipn_status.setMinimumSize(QtCore.QSize(17, 17))
         self.toolButton_ipn_status.setMaximumSize(QtCore.QSize(17, 17))
         self.toolButton_ipn_status.resize(17,17)
-        self.horizontalLayout.addWidget(self.toolButton_ipn_status)
+        #self.horizontalLayout.addWidget(self.toolButton_ipn_status)
         
         self.toolButton_ipn_added = QtGui.QToolButton(self)
         self.toolButton_ipn_added.setMinimumSize(QtCore.QSize(17, 17))
         self.toolButton_ipn_added.setMaximumSize(QtCore.QSize(17, 17))
         self.toolButton_ipn_added.resize(17,17)
-        self.horizontalLayout.addWidget(self.toolButton_ipn_added)
+        #self.horizontalLayout.addWidget(self.toolButton_ipn_added)
         
         self.toolButton_online_status = QtGui.QToolButton(self)
         self.toolButton_online_status.setMinimumSize(QtCore.QSize(17, 17))
@@ -1651,7 +1621,7 @@ class TemplatesWindow(QtGui.QMainWindow):
     def delCardTemplate(self):
         item = self.treeWidget.currentItem()
         if item.type_id:
-            self.connection.iddelete(item.id, "billservice_template")
+            self.connection.template_delete(id=item.id)
             self.connection.commit()
             self.refresh()
             self.treeWidget.setCurrentItem(self.treeWidget.topLevelItem(0))
@@ -1659,7 +1629,7 @@ class TemplatesWindow(QtGui.QMainWindow):
     def editTemplate(self, item1, item2):
         
         try:
-            type_id = self.treeWidget.currentItem().type_id
+            type_id = self.treeWidget.currentItem().type
             id = self.treeWidget.currentItem().id
         except:
             self.lineEdit_name.setText('')
@@ -1668,7 +1638,8 @@ class TemplatesWindow(QtGui.QMainWindow):
         self.textBrowser_remplate_body.clear()
 
 
-        template = self.connection.get_model(id, "billservice_template")
+        template = self.connection.get_templates(id=id)
+        
         self.connection.commit()
         
         #self.treeWidget.currentItem().model = template
@@ -1703,19 +1674,20 @@ class TemplatesWindow(QtGui.QMainWindow):
     def saveTemplate(self):
         if self.treeWidget.currentItem() and 'type_id' in self.treeWidget.currentItem().__dict__:
             #model = self.treeWidget.currentItem().model
-            model = Object()
+            model = AttrDict()
             #model.type_id = self.treeWidget.currentItem().type_id
             model.id = self.treeWidget.currentItem().id
         else:
-            model = Object()
+            model = AttrDict()
 
         model.name = unicode(self.lineEdit_name.text())
         model.body = unicode(self.textBrowser_remplate_body.toPlainText())
-        model.type_id = unicode(self.comboBox_template_type.itemData(self.comboBox_template_type.currentIndex()).toInt()[0]) 
+        model.type = unicode(self.comboBox_template_type.itemData(self.comboBox_template_type.currentIndex()).toInt()[0]) 
         #for x in model.__dict__:
         #    print x, model.__dict__[x]
 
-        model.id = self.connection.save(model, "billservice_template")
+        res = self.connection.template_save(model)
+        model.id = res.id
         self.treeWidget.currentItem().model = model
         
         self.connection.commit()
@@ -1733,7 +1705,7 @@ class TemplatesWindow(QtGui.QMainWindow):
         """
         
 
-        tempaltetypes = self.connection.get_models("billservice_templatetype")
+        tempaltetypes = self.connection.get_templatetypes()
         # 
         self.connection.commit()
         i=0
@@ -1750,14 +1722,13 @@ class TemplatesWindow(QtGui.QMainWindow):
         except:
             pass
         self.treeWidget.clear()
-        #te = self.connection.get_models("""billservice_template as template ORDER BY type_id ASC""")
-        #tempaltetypes = self.connection.get_models("billservice_templatetype", order={'name':'ASC'})
-        tempaltetypes = self.connection.get_models("billservice_templatetype")
-        templates = self.connection.get_models("billservice_template")
+
+
+        templates = self.connection.get_templates()
         
         tmpl = {}
         for x in templates:
-            if not tmpl.get(x.type_id):
+            if not tmpl.get(x.type):
                 tmpl[x.type_id]=[]
             tmpl[x.type_id].append(x)    
             
@@ -1775,7 +1746,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             for x in tmpl.get(tt.id):
                 item = QtGui.QTreeWidgetItem(r_item)
                 item.id=x.id
-                item.type_id=x.type_id
+                item.type=x.type
                 item.setText(0, x.name)  
                   
                 try:
@@ -1786,13 +1757,13 @@ class TemplatesWindow(QtGui.QMainWindow):
 
             
     def preview(self):
-        id = self.treeWidget.currentItem().type_id
+        id = self.treeWidget.currentItem().type
         print "type_id", id
         templ = Template(unicode(self.textBrowser_remplate_body.toPlainText()), input_encoding='utf-8')
         data=''
         if id==1:
 
-            account = self.connection.get("SELECT * FROM billservice_account LIMIT 1" )
+            account = self.connection.get_account(limit=1)[0]
             print account
             #tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
             try:
@@ -1800,18 +1771,16 @@ class TemplatesWindow(QtGui.QMainWindow):
             except Exception, e:
                 data=u"Error %s" % str(e)
         if id==2:
-            account = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0].id
-            #organization = self.connection.sql("SELECT * FROM billservice_organization LIMIT 1" )[0]
-            #bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
-            operator = self.connection.get("SELECT * FROM billservice_operator LIMIT 1")
+            account = self.connection.get_account(limit=1)[0].id
+            operator = self.connection.get_operator()
             try:
                 data=templ.render_unicode(account=account, operator=operator,  connection=self.connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
 
         if id==5:
-            account = self.connection.sql("SELECT * FROM billservice_account LIMIT 1" )[0]
-            transaction = self.connection.sql("SELECT * FROM billservice_transaction LIMIT 1")[0]
+            account = self.connection.get_account(limit=1)[0]
+            transaction = self.connection.get_transaction(normal_fields=True, limit=1)[0]
             sum = -10000
             document=u"Банковский перевод №112432"
             try:
@@ -1829,7 +1798,7 @@ class TemplatesWindow(QtGui.QMainWindow):
                 data=u"Error %s" % repr(e)
 
         if id==4:
-            account = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0]
+            account = self.connection.get_account(limit=1)[0]
 
             try:
                 data=templ.render_unicode(connection=self.connection, account=account.id)
@@ -1845,20 +1814,20 @@ class TemplatesWindow(QtGui.QMainWindow):
                                 
         if id ==7:
             try:
-                operator =self.connection.get_operator()[0]
+                operator =self.connection.get_operator()
             except Exception, e:
                 print e
                 QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
                 return
     
             try:
-                bank =self.connection.get_bank_for_operator(operator.id)
+                bank =self.connection.get_banks(id=operator.bank)
             except Exception, e:
                 print e
                 QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
                 return
             
-            card = Object()
+            card = AttrDict()
             card.id = '999'
             card.pin = '12345678901234'
             card.login = 'user'
@@ -2573,7 +2542,7 @@ class SpeedLimitDialog(QtGui.QDialog):
             
     def accept(self):
         if self.model==None:
-            self.model = Object()
+            self.model = AttrDict()
             
         self.model.speed_units = unicode(self.comboBox_unit.currentText())
         self.model.change_speed_type = "add" if self.radioButton_speed_add.isChecked() == True else "abs"
@@ -2738,9 +2707,9 @@ class InfoDialog(QtGui.QDialog):
                     id=self.getSelectedId(self.tableWidget)
                     
                     if id>0:
-                        model = self.connection.get_model(id, 'billservice_accountprepaysradiustrafic')
+                        model = self.connection.get_accountprepaysradiustrafic(id)
                         model.size=int(text[0])*1048576
-                        self.connection.save(model, 'billservice_accountprepaysradiustrafic')
+                        self.connection.accountprepaysradiustrafic_save(model)
         elif self.type=='prepaidtraffic':
             if x==3:
                 item = self.tableWidget.item(y,x)
@@ -2759,9 +2728,9 @@ class InfoDialog(QtGui.QDialog):
                     id=self.getSelectedId(self.tableWidget)
                     
                     if id>0:
-                        model = self.connection.get_model(id, 'billservice_accountprepaystrafic')
+                        model = self.connection.get_accountprepaystraffic(id)
                         model.size=int(text[0])*1048576
-                        self.connection.save(model, 'billservice_accountprepaystrafic')
+                        self.connection.accountprepaystrafic_save(model)
             
             
     def addrow(self, value, x, y, id=None, raw_value=None, color=None, enabled=True, ctext=None, setdata=False, widget = None):
@@ -3037,7 +3006,7 @@ class RadiusAttrsDialog(QtGui.QDialog):
         print "self.nas_id", self.nas_id
         try:
             
-            self.connection.radiusattr_save(model)
+            self.connection.radiusattrs_save(model)
             self.connection.commit()
         except Exception, e:
             print e
@@ -3046,7 +3015,7 @@ class RadiusAttrsDialog(QtGui.QDialog):
       
     def delete(self):
         id = self.getSelectedId()
-        self.connection.radiusattr_delete(id)
+        self.connection.radiusattrs_delete(id)
         self.connection.commit()
         self.fixtures()
               
@@ -3055,9 +3024,9 @@ class RadiusAttrsDialog(QtGui.QDialog):
     
     def fixtures(self):
         if self.tarif_id:
-            attrs = self.connection.get_models("billservice_radiusattrs", where={'tarif_id':self.tarif_id,})
+            attrs = self.connection.get_radiusattrs(tarif_id=self.tarif_id)
         elif self.nas_id:
-            attrs = self.connection.get_models("billservice_radiusattrs", where={'nas_id':self.nas_id,})
+            attrs = self.connection.get_radiusattrs(nas_id=self.nas_id)
         else:
             return
         self.connection.commit()
@@ -3479,12 +3448,11 @@ class TransactionForm(QtGui.QDialog):
         self.dateTimeEdit_paymend_date.setDateTime(now)
         self.dateTimeEdit_end_promise.setDateTime(now)
     
-        items = self.connection.get_transactiontypes("billservice_transactiontype")
-        if not items.status: return
+        items = self.connection.get_transactiontypes()
         
         self.comboBox_transactiontype.clear()
         i=0
-        for item in items.records:
+        for item in items:
             self.comboBox_transactiontype.addItem(item.name, userData=QtCore.QVariant(item.internal_name))
             if item.internal_name==u'MANUAL_TRANSACTION':
                 self.comboBox_transactiontype.setCurrentIndex(i)
@@ -3548,11 +3516,11 @@ class TransactionForm(QtGui.QDialog):
             #QtGui.QMessageBox.warning(self, unicode(u"Ок"), unicode(u"Настройка принтера не была произведена!"))
             self.getPrinter()
         
-        template = self.connection.get('SELECT body FROM billservice_template WHERE type_id=5')
+        template = self.connection.get_templates(type_id=5)[0]
         templ = Template(unicode(template.body), input_encoding='utf-8')
-        account = self.connection.get("SELECT * FROM billservice_account WHERE id=%s LIMIT 1" % self.transaction.account_id)
+        account = self.connection.get_account(id=self.transaction.account)
 
-        tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+        tarif = self.connection.get_tariff_for_account(id = account.id)
         #transaction = self.connection.get("SELECT * FROM billservice_transaction WHERE id=%s" % self.transaction)
         transaction = self.transaction
         self.connection.commit()

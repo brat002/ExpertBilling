@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 #restrict by ip adresses
 
 from helpers import tableFormat
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import HeaderUtil
 from helpers import dateDelim
@@ -386,7 +386,7 @@ class SystemUserFrame(QtGui.QDialog):
                 model.text_password = self.text_password
         else:
             #print 'New nas'
-            model=Object()
+            model=AttrDict()
             model.password=self.password
             model.text_password = self.text_password
             
@@ -412,16 +412,9 @@ class SystemUserFrame(QtGui.QDialog):
             model.unp=unicode(self.lineEdit_unp.text())
             model.im = unicode(self.lineEdit_im.text())
                         
-            try:
-                self.connection.save(model, "billservice_systemuser")
-                self.connection.commit()
-            except Exception, e:
-                print e
-                self.connection.rollback()
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"При сохранении данных возникла ошибка %s" % repr(e)))
-                return
-    
-            QtGui.QDialog.accept(self)
+
+            if self.connection.systemusers_save(model):
+                QtGui.QDialog.accept(self)
         else:
             QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите необходимые данные"))
             return
@@ -504,7 +497,7 @@ class SystemEbs(ebsTableWindow):
         if id>0 and QtGui.QMessageBox.question(self, u"Удалить пользователя?" , u"Вы уверены, что хотите удалить пользователя?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             try:
                 #self.connection.delete("DELETE FROM billservice_systemuser WHERE id=%d" % self.getSelectedId())
-                self.connection.iddelete(id, "billservice_systemuser")
+                self.connection.systemuser_delete(id)
                 self.connection.commit()
             except Exception, e:
                 print e
@@ -518,15 +511,17 @@ class SystemEbs(ebsTableWindow):
 
             
         try:
-            model=self.connection.get_model(self.getSelectedId(), "billservice_systemuser")
+            model=self.connection.get_systemusers(self.getSelectedId())
         except:
             return
 
-        if self.tableWidget.currentColumn()==7:
-            child = GroupSelectDialog(systemuser_model=model, connection = self.connection)
-            if child.exec_()==1:
-                self.refresh()
-            return            
+        #=======================================================================
+        # if self.tableWidget.currentColumn()==7:
+        #    child = GroupSelectDialog(systemuser_model=model, connection = self.connection)
+        #    if child.exec_()==1:
+        #        self.refresh()
+        #    return            
+        #=======================================================================
 
         addf = SystemUserFrame(connection=self.connection, model=model)
         
@@ -546,12 +541,12 @@ class SystemEbs(ebsTableWindow):
     def refresh(self):
         self.statusBar().showMessage(u"Идёт получение данных")
         #self.tableWidget.setSortingEnabled(False)
-        users = self.connection.get_models("billservice_systemuser")
+        users = self.connection.get_systemusers()
         self.connection.commit()
         self.tableWidget.setRowCount(len(users))
         i=0
         for user in users:
-            groups = self.connection.sql("SELECT (SELECT name FROM billservice_systemgroup WHERE id=sg.systemgroup_id) as name FROM billservice_systemuser_group as sg WHERE systemuser_id=%s" % user.id)
+            
             self.addrow(user.id, i,0)
             self.addrow(user.username, i,1)
             self.addrow(user.status, i,2)
@@ -562,10 +557,7 @@ class SystemEbs(ebsTableWindow):
                 pass
             self.addrow(user.last_ip, i,5)
             self.addrow(user.host, i,6)
-            if groups:
-                self.tableWidget.setItem(i,7, CustomWidget(parent=self.tableWidget, models=groups))
-            else:
-                self.addrow(u"Группы не назначены", i,7)
+           
             #self.tableWidget.setRowHeight(i, 14)
             i+=1            
             

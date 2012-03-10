@@ -26,20 +26,19 @@ from django.utils.functional import lazy
 from django.core.validators import EMPTY_VALUES
 
 from util import ErrorList
-from widgets import TextInput, PasswordInput, HiddenInput, MultipleHiddenInput, \
-        FileInput, CheckboxInput, Select, NullBooleanSelect, SelectMultiple, \
-        DateInput, DateTimeInput, TimeInput, SplitDateTimeWidget, SplitHiddenDateTimeWidget
+from widgets import (TextInput, PasswordInput, HiddenInput,
+    MultipleHiddenInput, ClearableFileInput, CheckboxInput, Select,
+    NullBooleanSelect, SelectMultiple, DateInput, DateTimeInput, TimeInput,
+    SplitDateTimeWidget, SplitHiddenDateTimeWidget, FILE_INPUT_CONTRADICTION)
 
 __all__ = (
     'Field', 'CharField', 'IntegerField',
-    'DEFAULT_DATE_INPUT_FORMATS', 'DateField',
-    'DEFAULT_TIME_INPUT_FORMATS', 'TimeField',
-    'DEFAULT_DATETIME_INPUT_FORMATS', 'DateTimeField', 'TimeField',
+    'DateField', 'TimeField', 'DateTimeField', 'TimeField',
     'RegexField', 'EmailField', 'FileField', 'ImageField', 'URLField',
     'BooleanField', 'NullBooleanField', 'ChoiceField', 'MultipleChoiceField',
     'ComboField', 'MultiValueField', 'FloatField', 'DecimalField',
     'SplitDateTimeField', 'IPAddressField', 'FilePathField', 'SlugField',
-    'TypedChoiceField'
+    'TypedChoiceField', 'TypedMultipleChoiceField'
 )
 
 def en_format(name):
@@ -49,13 +48,9 @@ def en_format(name):
     from django.conf.locale.en import formats
     warnings.warn(
         "`django.forms.fields.DEFAULT_%s` is deprecated; use `django.utils.formats.get_format('%s')` instead." % (name, name),
-        PendingDeprecationWarning
+        DeprecationWarning
     )
     return getattr(formats, name)
-
-DEFAULT_DATE_INPUT_FORMATS = lazy(lambda: en_format('DATE_INPUT_FORMATS'), tuple, list)()
-DEFAULT_TIME_INPUT_FORMATS = lazy(lambda: en_format('TIME_INPUT_FORMATS'), tuple, list)()
-DEFAULT_DATETIME_INPUT_FORMATS = lazy(lambda: en_format('DATETIME_INPUT_FORMATS'), tuple, list)()
 
 class Field(object):
     widget = TextInput # Default widget to use when rendering this type of Field.
@@ -107,6 +102,9 @@ class Field(object):
         self.localize = localize
         if self.localize:
             widget.is_localized = True
+
+        # Let the widget know whether it should display as required.
+        widget.is_required = self.required
 
         # Hook into self.widget_attrs() for any Field-specific HTML attributes.
         extra_attrs = self.widget_attrs(widget)
@@ -166,6 +164,17 @@ class Field(object):
         self.validate(value)
         self.run_validators(value)
         return value
+
+    def bound_data(self, data, initial):
+        """
+        Return the value that should be shown for this field on render of a
+        bound form, given the submitted POST data for the field and the initial
+        data, if any.
+
+        For most fields, this will simply be data; FileFields need to handle it
+        a bit differently.
+        """
+        return data
 
     def widget_attrs(self, widget):
         """
@@ -440,12 +449,13 @@ class EmailField(CharField):
         return super(EmailField, self).clean(value)
 
 class FileField(Field):
-    widget = FileInput
+    widget = ClearableFileInput
     default_error_messages = {
         'invalid': _(u"No file was submitted. Check the encoding type on the form."),
         'missing': _(u"No file was submitted."),
         'empty': _(u"The submitted file is empty."),
         'max_length': _(u'Ensure this filename has at most %(max)d characters (it has %(length)d).'),
+        'contradiction': _(u'Please either submit a file or check the clear checkbox, not both.')
     }
 
     def __init__(self, *args, **kwargs):
@@ -474,9 +484,28 @@ class FileField(Field):
         return data
 
     def clean(self, data, initial=None):
+        # If the widget got contradictory inputs, we raise a validation error
+        if data is FILE_INPUT_CONTRADICTION:
+            raise ValidationError(self.error_messages['contradiction'])
+        # False means the field value should be cleared; further validation is
+        # not needed.
+        if data is False:
+            if not self.required:
+                return False
+            # If the field is required, clearing is not possible (the widget
+            # shouldn't return False data in that case anyway). False is not
+            # in validators.EMPTY_VALUES; if a False value makes it this far
+            # it should be validated from here on out as None (so it will be
+            # caught by the required check).
+            data = None
         if not data and initial:
             return initial
         return super(FileField, self).clean(data)
+
+    def bound_data(self, data, initial):
+        if data in (None, FILE_INPUT_CONTRADICTION):
+            return initial
+        return data
 
 class ImageField(FileField):
     default_error_messages = {
@@ -667,7 +696,7 @@ class TypedChoiceField(ChoiceField):
 
     def to_python(self, value):
         """
-        Validate that the value is in self.choices and can be coerced to the
+        Validates that the value is in self.choices and can be coerced to the
         right type.
         """
         value = super(TypedChoiceField, self).to_python(value)
@@ -708,6 +737,32 @@ class MultipleChoiceField(ChoiceField):
         for val in value:
             if not self.valid_value(val):
                 raise ValidationError(self.error_messages['invalid_choice'] % {'value': val})
+
+class TypedMultipleChoiceField(MultipleChoiceField):
+    def __init__(self, *args, **kwargs):
+        self.coerce = kwargs.pop('coerce', lambda val: val)
+        self.empty_value = kwargs.pop('empty_value', [])
+        super(TypedMultipleChoiceField, self).__init__(*args, **kwargs)
+
+    def to_python(self, value):
+        """
+        Validates that the values are in self.choices and can be coerced to the
+        right type.
+        """
+        value = super(TypedMultipleChoiceField, self).to_python(value)
+        super(TypedMultipleChoiceField, self).validate(value)
+        if value == self.empty_value or value in validators.EMPTY_VALUES:
+            return self.empty_value
+        new_value = []
+        for choice in value:
+            try:
+                new_value.append(self.coerce(choice))
+            except (ValueError, TypeError, ValidationError):
+                raise ValidationError(self.error_messages['invalid_choice'] % {'value': choice})
+        return new_value
+
+    def validate(self, value):
+        pass
 
 class ComboField(Field):
     """
