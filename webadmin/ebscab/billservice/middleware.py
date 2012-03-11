@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 ADMIN_URLS = (
 '/helpdesk/',
 '/media/',
+'/admin/',
 '/static/',
 '/admin_media',
 'admin-media',
