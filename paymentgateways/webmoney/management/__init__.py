@@ -1,5 +1,5 @@
 
-from webmoney.signals import webmoney_payment_accepted
+from paymentgateways.webmoney.signals import webmoney_payment_accepted
 
 
 def webmoney_payment_accepted_processor(sender, payment, **kwargs):
