@@ -92,7 +92,7 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sitemaps',
+    #'django.contrib.sitemaps',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
@@ -137,7 +137,7 @@ LEFT_PROMISE_DAYS = 7
 
 ALLOW_WEBMONEY = True
 ALLOW_QIWI = True
-WEBCAB_LOG = '/opt/ebs/web/ebscab/log/webcab_log'
+WEBCAB_LOG = './log/webcab_log'#/opt/ebs/web/ebscab/log/webcab_log'
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'

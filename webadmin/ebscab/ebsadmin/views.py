@@ -5,7 +5,7 @@ from ebscab.lib.ssh_paramiko import ssh_client
 from billservice.models import Account, AccessParameters, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
 from billservice.models import Organization, TimeSpeed, BankData, TimePeriod, SettlementPeriod, Template, TemplateType,  AccountHardware, SuspendedPeriod, Operator, Transaction, PeriodicalService, AddonService, Tariff
 from billservice.models import OneTimeService, TimeSpeed, GroupTrafficClass, TrafficTransmitNodes, PrepaidTraffic, Group, PeriodicalService, OneTimeService, TrafficLimit, AddonServiceTarif
-from billservice.models import Template, News, SaleCard, DealerPay, Card, Dealer, AccountViewedNews, TPChangeRule, Manufacturer, Model, Hardware, HardwareType, TransactionType, TimePeriodNode, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, TrafficTransmitService, RadiusAttrs, SpeedLimit,  RadiusTraffic, RadiusTrafficNode,TimeAccessNode,TimeAccessService, AddonServiceTarif
+from billservice.models import Template, News, AccountAddonService, SaleCard, DealerPay, Card, Dealer, AccountViewedNews, TPChangeRule, Manufacturer, Model, Hardware, HardwareType, TransactionType, TimePeriodNode, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, TrafficTransmitService, RadiusAttrs, SpeedLimit,  RadiusTraffic, RadiusTrafficNode,TimeAccessNode,TimeAccessService, AddonServiceTarif
 
 from nas.models import Nas, Switch, TrafficClass, TrafficNode
 from radius.models import ActiveSession
@@ -33,6 +33,9 @@ from django.db.models import Q
 from django.db import transaction
 import json
 import commands
+
+from django.contrib.auth.decorators import permission_required
+
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
         for key in result:
@@ -95,26 +98,7 @@ def jsonaccounts(request):
     #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res, 'total':str(totalcount)}
     
-@ajax_request
-@login_required
-def periodicalservice(request):
-    extra={'start':int(request.POST.get('start',0)), 'limit':int(request.POST.get('limit',100))}
-    if request.POST.get('sort',''):
-        extra['sort'] = request.POST.get('sort','')
-        extra['dir'] = request.POST.get('dir','asc')
-        
-    
-    items = ExtDirectStore(PeriodicalService)
-    items, totalcount = items.query(**extra)
 
-    res=[]
-    for item in items:
-        r=instance_dict(item,normal_fields=True)
-        res.append(r)
-    #print instance_dict(item).keys()
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res, 'total':str(totalcount)}
 
 @ajax_request
 @login_required
@@ -172,6 +156,9 @@ def generate_credentials(request):
 @ajax_request
 @login_required
 def get_mac_for_ip(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('subaccount.getmacforip'):
+        return {'status':False, 'message':u'Недостаточно прав для выполнения операции'}
+    
     nas_id = request.POST.get('nas_id', None)
     if not nas_id:
         return {'status':False, 'message':u'Сервер доступа не указан'}
@@ -199,9 +186,11 @@ def get_mac_for_ip(request):
     
     return {'success':True, 'mac':mac}
     
-@ajax_request
 @login_required
+@ajax_request
 def subaccounts(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('subaccount.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id', None)
     id = request.POST.get('id', None)
     print "n fields", request.POST.get('normal_fields', True)
@@ -212,70 +201,53 @@ def subaccounts(request):
         items = SubAccount.objects.filter(account__id=account_id)
     else:
         items = SubAccount.objects.filter(id=id)
-    #print accounts
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item,normal_fields=normal_fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def addonservices(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('addonservice.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     id = request.POST.get('id', None)
     
     normal_fields = request.POST.get('normal_fields', True)=='True'
-    print 'id', id, type(id), len(id)
     if id and id!= '':
         items = AddonService.objects.filter(id=id)
     else:
         items = AddonService.objects.all().order_by('name')
-    #print accounts
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item,normal_fields=normal_fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def document(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('document.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id')
-    print "subaccount", account_id
+
     items = Document.objects.filter(account__id=account_id)
-    #print accounts
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item,normal_fields=True))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res}
 
-@ajax_request
-@login_required
-def document_get(request):
-    id = request.POST.get('id')
-    item = Document.objects.get(id=id)
-    return {"records": instance_dict(item)}
 
 @ajax_request
 @login_required
 def templates(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('template.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     type_id = request.POST.get('type_id',None)
@@ -292,17 +264,15 @@ def templates(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields, normal_fields=False))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def sessions(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('activesession.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     form = SessionFilterForm(request.POST)
     if form.is_valid():
         id = form.cleaned_data.get('id')
@@ -330,7 +300,6 @@ def sessions(request):
     
         return {"records": res, 'status':True, 'totalCount':len(res)}
     else:
-        print form._errors
         return { 'status':False, 'message': u'Невозможно выполнить выборку с такими условиями'}
 
 
@@ -338,7 +307,8 @@ def sessions(request):
 @ajax_request
 @login_required
 def settlementperiods(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_settlementperiod'):
+        return {'status':True, 'records':[], 'totalCount':0}
     js = json.loads(request.POST.get('data','{}'))
     fields = js.get('fields',[])
     id = js.get('id',None)
@@ -362,16 +332,15 @@ def settlementperiods(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def accessparameters(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('tariff.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     if id and id!='None':
@@ -386,10 +355,7 @@ def accessparameters(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
@@ -398,6 +364,8 @@ def accessparameters(request):
 @ajax_request
 @login_required
 def timeperiods(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('timeperiod.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     if id and id!='None':
@@ -412,22 +380,23 @@ def timeperiods(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def timeperiods_save(request):
-    
+
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_change'):
+            return {'status':False, 'message':u'У вас недостатчно прав для изменения периодов тарификации'}
         item = TimePeriod.objects.get(id=id)
         form = TimePeriodForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_add'):
+            return {'status':False, 'message':u'У вас недостатчно прав для создания периодов тарификации'}
         form = TimePeriodForm(request.POST)
         
     if form.is_valid():
@@ -446,6 +415,8 @@ def timeperiods_save(request):
 @ajax_request
 @login_required
 def timeperiods_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_delete'):
+        return {'status':False, 'message':u'У вас недостатчно прав для удаления периодов тарификации'}
     id = int(request.POST.get('id',0))
     if id:
         TimePeriod.objects.get(id=id).delete()
@@ -456,6 +427,8 @@ def timeperiods_delete(request):
 @ajax_request
 @login_required
 def timeperiodnodes_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_delete'):
+        return {'status':False, 'message':u'У вас недостатчно прав для удаления периодов тарификации'}
     id = int(request.POST.get('id',0))
     if id:
         TimePeriodNode.objects.get(id=id).delete()
@@ -466,10 +439,12 @@ def timeperiodnodes_delete(request):
 @ajax_request
 @login_required
 def timeperiodnodes(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('timeperiodnode.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
+    
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     period_id = request.POST.get('period_id',None)
-    print "period_id==", period_id
     
     if id:
         items = TimePeriodNode.objects.filter(id=id)
@@ -480,30 +455,28 @@ def timeperiodnodes(request):
         except:
             return {'status':True, "records":[], 'totalCount':0}
         items = period.time_period_nodes.all()
-
-
-        
     else:
         items = TimePeriodNode.objects.all()
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def timeperiodnodes_save(request):
-    
+
     id = request.POST.get('id')
     if id:
         item = TimePeriodNode.objects.get(id=id)
         form = TimePeriodNodeForm(request.POST, instance=item)
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_timeperiodnode'):
+            return {'status':False, 'message':u"У вас недостаточно прав для изменения составляющих периодов"}
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_timeperiodnode'):
+            return {'status':False, 'message':u"У вас недостаточно прав для добавления составляющих периодов"}
         form = TimePeriodNodeForm(request.POST)
         
     if form.is_valid():
@@ -522,7 +495,8 @@ def timeperiodnodes_save(request):
 @ajax_request
 @login_required
 def timeperiodnodes_m2m_save(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_change'):
+        return {'status':False, 'message':u'У вас недостатчно прав для изменения периодов тарификации'}
     timeperiod_id = request.POST.get('timeperiod')
     timeperiodnode_id = request.POST.get('timeperiodnode')
     if timeperiod_id and timeperiodnode_id :
@@ -540,7 +514,8 @@ def timeperiodnodes_m2m_save(request):
 @ajax_request
 @login_required
 def timeperiodnodes_m2m_delete(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_change'):
+        return {'status':False, 'message':u'У вас недостатчно прав для изменения периодов тарификации'}
     timeperiod_id = request.POST.get('period_id')
     timeperiodnode_id = request.POST.get('node_id')
     if timeperiod_id and timeperiodnode_id :
@@ -560,6 +535,8 @@ def timeperiodnodes_m2m_delete(request):
 @ajax_request
 @login_required
 def timeaccessservices(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('timeaccessservice.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     if id and id!='None':
@@ -574,16 +551,15 @@ def timeaccessservices(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def radiustrafficservices(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('radiustraffic.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     normal_fields = request.POST.get('normal_fields', False)=='True'
@@ -606,6 +582,8 @@ def radiustrafficservices(request):
 @ajax_request
 @login_required
 def traffictransmitservices(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('traffictransmitservice.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     normal_fields = request.POST.get('normal_fields', False)=='True'
@@ -636,6 +614,9 @@ def dictfetchall(cursor):
 @ajax_request
 @login_required
 def sql(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('rawsqlexecution'):
+        return {'status':False, 'records':[], 'totalCount':0}
+    
     s = request.POST.get('sql','')
   
     if not s:
@@ -661,6 +642,8 @@ def sql(request):
 @ajax_request
 @login_required
 def radiustrafficservices_nodes(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('radiustrafficnode.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields', [])
     id = request.POST.get('id', None)
     service_id = request.POST.get('service_id', None)
@@ -668,9 +651,9 @@ def radiustrafficservices_nodes(request):
     if id and id!='None':
         items = RadiusTrafficNode.objects.filter(id=id)
         if not items:
-            return {'status':False, 'message': 'TimeAccessNode item with id=%s not found' % id}
+            return {'status':False, 'message': 'RadiusTrafficNode item with id=%s not found' % id}
         if len(items)>1:
-            return {'status':False, 'message': 'TimeAccessNode >1 items with id=%s' % id}
+            return {'status':False, 'message': 'RadiusTrafficNode >1 items with id=%s' % id}
     elif service_id:
         items = RadiusTrafficNode.objects.filter(radiustraffic__id=service_id)
     else:
@@ -685,6 +668,8 @@ def radiustrafficservices_nodes(request):
 @ajax_request
 @login_required
 def traffictransmit_nodes(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('traffictransmitnodes.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields', [])
     id = request.POST.get('id', None)
     service_id = request.POST.get('service_id', None)
@@ -710,6 +695,9 @@ def traffictransmit_nodes(request):
 @ajax_request
 @login_required
 def prepaidtraffic(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('prepaidtraffic.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
+    
     fields = request.POST.get('fields', [])
     id = request.POST.get('id', None)
     service_id = request.POST.get('service_id', None)
@@ -734,6 +722,9 @@ def prepaidtraffic(request):
 @ajax_request
 @login_required
 def timeaccessservices_nodes(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('timeaccessnode.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
+    
     fields = request.POST.get('fields', [])
     id = request.POST.get('id', None)
     service_id = request.POST.get('service_id', None)
@@ -751,16 +742,16 @@ def timeaccessservices_nodes(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def timespeeds(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('timespeed.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
+    
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     access_parameters = request.POST.get('access_parameters',None)
@@ -778,16 +769,15 @@ def timespeeds(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def systemusers(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
+    
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     if id and id!='None':
@@ -802,7 +792,6 @@ def systemusers(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields))
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
@@ -810,6 +799,8 @@ def systemusers(request):
 @ajax_request
 @login_required
 def tpchangerules(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('tpchangerule.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     normal_fields = bool(request.POST.get('normal_fields',None)=='True')
@@ -825,7 +816,6 @@ def tpchangerules(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
@@ -836,9 +826,13 @@ def tpchangerules_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_tpchangerule'):
+            return {'status':False, 'message': u'У вас нет прав на изменение правила смены тарифных планов'}
         item = TPChangeRule.objects.get(id=id)
         form = TPChangeRuleForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_tpchangerule'):
+            return {'status':False,  'message': u'У вас нет прав на добавление правила смены тарифных планов'}
         form = TPChangeRuleForm(request.POST)
         
     if form.is_valid():
@@ -857,6 +851,8 @@ def tpchangerules_set(request):
 @ajax_request
 @login_required
 def tpchangerules_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_tpchangerule'):
+        return {'status':False,  'message': u'У вас нет прав на удаление правила смены тарифных планов'}
     id = int(request.POST.get('id',0))
     if id:
         TPChangeRule.objects.get(id=id).delete()
@@ -870,9 +866,13 @@ def systemusers_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_systemuser'):
+            return {'status':False,  'message': u'У вас нет прав на изменение администратора'}
         item = SystemUser.objects.get(id=id)
         form = SystemUserForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_systemuser'):
+            return {'status':False,  'message': u'У вас нет прав на добавление администратора'}
         form = SystemUserForm(request.POST)
         
     if form.is_valid():
@@ -891,6 +891,8 @@ def systemusers_set(request):
 @ajax_request
 @login_required
 def systemusers_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_systemuser'):
+        return {'status':False,  'message': u'У вас нет прав на удаление администратора'}
     id = int(request.POST.get('id',0))
     if id:
         SystemUser.objects.get(id=id).delete()
@@ -901,6 +903,9 @@ def systemusers_delete(request):
 @ajax_request
 @login_required
 def contracttemplates(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('contracttemplate.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
+    
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     if id and id!='None':
@@ -922,6 +927,9 @@ def contracttemplates(request):
 @ajax_request
 @login_required
 def ipnforvpn(request):
+
+    if  not request.user.is_staff==True and not request.user.has_perm('account.view'):
+        return {'status':True, 'result':False}
     id = request.POST.get('id',None)
     res = False
     if id and id!='None':
@@ -937,6 +945,9 @@ def ipnforvpn(request):
 @ajax_request
 @login_required
 def session_reset(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('activesessions.session_reset'):
+        return {'status':False, 'message':u'У вас нет прав на сброс сессии'}
+    
     id = request.POST.get('id',None)
     sessionid = request.POST.get('sessionid',None)
     res = False
@@ -973,6 +984,8 @@ def session_reset(request):
 @login_required
 @ajax_request
 def tariffforaccount(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('account.get_tariff'):
+        return {'status':False, 'message':u'У вас нет прав на получение тарифа пользователя'}
     id = request.POST.get('id',None)
     res = False
     if id and id!='None':
@@ -988,7 +1001,8 @@ def tariffforaccount(request):
 @ajax_request
 @login_required
 def operator(request):
-   
+    if  not request.user.is_staff==True and not request.user.has_perm('operator.view'):
+        return {'status':False, 'message':u'У вас нет прав на получение информации о провайдере'}
     try:
         item = Operator.objects.all()[0]
         return {'status':True, "records":[instance_dict(item, normal_fields=False)], 'totalCount':1}
@@ -1001,16 +1015,20 @@ def operator(request):
 @ajax_request
 @login_required
 def operator_set(request):
-    
+
     data = json.loads(request.POST.get('data'))
     op_model = data.get('op_model')
     bank_model = data.get('bank_model')
     bank_model_id = bank_model.get('id')
     op_model_id = op_model.get('id')
     if op_model_id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_operator'):
+            return {'status':False, 'message':u'У вас нет прав на изменение информации о провайдере'}
         item = Operator.objects.get(id=op_model_id)
         form = OperatorForm(op_model, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_operator'):
+            return {'status':False, 'message':u'У вас нет прав на сохранение информации о провайдере'}
         form = OperatorForm(op_model)
 
     if form.is_valid():
@@ -1042,6 +1060,8 @@ def operator_set(request):
 @ajax_request
 @login_required
 def get_pool_by_ipinuse(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('ippool.view'):
+        return {'status':True,'result':None}
     ipinuse = request.POST.get('ipinuse',None)
     res = None
     if ipinuse and ipinuse!='None':
@@ -1058,6 +1078,8 @@ def get_pool_by_ipinuse(request):
 @ajax_request
 @login_required
 def account_exists(request):
+    if  not request.user.is_staff==True:
+        return {'status':False,'message': u'У вас нет прав на просмотр этой информации'}
     username = request.POST.get('username',None)
     res = False
     if username and username!='None':
@@ -1072,10 +1094,12 @@ def account_exists(request):
 @ajax_request
 @login_required
 def tariffs(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('tariff.view'):
+        return {'status':True,'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     normal_fields = bool(request.POST.get('normal_fields',False))
-    print 'normal_fields', normal_fields
+
     if id and id!='None':
         items = Tariff.objects.filter(id=id)
         if not items:
@@ -1088,16 +1112,15 @@ def tariffs(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def cities(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('city.view'):
+        return {'status':True,'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     if id and id!='None':
@@ -1112,10 +1135,7 @@ def cities(request):
         
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item, fields=fields))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
@@ -1125,9 +1145,13 @@ def cities_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_city'):
+            return {'status':False, 'message':u'У вас нет прав на изменение городов'}
         item = City.objects.get(id=id)
         form = CityForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_city'):
+            return {'status':False, 'message':u'У вас нет прав на добавление городов'}
         form = CityForm(request.POST)
         
     if form.is_valid():
@@ -1146,6 +1170,8 @@ def cities_set(request):
 @ajax_request
 @login_required
 def cities_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_city'):
+        return {'status':False, 'message':u'У вас нет прав на удаление городов'}
     id = int(request.POST.get('id',0))
     if id:
         City.objects.get(id=id).delete()
@@ -1157,6 +1183,8 @@ def cities_delete(request):
 @ajax_request
 @login_required
 def accounthardware(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('accounthardware.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     account_id = request.POST.get('account_id',None)
@@ -1188,9 +1216,13 @@ def accounthardware_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accounthardware'):
+            return {'status':False, 'message':u'У вас нет прав на изменение оборудования аккаунта'}
         item = AccountHardware.objects.get(id=id)
         form = AccountHardwareForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accounthardware'):
+            return {'status':False, 'message':u'У вас нет прав на добавление оборудования аккаунта'}
         form = AccountHardwareForm(request.POST)
         
     if form.is_valid():
@@ -1209,16 +1241,20 @@ def accounthardware_set(request):
 @ajax_request
 @login_required
 def accounthardware_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_accounthardware'):
+        return {'status':False, 'message':u'У вас нет прав на удаление оборудования аккаунта'}
     id = int(request.POST.get('id',0))
     if id:
         AccountHardware.objects.get(id=id).delete()
         return {"status": True}
     else:
-        return {"status": False, "message": "Hardware not found"}
+        return {"status": False, "message": "AccountHardware not found"}
 
 @ajax_request
 @login_required
 def news(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('news.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
 
@@ -1249,9 +1285,13 @@ def news_set(request):
     accounts = data.get('accounts')
     model = data.get('model')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_news'):
+            return {'status':False, 'message':u'У вас нет прав на изменение новости'}
         item = News.objects.get(id=id)
         form = NewsForm(model, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_news'):
+            return {'status':False, 'message':u'У вас нет прав на добавление новости'}
         form = NewsForm(model)
         
     if form.is_valid():
@@ -1277,6 +1317,8 @@ def news_set(request):
 @ajax_request
 @login_required
 def news_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_news'):
+        return {'status':False, 'message':u'У вас нет прав на удаление новости'}
     id = int(request.POST.get('id',0))
     if id:
         News.objects.get(id=id).delete()
@@ -1287,45 +1329,26 @@ def news_delete(request):
 @ajax_request
 @login_required
 def accounttariffs(request):
+    
+    if  not request.user.is_staff==True and not request.user.has_perm('accounttarif.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id')
     
     items = AccountTarif.objects.filter(account__id=account_id).order_by('-datetime')
-    #print accounts
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
-        #print instance_dict(acc).keys()
         res.append(instance_dict(item,normal_fields=True))
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
-@ajax_request
-@login_required
-def subaccount(request):
-    subaccount_id = request.POST.get('id')
-    print "subaccount", subaccount_id
-    item = SubAccount.objects.get(id=subaccount_id)
-    #print accounts
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    #for item in items:
-        #print instance_dict(acc).keys()
-    res=instance_dict(item)
-        
-    res['subaccount_id']=item.id
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-
-    return {"records": res}
 
 @ajax_request
 @login_required
 def nasses(request):
-    from nas.models import Nas
+
+    if  not request.user.is_staff==True and not request.user.has_perm('nas.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1339,20 +1362,17 @@ def nasses(request):
         
     else:
         items = Nas.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def hardware(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('hardware.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     model_id = request.POST.get('model_id',None)
@@ -1367,8 +1387,7 @@ def hardware(request):
          items = Hardware.objects.filter(model__id=model_id)
     else:
         items = Hardware.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
@@ -1381,9 +1400,13 @@ def hardware_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_hardware'):
+            return {'status':False, 'message': u'У вас нет прав на изменение оборудования'}
         item = Hardware.objects.get(id=id)
         form = HardwareForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_hardware'):
+            return {'status':False, 'message': u'У вас нет прав на добавление оборудования'}
         form = HardwareForm(request.POST)
         
     if form.is_valid():
@@ -1402,6 +1425,8 @@ def hardware_set(request):
 @ajax_request
 @login_required
 def hardware_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_hardware'):
+        return {'status':False, 'message': u'У вас нет прав на удаление оборудования'}
     id = int(request.POST.get('id',0))
     if id:
         Hardware.objects.get(id=id).delete()
@@ -1412,7 +1437,8 @@ def hardware_delete(request):
 @ajax_request
 @login_required
 def manufacturers(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('manufacturer.view'):
+        return {'status':False, 'records': [], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
 
@@ -1425,8 +1451,7 @@ def manufacturers(request):
         
     else:
         items = Manufacturer.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -1439,9 +1464,13 @@ def manufacturers_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_manufacturer'):
+            return {'status':False, 'message': u'У вас нет прав на изменение производителя'}
         item = Manufacturer.objects.get(id=id)
         form = ManufacturerForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_manufacturer'):
+            return {'status':False, 'message': u'У вас нет прав на добавление производителя'}
         form = ManufacturerForm(request.POST)
         
     if form.is_valid():
@@ -1460,6 +1489,8 @@ def manufacturers_set(request):
 @ajax_request
 @login_required
 def manufacturers_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_manufacturer'):
+        return {'status':False, 'message': u'У вас нет прав на удаление производителя'}
     id = int(request.POST.get('id',0))
     if id:
         Manufacturer.objects.get(id=id).delete()
@@ -1471,7 +1502,8 @@ def manufacturers_delete(request):
 @ajax_request
 @login_required
 def models(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('model.view'):
+        return {'status':False, 'records': [], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     hardwaretype_id  = request.POST.get('hardwaretype_id',None)
@@ -1489,8 +1521,7 @@ def models(request):
             items = items.filter(hardwaretype__id=hardwaretype_id)
         if manufacturer_id:
             items = items.filter(manufacturer__id=manufacturer_id)
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
@@ -1503,9 +1534,13 @@ def models_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_model'):
+            return {'status':False, 'message': u'У вас нет прав на изменение модели'}
         item = Model.objects.get(id=id)
         form = ModelHardwareForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_model'):
+            return {'status':False, 'message': u'У вас нет прав на изменение модели'}
         form = ModelHardwareForm(request.POST)
         
     if form.is_valid():
@@ -1524,6 +1559,8 @@ def models_set(request):
 @ajax_request
 @login_required
 def models_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_model'):
+        return {'status':False, 'message': u'У вас нет прав на удаление модели'}
     id = int(request.POST.get('id',0))
     if id:
         Model.objects.get(id=id).delete()
@@ -1534,7 +1571,8 @@ def models_delete(request):
 @ajax_request
 @login_required
 def hardwaretypes(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('hardwaretype.view'):
+        return {'status':False, 'records': [], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
 
@@ -1547,8 +1585,7 @@ def hardwaretypes(request):
         
     else:
         items = HardwareType.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -1559,6 +1596,9 @@ def hardwaretypes(request):
 @ajax_request
 @login_required
 def dealers(request):
+    
+    if  not request.user.is_staff==True and not request.user.has_perm('dealer.view'):
+        return {'status':False, 'records': [], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1572,8 +1612,7 @@ def dealers(request):
         
     else:
         items = Dealer.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -1586,9 +1625,13 @@ def dealers_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_dealer'):
+            return {'status':False, 'message': u'У вас нет прав на изменение дилера'}
         item = Dealer.objects.get(id=id)
         form = DealerForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_dealer'):
+            return {'status':False, 'message': u'У вас нет прав на изменение дилера'}
         form = DealerForm(request.POST)
         
     if form.is_valid():
@@ -1606,6 +1649,8 @@ def dealers_set(request):
 @ajax_request
 @login_required
 def dealers_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_dealer'):
+        return {'status':False, 'message': u'У вас нет прав на удаление дилера'}
     id = int(request.POST.get('id',0))
     if id:
         Dealer.objects.get(id=id).delete()
@@ -1619,9 +1664,13 @@ def hardwaretypes_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_hardwaretype'):
+            return {'status':False, 'message': u'У вас нет прав на изменение типа оборудования'}
         item = HardwareType.objects.get(id=id)
         form = HardwareTypeForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_hardwaretype'):
+            return {'status':False, 'message': u'У вас нет прав на добавление типа оборудования'}
         form = HardwareTypeForm(request.POST)
         
     if form.is_valid():
@@ -1641,9 +1690,10 @@ def hardwaretypes_set(request):
 @ajax_request
 @login_required
 def getnotsoldcards(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('card.view'):
+        return {'status':False, 'records': [], 'totalCount':0}
     ids = request.POST.get('ids',None).split(',')
-    print "ids=", ids
+
     if ids:
         items = Card.objects.filter(id__in=ids, sold__isnull=True)
     else:
@@ -1658,7 +1708,8 @@ def getnotsoldcards(request):
 @ajax_request
 @login_required
 def cards(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('card.view'):
+        return {'status':False, 'records': [], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
 
@@ -1684,9 +1735,13 @@ def cards_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_card'):
+            return {'status':False, 'message': u'У вас нет прав на изменение карты'}
         item = Card.objects.get(id=id)
         form = CardForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_card'):
+            return {'status':False, 'message': u'У вас нет прав на добавление карты'}
         form = CardForm(request.POST)
         
     if form.is_valid():
@@ -1704,6 +1759,8 @@ def cards_set(request):
 @ajax_request
 @login_required
 def cards_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_card'):
+        return {'status':False, 'message': u'У вас нет прав на удаление карт'}
     id = int(request.POST.get('id',0))
     if id:
         Card.objects.filter(id=id).delete()
@@ -1716,16 +1773,14 @@ def cards_delete(request):
 @ajax_request
 @login_required
 def cardsstatus_set(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_card'):
+        return {'status':False, 'message': u'У вас нет прав на изменение карты'}
     data = json.loads(request.POST.get('data', '{}'))
     ids = data.get('ids',[])
     status = data.get('status',True)
     
-    print 'ids', ids, status
     if ids:
         Card.objects.filter(id__in=ids).update(disabled=status)
-        print "updated"
-    
         res={"status": True}
     else:
         res={"status": False, "message": u"Карты не указаны"}
@@ -1734,6 +1789,9 @@ def cardsstatus_set(request):
 @ajax_request
 @login_required
 def get_model(request):
+    
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.get_model'):
+        return {'status':False, 'message': u'У вас нет прав на выполнение такого запроса'}
     
     data = json.loads(request.POST.get('data', '{}'))
     id = data.get('id',None)
@@ -1756,7 +1814,8 @@ def get_model(request):
 @ajax_request
 @login_required
 def get_models(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.get_model'):
+        return {'status':False, 'message': u'У вас нет прав на выполнение такого запроса'}
     data = json.loads(request.POST.get('data', '{}'))
 
     table = data.get('table',None)
@@ -1777,6 +1836,8 @@ def get_models(request):
 @ajax_request
 @login_required
 def hardwaretypes_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_hardwaretype'):
+        return {'status':False, 'message': u'У вас нет прав на удаление типа оборудования'}
     id = int(request.POST.get('id',0))
     if id:
         HardwareType.objects.get(id=id).delete()
@@ -1788,12 +1849,14 @@ def hardwaretypes_delete(request):
 @ajax_request
 @login_required
 def account(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('account.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
+    
     data = json.loads(request.POST.get('data', '{}'))
     fields = data.get('fields',[])
     id = data.get('id',None)
     limit = data.get('limit',None)
-    print "fields", fields, limit
+
     if id:
         items = Account.objects.all_with_deleted().filter(id=id)
         if not items:
@@ -1805,8 +1868,7 @@ def account(request):
         items = Account.objects.all()
         if limit:
             items = items[:limit]
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -1816,6 +1878,8 @@ def account(request):
 @login_required
 def accountsfilter(request):
 
+    if  not request.user.is_staff==True and not request.user.has_perm('account.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     sql = request.POST.get('sql','True')
     from django.db import connection
     cur = connection.cursor()
@@ -1843,7 +1907,8 @@ def accountsfilter(request):
 @ajax_request
 @login_required
 def trafficclasses(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('trafficclass.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
 
@@ -1856,8 +1921,7 @@ def trafficclasses(request):
         
     else:
         items = TrafficClass.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -1873,9 +1937,13 @@ def trafficclasses_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('nas.change_trafficclass'):
+            return {'status':False, 'message':u'У вас нет прав на изменение класса трафика'}
         item = TrafficClass.objects.get(id=id)
         form = TrafficClassForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('nas.add_trafficclass'):
+            return {'status':False, 'message':u'У вас нет прав на добавление класса трафика'}
         form = TrafficClassForm(request.POST)
         
     if form.is_valid():
@@ -1904,6 +1972,8 @@ def trafficclasses_set(request):
 @ajax_request
 @login_required
 def trafficclasses_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('nas.delete_trafficclass'):
+        return {'status':True, 'message':u'У вас нет прав на удаление класса трафика'}
     id = int(request.POST.get('id',0))
     if id:
         TrafficClass.objects.get(id=id).delete()
@@ -1914,7 +1984,8 @@ def trafficclasses_delete(request):
 @ajax_request
 @login_required
 def trafficclassnodes(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('trafficclass.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     traffic_class_id = request.POST.get('traffic_class_id',None)
@@ -1929,8 +2000,7 @@ def trafficclassnodes(request):
         items = TrafficNode.objects.filter(traffic_class__id=traffic_class_id)
     else:
         items = TrafficNode.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -1944,9 +2014,13 @@ def trafficclassnodes_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('nas.change_trafficclass'):
+            return {'status':False, 'message':u'У вас нет прав на изменение класса трафика'}
         item = TrafficNode.objects.get(id=id)
         form = TrafficNodeForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('nas.add_trafficclass'):
+            return {'status':False, 'message':u'У вас нет прав на добавление класса трафика'}
         form = TrafficNodeForm(request.POST)
         
     if form.is_valid():
@@ -1964,6 +2038,8 @@ def trafficclassnodes_set(request):
 @ajax_request
 @login_required
 def trafficclassnodes_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('nas.delete_trafficclass'):
+        return {'status':False, 'message':u'У вас нет прав на изменение класса трафика'}
     id = int(request.POST.get('id',0))
     if id:
         TrafficNode.objects.get(id=id).delete()
@@ -1975,6 +2051,8 @@ def trafficclassnodes_delete(request):
 @ajax_request
 @login_required
 def classforgroup(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('group.view'):
+        return {'status':False, 'message':u'У вас нет прав на просмотр группы трафика'}
     
     fields = request.POST.get('fields',[])
     group = request.POST.get('group',None)
@@ -1987,13 +2065,8 @@ def classforgroup(request):
         res = []
         for item in items:
             res.append(item.trafficclass.id)
-
     else:
         return { 'status':False, 'message': u"Group id not defined"}
-
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 
@@ -2001,7 +2074,8 @@ def classforgroup(request):
 @ajax_request
 @login_required
 def ippools(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('ippool.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     type = request.POST.get('type',None)
@@ -2016,8 +2090,7 @@ def ippools(request):
         items = IPPool.objects.filter(type=type)
     else:
         items = IPPool.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -2031,9 +2104,13 @@ def ippools_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_ippool'):
+            return {'status':False, 'message': u"У вас нет прав на изменение IP пула"}
         item = IPPool.objects.get(id=id)
         form = IPPoolForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_ippool'):
+            return {'status':False, 'message': u"У вас нет прав на добавление IP пула"}
         form = IPPoolForm(request.POST)
         
     if form.is_valid():
@@ -2051,6 +2128,8 @@ def ippools_set(request):
 @ajax_request
 @login_required
 def ippools_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_ippool'):
+        return {'status':False, 'message': u"У вас нет прав на удаление IP пула"}
     id = int(request.POST.get('id',0))
     if id:
         IPPool.objects.get(id=id).delete()
@@ -2062,7 +2141,8 @@ def ippools_delete(request):
 @ajax_request
 @login_required
 def radiusattrs(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('radiusattrs.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2081,8 +2161,7 @@ def radiusattrs(request):
         items = RadiusAttrs.objects.filter(nas__id=nas_id)
     else:
         items = RadiusAttrs.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -2096,9 +2175,13 @@ def radiusattrs_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_radiusattrs'):
+            return {'status':False, 'message': u"У вас нет прав на изменение RADIUS атрибутов"}
         item = RadiusAttrs.objects.get(id=id)
         form = RadiusAttrsForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_radiusattrs'):
+            return {'status':False, 'message': u"У вас нет прав на добавление RADIUS атрибутов"}
         form = RadiusAttrsForm(request.POST)
         
     if form.is_valid():
@@ -2116,6 +2199,8 @@ def radiusattrs_set(request):
 @ajax_request
 @login_required
 def radiusattrs_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_radiusattrs'):
+        return {'status':False, 'message': u"У вас нет прав на удаление RADIUS атрибутов"}
     id = int(request.POST.get('id',0))
     if id:
         RadiusAttrs.objects.get(id=id).delete()
@@ -2123,43 +2208,12 @@ def radiusattrs_delete(request):
     else:
         return {"status": False, "message": "RadiusAttrs not found"}
     
-@ajax_request
-@login_required
-def radiusattrs_set(request):
-    
-    id = request.POST.get('id')
-    if id:
-        item = RadiusAttrs.objects.get(id=id)
-        form = RadiusAttrsForm(request.POST, instance=item)
-    else:
-        form = RadiusAttrsForm(request.POST)
-        
-    if form.is_valid():
-        try:
-            form.save()
-            res={"status": True}
-        except Exception, e:
-            print e
-            res={"status": False, "message": str(e)}
-    else:
-        res={"status": False, "errors": form._errors}
- 
-    return res
-
-@ajax_request
-@login_required
-def radiusattrs_delete(request):
-    id = int(request.POST.get('id',0))
-    if id:
-        RadiusAttrs.objects.get(id=id).delete()
-        return {"status": True}
-    else:
-        return {"status": False, "message": "RadiusAttrs not found"}
     
 @ajax_request
 @login_required
 def templates(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('template.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     type = request.POST.get('type',None)
@@ -2174,8 +2228,7 @@ def templates(request):
         items = Template.objects.filter(type=type)
     else:
         items = Template.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -2187,9 +2240,13 @@ def templates_save(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_template'):
+            return {'status':False, 'message': u"У вас нет прав на изменение шаблона"}
         item = Template.objects.get(id=id)
         form = TemplateForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_template'):
+            return {'status':False, 'message': u"У вас нет прав на добавление шаблона"}
         form = TemplateForm(request.POST)
         
     if form.is_valid():
@@ -2210,7 +2267,8 @@ def templates_save(request):
 @ajax_request
 @login_required
 def accountprepaystrafic(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('accountprepaystraffic.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
 
@@ -2236,9 +2294,13 @@ def accountprepaystrafic_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accountprepaystraffic'):
+            return {'status':True, 'message': u'У вас нет прав на изменение размера предоплаченного трафика'}
         item = AccountPrepaysTrafic.objects.get(id=id)
         form = AccountPrepaysTraficForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accountprepaystraffic'):
+            return {'status':True, 'message': u'У вас нет прав на добавление предоплаченного трафика'}
         form = AccountPrepaysTraficForm(request.POST)
         
     if form.is_valid():
@@ -2259,7 +2321,8 @@ def accountprepaystrafic_set(request):
 @ajax_request
 @login_required
 def accountprepaysradiustrafic(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('accountprepaysradiustrafic.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
 
@@ -2272,8 +2335,7 @@ def accountprepaysradiustrafic(request):
 
     else:
         items = AccountPrepaysRadiusTrafic.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -2285,9 +2347,14 @@ def accountprepaysradiustrafic_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accountprepaysradiustraffic'):
+            return {'status':True, 'message': u'У вас нет прав на изменение размера предоплаченного RADIUS трафика'}
+
         item = AccountPrepaysRadiusTrafic.objects.get(id=id)
         form = AccountPrepaysRadiusTraficForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accountprepaysradiustraffic'):
+            return {'status':True, 'message': u'У вас нет прав на добавление предоплаченного RADIUS трафика'}
         form = AccountPrepaysRadiusTraficForm(request.POST)
         
     if form.is_valid():
@@ -2302,12 +2369,12 @@ def accountprepaysradiustrafic_set(request):
         res={"status": False, "errors": form._errors}
  
     return res
-#===
-
 
 @ajax_request
 @login_required
 def templates_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_template'):
+        return {'status':False, 'message': u'У вас нет прав на удаление шаблона'}
     id = int(request.POST.get('id',0))
     if id:
         Template.objects.get(id=id).delete()
@@ -2318,7 +2385,8 @@ def templates_delete(request):
 @ajax_request
 @login_required
 def templatetypes(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('templatetype.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     type = request.POST.get('type',None)
@@ -2333,8 +2401,7 @@ def templatetypes(request):
         items = Template.objects.filter(type=type)
     else:
         items = TemplateType.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -2343,7 +2410,9 @@ def templatetypes(request):
 @ajax_request
 @login_required
 def periodicalservices(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('periodicalservice.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
+
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     tarif_id = request.POST.get('tarif',None)
@@ -2361,8 +2430,7 @@ def periodicalservices(request):
         items = PeriodicalService.objects.filter(tarif__id=tarif_id, deleted=deleted)
     else:
         items = PeriodicalService.objects.filter( deleted=deleted)
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
@@ -2374,7 +2442,8 @@ def periodicalservices(request):
 @ajax_request
 @login_required
 def transactions(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('transaction.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     limit = request.POST.get('limit',None)
@@ -2386,7 +2455,6 @@ def transactions(request):
             return {'status':False, 'message': 'Transaction item with id=%s not found' % id}
         if len(items)>1:
             return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
-        
     else:
         items = Transaction.objects.filter()
         if limit:
@@ -2400,7 +2468,8 @@ def transactions(request):
 @ajax_request
 @login_required
 def groups(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('group.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     normal_fields = bool(request.POST.get('normal_fields',None)=='True')
@@ -2410,22 +2479,20 @@ def groups(request):
             return {'status':False, 'message': 'Group item with id=%s not found' % id}
         if len(items)>1:
             return {'status':False, 'message': 'Group >1 items with id=%s' % id}
-        
     else:
         items = Group.objects.all()
 
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-    
- 
-    return {"records": res, 'status':True, 'totalCount':len(res)}
 
+    return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def onetimeservices(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('onetimeservice.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     tarif_id = request.POST.get('tarif_id',None)
@@ -2442,8 +2509,7 @@ def onetimeservices(request):
         items = OneTimeService.objects.filter(tarif__id=tarif_id)
     else:
         items = OneTimeService.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
@@ -2453,7 +2519,8 @@ def onetimeservices(request):
 @ajax_request
 @login_required
 def trafficlimites(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('trafficlimit.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     tarif_id = request.POST.get('tarif_id',None)
@@ -2480,7 +2547,8 @@ def trafficlimites(request):
 @ajax_request
 @login_required
 def speedlimites(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('speedlimit.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     limit_id = request.POST.get('limit_id',None)
@@ -2507,7 +2575,8 @@ def speedlimites(request):
 @ajax_request
 @login_required
 def addonservicetariff(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('addonservicetarif.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     tarif_id = request.POST.get('tarif_id',None)
@@ -2535,7 +2604,8 @@ def addonservicetariff(request):
 @ajax_request
 @login_required
 def get_cards_nominal(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('card.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     from django.db import connection
     cur = connection.cursor()
     
@@ -2547,7 +2617,8 @@ def get_cards_nominal(request):
 @ajax_request
 @login_required
 def get_next_cardseries(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('card.view'):
+        return {'status':True, 'records':[0], 'totalCount':1}
     from django.db import connection
     cur = connection.cursor()
     
@@ -2563,7 +2634,8 @@ def get_next_cardseries(request):
 @ajax_request
 @login_required
 def switches(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('switch.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     if id:
@@ -2575,8 +2647,6 @@ def switches(request):
         
     else:
         items = Switch.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -2589,9 +2659,13 @@ def switches_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_switch'):
+            return {'status':False, 'message': u'У вас нет прав на изменение коммутаторов'}
         item = Switch.objects.get(id=id)
         form = SwitchForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_switch'):
+            return {'status':False, 'message': u'У вас нет прав на добавление коммутаторов'}
         form = SwitchForm(request.POST)
         
     if form.is_valid():
@@ -2610,6 +2684,9 @@ def switches_set(request):
 @ajax_request
 @login_required
 def switches_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_switch'):
+        return {'status':False, 'message': u'У вас нет прав на удаление коммутаторов'}
+        
     id = int(request.POST.get('id',0))
     if id:
         Switch.objects.get(id=id).delete()
@@ -2620,7 +2697,8 @@ def switches_delete(request):
 @ajax_request
 @login_required
 def organizations(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('organization.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2636,7 +2714,6 @@ def organizations(request):
     else:
         items = Organization.objects.all()
 
-
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
@@ -2646,7 +2723,8 @@ def organizations(request):
 @ajax_request
 @login_required
 def banks(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('bankdata.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2669,9 +2747,13 @@ def banks_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_bankdata'):
+            return {'status':False, 'message': u'У вас нет прав на изменение банка'}
         item = BankData.objects.get(id=id)
         form =BankDataForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_bankdata'):
+            return {'status':False, 'message': u'У вас нет прав на добавление банка'}
         form = BankDataForm(request.POST)
         
     if form.is_valid():
@@ -2691,7 +2773,8 @@ def banks_set(request):
 @login_required
 def dealerpays(request):
 
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('dealerpay.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     dealer_id = request.POST.get('dealer_id',None)
@@ -2717,9 +2800,13 @@ def dealerpay_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_dealerpay'):
+            return {'status':False, 'message': u'У вас нет прав на изменение платежа'}
         item = DealerPay.objects.get(id=id)
         form = DealerPayForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_dealerpay'):
+            return {'status':False, 'message': u'У вас нет прав на добавление платежа'}
         form = DealerPayForm(request.POST)
         
     if form.is_valid():
@@ -2738,7 +2825,8 @@ def dealerpay_set(request):
 @ajax_request
 @login_required
 def returncards(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_card'):
+        return {'status':False, 'message': u'У вас нет прав на изменение состояния карт'}
     data = json.loads(request.POST.get('data', '{}'))
     dealer_id = data.get('dealer_id',None)
     cards = data.get('cards',[])
@@ -2751,11 +2839,8 @@ def returncards(request):
             for card in cards:
                 cur.execute("DELETE FROM billservice_salecard_cards WHERE card_id=%s", (card, ))
             Card.objects.filter(id__in=cards).update(sold=None)
-            
-    
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "message": u"Карты не указаны"}
@@ -2764,7 +2849,8 @@ def returncards(request):
 @ajax_request
 @login_required
 def salecards(request):
-
+    if  not request.user.is_staff==True and not request.user.has_perm('salecard.view'):
+        return {'status':False, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2795,9 +2881,13 @@ def salecards_set(request):
     id = data.get('model',{}).get('id')
     cards = data.get('cards',[])
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_salecard'):
+            return {'status':False, 'message': u'У вас нет прав на изменение продажи карт'}
         item = SaleCard.objects.get(id=id)
         form =SaleCardForm(data.get('model',{}), instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_salecard'):
+            return {'status':False, 'message': u'У вас нет прав на добавление продажи карт'}
         form = SaleCardForm(data.get('model',{}))
         
     if form.is_valid():
@@ -2821,6 +2911,8 @@ def salecards_set(request):
 @ajax_request
 @login_required
 def salecards_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_salecard'):
+        return {'status':False, 'message': u'У вас нет прав на удаление продажи карт'}
     id = int(request.POST.get('id',0))
     if id:
         SaleCard.objects.get(id=id).delete()
@@ -2828,21 +2920,6 @@ def salecards_delete(request):
     else:
         return {"status": False, "message": "SaleCard not found"}
     
-@ajax_request
-@login_required
-def nas(request):
-    from nas.models import Nas
-    items = Nas.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    res.append({"id":None, "name":u'-- Не указан --'})
-    for item in items:
-        res.append({"id":item.id, "name":item.name})
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
 
 @ajax_request
 @login_required
@@ -2850,9 +2927,13 @@ def tpchange_save(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accounttarif'):
+            return {'status':False, 'message': u'У вас нет прав на изменение связки тарифного плана'}
         item = AccountTarif.objects.get(id=id)
         form = AccountTariffForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accounttarif'):
+            return {'status':False, 'message': u'У вас нет прав на добавяление связки тарифного плана продажи карт'}
         form = AccountTariffForm(request.POST)
         
     if form.is_valid():
@@ -2865,8 +2946,6 @@ def tpchange_save(request):
     else:
         res={"success": False, "errors": form._errors}
     
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return res
 
 
@@ -2877,18 +2956,26 @@ def tpchange_save(request):
 @transaction.commit_manually
 def tariffs_set(request):
     
+    if  not request.user.is_staff==True:
+        return {'status':False, 'message': u'У вас нет прав на изменение тарифного плана'}
+
+    
     data = request.POST.get("data", {})
     
     js = json.loads(data)
-    print js
+
 
     if js.get('model'):
         if js.get('model').get('id'):
+            if not request.user.has_perm('billservice.change_tariff'):
+                transaction.rollback()
+                return {'status':False, 'message': u'У вас нет прав на изменение тарифного плана'}
             item = Tariff.objects.get(id=js['model']['id'])
             form = TariffForm(js['model'], instance=item)
-            print "tarif instance"
         else:
-            print "tarif frompost"
+            if not request.user.has_perm('billservice.add_tariff'):
+                transaction.rollback()
+                return {'status':False, 'message': u'У вас нет прав на добавление тарифного плана'}
             form = TariffForm(initial=js['model'])
             
         
@@ -3296,8 +3383,7 @@ def tariffs_set(request):
             tariff.radius_traffic_transmit_service.delete()
             
     transaction.commit()
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
     return {'status':True, 'tariff_id':tariff.id}
 
 @ajax_request
@@ -3307,9 +3393,14 @@ def groups_save(request):
     id = request.POST.get('id')
     traffic_classes = request.POST.get('traffic_classes','').split(',')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_group'):
+            return {'status':False, 'message': u'У вас нет прав на изменение группы трафика'}
+
         item = Group.objects.get(id=id)
         form = GroupForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_group'):
+            return {'status':False, 'message': u'У вас нет прав на добавление группы трафика'}
         form = GroupForm(request.POST)
         
     if form.is_valid():
@@ -3318,31 +3409,29 @@ def groups_save(request):
             model.save()
             if id:
                 GroupTrafficClass.objects.filter(group=model).delete()
-            print 
             for item in traffic_classes:
-                print "item", item
                 GroupTrafficClass.objects.create(group=model, trafficclass = TrafficClass.objects.get(id=item))
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
     
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return res
 
 @ajax_request
 @login_required
 def nas_save(request):
     id = request.POST.get('id')
-    print 'id',id
-    print request.POST
+
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('nas.change_nas'):
+            return {'status':False, 'message': u'У вас нет прав на изменение сервера доступа'}
         nas = Nas.objects.get(id=id)
         form = NasForm(request.POST, instance = nas)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('nas.add_nas'):
+            return {'status':False, 'message': u'У вас нет прав на добавление сервера доступа'}
         form = NasForm(request.POST)
         
     
@@ -3358,9 +3447,13 @@ def contracttemplates_set(request):
     id = request.POST.get('id')
 
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_contracttemplate'):
+            return {'status':False, 'message': u'У вас нет прав на изменение шаблона номера договора'}
         item = ContractTempalte.objects.get(id=id)
         form = ContractTemplateForm(request.POST, instance = item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_contracttemplate'):
+            return {'status':False, 'message': u'У вас нет прав на добавление шаблона номера договора'}
         form = ContractTemplateForm(request.POST)
         
     
@@ -3373,6 +3466,8 @@ def contracttemplates_set(request):
 @ajax_request
 @login_required
 def contracttemplate_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_contracttemplate'):
+        return {'status':False, 'message': u'У вас нет прав на удаление шаблона номера договора'}
     id = int(request.POST.get('id',0))
     if id:
         ContractTemplate.objects.get(id=id).delete()
@@ -3385,22 +3480,23 @@ def contracttemplate_delete(request):
 @ajax_request
 def settlementperiod_save(request):
     id = request.POST.get('id')
-    print id
-    print request
+
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_settlementperiod'):
+            return {'status':False, 'message': u'У вас нет прав на изменение расчётного периода'}
         item = SettlementPeriod.objects.get(id=id)
         form = SettlementPeriodForm(request.POST, instance = item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_settlementperiod'):
+            return {'status':False, 'message': u'У вас нет прав на добавление расчётного периода'}
         form = SettlementPeriodForm(request.POST)
         
     
     if form.is_valid():
-        print "form valid"
         d = form.save(commit=False)
         d.save()
         return {"status": True}
     else:
-        print "form invalid"
         return {"status": False, "message": form._errors}
 
 
@@ -3408,38 +3504,42 @@ def settlementperiod_save(request):
 @ajax_request
 def addonservices_set(request):
     data = json.loads(request.POST.get('data', "{}"))
-    print data
     id = data.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_addonservice'):
+            return {'status':False, 'message': u'У вас нет прав на изменение подключаемой услуги'}
         item = AddonService.objects.get(id=id)
         form = AddonServiceForm(data, instance = item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_addonservice'):
+            return {'status':False, 'message': u'У вас нет прав на изменение подключаемой услуги'}
         form = AddonServiceForm(data)
         
     
     if form.is_valid():
-        print "form valid"
         d = form.save(commit=False)
         d.save()
         return {"status": True}
     else:
-        print "form invalid"
-        print form
         return {"status": False, "message": form._errors}
     
 @ajax_request
 @login_required
 def settlementperiod_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_settlementperiod'):
+        return {'status':False, 'message': u'У вас нет прав на удаление расчётного периода'}
     id = int(request.POST.get('id',0))
     if id:
-        SettlementPeriod.objects.get(id=id).delete()
+        SettlementPeriod.objects.filter(id=id).delete()
         return {"status": True}
     else:
-        return {"status": False, "message": "Nas not found"}
+        return {"status": False, "message": "Settlementperiod not found"}
 
 @ajax_request
 @login_required
 def addonservices_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_addonservice'):
+        return {'status':False, 'message': u'У вас нет прав на удаление подключаемой услуги'}
     id = int(request.POST.get('id',0))
     if id:
         AddonService.objects.get(id=id).delete()
@@ -3452,6 +3552,8 @@ def addonservices_delete(request):
 @ajax_request
 @login_required
 def groups_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_group'):
+        return {'status':False, 'message': u'У вас нет прав на удаление группы трафика'}
     id = int(request.POST.get('id',0))
     if id:
         Group.objects.get(id=id).delete()
@@ -3463,6 +3565,8 @@ def groups_delete(request):
 @ajax_request
 @login_required
 def accounttariffs_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_accounttarif'):
+        return {'status':False, 'message': u'У вас нет прав на удаление связки тарифа'}
     id = int(request.POST.get('id',0))
     if id:
         try:
@@ -3479,6 +3583,8 @@ def accounttariffs_delete(request):
 @ajax_request
 @login_required
 def suspendedperiod_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_suspendedperiod'):
+        return {'status':False, 'message': u'У вас нет прав на удаление периода простоя'}
     id = int(request.POST.get('id',0))
     if id:
         try:
@@ -3493,24 +3599,23 @@ def suspendedperiod_delete(request):
 @ajax_request
 @login_required
 def get_tariffs(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('tariff.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     items = Tariff.objects.all_with_deleted().order_by('name')
-    #from django.core import serializers
-    #from django.http import HttpResponse
     res=[]
     for item in items:
         res.append({'active':item.active,'id':item.id, 'access_type':item.access_parameters.access_type, 'name':item.name, 'deleted':item.deleted})
     
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def accounts_for_tarif(request):
     
-    tarif_id = int(request.POST.get('tarif_id', -1000))
-    print 'tarif_id', tarif_id
+    if  not request.user.is_staff==True and not request.user.has_perm('account.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     
+    tarif_id = int(request.POST.get('tarif_id', -1000))
     
     from django.db import connection
     
@@ -3582,23 +3687,17 @@ def accounts_for_tarif(request):
             return { 'status':False, 'message':str(e)}   
         
     res=[]
-    print "len items", len(items)
-#===============================================================================
-#    for item in items:
-# 
-#        res.append({'id':item.id,'room':item.room, 'username':item.username, 'tariff':item.tariff, 'fullname':item.fullname, 'address':"%s %s" % (item.street or '', item.house or ''), 'email':item.email, 'suspended':item.suspended, 'created':item.created, 'ballance':item.ballance, 'credit':item.credit, 'contract':item.contract, 'disabled_by_limit':item.disabled_by_limit, 'balance_blocked':item.balance_blocked, 'comment':item.comment, 'status':item.status,  'org_name': item.organization_set.all()[0].name if len(item.organization_set.all())==1 else '','vpn_ips':vpn_ips,'ipn_ips':ipn_ips,'ipn_macs':ipn_macs,})
-#        
-#===============================================================================
+
     return {"records": items, 'status':True, 'totalCount':len(items)}
     
 @ajax_request
 @login_required
 def nas_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('nas.delete_nas'):
+        return {'status':True, 'message': u'У вас нет прав на удаление сервера доступа'}
     id = request.POST.get('id')
-    print 'id',id
-    print request.POST
     if id:
-        Nas.objects.get(id=id).delete()
+        Nas.objects.filter(id=id).delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Nas not found"}
@@ -3607,11 +3706,11 @@ def nas_delete(request):
 @ajax_request
 @login_required
 def subaccount_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_subaccount'):
+        return {'status':True, 'message': u'У вас нет прав на удаление субаккаунта'}
     id = request.POST.get('id')
-    print 'id',id
-    print request.POST
     if id:
-        
+        #TODO: СДелать удаление субаккаунта с сервера доступа, если он там был
         item = SubAccount.objects.get(id=id)
         if item.vpn_ipinuse:
             IPInUse.objects.filter(id=item.vpn_ipinuse).delete()
@@ -3629,8 +3728,8 @@ def subaccount_delete(request):
 @login_required
 def account_delete(request):
     id = request.POST.get('id')
-    print 'id',id
-    print request.POST
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_account'):
+        return {'status':True, 'message': u'У вас нет прав на удаление аккаунта'}
     if id:
         try:
            Account.objects.get(id=id).delete()
@@ -3661,48 +3760,13 @@ def document_save(request):
             res={"success": False, "message": str(e)}
     else:
         res={"success": False, "errors": form._errors}
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return res
 
 @ajax_request
 @login_required
-def switch(request):
-    from nas.models import Switch
-    items = Switch.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    res.append({"id":None, "name":u'-- Не указан --'})
-    for item in items:
-        res.append({"id":item.id, "name":item.name})
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
-
-@ajax_request
-@login_required
-def ippool(request):
-
-    pool_type = request.POST.get('pool_type')
-    items = IPPool.objects.filter(type=pool_type)
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    res.append({"id":None, "name":u'-- Не указан --'})
-    for item in items:
-        res.append({"id":item.id, "name":item.name})
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
-
-
-@ajax_request
-@login_required
 def streets(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('street.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     city_id = request.POST.get('city_id')
     id = request.POST.get('id')
     if city_id:
@@ -3711,14 +3775,10 @@ def streets(request):
         items = Street.objects.get(id=id)
     else:
         items = Street.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item))
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
@@ -3727,9 +3787,13 @@ def streets_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_street'):
+            return {'status':False, 'message':u'У вас нет прав на изменение улицы'}
         item = Street.objects.get(id=id)
         form = StreetForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_street'):
+            return {'status':False, 'message':u'У вас нет прав на добавление улицы'}
         form = StreetForm(request.POST)
         
     if form.is_valid():
@@ -3747,6 +3811,8 @@ def streets_set(request):
 @ajax_request
 @login_required
 def streets_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_street'):
+        return {'status':False, 'message':u'У вас нет прав на удаление улицы'}
     id = int(request.POST.get('id',0))
     if id:
         Street.objects.get(id=id).delete()
@@ -3754,33 +3820,15 @@ def streets_delete(request):
     else:
         return {"status": False, "message": "Street not found"}
     
-@ajax_request
-@login_required
-def accountstatus(request):
-    items = [1,u'Активен'], \
-            [2,u'Не активен, списывать периодические услуги'],\
-            [3,u'Не активен, не списывать периодические услуги'],\
-            [4,u'Пользовательская блокировка'],
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    for id,name in items:
-        res.append({"id":id, "name":name})
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
 
 @ajax_request
 @login_required
 def account_save(request):
     
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    print request
+
     id = request.POST.get('id')
     tarif_id = request.POST.get('tarif_id')
-    print "id=", id
+
     contract = request.POST.get('contract','')
 
     bank_bank = request.POST.get('bank_bank')
@@ -3802,6 +3850,8 @@ def account_save(request):
     newcontract=False
     acc = None
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_account'):
+            return {'status':False, 'message':u'У вас нет прав на изменение аккаунта'}
         acc = Account.objects.all_with_deleted().get(id=id)
         
         if acc.contract=='' and contract:
@@ -3809,19 +3859,16 @@ def account_save(request):
             newcontract=True
         a=AccountForm(request.POST, instance=acc)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_account'):
+            return {'status':False, 'message':u'У вас нет прав на добавление аккаунта'}
         if contract!='':
-            #new
             newcontract=True
         a=AccountForm(request.POST)
     p=request.POST
     res=[]
-    #print "a.is_valid()",a.is_valid()
-    print a._errors
-    #print a.clean()
-    
-    #acc.username=p.get("username")
-    #acc.password=p.get("password")
-    #acc.fullllname=p.get("fullname")
+
+
+
     if a.is_valid():
         contr = None
         if contract:
@@ -3852,9 +3899,6 @@ def account_save(request):
             contract = contract_template % d
             if contr:
                 contr.count = contr.count+1 
-            #cur.execute("UPDATE billservice_account SET contract=%s WHERE id=%s", (contract, id))
-            #cur.execute("UPDATE billservice_contracttemplate SET counter=counter+1 WHERE id=%s", (template_id,))
-        
 
         
         try:
@@ -3929,11 +3973,13 @@ def subaccount_save(request):
    # в системе существует такой мак у другого аккаунта
     
     """
+    if  not request.user.has_perm('billservice.add_subaccount'):
+        return {'status':False, 'message':u'У вас нет прав на создание субаккаунтов'}
     id=None if request.POST.get('id')=='None' else request.POST.get('id')
     ipv4_vpn_pool = None if request.POST.get('ipv4_vpn_pool')=='None' else request.POST.get('ipv4_vpn_pool')
     ipv4_ipn_pool = None if request.POST.get('ipv4_ipn_pool')=='None' else request.POST.get('ipv4_ipn_pool')
     account_id = None if request.POST.get('account')=='None' else request.POST.get('account')
-    print "account_id", account_id
+  
     vpn_pool = None
     if ipv4_vpn_pool:
         vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
@@ -3943,18 +3989,20 @@ def subaccount_save(request):
         
     cc=None
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_subaccount'):
+            return {'status':False, 'message':u'У вас нет прав на изменение субаккаунта'}
         cc = SubAccount.objects.get(id=id)
         
         a=SubAccountForm(request.POST,instance=cc)
         f=SubAccountForm(request.POST)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_subaccount'):
+            return {'status':False, 'message':u'У вас нет прав на добавление субаккаунта'}
         a=SubAccountForm(request.POST)
-    #a.account=aa.account_id
+
     p=request.POST
     res=[]
-    
-    #print instance_dict(cc)
-    #print "cc1",cc.vpn_ipinuse
+
     
     if a.is_valid():
         try:
@@ -4011,7 +4059,7 @@ def subaccount_save(request):
 
         """
         if cc and cc.vpn_ipinuse:
-            print 2
+
             #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
             
             if  subacc.vpn_ip_address not in ['0.0.0.0','',None]:
@@ -4035,23 +4083,23 @@ def subaccount_save(request):
                     
                 
             elif subacc.vpn_ip_address in ['0.0.0.0','',None]:
-                print 5
+
                 obj = subacc.vpn_ipinuse
                 obj.disabled=datetime.datetime.now()
                 obj.save()
                 subacc.vpn_ipinuse=None
         elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and vpn_pool:
-            print 6
+
             if not IPy.IP(vpn_pool.start_ip).int()<=IPy.IP(subacc.vpn_ip_address).int()<=IPy.IP(vpn_pool.end_ip).int():
                 return {"status": False, 'message':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
-            print 7
+
             ip=IPInUse(pool=vpn_pool, ip=subacc.vpn_ip_address, datetime=datetime.datetime.now())
             ip.save()
             subacc.vpn_ipinuse = ip 
             
         if cc and cc.ipn_ipinuse:
-            print 2
-            #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
+
+
             
             if  subacc.ipn_ip_address not in ['0.0.0.0','',None]:
                 if vpn_pool:
@@ -4074,26 +4122,26 @@ def subaccount_save(request):
                     
                 
             elif subacc.vpn_ip_address in ['0.0.0.0','',None]:
-                print 5
+
                 obj = subacc.ipn_ipinuse
                 obj.disabled=datetime.datetime.now()
                 obj.save()
                 subacc.ipn_ipinuse=None
         elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and ipn_pool:
-            print 6
+
             if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
                 return {"status": False, 'message':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
-            print 7
+
             ip=IPInUse(pool=ipn_pool, ip=subacc.ipn_ip_address, datetime=datetime.datetime.now())
             ip.save()
             subacc.ipn_ipinuse = ip 
        
         try:
             subacc.save()
-            print 99
+
             res={"status": True,'account_id':subacc.account.id}
         except Exception, e:
-            print e
+
             res={"status": False, "errors": a._errors}
     else:
         res={"status": False, "errors": a._errors}
@@ -4103,9 +4151,8 @@ def subaccount_save(request):
 @login_required
 def subaccount_delete(request):
     
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    print request
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_subaccount'):
+        return {'status':False, 'message':u'У вас нет прав на удаление субаккаунта'}
     id=request.POST.get('id')
     if id:
         SubAccount.objects.get(id=id).delete()
@@ -4116,13 +4163,14 @@ def subaccount_delete(request):
 @ajax_request
 @login_required
 def getipfrompool(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('ippool.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     default_ip='0.0.0.0'
     if default_ip:
         default_ip = IPy.IP(default_ip).int()
     pool_id=request.POST.get("pool_id")
     limit=int(request.POST.get("limit", 50))
     start=int(request.POST.get("start", 0))
-    print request
     if not pool_id:
         return {'records':[], 'status':False}
     pool = IPPool.objects.get(id=pool_id)
@@ -4161,6 +4209,8 @@ def getipfrompool(request):
 @ajax_request
 @login_required
 def houses(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('house.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     street_id = request.POST.get('street_id')
     id = request.POST.get('id')
     fields = request.POST.get('fields')
@@ -4170,14 +4220,11 @@ def houses(request):
         items = House.objects.get(id=id)
     else:
         items = House.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item, fields = fields))
     
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
@@ -4186,9 +4233,13 @@ def houses_set(request):
     
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_house'):
+            return {'status':False, 'message': u'У вас нет прав на редактирование домов'}
         item = House.objects.get(id=id)
         form = HouseForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_house'):
+            return {'status':False, 'message': u'У вас нет прав на добавление домов'}
         form = HouseForm(request.POST)
         
     if form.is_valid():
@@ -4206,6 +4257,8 @@ def houses_set(request):
 @ajax_request
 @login_required
 def houses_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_house'):
+        return {'status':False, 'message': u'У вас нет прав на удаление домов'}
     id = int(request.POST.get('id',0))
     if id:
         House.objects.get(id=id).delete()
@@ -4216,7 +4269,8 @@ def houses_delete(request):
 @ajax_request
 @login_required
 def accountaddonservices(request):
-    from billservice.models import AccountAddonService
+    if  not request.user.is_staff==True and not request.user.has_perm('accountaddonservice.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id')
     subaccount_id = request.POST.get('subaccount_id')
     id = request.POST.get('id')
@@ -4231,35 +4285,28 @@ def accountaddonservices(request):
     
     elif subaccount_id and subaccount_id!='None':
         items = AccountAddonService.objects.filter(subaccount__id=subaccount_id)
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append(instance_dict(item,normal_fields=normal_fields))
     
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
-@ajax_request
-@login_required
-def accountaddonservices_get(request):
-    from billservice.models import AccountAddonService
-    id = request.POST.get('id')
-    item = AccountAddonService.objects.get(id=id)
-    print instance_dict(item).keys()
-    return {"records": instance_dict(item)}
 
 @ajax_request
 @login_required
 def accountaddonservices_set(request):
     id = request.POST.get('id')
-    from billservice.models import AccountAddonService
     
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accountaddonservice'):
+            return {'status':False, 'message': u'У вас нет прав на редактирование связок подключаемых услуг'}
         item = AccountAddonService.objects.get(id=id)
         form = AccountAddonServiceModelForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accountaddonservice'):
+            return {'status':False, 'message': u'У вас нет прав на добавление связок подключаемых услуг'}
+
         form = AccountAddonServiceModelForm(request.POST)
         
     if form.is_valid():
@@ -4276,9 +4323,14 @@ def accounttariffs_set(request):
     id = request.POST.get('id')
     
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accounttariff'):
+            return {'status':False, 'message': u'У вас нет прав на редактирование связок тарифных планов'}
+
         item = AccountTarif.objects.get(id=id)
         form = AccountTariffForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accounttariff'):
+            return {'status':False, 'message': u'У вас нет прав на добавление связок тарифных планов'}
         form = AccountTariffForm(request.POST)
         
     if form.is_valid():
@@ -4286,13 +4338,15 @@ def accounttariffs_set(request):
         res = {'status':True}
     else:
         res={"status": False, "errors": form._errors}
-    #print instance_dict(item).keys()
+
     return res
 
 @ajax_request
 @login_required
 def accounttariffs_bathset(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accounttariff'):
+        return {'status':False, 'message': u'У вас нет прав на добавление связок тарифных планов'}
+
     form = AccountTariffBathForm(request.POST)
     
 
@@ -4315,28 +4369,15 @@ def accounttariffs_bathset(request):
         res = {'status':True}
     else:
         res={"status": False, "errors": form._errors}
-    #print instance_dict(item).keys()
+
     return res
 
 
 @ajax_request
 @login_required
-def systemuser(request):
-    items = SystemUser.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    res.append({"id":None, "name":u'-- Не указан --'})
-    for item in items:
-        res.append({"id":item.id, "name":"%s %s" % (item.username, item.fullname)})
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
-
-@ajax_request
-@login_required
 def suspendedperiods(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('suspendedperiod.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id')
     id = request.POST.get('id')
     if id:
@@ -4348,22 +4389,21 @@ def suspendedperiods(request):
         res.append(instance_dict(item,normal_fields=True))
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
-@ajax_request
-@login_required
-def suspendedperiod_get(request):
-    id = request.POST.get('id')
-    item = SuspendedPeriod.objects.get(id=id)
-
-    return {"records": instance_dict(item)}
 
 @ajax_request
 @login_required
 def suspendedperiod_set(request):
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_suspendedperiod'):
+            return {'status':False, 'message': u'У вас нет прав на редактирование периодов без списаний'}
+
         item = SuspendedPeriod.objects.get(id=id)
         form = SuspendedPeriodModelForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_suspendedperiod'):
+            return {'status':False, 'message': u'У вас нет прав на создание периодов без списаний'}
+
         form = SuspendedPeriodModelForm(request.POST)
         
     if form.is_valid():
@@ -4376,14 +4416,14 @@ def suspendedperiod_set(request):
     else:
         res={"success": False, "errors": form._errors}
     
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return res
 
 @ajax_request
 @login_required
 def transaction_set(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_transaction'):
+        return {'status':False, 'message': u'У вас нет прав на создание платежей'}
+
     form = TransactionModelForm(request.POST)
         
     if form.is_valid():
@@ -4400,51 +4440,24 @@ def transaction_set(request):
     else:
         res={"status": False, "errors": form._errors}
     
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return res
 
-
-
-
-@login_required
-@ajax_request
-def subaccount(request):
-    id=request.POST.get('id')
-    acc = SubAccount.objects.get(id=id)
-    from django.core import serializers
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    #data = serializers.serialize("json", [acc], ensure_ascii=False, fields=['username'])
-    data=instance_dict(acc)
-    #print data
-    #res.append({"id":acc.id, "username":acc.username, "password":acc.password, "fullname":acc.fullname,'vpn_ip_address':'',
-    #                'status':acc.status,'ipn_ip_address':'','city':'','street':'','nas_id':'','email':'','comment':'',
-    #                'ballance':float(acc.ballance),'credit':float(acc.credit),'created':'02.11.1984 00:00:00',
-    #                })
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": data}
 
 @login_required
 @ajax_request
 def transactiontypes(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('transactiontype.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
     id = request.POST.get('id')
     if id:
         items = TransactionType.objects.filter(id=id).order_by('name')
     else:
         items = TransactionType.objects.all().order_by('name')
-    #from django.core import serializers
-    #from django.http import HttpResponse
+
     res=[]
     for item in items:
         res.append({"id":item.id, "name":item.name, "internal_name":item.internal_name})
     
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
@@ -4452,9 +4465,13 @@ def transactiontypes(request):
 def transactiontypes_set(request):
     id = request.POST.get('id')
     if id:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_transactiontype'):
+            return {'status':False, 'message': u'У вас нет прав на редактирование типов списаний'}
         item = TransactionType.objects.get(id=id)
         form = TransactionTypeForm(request.POST, instance=item)
     else:
+        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_transactiontype'):
+            return {'status':False, 'message': u'У вас нет прав на создание типов списаний'}
         form = TransactionTypeForm(request.POST)
         
     if form.is_valid():
@@ -4469,26 +4486,15 @@ def transactiontypes_set(request):
     
     return res
 
-@render_to('jsongrid.html')
-@login_required
-def grid(request):
- 
-    return {}
-
 @ajax_request
 @login_required
 def actions_set(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.actions_set'):
+        return {'status':False, 'message': u'У вас нет прав на управление состоянием субаккаунтов'}
     subaccount = request.POST.get('subaccount_id')
     action = request.POST.get('action')
     if subaccount:          
 
-       
-        print 'subaccount',subaccount
-        #TODO: придумать что тут сделать с realdictcursor_ом
-        #cur.execute("SELECT * FROM billservice_subaccount WHERE id=%s",(subaccount,))
-        
-        #row = cur.fetchone()
-        #if not row: return {'status':False}
         sa=SubAccount.objects.get(id=subaccount)
         if action=='ipn_disable':
             sa.ipn_sleep=False
@@ -4501,31 +4507,15 @@ def actions_set(request):
 
         subacc = instance_dict(SubAccount.objects.get(id=subaccount))
 
-        #cur.execute("SELECT *, id as account_id FROM billservice_account WHERE id=%s",(subacc.account_id,))
-        
-        #row = cur.fetchone()
-        #if not row: return {'status':False}
-        #acc = Object(row)
         acc =  instance_dict(sa.account)
         acc['account_id']=acc['id']
         
-
-        #cur.execute("SELECT *, id as nas_id FROM nas_nas WHERE id=%s",(subacc.nas_id,))
-        #row = cur.fetchone()
-        #if not row: return {'status':False}
-        #nas = Object(row)
         try:
             n=sa.nas
             nas = instance_dict(n)
         except Exception, e:
             return {'status':False,'message':u'Не указан или не найден указанный сервер доступа'}
             
-        #connection.commit()
-        #print "actions", row
-        #print action
-
-        #if subacc.ipn_ip_address=="0.0.0.0":
-        #    continue
 
         if action=='disable':
             command = n.subacc_disable_action
@@ -4540,58 +4530,37 @@ def actions_set(request):
         sended = cred(account=acc, subacc=subacc, access_type='ipn', nas=nas,  format_string=command)
         print sended
         if action=='create' and sended==True:
-            #cur.execute("UPDATE billservice_subaccount SET ipn_added=%s, speed='' WHERE id=%s", (True, subacc.id))
             sa.ipn_added=True
             sa.speed=''
             sa.save()
-            
-            #cur.execute("UPDATE billservice_accountipnspeed SET state=False WHERE account_id=%s", (row['account_id'],))
-            
 
         
         if action =='delete'  and sended==True:
-            #cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s, ipn_added=%s WHERE id=%s", (False, False, subacc.id))
             sa.ipn_enabled=False
             sa.ipn_added=False
             sa.speed=''
             sa.save()
-            #cur.execute("DELETE FROM billservice_accountipnspeed WHERE account_id=%s", (row['account_id'],))
             
 
         if action=='disable' and sended==True:
-            #cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, subacc.id,))
             sa.ipn_enabled=False
             sa.save()
             
         if action=='enable' and sended==True:
-            #cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (True, subacc.id,))
             sa.ipn_enabled=True
             sa.save()
 
-        #connection.commit()
 
         
         return {'status':sended, 'message':'Ok'}
     return {'status':False, 'message':'Ok'}
             
-
-@ajax_request
-@login_required
-def contracttemplate(request):
-    items = ContractTemplate.objects.all()
-    #from django.core import serializers
-    #from django.http import HttpResponse
-    res=[]
-    for item in items:
-        res.append({"template":item.template})
-    
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
-    return {"records": res}
       
 @ajax_request
 @login_required 
 def documentrender(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.documentrender'):
+        return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
     form = DocumentRenderForm(request.POST)
     if form.is_valid():
         template = Template.objects.get(id=form.cleaned_data.get('template'))
@@ -4629,6 +4598,8 @@ def documentrender(request):
 @ajax_request
 @login_required 
 def cheque_render(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.documentrender'):
+        return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
     id = request.POST.get('id')#transaction_id
     transaction = Transaction.objects.get(id=id)
     template = Template.objects.get(type__id=5)
@@ -4660,6 +4631,8 @@ def cheque_render(request):
 @login_required 
 @ajax_request
 def testCredentials(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.testcredentials'):
+        return {'status':False, 'message': u'У вас нет на тестирование подключения'}
     host, login, password = request.POST.get('host'),request.POST.get('login'),request.POST.get('password')
     try:
         #print host, login, password
@@ -4672,7 +4645,8 @@ def testCredentials(request):
 @login_required 
 @ajax_request
 def get_ports_status(request):
-    
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.getportsstatus'):
+        return {'status':False, 'message': u'У вас нет прав на получение статуса портов'}
     switch_id = request.POST.get('switch_id')
     if not switch_id: 
         return {'status':False}
@@ -4717,6 +4691,8 @@ def get_ports_status(request):
 @login_required 
 @ajax_request
 def set_ports_status(self, switch_id):
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.setportsstatus'):
+        return {'status':False, 'message': u'У вас нет на установку статуса портов'}
     switch_id = request.POST.get('switch_id')
     if not switch_id: 
         return {'status':False}

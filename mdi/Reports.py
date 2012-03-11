@@ -90,13 +90,19 @@ class SelMunObrMolel(QtCore.QAbstractListModel):
     
     def setData(self,index,value,role=QtCore.Qt.EditRole):
         if index.isValid():
+            if type(value)==bool:
+                value = 1 if value else 0
+            else:
+                value = value.toInt()[0]     
             if index.row()==0 and self.objects[0][1]=='all':
                 for x in xrange(len(self.objects)):
-                    self.objects[x][2] = value.toInt()[0]     
+                    self.objects[x][2] = value  
                 self.emit(QtCore.SIGNAL("dataChanged(QModelIndex,QModelIndex)"),
                           index, index)
                 return True
-            self.objects[index.row()][2] = value.toInt()[0]            
+
+            self.objects[index.row()][2] = value
+      
             self.emit(QtCore.SIGNAL("dataChanged(QModelIndex,QModelIndex)"),
                       index, index)
             #print self.objects
@@ -109,6 +115,52 @@ class SelMunObrMolel(QtCore.QAbstractListModel):
         return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable |     QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsTristate
 
 
+class MyComboBox(QtGui.QComboBox):
+    def __init__(self, *arg, **kwarg):
+
+        QtGui.QComboBox.__init__(self)
+        self.m_opening = False
+        self.view().viewport().installEventFilter(self)
+        
+        
+    def hidePopup(self):
+        self.lineEdit().setText('cracaca')
+        super(MyComboBox, self).hidePopup()
+
+    def eventFilter(self, watched, event):
+        #проверка тика отловленного события
+
+        if  event.type() == QtCore.QEvent.MouseButtonRelease:
+            print "event inner"
+            #блокируем смену галочки при открытии
+            if  self.m_opening:
+        
+                self.m_opening = False;
+                return QtCore.QObject.eventFilter(self, watched, event);
+
+            #проверяем тип
+            print watched.parent().inherits("QListView")
+            if  watched.parent().inherits("QListView"):
+            
+                #приводим к нужным типам
+                tmp = watched.parent();
+                mEvent = event;
+                ind = tmp.indexAt(mEvent.pos())
+                #меняем состояние cheched
+                checked = tmp.model().data(ind,QtCore.Qt.CheckStateRole).toBool()
+                tmp.model().setData(ind, not checked,QtCore.Qt.CheckStateRole)
+                #блокируем закрытие комбобокса
+                return True
+     
+
+        return QtCore.QObject.eventFilter(self, watched, event);
+
+    def showPopup(self):
+        
+        self.m_opening = True
+
+        QtGui.QComboBox.showPopup(self)
+        
 class TransactionsReportEbs(ebsTableWindow):
     def __init__(self, connection,account=None, parent=None, cassa=False):
         self.account = account
@@ -189,7 +241,7 @@ class TransactionsReportEbs(ebsTableWindow):
         self.label_cashier = QtGui.QLabel(self)
         self.label_cashier.setMargin(10)
            
-        self.comboBox_transactions_type = QtGui.QComboBox(self)
+        self.comboBox_transactions_type = MyComboBox(self)#QtGui.QComboBox(self)
         self.comboBox_cashier = QtGui.QComboBox(self)
         
         

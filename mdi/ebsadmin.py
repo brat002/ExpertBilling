@@ -78,7 +78,8 @@ class HttpBot(object):
                     parameters[key] = value
             
         #print 'parameters', parameters
-        print "parameters=", parameters         
+        print "parameters=", parameters     
+        error = ''    
         while attempts<=3:
             try:
                 data=self._opener.open(url+"?uniqid=%s" % self.get_id(), urllib.urlencode(parameters)).read()
@@ -90,12 +91,15 @@ class HttpBot(object):
                 k.write('\n'.join(e.readlines()))
                 k.close()
                 attempts+=1
-                QtGui.QMessageBox.warning(self.widget, unicode(u"Ошибка"), unicode(str(e)))
+                error = unicode(str(e))
+                
             except urllib2.URLError, e:
                 print 'We failed to reach a server.'
                 print 'Reason: ', e.reason
-                QtGui.QMessageBox.warning(self.widget, unicode(u"Ошибка"), unicode(str(e)))
+                error = unicode(str(e))
                 attempts+=1
+        if error:
+            QtGui.QMessageBox.warning(self.widget, unicode(u"Ошибка"), error)
             
         
 
@@ -432,7 +436,9 @@ class HttpBot(object):
         #print a
         #print dir(a)
         d = self.POST(url,model)
-        #print d
+        if not d.status:
+            self.error(d)
+            return
         return d
     
     
@@ -448,6 +454,15 @@ class HttpBot(object):
       
     def get_transaction(self,id=None, normal_fields = False, limit=1, fields=[]):
         url='http://%s/ebsadmin/transaction/' % self.host 
+        
+        d = self.POST(url,{'fields':fields, 'id':id, 'normal_fields':normal_fields, 'limit':limit})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
+    def transactionreport(self,id=None, normal_fields = False, limit=1, fields=[]):
+        url='http://%s/ebsadmin/transactionreport/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id, 'normal_fields':normal_fields, 'limit':limit})
         if not d.status:

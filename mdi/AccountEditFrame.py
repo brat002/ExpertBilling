@@ -862,17 +862,14 @@ class SubaccountLinkDialog(QtGui.QDialog):
             
 
         d = self.connection.subaccount_save(model)
-        if d.status==False:
-            if d.errors:
-                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.errors.get(x))) for x in d.errors])))
-            if d.message:
-                QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode("%s" % d.message))
-            return
-        else:
+        if d.status==True:
             model.id = d.account_id
             self.model = model
             self.connection.rollback()
-        QtGui.QDialog.accept(self)
+            QtGui.QDialog.accept(self)
+
+
+        
 
     def generate_login(self):
         self.lineEdit_link_login.setText(nameGen())
