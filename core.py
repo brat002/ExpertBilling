@@ -346,7 +346,7 @@ class periodical_service_bill(Thread):
                             #cur.execute("UPDATE billservice_account SET ballance=ballance-")
                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                             new_summ=cur.fetchone()[0]
-                            cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
+                            #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                             
                             logger.debug('%s: Periodical Service: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
                         elif pss_type == ADDON:
@@ -365,7 +365,7 @@ class periodical_service_bill(Thread):
                         #ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)
                         cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                         new_summ=cur.fetchone()[0]
-                        cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
+                        #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                         logger.debug('%s: Periodical Service: Gradual checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
                     elif pss_type == ADDON:
                         cash_summ = cash_summ * susp_per_mlt
@@ -433,7 +433,7 @@ class periodical_service_bill(Thread):
                     if pss_type == PERIOD:
                         cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))
                         new_summ=cur.fetchone()[0]
-                        cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
+                        #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                         logger.debug('%s: Periodical Service: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
                     elif pss_type == ADDON:
                         cash_summ = cash_summ * susp_per_mlt
@@ -512,7 +512,7 @@ class periodical_service_bill(Thread):
                                 tr_date = acc.end_date
                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
                             new_summ=cur.fetchone()[0]
-                            cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
+                            #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                             logger.debug('%s: Periodical Service: AT END iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
                         elif pss_type == ADDON:
                             cash_summ = cash_summ * susp_per_mlt
@@ -1825,10 +1825,14 @@ if __name__ == "__main__":
     
     try:
         import psyco
-        #psyco.log()
         psyco.full(memory=100)
         psyco.profile(0.05, memory=100)
         psyco.profile(0.2)
+    except:
+        pass
+    try:
+        #psyco.log()
+
         vars = CoreVars()
         
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)

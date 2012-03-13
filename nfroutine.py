@@ -1065,8 +1065,12 @@ if __name__ == "__main__":
 
     try:
         import psyco
-        #psyco.log()
         psyco.full(memory=100)
+    except:
+        print "psyco not available. programm will run slowly" 
+    try:
+        #psyco.log()
+        
         #psyco.profile(0.05, memory=100)
         #psyco.profile(0.2)
 
