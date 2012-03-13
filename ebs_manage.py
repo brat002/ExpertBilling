@@ -259,42 +259,15 @@ def modifydb():
     print "Modifying DB. Deleting unneeded triggers"
     
     l=[]
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100101")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100201")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100301")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh201004101")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100501")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100601")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100701")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100801")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20100901")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20101001")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20101101")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20101201")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110101")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110201")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110301")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110401")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110501")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110601")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110701")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110801")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20110901")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20111001")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20111101")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20111201")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120101")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120201")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120301")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120401")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120501")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120601")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120701")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120801")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20120901")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20121001")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20121101")
-    l.append("DROP TRIGGER IF EXISTS acc_psh_trg ON psh20121201")
+    for x in xrange(9,13):
+        for i in xrange(1,13):
+            print "%.2i%.2i" % (x,i)
+            l.append("""CREATE TRIGGER acc_psh_trg
+              AFTER UPDATE OR DELETE
+              ON psh20%.2i%.2i01
+              FOR EACH ROW
+              EXECUTE PROCEDURE account_transaction_trg_fn(); """ % (x,i))
+    
     for sql in l:
         try:
             cur.execute(sql)

@@ -106,9 +106,9 @@ class HttpBot(object):
     
     def parse(self, data):
         if not data: return {}
-        print "before parce=", data
+        #print "before parce=", data
         d = json.loads(data,  object_hook=AttrDict)
-        print 'after parce', d
+        #print 'after parce', d
         if hasattr(d, 'status') and d.status==True:
 
             return d
@@ -461,10 +461,10 @@ class HttpBot(object):
             return
         return self.postprocess(d, id)
     
-    def transactionreport(self,id=None, normal_fields = False, limit=1, fields=[]):
+    def transactionreport(self, request):
         url='http://%s/ebsadmin/transactionreport/' % self.host 
         
-        d = self.POST(url,{'fields':fields, 'id':id, 'normal_fields':normal_fields, 'limit':limit})
+        d = self.POST(url,{'data':json.dumps(request)})
         if not d.status:
             self.error(d)
             return
@@ -2509,65 +2509,6 @@ class rpcDispatcher(threading.Thread):
     def run(self):
         pass
 
-#===============================================================================
-# class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
-#    def __init__(self):
-#        Pyro.protocol.DefaultConnValidator.__init__(self)
-#    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
-#        return authid
-#    def mungeIdent(self, ident):
-#        return ident
-#===============================================================================
-
-
- 
-class MyComboBox(QtGui.QComboBox):
-    def __init__(self, *arg, **kwarg):
-
-        QtGui.QComboBox.__init__(self)
-        #заменяем стандартный вьювер
-        self.m_listView = QtGui.QListView(self)
-        self.setView(self.m_listView)
-        #устанавливаем перехват событий
-        self.m_listView.viewport().installEventFilter(self)
-        #флаг открытия комбобокса
-        self.m_opening = False
-        
-        
-    def eventFilter(self, watched, event):
-        #проверка тика отловленного события
-
-        if  event.type() == QtCore.QEvent.MouseButtonRelease:
-            print "event inner"
-            #блокируем смену галочки при открытии
-            if  self.m_opening:
-        
-                self.m_opening = False;
-                return QtCore.QObject.eventFilter(self, watched, event);
-
-            #проверяем тип
-            
-            if  watched.parent().inherits("QListView"):
-            
-                #приводим к нужным типам
-                tmp = watched.parent();
-                mEvent = event;
-                ind = tmp.indexAt(mEvent.pos())
-                #меняем состояние cheched
-                checked = tmp.model().data(ind,QtCore.Qt.CheckStateRole).toBool()
-                tmp.model().setData(ind, not checked,QtCore.Qt.CheckStateRole)
-                #блокируем закрытие комбобокса
-                return True
-     
-
-        return QtCore.QObject.eventFilter(self, watched, event);
-
-
-    def showPopup(self):
-        
-        self.m_opening = True
-
-        QtGui.QComboBox.showPopup(self)
 
         
 def login():
@@ -2617,12 +2558,6 @@ if __name__ == "__main__":
     #app.installTranslator(translator)
     global connection, username, server_ip
     
-    kb = MyComboBox()
-    kb.addItem('123')
-    kb.addItem('3421')
-    kb.addItem('098764')
-    kb.addItem('394857')
-    kb.addItem('1111')
     #kb.show()
     connection = login() 
        

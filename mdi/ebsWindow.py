@@ -8,7 +8,50 @@ from helpers import makeHeaders
 from helpers import HeaderUtil, SplitterUtil
 from helpers import dateDelim
 from helpers import setFirstActive
+import math
 
+class Overlay(QtGui.QWidget):
+
+    def __init__(self, parent = None):
+    
+        QtGui.QWidget.__init__(self, parent)
+        palette = QtGui.QPalette(self.palette())
+        palette.setColor(palette.Background, QtCore.Qt.transparent)
+        self.setPalette(palette)
+    
+    def paintEvent(self, event):
+    
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.fillRect(event.rect(), QtGui.QBrush(QtGui.QColor(255, 255, 255, 127)))
+        painter.setPen(QtGui.QPen(QtCore.Qt.NoPen))
+        
+        for i in range(6):
+            if (self.counter / 5) % 6 == i:
+                painter.setBrush(QtGui.QBrush(QtGui.QColor(127 + (self.counter % 5)*32, 127, 127)))
+            else:
+                painter.setBrush(QtGui.QBrush(QtGui.QColor(127, 127, 127)))
+            painter.drawEllipse(
+                self.width()/2 + 30 * math.cos(2 * math.pi * i / 6.0) - 10,
+                self.height()/2 + 30 * math.sin(2 * math.pi * i / 6.0) - 10,
+                20, 20)
+        
+        painter.end()
+    
+    def showEvent(self, event):
+    
+        self.timer = self.startTimer(50)
+        self.counter = 0
+    
+    def timerEvent(self, event):
+    
+        self.counter += 1
+        self.update()
+        if self.counter == 60:
+            self.killTimer(self.timer)
+            self.hide()
+            
 class ebsTableWindow(QtGui.QMainWindow):
     sequenceNumber = 1
     def __init__(self, connection, initargs, parent=None):
@@ -46,7 +89,10 @@ class ebsTableWindow(QtGui.QMainWindow):
         HeaderUtil.nullifySaved(self.setname)
         
         self.firsttime = True
+        self.overlay = Overlay(self.centralWidget())
         self.refresh()
+        
+        
         
         
         if not bhdr.isEmpty():
@@ -66,6 +112,7 @@ class ebsTableWindow(QtGui.QMainWindow):
 
         
         self.ebsPostInit(initargs)
+        #self.overlay.show()
 
     def retranslateUI(self, initargs):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", initargs["wintitle"], None, QtGui.QApplication.UnicodeUTF8))
@@ -230,7 +277,12 @@ class ebsTableWindow(QtGui.QMainWindow):
             self.close()    
         if event.key() == QtCore.Qt.Key_Return and self.lineEdit_search_text.hasFocus()==True:
             self.tableFind()
-            
+
+    def resizeEvent(self, event):
+    
+        self.overlay.resize(event.size())
+        event.accept()
+          
             
 class ebsTabs_n_TablesWindow(QtGui.QMainWindow):
     sequenceNumber = 1

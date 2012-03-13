@@ -2086,6 +2086,9 @@ if __name__ == "__main__":
         psyco.full(memory=100)
         psyco.profile(0.05, memory=100)
         psyco.profile(0.2)
+    except:
+        pass
+    try:
         flags = RadFlags()
         vars  = RadVars()
         queues= RadQueues()
