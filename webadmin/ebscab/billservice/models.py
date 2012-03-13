@@ -1669,6 +1669,8 @@ class AccountHardware(models.Model):
 
 class TotalTransactionReport(models.Model):
     service_id = models.IntegerField()
+    service_name = models.CharField(max_length=128)
+    table = models.CharField(max_length=128)
     created = models.DateTimeField()
     tariff = models.ForeignKey(Tariff)
     summ = models.DecimalField(decimal_places=10, max_digits=30)
@@ -1676,12 +1678,12 @@ class TotalTransactionReport(models.Model):
     type = models.ForeignKey(TransactionType, to_field='internal_name')
     systemuser = models.ForeignKey(SystemUser)
     bill = models.TextField()
-    descrition = models.TextField()
+    description = models.TextField()
     end_promise = models.DateTimeField()
     promise_expired = models.BooleanField()
 
     class Meta:
-        abstract = True
+        managed = False
         ordering = ['-created']
         
 class PeriodicalServiceLog(models.Model):
