@@ -105,7 +105,7 @@ class TransactionReportForm(forms.Form):
     addonservice = forms.ModelMultipleChoiceField(queryset=AddonService.objects.all(), required=False)
     systemuser = forms.ModelMultipleChoiceField(queryset=SystemUser.objects.all(), required=False)
     periodicalservice = forms.ModelMultipleChoiceField(queryset=PeriodicalService.objects.all(), required=False)
-    transactiontype = forms.ModelMultipleChoiceField(queryset=TransactionType.objects.all(), required=False)
+    transactiontype = forms.MultipleChoiceField(choices=[(x.internal_name, x.name) for x in TransactionType.objects.all()], required=False)
     start_date = forms.DateTimeField(required=True)
     end_date = forms.DateTimeField(required=False)
     
