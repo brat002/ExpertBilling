@@ -5,7 +5,7 @@ import logging
 DEBUG = True
 DEBUG_SQL=True
 TEMPLATE_DEBUG = DEBUG
-
+PROJECT_ROOT = os.path.dirname(__file__)
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
@@ -35,6 +35,8 @@ MEDIA_ROOT = os.path.abspath('./media')
 # Example: "http://media.lawrence.com"
 MEDIA_URL = '/media/'
 
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+STATIC_URL = '/media/'
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
@@ -42,6 +44,10 @@ ADMIN_MEDIA_PREFIX = '/admin_media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '%!a5^gik_4lgzt+k)vyo6)y68_3!u^*j(ujks7(=6f2j89d=x&'
+
+
+CHARTIT_DIR = os.path.split(os.path.dirname(__file__))[0]
+CHARTIT_JS_REL_PATH = '/highcharts/'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -84,7 +90,7 @@ TEMPLATE_DIRS = (
     '/opt/ebs/web/ebscab/templates',
     #'/opt/ebs/web/ebscab/helpdesk/templates',
     os.path.abspath('./templates'),
-    os.path.abspath('./extjs/templates'),
+    #os.path.abspath('./extjs/templates'),
     
     #os.path.abspath('./helpdesk/templates'),
 )
@@ -99,12 +105,13 @@ INSTALLED_APPS = (
     'radius',
     'nas',
     'billservice',
-    'lib',
+    #'lib',
     'statistics',
     'paymentgateways.webmoney',
     'paymentgateways.qiwi',
     'helpdesk',
-    'compress',
+    #'compress',
+    'chartit',
     
 )
 

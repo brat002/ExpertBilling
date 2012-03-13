@@ -2,7 +2,7 @@
 from billservice.forms import TransactionReportForm
 from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib.auth.decorators import login_required
-from billservice.models import Transaction,PeriodicalServiceHistory, TotalTransactionReport as TransactionReport
+from billservice.models import Transaction, TransactionType, PeriodicalServiceHistory, TotalTransactionReport as TransactionReport
 from views import instance_dict
 import billservice.models as bsmodels
 from lib import QuerySetSequence, ExtDirectStore,IableSequence
@@ -16,7 +16,7 @@ from django.conf import settings
 # Очень важный момент, возврат результата из базы в виде словаря а не списка.
 from psycopg2.extras import RealDictCursor 
 from psycopg2 import IntegrityError, InternalError
-
+import json
 
 
 
@@ -85,8 +85,8 @@ TRANSACTION_MODELS = {"PS_GRADUAL":'PeriodicalServiceHistory',
 @login_required
 def transactionreport(request):
 
-    
-    form = TransactionReportForm(request.POST)
+    data = json.loads(request.POST.get('data','{}'))
+    form = TransactionReportForm(data)
     if form.is_valid():
         #items = PeriodicalServiceHistory.objects.all()[0:200]
         account = form.cleaned_data.get('account')
@@ -95,34 +95,34 @@ def transactionreport(request):
         systemusers = form.cleaned_data.get('systemuser')
         tariffs = form.cleaned_data.get('tarif')
         extra={}
-        if request.POST.get('limit',100)=='all':
+        if data.get('limit',100)=='all':
             l=-1
         else:
-            l=int(request.POST.get('limit',100))
-            extra={'start':int(request.POST.get('start',0)), 'limit':l}
+            l=int(data.get('limit',100))
+            extra={'start':int(data.get('start',0)), 'limit':l}
             
-        if request.POST.get('sort',''):
-            extra['sort'] = request.POST.get('sort','')
-            extra['dir'] = request.POST.get('dir','asc')
-        if request.POST.get('groupBy',''):
-            extra['groupby'] = request.POST.get('groupBy','')
-            extra['groupdir'] = request.POST.get('groupDir','asc')
+        if data.get('sort',''):
+            extra['sort'] = data.get('sort','')
+            extra['dir'] = data.get('dir','asc')
+        if data.get('groupBy',''):
+            extra['groupby'] = data.get('groupBy','')
+            extra['groupdir'] = data.get('groupDir','asc')
             
         res=[]
         resitems = []
         TYPES={}
         TRTYPES={}
         LTYPES=[]
-        for x in form.cleaned_data.get('transactiontype'):
-            key=TRANSACTION_MODELS.get(x.internal_name)
+        for x in form.cleaned_data.get('transactiontype', ''):
+            key=TRANSACTION_MODELS.get(x)
             model = bsmodels.__dict__.get(key)
             if key not in TYPES:
                 TYPES[key]=[]
             if key not in TRTYPES:
                 TRTYPES[key]=[]
             TYPES[key].append(model)
-            TRTYPES[key].append(x)
-            LTYPES.append(x.internal_name)
+            TRTYPES[key].append(TransactionType.objects.get(internal_name=x))
+            LTYPES.append(x)
                 
         #print TYPES
         #print ','.join(["'%s'" % x for x in LTYPES])
@@ -149,8 +149,8 @@ def transactionreport(request):
         
         ds = ExtDirectStore(TransactionReport)
         items, totalcount = ds.query(items, **extra)
-        res = tuple(items.values('id', 'service','created','tariff__name','summ','account','type','type__name','systemuser','bill','descrition','end_promise', 'promise_expired')) 
-
+        res = tuple(items.values('id', 'service_name', 'table', 'created','tariff__name','summ','account__username', 'account__fullname', 'type', 'systemuser_id','bill','description','end_promise', 'promise_expired')) 
+        #print items.query
         t=[{'name': 'id', 'sortable':True,'type':'integer'},
            {'name': 'service_name', 'sortable':True,'type':'string'},
            {'name': 'created', 'sortable':True,'type':'date'},
@@ -165,7 +165,7 @@ def transactionreport(request):
            {'name': 'end_promise',  'sortable':True,'type':'date'},
            {'name': 'promise_expired', 'sortable':True,'type':'boolean'},]
         
-        return {"records": res,  'total':totalcount, 'metaData':{'root': 'records',
+        return {"records": res,  'status':True, 'totalCount':len(res), 'metaData':{'root': 'records',
                                              'totalProperty':'total', 
                                              
                                              'fields':t
@@ -180,7 +180,7 @@ def transactionreport(request):
 
     else:
 
-        return {'success':False, 'msg':form._errors}
+        return {'status':False, 'errors':form._errors}
         
     
         
