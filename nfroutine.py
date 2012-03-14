@@ -689,7 +689,7 @@ class NetFlowRoutine(Thread):
                             logger.info("traffic_transmit_service_id=%s acctf_id=%s account_id=%s summ=%s", (acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ))
                             if summ <> 0:
                                 with queues.pickerLock:
-                                    logger.info("add to picker %s" % summ)
+                                    logger.info("add to picker %s",  summ)
                                     queues.picker.add_summ(acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ)
 
                 if flags.writeProf:
