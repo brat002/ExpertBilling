@@ -74,8 +74,7 @@ def jsonaccounts(request):
         items, totalcount = items.query(**extra)
     else:
         f=SearchAccountForm(request.POST)
-        print f.errors
-        print f.cleaned_data
+
         query={}
         for k in f.cleaned_data:
             if f.cleaned_data.get(k):
@@ -83,19 +82,12 @@ def jsonaccounts(request):
             
         items = Account.objects.filter(**query)
     
-    print items
-    #return items
-    
-    #from django.core import serializers
-    #from django.http import HttpResponse
     res=[]
     for item in items:
         r=instance_dict(item,normal_fields=True)
         r['tariff']=item.tariff
         res.append(r)
-    #print instance_dict(item).keys()
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
     return {"records": res, 'total':str(totalcount)}
     
 
@@ -116,9 +108,6 @@ def addonservice(request):
     for item in items:
         r=instance_dict(item,normal_fields=True)
         res.append(r)
-    #print instance_dict(item).keys()
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
     return {"records": res, 'total':str(totalcount)}
 
 
@@ -138,9 +127,7 @@ def account_livesearch(request):
     res=[]
     for item in items:
         res.append({'id':item.id, 'username':item.username, 'contract':item.contract,'fullname':item.fullname, 'created':item.created.strftime('%Y-%m-%d %H:%M:%S')})
-    #print instance_dict(item).keys()
-    #data = serializers.serialize('json', accounts, fields=('username','password'))
-    #return HttpResponse("{data: [{username: 'Image one', password:'12345', fullname:46.5, taskId: '10'},{username: 'Image Two', password:'/GetImage.php?id=2', fullname:'Abra', taskId: '20'}]}", mimetype='application/json')
+
     return {"records": res, 'total':len(res)}
 
 @ajax_request
@@ -193,10 +180,9 @@ def subaccounts(request):
         return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id', None)
     id = request.POST.get('id', None)
-    print "n fields", request.POST.get('normal_fields', True)
+
     normal_fields = request.POST.get('normal_fields', True)=='True'
-    print "normal_fields",normal_fields, type(normal_fields)
-    print "subaccount", account_id
+
     if account_id and account_id!= 'None':
         items = SubAccount.objects.filter(account__id=account_id)
     else:
@@ -405,7 +391,7 @@ def timeperiods_save(request):
             model.save()
             res={"status": True, 'id':model.id}
         except Exception, e:
-            print e
+
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -485,7 +471,7 @@ def timeperiodnodes_save(request):
             model.save()
             res={"status": True, 'id':model.id}
         except Exception, e:
-            print e
+
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -841,7 +827,7 @@ def tpchangerules_set(request):
             model.save()
             res={"status": True, 'id':model.id}
         except Exception, e:
-            print e
+
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -881,7 +867,7 @@ def systemusers_set(request):
             model.save()
             res={"status": True, 'id':model.id}
         except Exception, e:
-            print e
+
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -1008,7 +994,6 @@ def operator(request):
         return {'status':True, "records":[instance_dict(item, normal_fields=False)], 'totalCount':1}
    
     except Exception, e:
-        print e
         return {'status':False, 'message': u'Провайдер не найден. Задайте информацию о себе в меню Help'}
 
 
@@ -1048,7 +1033,6 @@ def operator_set(request):
                 opmodel.save()
                 res={"status": True}
             except Exception, e:
-                print e
                 res={"status": False, "message": str(e)}
         else:
             res={"status": False, "errors": bankform._errors}
@@ -1159,7 +1143,6 @@ def cities_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -1230,7 +1213,6 @@ def accounthardware_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -1306,7 +1288,6 @@ def news_set(request):
                     AccountViewedNews.objects.create(news = item, account = Account.objects.get(id=account), viewed=False)
             res={"status": True, 'id':item.id}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -1414,7 +1395,6 @@ def hardware_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -1478,7 +1458,6 @@ def manufacturers_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -1548,7 +1527,6 @@ def models_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -1639,7 +1617,6 @@ def dealers_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -1678,7 +1655,6 @@ def hardwaretypes_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -1749,7 +1725,6 @@ def cards_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -1961,7 +1936,6 @@ def trafficclasses_set(request):
             item.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2028,7 +2002,6 @@ def trafficclassnodes_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2118,7 +2091,6 @@ def ippools_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2189,7 +2161,6 @@ def radiusattrs_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2255,7 +2226,6 @@ def templates_save(request):
             model.save()
             res={"status": True, 'id':model.id}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2309,7 +2279,6 @@ def accountprepaystrafic_set(request):
             model.save()
             res={"status": True, 'id':model.id}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2363,7 +2332,6 @@ def accountprepaysradiustrafic_set(request):
             model.save()
             res={"status": True, 'id':model.id}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2418,7 +2386,7 @@ def periodicalservices(request):
     tarif_id = request.POST.get('tarif',None)
     deleted = bool(request.POST.get('deleted',None)=='True')
     normal_fields = bool(request.POST.get('normal_fields',None)=='True')
-    print tarif_id, deleted
+
     if id and id!='None':
         items = PeriodicalService.objects.filter(id=id, deleted=deleted)
         if not items:
@@ -2448,7 +2416,7 @@ def transactions(request):
     id = request.POST.get('id',None)
     limit = request.POST.get('limit',None)
     normal_fields = bool(request.POST.get('normal_fields',None)=='True')
-    print 'limit', limit
+
     if id and id!='None':
         items = Transaction.objects.filter(id=id)
         if not items:
@@ -2553,7 +2521,7 @@ def speedlimites(request):
     id = request.POST.get('id',None)
     limit_id = request.POST.get('limit_id',None)
     normal_fields = bool(request.POST.get('normal_fields',False)=='True')
-    print "speedlimites_normal_fields", normal_fields
+
     if id and id!='None':
         items = SpeedLimit.objects.filter(id=id)
         if not items:
@@ -2626,7 +2594,7 @@ def get_next_cardseries(request):
     
     res = cur.fetchone()[0] 
     
-    print "res==", res
+
     res = res if res else 1
     return {"records": [res], 'status':True, 'totalCount':1}
 
@@ -2674,7 +2642,6 @@ def switches_set(request):
             item.save()
             res={"status": True, 'id':item.id}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2762,7 +2729,6 @@ def banks_set(request):
             item.save()
             res={"status": True, 'id':item.id}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2815,7 +2781,6 @@ def dealerpay_set(request):
             item.save()
             res={"status": True, 'id':item.id}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2902,7 +2867,6 @@ def salecards_set(request):
                     item.cards.add(c)
             res={"status": True, 'id':item.id}
         except Exception, e:
-            print e
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -2941,7 +2905,6 @@ def tpchange_save(request):
             form.save()
             res={"success": True}
         except Exception, e:
-            print e
             res={"success": False, "message": str(e)}
     else:
         res={"success": False, "errors": form._errors}
@@ -2982,10 +2945,7 @@ def tariffs_set(request):
         if form.is_valid():
             tariff = form.save(commit=False)
             tariff.save()
-            print 'tarif save'
         else:
-            print 'tarif errors'
-            print form._errors
             transaction.rollback()
             return {'status':False, 'errors': form._errors}
         
@@ -2993,19 +2953,14 @@ def tariffs_set(request):
         if 'id' in js['access_parameters']:
             item = AccessParameters.objects.get(id=js['access_parameters']['id'])
             form = AccessParametersForm(js['access_parameters'], instance=item)
-            print "instance"
         else:
-            print "frompost"
             form = AccessParametersForm(js['access_parameters'])
             
         
         if form.is_valid():
-            print 'access parameters save pre'
             access_parameters = form.save(commit=False)
             access_parameters.save()
-            print 'access parameters save post'
         else:
-            print form._errors
             transaction.rollback()
             return {'status':False, 'errors': form._errors}
         
@@ -3013,13 +2968,10 @@ def tariffs_set(request):
         
         for speed in js.get('speeds', []):
             speed['access_parameters']=access_parameters.id
-            print speed
             if speed.get('id'):
                 item = TimeSpeed.objects.get(id=speed.get('id'))
                 form = TimeSpeedForm(speed, instance=item)
-                print "instance"
             else:
-                print "frompost"
                 form = TimeSpeedForm(speed)
 
             if form.is_valid():
@@ -3027,7 +2979,6 @@ def tariffs_set(request):
                 speeditem.save()
                 
             else:
-                print form._errors
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             speeditem_ids.append(speeditem.id)
@@ -3044,20 +2995,15 @@ def tariffs_set(request):
                 
                 item = PeriodicalService.objects.get(id=periodicalservice.get('id'))
                 form = PeriodicalServiceForm(periodicalservice, instance=item)
-                print "instance"
             else:
-                print "frompost"
                 form = PeriodicalServiceForm(periodicalservice)
             
         
             if form.is_valid():
-                print "ps save"
                 periodicalservice_item = form.save(commit=False)
                 periodicalservice_item.save()
-                
-                print 'ps post save'
+
             else:
-                print form._errors
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             periodicalservices_ids.append(periodicalservice_item.id)
@@ -3077,20 +3023,20 @@ def tariffs_set(request):
                 
                 item = AddonServiceTarif.objects.get(id=obj.get('id'))
                 form = AddonServiceTarifForm(obj, instance=item)
-                print "instance"
+
             else:
-                print "frompost"
+
                 form = AddonServiceTarifForm(obj)
             
         
             if form.is_valid():
-                print "as save"
+
                 addonservice_item = form.save(commit=False)
                 addonservice_item.save()
                 
-                print 'as post save'
+
             else:
-                print form._errors
+
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             addonservices_ids.append(addonservice_item.id)
@@ -3110,20 +3056,20 @@ def tariffs_set(request):
                 
                 item = OneTimeService.objects.get(id=onetimeservice.get('id'))
                 form = OneTimeServiceForm(onetimeservice, instance=item)
-                print "instance"
+
             else:
-                print "frompost"
+
                 form = OneTimeServiceForm(onetimeservice)
             
         
             if form.is_valid():
-                print "os save"
+
                 onetimeservice_item = form.save(commit=False)
                 onetimeservice_item.save()
                 
-                print 'os post save'
+
             else:
-                print form._errors
+
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             onetimeservices_ids.append(onetimeservice_item.id)
@@ -3141,23 +3087,23 @@ def tariffs_set(request):
         for (limit, speedlimit) in js.get('limites', []):
             limit['tarif']=tariff.id
             if limit.get('id'):
-                print 'limit.id', limit.get("id")
+
                 item = TrafficLimit.objects.get(id=limit.get('id'))
                 form = TrafficLimitForm(limit, instance=item)
-                print "instance"
+
             else:
-                print "frompost"
+
                 form = TrafficLimitForm(limit)
             
         
             if form.is_valid():
-                print "limit save"
+
                 limit_item = form.save(commit=False)
                 limit_item.save()
                 
-                print 'limit post save'
+
             else:
-                print form._errors
+
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             limites_ids.append(limit_item.id)
@@ -3171,19 +3117,16 @@ def tariffs_set(request):
                         
                         item = SpeedLimit.objects.get(id=speedlimit.get('id'))
                         form = SpeedLimitForm(speedlimit, instance=item)
-                        print "instance"
                     else:
-                        print "frompost"
                         form = SpeedLimitForm(speedlimit)
     
                     if form.is_valid():
-                        print "limit save"
                         speedlimit_item = form.save(commit=False)
                         speedlimit_item.save()
                         
-                        print ' speed imit post save'
+
                     else:
-                        print form._errors
+
                         transaction.rollback()
                         return {'status':False, 'errors': form._errors}
                     speedlimites_ids.append(speedlimit_item.id)
@@ -3205,21 +3148,21 @@ def tariffs_set(request):
             
             item = TimeAccessService.objects.get(id=obj.get('id'))
             form = TimeAccessServiceForm(obj, instance=item)
-            print "instance"
+
         else:
-            print "frompost"
+
             form = TimeAccessServiceForm(obj)
         
     
         if form.is_valid():
-            print "os save"
+
             timeaccessservice = form.save(commit=False)
             timeaccessservice.save()
             tariff.time_access_service = timeaccessservice
             tariff.save()
-            print 'os post save'
+
         else:
-            print form._errors
+
             transaction.rollback()
             return {'status':False, 'errors': form._errors}
 
@@ -3232,9 +3175,9 @@ def tariffs_set(request):
             if timeaccessnode.get('id'):
                 item = TimeAccessNode.objects.get(id=timeaccessnode.get('id'))
                 form = TimeAccessNodeForm(timeaccessnode, instance=item)
-                print "instance"
+
             else:
-                print "frompost"
+
                 form = TimeAccessNodeForm(timeaccessnode)
 
             if form.is_valid():
@@ -3242,7 +3185,6 @@ def tariffs_set(request):
                 timeaccessnode_item.save()
                 
             else:
-                print form._errors
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             time_access_nodes_ids.append(timeaccessnode_item.id)
@@ -3258,34 +3200,33 @@ def tariffs_set(request):
         if 'id' in js.get('traffic_transmit_service'):
             item = TrafficTransmitService.objects.get(id=js.get('traffic_transmit_service')['id'])
             form = TrafficTransmitServiceForm(js.get('traffic_transmit_service'), instance=item)
-            print "instance"
+
         else:
-            print "frompost"
+
             form = TrafficTransmitServiceForm(js.get('traffic_transmit_service', {}))
             
         
         if form.is_valid():
-            print 'tr transmit  save pre'
+
             traffic_transmit_service = form.save(commit=False)
             traffic_transmit_service.save()
             tariff.traffic_transmit_service = traffic_transmit_service
             tariff.save()
-            print 'tr transmit save post'
+
         else:
-            print form._errors
             transaction.rollback()
             return {'status':False, 'errors': form._errors}
         
         traffictransmitnodes_ids = []
         for traffictransmitnode in js.get('traffictransmitnodes', []):
-            print traffictransmitnode
+
             traffictransmitnode['traffic_transmit_service']=traffic_transmit_service.id
             if traffictransmitnode.get('id'):
                 item = TrafficTransmitNodes.objects.get(id=traffictransmitnode.get('id'))
                 form = TrafficTransmitNodeForm(traffictransmitnode, instance=item)
-                print "instance"
+
             else:
-                print "frompost"
+
                 form = TrafficTransmitNodeForm(traffictransmitnode)
 
             if form.is_valid():
@@ -3293,7 +3234,7 @@ def tariffs_set(request):
                 traffictransmitnode_item.save()
                 
             else:
-                print form._errors
+
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             traffictransmitnodes_ids.append(traffictransmitnode_item.id)
@@ -3303,14 +3244,14 @@ def tariffs_set(request):
             
         prepaidtraffic_ids = []
         for prepaidtrafficnode in js.get('prepaidtrafficnodes', []):
-            print prepaidtrafficnode
+
             prepaidtrafficnode['traffic_transmit_service']=traffic_transmit_service.id
             if prepaidtrafficnode.get('id'):
                 item = PrepaidTraffic.objects.get(id=prepaidtrafficnode.get('id'))
                 form = PrepaidTrafficForm(prepaidtrafficnode, instance=item)
-                print "instance"
+
             else:
-                print "frompost"
+
                 form = PrepaidTrafficForm(prepaidtrafficnode)
 
             if form.is_valid():
@@ -3318,7 +3259,7 @@ def tariffs_set(request):
                 prepaidtraffictransmitnode_item.save()
                 
             else:
-                print form._errors
+
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             prepaidtraffic_ids.append(prepaidtraffictransmitnode_item.id)
@@ -3334,34 +3275,34 @@ def tariffs_set(request):
         if 'id' in js.get('radius_traffic_service'):
             item = RadiusTraffic.objects.get(id=js.get('radius_traffic_service')['id'])
             form = RadiusTrafficForm(js.get('radius_traffic_service'), instance=item)
-            print "instance"
+
         else:
-            print "frompost"
+
             form = RadiusTrafficForm(js.get('radius_traffic_service', {}))
             
         
         if form.is_valid():
-            print 'rad tr transmit  save pre'
+
             radius_traffic_service = form.save(commit=False)
             radius_traffic_service.save()
             tariff.radius_traffic_transmit_service = radius_traffic_service
             tariff.save()
-            print 'rad tr transmit save post'
+
         else:
-            print form._errors
+
             transaction.rollback()
             return {'status':False, 'errors': form._errors}
         
         radiustraffictransmitnodes_ids = []
         for radtraffictransmitnode in js.get('radiustrafficnodes', []):
-            print radtraffictransmitnode
+
             radtraffictransmitnode['radiustraffic']=radius_traffic_service.id
             if radtraffictransmitnode.get('id'):
                 item = RadiusTrafficNode.objects.get(id=radtraffictransmitnode.get('id'))
                 form = RadiusTrafficNodeForm(radtraffictransmitnode, instance=item)
-                print "instance"
+
             else:
-                print "frompost"
+
                 form = RadiusTrafficNodeForm(radtraffictransmitnode)
 
             if form.is_valid():
@@ -3369,7 +3310,7 @@ def tariffs_set(request):
                 radtraffictransmitnode_item.save()
                 
             else:
-                print form._errors
+
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             radiustraffictransmitnodes_ids.append(radtraffictransmitnode_item.id)
@@ -3756,7 +3697,7 @@ def document_save(request):
             form.save()
             res={"success": True}
         except Exception, e:
-            print e
+
             res={"success": False, "message": str(e)}
     else:
         res={"success": False, "errors": form._errors}
@@ -3801,7 +3742,7 @@ def streets_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
+
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -3951,7 +3892,7 @@ def account_save(request):
                 contr.save()
             res={"status": True, 'account_id':item.id}
         except Exception, e:
-            print e
+
             res={"status": False, "errors": [{'error':str(e)}]}
     else:
         
@@ -4010,10 +3951,10 @@ def subaccount_save(request):
             pass
             subacc.save()
         except Exception, e:
-            print e
+
             res={"success": False, "errors": a._errors}
             return res
-        print 1
+
         
         # print "cc.vpn_ipinuse11",cc.vpn_ipinuse
         subaccounts = 0
@@ -4247,7 +4188,7 @@ def houses_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
+
             res={"status": False, "message": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -4411,7 +4352,7 @@ def suspendedperiod_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
+
             res={"status": False, "message": str(e)}
     else:
         res={"success": False, "errors": form._errors}
@@ -4435,7 +4376,7 @@ def transaction_set(request):
             tr.save()
             res={"status": True, 'transaction_id':tr.id}
         except Exception, e:
-            print e
+
             res={"status": False, "msg": str(e)}
     else:
         res={"status": False, "errors": form._errors}
@@ -4479,7 +4420,7 @@ def transactiontypes_set(request):
             form.save()
             res={"status": True}
         except Exception, e:
-            print e
+
             res={"status": False, "message": str(e)}
     else:
         res={"success": False, "errors": form._errors}
@@ -4526,9 +4467,9 @@ def actions_set(request):
         elif action =='delete':
             command = n.subacc_delete_action
         #print command
-        print command
+
         sended = cred(account=acc, subacc=subacc, access_type='ipn', nas=nas,  format_string=command)
-        print sended
+
         if action=='create' and sended==True:
             sa.ipn_added=True
             sa.speed=''
@@ -4566,11 +4507,10 @@ def documentrender(request):
         template = Template.objects.get(id=form.cleaned_data.get('template'))
         templ = mako_template(unicode(template.body), input_encoding='utf-8')
         data=''
-        print "form.cleaned_data.get('template')",form.cleaned_data.get('template')
         if template.type.id==1:
     
             account = Account.objects.get(id=form.cleaned_data.get('account'))
-            print account
+
             #tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
             try:
                 data=templ.render_unicode(account=account)
@@ -4664,7 +4604,7 @@ def get_ports_status(request):
         try:
             oid, value=line.split(" ")
         except Exception, e:
-            print line, e
+
             continue
         
         id=oid.split(".")[-1]
@@ -4679,7 +4619,6 @@ def get_ports_status(request):
         try:
             oid, value=line.split(" ")
         except Exception, e:
-            print line, e
             continue
         
         id=oid.split(".")[-1]
@@ -4710,7 +4649,7 @@ def set_ports_status(self, switch_id):
         try:
             oid, value=line.split(" ")
         except Exception, e:
-            print line, e
+
             continue
         
         id=oid.split(".")[-1]
@@ -4730,7 +4669,6 @@ def set_ports_status(self, switch_id):
         try:
             oid, value=line.split(" ")
         except Exception, e:
-            print line, e
             continue
         id=oid.split(".")[-1]
         ports_status[id]=value
