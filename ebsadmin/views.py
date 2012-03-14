@@ -31,7 +31,13 @@ from radius.forms import SessionFilterForm
 
 from django.db.models import Q
 from django.db import transaction
-import json
+
+try:
+    import json
+    json.loads("{}")
+except:
+    import simplejson as json
+    
 import commands
 
 from django.contrib.auth.decorators import permission_required
