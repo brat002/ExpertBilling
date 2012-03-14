@@ -573,7 +573,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
             i=0
             for a in sp:
                 self.addrow(self.tableWidget, a.id, i, 0)
-                self.addrow(self.tableWidget, a.addonservice, i, 1)
+                self.addrow(self.tableWidget, a.service, i, 1)
                 self.addrow(self.tableWidget, a.activated, i, 2)
                 try:
                     self.addrow(self.tableWidget, a.deactivated, i, 3)
