@@ -21,7 +21,9 @@ BEGIN
       INSERT INTO billservice_periodicalservicelog(service_id, accounttarif_id, datetime) VALUES(ps_id_, acctf_id_, created_);
     ELSE
       UPDATE billservice_periodicalservicelog SET datetime=created_ WHERE id=pslog_id;  
+    END IF;
     RETURN  new_summ_;
+    
 END;
 $BODY$
   LANGUAGE plpgsql VOLATILE

@@ -1,5 +1,5 @@
-DROP VIEW billservice_totaltransactionreport;
-CREATE OR REPLACE VIEW billservice_totaltransactionreport(id, service_id, service_name, table, created,tariff_id,summ,account_id,type_id,systemuser_id,bill,description,end_promise, promise_expired) AS
+DROP VIEW IF EXISTS billservice_totaltransactionreport;
+CREATE OR REPLACE VIEW billservice_totaltransactionreport(id, service_id, service_name, "table", created,tariff_id,summ,account_id,type_id,systemuser_id,bill,description,end_promise, promise_expired) AS
 SELECT psh.id, 
 	psh.service_id,
 	(select name from billservice_periodicalservice where id=psh.service_id),
@@ -15,7 +15,7 @@ UNION ALL
 SELECT transaction.id,
 	NULL,
 	'',
-	'billservice_transaction'
+	'billservice_transaction',
 	transaction.created,  
 	(SELECT tarif_id FROM billservice_accounttarif where id=transaction.accounttarif_id) as tarif,
 	transaction.summ*(-1),
