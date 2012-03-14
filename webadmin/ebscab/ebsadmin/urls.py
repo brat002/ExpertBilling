@@ -3,8 +3,10 @@ from django.conf.urls.defaults import *
 urlpatterns = patterns('ebsadmin.transactionreport',
                        url(r'^transactionreport/$', 'transactionreport'),
                        )
-urlpatterns = patterns('ebsadmin.charts',
+urlpatterns += patterns('ebsadmin.charts',
                        url(r'^rainchart/$', 'rainfall_pivot_chart_view'),
+                       url(r'^sessionschart/$', 'session_count_chart_view'),
+                       
                        )
 
 

@@ -28,9 +28,7 @@ class MyJSONEncoder(simplejson.JSONEncoder):
                 'microsecond' : obj.microsecond,
             }   
         else:
-            print type(obj)==ipaddr.IPv4Network
             if type(obj)==ipaddr.IPv4Network or  type(obj)==ipaddr.IPAddress:
-                print "YESSS"
                 return str(obj)
             return simplejson.JSONEncoder.default(self, obj)
     
