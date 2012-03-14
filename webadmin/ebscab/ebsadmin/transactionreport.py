@@ -16,7 +16,11 @@ from django.conf import settings
 # Очень важный момент, возврат результата из базы в виде словаря а не списка.
 from psycopg2.extras import RealDictCursor 
 from psycopg2 import IntegrityError, InternalError
-import json
+try:
+    import json
+    json.loads("{}")
+except:
+    import simplejson as json
 
 
 
