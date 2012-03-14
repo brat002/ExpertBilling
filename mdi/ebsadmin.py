@@ -357,7 +357,7 @@ class HttpBot(object):
             return
         return d
     
-    def get_account(self, id=None, fields=[], limit=1):
+    def get_account(self, id=None, fields=[], limit=None):
         url='http://%s/ebsadmin/account/' % self.host 
         
         d = self.POST(url,{'data':json.dumps({'fields':fields, 'id':id, 'limit':limit})})
