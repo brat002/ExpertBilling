@@ -2047,7 +2047,7 @@ class GroupsDialog(QtGui.QDialog):
         if y!=0:
             if y==2:
                 
-                value = u", ".join([vstr.decode('utf-8') for vstr in value])
+                value = u", ".join(value)
                 headerItem.setText(value)
             else:
                 headerItem.setText(unicode(value))
