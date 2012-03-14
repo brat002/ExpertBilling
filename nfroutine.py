@@ -103,6 +103,7 @@ class DepickerThread(Thread):
                 ilist = picker; ilen = len(picker)
                 for (tts,acctf,acc), summ in ilist:
                     #debit accounts
+                    logger.info("tts=%s acctf=%s acc=%s summ=%s", (tts, acctf, acc, summ=summ))
                     traffictransaction(self.cur, tts, acctf, acc, summ=summ, created=now)
                     self.connection.commit()
                     icount += 1
@@ -684,9 +685,11 @@ class NetFlowRoutine(Thread):
                                     nodes = caches.nodes_cache.by_tts_group.get((acc.traffic_transmit_service_id, group_id))
                                     trafic_cost = self.get_actual_cost(octets_summ, stream_date, nodes) if nodes else 0
                                     summ = (trafic_cost * octets) / MEGABYTE
-        
-                            if summ != 0:
+                                    
+                            logger.info("traffic_transmit_service_id=%s acctf_id=%s account_id=%s summ=%s", (acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ))
+                            if summ <> 0:
                                 with queues.pickerLock:
+                                    logger.info("add to picker %s" % summ)
                                     queues.picker.add_summ(acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ)
 
                 if flags.writeProf:
