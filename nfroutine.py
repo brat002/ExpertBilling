@@ -103,7 +103,7 @@ class DepickerThread(Thread):
                 ilist = picker; ilen = len(picker)
                 for (tts,acctf,acc), summ in ilist:
                     #debit accounts
-                    logger.info("tts=%s acctf=%s acc=%s summ=%s", (tts, acctf, acc, summ=summ))
+                    logger.info("tts=%s acctf=%s acc=%s summ=%s", (tts, acctf, acc, summ))
                     traffictransaction(self.cur, tts, acctf, acc, summ=summ, created=now)
                     self.connection.commit()
                     icount += 1
