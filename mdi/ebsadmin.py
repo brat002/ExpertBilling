@@ -136,6 +136,9 @@ class HttpBot(object):
         url='http://%s/ebsadmin/simple_login/' % self.host 
         
         d = self.POST(url, {'username':name, 'password':password})
+        if not d.status:
+            self.error(d)
+            return
         return d
 
     def get_settlementperiods(self,id=None, autostart=True, fields=[]):
@@ -2541,7 +2544,7 @@ def login():
             data = connection.log_in(unicode(child.name), unicode(child.password))
             username = unicode(child.name)
 
-            if data.status:
+            if data:
                 return connection
             else:
                 QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации.\n%s" % data.message))

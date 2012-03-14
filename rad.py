@@ -1736,7 +1736,7 @@ class HandleSAcct(HandleSBase):
         #subacc = SubAccount()
         if self.access_type=='lISG':
             subacc = self.caches.subaccount_cache.by_ipn_ip.get(self.userName)
-        if self.access_typ=='Wireless':
+        if self.access_type=='Wireless':
             logger.info('ACCT: Searching subaccount by mac %s', (self.userName,))
             subacc = self.caches.subaccount_cache.by_mac.get(mac)
         elif not subacc_id:
