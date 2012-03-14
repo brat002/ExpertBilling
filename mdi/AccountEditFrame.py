@@ -608,7 +608,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
         #print self.tarif_edit.itemText(self.tarif_edit.findData(QtCore.QVariant(1)))
         if self.model:
             if self.model.vpn_ipinuse:
-                d = self.connection.get_pool_by_ipinuse(ipinuse_id=self.model.vpn_ipinuse)
+                d = self.connection.get_pool_by_ipinuse(ipinuse=self.model.vpn_ipinuse)
                 if not d.status:
                      QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе не найден пул, из которого был выдан vpn ip адрес."))
                 pool_id = d.result
@@ -640,7 +640,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
 
         if self.model:
             if self.model.vpn_ipv6_ipinuse:
-                d = self.connection.get_pool_by_ipinuse(ipinuse_id=self.model.vpn_ipv6_ipinuse)
+                d = self.connection.get_pool_by_ipinuse(ipinuse=self.model.vpn_ipv6_ipinuse)
                 if not d.status:
                      QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе не найден пул, из которого был выдан ipv6 vpn ip адрес."))
                 ipv6_pool_id = d.result
@@ -669,7 +669,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
 
         if self.model:
             if self.model.ipn_ipinuse:
-                d = self.connection.get_pool_by_ipinuse(ipinuse_id=self.model.ipn_ipinuse)
+                d = self.connection.get_pool_by_ipinuse(ipinuse=self.model.ipn_ipinuse)
                 if not d.status:
                      QtGui.QMessageBox.information(self, u"Внимание!", unicode(u"В системе не найден пул, из которого был выдан ipn ip адрес."))
                 pool_id = d.result
