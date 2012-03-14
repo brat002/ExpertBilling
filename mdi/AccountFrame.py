@@ -1622,6 +1622,8 @@ class TarifWindow(QtGui.QMainWindow):
             if child.exec_()==1:
                 #self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(child.comboBox.currentText()))
                 #print "selected_id", child.selected_id
+                
+                print "child.selected_id", child.selected_id
                 self.addrow(self.trafficcost_tableWidget, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)
                 
         if x==5:
