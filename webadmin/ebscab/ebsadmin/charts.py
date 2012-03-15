@@ -1,4 +1,4 @@
-from chartit import DataPool, Chart
+
 from billservice.models import BalanceHistory
 from django.shortcuts import render_to_response
 

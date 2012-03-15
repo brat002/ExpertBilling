@@ -271,7 +271,7 @@ def sessions(request):
         account_id = form.cleaned_data.get('account')
         date_start =form.cleaned_data.get('date_start')
         date_end = form.cleaned_data.get('date_end')
-        only_active = form.cleaned_data.get('only_active')
+        only_active = form.cleaned_data.get('only_active')=='True'
 
         
         items = ActiveSession.objects.filter(date_start__gte=date_start, date_end__lte=date_end).order_by('-interrim_update')
@@ -2034,10 +2034,10 @@ def classforgroup(request):
         return {'status':False, 'message':u'У вас нет прав на просмотр группы трафика'}
     
     fields = request.POST.get('fields',[])
-    group = request.POST.get('group',None)
+    gr = request.POST.get('group',None)
 
     if group:
-        items = GroupTrafficClass.objects.filter(id=group)
+        items = GroupTrafficClass.objects.filter(group__id=group)
         if not items:
             return {'status':False, 'message': 'GroupTrafficClass item with id=%s not found' % id}
 
@@ -2601,8 +2601,8 @@ def get_next_cardseries(request):
     res = cur.fetchone()[0] 
     
 
-    res = res if res else 1
-    return {"records": [res], 'status':True, 'totalCount':1}
+    res = res if res else 0
+    return {"records": [res+1], 'status':True, 'totalCount':1}
 
 
 @ajax_request
