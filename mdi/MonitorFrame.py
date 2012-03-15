@@ -230,8 +230,8 @@ class MonitorEbs(ebsTableWindow):
                 date_end = session.date_end.strftime(self.strftimeFormat)
             #print session.id
             self.addrow(self.tableWidget, session.sessionid, i, 0, id=session.id, sessionid = session.sessionid, account_id=session.account)
-            self.addrow(self.tableWidget, session.username, i, 1)
-            self.addrow(self.tableWidget, session.subaccount_username, i, 2)
+            self.addrow(self.tableWidget, session.account, i, 1)
+            self.addrow(self.tableWidget, session.subaccount, i, 2)
             self.addrow(self.tableWidget, "%.2f" % session.ballance, i, 3, color=True)
             self.addrow(self.tableWidget, session.credit, i, 4)
             self.addrow(self.tableWidget, session.caller_id, i, 5)
@@ -245,7 +245,7 @@ class MonitorEbs(ebsTableWindow):
             self.addrow(self.tableWidget, prntime(session.session_time), i, 13)
             self.addrow(self.tableWidget, session.session_status, i, 14, color=True)
             self.addrow(self.tableWidget, session.acct_terminate_cause, i, 15)
-            sess_time += session.session_time if session.session_time else 0
+            sess_time += float(session.session_time) if float(session.session_time) else 0
             i+=1
         if self.firsttime and sessions and HeaderUtil.getBinaryHeader("monitor_frame_header").isEmpty():
             self.tableWidget.resizeColumnsToContents()
