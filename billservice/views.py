@@ -33,7 +33,7 @@ from lib.http import JsonResponse
 from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
 from billservice.models import SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime, SuspendedPeriod, GroupStat
 
-from billservice.forms import LoginForm, PasswordForm, EmailForm, SimplePasswordForm, CardForm, ChangeTariffForm, PromiseForm, StatististicForm
+from billservice.forms import LoginForm, PasswordForm, EmailForm, SimplePasswordForm, ActivationCardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession
 from billservice.utility import is_login_user, settlement_period_info
@@ -833,26 +833,22 @@ def change_tariff(request):
 @login_required
 def card_form(request):
     return {
-            'form':CardForm()
+            'form':ActivationCardForm()
             }
 
 
 @ajax_request
 @login_required
 def card_acvation(request):
-    if not request.session.has_key('express_pay'):
-        return {
-                'error_message': u'Вам не доступна услуга активации карт экспресс оплаты!',
-               }
     user = request.user.account
     if not user.allow_expresscards:
         return {
-                'error_message': u'Вам не доступна услуга активации карт экспресс оплаты!',
+                'error_message': u'Вам не доступна услуга активации карт экспресс оплаты.',
                 }
 
 
     if request.method == 'POST':
-        form = CardForm(request.POST)
+        form = ActivationCardForm(request.POST)
         error_message = ''
         if form.is_valid():
 

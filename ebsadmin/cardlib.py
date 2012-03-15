@@ -63,6 +63,9 @@ def activate_card(login, pin):
         transaction.created=now
         transaction.save()
 
+        card.activated = now
+        card.activated_by = account
+        card.save()
         return status_ok
                 
     return
@@ -97,7 +100,7 @@ def activate_pay_card(account_id, serial, card_id, pin):
                 transaction.created=now
                 transaction.save()            
                 
-                card.sold=now
+                card.activated=now
                 card.activated_by=account
                 card.save()
                 return_value = "CARD_ACTIVATED"

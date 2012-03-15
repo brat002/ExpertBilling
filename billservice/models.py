@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 # Create your models here.
 # choiCe
-from ipyfield.models import IPyField
+from lib.fields import IPNetworkField
 PROTOCOLS = {'0':'-all-',
            '37':'ddp',
            '98':'encap', 
@@ -1473,7 +1473,7 @@ class SubAccount(models.Model):
     account = models.ForeignKey(Account, related_name='subaccounts')
     username = models.CharField(max_length=512, blank=True)
     password = models.CharField(max_length=512, blank=True)
-    ipn_ip_address = models.IPAddressField(blank=True,null=True, default='0.0.0.0')
+    ipn_ip_address = IPNetworkField(blank=True,null=True, default='0.0.0.0')
     ipn_mac_address = models.CharField(blank=True, max_length=17, default='')
     vpn_ip_address = models.IPAddressField(blank=True,null=True,  default='0.0.0.0')
     allow_mac_update = models.BooleanField(default=False)
