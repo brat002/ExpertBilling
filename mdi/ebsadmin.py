@@ -19,9 +19,17 @@ import time
 import socket
 from json import JSONDecoder
 import datetime
-
+import decimal
 from db import AttrDict
 
+def default(obj):
+    '''Convert object to JSON encodable type.'''
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    if isinstance(obj, datetime.datetime):
+        return obj.strftime('%Y-%m-%d %H:%M:%S')
+
+    return simplejson.JSONEncoder.default(self, obj)
 
 class HttpBot(object):
     """an HttpBot represents one browser session, with cookies."""
@@ -107,7 +115,7 @@ class HttpBot(object):
     def parse(self, data):
         if not data: return {}
         #print "before parce=", data
-        d = json.loads(data,  object_hook=AttrDict)
+        d = json.loads(data,  object_hook=AttrDict, parse_float=decimal.Decimal,)
         #print 'after parce', d
         if hasattr(d, 'status') and d.status==True:
 
@@ -128,6 +136,7 @@ class HttpBot(object):
 
     def error(self, response, title=u'Ошибка!'):
             if 'errors' in response:
+                print response.errors
                 QtGui.QMessageBox.critical(self.widget, unicode(u"Внимание"), unicode('\n'.join(["%s %s" % (x, ';'.join(response.errors.get(x))) for x in response.errors])))
             if 'message' in response:
                 QtGui.QMessageBox.critical(self.widget, unicode(u"Ошибка"), unicode("%s" % response.message))
@@ -141,10 +150,10 @@ class HttpBot(object):
             return
         return d
 
-    def get_settlementperiods(self,id=None, autostart=True, fields=[]):
+    def get_settlementperiods(self,id=None, autostart=None, fields=[]):
         url='http://%s/ebsadmin/settlementperiods/' % self.host 
         
-        d = self.POST(url,{'data': json.dumps({'fields':fields, 'id':id, 'autostart':autostart}, ensure_ascii=False)})
+        d = self.POST(url,{'data': json.dumps({'fields':fields, 'id':id, 'autostart':autostart}, ensure_ascii=False, default=default)})
         if not d.status:
             self.error(d)
             return
@@ -243,7 +252,7 @@ class HttpBot(object):
     def get_model(self, id, table, fields=[], where={}):
         url='http://%s/ebsadmin/api/getmodel/' % self.host 
         
-        d = self.POST(url,{'data':json.dumps({'id':id,  'table':fields, 'fields': fields, 'where':where})})
+        d = self.POST(url,{'data':json.dumps({'id':id,  'table':fields, 'fields': fields, 'where':where}, default=default)})
         if not d.status:
             self.error(d)
             return
@@ -252,7 +261,7 @@ class HttpBot(object):
     def get_models(self, table, fields=[], where={}, order = {'id':'ASC',}):
         url='http://%s/ebsadmin/api/getmodels/' % self.host 
         
-        d = self.POST(url,{'data':json.dumps({'order':order,  'table':fields, 'fields': fields, 'where':where})})
+        d = self.POST(url,{'data':json.dumps({'order':order,  'table':fields, 'fields': fields, 'where':where}, default=default)})
         if not d.status:
             self.error(d)
             return
@@ -342,7 +351,7 @@ class HttpBot(object):
     def news_save(self,model, accounts=[]):
         url='http://%s/ebsadmin/news/set/' % self.host 
         
-        d = self.POST(url,{'data':json.dumps({'model':model, 'accounts':accounts}, ensure_ascii=False)})
+        d = self.POST(url,{'data':json.dumps({'model':model, 'accounts':accounts}, ensure_ascii=False, default=default)})
         if not d.status:
             self.error(d)
             return
@@ -421,15 +430,14 @@ class HttpBot(object):
         #print d
         return d
     
-    def account_save(self, model, tarif_id=None, template_id=None):
+    def account_save(self, model, organization, bank, tarif_id=None, template_id=None):
         url='http://%s/ebsadmin/account/save/' % self.host 
-        #print model
-        model['tarif_id'] = tarif_id
-        model['template_id'] = template_id
-        #print a
-        #print dir(a)
-        d = self.POST(url,model)
-        #print d
+
+
+        d = self.POST(url, {'data':json.dumps({'tarif_id':tarif_id, 'model':model, 'organization': organization, 'bank':bank},ensure_ascii = False, default=default)})
+        if not d.status:
+            self.error(d)
+            return
         return d
 
     def subaccount_save(self, model):
@@ -467,7 +475,7 @@ class HttpBot(object):
     def transactionreport(self, request):
         url='http://%s/ebsadmin/transactionreport/' % self.host 
         
-        d = self.POST(url,{'data':json.dumps(request)})
+        d = self.POST(url,{'data':json.dumps(request, default=default)})
         if not d.status:
             self.error(d)
             return
@@ -573,6 +581,17 @@ class HttpBot(object):
         #print d
         return d
 
+
+       
+    def get_log_messages(self, systemuser_id, start_date, end_date):
+        url='http://%s/ebsadmin/actionlogs/' % self.host 
+        
+        d = self.POST(url,{"data":json.dumps({ 'systemuser': systemuser_id, 'start_date': start_date, 'end_date':end_date}, default=default)})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)    
+          
     def get_banks(self,id=None,  fields=[]):
         url='http://%s/ebsadmin/banks/' % self.host 
         
@@ -639,7 +658,7 @@ class HttpBot(object):
     def salecards_save(self,model, cards=[]):
         url='http://%s/ebsadmin/salecards/set/' % self.host 
         
-        d = self.POST(url,{'data':json.dumps({'model':model, 'cards':cards})})
+        d = self.POST(url,{'data':json.dumps({'model':model, 'cards':cards}, default=default)})
         if not d.status:
             self.error(d)
             return
@@ -1372,7 +1391,7 @@ class HttpBot(object):
         url='http://%s/ebsadmin/operator/set/' % self.host 
         #print model
 
-        d = self.POST(url,{'data':json.dumps({'op_model':op_model, 'bank_model':bank_model},  ensure_ascii=False)})
+        d = self.POST(url,{'data':json.dumps({'op_model':op_model, 'bank_model':bank_model},  ensure_ascii=False, default=default)})
 
         if not d.status:
             self.error(d)
@@ -1476,7 +1495,7 @@ class HttpBot(object):
         url='http://%s/ebsadmin/tariffs/set/' % self.host 
         #print model
         print data
-        d = self.POST(url,{'data':json.dumps(data,  ensure_ascii=False)})
+        d = self.POST(url,{'data':json.dumps(data,  ensure_ascii=False, default=default)})
         print "d.status", d.status, type(d.status)
         if not d.status:
             self.error(d)
@@ -1487,7 +1506,7 @@ class HttpBot(object):
         url='http://%s/ebsadmin/addonservices/set/' % self.host 
         #print model
 
-        d = self.POST(url,{'data':json.dumps(data,  ensure_ascii=False)})
+        d = self.POST(url,{'data':json.dumps(data,  ensure_ascii=False, default=default)})
 
         if not d.status:
             self.error(d)
@@ -2576,7 +2595,7 @@ if __name__ == "__main__":
             
         splash.finish(mainwindow) 
         mainwindow.show()
-        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.4.%s-dev #%s - %s" % (version,username, connection.host))  
+        mainwindow.setWindowTitle("ExpertBilling administrator interface v.1.4.1%s-dev #%s - %s" % (version,username, connection.host))  
         #app.setStyle("cleanlooks")
         mainwindow.setWindowIcon(QtGui.QIcon("images/icon.png"))
         app.setStyleSheet(open("skins/style.qss","r").read())

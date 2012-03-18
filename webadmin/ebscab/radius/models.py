@@ -32,7 +32,7 @@ SESSION_STATUS=(
                 (u"ACK", u"Cброшена",),
                 )
 # Create your models here.
-class Session(models.Model):
+class Session():
     account=models.ForeignKey(Account)
     #Атрибут радиуса Acct-Session-Id
     sessionid=models.CharField(max_length=32, blank=True, default='')
@@ -106,6 +106,7 @@ class ActiveSession(models.Model):
     #Выставляется в случае, если был произведён платёж
     session_status=models.CharField(max_length=32, choices=SESSION_STATUS, null=True, blank=True)
     speed_string = models.CharField(max_length=255, blank=True, null=True)
+    acct_terminate_cause = models.CharField(max_length=128, blank=True, default = '')
     #speed_changed = models.BooleanField(blank=True, default=False)
 
 

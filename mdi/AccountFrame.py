@@ -3171,6 +3171,8 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
 
         if value==None:
             value=''
+        if type(value)==bool:
+            value = u"Да" if value else u"Нет"
         if color:
             if float(value)<0:
                 headerItem.setBackgroundColor(QtGui.QColor(color))
@@ -3406,10 +3408,10 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             disabled_accounts += 1 if a.status<>1 else 0
             if id==-1000 or id==-2000 or id==-4000 or id==-5000 or id==-12000:
                 self.addrow(a.tariff, i,3, enabled=a.status, organization='')
-                self.addrow(float(a.ballance or 0), i,4, color="red", enabled=a.status)
+                self.addrow(float("%.2f" % float(a.ballance or 0)), i,4, color="red", enabled=a.status)
                 self.addrow(float(a.credit or 0), i,5, enabled=a.status)
                 self.addrow(a.org_name if a.org_id else a.fullname, i,6, enabled=a.status)
-                self.addrow(u"%s %s" % (a.address, u"кв %s" % a.room if a.room else ""), i,7, enabled=a.status)
+                self.addrow(u"%s %s" % (a.address or '', u"кв %s" % a.room if a.room else ""), i,7, enabled=a.status)
                 self.addrow(self.format_array(a.vpn_ips), i,8, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_ips), i,9, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_macs), i,10, enabled=a.status)
@@ -3433,7 +3435,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
                 self.addrow(float("%.2f" % float(a.ballance or 0)), i,3, color="red", enabled=a.status)
                 self.addrow(float(a.credit or 0), i,4, enabled=a.status)
                 self.addrow(a.org_name if a.org_id else a.fullname, i,5, enabled=a.status)
-                self.addrow(u"%s %s" % (a.address, u"кв %s" % a.room if a.room else ""), i,6, enabled=a.status)
+                self.addrow(u"%s %s" % (a.address or '', u"кв %s" % a.room if a.room else ""), i,6, enabled=a.status)
                 self.addrow(self.format_array(a.vpn_ips), i,7, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_ips), i,8, enabled=a.status)
                 self.addrow(self.format_array(a.ipn_macs), i,9, enabled=a.status)
@@ -3510,20 +3512,24 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             return
         model_id=models_id[0]
         
-        operator = self.connection.get("SELECT * FROM billservice_operator LIMIT 1")
+        operator = self.connection.get_operator()
         child = TemplateSelect(connection = self.connection)
         if child.exec_():
             template_id = child.id
         else:
             return
-        template = self.connection.get_model(template_id, "billservice_template")
+        template = self.connection.get_templates(template_id)
         templ = Template(template.body, input_encoding='utf-8')
         
-        account = self.connection.get_model(model_id, "billservice_account")
+        account = self.connection.get_account(model_id)
         try:
             data=templ.render_unicode(account=account, operator=operator, connection=self.connection)
         except Exception, e:
-            data=unicode(u"Ошибка рендеринга документа: %s" % e)
+            data=unicode(u""" <html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body style="text-align:center;">%s</body></html>""" % repr(e))
         self.connection.commit()            
         file= open('templates/tmp/temp.html', 'wb')
         file.write(data.encode("utf-8", 'replace'))

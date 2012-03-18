@@ -90,6 +90,7 @@ class ebsTableWindow(QtGui.QMainWindow):
         
         self.firsttime = True
         self.overlay = Overlay(self.centralWidget())
+        self.overlay.hide()
         self.refresh()
         
         

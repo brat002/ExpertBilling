@@ -284,10 +284,17 @@ class SaleCards(QtGui.QDialog):
             QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
             return
         self.connection.commit()
-        for card in cards:
-            
-            templ = Template(t["%s" % card.template_id], input_encoding='utf-8')
-            data+=templ.render_unicode(connection=self.connection, card=card, operator = operator, bank=bank)
+        try:
+            for card in cards:
+                
+                templ = Template(t["%s" % card.template_id], input_encoding='utf-8')
+                data+=templ.render_unicode(connection=self.connection, card=card, operator = operator, bank=bank)
+        except Exception, e:
+                data=unicode(u""" <html>
+                <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                </head>
+                <body style="text-align:center;">%s</body></html>""" % repr(e))
         self.connection.commit()
         
         data+="</body></html>"
@@ -312,11 +319,17 @@ class SaleCards(QtGui.QDialog):
         
         templ = Template(unicode(template.body), input_encoding='utf-8')
         
-
-        data=templ.render_unicode(connection=self.connection, cards=cards, operator=operator, dealer=dealer, created=datetime.datetime.now().strftime(strftimeFormat), 
-                                  cardcount=len(cards), sum_for_pay = unicode(self.lineEdit_for_pay.text()), discount = unicode(self.spinBox_discount.text()),
-                                  discount_sum = unicode(self.lineEdit_discount_amount.text()), pay = unicode(self.lineEdit_pay.text()),
-                                  paydeffer = (datetime.datetime.now()+datetime.timedelta(days=self.spinBox_paydeffer.value())).strftime(strftimeFormat))
+        try:
+            data=templ.render_unicode(connection=self.connection, cards=cards, operator=operator, dealer=dealer, created=datetime.datetime.now().strftime(strftimeFormat), 
+                                      cardcount=len(cards), sum_for_pay = unicode(self.lineEdit_for_pay.text()), discount = unicode(self.spinBox_discount.text()),
+                                      discount_sum = unicode(self.lineEdit_discount_amount.text()), pay = unicode(self.lineEdit_pay.text()),
+                                      paydeffer = (datetime.datetime.now()+datetime.timedelta(days=self.spinBox_paydeffer.value())).strftime(strftimeFormat))
+        except Exception, e:
+            data=unicode(u""" <html>
+            <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            </head>
+            <body style="text-align:center;">%s</body></html>""" % repr(e))
         self.connection.commit()
         file= open('templates/tmp/temp.html', 'wb')
         file.write(data.encode("utf-8", 'replace'))
@@ -941,8 +954,14 @@ class AddCards(QtGui.QDialog):
         template = self.connection.get_templates(self.comboBox_templates.itemData(self.comboBox_templates.currentIndex()).toInt()[0], "billservice_template")
         #print template.body
         templ = Template(template.body, input_encoding='utf-8')
-        data+=templ.render_unicode(connection=self.connection, card=card, operator=operator, bank=bank)
-
+        try:
+            data+=templ.render_unicode(connection=self.connection, card=card, operator=operator, bank=bank)
+        except Exception, e:
+            data=unicode(u""" <html>
+            <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            </head>
+            <body style="text-align:center;">%s</body></html>""" % repr(e))
         
         data+="</body></html>"
         file= open('templates/cards/cards.html', 'wb')

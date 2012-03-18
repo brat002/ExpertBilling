@@ -182,10 +182,10 @@ class SettlementPeriod(models.Model):
 
     class Meta:
         ordering = ['name']
-        verbose_name = u"Расчётный период"
-        verbose_name_plural = u"Расчётные периоды"
+        verbose_name = u"Расчетный период"
+        verbose_name_plural = u"Расчетные периоды"
         permissions = (
-            ("view", u"Просматр расчётных периодов"),
+            ("view", u"Просмотр расчётных периодов"),
             )
         
 class PeriodicalService(models.Model):
@@ -649,7 +649,7 @@ class Account(models.Model):
     ipn_status = models.BooleanField(verbose_name=u"Статус на сервере доступа", default=False, blank=True)
     status=models.IntegerField(verbose_name=u'Статус пользователя', default=1)
     suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
-    created=models.DateTimeField(verbose_name=u'Создан',auto_now_add=True, blank=True,null=True,default='')
+    created=models.DateTimeField(verbose_name=u'Создан', blank=True,null=True,default='')
     #NOTE: baLance
     ballance=models.DecimalField(u'Баланс', blank=True, default=0,decimal_places=10,max_digits=20)
     credit = models.DecimalField(verbose_name=u'Размер кредита',decimal_places=10,max_digits=20, help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, default=0)
@@ -789,15 +789,17 @@ class Account(models.Model):
 
 
 class Organization(models.Model):
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, blank=True, null=True)
     name = models.CharField(max_length=255)
     #rs = models.CharField(max_length=255)
     uraddress = models.CharField(max_length=255)
     okpo = models.CharField(max_length=255)
+    kpp = models.CharField(max_length=255)
+    kor_s = models.CharField(max_length=255)
     unp = models.CharField(max_length=255)
     phone = models.CharField(max_length=255)
     fax = models.CharField(max_length=255)
-    bank = models.ForeignKey("BankData", null=True, on_delete = models.SET_NULL)
+    bank = models.ForeignKey("BankData", blank=True, null=True, on_delete = models.SET_NULL)
 
     class Meta:
         permissions = (
@@ -1087,6 +1089,7 @@ class Template(models.Model):
 class Card(models.Model):
     series = models.IntegerField()
     pin = models.CharField(max_length=255)
+    login = models.CharField(max_length=255, blank=True, default='')
     sold = models.DateTimeField(blank=True, default=False)
     nominal = models.FloatField(default=0)
     activated = models.DateTimeField(blank=True, default=False)
@@ -1097,8 +1100,12 @@ class Card(models.Model):
     created = models.DateTimeField()
     template = models.ForeignKey(Template)
     type = models.IntegerField()
-  
-  
+    tarif = models.ForeignKey(Tariff, blank=True, null=True)
+    nas = models.ForeignKey(Nas, blank=True, null=True)
+    ip = models.CharField(max_length=20,blank=True, default='')
+    ipinuse = models.ForeignKey("IPInUse", blank=True, null=True)
+    ippool = models.ForeignKey("IPPool", blank=True, null=True)
+    
     class Meta:
         ordering = ['-series', '-created', 'activated']
         permissions = (
@@ -1349,7 +1356,7 @@ class AddonService(models.Model):
     sp_type = models.CharField(max_length=32, choices=(("AT_START",u"В начале расчётного периода"),("AT_END", u"В конце расчётного периода" ),("GRADUAL", u"На протяжении расчётного периода"),))    
     sp_period = models.ForeignKey(SettlementPeriod, related_name="addonservice_spperiod", blank=True, null=True, on_delete=models.SET_NULL)    
     timeperiod = models.ForeignKey(TimePeriod, null=True, on_delete=models.SET_NULL)    
-    cost = models.DecimalField(decimal_places=10, max_digits=30)    
+    cost = models.DecimalField(decimal_places=10, max_digits=30, blank=True, default=0)    
     cancel_subscription = models.BooleanField(default = True)    
     wyte_period = models.ForeignKey(SettlementPeriod, related_name="addonservice_wyteperiod", blank=True, null=True, on_delete=models.SET_NULL)    
     wyte_cost = models.DecimalField(decimal_places=10, max_digits=60, blank=True, default=0)    

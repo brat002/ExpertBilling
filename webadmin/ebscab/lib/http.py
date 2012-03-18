@@ -15,7 +15,8 @@ class MyJSONEncoder(simplejson.JSONEncoder):
     def default(self, obj):
         '''Convert object to JSON encodable type.'''
         if isinstance(obj, Decimal):
-            return float(obj)
+            print float(obj if obj else 0)
+            return float(obj if obj else 0)
         if isinstance(obj, datetime):
             return {
                 '__type__' : 'datetime',
