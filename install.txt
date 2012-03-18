@@ -5,7 +5,7 @@
 #tar -xvzf путь к архиву с биллингом
 
 #apt-get update
-#apt-get install postgresql-8.4 postgresql-contrib-8.4 mc openssh-server python-twisted python-psycopg2 openssl python-paramiko python-dateutil python-pytils python-crypto libpython2.6 libapache2-mod-wsgi python-jsonpickle python-simplejson rrdtool snmp python-pexpect python-pip
+#apt-get install postgresql postgresql-contrib mc openssh-server python-twisted python-psycopg2 openssl python-paramiko python-dateutil python-pytils python-crypto libpython2.6 libapache2-mod-wsgi python-jsonpickle python-simplejson rrdtool snmp python-pexpect python-pip
 
 #pip install ipaddr mako 
 #mkdir /opt/ebs
@@ -14,13 +14,23 @@
 #su postgres
 $createuser -P -s ebs
 $createdb -O ebs ebs
+Для версии postgresql<9
 $psql ebs -f /usr/share/postgresql/8.4/contrib/int_aggregate.sql
 $psql ebs -f /usr/share/postgresql/8.4/contrib/_int.sql
+Для версии postgresql>9
+$psql ebs
+ebs=# create extension int;
+ebs=# create extension int_aggregate;
+ebs=# exit;
 $exit
 
 #Запустите утилиту установки биллинга и вводите требуемые значения для доступа к БД.
 python ebs_manage.py install имя распакованного архива с биллингом(вид ebs-*****.tar.gz)
 
 #Часть установки веб-кабинета инсталлятор выполнит автоматически. Инструкцию по настройке вы сможете найти на wiki.expertbilling.ru
+
+Внимание!!! Это версия 1.4.1. В ней RPC сервер не используется. Вместо него интефрейс администратора подключается к веб-серверу. 
+Перед запуском EBSAdmin убедитесь, что веб-кабинет настроен и работает. Логи веб-кабинета находятся в
+/opt/ebs/web/errors.log
 
 Имя и пароль для входа через EBSAdmin admin/admin.
