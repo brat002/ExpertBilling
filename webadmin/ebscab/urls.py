@@ -14,10 +14,7 @@ urlpatterns = patterns('',
     url('^helpdesk/admin/(.*)', helpdesk_admin.site.urls, name='helpdesk_admin'),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     # Uncomment this for admin:
-    
-    #(r'^accounts/profile/$', 'ebscab.billing.views.profile'),
-    #(r'^accounts/logout/$', 'ebscab.billing.views.logout_view'),
-    (r'^ext/', include('extjs.urls')),
+    (r'^objectlog/', include('object_log.urls')),
     (r'^helpdesk/', include('helpdesk.urls')),
     (r'^webmoney/', include('paymentgateways.webmoney.urls')),
     (r'^ebsadmin/', include('ebsadmin.urls')),

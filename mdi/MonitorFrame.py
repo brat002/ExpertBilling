@@ -215,28 +215,29 @@ class MonitorEbs(ebsTableWindow):
         date_end = self.date_end.currentDate()
         self.statusBar().showMessage(u"Ожидание ответа")
 
-        only_active = True if self.allTimeCheckbox.checkState()==0 else False 
-
+        only_active = True if self.allTimeCheckbox.checkState()==QtCore.Qt.Unchecked else False 
+        print 'only_active', only_active
         sessions = self.connection.get_sessions(account_id=user, only_active = only_active, date_start=date_start, date_end=date_end)
-        
+        print "fot sessions", len(sessions)
         i=0        
         sess_time = 0
         self.tableWidget.setRowCount(len(sessions))        
         self.tableWidget.setSortingEnabled(False)
+        ("id","sessionid","account__username","account__id","subaccount__username", "account__ballance", "account__credit", "caller_id", "framed_ip_address", "nas_int_id__name", "framed_protocol", "date_start", "date_end", "bytes_out", "bytes_in", "session_time", "session_status","acct_terminate_cause")
         for session in sessions:
             if session.date_end==None:
                 date_end=""
             else:
                 date_end = session.date_end.strftime(self.strftimeFormat)
             #print session.id
-            self.addrow(self.tableWidget, session.sessionid, i, 0, id=session.id, sessionid = session.sessionid, account_id=session.account)
-            self.addrow(self.tableWidget, session.account, i, 1)
-            self.addrow(self.tableWidget, session.subaccount, i, 2)
-            self.addrow(self.tableWidget, "%.2f" % session.ballance, i, 3, color=True)
-            self.addrow(self.tableWidget, session.credit, i, 4)
+            self.addrow(self.tableWidget, session.sessionid, i, 0, id=session.id, sessionid = session.sessionid, account_id=session.account__id)
+            self.addrow(self.tableWidget, session.account__username, i, 1)
+            self.addrow(self.tableWidget, session.subaccount__username, i, 2)
+            self.addrow(self.tableWidget, "%.2f" % session.account__ballance, i, 3, color=True)
+            self.addrow(self.tableWidget, session.account__credit, i, 4)
             self.addrow(self.tableWidget, session.caller_id, i, 5)
             self.addrow(self.tableWidget, session.framed_ip_address, i, 6)
-            self.addrow(self.tableWidget, session.nas_name, i, 7)
+            self.addrow(self.tableWidget, session.nas_int_id__name, i, 7)
             self.addrow(self.tableWidget, session.framed_protocol, i, 8)
             self.addrow(self.tableWidget, session.date_start.strftime(self.strftimeFormat), i, 9)
             self.addrow(self.tableWidget, date_end, i, 10)

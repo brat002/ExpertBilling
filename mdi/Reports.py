@@ -291,9 +291,9 @@ class TransactionsReportEbs(ebsTableWindow):
         for item in select:
             if first:
                 first=False
-                prev = self.transactions_types.get(item)
+                prev = self.transactions_types.get(item)  or "billservice_transaction" 
                 continue
-            if self.transactions_types.get(item)!=prev:
+            if self.transactions_types.get(item) or "billservice_transaction" !=prev:
                 return 'totaltransactions'
         return prev
             

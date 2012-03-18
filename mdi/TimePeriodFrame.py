@@ -189,7 +189,7 @@ class AddTimePeriod(QtGui.QDialog):
             
             model.repeat_after=unicode(self.repeat_edit.currentText())
     
-            if model.hasattr('id'):
+            if self.nodemodel:
                 #Update
                 self.connection.timeperiodnode_save(model)
             else:

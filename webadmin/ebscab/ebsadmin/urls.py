@@ -19,6 +19,8 @@ urlpatterns += patterns('ebsadmin.views',
      
      
      url(r'^gettariffs/$', 'get_tariffs'),
+     url(r'^actionlogs/$', 'actionlogs'),
+     
      url(r'^accountsfortariff/$', 'accounts_for_tarif'),
      
      url(r'^timeperiods/save/$', 'timeperiods_save'),

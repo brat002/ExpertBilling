@@ -1706,7 +1706,11 @@ class AccountWindow(QtGui.QMainWindow):
         try:
             data=templ.render_unicode(account=account, operator=operator, connection=self.connection)
         except Exception, e:
-            data=unicode(u"Ошибка рендеринга документа: %s" % e)
+            data=unicode(u""" <html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body style="text-align:center;">%s</body></html>""" % repr(e))
         self.connection.commit()            
         file= open('templates/tmp/temp.html', 'wb')
         file.write(data.encode("utf-8", 'replace'))
@@ -1853,7 +1857,7 @@ class AccountWindow(QtGui.QMainWindow):
             
 
             self.lineEdit_balance.setText(unicode(self.model.ballance))
-            self.lineEdit_credit.setText(unicode(self.model.credit))
+            self.lineEdit_credit.setText(unicode(self.model.credit or 0))
             
             organization = self.connection.get_organizations(account_id=self.model.id)
             #organization = None
@@ -1873,9 +1877,10 @@ class AccountWindow(QtGui.QMainWindow):
                 self.lineEdit_kor_s.setText(unicode(org.kor_s))
                 
                 #print "bank_id",org.bank_id
-                bank = self.connection.get_bank(id=org.bank)
+                bank = self.connection.get_banks(id=org.bank)
                 self.connection.commit()
                 if bank:
+                    self.bank = bank
                     self.lineEdit_bank.setText(unicode(bank.bank))
                     self.lineEdit_bank_code.setText(unicode(bank.bankcode))
                     self.lineEdit_rs.setText(unicode(bank.rs))
@@ -1900,147 +1905,131 @@ class AccountWindow(QtGui.QMainWindow):
         """
         понаставить проверок
         """
-        try:
-            contracttemplate_id=self.comboBox_agreement_num.itemData(self.comboBox_agreement_num.currentIndex()).toInt()[0]
-            if self.model:
-                model=self.model
-                if self.tarif_id==-3000:
-                    model.created = self.dateTimeEdit_agreement_date.currentDate()
+
+        contracttemplate_id=self.comboBox_agreement_num.itemData(self.comboBox_agreement_num.currentIndex()).toInt()[0]
+        if self.model:
+            model=self.model
+            if self.tarif_id==-3000:
+                model.created = self.dateTimeEdit_agreement_date.currentDate().strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            #print 'New account'
+            if self.connection.check_account_exists(username=unicode(self.lineEdit_username.text())).status:
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
+                self.connection.rollback()
+                return
+
+            model=AttrDict()
+            model.created = self.dateTimeEdit_agreement_date.currentDate().strftime('%Y-%m-%d %H:%M:%S')
+            model.disabled_by_limit = False
+            model.vpn_ipinuse_id = None
+            model.ipn_ipinuse_id = None
+
+            #model.user_id=1
+        model.ipn_status = self.toolButton_ipn_enabled.isChecked()
+        model.ipn_added = self.toolButton_ipn_added.isChecked()
+        model.suspended = self.toolButton_ipn_sleep.isChecked()
+
+            
+        if not contracttemplate_id:
+            model.contract=unicode(self.comboBox_agreement_num.currentText())
+            print "model.contract", model.contract
+        else:
+            model.contract=''
+            model.contracttemplate_id = contracttemplate_id
+
+                
+        model.username = unicode(self.lineEdit_username.text())
+        
+        if model.username=='':
+            QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы не указали имя пользователя."))
+            return 
+        #print 1
+        model.password = unicode(self.lineEdit_password.text())
+        #model.contract = unicode(self.comboBox_agreement_num.text())
+        model.status = self.comboBox_status.itemData(self.comboBox_status.currentIndex()).toInt()[0]
+        for i in xrange(self.tableWidget.rowCount()):
+            model[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text()) 
+            #self.tableWidget.item(i,1).setText(unicode(self.model.__dict__.get(self.tableInfo[i][0])))
+            
+
+        model.nas = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0] or ''
+        model.systemuser = self.comboBox_manager.itemData(self.comboBox_manager.currentIndex()).toInt()[0] or ''
+
+        #model.ballance = unicode(self.lineEdit_balance.text()) or 0
+        model.credit = unicode(self.lineEdit_credit.text()) or 0
+        model.comment = unicode(self.plainTextEdit_comment.toPlainText())
+        
+        model.allow_expresscards = self.checkBox_allow_expresscards.checkState()==QtCore.Qt.Checked
+        model.allow_webcab = self.checkBox_allow_webcab.checkState()==QtCore.Qt.Checked
+        
+        model.allow_ipn_with_null = self.checkBox_allow_ipn_with_null.checkState()==QtCore.Qt.Checked
+        model.allow_ipn_with_minus = self.checkBox_allow_ipn_with_minus.checkState()==QtCore.Qt.Checked
+        model.allow_ipn_with_block = self.checkBox_allow_ipn_with_block.checkState()==QtCore.Qt.Checked
+        
+        city_id = self.comboBox_city.itemData(self.comboBox_city.currentIndex()).toInt()[0]
+        if city_id:
+            model.city = city_id or ''
+            
+        street_id = self.comboBox_street.itemData(self.comboBox_street.currentIndex()).toInt()[0]
+        if street_id:
+            model.street = street_id or ''
+            
+        house_id = self.comboBox_house.itemData(self.comboBox_house.currentIndex()).toInt()[0]
+        if house_id:
+            model.house = house_id or ''
+            
+        #print model.__dict__  
+
+        organization = {}
+        bank = {}
+        if self.groupBox_urdata.isChecked():
+            if unicode(self.lineEdit_organization.text())=="" or unicode(self.lineEdit_bank.text())=="":
+                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указаны реквизиты юридического лица(название организации, банк)."))
+                return
+
+            if self.organization:
+                organization = self.organization
             else:
-                #print 'New account'
-                if self.connection.check_account_exists(username=unicode(self.lineEdit_username.text())).status:
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Пользователь с таким логином уже существует."))
-                    self.connection.rollback()
-                    return
-
-                model=AttrDict()
-                model.created = self.dateTimeEdit_agreement_date.currentDate()
-                model.disabled_by_limit = False
-                model.vpn_ipinuse_id = None
-                model.ipn_ipinuse_id = None
-
-                #model.user_id=1
-            model.ipn_status = self.toolButton_ipn_enabled.isChecked()
-            model.ipn_added = self.toolButton_ipn_added.isChecked()
-            model.suspended = self.toolButton_ipn_sleep.isChecked()
-
+                organization = AttrDict()
+                organization.bank = None
                 
-            if contracttemplate_id==None:
-                model.contract=unicode(self.comboBox_agreement_num.currentText())
-                print "model.contract", model.contract
+            organization.name = unicode(self.lineEdit_organization.text())
+            organization.uraddress = unicode(self.lineEdit_uraddress.text())
+            organization.phone = unicode(self.lineEdit_urphone.text())
+            organization.fax = unicode(self.lineEdit_fax.text())
+            organization.okpo = unicode(self.lineEdit_okpo.text())
+            organization.unp = unicode(self.lineEdit_unp.text())
+            organization.kpp = unicode(self.lineEdit_kpp.text())
+            organization.kor_s = unicode(self.lineEdit_kor_s.text())
+            
+            if organization.bank:
+                bank = self.bank
             else:
-                model.contract=''
-
-                    
-            model.username = unicode(self.lineEdit_username.text())
-            
-            if model.username=='':
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Вы не указали имя пользователя."))
-                return 
-            #print 1
-            model.password = unicode(self.lineEdit_password.text())
-            #model.contract = unicode(self.comboBox_agreement_num.text())
-            model.status = self.comboBox_status.itemData(self.comboBox_status.currentIndex()).toInt()[0]
-            for i in xrange(self.tableWidget.rowCount()):
-                model[self.tableInfo[i][0]] = unicode(self.tableWidget.item(i,1).text()) 
-                #self.tableWidget.item(i,1).setText(unicode(self.model.__dict__.get(self.tableInfo[i][0])))
+                bank = AttrDict()
                 
+            bank.bank = unicode(self.lineEdit_bank.text())
+            bank.bankcode = unicode(self.lineEdit_bank_code.text())
+            bank.rs = unicode(self.lineEdit_rs.text())
+            bank.currency = ''
 
-            model.nas = self.comboBox_nas.itemData(self.comboBox_nas.currentIndex()).toInt()[0] or ''
-            model.systemuser = self.comboBox_manager.itemData(self.comboBox_manager.currentIndex()).toInt()[0] or ''
-
-            #model.ballance = unicode(self.lineEdit_balance.text()) or 0
-            model.credit = unicode(self.lineEdit_credit.text()) or 0
-            model.comment = unicode(self.plainTextEdit_comment.toPlainText())
-            
-            model.allow_expresscards = self.checkBox_allow_expresscards.checkState()==QtCore.Qt.Checked
-            model.allow_webcab = self.checkBox_allow_webcab.checkState()==QtCore.Qt.Checked
-            
-            model.allow_ipn_with_null = self.checkBox_allow_ipn_with_null.checkState()==QtCore.Qt.Checked
-            model.allow_ipn_with_minus = self.checkBox_allow_ipn_with_minus.checkState()==QtCore.Qt.Checked
-            model.allow_ipn_with_block = self.checkBox_allow_ipn_with_block.checkState()==QtCore.Qt.Checked
-            
-            city_id = self.comboBox_city.itemData(self.comboBox_city.currentIndex()).toInt()[0]
-            if city_id:
-                model.city = city_id or ''
                 
-            street_id = self.comboBox_street.itemData(self.comboBox_street.currentIndex()).toInt()[0]
-            if street_id:
-                model.street = street_id or ''
-                
-            house_id = self.comboBox_house.itemData(self.comboBox_house.currentIndex()).toInt()[0]
-            if house_id:
-                model.house = house_id or ''
-                
-            #print model.__dict__  
-            print "model======", model                  
-            if self.model:
-                
-                d = self.connection.account_save(model, tarif_id=self.tarif_id,template_id=contracttemplate_id)
-                print d
-                if d.status==False:
-                    QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.errors.get(x))) for x in d.errors])))
-                    return
-                else:
-                    model.id = d.account_id
-                    self.model = model
-            else:
-                #print 123
+        d = self.connection.account_save(model, organization, bank, tarif_id=self.tarif_id,template_id=contracttemplate_id)
+        
+        if not d: return
 
-                d = self.connection.account_save(model, tarif_id=self.tarif_id,template_id=contracttemplate_id)
-                print d
-                if d.status==False:
-                    QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.errors.get(x))) for x in d.errors])))
-                    return
-                else:
-                    
-                    model.id = d.account_id
-                    self.model = model
+        self.model = self.connection.get_account(id=d.id)
+        
+        self.fixtures()
+        print "fixtures"
+        #self.model = self.connection.get_model(model.id, "billservice_account")
+        self.connection.commit()
+        #self.fixtures()
+        if self.parent_window:
+            self.parent_window.refresh()
+        self.actionAdd.setDisabled(False)
+        self.actionDel.setDisabled(False)      
+        self.toolButton_agreement_print.setDisabled(False)     
 
-            if self.groupBox_urdata.isChecked():
-                if unicode(self.lineEdit_organization.text())=="" or unicode(self.lineEdit_bank.text())=="":
-                    QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Не указаны реквизиты юридического лица(название организации, банк)."))
-                    return
-
-                model.bank_bank = unicode(self.lineEdit_bank.text())
-                model.bank_bankcode = unicode(self.lineEdit_bank_code.text())
-                model.bank_rs = unicode(self.lineEdit_rs.text())
-                model.bank_currency = ''
-                #model.bank_id = self.connection.save(bank, "billservice_bankdata")
-                #self.bank = bank
-                
-                model.org_name = unicode(self.lineEdit_organization.text())
-                model.org_uraddress = unicode(self.lineEdit_uraddress.text())
-                model.org_phone = unicode(self.lineEdit_urphone.text())
-                model.org_fax = unicode(self.lineEdit_fax.text())
-                model.org_okpo = unicode(self.lineEdit_okpo.text())
-                model.org_unp = unicode(self.lineEdit_unp.text())
-                model.org_kpp = unicode(self.lineEdit_kpp.text())
-                model.org_kor_s = unicode(self.lineEdit_kor_s.text())
-
-   
-            
-                    
-            #x8021 = self.connection.get
-            
-            #self.model = self.connection.get_model(model.id, "billservice_account")
-            self.connection.commit()
-            #self.fixtures()
-            if self.parent_window:
-                self.parent_window.refresh()
-            self.actionAdd.setDisabled(False)
-            self.actionDel.setDisabled(False)      
-            self.toolButton_agreement_print.setDisabled(False)     
-            #self.parent.refresh() 
-        except Exception, e:
-            import traceback
-            traceback.print_exc()
-            if isinstance(e, psycopg2.InternalError) and e.args[0].startswith('Amount'):
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Достигнуто максимальное число пользователей. \n" + e.args[0]))
-            else:
-                QtGui.QMessageBox.warning(self, u"Ошибка", unicode(u"Ошибка при сохранении."))
-            self.connection.rollback()
-            return
         
     def accountTarifRefresh(self):
         if self.model:

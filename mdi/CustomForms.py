@@ -537,7 +537,11 @@ class ReportMainWindow(QtGui.QMainWindow):
         try:
             data=templ.render_unicode(accounts=self.accounts, connection=self.connection)
         except Exception, e:
-            data+=str(e)
+            data=unicode(u""" <html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body style="text-align:center;">%s</body></html>""" % repr(e))
 
         file= open('templates/tmp/temp.html', 'wb')
         file.write(data.encode("utf-8", 'replace'))
@@ -1769,14 +1773,22 @@ class TemplatesWindow(QtGui.QMainWindow):
             try:
                 data=templ.render_unicode(account=account, connection=self.connection)
             except Exception, e:
-                data=u"Error %s" % str(e)
+                data=unicode(u""" <html>
+                <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                </head>
+                <body style="text-align:center;">%s</body></html>""" % repr(e))
         if id==2:
             account = self.connection.get_account(limit=1)[0].id
             operator = self.connection.get_operator()
             try:
                 data=templ.render_unicode(account=account, operator=operator,  connection=self.connection)
             except Exception, e:
-                data=u"Error %s" % str(e)
+                data=unicode(u""" <html>
+                    <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                    </head>
+                    <body style="text-align:center;">%s</body></html>""" % repr(e))
 
         if id==5:
             account = self.connection.get_account(limit=1)[0]
@@ -1786,7 +1798,11 @@ class TemplatesWindow(QtGui.QMainWindow):
             try:
                 data=templ.render_unicode(connection=self.connection, account=account, transaction = transaction)
             except Exception, e:
-                data=u"Error %s" % str(e)
+                data=unicode(u""" <html>
+                <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                </head>
+                <body style="text-align:center;">%s</body></html>""" % repr(e))
             
         if id==9:
             accounts = self.connection.sql("SELECT id FROM billservice_account LIMIT 1" )
@@ -1795,7 +1811,11 @@ class TemplatesWindow(QtGui.QMainWindow):
             try:
                 data=templ.render_unicode(accounts=[x.id for x in accounts], connection=self.connection)
             except Exception, e:
-                data=u"Error %s" % repr(e)
+                data=unicode(u""" <html>
+                <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                </head>
+                <body style="text-align:center;">%s</body></html>""" % repr(e))
 
         if id==4:
             account = self.connection.get_account(limit=1)[0]
@@ -1804,7 +1824,11 @@ class TemplatesWindow(QtGui.QMainWindow):
                 data=templ.render_unicode(connection=self.connection, account=account.id)
                 #data=templ.render_unicode(accounts=123, connection=self.connection)
             except Exception, e:
-                data=u"Error %s" % str(e)                
+                data=unicode(u""" <html>
+                <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                </head>
+                <body style="text-align:center;">%s</body></html>""" % repr(e))           
             
         if id==6:
             data=u"Preview for this type of documents unavailable. For preview go to Express Cards->Sale Cards->Print Invoice"
@@ -1846,7 +1870,11 @@ class TemplatesWindow(QtGui.QMainWindow):
             try:
                 data+=templ.render_unicode(operator = operator, bank=bank, card=card, connection=self.connection)
             except Exception, e:
-                data=u"Error %s" % str(e)
+                data=unicode(u""" <html>
+                                <head>
+                                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                                </head>
+                                <body style="text-align:center;">%s""" % repr(e))
             data+="</body></html>"
                         
         self.connection.commit()
@@ -3526,13 +3554,17 @@ class TransactionForm(QtGui.QDialog):
         self.connection.commit()
         sum = 10000
         transaction.summ = transaction.summ*(-1)
-        #try:
-        data=templ.render_unicode(connection=self.connection, account=account, tarif=tarif, transaction=transaction)
-        self.connection.commit()
-        #except Exception, e:
-        #    print e
-        #    QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Ошибка рендеринга чека. Проверьте шаблон 'Кассовый чек'."))
-        #    return
+        try:
+            data=templ.render_unicode(connection=self.connection, account=account, tarif=tarif, transaction=transaction)
+
+        except Exception, e:
+            data=unicode(u""" <html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body style="text-align:center;">%s</body></html>""" % repr(e))
+            QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Ошибка рендеринга чека. Проверьте шаблон 'Кассовый чек'."))
+            return
         
         #it seem that software printers can change the path!
         file= open('templates/tmp/temp.html', 'wb')

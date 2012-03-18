@@ -270,7 +270,7 @@ class SettlementPeriodEbs(ebsTableWindow):
                     res = self.connection.settlementperiod_delete(id)
                     if res.status==False:
                         QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode('\n'.join(["%s %s" % (x, ';'.join(d.message.get(x))) for x in d.message])))     
-
+                    self.refresh()
                 except Exception, e:
                     print e
                     QtGui.QMessageBox.warning(self, u"Предупреждение!", u"Удаление не было произведено!")
