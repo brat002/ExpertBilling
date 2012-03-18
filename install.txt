@@ -19,8 +19,8 @@ $psql ebs -f /usr/share/postgresql/8.4/contrib/int_aggregate.sql
 $psql ebs -f /usr/share/postgresql/8.4/contrib/_int.sql
 Для версии postgresql>9
 $psql ebs
-ebs=# create extension int;
-ebs=# create extension int_aggregate;
+ebs=# create extension intagg;
+ebs=# create extension intarray;
 ebs=# exit;
 $exit
 

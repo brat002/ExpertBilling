@@ -1,3 +1,18 @@
+CREATE TABLE object_log_logaction
+(
+  "name" character varying(128) NOT NULL,
+  "template" character varying(128) NOT NULL,
+  CONSTRAINT object_log_logaction_pkey PRIMARY KEY (name)
+)
+WITH (
+  OIDS=FALSE
+);
+
+INSERT INTO object_log_logaction (name, template) VALUES ('EDIT', 'object_log/edit.html');
+INSERT INTO object_log_logaction (name, template) VALUES ('CREATE', 'object_log/add.html');
+INSERT INTO object_log_logaction (name, template) VALUES ('DELETE', 'object_log/delete.html');
+INSERT INTO object_log_logaction (name, template) VALUES ('RAWSQL', 'object_log/rawsql.html');
+
 CREATE TABLE object_log_logitem
 (
   id serial NOT NULL,
@@ -24,18 +39,5 @@ WITH (
 );
 ALTER TABLE object_log_logitem OWNER TO ebs;
 
-CREATE TABLE object_log_logaction
-(
-  "name" character varying(128) NOT NULL,
-  "template" character varying(128) NOT NULL,
-  CONSTRAINT object_log_logaction_pkey PRIMARY KEY (name)
-)
-WITH (
-  OIDS=FALSE
-);
 
-INSERT INTO object_log_logaction (name, template) VALUES ('EDIT', 'object_log/edit.html');
-INSERT INTO object_log_logaction (name, template) VALUES ('CREATE', 'object_log/add.html');
-INSERT INTO object_log_logaction (name, template) VALUES ('DELETE', 'object_log/delete.html');
-INSERT INTO object_log_logaction (name, template) VALUES ('RAWSQL', 'object_log/rawsql.html');
 
