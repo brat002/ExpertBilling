@@ -23,7 +23,7 @@ from mako.template import Template as mako_template
 from ebsadmin.lib import ExtDirectStore, instance_dict
 from billservice.forms import LoginForm, AccountPrepaysRadiusTraficForm, RadiusTrafficForm, RadiusTrafficNodeForm, PrepaidTrafficForm, TrafficTransmitNodeForm,TrafficTransmitServiceForm, PeriodicalServiceForm, OneTimeServiceForm,  TariffForm, AccessParametersForm, SettlementPeriodForm, OrganizationForm, BankDataForm,AccountTariffBathForm
 from billservice.forms import RadiusAttrsForm, IPPoolForm, TimePeriodForm, TimePeriodNodeForm, SystemUserForm, TransactionTypeForm, AccountPrepaysTrafic, TimeAccessNodeForm, ContractTemplateForm, TimeAccessServiceForm, TrafficLimitForm, SpeedLimitForm, AddonServiceTarifForm
-from billservice.forms import ManufacturerForm, OperatorForm, DealerPayForm, SaleCardForm, CardForm, DealerForm, NewsForm, TPChangeRuleForm, AccountHardwareForm, ModelHardwareForm, HardwareTypeForm, HardwareForm
+from billservice.forms import ActionLogFilterForm, ManufacturerForm, OperatorForm, DealerPayForm, SaleCardForm, CardForm, DealerForm, NewsForm, TPChangeRuleForm, AccountHardwareForm, ModelHardwareForm, HardwareTypeForm, HardwareForm
 
 from billservice import authenticate, log_in, log_out
 from nas.forms import NasForm, TrafficNodeForm, TrafficClassForm, SwitchForm
@@ -31,6 +31,8 @@ from radius.forms import SessionFilterForm
 
 from django.db.models import Q
 from django.db import transaction
+from object_log.models import LogItem
+log = LogItem.objects.log_action
 
 try:
     import json
@@ -57,6 +59,12 @@ def simple_login(request):
             user = authenticate(username=form.cleaned_data['username'], \
                                 password=form.cleaned_data['password'])
             if isinstance(user.account, SystemUser):
+                if user.account.host!='0.0.0.0/0':
+                    try:
+                        if not (IPy.IP(request.META.get("REMOTE_ADDR")) in IPy.IP(user.account.host)):
+                            return {"status":False,"message":"Access for your IP address forbidden"}
+                    except Exception, e:
+                        return {"status":False,"message":"Login error. May be systemuser host syntax error"}
                 log_in(request, user)
                 return {"status":True,"message":"Login succeful"}
             else:
@@ -271,9 +279,9 @@ def sessions(request):
         account_id = form.cleaned_data.get('account')
         date_start =form.cleaned_data.get('date_start')
         date_end = form.cleaned_data.get('date_end')
-        only_active = form.cleaned_data.get('only_active')=='True'
+        only_active = request.POST.get('only_active')=='True'
 
-        
+
         items = ActiveSession.objects.filter(date_start__gte=date_start, date_end__lte=date_end).order_by('-interrim_update')
         if only_active:
             items = items.filter(session_status='ACTIVE')
@@ -284,12 +292,12 @@ def sessions(request):
                 return {'status':False, 'message': 'Session with id=%s not found' % id}
         elif account_id:
             items = items.filter(account__id=account_id)
-        
-        res=[]
+ 
+        items = items.values("id","sessionid","account__username","account__id","subaccount__username", "account__ballance", "account__credit", "caller_id", "framed_ip_address", "nas_int_id__name", "framed_protocol", "date_start", "date_end", "bytes_out", "bytes_in", "session_time", "session_status","acct_terminate_cause")
+        res = []
         for item in items:
-            res.append(instance_dict(item,normal_fields=True))
+            res.append(item)
             
-    
         return {"records": res, 'status':True, 'totalCount':len(res)}
     else:
         return { 'status':False, 'message': u'Невозможно выполнить выборку с такими условиями'}
@@ -396,6 +404,7 @@ def timeperiods_save(request):
             model = form.save(commit=False)
             model.save()
             res={"status": True, 'id':model.id}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
 
             res={"status": False, "message": str(e)}
@@ -411,7 +420,9 @@ def timeperiods_delete(request):
         return {'status':False, 'message':u'У вас недостатчно прав для удаления периодов тарификации'}
     id = int(request.POST.get('id',0))
     if id:
-        TimePeriod.objects.get(id=id).delete()
+        model = TimePeriod.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "TimePeriod not found"}
@@ -423,7 +434,9 @@ def timeperiodnodes_delete(request):
         return {'status':False, 'message':u'У вас недостатчно прав для удаления периодов тарификации'}
     id = int(request.POST.get('id',0))
     if id:
-        TimePeriodNode.objects.get(id=id).delete()
+        model = TimePeriodNode.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "TimePeriodNode not found"} 
@@ -476,6 +489,7 @@ def timeperiodnodes_save(request):
             model = form.save(commit=False)
             model.save()
             res={"status": True, 'id':model.id}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
 
             res={"status": False, "message": str(e)}
@@ -618,7 +632,7 @@ def sql(request):
     
     cur = connection.cursor()
     
-
+    log('RAWSQL', request.user,  request.user.account, data={'sql':s})
     try:
         cur.execute(s)
         
@@ -831,6 +845,7 @@ def tpchangerules_set(request):
         try:
             model = form.save(commit=False)
             model.save()
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             res={"status": True, 'id':model.id}
         except Exception, e:
 
@@ -847,7 +862,9 @@ def tpchangerules_delete(request):
         return {'status':False,  'message': u'У вас нет прав на удаление правила смены тарифных планов'}
     id = int(request.POST.get('id',0))
     if id:
-        TPChangeRule.objects.get(id=id).delete()
+        model = TPChangeRule.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "SystemUser not found"}
@@ -871,6 +888,7 @@ def systemusers_set(request):
         try:
             model = form.save(commit=False)
             model.save()
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             res={"status": True, 'id':model.id}
         except Exception, e:
 
@@ -887,7 +905,9 @@ def systemusers_delete(request):
         return {'status':False,  'message': u'У вас нет прав на удаление администратора'}
     id = int(request.POST.get('id',0))
     if id:
-        SystemUser.objects.get(id=id).delete()
+        model = SystemUser.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "SystemUser not found"}
@@ -1034,10 +1054,12 @@ def operator_set(request):
             try:
                 bankitem = bankform.save(commit=False)
                 bankitem.save()
+                log('EDIT', request.user, bankitem) if id else log('CREATE', request.user, bankitem) 
                 opmodel = form.save(commit=False)
                 opmodel.bank=bankitem
                 opmodel.save()
                 res={"status": True}
+                log('EDIT', request.user, opmodel) if id else log('CREATE', request.user, opmodel) 
             except Exception, e:
                 res={"status": False, "message": str(e)}
         else:
@@ -1146,8 +1168,10 @@ def cities_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit=False)
+            model.save()
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -1163,7 +1187,9 @@ def cities_delete(request):
         return {'status':False, 'message':u'У вас нет прав на удаление городов'}
     id = int(request.POST.get('id',0))
     if id:
-        City.objects.get(id=id).delete()
+        model = City.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "City not found"}
@@ -1216,8 +1242,9 @@ def accounthardware_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -1233,7 +1260,9 @@ def accounthardware_delete(request):
         return {'status':False, 'message':u'У вас нет прав на удаление оборудования аккаунта'}
     id = int(request.POST.get('id',0))
     if id:
-        AccountHardware.objects.get(id=id).delete()
+        model = AccountHardware.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "AccountHardware not found"}
@@ -1286,6 +1315,7 @@ def news_set(request):
         try:
             item = form.save(commit=False)
             item.save()
+            log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
             if not id and accounts:
                 for account in accounts:
                     AccountViewedNews.objects.create(news = item, account = Account.objects.get(id=account), viewed=False)
@@ -1308,7 +1338,9 @@ def news_delete(request):
         return {'status':False, 'message':u'У вас нет прав на удаление новости'}
     id = int(request.POST.get('id',0))
     if id:
-        News.objects.get(id=id).delete()
+        model = News.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "News not found"}
@@ -1398,8 +1430,10 @@ def hardware_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit =False)
+            model.save()
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -1415,11 +1449,40 @@ def hardware_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление оборудования'}
     id = int(request.POST.get('id',0))
     if id:
-        Hardware.objects.get(id=id).delete()
+        model = Hardware.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Hardware not found"}
     
+@ajax_request
+@login_required
+def actionlogs(request):
+    if  not request.user.is_superuser==True:
+        return {'status':False, 'records': [], 'totalCount':0}
+    
+    data = json.loads(request.POST.get("data", "{}"))
+    form = ActionLogFilterForm(data)
+    if form.is_valid():
+        start_date =form.cleaned_data.get('start_date')
+        end_data = form.cleaned_data.get('end_date')
+        systemuser = form.cleaned_data.get('systemuser')
+
+        items = LogItem.objects.filter(timestamp__gte=start_date, timestamp__lte=end_data).order_by("-timestamp")
+        
+        if systemuser:
+            items = items.filter(user__username=systemuser.username)
+    
+        items = items.values("id", 'action__name', 'user__username', 'timestamp', 'serialized_data')
+        res=[]
+        for item in items:
+            res.append(item)
+        
+        return {"records": res, 'status':True, 'totalCount':len(res)}
+    else:
+        return {'status':False, "errors": form._errors, 'message': 'Malformed request'}
+
 @ajax_request
 @login_required
 def manufacturers(request):
@@ -1461,8 +1524,10 @@ def manufacturers_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -1478,7 +1543,9 @@ def manufacturers_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление производителя'}
     id = int(request.POST.get('id',0))
     if id:
-        Manufacturer.objects.get(id=id).delete()
+        model = Manufacturer.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Manufacturer not found"}
@@ -1530,8 +1597,10 @@ def models_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -1547,7 +1616,9 @@ def models_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление модели'}
     id = int(request.POST.get('id',0))
     if id:
-        Model.objects.get(id=id).delete()
+        model = Model.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Model not found"}
@@ -1620,8 +1691,10 @@ def dealers_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -1636,7 +1709,9 @@ def dealers_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление дилера'}
     id = int(request.POST.get('id',0))
     if id:
-        Dealer.objects.get(id=id).delete()
+        model = Dealer.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Dealer not found"}
@@ -1658,8 +1733,10 @@ def hardwaretypes_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -1728,8 +1805,10 @@ def cards_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -1744,7 +1823,9 @@ def cards_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление карт'}
     id = int(request.POST.get('id',0))
     if id:
-        Card.objects.filter(id=id).delete()
+        model = Card.objects.filter(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Card not found"}
@@ -1821,7 +1902,9 @@ def hardwaretypes_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление типа оборудования'}
     id = int(request.POST.get('id',0))
     if id:
-        HardwareType.objects.get(id=id).delete()
+        model = HardwareType.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "HardwareType not found"}
@@ -1941,6 +2024,7 @@ def trafficclasses_set(request):
                 item.weight=m
             item.save()
             res={"status": True}
+            log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -1956,7 +2040,9 @@ def trafficclasses_delete(request):
         return {'status':True, 'message':u'У вас нет прав на удаление класса трафика'}
     id = int(request.POST.get('id',0))
     if id:
-        TrafficClass.objects.get(id=id).delete()
+        model = TrafficClass.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "TrafficClass not found"}
@@ -2005,8 +2091,10 @@ def trafficclassnodes_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -2021,7 +2109,9 @@ def trafficclassnodes_delete(request):
         return {'status':False, 'message':u'У вас нет прав на изменение класса трафика'}
     id = int(request.POST.get('id',0))
     if id:
-        TrafficNode.objects.get(id=id).delete()
+        model = TrafficNode.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "TrafficNode not found"}
@@ -2094,8 +2184,10 @@ def ippools_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -2110,7 +2202,9 @@ def ippools_delete(request):
         return {'status':False, 'message': u"У вас нет прав на удаление IP пула"}
     id = int(request.POST.get('id',0))
     if id:
-        IPPool.objects.get(id=id).delete()
+        model = IPPool.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "IPPool not found"}
@@ -2164,8 +2258,9 @@ def radiusattrs_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
             res={"status": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -2180,7 +2275,9 @@ def radiusattrs_delete(request):
         return {'status':False, 'message': u"У вас нет прав на удаление RADIUS атрибутов"}
     id = int(request.POST.get('id',0))
     if id:
-        RadiusAttrs.objects.get(id=id).delete()
+        model = RadiusAttrs.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "RadiusAttrs not found"}
@@ -2231,6 +2328,7 @@ def templates_save(request):
             model = form.save(commit=False)
             model.save()
             res={"status": True, 'id':model.id}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -2284,6 +2382,7 @@ def accountprepaystrafic_set(request):
             model = form.save(commit=False)
             model.save()
             res={"status": True, 'id':model.id}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -2337,6 +2436,7 @@ def accountprepaysradiustrafic_set(request):
             model = form.save(commit=False)
             model.save()
             res={"status": True, 'id':model.id}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -2351,7 +2451,9 @@ def templates_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление шаблона'}
     id = int(request.POST.get('id',0))
     if id:
-        Template.objects.get(id=id).delete()
+        model = Template.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "RadiusAttrs not found"}
@@ -2647,6 +2749,7 @@ def switches_set(request):
             item = form.save(commit=False)
             item.save()
             res={"status": True, 'id':item.id}
+            log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -2662,7 +2765,9 @@ def switches_delete(request):
         
     id = int(request.POST.get('id',0))
     if id:
-        Switch.objects.get(id=id).delete()
+        model = Switch.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Switch not found"}
@@ -2734,6 +2839,7 @@ def banks_set(request):
             item = form.save(commit=False)
             item.save()
             res={"status": True, 'id':item.id}
+            log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -2786,6 +2892,7 @@ def dealerpay_set(request):
             item = form.save(commit=False)
             item.save()
             res={"status": True, 'id':item.id}
+            log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
         except Exception, e:
             res={"status": False, "message": str(e)}
     else:
@@ -2865,12 +2972,14 @@ def salecards_set(request):
         try:
             item = form.save(commit=False)
             item.save()
+            log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
             if cards:
                 for card in cards:
                     c = Card.objects.get(id=card)
                     c.sold = item.created
                     c.save()
                     item.cards.add(c)
+                    log('EDIT', request.user, card)
             res={"status": True, 'id':item.id}
         except Exception, e:
             res={"status": False, "message": str(e)}
@@ -2885,7 +2994,9 @@ def salecards_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление продажи карт'}
     id = int(request.POST.get('id',0))
     if id:
-        SaleCard.objects.get(id=id).delete()
+        model = SaleCard.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "SaleCard not found"}
@@ -2908,8 +3019,10 @@ def tpchange_save(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
             res={"success": True}
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"success": False, "message": str(e)}
     else:
@@ -2966,6 +3079,7 @@ def tariffs_set(request):
         if form.is_valid():
             access_parameters = form.save(commit=False)
             access_parameters.save()
+            log('EDIT', request.user, access_parameters) if 'id' in js['access_parameters'] else log('CREATE', request.user, access_parameters) 
         else:
             transaction.rollback()
             return {'status':False, 'errors': form._errors}
@@ -2983,13 +3097,16 @@ def tariffs_set(request):
             if form.is_valid():
                 speeditem = form.save(commit=False)
                 speeditem.save()
+                log('EDIT', request.user, speeditem) if speed.get('id') else log('CREATE', request.user, speeditem) 
                 
             else:
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             speeditem_ids.append(speeditem.id)
         if speeditem_ids:
-            TimeSpeed.objects.filter(access_parameters=access_parameters).exclude(id__in=speeditem_ids).delete()
+            for d in TimeSpeed.objects.filter(access_parameters=access_parameters).exclude(id__in=speeditem_ids):
+                log('DELETE', request.user, d)
+                d.delete()
         
     
     if js['periodicalservices']:
@@ -3008,6 +3125,7 @@ def tariffs_set(request):
             if form.is_valid():
                 periodicalservice_item = form.save(commit=False)
                 periodicalservice_item.save()
+                log('EDIT', request.user, periodicalservice_item) if periodicalservice.get('id') else log('CREATE', request.user, periodicalservice_item) 
 
             else:
                 transaction.rollback()
@@ -3016,7 +3134,9 @@ def tariffs_set(request):
         
 
         if periodicalservices_ids:
-            PeriodicalService.objects.filter(tarif=tariff).exclude(id__in=periodicalservices_ids).delete()
+            for d in PeriodicalService.objects.filter(tarif=tariff).exclude(id__in=periodicalservices_ids):
+                log('DELETE', request.user, d)
+                d.delete()
     else:
         PeriodicalService.objects.filter(tarif=tariff).update(deleted=True, deactivated = datetime.datetime.now())
         
@@ -3040,7 +3160,7 @@ def tariffs_set(request):
                 addonservice_item = form.save(commit=False)
                 addonservice_item.save()
                 
-
+                log('EDIT', request.user, addonservice_item) if obj.get('id') else log('CREATE', request.user, addonservice_item)
             else:
 
                 transaction.rollback()
@@ -3049,9 +3169,13 @@ def tariffs_set(request):
         
 
         if addonservices_ids:
-            AddonServiceTarif.objects.filter(tarif=tariff).exclude(id__in=addonservices_ids).delete()
+            for d in AddonServiceTarif.objects.filter(tarif=tariff).exclude(id__in=addonservices_ids):
+                log('DELETE', request.user, d)
+                d.delete()
     else:
-        AddonServiceTarif.objects.filter(tarif=tariff).delete()
+        for d in AddonServiceTarif.objects.filter(tarif=tariff):
+            log('DELETE', request.user, d)
+            d.delete()
             
     if js.get('onetimeservices'):
         
@@ -3072,7 +3196,7 @@ def tariffs_set(request):
 
                 onetimeservice_item = form.save(commit=False)
                 onetimeservice_item.save()
-                
+                log('EDIT', request.user, onetimeservice_item) if onetimeservice.get('id') else log('CREATE', request.user, onetimeservice_item)
 
             else:
 
@@ -3082,9 +3206,13 @@ def tariffs_set(request):
         
 
         if onetimeservices_ids:
-            OneTimeService.objects.filter(tarif=tariff).exclude(id__in=onetimeservices_ids).delete()
+            for d in OneTimeService.objects.filter(tarif=tariff).exclude(id__in=onetimeservices_ids):
+                log('DELETE', request.user, d)
+                d.delete()
     else:
-        OneTimeService.objects.filter(tarif=tariff).delete()
+        for d in OneTimeService.objects.filter(tarif=tariff):
+            log('DELETE', request.user, d)
+            d.delete()
         
     if js.get('limites'):
         
@@ -3106,7 +3234,7 @@ def tariffs_set(request):
 
                 limit_item = form.save(commit=False)
                 limit_item.save()
-                
+                log('EDIT', request.user, limit_item) if limit.get('id') else log('CREATE', request.user, limit_item)
 
             else:
 
@@ -3115,7 +3243,9 @@ def tariffs_set(request):
             limites_ids.append(limit_item.id)
             
             if limit_item.action ==0:
-                SpeedLimit.objects.filter(limit=limit_item).delete()
+                for d in SpeedLimit.objects.filter(limit=limit_item):
+                    log('DELETE', request.user, d)
+                    d.delete()
             elif  limit_item.action ==1:
                 if speedlimit:
                     speedlimit['limit']=limit_item.id
@@ -3129,7 +3259,7 @@ def tariffs_set(request):
                     if form.is_valid():
                         speedlimit_item = form.save(commit=False)
                         speedlimit_item.save()
-                        
+                        log('EDIT', request.user, speedlimit_item) if speedlimit.get('id') else log('CREATE', request.user, speedlimit_item)
 
                     else:
 
@@ -3138,14 +3268,21 @@ def tariffs_set(request):
                     speedlimites_ids.append(speedlimit_item.id)
     
             if speedlimites_ids:
-                SpeedLimit.objects.filter(limit=limit_item).exclude(id__in=speedlimites_ids).delete()
+                for d in SpeedLimit.objects.filter(limit=limit_item).exclude(id__in=speedlimites_ids):
+                    log('DELETE', request.user, d)
+                    d.delete()
             
         if limites_ids:
-            TrafficLimit.objects.filter(tarif=tariff).exclude(id__in=limites_ids).delete()
+            for d in TrafficLimit.objects.filter(tarif=tariff).exclude(id__in=limites_ids):
+                log('DELETE', request.user, d)
+                d.delete()
                 
     else:
         for tl in TrafficLimit.objects.filter(tarif=tariff):
-             SpeedLimit.objects.filter(limit=tl).delete()
+             for d in SpeedLimit.objects.filter(limit=tl):
+                 log('DELETE', request.user, d)
+                 d.delete()
+             log('DELETE', request.user, tl)
              tl.delete()
             
     if js.get('time_access_service'):
@@ -3164,6 +3301,7 @@ def tariffs_set(request):
 
             timeaccessservice = form.save(commit=False)
             timeaccessservice.save()
+            log('EDIT', request.user, timeaccessservice) if obj.get('id') else log('CREATE', request.user, timeaccessservice)
             tariff.time_access_service = timeaccessservice
             tariff.save()
 
@@ -3189,17 +3327,22 @@ def tariffs_set(request):
             if form.is_valid():
                 timeaccessnode_item = form.save(commit=False)
                 timeaccessnode_item.save()
-                
+                log('EDIT', request.user, timeaccessnode_item) if timeaccessnode.get('id') else log('CREATE', request.user, timeaccessnode_item)
             else:
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             time_access_nodes_ids.append(timeaccessnode_item.id)
             
         if time_access_nodes_ids:
-            TimeAccessNode.objects.filter(time_access_service=timeaccessservice).exclude(id__in=time_access_nodes_ids).delete()
+            for d in TimeAccessNode.objects.filter(time_access_service=timeaccessservice).exclude(id__in=time_access_nodes_ids):
+                log('DELETE', request.user, d)
+                d.delete()
     else:
         if tariff.time_access_service:
-            TimeAccessNode.objects.filter(id=tariff.time_access_service).delete()
+            for d in TimeAccessNode.objects.filter(id=tariff.time_access_service):
+                log('DELETE', request.user, d)
+                d.delete()
+            log('DELETE', request.user, tariff.time_access_service)
             tariff.time_access_service.delete()
 
     if js.get('traffic_transmit_service'):
@@ -3216,6 +3359,7 @@ def tariffs_set(request):
 
             traffic_transmit_service = form.save(commit=False)
             traffic_transmit_service.save()
+            log('EDIT', request.user, traffic_transmit_service) if 'id' in js.get('traffic_transmit_service') else log('CREATE', request.user, traffic_transmit_service)
             tariff.traffic_transmit_service = traffic_transmit_service
             tariff.save()
 
@@ -3238,7 +3382,7 @@ def tariffs_set(request):
             if form.is_valid():
                 traffictransmitnode_item = form.save(commit=False)
                 traffictransmitnode_item.save()
-                
+                log('EDIT', request.user, traffictransmitnode_item) if 'id' in traffictransmitnode.get('id') else log('CREATE', request.user, traffictransmitnode_item)
             else:
 
                 transaction.rollback()
@@ -3246,7 +3390,9 @@ def tariffs_set(request):
             traffictransmitnodes_ids.append(traffictransmitnode_item.id)
             
         if traffictransmitnodes_ids:
-            TrafficTransmitNodes.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=traffictransmitnodes_ids).delete()
+            for d in TrafficTransmitNodes.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=traffictransmitnodes_ids):
+                log('DELETE', request.user, d)
+                d.delete()
             
         prepaidtraffic_ids = []
         for prepaidtrafficnode in js.get('prepaidtrafficnodes', []):
@@ -3263,19 +3409,25 @@ def tariffs_set(request):
             if form.is_valid():
                 prepaidtraffictransmitnode_item = form.save(commit=False)
                 prepaidtraffictransmitnode_item.save()
-                
+                log('EDIT', request.user, prepaidtraffictransmitnode_item) if 'id' in prepaidtrafficnode.get('id') else log('CREATE', request.user, prepaidtraffictransmitnode_item)
             else:
 
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             prepaidtraffic_ids.append(prepaidtraffictransmitnode_item.id)
         if traffictransmitnodes_ids:
-            PrepaidTraffic.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=prepaidtraffic_ids).delete()
+            for d in PrepaidTraffic.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=prepaidtraffic_ids):
+                log('DELETE', request.user, d)
+                d.delete()
             
     else:
         if tariff.traffic_transmit_service:
-            TrafficTransmitService.objects.filter(id=tariff.traffic_transmit_service.id).delete()
-            TrafficTransmitNodes.objects.filter(traffic_transmit_service=tariff.traffic_transmit_service).delete()
+            for d in TrafficTransmitService.objects.filter(id=tariff.traffic_transmit_service.id):
+                log('DELETE', request.user, d)
+                d.delete()
+            for d in TrafficTransmitNodes.objects.filter(traffic_transmit_service=tariff.traffic_transmit_service):
+                log('DELETE', request.user, d)
+                d.delete()
             
     if js.get('radius_traffic_service'):
         if 'id' in js.get('radius_traffic_service'):
@@ -3291,6 +3443,7 @@ def tariffs_set(request):
 
             radius_traffic_service = form.save(commit=False)
             radius_traffic_service.save()
+            log('EDIT', request.user, radius_traffic_service) if 'id' in js.get('radius_traffic_service') else log('CREATE', request.user, radius_traffic_service)
             tariff.radius_traffic_transmit_service = radius_traffic_service
             tariff.save()
 
@@ -3314,7 +3467,7 @@ def tariffs_set(request):
             if form.is_valid():
                 radtraffictransmitnode_item = form.save(commit=False)
                 radtraffictransmitnode_item.save()
-                
+                log('EDIT', request.user, radtraffictransmitnode_item) if 'id' in radtraffictransmitnode.get('id') else log('CREATE', request.user, radtraffictransmitnode_item)
             else:
 
                 transaction.rollback()
@@ -3322,13 +3475,19 @@ def tariffs_set(request):
             radiustraffictransmitnodes_ids.append(radtraffictransmitnode_item.id)
             
         if radiustraffictransmitnodes_ids:
-            RadiusTrafficNode.objects.filter(radiustraffic=radius_traffic_service).exclude(id__in=radiustraffictransmitnodes_ids).delete()
+            for d in RadiusTrafficNode.objects.filter(radiustraffic=radius_traffic_service).exclude(id__in=radiustraffictransmitnodes_ids):
+                log('DELETE', request.user, d)
+                d.delete()
         
     else:
         if tariff.radius_traffic_transmit_service:
-            RadiusTrafficNode.objects.filter(radiustraffic=tariff.radius_traffic_transmit_service).delete()
+            for d in RadiusTrafficNode.objects.filter(radiustraffic=tariff.radius_traffic_transmit_service):
+                log('DELETE', request.user, d)
+                d.delete()
+            log('DELETE', request.user, tariff.radius_traffic_transmit_service)
             tariff.radius_traffic_transmit_service.delete()
             
+    log('EDIT', request.user, tariff) if js.get('model').get('id') else log('CREATE', request.user, tariff) 
     transaction.commit()
 
     return {'status':True, 'tariff_id':tariff.id}
@@ -3354,10 +3513,14 @@ def groups_save(request):
         try:
             model = form.save(commit=False)
             model.save()
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model)
             if id:
-                GroupTrafficClass.objects.filter(group=model).delete()
+                for d in GroupTrafficClass.objects.filter(group=model):
+                    log('DELETE', request.user, d)
+                    d.delete()
             for item in traffic_classes:
-                GroupTrafficClass.objects.create(group=model, trafficclass = TrafficClass.objects.get(id=item))
+                gt = GroupTrafficClass.objects.create(group=model, trafficclass = TrafficClass.objects.get(id=item))
+                log('CREATE', request.user, gt)
             res={"status": True}
         except Exception, e:
             res={"status": False, "message": str(e)}
@@ -3383,7 +3546,9 @@ def nas_save(request):
         
     
     if form.is_valid():
-        form.save()
+        item = form.save(commit=False)
+        item.save()
+        log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
         return {"status": True, "message": 'yes'}
     else:
         return {"status": False, "message": form._errors}
@@ -3405,7 +3570,9 @@ def contracttemplates_set(request):
         
     
     if form.is_valid():
-        form.save()
+        model = form.save(commit = False)
+        model.save()
+        log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         return {"status": True}
     else:
         return {"status": False, "message": form._errors}
@@ -3417,7 +3584,9 @@ def contracttemplate_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление шаблона номера договора'}
     id = int(request.POST.get('id',0))
     if id:
-        ContractTemplate.objects.get(id=id).delete()
+        model = ContractTemplate.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "ContractTemplate not found"}
@@ -3442,6 +3611,7 @@ def settlementperiod_save(request):
     if form.is_valid():
         d = form.save(commit=False)
         d.save()
+        log('EDIT', request.user, d) if id else log('CREATE', request.user, d) 
         return {"status": True}
     else:
         return {"status": False, "message": form._errors}
@@ -3466,6 +3636,7 @@ def addonservices_set(request):
     if form.is_valid():
         d = form.save(commit=False)
         d.save()
+        log('EDIT', request.user, d) if id else log('CREATE', request.user, d) 
         return {"status": True}
     else:
         return {"status": False, "message": form._errors}
@@ -3477,7 +3648,9 @@ def settlementperiod_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление расчётного периода'}
     id = int(request.POST.get('id',0))
     if id:
-        SettlementPeriod.objects.filter(id=id).delete()
+        for d in SettlementPeriod.objects.filter(id=id):
+            log('DELETE', request.user, d)
+            d.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Settlementperiod not found"}
@@ -3489,7 +3662,9 @@ def addonservices_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление подключаемой услуги'}
     id = int(request.POST.get('id',0))
     if id:
-        AddonService.objects.get(id=id).delete()
+        for d in AddonService.objects.filter(id=id):
+            log('DELETE', request.user, d)
+            d.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "AddonService not found"}
@@ -3503,7 +3678,9 @@ def groups_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление группы трафика'}
     id = int(request.POST.get('id',0))
     if id:
-        Group.objects.get(id=id).delete()
+        for d in Group.objects.filter(id=id):
+            log('DELETE', request.user, d)
+            d.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Group not found"}
@@ -3522,6 +3699,7 @@ def accounttariffs_delete(request):
             return {"status": False, "message": u"Указанный тарифный план не найден тарифный план %s" % str(e)}
         if item.datetime<datetime.datetime.now():
             return {"status": False, "message": u"Невозможно удалить вступивший в силу тарифный план"}
+        log('DELETE', request.user, item)
         item.delete()
         return {"status": True}
     else:
@@ -3538,6 +3716,7 @@ def suspendedperiod_delete(request):
             item = SuspendedPeriod.objects.get(id=id)
         except Exception, e:
             return {"status": False, "message": u"Указанный период не найден %s" % str(e)}
+        log('DELETE', request.user, item)
         item.delete()
         return {"status": True}
     else:
@@ -3644,7 +3823,9 @@ def nas_delete(request):
         return {'status':True, 'message': u'У вас нет прав на удаление сервера доступа'}
     id = request.POST.get('id')
     if id:
-        Nas.objects.filter(id=id).delete()
+        for d in Nas.objects.filter(id=id):
+            log('DELETE', request.user, d)
+            d.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Nas not found"}
@@ -3660,13 +3841,21 @@ def subaccount_delete(request):
         #TODO: СДелать удаление субаккаунта с сервера доступа, если он там был
         item = SubAccount.objects.get(id=id)
         if item.vpn_ipinuse:
-            IPInUse.objects.filter(id=item.vpn_ipinuse).delete()
+            for d in IPInUse.objects.filter(id=item.vpn_ipinuse):
+                log('DELETE', request.user, d)
+                d.delete()
         if item.ipn_ipinuse:
-            IPInUse.objects.filter(id=item.ipn_ipinuse).delete()
+            for d in IPInUse.objects.filter(id=item.ipn_ipinuse):
+                log('DELETE', request.user, d)
+                d.delete()
         if item.vpn_ipv6_ipinuse:
-            IPInUse.objects.filter(id=item.vpn_ipv6_ipinuse).delete()
+            for d in IPInUse.objects.filter(id=item.vpn_ipv6_ipinuse):
+                log('DELETE', request.user, d)
+                d.delete()
         
+        log('DELETE', request.user, item)
         item.delete()
+        
         return {"status": True}
     else:
         return {"status": False, "message": "SubAccount not found"}
@@ -3679,7 +3868,9 @@ def account_delete(request):
         return {'status':True, 'message': u'У вас нет прав на удаление аккаунта'}
     if id:
         try:
-           Account.objects.all_with_deleted().get(id=id).delete()
+           model = Account.objects.all_with_deleted().get(id=id)
+           log('DELETE', request.user, model)
+           model.delete()
         except Exception, e:
             return {"status": False, "message": "%s" % str(e)}
         
@@ -3700,7 +3891,9 @@ def document_save(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             res={"success": True}
         except Exception, e:
 
@@ -3745,7 +3938,9 @@ def streets_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             res={"status": True}
         except Exception, e:
 
@@ -3762,7 +3957,9 @@ def streets_delete(request):
         return {'status':False, 'message':u'У вас нет прав на удаление улицы'}
     id = int(request.POST.get('id',0))
     if id:
-        Street.objects.get(id=id).delete()
+        for d in Street.objects.filter(id=id):
+            log('DELETE', request.user, d)
+            d.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Street not found"}
@@ -3770,143 +3967,175 @@ def streets_delete(request):
 
 @ajax_request
 @login_required
+@transaction.commit_manually
 def account_save(request):
     
-
-    id = request.POST.get('id')
-    tarif_id = request.POST.get('tarif_id')
-
-    contract = request.POST.get('contract','')
-
-    bank_bank = request.POST.get('bank_bank')
-    bank_bankcode = request.POST.get('bankcode')
-    bank_rs = request.POST.get('rs')
-    bank_currency = request.POST.get('currency')
-    #model.bank_id = self.connection.save(bank, "billservice_bankdata")
-    #self.bank = bank
     
-    org_name = request.POST.get('org_name')
-    org_uraddress = request.POST.get('uraddress')
-    org_phone = request.POST.get('phone')
-    org_fax = request.POST.get('fax')
-    org_okpo = request.POST.get('okpo')
-    org_unp = request.POST.get('unp')
-    org_kpp = request.POST.get('kpp')
-    org_kor_s = request.POST.get('kor_s')
+    data = json.loads(request.POST.get("data", "{}"))
+    model = data.get("model")
+    bank = data.get("bank")
+    organization = data.get("organization")
+    id = model.get('id')
+    tarif_id = data.get('tarif_id')
+
+    contract = model.get('contract','')
+    contracttemplate_id = model.get('contracttemplate_id',None)
+
+    username = model.get('username','')
+  
         
+
     newcontract=False
     acc = None
     if id:
+
         if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_account'):
+            transaction.rollback()
             return {'status':False, 'message':u'У вас нет прав на изменение аккаунта'}
         acc = Account.objects.all_with_deleted().get(id=id)
         
-        if acc.contract=='' and contract:
+        if acc.contract!= contract or contracttemplate_id:
             #new
+
             newcontract=True
-        a=AccountForm(request.POST, instance=acc)
+        a=AccountForm(model, instance=acc)
     else:
         if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_account'):
+            transaction.rollback()
             return {'status':False, 'message':u'У вас нет прав на добавление аккаунта'}
-        if contract!='':
+        if contract!='' or contracttemplate_id:
+
             newcontract=True
-        a=AccountForm(request.POST)
-    p=request.POST
+        a=AccountForm(model)
+
     res=[]
 
 
 
     if a.is_valid():
+
         contr = None
         if contract:
+
             contr = ContractTemplate.objects.filter(template=contract)
+
             if contr:
+
                 contr=contr[0]
-            if acc:
-                pass
+        else:
+            contr = None
+            if contracttemplate_id:
+                contr = ContractTemplate.objects.get(id=contracttemplate_id)
+
         if newcontract:
+
             if not acc:
-                id=Account.objects.all().order_by("-id")[0].id+1
+                accid=Account.objects.all().order_by("-id")[0].id+1
             else:
-                id = acc.id
+                accid = acc.id
+
             contract_template = contr.template if contr else contract
             contract_counter = contr.counter if contr else 0
-            year=a.created.year
-            month=a.created.month
-            day=a.created.day
-            hour=a.created.hour
-            minute=a.created.minute
-            second=a.created.second
-            contract_num=contr.count+1
+
+            year=a.cleaned_data.get("created").year
+            month=a.cleaned_data.get("created").month
+            day=a.cleaned_data.get("created").day
+            hour=a.cleaned_data.get("created").hour
+            minute=a.cleaned_data.get("created").minute
+            second=a.cleaned_data.get("created").second
+            contract_num=contr.counter
             
             
-            d={'account_id':id,'year':year,'month':month, 'day':day, 'hour':hour, 'minute':minute,'second':second, 'tarif_type':tarif_type, 'contract_num':contract_num}
-            d.update(model.__dict__)
+            d={'account_id':accid,'username':username, 'year':year,'month':month, 'day':day, 'hour':hour, 'minute':minute,'second':second, 'contract_num':contract_num}
+            #d.update(model.__dict__)
 
             contract = contract_template % d
             if contr:
-                contr.count = contr.count+1 
+                contr.count = contr.counter+1 
 
         
         try:
             item = a.save(commit=False)
             item.save()
-            bank = None
-            org = None
-            organization = Organization.objects.filter(account=item)
-            if organization:
-                org = organization[0]
-                bank = org.bank
-                if org and not (rg_name or org_uraddress or org_phone):
-                    bank.delete()
+            
+
+            o = Organization.objects.filter(account=item)
+            if o:
+                org = o[0]
+                bankdata = org.bank
+                if org and not organization:
+                    log('DELETE', request.user, bankdata)
+                    bankdata.delete()
+                    log('DELETE', request.user, org)
                     org.delete()
-            elif org_name or org_uraddress or org_phone:
-                org = Organization()
-                if bank_bank:
-                    bank = BankData()
-            
-                    bank.name = bank
-                    bank.bankcode = bank_bankcode
-                    bank.rs = bank_rs
-                    bank.currency = bank_currency
-                    bank.save()
-            
-            if org:
-                org.name = org_name
-                org.okpo = org_okpo
-                org.uraddress = org_uraddress
-                org.phone = org_phone
-                org.kor_s = org_kor_s
-                org.kpp = org_kpp
-                org.unp = org_unp
-                org.fax = org_fax
-                org.account = item
-                if bank:
-                    org.bank = bank
-                org.save()
-            
-                
+                org = OrganizationForm(organization, instance = org)
+                if not org.is_valid(): 
+                    transaction.rollback()
+                    return {"status": False, "errors": org._errors, 'message': u'Организация указана с ошибками'}
+                    
+                bank = BankDataForm(bank, instance = bankdata)
+                if not bank.is_valid(): 
+                    transaction.rollback()
+                    return {"status": False, "errors": bank._errors, 'message': u'Банковские данные  должны быть указаны правильно'}
+
+                bank = bank.save(commit = False)
+                bank.save()
+                organization = org.save(commit = False)
+                organization.save()
+                log('EDIT', request.user, bank)
+                log('EDIT', request.user, organization)
+            elif organization:
+
+                org = OrganizationForm(organization)
+           
+                if org.is_valid(): 
+              
+                    organization = org.save(commit = False)
+               
+                    b = BankDataForm(bank)
+                    if  b.is_valid():
+                        bank = b.save(commit=False)
+                        bank.save()
+                        log('CREATE', request.user, bank) 
+                        organization.bank = bank
+                        
+                        organization.account = item
+                        organization.save()
+                        log('CREATE', request.user, organization) 
+                    else:
+                        transaction.rollback()
+                        return {"status": False, "errors": b._errors, 'message': u'Банковские данные  должны быть указаны правильно'}
+                else:
+                    transaction.rollback()
+                    return {"status": False, "errors": org._errors, 'message': u'Организация указана с ошибками'}
+
             if not id and tarif_id and tarif_id>0:
                 accounttarif = AccountTarif()
                 accounttarif.account=item
                 accounttarif.tarif=Tariff.objects.get(id=tarif_id)
                 accounttarif.datetime = item.created
                 accounttarif.save()
-            if contr:
+                log('CREATE', request.user, accounttarif) 
+            if newcontract:
+
                 item.contract = contract
                 item.save()
                 contr.save()
-            res={"status": True, 'account_id':item.id}
-        except Exception, e:
 
-            res={"status": False, "errors": [{'error':str(e)}]}
+            log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
+            res={"status": True, 'id':item.id}
+        except Exception, e:
+            transaction.rollback()
+            res={"status": False, "message": {'error':unicode(e)}}
     else:
         
-        res={"status": False, "errors": a._errors, 'msg':u"Поля с ошибками:<br />"+unicode('<br />'.join([u'%s:%s' %(x,a._errors.get(x)) for x in a._errors]))}
+        res={"status": False, "errors": a._errors, 'msg':u"Поля с ошибками:"+unicode('\n'.join([u'%s:%s' %(x,a._errors.get(x)) for x in a._errors]))}
+    transaction.commit()
     return res
 
 @login_required
 @ajax_request
+@transaction.commit_manually()
 def subaccount_save(request):
     
     #from django.core import serializers
@@ -3921,6 +4150,7 @@ def subaccount_save(request):
     
     """
     if  not request.user.has_perm('billservice.add_subaccount'):
+        transaction.rollback()
         return {'status':False, 'message':u'У вас нет прав на создание субаккаунтов'}
     id=None if request.POST.get('id')=='None' else request.POST.get('id')
     ipv4_vpn_pool = None if request.POST.get('ipv4_vpn_pool')=='None' else request.POST.get('ipv4_vpn_pool')
@@ -3937,6 +4167,7 @@ def subaccount_save(request):
     cc=None
     if id:
         if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_subaccount'):
+            transaction.rollback()
             return {'status':False, 'message':u'У вас нет прав на изменение субаккаунта'}
         cc = SubAccount.objects.get(id=id)
         
@@ -3944,6 +4175,7 @@ def subaccount_save(request):
         f=SubAccountForm(request.POST)
     else:
         if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_subaccount'):
+            transaction.rollback()
             return {'status':False, 'message':u'У вас нет прав на добавление субаккаунта'}
         a=SubAccountForm(request.POST)
 
@@ -3956,55 +4188,55 @@ def subaccount_save(request):
             subacc = a.save(commit=False)
             pass
             subacc.save()
+            
         except Exception, e:
-
+            transaction.rollback()
             res={"success": False, "errors": a._errors}
             return res
 
         
         # print "cc.vpn_ipinuse11",cc.vpn_ipinuse
-        subaccounts = 0
-        """
-        bug???
-        _wrapped_view() takes at least 1 argument (0 given)
+        subaccs = 0
+
+        #_wrapped_view() takes at least 1 argument (0 given)
         if subacc.username:
             if not id:
-                subaccounts = SubAccount.objects.filter(username = subacc.username ).exclude(account__id = account).count()
+                subaccs = SubAccount.objects.filter(username = subacc.username ).exclude(account__id = account_id).count()
             else:
-                subaccounts = SubAccount.objects.exclude(id = id).filter(account__id = account, username = subacc.username).count()
-            if subaccounts>0:
+                subaccs = SubAccount.objects.exclude(id = id).filter(account__id = account_id, username = subacc.username).count()
+            if subaccs>0:
                 return {"status": False, 'message':u'Выбранное имя пользователя используется в другом аккаунте'}
 
-        """
-        """
+
         if subacc.ipn_mac_address:    
             if not id:
-                subaccounts = SubAccount.objects.exclude(account__id = account).filter(ipn_mac_address = subacc.ipn_mac_address).count()
+                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_mac_address = subacc.ipn_mac_address).count()
             else:
-                subaccounts = SubAccount.objects.exclude(id = id).exclude(account__id = account).filter(ipn_mac_address = subacc.ipn_mac_address).count()
+                subaccs = SubAccount.objects.exclude(id = id, account__id = account_id).filter(ipn_mac_address = subacc.ipn_mac_address).count()
 
-            if subaccounts>0:
+            if subaccs>0:
                 return {"status": False, 'message':u'Выбранный мак-адрес используется в другом аккаунте'}
 
-        if subacc.vpn_ip_address and not subacc.vpn_ip_address.startswith('0.0.0.0'):    
+        if subacc.vpn_ip_address and not subacc.vpn_ip_address==('0.0.0.0'):    
             if not id:
-                subaccounts = SubAccount.objects.exclude(account__id = account).filter(vpn_ip_address = subacc.vpn_ip_address).count()
+                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(vpn_ip_address = subacc.vpn_ip_address).count()
             else:
-                subaccounts = SubAccount.objects.exclude(id = id).exclude(account__id = account).filter(vpn_ip_address = subacc.vpn_ip_address).count()
+                subaccs = SubAccount.objects.exclude(id = id).exclude(account__id = account_id).filter(vpn_ip_address = subacc.vpn_ip_address).count()
 
-            if subaccounts>0:
+            if subaccs>0:
                 return {"status": False, 'message':u'Выбранный vpn_ip_address используется в другом аккаунте'}
 
-        if subacc.ipn_ip_address and not subacc.ipn_ip_address.startswith('0.0.0.0'):    
+        if subacc.ipn_ip_address and not subacc.ipn_ip_address==('0.0.0.0'):    
             if not id:
-                subaccounts = SubAccount.objects.exclude(account__id = account).filter(ipn_ip_address = subacc.ipn_ip_address, ).count()
+                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_ip_address = subacc.ipn_ip_address, ).count()
             else:
-                subaccounts = SubAccount.objects.exclude(~Q(id = id)).exclude(account__id = account).filter(ipn_ip_address = subacc.ipn_ip_address).count()
+                subaccs = SubAccount.objects.exclude(~Q(id = id)).exclude(account__id = account_id).filter(ipn_ip_address = subacc.ipn_ip_address).count()
 
-            if subaccounts>0:
+            if subaccs>0:
+                transaction.rollback()
                 return {"status": False, 'message':u'Выбранный ipn_ip_address используется в другом аккаунте'}
 
-        """
+
         if cc and cc.vpn_ipinuse:
 
             #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
@@ -4012,6 +4244,7 @@ def subaccount_save(request):
             if  subacc.vpn_ip_address not in ['0.0.0.0','',None]:
                 if vpn_pool:
                     if not IPy.IP(vpn_pool.start_ip).int()<=IPy.IP(subacc.vpn_ip_address).int()<=IPy.IP(vpn_pool.end_ip).int():
+                        transaction.rollback()
                         return {"status": False, 'message':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
                     
                 
@@ -4019,8 +4252,9 @@ def subaccount_save(request):
                         obj = subacc.vpn_ipinuse
                         obj.disabled=datetime.datetime.now()
                         obj.save()
-                        
+                        log('EDIT', request.user, obj)
                         subacc.vpn_ipinuse = IPInUse.objects.create(pool=vpn_pool,ip=subacc.vpn_ip_address,datetime=datetime.datetime.now())
+                        log('EDIT', request.user, subacc.vpn_ipinuse)
                 else:
                     obj = subacc.vpn_ipinuse
                     obj.disabled=datetime.datetime.now()
@@ -4034,14 +4268,17 @@ def subaccount_save(request):
                 obj = subacc.vpn_ipinuse
                 obj.disabled=datetime.datetime.now()
                 obj.save()
+                log('EDIT', request.user, obj)
                 subacc.vpn_ipinuse=None
         elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and vpn_pool:
 
             if not IPy.IP(vpn_pool.start_ip).int()<=IPy.IP(subacc.vpn_ip_address).int()<=IPy.IP(vpn_pool.end_ip).int():
+                transaction.rollback()
                 return {"status": False, 'message':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
 
             ip=IPInUse(pool=vpn_pool, ip=subacc.vpn_ip_address, datetime=datetime.datetime.now())
             ip.save()
+            log('CREATE', request.user, ip)
             subacc.vpn_ipinuse = ip 
             
         if cc and cc.ipn_ipinuse:
@@ -4051,6 +4288,7 @@ def subaccount_save(request):
             if  subacc.ipn_ip_address not in ['0.0.0.0','',None]:
                 if vpn_pool:
                     if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
+                        transaction.rollback()
                         return {"status": False, 'message':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
                     
                 
@@ -4058,12 +4296,14 @@ def subaccount_save(request):
                         obj = subacc.ipn_ipinuse
                         obj.disabled=datetime.datetime.now()
                         obj.save()
-                        
+                        log('EDIT', request.user, obj)
                         subacc.ipn_ipinuse = IPInUse.objects.create(pool=ipn_pool,ip=subacc.ipn_ip_address,datetime=datetime.datetime.now())
+                        log('CREATE', request.user, subacc.ipn_ipinuse)
                 else:
                     obj = subacc.ipn_ipinuse
                     obj.disabled=datetime.datetime.now()
                     obj.save()
+                    log('EDIT', request.user, obj)
                     subacc.ipn_ipinuse = None
                 
                     
@@ -4073,25 +4313,29 @@ def subaccount_save(request):
                 obj = subacc.ipn_ipinuse
                 obj.disabled=datetime.datetime.now()
                 obj.save()
+                log('EDIT', request.user, obj)
                 subacc.ipn_ipinuse=None
         elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and ipn_pool:
 
             if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
+                transaction.rollback()
                 return {"status": False, 'message':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
 
             ip=IPInUse(pool=ipn_pool, ip=subacc.ipn_ip_address, datetime=datetime.datetime.now())
             ip.save()
+            log('CREATE', request.user, ip)
             subacc.ipn_ipinuse = ip 
        
         try:
             subacc.save()
-
+            log('EDIT', request.user, subacc) if id else log('CREATE', request.user, subacc) 
             res={"status": True,'account_id':subacc.account.id}
         except Exception, e:
-
+            transaction.rollback()
             res={"status": False, "errors": a._errors}
     else:
         res={"status": False, "errors": a._errors}
+    transaction.commit()
     return res
 
 @ajax_request
@@ -4102,7 +4346,9 @@ def subaccount_delete(request):
         return {'status':False, 'message':u'У вас нет прав на удаление субаккаунта'}
     id=request.POST.get('id')
     if id:
-        SubAccount.objects.get(id=id).delete()
+        for d in SubAccount.objects.filter(id=id):
+            log('DELETE', request.user, d)
+            d.delete()
         return {"success": True}
     else:
         return {"success": False,'msg':u'Субаккаунт не найден'}
@@ -4191,7 +4437,9 @@ def houses_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             res={"status": True}
         except Exception, e:
 
@@ -4208,7 +4456,9 @@ def houses_delete(request):
         return {'status':False, 'message': u'У вас нет прав на удаление домов'}
     id = int(request.POST.get('id',0))
     if id:
-        House.objects.get(id=id).delete()
+        for d in House.objects.filter(id=id):
+            log('DELETE', request.user, d)
+            d.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "House not found"}
@@ -4257,7 +4507,9 @@ def accountaddonservices_set(request):
         form = AccountAddonServiceModelForm(request.POST)
         
     if form.is_valid():
-        form.save()
+        model = form.save(commit = False)
+        model.save()
+        log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         res = {'status':True}
     else:
         res={"status": False, "errors": form._errors}
@@ -4281,7 +4533,9 @@ def accounttariffs_set(request):
         form = AccountTariffForm(request.POST)
         
     if form.is_valid():
-        form.save()
+        model = form.save(commit = False)
+        model.save()
+        log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         res = {'status':True}
     else:
         res={"status": False, "errors": form._errors}
@@ -4309,6 +4563,7 @@ def accounttariffs_bathset(request):
                 item.tarif = Tariff.objects.get(id=tariff)
                 item.datetime = date
                 item.save()
+                log('CREATE', request.user, item) 
             except Exception, e:
                 res={"status": False, "message": str(e)}
             
@@ -4355,7 +4610,9 @@ def suspendedperiod_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             res={"status": True}
         except Exception, e:
 
@@ -4380,6 +4637,7 @@ def transaction_set(request):
             tr.summ=tr.summ
             tr.systemuser = request.user.account
             tr.save()
+            log('EDIT', request.user, tr) if id else log('CREATE', request.user, tr) 
             res={"status": True, 'transaction_id':tr.id}
         except Exception, e:
 
@@ -4423,7 +4681,9 @@ def transactiontypes_set(request):
         
     if form.is_valid():
         try:
-            form.save()
+            model = form.save(commit = False)
+            model.save()
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             res={"status": True}
         except Exception, e:
 
@@ -4480,6 +4740,8 @@ def actions_set(request):
             sa.ipn_added=True
             sa.speed=''
             sa.save()
+            log('EDIT', request.user, sa)
+            #TODO: IPN Actions action
 
         
         if action =='delete'  and sended==True:
@@ -4487,16 +4749,20 @@ def actions_set(request):
             sa.ipn_added=False
             sa.speed=''
             sa.save()
-            
+            log('EDIT', request.user, sa)
+            #TODO: IPN Actions action
 
         if action=='disable' and sended==True:
             sa.ipn_enabled=False
             sa.save()
+            log('EDIT', request.user, sa)
+            #TODO: IPN Actions action
             
         if action=='enable' and sended==True:
             sa.ipn_enabled=True
             sa.save()
-
+            log('EDIT', request.user, sa)
+            #TODO: IPN Actions action
 
         
         return {'status':sended, 'message':'Ok'}

@@ -37,6 +37,7 @@ MEDIA_URL = '/media/'
 STATIC_URL = '/media/'
 
 ADMIN_MEDIA_PREFIX = '/admin_media/'
+SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '%!a5^gik_4lgzt+k)vyo6)y68_3!u^*j(ujks7(=6f2j89d=x&'
@@ -97,6 +98,7 @@ INSTALLED_APPS = (
     'paymentgateways.webmoney',
     'paymentgateways.qiwi',
     'helpdesk',
+    'object_log'
 
     
 )

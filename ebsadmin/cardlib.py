@@ -17,7 +17,7 @@ def activate_card(login, pin):
 
         return_status = 0
         
-        card = Card.objects.filter(type=2, login=login, pin=pin, sold__isnot=None, disabled=False)
+        card = Card.objects.filter(type=2, login=login, pin=pin, sold__isnull=False, disabled=False)
         if not card: 
             return  status_bad_userpassword      
         if len(card)>1:

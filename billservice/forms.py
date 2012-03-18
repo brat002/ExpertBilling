@@ -109,7 +109,11 @@ class TransactionReportForm(forms.Form):
     start_date = forms.DateTimeField(required=True)
     end_date = forms.DateTimeField(required=False)
     
-
+class ActionLogFilterForm(forms.Form):
+    systemuser = forms.ModelChoiceField(queryset=SystemUser.objects.all(), required=False)
+    start_date = forms.DateTimeField(required=True)
+    end_date = forms.DateTimeField(required=True)
+    
 class AccountTariffBathForm(forms.Form):
     accounts = forms.CharField(required=True)
     tariff = forms.IntegerField(required=True)
