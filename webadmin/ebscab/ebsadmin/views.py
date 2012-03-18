@@ -949,7 +949,9 @@ def ipnforvpn(request):
         if not item:
             return {'status':False, 'message': 'Account item with id=%s not found' % id}
        
-        res = item.get_account_tariff().access_parameters.ipn_for_vpn
+        res = item.get_account_tariff()
+        if res:
+          res = res.access_parameters.ipn_for_vpn
         return {"result": res, 'status':True}
     
     return {"result": res, 'status':False}
