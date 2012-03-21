@@ -114,6 +114,11 @@ class ActionLogFilterForm(forms.Form):
     start_date = forms.DateTimeField(required=True)
     end_date = forms.DateTimeField(required=True)
     
+class ReportForm(forms.Form):
+    accounts = forms.ModelMultipleChoiceField(queryset=Account.objects.all(), required=False)
+    start_date = forms.DateTimeField(required=True)
+    end_date = forms.DateTimeField(required=True)
+    
 class AccountTariffBathForm(forms.Form):
     accounts = forms.CharField(required=True)
     tariff = forms.IntegerField(required=True)

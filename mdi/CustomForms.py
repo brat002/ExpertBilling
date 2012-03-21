@@ -305,6 +305,15 @@ class CookieJar(QNetworkCookieJar):
         def setAllCookies(self, cookieList):
             QNetworkCookieJar.setAllCookies(self, cookieList)
   
+class FakeBrowser(QtWebKit.QWebPage):
+    """
+    Set custom userAgent for the QWebView
+    """
+    def __init__(self, parent=None):
+        super(FakeBrowser, self).__init__(parent)
+    def userAgentForUrl(self, url):
+        return 'Chrome/1.0'
+    
 class RrdReportMainWindow(QtGui.QMainWindow):
     def __init__(self, item_id=None, type='account',connection=None):
         self.item_id=item_id
@@ -329,6 +338,7 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         self.gridLayout.setSizeConstraint(QtGui.QLayout.SetMaximumSize)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
         self.webView = QtWebKit.QWebView(self)
+        #self.webView.setPage(FakeBrowser(self))
         self.page = self.webView.page()
         self.cookieJar = CookieJar()
         self.page.networkAccessManager().setCookieJar( self.cookieJar )
@@ -365,6 +375,7 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         self._restoreState()
         self.load_stat()
         
+
     def getCookiesForUrl(self, url):
         "Retorna las cookies que el navegador mandaría al requerir una url dada"
         url = QtCore.QUrl(url)
@@ -423,7 +434,6 @@ class RrdReportMainWindow(QtGui.QMainWindow):
         cookieList = []
         for cookie in raw:
             cookie = cookie.toList()
-            print cookie
             name = QtCore.QByteArray.fromBase64( str(cookie[0].toString()) )
             value = QtCore.QByteArray.fromBase64( str(cookie[1].toString() ))
             networkCookie = QtNetwork.QNetworkCookie( name, value )
@@ -457,7 +467,7 @@ class RrdReportMainWindow(QtGui.QMainWindow):
             for cookie in Config.getCookies():
                 if not self.addCookiesForUrl(cookie, "http://%s:8000%s" % (self.connection.server_ip, '/ext/transactions/')):
                     raise ValueError, "couldn't add cookie"
-            self.webView.load(QtCore.QUrl("http://%s:8000%s" % (self.connection.server_ip, '/ext/transactions/')))
+            self.webView.load(QtCore.QUrl("http://%s%s" % (self.connection.host, '/ebsadmin/sessionschart/?username=admin&password=admin&start_date=2011-12-31 23:58:57&end_date=2013-12-31 23:58:57')))
         #self.reloadAction.setEnabled(True)
             
             

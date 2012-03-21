@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 import os, sys
-from PyQt4 import QtCore, QtGui, QtSql, QtWebKit
+from PyQt4 import QtCore, QtGui, QtSql, QtWebKit, QtNetwork
 from helpers import tableFormat
 from db import AttrDict
 from helpers import makeHeaders
@@ -14,7 +14,7 @@ import itertools
 from itertools import count, izip
 import datetime
 import socket 
-from reports.bpreportedit import bpReportEdit
+#from reports.bpreportedit import bpReportEdit
 import thread
 import time
 from customwidget import CustomDateTimeWidget
@@ -1025,7 +1025,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
 
         
     def fixtures(self):
-        accounts = self.connection.get_models("billservice_account", fields=['id', 'username'], order={'username':'ASC'})
+        accounts = self.connection.get_account(fields=['id', 'username'])
         self.connection.commit()
         for account in accounts:
             item = QtGui.QListWidgetItem()
@@ -1034,7 +1034,7 @@ class ReportPropertiesDialog(QtGui.QDialog):
             self.listWidget_accounts_all.addItem(item)
             
         
-        groups = self.connection.get_models("billservice_group", fields=['id', 'name'], order={'name':'ASC'})
+        groups = self.connection.get_groups(fields=['id', 'name'])
         self.connection.commit()
         for group in groups:
             item = QtGui.QListWidgetItem()
@@ -1408,7 +1408,14 @@ class NetFlowReportEbs(ebsTabs_n_TablesWindow):
         
 
 
-
+class FakeBrowser(QtWebKit.QWebPage):
+    """
+    Set custom userAgent for the QWebView
+    """
+    def __init__(self, parent=None):
+        super(FakeBrowser, self).__init__(parent)
+    def userAgentForUrl(self, url):
+        return 'Opera/9.64 (X11; Linux x86_64; U; en) Presto/2.1.1 EBSAdmin'
 
 class StatReport(QtGui.QMainWindow):
     def __init__(self, connection, chartinfo):
@@ -1476,7 +1483,7 @@ class StatReport(QtGui.QMainWindow):
             kwargs['options']['autoticks'] = False
           
         if self.child.users:
-            kwargs['users']   = self.child.users
+            kwargs['accounts']   = self.child.users
             
         if self.child.classes:
             kwargs['classes'] = self.child.classes
@@ -1492,20 +1499,42 @@ class StatReport(QtGui.QMainWindow):
         chOpts = _chartopts[kwargs['type']]
         kwargs.update(chOpts[2])
         kwargs.update(self.child.opts)
-        brep = bpReportEdit()
-        editor  = brep.createreport(_xmlpath+"/" +self.chartinfo[0], [(self.child.start_date, self.child.end_date)], [kwargs], connection=self.connection)
+        #brep = bpReportEdit()
+        #editor  = brep.createreport(_xmlpath+"/" +self.chartinfo[0], [(self.child.start_date, self.child.end_date)], [kwargs], connection=self.connection)
         self.textedit = None
         #print editor.physicalDpiX()
         #print editor.logicalDpiX()
-        fname = reppath + "/" +self.chartinfo[1][0] + str(time.time()) + ".html"
-        f = open(fname, "wb")
-        f.write(editor.document().toHtml("utf-8").toUtf8())
-        f.close()
+        #fname = reppath + "/" +self.chartinfo[1][0] + str(time.time()) + ".html"
+        #f = open(fname, "wb")
+        #f.write(editor.document().toHtml("utf-8").toUtf8())
+        #f.close()
+        print kwargs
         webv = QtWebKit.QWebView()
+        webv.setPage(FakeBrowser(self))
         #webv.setHtml(sht)
-        lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath(fname))
+        #lfurl = QtCore.QUrl.fromLocalFile(os.path.abspath(fname))
         #print lfurl.toString()
-        webv.load(lfurl)
+        if self.chartinfo[1][0]=='pie_gmulti':
+            url = QtCore.QUrl("http://%s/ebsadmin/grouptrafficchart/" % self.connection.host)
+        elif self.chartinfo[1][0]=='groups':
+            url = QtCore.QUrl("http://%s/ebsadmin/trafficvolumechart/" % self.connection.host)
+        else:
+            url = QtCore.QUrl("http://%s/ebsadmin/sessionschart/" % self.connection.host)
+            
+        iws2 = QtCore.QByteArray()
+        iws2.append("username=%s" % self.connection.username)
+        iws2.append("&password=%s" % self.connection.password)
+        iws2.append("&start_date=%s" %  self.child.start_date.strftime('%Y-%m-%d %H:%M:%S'))
+        iws2.append("&end_date=%s" %  self.child.end_date.strftime('%Y-%m-%d %H:%M:%S'))
+        
+        for key in kwargs:
+            if key=='accounts':
+                for acc in kwargs.get(key):
+                    iws2.append("&%s=%s" % (key, acc))
+                continue
+            iws2.append("&%s=%s" % (key, kwargs.get(key)))
+        webv.load(QtNetwork.QNetworkRequest(url), QtNetwork.QNetworkAccessManager.PostOperation,iws2);
+
 
         self.setCentralWidget(webv)
             
@@ -1964,7 +1993,7 @@ class ReportOptionsDialog(QtGui.QDialog):
             
             
         if "usersTab" not in hidetabs:
-            users = self.connection.sql(_querydict['get_usernames'])
+            users = self.connection.get_account(fields=['id', 'username'])
             
             for user in users:
                 item = QtGui.QListWidgetItem()
@@ -1973,7 +2002,7 @@ class ReportOptionsDialog(QtGui.QDialog):
                 self.all_users_listWidget.addItem(item)
             
         if "classesTab" not in hidetabs:
-            classes = self.connection.sql(_querydict['get_classes'])
+            classes = self.connection.get_trafficclasses(fields=['id', 'name'])
             
             for clas in classes:
                 item = QtGui.QListWidgetItem()
@@ -1982,7 +2011,7 @@ class ReportOptionsDialog(QtGui.QDialog):
                 self.all_classes_listWidget.addItem(item)
           
         if "serversTab" not in hidetabs:        
-            servers = self.connection.sql(_querydict['get_nas'])
+            servers = self.connection.get_nasses(fields=['id', 'name'])
             
             for serv in servers:
                 item = QtGui.QListWidgetItem()
@@ -1991,7 +2020,7 @@ class ReportOptionsDialog(QtGui.QDialog):
                 self.all_servers_listWidget.addItem(item)
                 
         if "groupsTab" not in hidetabs:
-            groups = self.connection.sql(_querydict['get_groups'])
+            groups = self.connection.get_groups(fields=['id', 'name'])
             for grp in groups:
                 item = QtGui.QListWidgetItem()
                 item.setText(grp.name)
@@ -2222,11 +2251,11 @@ class LogViewWindow(QtGui.QMainWindow):
         else:
             a = self.connection.get_tail_log(log_name, log_count)
         #print a
-        u = a[1]
-        self.plainTextEdit.setPlainText(u)
+        self.plainTextEdit.setPlainText(a.data)
         #self.plainTextEdit.setPla
         
-        
+#from datamodels import MyTableModel
+
 class SimpleReportEbs(ebsTableWindow):
     def __init__(self, connection, report_type='radius_authlog', account_id=None, subaccount_id=None, nas_id=None):
         self.report_type=report_type
@@ -2442,6 +2471,12 @@ class SimpleReportEbs(ebsTableWindow):
         
         [u'#', u'Аккаунт', u"Баланс", u'Дата']
         self.connection.commit()
+        
+        #self.tableView = QtGui.QTableView(self)
+        #self.tableWidget.setHidden(True)
+        #self.setCentralWidget(self.tableView)
+        #self.tableWidget.setModel(MyTableModel(items))
+        #
         self.tableWidget.setRowCount(len(items)+1)
         i=0
         for item in items:
@@ -2461,7 +2496,7 @@ class SimpleReportEbs(ebsTableWindow):
             
         self.statusBar().showMessage(u"Готово")
     def fixtures(self):            
-        accounts = self.connection.sql("SELECT id, username FROM billservice_account ORDER BY username ASC")
+        accounts = self.connection.get_account(fields = ['id', 'username'])
         self.connection.commit()
         self.comboBox_account.addItem(u"-Все клиенты-")
         self.comboBox_account.setItemData(0, QtCore.QVariant(0))

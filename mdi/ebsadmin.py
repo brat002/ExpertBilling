@@ -36,6 +36,8 @@ class HttpBot(object):
     def __init__(self, widget, host):
         self.host = host
         self.widget = widget
+        self.username=''
+        self.pasword = ''
         cookie_handler= urllib2.HTTPCookieProcessor()
         redirect_handler= urllib2.HTTPRedirectHandler()
         self._opener = urllib2.build_opener(redirect_handler, cookie_handler)
@@ -143,7 +145,8 @@ class HttpBot(object):
                       
     def log_in(self, name, password):
         url='http://%s/ebsadmin/simple_login/' % self.host 
-        
+        self.username=name
+        self.password = password
         d = self.POST(url, {'username':name, 'password':password})
         if not d.status:
             self.error(d)
@@ -592,6 +595,26 @@ class HttpBot(object):
             return
         return self.postprocess(d)    
           
+    def list_logfiles(self):
+        url='http://%s/ebsadmin/listlogfiles/' % self.host 
+        
+        d = self.POST(url,{})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)    
+    
+    def get_tail_log(self, log_name, log_count, all_file = False):
+        url='http://%s/ebsadmin/gettaillog/' % self.host 
+        
+        d = self.POST(url,{"log_name": log_name, 'log_count':log_count, 'all_file':all_file})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
+
+     
     def get_banks(self,id=None,  fields=[]):
         url='http://%s/ebsadmin/banks/' % self.host 
         
