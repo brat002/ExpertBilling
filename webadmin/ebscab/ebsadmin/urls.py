@@ -6,6 +6,8 @@ urlpatterns = patterns('ebsadmin.transactionreport',
 urlpatterns += patterns('ebsadmin.charts',
                        url(r'^rainchart/$', 'rainfall_pivot_chart_view'),
                        url(r'^sessionschart/$', 'session_count_chart_view'),
+                       url(r'^grouptrafficchart/$', 'groupstraffic_chart_view'),
+                       url(r'^trafficvolumechart/$', 'traffic_volume_chart_view'),
                        
                        )
 
@@ -54,6 +56,8 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^settlementperiods/delete/$', 'settlementperiod_delete'),
      url(r'^settlementperiods/save/$', 'settlementperiod_save'),
      
+     url(r'^listlogfiles/$', 'list_logfiles'),
+     url(r'^gettaillog/$', 'get_tail_log'),
      
      url(r'^nasses/$', 'nasses'),
      url(r'^groups/$', 'groups'),

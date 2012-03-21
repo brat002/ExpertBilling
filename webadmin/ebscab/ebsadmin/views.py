@@ -7,6 +7,7 @@ from billservice.models import Organization, TimeSpeed, BankData, TimePeriod, Se
 from billservice.models import OneTimeService, TimeSpeed, GroupTrafficClass, TrafficTransmitNodes, PrepaidTraffic, Group, PeriodicalService, OneTimeService, TrafficLimit, AddonServiceTarif
 from billservice.models import Template, News, AccountAddonService, SaleCard, DealerPay, Card, Dealer, AccountViewedNews, TPChangeRule, Manufacturer, Model, Hardware, HardwareType, TransactionType, TimePeriodNode, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, TrafficTransmitService, RadiusAttrs, SpeedLimit,  RadiusTraffic, RadiusTrafficNode,TimeAccessNode,TimeAccessService, AddonServiceTarif
 
+import os
 from nas.models import Nas, Switch, TrafficClass, TrafficNode
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
@@ -4949,3 +4950,29 @@ def set_ports_status(self, switch_id):
         
     return {'status':True, 'ports_status':ports_status}
     
+@login_required 
+@ajax_request
+def list_logfiles(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.list_log_files'):
+        return {'status':False, 'message': u'У вас нет на получение списка лог-файлов'}
+    
+    logfiles = os.listdir('/opt/ebs/data/log/')
+    return {'status':True, 'records':logfiles, 'totalCount':len(logfiles)}
+
+@login_required 
+@ajax_request
+def get_tail_log(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.view_log_files'):
+        return {'status':False, 'message': u'У вас нет на получение списка лог-файлов'}
+    log_name = request.POST.get("log_name")
+    count =  request.POST.get("log_count", 0)
+    all_file = request.POST.get('all_file')=='True'
+    
+
+    if all_file:
+        s, o = commands.getstatusoutput("cat /opt/ebs/data/log/%s" % log_name.replace('/',''))
+        return {'status': True, 'data': o}
+
+    s, o = commands.getstatusoutput("tail -n %s /opt/ebs/data/log/%s" % (count, log_name.replace('/','')))
+
+    return {'status': True, 'data': o}

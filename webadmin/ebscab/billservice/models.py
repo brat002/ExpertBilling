@@ -1043,6 +1043,8 @@ class SystemUser(models.Model):
             ("testcredentials",  "Тестирование данных для сервера доступа"),
             ("getportsstatus","Получение статуса портов коммутатора"),
             ("setportsstatus","Установка статуса портов коммутатора"),
+            ("list_log_files","Список лог-файлов биллинга"),
+            ("view_log_files","Просмотр лог-файлов биллинга"),
             )
 
 class DocumentType(models.Model):
