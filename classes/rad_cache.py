@@ -125,7 +125,7 @@ class RadiusAttrsCache(CacheItem):
             if item.tarif_id:
                 self.by_tarif_id[item.tarif_id]=item
             if item.nas_id:
-                self.nas_id_id[item.nas_id]=item
+                self.by_nas_id[item.nas_id]=item
 
 
 class AddonServiceCache(SimpleDictCache):

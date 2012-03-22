@@ -114,11 +114,11 @@ class AccountCache(CacheItem):
                 if vpn_ip != '0.0.0.0/32':
                     self.vpn_ips[(parseAddress(vpn_ip.split('/')[0])[0], nas_id)] = account_object
                 if ipn_ip != '0.0.0.0/32':
-                    if ipn_ip.find('/') != -1 and ipn_ip[:-3]!='/32':
+                    if ipn_ip.find('/') != -1 and ipn_ip[-3:]!='/32':
                         range_ip = IPint(ipn_ip)
                         self.ipn_range.append((range_ip.int(), range_ip.netmask(), nas_id, account_object))
                     else:
-                        self.ipn_ips[(parseAddress(ipn_ip)[0], nas_id)] = account_object
+                        self.vpn_ips[(parseAddress(ipn_ip.split('/')[0])[0], nas_id)] = account_object
         #print self.vpn_ips
         #print self.ipn_ips
         #print self.ipn_range
