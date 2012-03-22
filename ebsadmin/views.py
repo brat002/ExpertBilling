@@ -4289,7 +4289,7 @@ def subaccount_save(request):
 
             
             if  subacc.ipn_ip_address not in ['0.0.0.0','',None]:
-                if vpn_pool:
+                if ipn_pool:
                     if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
                         transaction.rollback()
                         return {"status": False, 'message':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
