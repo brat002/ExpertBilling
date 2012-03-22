@@ -336,7 +336,9 @@ def find_account_by_ip(nasses,flow,src=False, dst=False):
                 acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nasitem.id))
                 if acc_data_dst:
                     nas_id = nasitem.id
-        if acc_data_dst and acc_data_src:  return caches.account_cache.by_id.get(acc_data_src), caches.account_cache.by_id.get(acc_data_dst), nas_id
+        if acc_data_dst and acc_data_src:  
+            logger.debug(" Account with nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
+            return caches.account_cache.by_id.get(acc_data_src), caches.account_cache.by_id.get(acc_data_dst), nas_id
     if src:
         if not acc_data_src:
             #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
@@ -354,7 +356,7 @@ def find_account_by_ip(nasses,flow,src=False, dst=False):
             else:
                 nas_id = None
             
-    logger.debug("VPN Account without nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
+    logger.debug(" Account without nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
     return acc_data_src,acc_data_dst, nas_id
 
 
