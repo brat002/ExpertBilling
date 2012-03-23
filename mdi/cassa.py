@@ -9,16 +9,6 @@ import os, sys
 
 sys.path.append(os.path.abspath('../'))
 
-from rpc2 import rpc_protocol, client_networking
-'''
-import sys
-import datetime
-import Pyro.core
-import Pyro.protocol
-import Pyro.constants
-import Pyro.errors
-'''
-
 import isdlogger
 try:
     os.mkdir('log')
@@ -26,7 +16,7 @@ except:
     pass
 import traceback
 
-from db import Object as Object
+from db import AttrDict
 from helpers import makeHeaders
 from helpers import tableFormat
 from helpers import HeaderUtil
@@ -38,12 +28,12 @@ from helpers import dateDelim
 from mako.template import Template
 from ebsWindow import ebsTableWindow
 import datetime
+from ebsadmin import HttpBot
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 tr_id=0
 
 logger = isdlogger.isdlogger('logging', loglevel=LOG_LEVEL, ident='cassa', filename='log/webcab_log')
-rpc_protocol.install_logger(logger)
-client_networking.install_logger(logger)
+
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -275,7 +265,7 @@ class CassaEbs(ebsTableWindow):
             self.comboBox_street.clear()
             self.comboBox_house.clear()
         if not city_id: return
-        streets = self.connection.get_models("billservice_street", where={'city_id':city_id}, order={'name': 'ASC'})
+        streets = self.connection.get_streets(city_id=city_id)
         self.connection.commit()
         self.comboBox_street.clear()
         self.comboBox_house.clear()
@@ -286,7 +276,7 @@ class CassaEbs(ebsTableWindow):
             i+=1
 
     def combo_city(self):
-        cities = self.connection.get_models("billservice_city", order={'name':'ASC'})
+        cities = self.connection.get_cities()
         self.connection.commit()
         self.comboBox_city.clear()
         self.comboBox_house.clear()
@@ -302,7 +292,7 @@ class CassaEbs(ebsTableWindow):
     def refresh_combo_house(self):
         street_id = self.comboBox_street.itemData(self.comboBox_street.currentIndex()).toInt()[0]
         if not street_id: return        
-        items = self.connection.get_models("billservice_house", where={'street_id':street_id}, order={'name': 'ASC'})
+        items = self.connection.get_houses(street_id=street_id)
         self.connection.commit()
         self.comboBox_house.clear()
         self.comboBox_house.addItem(u"--Не указано--", QtCore.QVariant(0))
@@ -327,7 +317,7 @@ class CassaEbs(ebsTableWindow):
     def transactionReport(self):
         id = self.getSelectedId()
         if id:
-            account = self.connection.get_model(id, "billservice_account")
+            account = self.connection.get_account(id)
             child = TransactionsReportEbs(parent=self, connection= self.connection, account=account, cassa=True)
             child.delete_transaction=lambda s: True
             child.show()
@@ -430,8 +420,8 @@ class CassaEbs(ebsTableWindow):
             self.addrow("%.2f" % account.ballance, i, 5, enabled=account.status)
             self.addrow(account.credit, i, 6, enabled=account.status)
             #self.addrow(account.city, i, 6, enabled=account.status)
-            self.addrow(account.street, i, 7, enabled=account.status)
-            self.addrow(account.house, i, 8, enabled=account.status)
+            self.addrow(account.street__name, i, 7, enabled=account.status)
+            self.addrow(account.house__name, i, 8, enabled=account.status)
             self.addrow(account.house_bulk, i, 9, enabled=account.status)
             self.addrow(account.room, i, 10, enabled=account.status)
             self.addrow(account.created.strftime(strftimeFormat), i, 11, enabled=account.status)
@@ -443,7 +433,7 @@ class CassaEbs(ebsTableWindow):
     def pay(self):
         id = self.getSelectedId()
         if id:
-            account = self.connection.get_model(id, "billservice_account")
+            account = self.connection.get_account(id)
             self.connection.commit()
             child = TransactionForm(self.connection, None, account)
             if child.exec_()==1:
@@ -483,7 +473,7 @@ class CassaEbs(ebsTableWindow):
     def createAccountTarif(self):
         id = self.getSelectedId()
         if id:
-            account = self.connection.get_model(id, "billservice_account")
+            account = self.connection.get_account(id)
             self.connection.commit()
             child = AddAccountTarif(self.connection, account = account)
             if child.exec_()==1:
@@ -491,30 +481,6 @@ class CassaEbs(ebsTableWindow):
                 self.refreshTable()
         
 
-    def cheque_print(self, tr_id):
-        if not self.printer:
-            QtGui.QMessageBox.warning(self, unicode(u"Ок"), unicode(u"Настройка принтера не была произведена!"))
-            return
-        account_id = self.getSelectedId()
-        if account_id:
-            template = self.connection.get('SELECT body FROM billservice_template WHERE type_id=5')
-            templ = Template(unicode(template.body), input_encoding='utf-8')
-            account = self.connection.get("SELECT * FROM billservice_account WHERE id=%s LIMIT 1" % account_id)
-
-            tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
-            transaction = self.connection.get_model(tr_id.id, "billservice_transaction")
-            self.connection.commit()
-            sum = 10000
-            transaction.summ = transaction.summ*(-1)
-            data=templ.render_unicode(account=account, tarif=tarif, transaction=transaction, connection=self.connection)
-            self.connection.commit()
-            #it seem that software printers can change the path!
-            file= open('templates/tmp/temp.html', 'wb')
-            file.write(data.encode("utf-8", 'replace'))
-            file.flush()
-            file.close()
-            a=CardPreviewDialog(url="templates/tmp/temp.html", printer=self.printer)
-            a.exec_()
 
     def getPrinter(self):
         printer = QtGui.QPrinter()
@@ -525,53 +491,43 @@ class CassaEbs(ebsTableWindow):
         self.printer = printer
     
 
-'''        
-class antiMungeValidator(Pyro.protocol.DefaultConnValidator):
-    def __init__(self):
-        Pyro.protocol.DefaultConnValidator.__init__(self)
-
-    def createAuthToken(self, authid, challenge, peeraddr, URI, daemon):
-
-        return authid
-
-    def mungeIdent(self, ident):
-        return ident
-'''      
-
 def login():
     child = ConnectDialog()
     while True:
 
-        if child.exec_() == 1:
-            waitchild = ConnectionWaiting()
-            waitchild.show()
-            try:
-                authenticator = rpc_protocol.MD5_Authenticator('client', 'AUTH')
-                protocol = rpc_protocol.RPCProtocol(authenticator)
-                connection = rpc_protocol.BasicClientConnection(protocol)
-                connection.notifier = lambda x: QtGui.QMessageBox.warning(None, unicode(u"Exception"), unicode(x))
-                if ':' in child.address:
-                    host, port = str(child.address).split(':')
-                else:
-                    host, port = str(child.address), DEFAULT_PORT
-                transport = client_networking.BlockingTcpClient(host, port)
-                transport.connect()
-                connection.registerConsumer_(transport)
-                auth_result = connection.authenticate(str(child.name), str(child.password), ROLE)
-                if not auth_result or not connection.protocol._check_status():
-                    raise Exception('Status = False!')
-                waitchild.hide()
-                return connection
+        if child.exec_()==1:
+            #waitchild = ConnectionWaiting()
+            #waitchild.show()
+            global splash, username, server_ip
+            #pixmap = QtGui.QPixmap("splash.png")
+            #splash = QtGui.QSplashScreen(pixmap, QtCore.Qt.WindowStaysOnTopHint)
+            #splash = QtGui.QSplashScreen(pixmap)
+            #splash.setMask(pixmap.mask()) # this is usefull if the splashscreen is not a regular ractangle...
+            #splash.show()
+            #splash.showMessage(u'Интерфейс кассира. Запуск...', QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom,QtCore.Qt.yellow)
+            # make sure Qt really display the splash screen
+            global app
+            app.processEvents()
 
-            except Exception, e:
-                print repr(e), traceback.format_exc()
-                if not isinstance(e, client_networking.TCPException):
-                    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации."))
-                else:
-                    QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
-            waitchild.hide()
-            del waitchild
+                
+                #logger  = PrintLogger()
+            try:
+                os.mkdir('log')
+            except:
+                pass
+            logger = isdlogger.isdlogger('logging', loglevel=LOG_LEVEL, ident='mdi', filename='log/mdi_log')
+
+            connection = HttpBot(widget=child, host=unicode(child.address))
+            data = connection.log_in(unicode(child.name), unicode(child.password))
+            username = unicode(child.name)
+
+            if data:
+                return connection
+            else:
+                QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации.\n%s" % data.message))
+
         else:
+            #splash.hide()
             return None
 
 

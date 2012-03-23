@@ -25,27 +25,27 @@
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="groupBox_common">
          <property name="title">
           <string>Общее</string>
          </property>
          <layout class="QGridLayout" name="gridLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="label_template">
             <property name="text">
              <string>Отчёт</string>
             </property>
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLabel" name="from_label">
+           <widget class="QLabel" name="label_date_start">
             <property name="text">
              <string>Начало:</string>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QDateTimeEdit" name="from_dateTimeEdit">
+           <widget class="QDateTimeEdit" name="dateTimeEdit_date_start">
             <property name="minimumDate">
              <date>
               <year>2008</year>
@@ -62,14 +62,14 @@
            </widget>
           </item>
           <item row="5" column="0">
-           <widget class="QLabel" name="to_label">
+           <widget class="QLabel" name="label_date_end">
             <property name="text">
              <string>Конец:</string>
             </property>
            </widget>
           </item>
           <item row="5" column="1">
-           <widget class="QDateTimeEdit" name="to_dateTimeEdit">
+           <widget class="QDateTimeEdit" name="dateTimeEdit_date_end">
             <property name="minimumDate">
              <date>
               <year>2008</year>
@@ -86,10 +86,10 @@
            </widget>
           </item>
           <item row="1" column="0" colspan="2">
-           <widget class="QComboBox" name="comboBox"/>
+           <widget class="QComboBox" name="comboBox_template"/>
           </item>
           <item row="3" column="1">
-           <widget class="QComboBox" name="comboBox_4">
+           <widget class="QComboBox" name="comboBox_templatetype">
             <item>
              <property name="text">
               <string>Линия</string>
@@ -118,7 +118,7 @@
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="label_4">
+           <widget class="QLabel" name="label_templatetype">
             <property name="text">
              <string>Тип отчёта</string>
             </property>
@@ -128,20 +128,20 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QGroupBox" name="groupBox_2">
+        <widget class="QGroupBox" name="groupBox_source">
          <property name="title">
           <string>Построение отчёта</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="1" column="0">
-           <widget class="QLabel" name="label_3">
+           <widget class="QLabel" name="label_grouping">
             <property name="text">
              <string>Период группировки</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QComboBox" name="comboBox_3">
+           <widget class="QComboBox" name="comboBox_grouping">
             <item>
              <property name="text">
               <string>Час</string>
@@ -160,14 +160,14 @@
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="label_2">
+           <widget class="QLabel" name="label_trafficsource">
             <property name="text">
              <string>Источник данных о трафике</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="comboBox_2">
+           <widget class="QComboBox" name="comboBox_trafficsource">
             <item>
              <property name="text">
               <string>Весь трафик (сумма Вх+Исх)</string>
@@ -202,41 +202,41 @@
         </spacer>
        </item>
        <item row="2" column="0">
-        <widget class="QGroupBox" name="groupBox_3">
+        <widget class="QGroupBox" name="groupBox_view">
          <property name="title">
           <string>Внешний вид</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_5">
           <item row="0" column="0" colspan="2">
-           <widget class="QCheckBox" name="checkBox">
+           <widget class="QCheckBox" name="checkBox_animation">
             <property name="text">
              <string>Анимация</string>
             </property>
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QCheckBox" name="checkBox_2">
+           <widget class="QCheckBox" name="checkBox_shadow">
             <property name="text">
              <string>Отбрасывать тень</string>
             </property>
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QCheckBox" name="checkBox_3">
+           <widget class="QCheckBox" name="checkBox_legend">
             <property name="text">
              <string>Добавить легенду</string>
             </property>
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="label_5">
+           <widget class="QLabel" name="label_back">
             <property name="text">
              <string>Подложка</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QComboBox" name="comboBox_5">
+           <widget class="QComboBox" name="comboBox_back">
             <item>
              <property name="text">
               <string>По-умолчанию</string>
@@ -274,7 +274,335 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="classes_tab">
+     <widget class="QWidget" name="tab_accounts">
+      <attribute name="title">
+       <string>Аккаунты</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_6">
+       <item row="0" column="0">
+        <widget class="QLabel" name="all_classes_label_2">
+         <property name="text">
+          <string>Доступные классы</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="selected_classes_label_2">
+         <property name="text">
+          <string>Выбранные классы</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QListWidget" name="listWidget_accounts_all">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+         <property name="selectionRectVisible">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <spacer name="verticalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QToolButton" name="select_class_toolButton_2">
+           <property name="text">
+            <string>&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="remove_class_toolButton_2">
+           <property name="text">
+            <string>&lt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="2">
+        <widget class="QListWidget" name="listWidget_accounts_selected">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_nasses">
+      <attribute name="title">
+       <string>Сервера доступа</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_7">
+       <item row="0" column="0">
+        <widget class="QLabel" name="all_classes_label_3">
+         <property name="text">
+          <string>Доступные классы</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="selected_classes_label_3">
+         <property name="text">
+          <string>Выбранные классы</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QListWidget" name="listWidget_nasses_all">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+         <property name="selectionRectVisible">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <spacer name="verticalSpacer_6">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QToolButton" name="select_class_toolButton_3">
+           <property name="text">
+            <string>&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="remove_class_toolButton_3">
+           <property name="text">
+            <string>&lt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="2">
+        <widget class="QListWidget" name="listWidget_nasses_selected">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_groups">
+      <attribute name="title">
+       <string>Группы трафика</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_8">
+       <item row="0" column="0">
+        <widget class="QLabel" name="all_classes_label_4">
+         <property name="text">
+          <string>Доступные классы</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="selected_classes_label_4">
+         <property name="text">
+          <string>Выбранные классы</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QListWidget" name="listWidget_groups_all">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+         <property name="selectionRectVisible">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <spacer name="verticalSpacer_8">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QToolButton" name="select_class_toolButton_4">
+           <property name="text">
+            <string>&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="remove_class_toolButton_4">
+           <property name="text">
+            <string>&lt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_9">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="2">
+        <widget class="QListWidget" name="listWidget_groups_selected">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_tariffs">
+      <attribute name="title">
+       <string>Тарифные планы</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_10">
+       <item row="0" column="0">
+        <widget class="QLabel" name="all_classes_label_5">
+         <property name="text">
+          <string>Доступные классы</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="selected_classes_label_5">
+         <property name="text">
+          <string>Выбранные классы</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QListWidget" name="listWidget_tariffs_all">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+         <property name="selectionRectVisible">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <spacer name="verticalSpacer_10">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QToolButton" name="select_class_toolButton_5">
+           <property name="text">
+            <string>&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="remove_class_toolButton_5">
+           <property name="text">
+            <string>&lt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_11">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="2">
+        <widget class="QListWidget" name="listWidget_tariffs_selected">
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_classes">
       <attribute name="title">
        <string>Классы трафика</string>
       </attribute>
@@ -294,7 +622,7 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QListWidget" name="all_classes_listWidget">
+        <widget class="QListWidget" name="listWidget_classes_all">
          <property name="selectionMode">
           <enum>QAbstractItemView::ExtendedSelection</enum>
          </property>
@@ -348,7 +676,7 @@
         </layout>
        </item>
        <item row="1" column="2">
-        <widget class="QListWidget" name="selected_classes_listWidget">
+        <widget class="QListWidget" name="listWidget_classes_selected">
          <property name="selectionMode">
           <enum>QAbstractItemView::ExtendedSelection</enum>
          </property>
@@ -373,8 +701,8 @@
  <tabstops>
   <tabstop>tabWidget</tabstop>
   <tabstop>buttonBox</tabstop>
-  <tabstop>all_classes_listWidget</tabstop>
-  <tabstop>selected_classes_listWidget</tabstop>
+  <tabstop>listWidget_classes_all</tabstop>
+  <tabstop>listWidget_classes_selected</tabstop>
   <tabstop>select_class_toolButton</tabstop>
   <tabstop>remove_class_toolButton</tabstop>
  </tabstops>

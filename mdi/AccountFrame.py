@@ -2458,7 +2458,7 @@ class TarifWindow(QtGui.QMainWindow):
                     time_access_node.cost = unicode(self.timeaccess_table.item(i,2).text())
                     timeaccessnodes.append(time_access_node)
             
-            elif self.time_access_service_checkbox.checkState()==0 and model.time_access_service:
+            elif self.time_access_service_checkbox.checkState()==0 and "time_access_service" in model.__dict__:
                     model.time_access_service = None
 
                     
@@ -2496,7 +2496,7 @@ class TarifWindow(QtGui.QMainWindow):
                     radius_traffic_node.cost = unicode(self.tableWidget_radius_traffic_trafficcost.item(i,3).text())
                     radiustrafficnodes.append(radius_traffic_node)
             
-            elif self.radius_traffic_access_service_checkbox.checkState()==0 and model.radius_traffic_transmit_service:
+            elif self.radius_traffic_access_service_checkbox.checkState()==0 and "radius_traffic_transmit_service" in model.__dict__:
                     model.radius_traffic_transmit_service=None
 
             
@@ -2689,7 +2689,7 @@ class TarifWindow(QtGui.QMainWindow):
 
 
     
-            elif (self.transmit_service_checkbox.checkState()==0) and  model.traffic_transmit_service:
+            elif (self.transmit_service_checkbox.checkState()==0) and "radius_traffic_transmit_service" in model.__dict__:
                 model.traffic_transmit_service=None
 
 

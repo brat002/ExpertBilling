@@ -252,6 +252,7 @@ def templates(request):
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
     type_id = request.POST.get('type_id',None)
+
     if id and id!='None':
         items = Template.objects.filter(id=id)
         if not items:
@@ -1008,6 +1009,7 @@ def tariffforaccount(request):
         if not item:
             return {'status':False, 'message': 'Account item with id=%s not found' % id}
        
+        #print item.get_account_tariff()
         res = instance_dict(item.get_account_tariff())
         return {"records": [res], 'status':True, 'totalCount':1}
     
@@ -2285,31 +2287,6 @@ def radiusattrs_delete(request):
     else:
         return {"status": False, "message": "RadiusAttrs not found"}
     
-    
-@ajax_request
-@login_required
-def templates(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('template.view'):
-        return {'status':True, 'records':[], 'totalCount':0}
-    fields = request.POST.get('fields',[])
-    id = request.POST.get('id',None)
-    type = request.POST.get('type',None)
-    if id and id!='None':
-        items = Template.objects.filter(id=id)
-        if not items:
-            return {'status':False, 'message': 'Template item with id=%s not found' % id}
-        if len(items)>1:
-            return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
-        
-    elif type and type!='None':
-        items = Template.objects.filter(type=type)
-    else:
-        items = Template.objects.all()
-
-    res=[]
-    for item in items:
-        res.append(instance_dict(item, fields=fields))
-    return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
@@ -3050,27 +3027,6 @@ def tariffs_set(request):
     js = json.loads(data)
 
 
-    if js.get('model'):
-        if js.get('model').get('id'):
-            if not request.user.has_perm('billservice.change_tariff'):
-                transaction.rollback()
-                return {'status':False, 'message': u'У вас нет прав на изменение тарифного плана'}
-            item = Tariff.objects.get(id=js['model']['id'])
-            form = TariffForm(js['model'], instance=item)
-        else:
-            if not request.user.has_perm('billservice.add_tariff'):
-                transaction.rollback()
-                return {'status':False, 'message': u'У вас нет прав на добавление тарифного плана'}
-            form = TariffForm(initial=js['model'])
-            
-        
-        if form.is_valid():
-            tariff = form.save(commit=False)
-            tariff.save()
-        else:
-            transaction.rollback()
-            return {'status':False, 'errors': form._errors}
-        
     if js['access_parameters']:
         if 'id' in js['access_parameters']:
             item = AccessParameters.objects.get(id=js['access_parameters']['id'])
@@ -3110,6 +3066,30 @@ def tariffs_set(request):
             for d in TimeSpeed.objects.filter(access_parameters=access_parameters).exclude(id__in=speeditem_ids):
                 log('DELETE', request.user, d)
                 d.delete()
+                
+    if js.get('model'):
+        if js.get('model').get('id'):
+            if not request.user.has_perm('billservice.change_tariff'):
+                transaction.rollback()
+                return {'status':False, 'message': u'У вас нет прав на изменение тарифного плана'}
+            item = Tariff.objects.get(id=js['model']['id'])
+            form = TariffForm(js['model'], instance=item)
+        else:
+            if not request.user.has_perm('billservice.add_tariff'):
+                transaction.rollback()
+                return {'status':False, 'message': u'У вас нет прав на добавление тарифного плана'}
+            js['model']['access_parameters']=access_parameters.id
+            form = TariffForm(js['model'])
+            
+        
+        if form.is_valid():
+            tariff = form.save(commit=False)
+            tariff.save()
+        else:
+            transaction.rollback()
+            return {'status':False, 'errors': form._errors}
+        
+
         
     
     if js['periodicalservices']:
@@ -3733,7 +3713,11 @@ def get_tariffs(request):
     items = Tariff.objects.all_with_deleted().order_by('name')
     res=[]
     for item in items:
-        res.append({'active':item.active,'id':item.id, 'access_type':item.access_parameters.access_type, 'name':item.name, 'deleted':item.deleted})
+        try:
+            access_type = item.access_parameters.access_type
+        except:
+            access_type = ''
+        res.append({'active':item.active,'id':item.id, 'access_type':access_type, 'name':item.name, 'deleted':item.deleted})
     
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
@@ -3819,6 +3803,55 @@ def accounts_for_tarif(request):
 
     return {"records": items, 'status':True, 'totalCount':len(items)}
     
+@ajax_request
+@login_required
+def get_accounts_for_cashier(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('account.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
+    
+    data = json.loads(request.POST.get("data", "{}"))
+    fullname, city, street, house, bulk, room, username, agreement, phone_h, phone_m = \
+    data.get("fullname"), data.get("city"), data.get("street"),  data.get("house"), data.get("bulk"),data.get("room"),  data.get("username"), data.get("agreement"), data.get("phone_h"),data.get("phone_m"),  
+    items = Account.objects.all()
+    
+    if fullname:
+        items = items.filter(fullname__icontains=fullname)
+        
+    if city:
+        items = items.filter(city__id=city)
+    
+    if street:
+        items = items.filter(street__id=street)
+    
+    if house:
+        items = items.filter(house__id=house)
+
+    if bulk:
+        items = items.filter(hbulk__icontains=bulk)
+
+    if room:
+        items = items.filter(room__icontains=room)
+        
+    if username:
+        items = items.filter(username__icontains=username)
+
+    if agreement:
+        items = items.filter(agreement__icontains=agreement)
+      
+    if phone_h:
+        items = items.filter(phone_h__icontains=agreement)
+
+    if phone_m:
+        items = items.filter(phone_m__icontains=agreement)
+     
+    #id, contract,username,fullname,ballance,credit,status,created,(SELECT name FROM billservice_street WHERE id=account.street_id) as street,(SELECT name FROM billservice_house WHERE id=account.house_id) as house,house_bulk,room, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name
+    items = items.extra(select={"tarif_name": "(SELECT name FROM billservice_tariff WHERE id=get_tarif(billservice_account.id))"}).values('id', 'contract','username','fullname','ballance','credit','status','created', "street__name", 'house__name', 'house_bulk', 'room', 'tarif_name')
+    res = []             
+    for item in items:
+        
+        res.append(item)
+        
+    return {"records": res, 'status':True, 'totalCount':len(res)}
 @ajax_request
 @login_required
 def nas_delete(request):
@@ -3922,7 +3955,7 @@ def streets(request):
     res=[]
     for item in items:
         res.append(instance_dict(item))
-    return {"records": res, 'status':True, 'totalCount':len(res)}
+    return {"records": items, 'status':True, 'totalCount':len(items)}
 
 @ajax_request
 @login_required
