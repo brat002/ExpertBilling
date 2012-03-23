@@ -138,7 +138,7 @@ class HttpBot(object):
 
     def error(self, response, title=u'Ошибка!'):
             if 'errors' in response:
-                print response.errors
+                print response
                 QtGui.QMessageBox.critical(self.widget, unicode(u"Внимание"), unicode('\n'.join(["%s %s" % (x, ';'.join(response.errors.get(x))) for x in response.errors])))
             if 'message' in response:
                 QtGui.QMessageBox.critical(self.widget, unicode(u"Ошибка"), unicode("%s" % response.message))
@@ -242,6 +242,15 @@ class HttpBot(object):
             self.error(d)
             return
         return self.postprocess(d, id)
+    
+    def get_accounts_for_cachier(self, fullname, city, street, house, bulk, room, username, agreement, phone_h, phone_m):
+        url='http://%s/ebsadmin/accountsforcashier/' % self.host 
+        
+        d = self.POST(url,{"data": json.dumps({"fullname": fullname, "city":city, "street":street, "house": house, "bulk": bulk, "room":room, "username": username, "agreement": agreement, "phone_h": phone_h, "phone_m": phone_m}, ensure_ascii=False)})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
     
     def get_cards(self,id=None, fields=[]):
         url='http://%s/ebsadmin/cards/' % self.host 
@@ -1508,7 +1517,7 @@ class HttpBot(object):
     def tariff_delete(self, id):
         url='http://%s/ebsadmin/tariffs/delete/' % self.host 
         #print model
-        d = self.POST(url,model)
+        d = self.POST(url,{'id':id})
         if not d.status:
             self.error(d)
             return

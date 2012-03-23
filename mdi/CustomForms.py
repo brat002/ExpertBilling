@@ -3555,6 +3555,8 @@ class TransactionForm(QtGui.QDialog):
             self.getPrinter()
         
         template = self.connection.get_templates(type_id=5)[0]
+        
+        print template.body
         templ = Template(unicode(template.body), input_encoding='utf-8')
         account = self.connection.get_account(id=self.transaction.account)
 
@@ -3573,8 +3575,7 @@ class TransactionForm(QtGui.QDialog):
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body style="text-align:center;">%s</body></html>""" % repr(e))
-            QtGui.QMessageBox.critical(self, unicode(u"Ошибка"), unicode(u"Ошибка рендеринга чека. Проверьте шаблон 'Кассовый чек'."))
-            return
+
         
         #it seem that software printers can change the path!
         file= open('templates/tmp/temp.html', 'wb')

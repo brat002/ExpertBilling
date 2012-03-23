@@ -658,7 +658,10 @@ class ebsTable_n_TreeWindow(QtGui.QMainWindow):
     def getSelectedId(self):
         return int(self.tableWidget.item(self.tableWidget.currentRow(), 0).text())
     def getTreeId(self):
-        return self.treeWidget.currentItem().id
+        try:
+            return self.treeWidget.currentItem().id
+        except:
+            return 0
     
     #list example: [(name, title, iconpath, function)]
     #dict example: {objname:[actname, {"separator"}]
