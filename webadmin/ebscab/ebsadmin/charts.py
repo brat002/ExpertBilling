@@ -1,4 +1,4 @@
-
+#-*-coding:utf-8 -*-
 from billservice.models import BalanceHistory
 from django.shortcuts import render_to_response
 import datetime
