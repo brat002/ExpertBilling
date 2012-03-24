@@ -46,23 +46,23 @@ _chartopts = {\
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
 
 charts = {
-'sessionsonline':[{'name':u'Сессии рользователей', 'tabs':['accountsTab', 'nassesTab']}],
-'sessionsdynamic':[{'name':u'Динамика сессий', 'tabs':['accountsTab', 'nassesTab']}],
-'trafficclasses': [{'name':u'Потребление трафика по классам трафика', 'tabs':['classesTab', 'nassesTab']}],
-'trafficgroups': [{'name':u'Потребление трафика по группам трафика', 'tabs':['accountTab', 'groupsTab', 'nassesTab']}],
-'selectedaccountstraffic': [{'name':u'Потребление трафика выбранными аккаунтами', 'tabs':['accountTab', 'groupsTab']}],
-'accountstraffic': [{'name':u'Потребление трафика аккаунтами(общее)', 'tabs':['accountTab', 'groupsTab']}],
-'nassestraffic': [{'name':u'Потребление трафика по серверам доступа', 'tabs':['nassesTab', 'groupsTab']}],
-'tariffstraffic': [{'name':u'Распределение трафика по тарифам', 'tabs':['tariffsTab']}],
-'distrtrafficclasses': [{'name':u'Распределение трафика по классам трафика', 'tabs':['classesTab', 'nassesTab']}],
-'distrtrafficgroups': [{'name':u'Распределение трафика по группам трафика', 'tabs':['accountTab', 'groupsTab', 'nassesTab']}],
-'distraccountstraffic': [{'name':u'Распределение трафика по аккаунтам ', 'tabs':['accountTab', 'groupsTab']}],
-'distnassestraffic': [{'name':u'Распределение трафика по серверам доступа', 'tabs':['nassesTab', 'groupsTab']}],
-'distraccountstoptraffic': [{'name':u'Распределение трафика по аккаунтам ', 'tabs':['accountTab', 'groupsTab']}],
-'accountsincrease': [{'name':u'Динамика абонентской базы ', 'tabs':[]}],
-'moneydynamic': [{'name':u'Динамика прибыли ', 'tabs':[]}],
-'disttransactiontypes': [{'name':u'Распределение платежей/списаний по типам ', 'tabs':[]}],
-'balancehistory': [{'name':u'Динамика изменения баланса ', 'tabs':['accountTab']}],
+'sessionsonline':{'name':u'Сессии рользователей', 'tabs':['accountsTab', 'nassesTab']},
+'sessionsdynamic':{'name':u'Динамика сессий', 'tabs':['accountsTab', 'nassesTab']},
+'trafficclasses': {'name':u'Потребление трафика по классам трафика', 'tabs':['classesTab', 'nassesTab']},
+'trafficgroups': {'name':u'Потребление трафика по группам трафика', 'tabs':['accountsTab', 'groupsTab', 'nassesTab']},
+'selectedaccountstraffic': {'name':u'Потребление трафика выбранными аккаунтами', 'tabs':['accountsTab', 'groupsTab']},
+'accountstraffic': {'name':u'Потребление трафика аккаунтами(общее)', 'tabs':['accountsTab', 'groupsTab']},
+'nassestraffic': {'name':u'Потребление трафика по серверам доступа', 'tabs':['nassesTab', 'groupsTab']},
+'tariffstraffic': {'name':u'Распределение трафика по тарифам', 'tabs':['tariffsTab']},
+'distrtrafficclasses': {'name':u'Распределение трафика по классам трафика', 'tabs':['classesTab', 'nassesTab']},
+'distrtrafficgroups': {'name':u'Распределение трафика по группам трафика', 'tabs':['accountsTab', 'groupsTab', 'nassesTab']},
+'distraccountstraffic': {'name':u'Распределение трафика по аккаунтам ', 'tabs':['accountsTab', 'groupsTab']},
+'distnassestraffic': {'name':u'Распределение трафика по серверам доступа', 'tabs':['nassesTab', 'groupsTab']},
+'distraccountstoptraffic': {'name':u'Распределение трафика по аккаунтам ', 'tabs':['accountsTab', 'groupsTab']},
+'accountsincrease': {'name':u'Динамика абонентской базы ', 'tabs':[]},
+'moneydynamic': {'name':u'Динамика прибыли ', 'tabs':[]},
+'disttransactiontypes': {'name':u'Распределение платежей/списаний по типам ', 'tabs':[]},
+'balancehistory': {'name':u'Динамика изменения баланса ', 'tabs':['accountsTab']},
 }
 
 
@@ -1195,8 +1195,8 @@ class ReportOptionsDialog(QtGui.QDialog):
     def postinit(self):
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            self.dateTimeEdit_date_start.setDateTime(settings.value("reportprop_date_start", QtCore.QVariant(QtCore.QDateTime(2011,1,1,0,0))).toDateTime())
-            self.dateTimeEdit_date_end.setDateTime(settings.value("reportprop_date_end", QtCore.QVariant(QtCore.QDateTime(2012,1,1,0,0))).toDateTime())
+            self.dateTimeEdit_date_start.setDateTime(settings.value("chrep_date_start", QtCore.QVariant(QtCore.QDateTime(2011,1,1,0,0))).toDateTime())
+            self.dateTimeEdit_date_end.setDateTime(settings.value("chrep_date_end", QtCore.QVariant(QtCore.QDateTime(2012,1,1,0,0))).toDateTime())
         except Exception, ex:
             print "Transactions settings error: ", ex
 
@@ -1211,6 +1211,9 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.listWidget_nasses_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.listWidget_nasses_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         
+        for key in charts:
+            self.comboBox_template.addItem(charts.get(key).get("name"), userData=QtCore.QVariant(key))
+            
         QtCore.QObject.connect(self.toolButton_accounts_to_selected, QtCore.SIGNAL("clicked()"),self.addAccount)
         QtCore.QObject.connect(self.toolButton_accounts_from_selected, QtCore.SIGNAL("clicked()"),self.delAccount)
 
@@ -1241,6 +1244,9 @@ class ReportOptionsDialog(QtGui.QDialog):
         
         QtCore.QObject.connect(self.listWidget_tariffs_all, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addTariff)
         QtCore.QObject.connect(self.listWidget_tariffs_selected, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delTariff)
+        
+        QtCore.QObject.connect(self.comboBox_template,QtCore.SIGNAL("currentIndexChanged(int)"), self.fixtures)
+
         """
 1. Сессии онлайн(гант) с выбором:
    аккаунты
@@ -1284,11 +1290,14 @@ class ReportOptionsDialog(QtGui.QDialog):
     def fixtures(self):
         
             
+        self.config = charts.get(unicode(self.comboBox_template.itemData(self.comboBox_template.currentIndex()).toString()))
+        
             
-        for key in charts:
-            self.comboBox_template.addItem(charts.get(key), userData=QVariant(key))
+        if  self.config and "accountsTab" in  self.config.get("tabs", []):
+            #self.tab_accounts.setVisible(True)
             
-        if not self.config or self.config.get("accountsTab"):
+            #if not self.tab_accounts.isVisible():
+            self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tab_accounts), True)
             items = self.connection.get_account(fields=['id', 'username'])
             
             for item in items:
@@ -1296,8 +1305,12 @@ class ReportOptionsDialog(QtGui.QDialog):
                 i.setText(item.username)
                 i.id = item.id
                 self.listWidget_accounts_all.addItem(i)
+        else:
+            self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tab_accounts), False)
+            print "set disabled"
             
-        if not self.config or self.config.get("classesTab"):
+        if self.config and "classesTab" in self.config.get("tabs", []):
+            self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tab_classes), True)
             classes = self.connection.get_trafficclasses(fields=['id', 'name'])
             
             for clas in classes:
@@ -1306,7 +1319,11 @@ class ReportOptionsDialog(QtGui.QDialog):
                 item.id = clas.id
                 self.listWidget_classes_all.addItem(item)
           
-        if not self.config or self.config.get("nassesTab"):
+        else:
+            self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tab_classes), False)
+            
+        if self.config and "nassesTab" in self.config.get("tabs", []):
+            self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tab_nasses), True)
             servers = self.connection.get_nasses(fields=['id', 'name'])
             
             for serv in servers:
@@ -1315,21 +1332,30 @@ class ReportOptionsDialog(QtGui.QDialog):
                 item.id = serv.id
                 self.listWidget_nasses_all.addItem(item)
                 
-        if not self.config or self.config.get("groupsTab"):
+        else:
+            self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tab_nasses), False)
+            
+        if self.config and "groupsTab" in self.config.get("tabs", []):
+            self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tab_groups), True)
             groups = self.connection.get_groups(fields=['id', 'name'])
             for grp in groups:
                 item = QtGui.QListWidgetItem()
                 item.setText(grp.name)
                 item.id = grp.id
                 self.listWidget_groups_all.addItem(item)
-                
-        if not self.config or self.config.get("tariffsTab"):
+        else:
+            self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tab_groups), False)
+            
+        if self.config and "tariffsTab" in self.config.get("tabs", []):
+            self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tab_tariffs), True)
             tariffs = self.connection.get_tariffs(fields=['id', 'name'])
             for tariff in tariffs:
                 item = QtGui.QListWidgetItem()
                 item.setText(tariff.name)
                 item.id = tariff.id
                 self.listWidget_tariffs_all.addItem(item)
+        else:
+            self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tab_tariffs), False)
         
 
     def accept(self):

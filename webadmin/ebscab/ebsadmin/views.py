@@ -3671,6 +3671,27 @@ def groups_delete(request):
 
 @ajax_request
 @login_required
+def tariffs_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_tariff'):
+        return {'status':False, 'message': u'У вас нет прав на удаление тарифа'}
+    id = int(request.POST.get('id',0))
+    if id:
+        try:
+            item = Tariff.objects.get(id=id)
+        except Exception, e:
+            return {"status": False, "message": u"Указанный тарифный план не найден %s" % str(e)}
+ 
+        item.delete()
+        
+        log('DELETE', request.user, item)
+        item.delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "AccountTarif not found"}
+  
+  
+@ajax_request
+@login_required
 def accounttariffs_delete(request):
     if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_accounttarif'):
         return {'status':False, 'message': u'У вас нет прав на удаление связки тарифа'}
