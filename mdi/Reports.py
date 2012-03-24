@@ -45,6 +45,26 @@ _chartopts = {\
 
 _ports = [(25, "SMTP"), (53, "DNS"), (80, "HTTP"), (110, "POP3"), (143, "IMAP"), (443, "HTTPS"), (1080, "SOCKS"), (3128, "Web Cache"), (3306, "MySQL"), (3724, "WoW"), (5190, "ICQ"), (5222, "Jabber"), (5432, "Postgres"), (8080, "HTTP Proxy")]
 
+charts = {
+'sessionsonline':[{'name':u'Сессии рользователей', 'tabs':['accountsTab', 'nassesTab']}],
+'sessionsdynamic':[{'name':u'Динамика сессий', 'tabs':['accountsTab', 'nassesTab']}],
+'trafficclasses': [{'name':u'Потребление трафика по классам трафика', 'tabs':['classesTab', 'nassesTab']}],
+'trafficgroups': [{'name':u'Потребление трафика по группам трафика', 'tabs':['accountTab', 'groupsTab', 'nassesTab']}],
+'selectedaccountstraffic': [{'name':u'Потребление трафика выбранными аккаунтами', 'tabs':['accountTab', 'groupsTab']}],
+'accountstraffic': [{'name':u'Потребление трафика аккаунтами(общее)', 'tabs':['accountTab', 'groupsTab']}],
+'nassestraffic': [{'name':u'Потребление трафика по серверам доступа', 'tabs':['nassesTab', 'groupsTab']}],
+'tariffstraffic': [{'name':u'Распределение трафика по тарифам', 'tabs':['tariffsTab']}],
+'distrtrafficclasses': [{'name':u'Распределение трафика по классам трафика', 'tabs':['classesTab', 'nassesTab']}],
+'distrtrafficgroups': [{'name':u'Распределение трафика по группам трафика', 'tabs':['accountTab', 'groupsTab', 'nassesTab']}],
+'distraccountstraffic': [{'name':u'Распределение трафика по аккаунтам ', 'tabs':['accountTab', 'groupsTab']}],
+'distnassestraffic': [{'name':u'Распределение трафика по серверам доступа', 'tabs':['nassesTab', 'groupsTab']}],
+'distraccountstoptraffic': [{'name':u'Распределение трафика по аккаунтам ', 'tabs':['accountTab', 'groupsTab']}],
+'accountsincrease': [{'name':u'Динамика абонентской базы ', 'tabs':[]}],
+'moneydynamic': [{'name':u'Динамика прибыли ', 'tabs':[]}],
+'disttransactiontypes': [{'name':u'Распределение платежей/списаний по типам ', 'tabs':[]}],
+'balancehistory': [{'name':u'Динамика изменения баланса ', 'tabs':['accountTab']}],
+}
+
 
 class SelMunObrMolel(QtCore.QAbstractListModel):
     
@@ -1264,6 +1284,9 @@ class ReportOptionsDialog(QtGui.QDialog):
     def fixtures(self):
         
             
+            
+        for key in charts:
+            self.comboBox_template.addItem(charts.get(key), userData=QVariant(key))
             
         if not self.config or self.config.get("accountsTab"):
             items = self.connection.get_account(fields=['id', 'username'])
