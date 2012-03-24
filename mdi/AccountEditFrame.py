@@ -2293,7 +2293,7 @@ class AccountWindow(QtGui.QMainWindow):
 
         if QtGui.QMessageBox.question(self, u"Удалить запись?" , u"Вы уверены, что хотите удалить эту запись из системы?", QtGui.QMessageBox.Yes|QtGui.QMessageBox.No)==QtGui.QMessageBox.Yes:
             d = self.connection.subaccount_delete(i)
-            if not d.status:return
+            if not d:return
             self.subAccountLinkRefresh()
             
     def delAccountHardware(self):
