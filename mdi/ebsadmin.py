@@ -148,7 +148,7 @@ class HttpBot(object):
         self.username=name
         self.password = password
         d = self.POST(url, {'username':name, 'password':password})
-        if not d.status:
+        if d and not d.status:
             self.error(d)
             return
         return d
@@ -2597,6 +2597,9 @@ def login():
 
             if data:
                 return connection
+            elif data==None:
+                #QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Невозможно подключиться к серверу."))
+                pass
             else:
                 QtGui.QMessageBox.warning(None, unicode(u"Ошибка"), unicode(u"Отказано в авторизации.\n%s" % data.message))
 
