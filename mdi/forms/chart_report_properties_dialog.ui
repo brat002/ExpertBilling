@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>ReportPropertiesDialog</class>
+ <widget class="QDialog" name="ReportPropertiesDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="general_tab">
       <attribute name="title">
@@ -282,14 +282,14 @@
        <item row="0" column="0">
         <widget class="QLabel" name="all_classes_label_2">
          <property name="text">
-          <string>Доступные классы</string>
+          <string>Доступные аккаунты</string>
          </property>
         </widget>
        </item>
        <item row="0" column="2">
         <widget class="QLabel" name="selected_classes_label_2">
          <property name="text">
-          <string>Выбранные классы</string>
+          <string>Выбранные аккаунты</string>
          </property>
         </widget>
        </item>
@@ -319,14 +319,14 @@
           </spacer>
          </item>
          <item>
-          <widget class="QToolButton" name="select_class_toolButton_2">
+          <widget class="QToolButton" name="toolButton_accounts_to_selected">
            <property name="text">
             <string>&gt;</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="remove_class_toolButton_2">
+          <widget class="QToolButton" name="toolButton_accounts_from_selected">
            <property name="text">
             <string>&lt;</string>
            </property>
@@ -364,14 +364,14 @@
        <item row="0" column="0">
         <widget class="QLabel" name="all_classes_label_3">
          <property name="text">
-          <string>Доступные классы</string>
+          <string>Доступные сервера доступа</string>
          </property>
         </widget>
        </item>
        <item row="0" column="2">
         <widget class="QLabel" name="selected_classes_label_3">
          <property name="text">
-          <string>Выбранные классы</string>
+          <string>Выбранные севрера доступа</string>
          </property>
         </widget>
        </item>
@@ -401,14 +401,14 @@
           </spacer>
          </item>
          <item>
-          <widget class="QToolButton" name="select_class_toolButton_3">
+          <widget class="QToolButton" name="toolButton_nasses_to_selected">
            <property name="text">
             <string>&gt;</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="remove_class_toolButton_3">
+          <widget class="QToolButton" name="toolButton_nasses_from_selected">
            <property name="text">
             <string>&lt;</string>
            </property>
@@ -446,14 +446,14 @@
        <item row="0" column="0">
         <widget class="QLabel" name="all_classes_label_4">
          <property name="text">
-          <string>Доступные классы</string>
+          <string>Доступные группы</string>
          </property>
         </widget>
        </item>
        <item row="0" column="2">
         <widget class="QLabel" name="selected_classes_label_4">
          <property name="text">
-          <string>Выбранные классы</string>
+          <string>Выбранные группы</string>
          </property>
         </widget>
        </item>
@@ -483,14 +483,14 @@
           </spacer>
          </item>
          <item>
-          <widget class="QToolButton" name="select_class_toolButton_4">
+          <widget class="QToolButton" name="toolButton_groups_to_selected">
            <property name="text">
             <string>&gt;</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="remove_class_toolButton_4">
+          <widget class="QToolButton" name="toolButton_groups_from_selected">
            <property name="text">
             <string>&lt;</string>
            </property>
@@ -528,14 +528,14 @@
        <item row="0" column="0">
         <widget class="QLabel" name="all_classes_label_5">
          <property name="text">
-          <string>Доступные классы</string>
+          <string>Доступные тарифы</string>
          </property>
         </widget>
        </item>
        <item row="0" column="2">
         <widget class="QLabel" name="selected_classes_label_5">
          <property name="text">
-          <string>Выбранные классы</string>
+          <string>Выбранные тарифы</string>
          </property>
         </widget>
        </item>
@@ -565,14 +565,14 @@
           </spacer>
          </item>
          <item>
-          <widget class="QToolButton" name="select_class_toolButton_5">
+          <widget class="QToolButton" name="toolButton_tariffs_to_selected">
            <property name="text">
             <string>&gt;</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="remove_class_toolButton_5">
+          <widget class="QToolButton" name="toolButton_tariffs_from_selected">
            <property name="text">
             <string>&lt;</string>
            </property>
@@ -647,14 +647,14 @@
           </spacer>
          </item>
          <item>
-          <widget class="QToolButton" name="select_class_toolButton">
+          <widget class="QToolButton" name="toolButton_classes_to_selected">
            <property name="text">
             <string>&gt;</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="remove_class_toolButton">
+          <widget class="QToolButton" name="toolButton_classes_from_selected">
            <property name="text">
             <string>&lt;</string>
            </property>
@@ -700,23 +700,49 @@
  </widget>
  <tabstops>
   <tabstop>tabWidget</tabstop>
-  <tabstop>buttonBox</tabstop>
+  <tabstop>comboBox_template</tabstop>
+  <tabstop>comboBox_templatetype</tabstop>
+  <tabstop>dateTimeEdit_date_start</tabstop>
+  <tabstop>dateTimeEdit_date_end</tabstop>
+  <tabstop>comboBox_trafficsource</tabstop>
+  <tabstop>comboBox_grouping</tabstop>
+  <tabstop>checkBox_animation</tabstop>
+  <tabstop>checkBox_shadow</tabstop>
+  <tabstop>checkBox_legend</tabstop>
+  <tabstop>comboBox_back</tabstop>
+  <tabstop>listWidget_accounts_all</tabstop>
+  <tabstop>toolButton_accounts_to_selected</tabstop>
+  <tabstop>toolButton_accounts_from_selected</tabstop>
+  <tabstop>listWidget_accounts_selected</tabstop>
+  <tabstop>listWidget_nasses_all</tabstop>
+  <tabstop>toolButton_nasses_to_selected</tabstop>
+  <tabstop>toolButton_nasses_from_selected</tabstop>
+  <tabstop>listWidget_nasses_selected</tabstop>
+  <tabstop>listWidget_groups_all</tabstop>
+  <tabstop>toolButton_groups_to_selected</tabstop>
+  <tabstop>toolButton_groups_from_selected</tabstop>
+  <tabstop>listWidget_groups_selected</tabstop>
+  <tabstop>listWidget_tariffs_all</tabstop>
+  <tabstop>toolButton_tariffs_to_selected</tabstop>
+  <tabstop>toolButton_tariffs_from_selected</tabstop>
+  <tabstop>listWidget_tariffs_selected</tabstop>
   <tabstop>listWidget_classes_all</tabstop>
+  <tabstop>toolButton_classes_to_selected</tabstop>
+  <tabstop>toolButton_classes_from_selected</tabstop>
   <tabstop>listWidget_classes_selected</tabstop>
-  <tabstop>select_class_toolButton</tabstop>
-  <tabstop>remove_class_toolButton</tabstop>
+  <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
    <signal>clicked(QAbstractButton*)</signal>
-   <receiver>Dialog</receiver>
+   <receiver>ReportPropertiesDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>252</x>
-     <y>374</y>
+     <x>261</x>
+     <y>567</y>
     </hint>
     <hint type="destinationlabel">
      <x>22</x>
@@ -727,12 +753,12 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>clicked(QAbstractButton*)</signal>
-   <receiver>Dialog</receiver>
+   <receiver>ReportPropertiesDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>344</x>
-     <y>371</y>
+     <x>353</x>
+     <y>567</y>
     </hint>
     <hint type="destinationlabel">
      <x>8</x>

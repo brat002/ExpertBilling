@@ -809,7 +809,622 @@ class TransactionsReportEbs(ebsTableWindow):
             self.refresh_table()
      
 
+class ReportOptionsDialog(QtGui.QDialog):
+    def __init__(self, connection, config={}):
+        super(ReportOptionsDialog, self).__init__()
+        self.connection = connection
+        self.config = {}
+        self.setObjectName(_fromUtf8("ReportOptionsDialog"))
+        self.resize(563, 577)
+        self.setWindowTitle(QtGui.QApplication.translate("ReportOptionsDialog", "Настройки отчёта", None, QtGui.QApplication.UnicodeUTF8))
+        self.gridLayout_4 = QtGui.QGridLayout(self)
+        self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
+        self.tabWidget = QtGui.QTabWidget(self)
+        self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
+        self.general_tab = QtGui.QWidget()
+        self.general_tab.setObjectName(_fromUtf8("general_tab"))
+        self.gridLayout_3 = QtGui.QGridLayout(self.general_tab)
+        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
+        self.groupBox_common = QtGui.QGroupBox(self.general_tab)
+        self.groupBox_common.setTitle(QtGui.QApplication.translate("ReportOptionsDialog", "Общее", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_common.setObjectName(_fromUtf8("groupBox_common"))
+        self.gridLayout = QtGui.QGridLayout(self.groupBox_common)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.label_template = QtGui.QLabel(self.groupBox_common)
+        self.label_template.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Отчёт", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_template.setObjectName(_fromUtf8("label_template"))
+        self.gridLayout.addWidget(self.label_template, 0, 0, 1, 1)
+        self.label_date_start = QtGui.QLabel(self.groupBox_common)
+        self.label_date_start.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Начало:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_date_start.setObjectName(_fromUtf8("label_date_start"))
+        self.gridLayout.addWidget(self.label_date_start, 4, 0, 1, 1)
+        self.dateTimeEdit_date_start = CustomDateTimeWidget()
+        self.dateTimeEdit_date_start.setObjectName(_fromUtf8("dateTimeEdit_date_start"))
+        self.gridLayout.addWidget(self.dateTimeEdit_date_start, 4, 1, 1, 1)
+        self.label_date_end = QtGui.QLabel(self.groupBox_common)
+        self.label_date_end.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Конец:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_date_end.setObjectName(_fromUtf8("label_date_end"))
+        self.gridLayout.addWidget(self.label_date_end, 5, 0, 1, 1)
+        self.dateTimeEdit_date_end = CustomDateTimeWidget()
+        self.dateTimeEdit_date_end.setObjectName(_fromUtf8("dateTimeEdit_date_end"))
+        self.gridLayout.addWidget(self.dateTimeEdit_date_end, 5, 1, 1, 1)
+        self.comboBox_template = QtGui.QComboBox(self.groupBox_common)
+        self.comboBox_template.setObjectName(_fromUtf8("comboBox_template"))
+        self.gridLayout.addWidget(self.comboBox_template, 1, 0, 1, 2)
+        self.comboBox_templatetype = QtGui.QComboBox(self.groupBox_common)
+        self.comboBox_templatetype.setObjectName(_fromUtf8("comboBox_templatetype"))
+        self.comboBox_templatetype.addItem(_fromUtf8(""))
+        self.comboBox_templatetype.setItemText(0, QtGui.QApplication.translate("ReportOptionsDialog", "Линия", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_templatetype.addItem(_fromUtf8(""))
+        self.comboBox_templatetype.setItemText(1, QtGui.QApplication.translate("ReportOptionsDialog", "Плавная линия", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_templatetype.addItem(_fromUtf8(""))
+        self.comboBox_templatetype.setItemText(2, QtGui.QApplication.translate("ReportOptionsDialog", "Вертикальная", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_templatetype.addItem(_fromUtf8(""))
+        self.comboBox_templatetype.setItemText(3, QtGui.QApplication.translate("ReportOptionsDialog", "Горизонтальная", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_templatetype.addItem(_fromUtf8(""))
+        self.comboBox_templatetype.setItemText(4, QtGui.QApplication.translate("ReportOptionsDialog", "Пирог", None, QtGui.QApplication.UnicodeUTF8))
+        self.gridLayout.addWidget(self.comboBox_templatetype, 3, 1, 1, 1)
+        self.label_templatetype = QtGui.QLabel(self.groupBox_common)
+        self.label_templatetype.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Тип отчёта", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_templatetype.setObjectName(_fromUtf8("label_templatetype"))
+        self.gridLayout.addWidget(self.label_templatetype, 3, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.groupBox_common, 0, 0, 1, 1)
+        self.groupBox_source = QtGui.QGroupBox(self.general_tab)
+        self.groupBox_source.setTitle(QtGui.QApplication.translate("ReportOptionsDialog", "Построение отчёта", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_source.setObjectName(_fromUtf8("groupBox_source"))
+        self.gridLayout_2 = QtGui.QGridLayout(self.groupBox_source)
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.label_grouping = QtGui.QLabel(self.groupBox_source)
+        self.label_grouping.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Период группировки", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_grouping.setObjectName(_fromUtf8("label_grouping"))
+        self.gridLayout_2.addWidget(self.label_grouping, 1, 0, 1, 1)
+        self.comboBox_grouping = QtGui.QComboBox(self.groupBox_source)
+        self.comboBox_grouping.setObjectName(_fromUtf8("comboBox_grouping"))
+        self.comboBox_grouping.addItem(_fromUtf8(""))
+        self.comboBox_grouping.setItemText(0, QtGui.QApplication.translate("ReportOptionsDialog", "Час", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_grouping.addItem(_fromUtf8(""))
+        self.comboBox_grouping.setItemText(1, QtGui.QApplication.translate("ReportOptionsDialog", "День", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_grouping.addItem(_fromUtf8(""))
+        self.comboBox_grouping.setItemText(2, QtGui.QApplication.translate("ReportOptionsDialog", "Месяц", None, QtGui.QApplication.UnicodeUTF8))
+        self.gridLayout_2.addWidget(self.comboBox_grouping, 1, 1, 1, 1)
+        self.label_trafficsource = QtGui.QLabel(self.groupBox_source)
+        self.label_trafficsource.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Источник данных о трафике", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_trafficsource.setObjectName(_fromUtf8("label_trafficsource"))
+        self.gridLayout_2.addWidget(self.label_trafficsource, 0, 0, 1, 1)
+        self.comboBox_trafficsource = QtGui.QComboBox(self.groupBox_source)
+        self.comboBox_trafficsource.setObjectName(_fromUtf8("comboBox_trafficsource"))
+        self.comboBox_trafficsource.addItem(_fromUtf8(""))
+        self.comboBox_trafficsource.setItemText(0, QtGui.QApplication.translate("ReportOptionsDialog", "Весь трафик (сумма Вх+Исх)", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_trafficsource.addItem(_fromUtf8(""))
+        self.comboBox_trafficsource.setItemText(1, QtGui.QApplication.translate("ReportOptionsDialog", "Весь трафик (Вх и Исх раздельно)", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_trafficsource.addItem(_fromUtf8(""))
+        self.comboBox_trafficsource.setItemText(2, QtGui.QApplication.translate("ReportOptionsDialog", "Тарифицированный трафик", None, QtGui.QApplication.UnicodeUTF8))
+        self.gridLayout_2.addWidget(self.comboBox_trafficsource, 0, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.groupBox_source, 1, 0, 1, 1)
+        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_3.addItem(spacerItem, 3, 0, 1, 1)
+        self.groupBox_view = QtGui.QGroupBox(self.general_tab)
+        self.groupBox_view.setTitle(QtGui.QApplication.translate("ReportOptionsDialog", "Внешний вид", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_view.setObjectName(_fromUtf8("groupBox_view"))
+        self.gridLayout_5 = QtGui.QGridLayout(self.groupBox_view)
+        self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
+        self.checkBox_animation = QtGui.QCheckBox(self.groupBox_view)
+        self.checkBox_animation.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Анимация", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_animation.setObjectName(_fromUtf8("checkBox_animation"))
+        self.gridLayout_5.addWidget(self.checkBox_animation, 0, 0, 1, 2)
+        self.checkBox_shadow = QtGui.QCheckBox(self.groupBox_view)
+        self.checkBox_shadow.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Отбрасывать тень", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_shadow.setObjectName(_fromUtf8("checkBox_shadow"))
+        self.gridLayout_5.addWidget(self.checkBox_shadow, 1, 0, 1, 1)
+        self.checkBox_legend = QtGui.QCheckBox(self.groupBox_view)
+        self.checkBox_legend.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Добавить легенду", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_legend.setObjectName(_fromUtf8("checkBox_legend"))
+        self.gridLayout_5.addWidget(self.checkBox_legend, 2, 0, 1, 1)
+        self.label_back = QtGui.QLabel(self.groupBox_view)
+        self.label_back.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Подложка", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_back.setObjectName(_fromUtf8("label_back"))
+        self.gridLayout_5.addWidget(self.label_back, 3, 0, 1, 1)
+        self.comboBox_back = QtGui.QComboBox(self.groupBox_view)
+        self.comboBox_back.setObjectName(_fromUtf8("comboBox_back"))
+        self.comboBox_back.addItem(_fromUtf8(""))
+        self.comboBox_back.setItemText(0, QtGui.QApplication.translate("ReportOptionsDialog", "По-умолчанию", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_back.addItem(_fromUtf8(""))
+        self.comboBox_back.setItemText(1, QtGui.QApplication.translate("ReportOptionsDialog", "Таблица", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_back.addItem(_fromUtf8(""))
+        self.comboBox_back.setItemText(2, QtGui.QApplication.translate("ReportOptionsDialog", "Облока", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_back.addItem(_fromUtf8(""))
+        self.comboBox_back.setItemText(3, QtGui.QApplication.translate("ReportOptionsDialog", "Серая", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_back.addItem(_fromUtf8(""))
+        self.comboBox_back.setItemText(4, QtGui.QApplication.translate("ReportOptionsDialog", "Тёмно-синяя", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_back.addItem(_fromUtf8(""))
+        self.comboBox_back.setItemText(5, QtGui.QApplication.translate("ReportOptionsDialog", "Тёмно-зелёная", None, QtGui.QApplication.UnicodeUTF8))
+        self.gridLayout_5.addWidget(self.comboBox_back, 3, 1, 1, 1)
+        self.gridLayout_3.addWidget(self.groupBox_view, 2, 0, 1, 1)
+        self.tabWidget.addTab(self.general_tab, _fromUtf8(""))
+        self.tab_accounts = QtGui.QWidget()
+        self.tab_accounts.setObjectName(_fromUtf8("tab_accounts"))
+        self.gridLayout_6 = QtGui.QGridLayout(self.tab_accounts)
+        self.gridLayout_6.setObjectName(_fromUtf8("gridLayout_6"))
+        self.all_classes_label_2 = QtGui.QLabel(self.tab_accounts)
+        self.all_classes_label_2.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Доступные аккаунты", None, QtGui.QApplication.UnicodeUTF8))
+        self.all_classes_label_2.setObjectName(_fromUtf8("all_classes_label_2"))
+        self.gridLayout_6.addWidget(self.all_classes_label_2, 0, 0, 1, 1)
+        self.selected_classes_label_2 = QtGui.QLabel(self.tab_accounts)
+        self.selected_classes_label_2.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Выбранные аккаунты", None, QtGui.QApplication.UnicodeUTF8))
+        self.selected_classes_label_2.setObjectName(_fromUtf8("selected_classes_label_2"))
+        self.gridLayout_6.addWidget(self.selected_classes_label_2, 0, 2, 1, 1)
+        self.listWidget_accounts_all = QtGui.QListWidget(self.tab_accounts)
+        self.listWidget_accounts_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_accounts_all.setSelectionRectVisible(True)
+        self.listWidget_accounts_all.setObjectName(_fromUtf8("listWidget_accounts_all"))
+        self.gridLayout_6.addWidget(self.listWidget_accounts_all, 1, 0, 1, 1)
+        self.verticalLayout_2 = QtGui.QVBoxLayout()
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem1)
+        self.toolButton_accounts_to_selected = QtGui.QToolButton(self.tab_accounts)
+        self.toolButton_accounts_to_selected.setText(QtGui.QApplication.translate("ReportOptionsDialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_accounts_to_selected.setObjectName(_fromUtf8("toolButton_accounts_to_selected"))
+        self.verticalLayout_2.addWidget(self.toolButton_accounts_to_selected)
+        self.toolButton_accounts_from_selected = QtGui.QToolButton(self.tab_accounts)
+        self.toolButton_accounts_from_selected.setText(QtGui.QApplication.translate("ReportOptionsDialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_accounts_from_selected.setObjectName(_fromUtf8("toolButton_accounts_from_selected"))
+        self.verticalLayout_2.addWidget(self.toolButton_accounts_from_selected)
+        spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem2)
+        self.gridLayout_6.addLayout(self.verticalLayout_2, 1, 1, 1, 1)
+        self.listWidget_accounts_selected = QtGui.QListWidget(self.tab_accounts)
+        self.listWidget_accounts_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_accounts_selected.setObjectName(_fromUtf8("listWidget_accounts_selected"))
+        self.gridLayout_6.addWidget(self.listWidget_accounts_selected, 1, 2, 1, 1)
+        self.tabWidget.addTab(self.tab_accounts, _fromUtf8(""))
+        self.tab_nasses = QtGui.QWidget()
+        self.tab_nasses.setObjectName(_fromUtf8("tab_nasses"))
+        self.gridLayout_7 = QtGui.QGridLayout(self.tab_nasses)
+        self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
+        self.all_classes_label_3 = QtGui.QLabel(self.tab_nasses)
+        self.all_classes_label_3.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Доступные сервера доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.all_classes_label_3.setObjectName(_fromUtf8("all_classes_label_3"))
+        self.gridLayout_7.addWidget(self.all_classes_label_3, 0, 0, 1, 1)
+        self.selected_classes_label_3 = QtGui.QLabel(self.tab_nasses)
+        self.selected_classes_label_3.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Выбранные севрера доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.selected_classes_label_3.setObjectName(_fromUtf8("selected_classes_label_3"))
+        self.gridLayout_7.addWidget(self.selected_classes_label_3, 0, 2, 1, 1)
+        self.listWidget_nasses_all = QtGui.QListWidget(self.tab_nasses)
+        self.listWidget_nasses_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_nasses_all.setSelectionRectVisible(True)
+        self.listWidget_nasses_all.setObjectName(_fromUtf8("listWidget_nasses_all"))
+        self.gridLayout_7.addWidget(self.listWidget_nasses_all, 1, 0, 1, 1)
+        self.verticalLayout_3 = QtGui.QVBoxLayout()
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+        spacerItem3 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_3.addItem(spacerItem3)
+        self.toolButton_nasses_to_selected = QtGui.QToolButton(self.tab_nasses)
+        self.toolButton_nasses_to_selected.setText(QtGui.QApplication.translate("ReportOptionsDialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_nasses_to_selected.setObjectName(_fromUtf8("toolButton_nasses_to_selected"))
+        self.verticalLayout_3.addWidget(self.toolButton_nasses_to_selected)
+        self.toolButton_nasses_from_selected = QtGui.QToolButton(self.tab_nasses)
+        self.toolButton_nasses_from_selected.setText(QtGui.QApplication.translate("ReportOptionsDialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_nasses_from_selected.setObjectName(_fromUtf8("toolButton_nasses_from_selected"))
+        self.verticalLayout_3.addWidget(self.toolButton_nasses_from_selected)
+        spacerItem4 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_3.addItem(spacerItem4)
+        self.gridLayout_7.addLayout(self.verticalLayout_3, 1, 1, 1, 1)
+        self.listWidget_nasses_selected = QtGui.QListWidget(self.tab_nasses)
+        self.listWidget_nasses_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_nasses_selected.setObjectName(_fromUtf8("listWidget_nasses_selected"))
+        self.gridLayout_7.addWidget(self.listWidget_nasses_selected, 1, 2, 1, 1)
+        self.tabWidget.addTab(self.tab_nasses, _fromUtf8(""))
+        self.tab_groups = QtGui.QWidget()
+        self.tab_groups.setObjectName(_fromUtf8("tab_groups"))
+        self.gridLayout_8 = QtGui.QGridLayout(self.tab_groups)
+        self.gridLayout_8.setObjectName(_fromUtf8("gridLayout_8"))
+        self.all_classes_label_4 = QtGui.QLabel(self.tab_groups)
+        self.all_classes_label_4.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Доступные группы", None, QtGui.QApplication.UnicodeUTF8))
+        self.all_classes_label_4.setObjectName(_fromUtf8("all_classes_label_4"))
+        self.gridLayout_8.addWidget(self.all_classes_label_4, 0, 0, 1, 1)
+        self.selected_classes_label_4 = QtGui.QLabel(self.tab_groups)
+        self.selected_classes_label_4.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Выбранные группы", None, QtGui.QApplication.UnicodeUTF8))
+        self.selected_classes_label_4.setObjectName(_fromUtf8("selected_classes_label_4"))
+        self.gridLayout_8.addWidget(self.selected_classes_label_4, 0, 2, 1, 1)
+        self.listWidget_groups_all = QtGui.QListWidget(self.tab_groups)
+        self.listWidget_groups_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_groups_all.setSelectionRectVisible(True)
+        self.listWidget_groups_all.setObjectName(_fromUtf8("listWidget_groups_all"))
+        self.gridLayout_8.addWidget(self.listWidget_groups_all, 1, 0, 1, 1)
+        self.verticalLayout_4 = QtGui.QVBoxLayout()
+        self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
+        spacerItem5 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_4.addItem(spacerItem5)
+        self.toolButton_groups_to_selected = QtGui.QToolButton(self.tab_groups)
+        self.toolButton_groups_to_selected.setText(QtGui.QApplication.translate("ReportOptionsDialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_groups_to_selected.setObjectName(_fromUtf8("toolButton_groups_to_selected"))
+        self.verticalLayout_4.addWidget(self.toolButton_groups_to_selected)
+        self.toolButton_groups_from_selected = QtGui.QToolButton(self.tab_groups)
+        self.toolButton_groups_from_selected.setText(QtGui.QApplication.translate("ReportOptionsDialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_groups_from_selected.setObjectName(_fromUtf8("toolButton_groups_from_selected"))
+        self.verticalLayout_4.addWidget(self.toolButton_groups_from_selected)
+        spacerItem6 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_4.addItem(spacerItem6)
+        self.gridLayout_8.addLayout(self.verticalLayout_4, 1, 1, 1, 1)
+        self.listWidget_groups_selected = QtGui.QListWidget(self.tab_groups)
+        self.listWidget_groups_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_groups_selected.setObjectName(_fromUtf8("listWidget_groups_selected"))
+        self.gridLayout_8.addWidget(self.listWidget_groups_selected, 1, 2, 1, 1)
+        self.tabWidget.addTab(self.tab_groups, _fromUtf8(""))
+        self.tab_tariffs = QtGui.QWidget()
+        self.tab_tariffs.setObjectName(_fromUtf8("tab_tariffs"))
+        self.gridLayout_10 = QtGui.QGridLayout(self.tab_tariffs)
+        self.gridLayout_10.setObjectName(_fromUtf8("gridLayout_10"))
+        self.all_classes_label_5 = QtGui.QLabel(self.tab_tariffs)
+        self.all_classes_label_5.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Доступные тарифы", None, QtGui.QApplication.UnicodeUTF8))
+        self.all_classes_label_5.setObjectName(_fromUtf8("all_classes_label_5"))
+        self.gridLayout_10.addWidget(self.all_classes_label_5, 0, 0, 1, 1)
+        self.selected_classes_label_5 = QtGui.QLabel(self.tab_tariffs)
+        self.selected_classes_label_5.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Выбранные тарифы", None, QtGui.QApplication.UnicodeUTF8))
+        self.selected_classes_label_5.setObjectName(_fromUtf8("selected_classes_label_5"))
+        self.gridLayout_10.addWidget(self.selected_classes_label_5, 0, 2, 1, 1)
+        self.listWidget_tariffs_all = QtGui.QListWidget(self.tab_tariffs)
+        self.listWidget_tariffs_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_tariffs_all.setSelectionRectVisible(True)
+        self.listWidget_tariffs_all.setObjectName(_fromUtf8("listWidget_tariffs_all"))
+        self.gridLayout_10.addWidget(self.listWidget_tariffs_all, 1, 0, 1, 1)
+        self.verticalLayout_5 = QtGui.QVBoxLayout()
+        self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
+        spacerItem7 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_5.addItem(spacerItem7)
+        self.toolButton_tariffs_to_selected = QtGui.QToolButton(self.tab_tariffs)
+        self.toolButton_tariffs_to_selected.setText(QtGui.QApplication.translate("ReportOptionsDialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_tariffs_to_selected.setObjectName(_fromUtf8("toolButton_tariffs_to_selected"))
+        self.verticalLayout_5.addWidget(self.toolButton_tariffs_to_selected)
+        self.toolButton_tariffs_from_selected = QtGui.QToolButton(self.tab_tariffs)
+        self.toolButton_tariffs_from_selected.setText(QtGui.QApplication.translate("ReportOptionsDialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_tariffs_from_selected.setObjectName(_fromUtf8("toolButton_tariffs_from_selected"))
+        self.verticalLayout_5.addWidget(self.toolButton_tariffs_from_selected)
+        spacerItem8 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_5.addItem(spacerItem8)
+        self.gridLayout_10.addLayout(self.verticalLayout_5, 1, 1, 1, 1)
+        self.listWidget_tariffs_selected = QtGui.QListWidget(self.tab_tariffs)
+        self.listWidget_tariffs_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_tariffs_selected.setObjectName(_fromUtf8("listWidget_tariffs_selected"))
+        self.gridLayout_10.addWidget(self.listWidget_tariffs_selected, 1, 2, 1, 1)
+        self.tabWidget.addTab(self.tab_tariffs, _fromUtf8(""))
+        self.tab_classes = QtGui.QWidget()
+        self.tab_classes.setObjectName(_fromUtf8("tab_classes"))
+        self.gridLayout_9 = QtGui.QGridLayout(self.tab_classes)
+        self.gridLayout_9.setObjectName(_fromUtf8("gridLayout_9"))
+        self.all_classes_label = QtGui.QLabel(self.tab_classes)
+        self.all_classes_label.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Доступные классы", None, QtGui.QApplication.UnicodeUTF8))
+        self.all_classes_label.setObjectName(_fromUtf8("all_classes_label"))
+        self.gridLayout_9.addWidget(self.all_classes_label, 0, 0, 1, 1)
+        self.selected_classes_label = QtGui.QLabel(self.tab_classes)
+        self.selected_classes_label.setText(QtGui.QApplication.translate("ReportOptionsDialog", "Выбранные классы", None, QtGui.QApplication.UnicodeUTF8))
+        self.selected_classes_label.setObjectName(_fromUtf8("selected_classes_label"))
+        self.gridLayout_9.addWidget(self.selected_classes_label, 0, 2, 1, 1)
+        self.listWidget_classes_all = QtGui.QListWidget(self.tab_classes)
+        self.listWidget_classes_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_classes_all.setSelectionRectVisible(True)
+        self.listWidget_classes_all.setObjectName(_fromUtf8("listWidget_classes_all"))
+        self.gridLayout_9.addWidget(self.listWidget_classes_all, 1, 0, 1, 1)
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        spacerItem9 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem9)
+        self.toolButton_classes_to_selected = QtGui.QToolButton(self.tab_classes)
+        self.toolButton_classes_to_selected.setText(QtGui.QApplication.translate("ReportOptionsDialog", ">", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_classes_to_selected.setObjectName(_fromUtf8("toolButton_classes_to_selected"))
+        self.verticalLayout.addWidget(self.toolButton_classes_to_selected)
+        self.toolButton_classes_from_selected = QtGui.QToolButton(self.tab_classes)
+        self.toolButton_classes_from_selected.setText(QtGui.QApplication.translate("ReportOptionsDialog", "<", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton_classes_from_selected.setObjectName(_fromUtf8("toolButton_classes_from_selected"))
+        self.verticalLayout.addWidget(self.toolButton_classes_from_selected)
+        spacerItem10 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem10)
+        self.gridLayout_9.addLayout(self.verticalLayout, 1, 1, 1, 1)
+        self.listWidget_classes_selected = QtGui.QListWidget(self.tab_classes)
+        self.listWidget_classes_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_classes_selected.setObjectName(_fromUtf8("listWidget_classes_selected"))
+        self.gridLayout_9.addWidget(self.listWidget_classes_selected, 1, 2, 1, 1)
+        self.tabWidget.addTab(self.tab_classes, _fromUtf8(""))
+        self.gridLayout_4.addWidget(self.tabWidget, 0, 0, 1, 1)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.gridLayout_4.addWidget(self.buttonBox, 1, 0, 1, 1)
+
+        self.retranslateUi()
+        self.tabWidget.setCurrentIndex(0)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("clicked(QAbstractButton*)")), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("clicked(QAbstractButton*)")), self.reject)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.setTabOrder(self.tabWidget, self.comboBox_template)
+        self.setTabOrder(self.comboBox_template, self.comboBox_templatetype)
+        self.setTabOrder(self.comboBox_templatetype, self.dateTimeEdit_date_start)
+        self.setTabOrder(self.dateTimeEdit_date_start, self.dateTimeEdit_date_end)
+        self.setTabOrder(self.dateTimeEdit_date_end, self.comboBox_trafficsource)
+        self.setTabOrder(self.comboBox_trafficsource, self.comboBox_grouping)
+        self.setTabOrder(self.comboBox_grouping, self.checkBox_animation)
+        self.setTabOrder(self.checkBox_animation, self.checkBox_shadow)
+        self.setTabOrder(self.checkBox_shadow, self.checkBox_legend)
+        self.setTabOrder(self.checkBox_legend, self.comboBox_back)
+        self.setTabOrder(self.comboBox_back, self.listWidget_accounts_all)
+        self.setTabOrder(self.listWidget_accounts_all, self.toolButton_accounts_to_selected)
+        self.setTabOrder(self.toolButton_accounts_to_selected, self.toolButton_accounts_from_selected)
+        self.setTabOrder(self.toolButton_accounts_from_selected, self.listWidget_accounts_selected)
+        self.setTabOrder(self.listWidget_accounts_selected, self.listWidget_nasses_all)
+        self.setTabOrder(self.listWidget_nasses_all, self.toolButton_nasses_to_selected)
+        self.setTabOrder(self.toolButton_nasses_to_selected, self.toolButton_nasses_from_selected)
+        self.setTabOrder(self.toolButton_nasses_from_selected, self.listWidget_nasses_selected)
+        self.setTabOrder(self.listWidget_nasses_selected, self.listWidget_groups_all)
+        self.setTabOrder(self.listWidget_groups_all, self.toolButton_groups_to_selected)
+        self.setTabOrder(self.toolButton_groups_to_selected, self.toolButton_groups_from_selected)
+        self.setTabOrder(self.toolButton_groups_from_selected, self.listWidget_groups_selected)
+        self.setTabOrder(self.listWidget_groups_selected, self.listWidget_tariffs_all)
+        self.setTabOrder(self.listWidget_tariffs_all, self.toolButton_tariffs_to_selected)
+        self.setTabOrder(self.toolButton_tariffs_to_selected, self.toolButton_tariffs_from_selected)
+        self.setTabOrder(self.toolButton_tariffs_from_selected, self.listWidget_tariffs_selected)
+        self.setTabOrder(self.listWidget_tariffs_selected, self.listWidget_classes_all)
+        self.setTabOrder(self.listWidget_classes_all, self.toolButton_classes_to_selected)
+        self.setTabOrder(self.toolButton_classes_to_selected, self.toolButton_classes_from_selected)
+        self.setTabOrder(self.toolButton_classes_from_selected, self.listWidget_classes_selected)
+        self.setTabOrder(self.listWidget_classes_selected, self.buttonBox)
+
+        self.postinit()
         
+    def postinit(self):
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            self.dateTimeEdit_date_start.setDateTime(settings.value("reportprop_date_start", QtCore.QVariant(QtCore.QDateTime(2011,1,1,0,0))).toDateTime())
+            self.dateTimeEdit_date_end.setDateTime(settings.value("reportprop_date_end", QtCore.QVariant(QtCore.QDateTime(2012,1,1,0,0))).toDateTime())
+        except Exception, ex:
+            print "Transactions settings error: ", ex
+
+        self.listWidget_accounts_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_accounts_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_classes_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_classes_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_groups_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_groups_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_tariffs_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_tariffs_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_nasses_all.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.listWidget_nasses_selected.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        
+        QtCore.QObject.connect(self.toolButton_accounts_to_selected, QtCore.SIGNAL("clicked()"),self.addAccount)
+        QtCore.QObject.connect(self.toolButton_accounts_from_selected, QtCore.SIGNAL("clicked()"),self.delAccount)
+
+        QtCore.QObject.connect(self.listWidget_accounts_all, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.addAccount)
+        QtCore.QObject.connect(self.listWidget_accounts_selected, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"),self.delAccount)        
+        
+
+        QtCore.QObject.connect(self.toolButton_classes_to_selected, QtCore.SIGNAL("clicked()"), self.addClass)
+        QtCore.QObject.connect(self.toolButton_classes_from_selected, QtCore.SIGNAL("clicked()"), self.delClass)
+        
+        QtCore.QObject.connect(self.listWidget_classes_all, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addClass)
+        QtCore.QObject.connect(self.listWidget_classes_selected, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delClass)
+        
+        QtCore.QObject.connect(self.toolButton_groups_to_selected, QtCore.SIGNAL("clicked()"), self.addGroup)
+        QtCore.QObject.connect(self.toolButton_groups_from_selected, QtCore.SIGNAL("clicked()"), self.delGroup)
+        
+        QtCore.QObject.connect(self.listWidget_groups_all, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addGroup)
+        QtCore.QObject.connect(self.listWidget_groups_selected, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delGroup)
+        
+        QtCore.QObject.connect(self.toolButton_nasses_to_selected, QtCore.SIGNAL("clicked()"), self.addNas)
+        QtCore.QObject.connect(self.toolButton_nasses_from_selected, QtCore.SIGNAL("clicked()"), self.delNas)
+        
+        QtCore.QObject.connect(self.listWidget_nasses_all, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addNas)
+        QtCore.QObject.connect(self.listWidget_nasses_selected, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delNas)
+        
+        QtCore.QObject.connect(self.toolButton_tariffs_to_selected, QtCore.SIGNAL("clicked()"), self.addTariff)
+        QtCore.QObject.connect(self.toolButton_tariffs_from_selected, QtCore.SIGNAL("clicked()"), self.delTariff)
+        
+        QtCore.QObject.connect(self.listWidget_tariffs_all, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.addTariff)
+        QtCore.QObject.connect(self.listWidget_tariffs_selected, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem *)"), self.delTariff)
+        """
+1. Сессии онлайн(гант) с выбором:
+   аккаунты
+   сервера доступа
+2. Открытие и закрытие сессий
+    сервера доступа
+
+   распределение трафика по классам(выбор классов, серверов доступа)
+   распределение трафика по серверам доступа(выбор серверов доступа, групп)
+   распределение трафика по аккаунтам(выбор аккаунтов, групп)
+   ТОП N аккаунтов по трафику(выбор групп)
+    
+Названия:
+   распределение трафика по классам трафика(выбор классов, серверов доступа)
+   распределение трафика по группам трафика(выбор групп, серверов доступа, аккаунтов)
+   потребление трафика выбранными аккаунтами(выбор аккаунтов, групп)
+   потребление трафика аккаунтами(выбор аккаунтов, групп)
+   распределение трафика по серверам доступа(выбор серверов доступа, групп)
+   потребление трафика на тарифах(выбор тарифов)
+   
+   
+   
+3. Прирост абонентской базы за период
+4. Прибыль за период
+5. АБонентов на тарифных планах за период
+6. Распределение платежей по типам
+7. История изменения баланса у аккаунта(-ов
+                                        
+                                        """
+        self.fixtures()
+        
+    def retranslateUi(self):
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.general_tab), QtGui.QApplication.translate("ReportOptionsDialog", "Общие настройки", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_accounts), QtGui.QApplication.translate("ReportOptionsDialog", "Аккаунты", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_nasses), QtGui.QApplication.translate("ReportOptionsDialog", "Сервера доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_groups), QtGui.QApplication.translate("ReportOptionsDialog", "Группы трафика", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_tariffs), QtGui.QApplication.translate("ReportOptionsDialog", "Тарифные планы", None, QtGui.QApplication.UnicodeUTF8))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_classes), QtGui.QApplication.translate("ReportOptionsDialog", "Классы трафика", None, QtGui.QApplication.UnicodeUTF8))
+
+        
+    def fixtures(self):
+        
+            
+            
+        if not self.config or self.config.get("accountsTab"):
+            items = self.connection.get_account(fields=['id', 'username'])
+            
+            for item in items:
+                i = QtGui.QListWidgetItem()
+                i.setText(item.username)
+                i.id = item.id
+                self.listWidget_accounts_all.addItem(i)
+            
+        if not self.config or self.config.get("classesTab"):
+            classes = self.connection.get_trafficclasses(fields=['id', 'name'])
+            
+            for clas in classes:
+                item = QtGui.QListWidgetItem()
+                item.setText(clas.name)
+                item.id = clas.id
+                self.listWidget_classes_all.addItem(item)
+          
+        if not self.config or self.config.get("nassesTab"):
+            servers = self.connection.get_nasses(fields=['id', 'name'])
+            
+            for serv in servers:
+                item = QtGui.QListWidgetItem()
+                item.setText(serv.name)
+                item.id = serv.id
+                self.listWidget_nasses_all.addItem(item)
+                
+        if not self.config or self.config.get("groupsTab"):
+            groups = self.connection.get_groups(fields=['id', 'name'])
+            for grp in groups:
+                item = QtGui.QListWidgetItem()
+                item.setText(grp.name)
+                item.id = grp.id
+                self.listWidget_groups_all.addItem(item)
+                
+        if not self.config or self.config.get("tariffsTab"):
+            tariffs = self.connection.get_tariffs(fields=['id', 'name'])
+            for tariff in tariffs:
+                item = QtGui.QListWidgetItem()
+                item.setText(tariff.name)
+                item.id = tariff.id
+                self.listWidget_tariffs_all.addItem(item)
+        
+
+    def accept(self):
+        #check the buttons!
+        self.accounts   = []
+        self.classes = []
+        self.nasses = []
+        self.tariffs   = []
+        self.groups  = []
+        self.opts    = {}
+        
+
+        for x in xrange(0, self.listWidget_accounts_selected.count()):
+            self.accounts.append(self.listWidget_accounts_selected.item(x).id)
+            
+        for x in xrange(0, self.listWidget_classes_selected.count()):
+            self.classes.append(self.listWidget_classes_selected.item(x).id)
+            
+        for x in xrange(0, self.listWidget_nasses_selected.count()):
+            self.nasses.append(self.listWidget_nasses_selected.item(x).id)
+            
+        for x in xrange(0, self.listWidget_groups_selected.count()):
+            self.groups.append(self.listWidget_groups_selected.item(x).id)
+            
+        for x in xrange(0, self.listWidget_tariffs_selected.count()):
+            self.tariffs.append(self.listWidget_tariffs_selected.item(x).id)
+ 
+                
+            
+                    
+        try:
+            settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
+            settings.setValue("chrep_date_start", QtCore.QVariant(self.from_dateTimeEdit.dateTime()))
+            settings.setValue("chrep_date_end", QtCore.QVariant(self.to_dateTimeEdit.dateTime()))
+        except Exception, ex:
+            print "Chart reports settings save error: ", ex
+            
+        self.start_date = self.from_dateTimeEdit.currentDate()
+        self.end_date   = self.to_dateTimeEdit.currentDate()
+
+        QtGui.QDialog.accept(self)
+        
+    def addAccount(self):
+        selected_items = self.listWidget_accounts_all.selectedItems()        
+        for item in selected_items:
+            self.listWidget_accounts_all.takeItem(self.listWidget_accounts_all.row(item))
+            self.listWidget_accounts_selected.addItem(item)
+            
+        self.listWidget_accounts_selected.sortItems()
+        
+    def delAccount(self):
+        selected_items = self.listWidget_accounts_selected.selectedItems()        
+        for item in selected_items:
+            self.listWidget_accounts_selected.takeItem(self.listWidget_accounts_selected.row(item))
+            self.listWidget_accounts_all.addItem(item)
+        self.listWidget_accounts_all.sortItems()
+        
+    def addNas(self):
+        selected_items = self.listWidget_nasses_all.selectedItems()        
+        for item in selected_items:
+            self.listWidget_nasses_all.takeItem(self.listWidget_nasses_all.row(item))
+            self.listWidget_nasses_selected.addItem(item)
+            
+        self.listWidget_nasses_selected.sortItems()
+        
+    def delNas(self):
+        selected_items = self.listWidget_nasses_selected.selectedItems()        
+        for item in selected_items:
+            self.listWidget_nasses_selected.takeItem(self.listWidget_nasses_selected.row(item))
+            self.listWidget_nasses_all.addItem(item)
+        self.listWidget_nasses_all.sortItems()
+        
+    def addClass(self):
+        selected_items = self.listWidget_classes_all.selectedItems()        
+        for item in selected_items:
+            self.listWidget_classes_all.takeItem(self.listWidget_classes_all.row(item))
+            self.listWidget_classes_selected.addItem(item)
+            
+        self.listWidget_classes_selected.sortItems()
+        
+    def delClass(self):
+        selected_items = self.listWidget_classes_selected.selectedItems()        
+        for item in selected_items:
+            self.listWidget_classes_selected.takeItem(self.listWidget_classes_selected.row(item))
+            self.listWidget_classes_all.addItem(item)
+        self.listWidget_classes_all.sortItems()
+        
+    def addGroup(self):
+        selected_items = self.listWidget_groups_all.selectedItems()        
+        for item in selected_items:
+            self.listWidget_groups_all.takeItem(self.listWidget_groups_all.row(item))
+            self.listWidget_groups_selected.addItem(item)
+            
+        self.listWidget_groups_selected.sortItems()
+        
+    def delGroup(self):
+        selected_items = self.listWidget_groups_selected.selectedItems()        
+        for item in selected_items:
+            self.listWidget_groups_selected.takeItem(self.listWidget_groups_selected.row(item))
+            self.listWidget_groups_all.addItem(item)
+        self.listWidget_groups_all.sortItems()
+        
+    def addTariff(self):
+        selected_items = self.listWidget_tariffs_all.selectedItems()        
+        for item in selected_items:
+            self.listWidget_tariffs_all.takeItem(self.listWidget_tariffs_all.row(item))
+            self.listWidget_tariffs_selected.addItem(item)
+            
+        self.listWidget_tariffs_selected.sortItems()
+        
+    def delTariff(self):
+        selected_items = self.listWidget_tariffs_selected.selectedItems()        
+        for item in selected_items:
+            self.listWidget_tariffs_selected.takeItem(self.listWidget_tariffs_selected.row(item))
+            self.listWidget_tariffs_all.addItem(item)
+        self.listWidget_tariffs_all.sortItems()
+        
+
 class ReportPropertiesDialog(QtGui.QDialog):
     def __init__(self, connection):
         super(ReportPropertiesDialog, self).__init__()
@@ -1552,9 +2167,9 @@ class StatReport(QtGui.QMainWindow):
 
     
 
-class ReportOptionsDialog(QtGui.QDialog):
+class ReportOptionsDialog1(QtGui.QDialog):
     def __init__(self, connection, chartclass):
-        super(ReportOptionsDialog, self).__init__()
+        super(ReportOptionsDialog1, self).__init__()
         self.connection = connection
         self.chartclass = chartclass
         self.users   = []
