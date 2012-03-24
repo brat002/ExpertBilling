@@ -2406,19 +2406,12 @@ class TarifWindow(QtGui.QMainWindow):
                 speeds.append(speed)
             
             #Период
-            #sp=unicode(self.sp_name_edit.currentText())
             model.settlement_period = self.sp_name_edit.itemData(self.sp_name_edit.currentIndex()).toInt()[0]
             
-            #if self.sp_groupbox.isChecked()==True and sp!='':
+
             model.cost = unicode(self.tarif_cost_edit.text()) or 0
             model.reset_tarif_cost = self.reset_tarif_cost_edit.checkState()==2
             model.require_tarif_cost = self.require_tarif_cost_edit.checkState()==2
-            #else:
-            #    model.reset_tarif_cost=False
-            #    model.require_tarif_cost = False
-            #    model.cost = 0
-
-            #model.id = self.connection.save(model, "billservice_tariff")
 
 
             #Доступ по времени
@@ -2427,7 +2420,7 @@ class TarifWindow(QtGui.QMainWindow):
             if self.time_access_service_checkbox.checkState()==2 and (unicode(self.prepaid_time_edit.text()) or self.timeaccess_table.rowCount()>0):
                 
                 time_access_service=AttrDict()
-                if 'time_access_service' in self.model.__dict__:
+                if 'time_access_service' in self.model:
                     time_access_service.id = self.model.time_access_service_id
 
                 #print 1
@@ -2458,7 +2451,7 @@ class TarifWindow(QtGui.QMainWindow):
                     time_access_node.cost = unicode(self.timeaccess_table.item(i,2).text())
                     timeaccessnodes.append(time_access_node)
             
-            elif self.time_access_service_checkbox.checkState()==0 and "time_access_service" in model.__dict__:
+            elif self.time_access_service_checkbox.checkState()==0 and "time_access_service" in model:
                     model.time_access_service = None
 
                     
@@ -2496,7 +2489,7 @@ class TarifWindow(QtGui.QMainWindow):
                     radius_traffic_node.cost = unicode(self.tableWidget_radius_traffic_trafficcost.item(i,3).text())
                     radiustrafficnodes.append(radius_traffic_node)
             
-            elif self.radius_traffic_access_service_checkbox.checkState()==0 and "radius_traffic_transmit_service" in model.__dict__:
+            elif self.radius_traffic_access_service_checkbox.checkState()==0 and "radius_traffic_transmit_service" in model:
                     model.radius_traffic_transmit_service=None
 
             
@@ -2630,7 +2623,7 @@ class TarifWindow(QtGui.QMainWindow):
             traffic_transmit_service = None
             if self.transmit_service_checkbox.checkState()==2:
                 traffic_transmit_service = AttrDict()
-                if 'traffic_transmit_service_id' in model.__dict__ and model.traffic_transmit_service_id:
+                if 'traffic_transmit_service_id' in model and model.traffic_transmit_service_id:
                     traffic_transmit_service.id =  self.model.traffic_transmit_service_id
 
                 
@@ -2680,7 +2673,7 @@ class TarifWindow(QtGui.QMainWindow):
                     if id:
                         prepaid_node.id = id
 
-                    if 'id' in traffic_transmit_service.__dict__:
+                    if 'id' in traffic_transmit_service:
                         prepaid_node.traffic_transmit_service = traffic_transmit_service.id
                     prepaid_node.group = self.prepaid_tableWidget.item(i,1).id
                     prepaid_node.size = unicode(int(float(self.prepaid_tableWidget.item(i,2).text())*1048576))
@@ -2689,7 +2682,7 @@ class TarifWindow(QtGui.QMainWindow):
 
 
     
-            elif (self.transmit_service_checkbox.checkState()==0) and "radius_traffic_transmit_service" in model.__dict__:
+            elif (self.transmit_service_checkbox.checkState()==0) and "radius_traffic_transmit_service" in model:
                 model.traffic_transmit_service=None
 
 
