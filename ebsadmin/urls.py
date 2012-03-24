@@ -203,6 +203,7 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^banks/$', 'banks'),
      
      url(r'^tariffs/set/$', 'tariffs_set'),
+     url(r'^tariffs/delete/$', 'tariffs_delete'),
      url(r'^tariffs/$', 'tariffs'),
      #url(r'^subaccounts/get/$', 'subaccount'),
      url(r'^subaccounts/set/$', 'subaccount_save'),
