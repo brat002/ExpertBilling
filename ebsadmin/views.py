@@ -3976,7 +3976,7 @@ def streets(request):
     res=[]
     for item in items:
         res.append(instance_dict(item))
-    return {"records": items, 'status':True, 'totalCount':len(items)}
+    return {"records": res, 'status':True, 'totalCount':len(items)}
 
 @ajax_request
 @login_required
