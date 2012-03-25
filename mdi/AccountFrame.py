@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui
 
 import traceback
 import psycopg2
-from ebsWindow import ebsTable_n_TreeWindow
+from ebsWindow import ebsTable_n_TreeWindow, ebsTableView_n_TreeWindow
 from db import Object as Object
 from helpers import dateDelim
 from helpers import connlogin
@@ -32,6 +32,7 @@ from MessagesFrame import MessageDialog
 from AccountEditFrame import AccountWindow, AddAccountTarif
 from mako.template import Template
 from AccountFilter import AccountFilterDialog
+from datamodels import MyTableModel
 
 strftimeFormat = "%d" + dateDelim + "%m" + dateDelim + "%Y %H:%M:%S"
 qtTimeFormat = "YYYY-MM-DD HH:MM:SS"
@@ -2737,7 +2738,7 @@ class TarifWindow(QtGui.QMainWindow):
 
             
 
-class AccountsMdiEbs(ebsTable_n_TreeWindow):
+class AccountsMdiEbs(ebsTableView_n_TreeWindow):
     def __init__(self, connection, parent, selected_account=None):
         columns=[u'#', u'Имя пользователя', u'Баланс', u'Кредит', u'Имя', u'Сервер доступа', u'VPN IP адрес', u'IPN IP адрес', u"MAC адрес", u'', u"Дата создания", u"Комментарий"]
         initargs = {"setname":"account_frame", "objname":"AccountEbsMDI", "winsize":(0,0,1100,600), "wintitle":"Пользователи", "tablecolumns":columns, "spltsize":(0,0,391,411), "treeheader":"Тарифы", "tbiconsize":(18,18)}
@@ -2819,7 +2820,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         self.toolBar.setIconSize(QtCore.QSize(18,18))
         self.toolBar2.setIconSize(QtCore.QSize(18,18))
         
-        self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editframe)
+        self.tableWidget.doubleClicked.connect(self.editframe) 
         self.connect(self.tableWidget, QtCore.SIGNAL("itemSelectionChanged()"), self.delNodeLocalAction)
         self.tb.setMenu(self.menu)
         self.reports_tb.setMenu(self.reports_menu)
@@ -3108,7 +3109,9 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             
     
     def getSelectedId(self):
-        return self.tableWidget.item(self.tableWidget.currentRow(), 0).id
+        index = self.tableWidget.selectionModel().currentIndex()
+        
+        return self.tableWidget.model().currentIdByIndex(index)
 
 
     def pass_(self):
@@ -3133,6 +3136,7 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
     def editframe(self, *args, **kwargs):
         #print self.tableWidget.item(self.tableWidget.currentRow(), 0).text()
         id=self.getSelectedId()
+        print "id", id
         #print id
         if id == 0:
             return
@@ -3345,18 +3349,12 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
             except:
                 return
         
-        if id==-1000 or id==-2000 or id==-4000 or id==-5000 or id==-12000:
-            #self.sql=''
-            columns=[u'#', u'Аккаунт', u"Договор",u'Тарифный план', u'Баланс', u"Кредит", u'ФИО',  u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'Блокировка по балансу', u'Блокировка по лимитам' ,  u'Сессия активна',  u'Создан', u"Комментарий"]
-            makeHeaders(columns, self.tableWidget)
-        else:
-            columns=[u'#', u'Аккаунт',  u"Договор", u'Баланс', u"Кредит", u'ФИО', u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'Блокировка по балансу', u'Блокировка по лимитам' ,  u'Сессия активна',  u'Создан', u"Комментарий"]
-            makeHeaders(columns, self.tableWidget)
+
 
         #print "sql=", self.sql, id    
-        self.tableWidget.clearContents()  
-        self.tableWidget.setRowCount(0)
-        import json
+        #self.tableWidget.clearContents()  
+        #self.tableWidget.setRowCount(0)
+        #import json
 
         if self.sql:
 
@@ -3377,6 +3375,16 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         else:
             return
         
+        
+        if id==-1000 or id==-2000 or id==-4000 or id==-5000 or id==-12000:
+            #self.sql=''
+            columns=[u'#', u'Аккаунт', u"Договор",u'Тарифный план', u'Баланс', u"Кредит", u'ФИО',  u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'Блокировка по балансу', u'Блокировка по лимитам' ,  u'Сессия активна',  u'Создан', u"Комментарий"]
+            model = MyTableModel(datain = accounts, columns = columns)
+        else:
+            columns=[u'#', u'Аккаунт',  u"Договор", u'Баланс', u"Кредит", u'ФИО', u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'Блокировка по балансу', u'Блокировка по лимитам' ,  u'Сессия активна',  u'Создан', u"Комментарий"]
+        model = MyTableModel(datain = accounts, columns = columns)
+            
+        self.tableWidget.setModel(model)
         self.treeWidget.setDisabled(True)
 
         
@@ -3384,9 +3392,13 @@ class AccountsMdiEbs(ebsTable_n_TreeWindow):
         id=self.getTarifId()
         #accounts=accounts.toList()
         #print accounts
-        self.tableWidget.setRowCount(len(accounts))
-        
-
+        #self.tableWidget.setRowCount(len(accounts))
+        HeaderUtil.getHeader("%s%s" % (self.setname,self.getTreeId()<0), self.tableWidget)
+        #HeaderUtil.getHeader("account_frame_header", self.tableWidget)
+        self.delNodeLocalAction()
+        #self.tablewidget.setShowGrid(False)
+        self.tableWidget.setSortingEnabled(True)
+        return
         m_ballance = 0
         disabled_accounts = 0
         now = datetime.datetime.now()

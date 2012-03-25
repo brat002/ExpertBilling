@@ -171,7 +171,7 @@ def makeHeaders(columns, table):
         table.setHorizontalHeaderItem(i, header)
         i+=1
 
-        
+
 def connlogin(func):
     def relogfunc(*args, **kwargs):
         try:
@@ -179,7 +179,7 @@ def connlogin(func):
             return res
         except Exception, cce:
             print repr(cce)
-            QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"Потеря связи."))
+            QtGui.QMessageBox.warning(args[0], u"Внимание", unicode(u"%s." % repr(cce)))
         '''
         except Pyro.errors.ConnectionDeniedError, cde:
             print repr(cde)
