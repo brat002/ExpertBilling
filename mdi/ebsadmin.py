@@ -1733,7 +1733,7 @@ class MainWindow(QtGui.QMainWindow):
             self.writeSettings()
             event.accept()
 
-    @connlogin
+
     def newFile(self):
         self.workspace.windowList()
         
