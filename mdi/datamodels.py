@@ -1,5 +1,7 @@
+#-*-coding=utf-8*-
 from PyQt4 import QtCore, QtGui
 import datetime
+import operator
 
 class MyTableModel(QtCore.QAbstractTableModel):
     def __init__(self, datain, columns=[], parent=None, *args):
@@ -12,7 +14,8 @@ class MyTableModel(QtCore.QAbstractTableModel):
         QtCore.QAbstractTableModel.__init__(self, parent, *args)
         self.arraydata = datain
         self.columns =columns
-        self.int_columns = ['id', 'username', 'contract',  'tariff', 'ballance', 'credit', 'fullname',  'address',  'vpn_ips', 'ipn_ips', 'ipn_macs', 'balance_blocked', 'disabled_by_limit', 'account_online', 'created', 'comment']
+        
+        self.int_columns = ['id', 'username', 'contract', 'ballance', 'credit', 'fullname',  'address',  'vpn_ips', 'ipn_ips', 'ipn_macs', 'balance_blocked', 'disabled_by_limit', 'account_online', 'created', 'comment']
 
     def rowCount(self, parent):
         return len(self.arraydata)
@@ -23,6 +26,19 @@ class MyTableModel(QtCore.QAbstractTableModel):
         else:
             return 0
 
+    def setIntColumns(self):
+        
+         self.emit(QtCore.SIGNAL("LayoutAboutToBeChanged()"))
+
+         self.emit(QtCore.SIGNAL("LayoutChanged()"))
+         self.dataChanged.emit(self.createIndex(0, 0),
+                               self.createIndex(self.rowCount(0),
+                                                self.columnCount(0)))
+         self.emit(QtCore.SIGNAL("DataChanged(QModelIndex,QModelIndex)"),
+                   self.createIndex(0, 0),
+                   self.createIndex(self.rowCount(0),
+                                    self.columnCount(0))) 
+         
     def data(self, index, role):
         if not index.isValid():
             return QtCore.QVariant()
@@ -62,7 +78,17 @@ class MyTableModel(QtCore.QAbstractTableModel):
         if column=='fullname':
 
             return QtCore.QVariant(unicode(value if value else getattr(self.arraydata[index.row()], 'org_name')))
+        if type(value)==list:
+            value = ','.join(value)
         
+        if column in ['vpn_ips', 'ipn_ips']:
+            value = value.replace('{', '').replace('}', '')
+            
+        if value in [None, 'None']:
+            value = ''
+        if type(value)==bool:
+            value = u'Да' if value=='True' else u'Нет'
+            
         if isinstance(value,datetime.datetime):
             return QtCore.QDateTime(value)
 
@@ -79,3 +105,12 @@ class MyTableModel(QtCore.QAbstractTableModel):
                     pass
         return QtCore.QVariant()
     
+    def sort(self, Ncol, order):
+        """Sort table by given column number.
+        """
+        self.emit(QtCore.SIGNAL("layoutAboutToBeChanged()"))
+        self.arraydata = sorted(self.arraydata, key=operator.itemgetter(self.int_columns[Ncol]))        
+        if order == QtCore.Qt.DescendingOrder:
+            self.arraydata.reverse()
+        self.emit(QtCore.SIGNAL("layoutChanged()"))
+        

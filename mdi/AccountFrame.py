@@ -3380,11 +3380,15 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
             #self.sql=''
             columns=[u'#', u'Аккаунт', u"Договор",u'Тарифный план', u'Баланс', u"Кредит", u'ФИО',  u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'Блокировка по балансу', u'Блокировка по лимитам' ,  u'Сессия активна',  u'Создан', u"Комментарий"]
             model = MyTableModel(datain = accounts, columns = columns)
+            model.int_columns = ['id', 'username', 'contract',  'tariff', 'ballance', 'credit', 'fullname',  'address',  'vpn_ips', 'ipn_ips', 'ipn_macs', 'balance_blocked', 'disabled_by_limit', 'account_online', 'created', 'comment']
         else:
             columns=[u'#', u'Аккаунт',  u"Договор", u'Баланс', u"Кредит", u'ФИО', u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'Блокировка по балансу', u'Блокировка по лимитам' ,  u'Сессия активна',  u'Создан', u"Комментарий"]
-        model = MyTableModel(datain = accounts, columns = columns)
             
+            model = MyTableModel(datain = accounts, columns = columns)
+            model.int_columns = ['id', 'username', 'contract', 'ballance', 'credit', 'fullname',  'address',  'vpn_ips', 'ipn_ips', 'ipn_macs', 'balance_blocked', 'disabled_by_limit', 'account_online', 'created', 'comment']
+        
         self.tableWidget.setModel(model)
+        model.setIntColumns()
         self.treeWidget.setDisabled(True)
 
         

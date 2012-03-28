@@ -147,7 +147,7 @@ def tableFormat(table, no_vsection_size=False):
     table.verticalHeader().setHidden(True)
     table.setColumnHidden(0, True)
     hh = table.horizontalHeader()
-    hh.setMaximumHeight(17)
+    hh.setMaximumHeight(18)
     hh.setStretchLastSection(False)
     hh.setHighlightSections(False)
     hh.setClickable(True)
