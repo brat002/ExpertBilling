@@ -1760,7 +1760,7 @@ class TemplatesWindow(QtGui.QMainWindow):
             for x in tmpl.get(tt.id):
                 item = QtGui.QTreeWidgetItem(r_item)
                 item.id=x.id
-                item.type=x.type
+                item.type_id=x.type
                 item.setText(0, x.name)  
                   
                 try:
