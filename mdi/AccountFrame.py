@@ -2910,10 +2910,12 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
         
     def get_selected_accounts(self):
         ids = []
-        for r in self.tableWidget.selectedItems():
-            if r.column()==0:
-                if r.id:
-                    ids.append(r.id)
+        
+        model = self.tableWidget.model().currentIdByIndex(index)
+        for index in self.tableWidget.selectionModel().selection().indexes():
+            
+            ids.append(model.currentIdByIndex(index))
+            
         return ids
     
     def changeTariff(self):
