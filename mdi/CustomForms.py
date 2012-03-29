@@ -1643,7 +1643,7 @@ class TemplatesWindow(QtGui.QMainWindow):
     def editTemplate(self, item1, item2):
         
         try:
-            type_id = self.treeWidget.currentItem().type
+            type_id = self.treeWidget.currentItem().type_id
             id = self.treeWidget.currentItem().id
         except:
             self.lineEdit_name.setText('')
@@ -1771,7 +1771,7 @@ class TemplatesWindow(QtGui.QMainWindow):
 
             
     def preview(self):
-        id = self.treeWidget.currentItem().type
+        id = self.treeWidget.currentItem().type_id
         print "type_id", id
         templ = Template(unicode(self.textBrowser_remplate_body.toPlainText()), input_encoding='utf-8')
         data=''

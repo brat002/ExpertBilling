@@ -1283,6 +1283,7 @@ class IPPool(models.Model):
     type = models.IntegerField()
     start_ip = models.IPAddressField()
     end_ip = models.IPAddressField()
+    next_ippool = models.ForeignKey("IPPool", blank=True, null=True)
     
     class Meta:
         ordering = ['name']
