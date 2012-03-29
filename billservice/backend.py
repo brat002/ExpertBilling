@@ -23,7 +23,7 @@ def get_account(**kwargs):
         return accounts[0]
 
 def check_password(obj, row_password):
-    _hash = md5(row_password).hexdigest()
+    #_hash = md5(row_password).hexdigest()
     if isinstance(obj, Account):
         log.debug('Account obj found, try to compare %s == %s' % (obj.password, row_password))
         return str(obj.password) == str(row_password)

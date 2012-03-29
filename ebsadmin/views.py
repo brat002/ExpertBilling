@@ -4084,7 +4084,7 @@ def account_save(request):
             if contracttemplate_id:
                 contr = ContractTemplate.objects.get(id=contracttemplate_id)
 
-        if newcontract:
+        if newcontract and contr:
 
             if not acc:
                 accid=Account.objects.all().order_by("-id")[0].id+1
