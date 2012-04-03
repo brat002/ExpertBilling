@@ -3969,7 +3969,7 @@ def streets(request):
     if city_id:
         items = Street.objects.filter(city__id=city_id)
     elif id:
-        items = Street.objects.get(id=id)
+        items = [Street.objects.get(id=id)]
     else:
         items = Street.objects.all()
 
@@ -4467,7 +4467,7 @@ def houses(request):
     if street_id:
         items = House.objects.filter(street__id=street_id)
     elif id:
-        items = House.objects.get(id=id)
+        items = [House.objects.get(id=id)]
     else:
         items = House.objects.all()
 
