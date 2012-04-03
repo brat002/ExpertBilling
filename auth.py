@@ -345,12 +345,12 @@ class Auth:
         
     def _MSCHAP2Decrypt(self):
         (self.ident, var, self.PeerChallenge, reserved, self.NTResponse)=struct.unpack("!BB16s8s24s",self.packet['MS-CHAP2-Response'][0])
-        self.AuthenticatorChallenge=self.packet['MS-CHAP-Challenge'][0]
+        self.AuthenticatorChallenge=self.packet.get('MS-CHAP-Challenge', [''])[0]
         return self.NTResponse==self._GenerateNTResponse(self.AuthenticatorChallenge, self.PeerChallenge, self.plainusername, self.plainpassword)
 
     def _CHAPDecrypt(self):
         (ident , password)=struct.unpack('!B16s',self.packet['CHAP-Password'][0])
-        pck="%s%s%s" % (struct.pack('!B',ident),self.plainpassword,self.packet['CHAP-Challenge'][0])
+        pck="%s%s%s" % (struct.pack('!B',ident),self.plainpassword,self.packet.get('CHAP-Challenge', [''])[0])
         return md5.new(pck).digest()==password
 
     def _PwDecrypt(self):
