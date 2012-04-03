@@ -350,7 +350,10 @@ class Auth:
 
     def _CHAPDecrypt(self):
         (ident , password)=struct.unpack('!B16s',self.packet['CHAP-Password'][0])
-        pck="%s%s%s" % (struct.pack('!B',ident),self.plainpassword,self.packet.get('CHAP-Challenge', [''])[0])
+        if self.packet.has_key('CHAP-Challenge'):
+            pck="%s%s%s" % (struct.pack('!B',ident),self.plainpassword,self.packet.get('CHAP-Challenge', [''])[0])
+        else:
+            pck="%s%s%s" % (struct.pack('!B',ident),self.plainpassword,self.packet.authenticator)
         return md5.new(pck).digest()==password
 
     def _PwDecrypt(self):
