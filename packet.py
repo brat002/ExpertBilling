@@ -273,11 +273,13 @@ class Packet(UserDict.UserDict):
 
 	def _PktEncodeAttribute(self, key, value):
 		if type(key)==types.TupleType:
-			value=struct.pack("!L", key[0]) + \
-				self._PktEncodeAttribute(key[1], value)
+			value=struct.pack("!L", key[0]) + self._PktEncodeAttribute(key[1], value)
 			key=26
-        try: return "%s%s" % (struct.pack("!BB", key, (len(value)+2)), str(value))
-        except: print key, value, type(key), type(value)
+		try: 
+        		return "%s%s" % (struct.pack("!BB", key, (len(value)+2)), str(value))
+    		except: 
+        		print key, value, type(key), type(value)
+        		return ""
 
 	def _PktEncodeAttributes(self):
 		result=""
