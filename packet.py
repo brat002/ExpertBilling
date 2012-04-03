@@ -149,9 +149,9 @@ class Packet(UserDict.UserDict):
 
 	def __getitem__(self, key):
 		if type(key)!=types.StringType:
-			return self.data.get(key,'')
+			return self.data[key]
 
-		values=self.data.get(self._EncodeKey(key), "")
+		values=self.data.get(self._EncodeKey(key), [''])
 		attr=self.dict.attributes[key]
 		res=[]
 		for v in values:
