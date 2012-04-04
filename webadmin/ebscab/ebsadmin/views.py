@@ -3015,7 +3015,7 @@ def tpchange_save(request):
 
 @login_required
 @ajax_request
-@transaction.commit_manually
+#@transaction.commit_manually
 def tariffs_set(request):
     
     if  not request.user.is_staff==True:
@@ -3033,7 +3033,7 @@ def tariffs_set(request):
             form = AccessParametersForm(js['access_parameters'], instance=item)
         else:
             form = AccessParametersForm(js['access_parameters'])
-            
+        
         
         if form.is_valid():
             access_parameters = form.save(commit=False)
@@ -3365,7 +3365,7 @@ def tariffs_set(request):
             if form.is_valid():
                 traffictransmitnode_item = form.save(commit=False)
                 traffictransmitnode_item.save()
-                log('EDIT', request.user, traffictransmitnode_item) if 'id' in traffictransmitnode.get('id') else log('CREATE', request.user, traffictransmitnode_item)
+                log('EDIT', request.user, traffictransmitnode_item) if traffictransmitnode.get('id') else log('CREATE', request.user, traffictransmitnode_item)
             else:
 
                 transaction.rollback()
@@ -3392,7 +3392,7 @@ def tariffs_set(request):
             if form.is_valid():
                 prepaidtraffictransmitnode_item = form.save(commit=False)
                 prepaidtraffictransmitnode_item.save()
-                log('EDIT', request.user, prepaidtraffictransmitnode_item) if 'id' in prepaidtrafficnode.get('id') else log('CREATE', request.user, prepaidtraffictransmitnode_item)
+                log('EDIT', request.user, prepaidtraffictransmitnode_item) if prepaidtrafficnode.get('id') else log('CREATE', request.user, prepaidtraffictransmitnode_item)
             else:
 
                 transaction.rollback()
