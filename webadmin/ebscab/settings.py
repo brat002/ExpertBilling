@@ -45,7 +45,7 @@ SECRET_KEY = '%!a5^gik_4lgzt+k)vyo6)y68_3!u^*j(ujks7(=6f2j89d=x&'
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
+    'django.template.loaders.app_directories.Loader',
 #     'django.template.loaders.eggs.load_template_source',
 )
 
@@ -135,7 +135,7 @@ EMAIL_HOST_USER = 'user@gmail.com'
 EMAIL_HOST_PASSWORD = 'userpassword'
 
 
-CURRENCY = '$'
+CURRENCY = u' руб'
 
 TEST_RUNNER = 'testcases.test_runner.run_tests'
 PERSONAL_AREA_STAFF_MENU = [
