@@ -1543,6 +1543,7 @@ class Street(models.Model):
     
     def __unicode__(self):
         return u"%s" % self.name
+    
     class Meta:
         ordering = ['name']
         permissions = (

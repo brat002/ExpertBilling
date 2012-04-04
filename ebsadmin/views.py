@@ -3966,6 +3966,7 @@ def streets(request):
         return {'status':True, 'records':[], 'totalCount':0}
     city_id = request.POST.get('city_id')
     id = request.POST.get('id')
+    items = []
     if city_id:
         items = Street.objects.filter(city__id=city_id)
     elif id:
