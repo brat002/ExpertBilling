@@ -1989,7 +1989,7 @@ def trafficclasses(request):
             return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
         
     else:
-        items = TrafficClass.objects.all()
+        items = TrafficClass.objects.all().order_by("weight")
 
     res=[]
     for item in items:
