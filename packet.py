@@ -276,7 +276,7 @@ class Packet(UserDict.UserDict):
 			value=struct.pack("!L", key[0]) + self._PktEncodeAttribute(key[1], value)
 			key=26
 		try: 
-        		return "%s%s" % (struct.pack("!BB", int(key), len(value)+2), str(value))
+        		return "%s%s" % (str(struct.pack("!BB", int(key), len(value)+2)), str(value))
     		except: 
         		print key, value, type(key), type(value)
         		return ""

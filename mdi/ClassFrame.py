@@ -713,10 +713,10 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
         model1 = self.connection.get_trafficclasses(id=item_changed_id)
         model2 = self.connection.get_trafficclasses(id=item_swap_id)
         #print model1.name, model2.name
-        a=model1.weight+0
-        b=model2.weight+0
+        a=int(model1.weight)
+        b=int(model2.weight)
         #print "a,b", a,b, model1.id, model2.id
-        model1.weight=1000001
+        model1.weight=2000001
         try:
             
             self.connection.trafficclasses_save(model1)
@@ -724,9 +724,9 @@ class ClassChildEbs(ebsTable_n_TreeWindow):
             model2.weight=a
             model1.weight=b
             
-            self.connection.trafficclasses_save(model2,"nas_trafficclass")
+            self.connection.trafficclasses_save(model2)
             
-            self.connection.trafficclasses_save(model1,"nas_trafficclass")
+            self.connection.trafficclasses_save(model1)
             
             #self.connection.create(model2.save("nas_trafficclass"))
             self.connection.commit()
