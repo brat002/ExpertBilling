@@ -2804,7 +2804,7 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
 
 
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
-                   self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction",  "actionAddAccount", "actionEnableSession", "actionDisableSession", "actionDeleteAccount", "messageDialogAction", "rrdAccountTrafficInfo","radiusauth_logInfo", "actionBalanceLog"], \
+                   self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction", "messageDialogAction", "rrdAccountTrafficInfo","radiusauth_logInfo", "actionBalanceLog"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
                    self.toolBar2   :["actionChangeTarif", "actionSetSuspendedPeriod", "connectionAgreementAction", 'separator',  'radiusauth_logInfo', "actionBalanceLog","rrdAccountTrafficInfo", "separator","actionRadiusAttrs",],\
                    self.menu   :[ 'actionSettlementPeriodInfo', 'separator', "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', 'actionPrepaidRadiusTimeInfo'],\
@@ -2911,11 +2911,12 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
     def get_selected_accounts(self):
         ids = []
         
-        model = self.tableWidget.model().currentIdByIndex(index)
+        model = self.tableWidget.model()
         for index in self.tableWidget.selectionModel().selection().indexes():
-            
+            if index.column()!=0: continue
             ids.append(model.currentIdByIndex(index))
             
+        print ids
         return ids
     
     def changeTariff(self):
@@ -2977,16 +2978,7 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
     def suspended_period(self):
         ids = []
         #import Pyro
-        for index in self.tableWidget.selectedIndexes():
-            #print index.row(), index.column()
-            if not index.column()==0:
-                continue
-
-            i=unicode(self.tableWidget.item(index.row(), 0).id)
-            try:
-                ids.append(int(i))
-            except Exception, e:
-                print "can not convert id to int"      
+        ids=self.get_selected_accounts()    
                 
         #print ids
         if not ids: return
