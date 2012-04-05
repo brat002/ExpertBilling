@@ -31,6 +31,15 @@ def default(obj):
 
     return simplejson.JSONEncoder.default(self, obj)
 
+def default_detail(obj):
+    '''Convert object to JSON encodable type.'''
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    if isinstance(obj, datetime.datetime):
+        return obj.strftime('%Y-%m-%d %H:%M:%S.%f')
+
+    return simplejson.JSONEncoder.default(self, obj)
+
 class HttpBot(object):
     """an HttpBot represents one browser session, with cookies."""
     def __init__(self, widget, host):
@@ -296,6 +305,15 @@ class HttpBot(object):
             self.error(d)
             return
         return d
+    def transaction_delete(self,data):
+        url='http://%s/ebsadmin/transactions/delete/' % self.host 
+        #print model
+        d = self.POST(url,{'data':json.dumps(data, ensure_ascii=False, default=default_detail)})
+        if not d.status:
+            self.error(d)
+            return
+        return d
+    
     
     def set_cardsstatus(self, ids=[], status=True):
         url='http://%s/ebsadmin/cards/status/set/' % self.host 
@@ -2104,7 +2122,7 @@ class MainWindow(QtGui.QMainWindow):
         global connection
         connection = login()
         global mainwindow
-        mainwindow.setWindowTitle("ExpertBilling administrator interface #%s - %s" % (username, server_ip)) 
+        mainwindow.setWindowTitle("ExpertBilling administrator interface #%s - %s" % (connection.username, connection.host)) 
         
 
     def updateMenus(self):

@@ -1624,7 +1624,7 @@ class TarifWindow(QtGui.QMainWindow):
                 #self.periodical_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(child.comboBox.currentText()))
                 #print "selected_id", child.selected_id
                 
-                print "child.selected_id", child.selected_id
+
                 self.addrow(self.trafficcost_tableWidget, child.comboBox.currentText(), y, x, 'combobox', child.selected_id)
                 
         if x==5:
@@ -1634,9 +1634,9 @@ class TarifWindow(QtGui.QMainWindow):
             except:
                 default_text=0
 
-            text = QtGui.QInputDialog.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text, -1000000,1000000,2)      
+            text = QtGui.QInputDialog.getDouble(self, u"Цена за МБ:", u"Введите цену", default_text, -1000000,1000000,3)      
 
-            self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode(text[0])))
+            self.trafficcost_tableWidget.setItem(y,x, QtGui.QTableWidgetItem(unicode("%.3f" % float(text[0]))))
 
         if x==1:
             item = self.trafficcost_tableWidget.item(y,x)
@@ -2063,7 +2063,7 @@ class TarifWindow(QtGui.QMainWindow):
                     self.addrow(self.tableWidget_radius_traffic_trafficcost, node.id,i, 0, id=node.id)
                     self.addrow(self.tableWidget_radius_traffic_trafficcost, node.value,i, 1)
                     self.addrow(self.tableWidget_radius_traffic_trafficcost, node.timeperiod,i, 2, 'combobox', node.timeperiod_id)
-                    self.addrow(self.tableWidget_radius_traffic_trafficcost, node.cost,i, 3)
+                    self.addrow(self.tableWidget_radius_traffic_trafficcost, "%.3f" % float(node.cost),i, 3)
                     i+=1                
                 self.tableWidget_radius_traffic_trafficcost.setColumnHidden(0, True)
                         
@@ -2221,7 +2221,7 @@ class TarifWindow(QtGui.QMainWindow):
                         self.addrow(self.trafficcost_tableWidget, node.group, i, 3, id=node.group_id)
                         self.addrow(self.trafficcost_tableWidget, node.timeperiod, i, 4, id=node.timeperiod_id)
                         #self.trafficcost_tableWidget.setItem(i,4, CustomWidget(parent=self.trafficcost_tableWidget, models=time_nodes))
-                        self.addrow(self.trafficcost_tableWidget, node.cost, i, 5)
+                        self.addrow(self.trafficcost_tableWidget, "%.3f" % float(node.cost), i, 5)
                         i+=1
                         
                     self.trafficcost_tableWidget.resizeRowsToContents()

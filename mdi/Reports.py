@@ -802,30 +802,8 @@ class TransactionsReportEbs(ebsTableWindow):
         #print ids
         #table=self.transactions_types.get(unicode(self.comboBox_transactions_type.itemData(self.comboBox_transactions_type.currentIndex()).toString()))
         if not ids:return
-        
-        for id,date,table in ids:
-            #print id,date,table
-            if table=="billservice_transaction":
-                self.connection.transaction_delete(ids=[(id,date)])       
-            elif  table=="billservice_periodicalservicehistory":
-
-                self.connection.command("DELETE FROM billservice_periodicalservicehistory WHERE id=%s and created='%s'" % (id, date,))
-                self.connection.commit()
-            elif  table=="billservice_onetimeservicehistory":
-                self.connection.command("DELETE FROM billservice_onetimeservicehistory WHERE id=%s and created='%s'" % (id, date,))
-                self.connection.commit()
-            elif  table=="billservice_addonservicetransaction":
-                self.connection.command("DELETE FROM billservice_addonservicetransaction WHERE id=%s and created='%s'" % (id, date,))
-                self.connection.commit()
-            elif  table=="billservice_traffictransaction":
-                self.connection.command("DELETE FROM billservice_traffictransaction WHERE id=%s and created='%s'" % (id, date,))
-                self.connection.commit()
-            elif  table=="billservice_timetransaction":
-                self.connection.command("DELETE FROM billservice_timetransaction WHERE id=%s and created='%s'" % (id, date,))
-                self.connection.commit()         
-            elif  table=="qiwi_invoice":
-                self.connection.command("DELETE FROM qiwi_invoice WHERE id=%s and created='%s'" % (id, date,))
-                self.connection.commit()                            
+        self.connection.transaction_delete(data=ids)
+               
         if ids:
             self.refresh_table()
      

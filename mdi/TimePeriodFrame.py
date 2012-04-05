@@ -432,7 +432,7 @@ class TimePeriodChildEbs(ebsTable_n_TreeWindow):
         #print id
         
         try:
-            nodemodel = self.connection.get_timenodes(unicode(self.getSelectedId()))
+            nodemodel = self.connection.get_timenodes(id=unicode(self.getSelectedId()))
             #nodemodel = self.connection.sql("SELECT * FROM billservice_timeperiodnode WHERE id=%d;" % int(id))[0]
         except Exception, e:
             pass
