@@ -29,7 +29,7 @@ from billservice.forms import ActionLogFilterForm, ManufacturerForm, OperatorFor
 from billservice import authenticate, log_in, log_out
 from nas.forms import NasForm, TrafficNodeForm, TrafficClassForm, SwitchForm
 from radius.forms import SessionFilterForm
-
+import ipaddr
 from django.db.models import Q
 from django.db import transaction
 from object_log.models import LogItem
@@ -4193,7 +4193,7 @@ def account_save(request):
 
 @login_required
 @ajax_request
-@transaction.commit_manually()
+#@transaction.commit_manually()
 def subaccount_save(request):
     
     #from django.core import serializers
@@ -4345,7 +4345,7 @@ def subaccount_save(request):
             
             if  subacc.ipn_ip_address not in ['0.0.0.0','',None]:
                 if ipn_pool:
-                    if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
+                    if not ipaddr.IPv4Network(ipn_pool.start_ip)<=ipaddr.IPv4Network(subacc.ipn_ip_address)<=ipaddr.IPv4Network(ipn_pool.end_ip):
                         transaction.rollback()
                         return {"status": False, 'message':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
                     
@@ -4375,7 +4375,7 @@ def subaccount_save(request):
                 subacc.ipn_ipinuse=None
         elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and ipn_pool:
 
-            if not IPy.IP(ipn_pool.start_ip).int()<=IPy.IP(subacc.ipn_ip_address).int()<=IPy.IP(ipn_pool.end_ip).int():
+            if not ipaddr.IPv4Network(ipn_pool.start_ip)<=ipaddr.IPv4Network(subacc.ipn_ip_address)<=ipaddr.IPv4Network(ipn_pool.end_ip):
                 transaction.rollback()
                 return {"status": False, 'message':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
 
