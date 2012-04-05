@@ -429,6 +429,7 @@ def timeperiods_delete(request):
     else:
         return {"status": False, "message": "TimePeriod not found"}
    
+
 @ajax_request
 @login_required
 def timeperiodnodes_delete(request):
@@ -1118,7 +1119,7 @@ def tariffs(request):
     normal_fields = bool(request.POST.get('normal_fields',False))
 
     if id and id!='None':
-        items = Tariff.objects.filter(id=id)
+        items = Tariff.objects.all_with_deleted().filter(id=id)
         if not items:
             return {'status':False, 'message': 'Tariff item with id=%s not found' % id}
         if len(items)>1:
@@ -3677,14 +3678,16 @@ def tariffs_delete(request):
     id = int(request.POST.get('id',0))
     if id:
         try:
-            item = Tariff.objects.get(id=id)
+            item = Tariff.objects.all_with_deleted().get(id=id)
+            log('DELETE', request.user, item)
+            item.delete()
         except Exception, e:
             return {"status": False, "message": u"Указанный тарифный план не найден %s" % str(e)}
  
-        item.delete()
+
         
-        log('DELETE', request.user, item)
-        item.delete()
+        
+
         return {"status": True}
     else:
         return {"status": False, "message": "AccountTarif not found"}
@@ -4420,7 +4423,7 @@ def getipfrompool(request):
     if default_ip:
         default_ip = IPy.IP(default_ip).int()
     pool_id=request.POST.get("pool_id")
-    limit=int(request.POST.get("limit", 50))
+    limit=int(request.POST.get("limit", 500))
     start=int(request.POST.get("start", 0))
     if not pool_id:
         return {'records':[], 'status':False}
@@ -5031,3 +5034,17 @@ def get_tail_log(request):
     s, o = commands.getstatusoutput("tail -n %s /opt/ebs/data/log/%s" % (count, log_name.replace('/','')))
 
     return {'status': True, 'data': o}
+
+@ajax_request
+@login_required
+def transactions_delete(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.transactions_delete'):
+        return {'status':False, 'message':u'У вас недостатчно прав для удаления проводок'}
+    js = json.loads(request.POST.get('data','{}'))
+    if js:
+        cursor = connection.cursor()
+        for id,date, table in js:
+            cursor.execute("DELETE FROM %s WHERE id=%%s and created=%%s" % table, (id, date))
+    return {"status": True}
+
+    
