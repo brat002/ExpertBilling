@@ -2916,7 +2916,7 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
             if index.column()!=0: continue
             ids.append(model.currentIdByIndex(index))
             
-        print ids
+
         return ids
     
     def changeTariff(self):

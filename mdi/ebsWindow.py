@@ -924,17 +924,22 @@ class ebsTableView_n_TreeWindow(QtGui.QMainWindow):
         
     def tableFind(self):
         self.tableWidget.clearSelection()
-        for y in xrange(self.tableWidget.rowCount()):
-            for x in xrange(self.tableWidget.columnCount()):
-                #print "check"
+        model = self.tableWidget.model()
+        for column in xrange(self.tableWidget.model().columnCount(self)):
+            for row in xrange(self.tableWidget.model().rowCount(self)):
                 try:
-                    if unicode(self.tableWidget.item(y,x).text()).lower().rfind(unicode(self.lineEdit_search_text.text()).lower())>-1:
-                        self.tableWidget.scrollToItem(self.tableWidget.item(y,x))
-                        self.tableWidget.setItemSelected(self.tableWidget.item(y,x), True)
-                except:
+                    
+                    index = self.tableWidget.model().index(column, row)
+                    data = unicode(model.data(index, QtCore.Qt.DisplayRole).toString()).lower()
+                    print data
+                    if data.rfind(unicode(self.lineEdit_search_text.text()).lower())!=-1:
+                        self.tableWidget.scrollTo(self.tableWidget.model().index(column, row))
+                        self.tableWidget.selectRow(index.row())
+                except Exception, e:
+                    print e
                     pass
-                    #print "finded!"
-                    #break
+                #print "finded!"
+                #break
 
     def exportToCSV(self):
         settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
