@@ -564,7 +564,7 @@ class SubaccountLinkDialog(QtGui.QDialog):
     def accountAddonServiceRefresh(self):
         if self.model:
 
-            sp = self.connection.get_accountaddonservices(subaccount_id=self.model.id)
+            sp = self.connection.get_accountaddonservices(subaccount_id=self.model.id, normal_fields=True)
             
             self.connection.commit()
             self.tableWidget.clearContents()

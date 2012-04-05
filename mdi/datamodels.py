@@ -74,6 +74,9 @@ class MyTableModel(QtCore.QAbstractTableModel):
         elif role != QtCore.Qt.DisplayRole:
             return QtCore.QVariant()
         
+        if column=='address':
+
+            return QtCore.QVariant(unicode(u"%s %s" % (value, getattr(self.arraydata[index.row()], 'room'))))
         
         if column=='fullname':
 
