@@ -632,8 +632,8 @@ class SubaccountLinkDialog(QtGui.QDialog):
                     if pool.id==self.model.ipv4_vpn_pool:
                         self.comboBox_vpn_pool.setCurrentIndex(i)
                         self.lineEdit_vpn_ip_address.setDisabled(True)  
-                elif self.model.vpn_ipinuse==False:
-                    if pool.id==pool_id.pool:
+                elif self.model.vpn_ipinuse:
+                    if pool.id==pool_id:
                         self.comboBox_vpn_pool.setCurrentIndex(i)
                         self.lineEdit_vpn_ip_address.setDisabled(True)
             i+=1
@@ -658,8 +658,8 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.comboBox_vpn_ipv6_pool.addItem(pool.name)
             self.comboBox_vpn_ipv6_pool.setItemData(i, QtCore.QVariant(pool.id))
             if self.model:
-                if self.model.vpn_ipv6_ipinuse==False:
-                    if pool.id==ipv6_pool_id.pool:
+                if self.model.vpn_ipv6_ipinuse:
+                    if pool.id==ipv6_pool_id:
                         self.comboBox_vpn_ipv6_pool.setCurrentIndex(i)
                         self.lineEdit_vpn_ipv6_address.setDisabled(True)
             i+=1
@@ -686,8 +686,8 @@ class SubaccountLinkDialog(QtGui.QDialog):
             self.comboBox_ipn_pool.addItem(pool.name)
             self.comboBox_ipn_pool.setItemData(i, QtCore.QVariant(pool.id))
             if self.model:
-                if self.model.ipn_ipinuse==False:
-                    if pool.id==pool_id.pool:
+                if self.model.ipn_ipinuse:
+                    if pool.id==pool_id:
                         self.comboBox_ipn_pool.setCurrentIndex(i)
                         self.lineEdit_ipn_ip_address.setDisabled(True)
             i+=1
@@ -847,9 +847,10 @@ class SubaccountLinkDialog(QtGui.QDialog):
         if pool_id and model.ipn_ip_address==u'0.0.0.0':
             QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPN пул, но не назначили ip адрес."))
             return 
-        
+        model.ipv4_ipn_pool = pool_id
 
-                
+        pool_id = self.comboBox_vpn_pool.itemData(self.comboBox_vpn_pool.currentIndex()).toInt()[0] or ''
+        model.ipv4_vpn_pool = pool_id   
          #Операции с vpn ipv6 пулом    
 
         pool_id = self.comboBox_vpn_ipv6_pool.itemData(self.comboBox_vpn_ipv6_pool.currentIndex()).toInt()[0] or ''
@@ -857,8 +858,9 @@ class SubaccountLinkDialog(QtGui.QDialog):
             QtGui.QMessageBox.critical(self, u"Ошибка", unicode(u"Вы указали IPV6 VPN пул, но не назначили ip адрес."))
             self.connection.rollback()
             return             
+        model.ipv6_ipn_pool = pool_id
 
-
+        
             
 
         d = self.connection.subaccount_save(model)

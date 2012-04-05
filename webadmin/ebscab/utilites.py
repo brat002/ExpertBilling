@@ -73,7 +73,7 @@ def cred(account, subacc, access_type, nas, format_string):
                 sshclient=ssh_client(host=nas.get('ipaddress'), username=nas.get('login'), password=nas.get('password'), command = command_string)
                 
                 del sshclient
-            elif nas.type=='localhost':
+            elif nas.get("type")=='localhost':
                 status, output = commands.getstatusoutput(command_string)
                 
             return True
