@@ -160,6 +160,7 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^suspendedperiod/set/$', 'suspendedperiod_set'),
      url(r'^suspendedperiod/delete/$', 'suspendedperiod_delete'),
      url(r'^transaction/set/$', 'transaction_set'),
+     url(r'^transactions/delete/$', 'transactions_delete'),
      url(r'^transaction/$', 'transactions'),
      url(r'^tariffforaccount/$', 'tariffforaccount'),
      
