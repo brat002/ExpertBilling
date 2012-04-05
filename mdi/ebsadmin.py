@@ -193,7 +193,7 @@ class HttpBot(object):
     def get_timenodes(self,id=None, period_id=None, fields=[]):
         url='http://%s/ebsadmin/timeperiodnodes/' % self.host 
         
-        d = self.POST(url,{'fields':fields, 'period_id':period_id})
+        d = self.POST(url,{'fields':fields, 'id':id, 'period_id':period_id})
         if not d.status:
             self.error(d)
             return
