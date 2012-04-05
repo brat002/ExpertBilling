@@ -1045,6 +1045,8 @@ class SystemUser(models.Model):
             ("setportsstatus","Установка статуса портов коммутатора"),
             ("list_log_files","Список лог-файлов биллинга"),
             ("view_log_files","Просмотр лог-файлов биллинга"),
+            ("transactions_delete","Удаление проводок"),
+            
             )
 
 class DocumentType(models.Model):

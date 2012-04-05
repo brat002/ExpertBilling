@@ -109,20 +109,20 @@ class TrafficNode(models.Model):
     direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
     protocol = models.CharField(max_length=10, blank=True, default='')
 
-    src_ip  = IPNetworkField(verbose_name=u'Cеть источника', default='0.0.0.0/0')
+    src_ip  = IPNetworkField(verbose_name=u'Cеть источника', blank=True, default='0.0.0.0/0')
 #    src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')
-    src_port  = models.IntegerField(verbose_name=u'Порт источника', default=0)
+    src_port  = models.IntegerField(verbose_name=u'Порт источника', blank=True, default=0)
 
-    dst_ip = IPNetworkField(verbose_name=u'Сеть получателя', default='0.0.0.0/0')
+    dst_ip = IPNetworkField(verbose_name=u'Сеть получателя', blank=True, default='0.0.0.0/0')
 #    dst_mask = models.IPAddressField(verbose_name=u'Маска сети получателя', default='0.0.0.0')
-    dst_port  = models.IntegerField(verbose_name=u'Порт получетеля', default=0)
+    dst_port  = models.IntegerField(verbose_name=u'Порт получетеля', blank=True, default=0)
 
-    next_hop = models.IPAddressField(verbose_name=u'Направление пакета (IP address)', default='0.0.0.0')
-    in_index  = models.IntegerField(verbose_name=u'SNMP IN порт', default=0)
-    out_index  = models.IntegerField(verbose_name=u'SNMP OUT порт', default=0)
+    next_hop = models.IPAddressField(verbose_name=u'Направление пакета (IP address)', blank=True, default='0.0.0.0')
+    in_index  = models.IntegerField(verbose_name=u'SNMP IN порт', blank=True, default=0)
+    out_index  = models.IntegerField(verbose_name=u'SNMP OUT порт', blank=True, default=0)
     
-    src_as  = models.IntegerField(verbose_name=u'src_as', default=0)
-    dst_as  = models.IntegerField(verbose_name=u'dst_as', default=0)
+    src_as  = models.IntegerField(verbose_name=u'src_as', blank=True, default=0)
+    dst_as  = models.IntegerField(verbose_name=u'dst_as', blank=True, default=0)
 
   
     def __unicode__(self):
