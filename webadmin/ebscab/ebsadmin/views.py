@@ -2962,7 +2962,7 @@ def salecards_set(request):
                     c.sold = item.created
                     c.save()
                     item.cards.add(c)
-                    log('EDIT', request.user, card)
+                    log('EDIT', request.user, c)
             res={"status": True, 'id':item.id}
         except Exception, e:
             res={"status": False, "message": str(e)}
@@ -4280,7 +4280,7 @@ def subaccount_save(request):
             if subaccs>0:
                 return {"status": False, 'message':u'Выбранный мак-адрес используется в другом аккаунте'}
 
-        if subacc.vpn_ip_address and not subacc.vpn_ip_address==('0.0.0.0'):    
+        if subacc.vpn_ip_address and not subacc.vpn_ip_address in ('0.0.0.0', '0.0.0.0/32'):    
             if not id:
                 subaccs = SubAccount.objects.exclude(account__id = account_id).filter(vpn_ip_address = subacc.vpn_ip_address).count()
             else:
@@ -4289,7 +4289,7 @@ def subaccount_save(request):
             if subaccs>0:
                 return {"status": False, 'message':u'Выбранный vpn_ip_address используется в другом аккаунте'}
 
-        if subacc.ipn_ip_address and not subacc.ipn_ip_address==('0.0.0.0'):    
+        if subacc.ipn_ip_address and not subacc.ipn_ip_address in ('0.0.0.0', '0.0.0.0/32'):    
             if not id:
                 subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_ip_address = subacc.ipn_ip_address, ).count()
             else:
@@ -4304,7 +4304,7 @@ def subaccount_save(request):
 
             #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
             
-            if  subacc.vpn_ip_address not in ['0.0.0.0','',None]:
+            if  subacc.vpn_ip_address not in ['0.0.0.0', '0.0.0.0/32','',None]:
                 if vpn_pool:
                     if not IPy.IP(vpn_pool.start_ip).int()<=IPy.IP(subacc.vpn_ip_address).int()<=IPy.IP(vpn_pool.end_ip).int():
                         transaction.rollback()
@@ -4326,14 +4326,14 @@ def subaccount_save(request):
                 
                     
                 
-            elif subacc.vpn_ip_address in ['0.0.0.0','',None]:
+            elif subacc.vpn_ip_address in ['0.0.0.0', '0.0.0.0/32','',None]:
 
                 obj = subacc.vpn_ipinuse
                 obj.disabled=datetime.datetime.now()
                 obj.save()
                 log('EDIT', request.user, obj)
                 subacc.vpn_ipinuse=None
-        elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and vpn_pool:
+        elif subacc.vpn_ip_address not in ['0.0.0.0', '0.0.0.0/32','',None] and vpn_pool:
 
             if not IPy.IP(vpn_pool.start_ip).int()<=IPy.IP(subacc.vpn_ip_address).int()<=IPy.IP(vpn_pool.end_ip).int():
                 transaction.rollback()
@@ -4348,7 +4348,7 @@ def subaccount_save(request):
 
 
             
-            if  subacc.ipn_ip_address not in ['0.0.0.0','',None]:
+            if  subacc.ipn_ip_address not in ['0.0.0.0', '0.0.0.0/32','',None]:
                 if ipn_pool:
                     if not ipaddr.IPv4Network(ipn_pool.start_ip)<=ipaddr.IPv4Network(subacc.ipn_ip_address)<=ipaddr.IPv4Network(ipn_pool.end_ip):
                         transaction.rollback()
@@ -4371,14 +4371,14 @@ def subaccount_save(request):
                 
                     
                 
-            elif subacc.vpn_ip_address in ['0.0.0.0','',None]:
+            elif subacc.vpn_ip_address in ['0.0.0.0', '0.0.0.0/32','',None]:
 
                 obj = subacc.ipn_ipinuse
                 obj.disabled=datetime.datetime.now()
                 obj.save()
                 log('EDIT', request.user, obj)
                 subacc.ipn_ipinuse=None
-        elif subacc.vpn_ip_address not in ['0.0.0.0','',None] and ipn_pool:
+        elif subacc.vpn_ip_address not in ['0.0.0.0', '0.0.0.0/32','',None] and ipn_pool:
 
             if not ipaddr.IPv4Network(ipn_pool.start_ip)<=ipaddr.IPv4Network(subacc.ipn_ip_address)<=ipaddr.IPv4Network(ipn_pool.end_ip):
                 transaction.rollback()
