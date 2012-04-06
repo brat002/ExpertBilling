@@ -1128,7 +1128,10 @@ class addon_service(Thread):
                         if not nas:
                             logger.info("Addon Service: %s: nas not set for account/subaccount/service %s/%s/%s", (self.getName(), repr(acc), repr(subacc), repr(service),))
                             continue
-                        if (not accountaddonservice.deactivated and not deactivated) and (service.action and not accountaddonservice.action_status) and not accountaddonservice.temporary_blocked and ((service.deactivate_service_for_blocked_account==False) or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)>0 and acc.disabled_by_limit==False and acc.balance_blocked==False and acc.account_status==1 ))):
+                        if (not accountaddonservice.deactivated and not deactivated) and \
+                        (service.action and not accountaddonservice.action_status) and \
+                        not accountaddonservice.temporary_blocked and \
+                         ((service.deactivate_service_for_blocked_account==False) or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)>0 and acc.disabled_by_limit==False and acc.balance_blocked==False and acc.account_status==1 ))):
                             #выполняем service_activation_action
                             cur.connection.commit()
                             sended = cred(acc, subacc, 'ipn', nas, format_string=service.service_activation_action)
