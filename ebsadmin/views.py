@@ -634,8 +634,10 @@ def sql(request):
     from django.db import connection
     
     cur = connection.cursor()
-    
-    log('RAWSQL', request.user,  request.user.account, data={'sql':s})
+    try:
+        log('RAWSQL', request.user,  request.user.account, data={'sql':unicode(s, errors="ignore")})
+    except:
+        pass
     try:
         cur.execute(s)
         
@@ -5029,11 +5031,11 @@ def get_tail_log(request):
 
     if all_file:
         s, o = commands.getstatusoutput("cat /opt/ebs/data/log/%s" % log_name.replace('/',''))
-        return {'status': True, 'data': o}
+        return {'status': True, 'data': unicode(o, errors='ignore')}
 
     s, o = commands.getstatusoutput("tail -n %s /opt/ebs/data/log/%s" % (count, log_name.replace('/','')))
 
-    return {'status': True, 'data': o}
+    return {'status': True, 'data': unicode(o, errors='ignore')}
 
 @ajax_request
 @login_required
