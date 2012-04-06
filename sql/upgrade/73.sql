@@ -1,5 +1,3 @@
-DROP FUNCTION traftrans_ins_trg_fn();
-
 CREATE OR REPLACE FUNCTION traftrans_ins_trg_fn()
   RETURNS trigger AS
 $BODY$
