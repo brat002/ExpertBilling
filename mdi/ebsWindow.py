@@ -925,16 +925,18 @@ class ebsTableView_n_TreeWindow(QtGui.QMainWindow):
     def tableFind(self):
         self.tableWidget.clearSelection()
         model = self.tableWidget.model()
+        searched_text = unicode(self.lineEdit_search_text.text()).lower()
+        
         for column in xrange(self.tableWidget.model().columnCount(self)):
             for row in xrange(self.tableWidget.model().rowCount(self)):
                 try:
                     
-                    index = self.tableWidget.model().index(column, row)
+                    index = self.tableWidget.model().index(row, column)
                     data = unicode(model.data(index, QtCore.Qt.DisplayRole).toString()).lower()
-                    print data
-                    if data.rfind(unicode(self.lineEdit_search_text.text()).lower())!=-1:
-                        self.tableWidget.scrollTo(self.tableWidget.model().index(column, row))
-                        self.tableWidget.selectRow(index.row())
+                    if data and data.rfind(searched_text)!=-1:
+                        self.tableWidget.scrollTo(index)
+                        self.tableWidget.selectRow(row)
+                        #return
                 except Exception, e:
                     print e
                     pass

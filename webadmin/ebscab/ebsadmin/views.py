@@ -2134,8 +2134,8 @@ def classforgroup(request):
     fields = request.POST.get('fields',[])
     gr = request.POST.get('group',None)
 
-    if group:
-        items = GroupTrafficClass.objects.filter(group__id=group)
+    if gr:
+        items = GroupTrafficClass.objects.filter(group__id=gr)
         if not items:
             return {'status':False, 'message': 'GroupTrafficClass item with id=%s not found' % id}
 
