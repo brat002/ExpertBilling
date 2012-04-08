@@ -330,7 +330,7 @@ def ps_history(cursor, ps_id, accounttarif, account_id, type_id, summ=0, created
     if not created:
         created=datetime.datetime.now()
     cursor.execute("""
-                   INSERT INTO billservice_periodicalservicehistory(service_id, accounttarif_id, account_id, type_id, summ, datetime) VALUES (%s, %s, %s, %s, %s, %s);
+                   INSERT INTO billservice_periodicalservicehistory(service_id, accounttarif_id, account_id, type_id, summ, created) VALUES (%s, %s, %s, %s, %s, %s);
                    """, (ps_id, accounttarif, account_id, type_id, summ, created,))
 def addon_history(cursor, addon_id, service_type, ps_id, accounttarif, account_id, type_id, summ=0, created=None):
     if not created:
@@ -344,7 +344,7 @@ def get_last_checkout(cursor, ps_id, accounttarif, co_datetime=None):
     if co_datetime:
         cursor.execute("""
                    SELECT date_trunc('second', datetime) FROM billservice_periodicalservicehistory
-                    WHERE service_id=%s AND accounttarif_id=%s AND datetime <= %s ORDER BY datetime DESC LIMIT 1
+                    WHERE service_id=%s AND accounttarif_id=%s AND created <= %s ORDER BY created DESC LIMIT 1
                     """ , (ps_id, accounttarif, co_datetime))
     else:
         cursor.execute("""
