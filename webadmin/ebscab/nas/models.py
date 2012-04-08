@@ -13,6 +13,8 @@ NAS_LIST=(
                 (u'mikrotik5',u'Mikrotik 5'),
                 (u'common_radius',u'Общий RADIUS интерфейс'),
                 (u'common_ssh',u'common_ssh'),
+                (u'cisco',u'cisco'),
+                (u'localhost',u'localhost'),
                 )
 
 DIRECTIONS_LIST=(
