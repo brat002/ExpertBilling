@@ -284,7 +284,7 @@ def sessions(request):
         only_active = request.POST.get('only_active')=='True'
 
 
-        items = ActiveSession.objects.filter(date_start__gte=date_start, date_end__lte=date_end).order_by('-interrim_update')
+        items = ActiveSession.objects.filter( Q(date_end__lte=date_end) | Q(date_end__isnull=True)).filter(date_start__gte=date_start).order_by('-interrim_update')
         if only_active:
             items = items.filter(session_status='ACTIVE')
             

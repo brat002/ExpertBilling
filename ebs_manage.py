@@ -28,6 +28,10 @@ exclude_files_upgrade=(
 '/opt/ebs/web/ebscab/settings.py',
 '/opt/ebs/web/ebscab/upgrade.py',
 )
+
+exclude_folders_upgrade =(
+'/opt/ebs/data/scripts/',
+                          )
 curdate = datetime.datetime.now().strftime('%d-%m-%y_%H_%M_%S')
 config = ConfigParser.ConfigParser()
 config.read(BILLING_PATH+"/ebs_config.ini") 
@@ -160,6 +164,7 @@ def files_for_copy(first_time=False):
     for root,dirs,files in os.walk(DIST_PATH):
         for d in dirs:
             to_dir = os.path.join(root.replace(DIST_PATH,BILLING_PATH), d)
+            if to_dir in exclude_folders_upgrade and first_time==False:continue
             if not os.path.exists(to_dir):
                 to_copy.append((None, to_dir))
         for f in files:
@@ -497,7 +502,11 @@ if __name__=='__main__':
             if not len(sys.argv)==3:  
                 print "*"*80
                 print 'Please define archive path and name (example: upgrade.py install /opt/12345678901234567890.tar.gz)'
-                sys.exit()    
+                sys.exit()   
+                
+            if os.path.exists(BILLING_PATH):
+                print "You cant`t install billing on existing installation"
+                sys.exit() 
             create_user()    
             unpack_archive(sys.argv[2])
             import_dump()
