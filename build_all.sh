@@ -36,18 +36,22 @@ mkdir builds/$1
 echo "Additional keys: " $5
 
 
-
-simple_build="core rad nf nfroutine"
-total_build="$simple_build rpc"
+crypto_build="core"
+simple_build="rad nf nfroutine"
+total_build="$crypto_build $simple_build"
 
 cp license.lic license.lic.old
 cp license_$1.lic license.lic
 
-for bld in $simple_build; do
+for bld in $crypto_build; do
 	python freezer/freezer_rec.py  -i $5 $karg $reskey $bld.py > builds/$1.$bld.buildlog;
 done
 
-python freezer/freezer_rec.py --nloc=chartprovider.pychartdir26,chartprovider.pychartdir25,chartprovider.pychartdir27 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $5 $karg $reskey rpc.py > builds/$1.rpc.buildlog;
+for bld in $simple_build; do
+    python freezer/freezer_rec.py  -i $5 '' '' $bld.py > builds/$1.$bld.buildlog;
+done
+
+#python freezer/freezer_rec.py --nloc=chartprovider.pychartdir26,chartprovider.pychartdir25,chartprovider.pychartdir27 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $5 $karg $reskey rpc.py > builds/$1.rpc.buildlog;
 
 cp license.lic builds/$1/license.lic
 cp license.lic.old license.lic
@@ -66,10 +70,10 @@ mkdir builds/$1/soft/
 #cp -rf dicts builds/$1/dicts
 #cp -rf fonts builds/$1/fonts
 #cp -rf scripts builds/$1/scripts
-rm -rf builds/$1/modules/chartprovider
-cp chartprovider/pychartdir.pyc chartprovider/pychartdir25.pyd chartprovider/pychartdir25.so chartprovider/libchartdir.so builds/$1/modules
-cp chartprovider/pychartdir.pyc chartprovider/pychartdir26.pyd chartprovider/pychartdir26.so builds/$1/modules
-cp chartprovider/pychartdir.pyc chartprovider/pychartdir27.pyd chartprovider/pychartdir27.so builds/$1/modules
+#rm -rf builds/$1/modules/chartprovider
+#cp chartprovider/pychartdir.pyc chartprovider/pychartdir25.pyd chartprovider/pychartdir25.so chartprovider/libchartdir.so builds/$1/modules
+#cp chartprovider/pychartdir.pyc chartprovider/pychartdir26.pyd chartprovider/pychartdir26.so builds/$1/modules
+#cp chartprovider/pychartdir.pyc chartprovider/pychartdir27.pyd chartprovider/pychartdir27.so builds/$1/modules
 mkdir builds/$1/ebscab
 svn export webadmin/ebscab builds/$1/ebscab/ebscab/ --force
 echo >builds/$1/ebscab/ebscab/log/django.log
@@ -91,8 +95,8 @@ svn export dicts/ builds/$1/dicts/
 svn export fonts/ builds/$1/fonts/
 svn export scripts/ builds/$1/scripts/
 svn export mail/ builds/$1/modules/mail/
-cp sendmail.py builds/$1/
-cp sendsms.py builds/$1/
+cp sendmail.py builds/$1/scripts/
+cp sendsms.py builds/$1/scripts/
 cp install.txt builds/$1/
 
 for bldd in $total_build; do
