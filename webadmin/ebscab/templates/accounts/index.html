@@ -94,8 +94,8 @@
 
 			</div>
 			<div class="user_ballance f-left">
-				<div><span>Баланс :</span> {{ ballance }}{{ CURRENCY }}</div>
-				<div><span>Размер кредита :</span> {{ user.credit }}{{ CURRENCY }}</div>
+				<div><span>Баланс :</span> {{ ballance|floatformat:2 }}{{ CURRENCY }}</div>
+				<div><span>Размер кредита :</span> {{ user.credit|floatformat:2 }}{{ CURRENCY }}</div>
 				{% if user.contract %}<div><span>Номер договора :</span> {{ user.contract }}</div>{% endif %}
 				<div><span><a href="/account/block/?height=250&width=450&modal=true" class="thickbox text">Блокировка учётной записи</a></span></div>
 				
