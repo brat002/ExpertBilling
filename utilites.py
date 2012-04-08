@@ -203,12 +203,17 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=43, secret=str(nas.secret), dict=dict)
         doc.AddAttribute('NAS-IP-Address', str(nas.ipaddress))
-        doc.AddAttribute('NAS-Identifier', str(nas.identify))
+        if nas.type!='cisco' and nas.identify:
+            doc.AddAttribute('NAS-Identifier', str(nas.identify))
         if access_type=='lisg':
             doc.AddAttribute('User-Name', str(subacc.ipn_ip_address))
         else:
             doc.AddAttribute('User-Name', str(subacc.username))
-        doc.AddAttribute('Acct-Session-Id', str(session_id))
+        if nas.type=='cisco':
+            log_debug_("Normalization cisco session id")
+            doc.AddAttribute('Acct-Session-Id', re.sub('^0+', '', str(session_id) ))
+        else:
+            doc.AddAttribute('Acct-Session-Id', str(session_id))
         if access_type=='hotspot':
             doc.AddAttribute('Framed-IP-Address', str(subacc.ipn_ip_address))
         elif access_type not in ('hotspot', 'lisg'):
