@@ -97,7 +97,12 @@ def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='
             doc.AddAttribute('User-Name', str(subacc.ipn_ip_address))
         elif subacc.username:
             doc.AddAttribute('User-Name', str(subacc.username))
-        doc.AddAttribute('Acct-Session-Id', str(session_id))
+            
+        if nas.type=='cisco':
+            doc.AddAttribute('Acct-Session-Id', re.sub('^0+', '', str(session_id) ))
+        else:
+            doc.AddAttribute('Acct-Session-Id', str(session_id))
+            
         if access_type=='hotspot':
             doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
         elif access_type not in ('hotspot', 'lisg'):
