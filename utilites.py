@@ -92,13 +92,16 @@ def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='
         sock.bind(('0.0.0.0',24000))
         doc = packet.AcctPacket(code=40, secret=str(nas.secret), dict=dict)
         doc.AddAttribute('NAS-IP-Address', str(nas.ipaddress))
-        doc.AddAttribute('NAS-Identifier', str(nas.identify))
+        if nas.type!='cisco' and nas.identify:
+            doc.AddAttribute('NAS-Identifier', str(nas.identify))
+            
         if access_type=='lisg':
             doc.AddAttribute('User-Name', str(subacc.ipn_ip_address))
         elif subacc.username:
             doc.AddAttribute('User-Name', str(subacc.username))
             
         if nas.type=='cisco':
+            log_debug_("Normalization cisco session id")
             doc.AddAttribute('Acct-Session-Id', re.sub('^0+', '', str(session_id) ))
         else:
             doc.AddAttribute('Acct-Session-Id', str(session_id))
@@ -108,7 +111,7 @@ def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='
         elif access_type not in ('hotspot', 'lisg'):
             doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
             
-        if caller_id:
+        if caller_id and nas.type!='cisco' :
             doc.AddAttribute('Calling-Station-Id', str(caller_id))
             
         doc_data=doc.RequestPacket()
