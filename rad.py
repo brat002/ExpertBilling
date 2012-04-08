@@ -1797,7 +1797,7 @@ class HandleSAcct(HandleSBase):
                                 nas_int_id=%s AND framed_protocol=%s and session_status='ACTIVE' and interrim_update is Null;
                              """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
                                     self.packetobject['Calling-Station-Id'][0],
-                                    self.packetobject['Called-Station-Id'][0], \
+                                    self.packetobject.get('Called-Station-Id',[''])[0], \
                                     nas_int_id, self.access_type,))
             else:                
                 self.cur.execute("""SELECT id FROM radius_activesession
@@ -1806,7 +1806,7 @@ class HandleSAcct(HandleSBase):
                                     nas_id=%s AND framed_protocol=%s and session_status='ACTIVE' and interrim_update is Null;
                                  """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
                                         self.packetobject['Calling-Station-Id'][0],
-                                        self.packetobject['Called-Station-Id'][0], \
+                                        self.packetobject.get('Called-Station-Id',[''])[0], \
                                         self.packetobject['NAS-IP-Address'][0], self.access_type,))
 
             allow_write = self.cur.fetchone() is None
@@ -1818,7 +1818,7 @@ class HandleSAcct(HandleSBase):
                                  VALUES (%s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s, %s, %s);
                                  """, (acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now,
                                         self.packetobject['Calling-Station-Id'][0], 
-                                        self.packetobject['Called-Station-Id'][0], 
+                                        self.packetobject.get('Called-Station-Id',[''])[0], 
                                         self.packetobject.get('Framed-IP-Address',[''])[0],
                                         self.packetobject['NAS-IP-Address'][0], self.access_type, nas_int_id, session_speed if not sessions_speed.get(acc.account_id, "") else sessions_speed.get(acc.account_id, ""),self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
 
