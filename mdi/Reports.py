@@ -59,8 +59,8 @@ charts = {
 'distrtrafficgroups': {'name':u'Распределение трафика по группам трафика', 'tabs':['accountsTab', 'groupsTab', 'nassesTab']},
 'distraccountstraffic': {'name':u'Распределение трафика по аккаунтам ', 'tabs':['accountsTab', 'groupsTab']},
 'distnassestraffic': {'name':u'Распределение трафика по серверам доступа', 'tabs':['nassesTab', 'groupsTab']},
-'distraccountstoptraffic': {'name':u'TOP 10 аккаунтов (потребление трафика) ', 'tabs':['accountsTab', 'groupsTab']},
-'accountsincrease': {'name':u'Динамика абонентской базы ', 'tabs':[]},
+'distraccountstoptraffic': {'name':u'TOP 10 аккаунтов (потребление трафика) ', 'tabs':[ 'groupsTab']},
+'accountsincrease': {'name':u'Динамика роста абонентской базы ', 'tabs':[]},
 'moneydynamic': {'name':u'Динамика прибыли ', 'tabs':[]},
 'disttransactiontypes': {'name':u'Распределение платежей/списаний по типам ', 'tabs':[]},
 'balancehistory': {'name':u'Динамика изменения баланса ', 'tabs':['accountsTab']},
@@ -915,7 +915,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         self.comboBox_back.addItem(_fromUtf8(""))
         self.comboBox_back.setItemText(1, QtGui.QApplication.translate("ReportOptionsDialog", "Таблица", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox_back.addItem(_fromUtf8(""))
-        self.comboBox_back.setItemText(2, QtGui.QApplication.translate("ReportOptionsDialog", "Облока", None, QtGui.QApplication.UnicodeUTF8))
+        self.comboBox_back.setItemText(2, QtGui.QApplication.translate("ReportOptionsDialog", "Облака", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox_back.addItem(_fromUtf8(""))
         self.comboBox_back.setItemText(3, QtGui.QApplication.translate("ReportOptionsDialog", "Серая", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox_back.addItem(_fromUtf8(""))
@@ -1159,8 +1159,8 @@ class ReportOptionsDialog(QtGui.QDialog):
     def postinit(self):
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
-            self.dateTimeEdit_date_start.setDateTime(settings.value("chrep_date_start", QtCore.QVariant(QtCore.QDateTime(2011,1,1,0,0))).toDateTime())
-            self.dateTimeEdit_date_end.setDateTime(settings.value("chrep_date_end", QtCore.QVariant(QtCore.QDateTime(2012,1,1,0,0))).toDateTime())
+            self.dateTimeEdit_date_start.setDateTime(settings.value("chrep_date_start", QtCore.QVariant(QtCore.QDateTime(2012,1,1,0,0))).toDateTime())
+            self.dateTimeEdit_date_end.setDateTime(settings.value("chrep_date_end", QtCore.QVariant(QtCore.QDateTime(2013,1,1,0,0))).toDateTime())
         except Exception, ex:
             print "Transactions settings error: ", ex
 
@@ -1413,7 +1413,7 @@ class ReportOptionsDialog(QtGui.QDialog):
         try:
             settings = QtCore.QSettings("Expert Billing", "Expert Billing Client")
             settings.setValue("chrep_date_start", QtCore.QVariant(self.dateTimeEdit_date_start.dateTime()))
-            settings.setValue("chrep_date_end", QtCore.QVariant(self.dateTimeEdit_date_start.dateTime()))
+            settings.setValue("chrep_date_end", QtCore.QVariant(self.dateTimeEdit_date_end.dateTime()))
         except Exception, ex:
             print "Chart reports settings save error: ", ex
 
