@@ -896,16 +896,13 @@ class HandleSAuth(HandleSBase):
         #if 0: assert isinstance(nas, NasData)
 
         
+        
         station_id = self.packetobject.get('Calling-Station-Id', [''])[0]
+        if self.access_type == 'PPPOE'  and nasses[0].type=='cisco':
+            station_id = station_id.replace("-",':')
         user_name = str(self.packetobject['User-Name'][0])
 
-        #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
-        #logger.warning("Searching account %s", user_name)
-        #acc = self.caches.account_cache.by_username.get(user_name)
-        
-        #subacc = SubAccount()
-        #Если не нашли в аккаунтах - ищем в субаккаунтах
-        #if not acc:
+
         logger.warning("Searching account username=%s in subaccounts with pptp-ipn_ip or pppoe-ipn_mac link %s", (user_name, station_id))
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
         
