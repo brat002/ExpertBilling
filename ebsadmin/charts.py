@@ -18,7 +18,7 @@ chartdata = {
 'distrtrafficgroups': {'name':u'Распределение трафика по группам трафика', 'tabs':['accountsTab', 'groupsTab', 'nassesTab']},
 'distraccountstraffic': {'name':u'Распределение трафика по аккаунтам ', 'tabs':['accountsTab', 'groupsTab']},
 'distnassestraffic': {'name':u'Распределение трафика по серверам доступа', 'tabs':['nassesTab', 'groupsTab']},
-'distraccountstoptraffic': {'name':u'Распределение трафика по аккаунтам ', 'tabs':['accountsTab', 'groupsTab']},
+'distraccountstoptraffic': {'name':u'ТОП 10 по потреблению трафика ', 'tabs':[ 'groupsTab']},
 'accountsincrease': {'name':u'Динамика абонентской базы ', 'tabs':[]},
 'moneydynamic': {'name':u'Динамика прибыли ', 'tabs':[]},
 'disttransactiontypes': {'name':u'Распределение платежей/списаний по типам ', 'tabs':[]},
@@ -99,7 +99,9 @@ def charts(request):
         nasses = form.cleaned_data.get("nasses")
         reporttype = form.cleaned_data.get("reporttype")
         grouping = form.cleaned_data.get("grouping")
-
+        
+        rep = chartdata.get(report)
+        report_name = rep.get("name")
         if accounts:
             accounts_str = " and account_id in (%s)" %  ','.join(['%s' % x.id for x in accounts])
         if groups:
@@ -112,26 +114,31 @@ def charts(request):
             cur.execute("""select (select name from nas_nas WHERE id=gst.nas_id) as nas,  sum(bytes_in+bytes_out)/(1024*1024) FROM billservice_globalstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by nas_id;""" \
                         % (nasses_str, groups_str), ( start_date, end_date))
             res = cur.fetchall()
-            return render_to_response('grouptrafficpiechart.html', {'res':res,'reporttype':reporttype})
+            return render_to_response('grouptrafficpiechart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype})
         
         
         if report=='distrtrafficgroups':
             cur.execute("""select (select name from billservice_group WHERE id=gst.group_id) as group,  sum(bytes)/(1024*1024) FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by group_id;""" \
                         % (accounts_str, groups_str), ( start_date, end_date))
             res = cur.fetchall()
-            return render_to_response('grouptrafficpiechart.html', {'res':res,'reporttype':reporttype})
+            return render_to_response('grouptrafficpiechart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype})
         
         if report=='distraccountstraffic':
             cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username,  sum(bytes)/(1024*1024) FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by account_id;""" \
                         % (accounts_str, groups_str), ( start_date, end_date))
             res = cur.fetchall()
-            return render_to_response('grouptrafficpiechart.html', {'res':res,'reporttype':reporttype})
+            return render_to_response('grouptrafficpiechart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype})
+        if report=='distraccountstoptraffic':
+            cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username,  sum(bytes)/(1024*1024) as b FROM billservice_groupstat as gst WHERE True %s and datetime between %%s and %%s GROUP by account_id ORDER BY b desc limit 10;""" \
+                        % (groups_str,), ( start_date, end_date))
+            res = cur.fetchall()
+            return render_to_response('grouptrafficpiechart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype})
 
         if report=='accountstraffic':
             cur.execute("""select date_trunc(%%s, datetime) as dt,  sum(bytes)/(1024*1024) FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by date_trunc(%%s, datetime) ORDER BY dt ASC;""" \
                         % (accounts_str, groups_str), ( grouping, start_date, end_date, grouping))
             res = cur.fetchall()
-            return render_to_response('trafficvolumechart.html', {'res':res,'reporttype':reporttype})
+            return render_to_response('trafficvolumechart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype})
         if report=='accountsincrease':
             cur.execute(""" select date_trunc(%s, created),  (SELECT count(*) FROM billservice_account WHERE id<=acc.id and deleted is null)-(SELECT count(*) FROM billservice_account WHERE id<=acc.id and deleted is not null) FROM billservice_account as acc
                             WHERE created between %s and %s ORDER BY  created ASC;
@@ -139,10 +146,13 @@ def charts(request):
                         , (grouping,  start_date, end_date,))
             res = cur.fetchall()
 
-            return render_to_response('trafficvolumechart.html', {'res':res,'reporttype':reporttype})
+            return render_to_response('trafficvolumechart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype})
         
         if report=='sessionsonline':
-            cur.execute("""select (select username from billservice_account WHERE id=rst.account_id) as username,  case when date_start<%%s then %%s else date_start end as date_start, case when date_end>%%s then %%s else date_end end as date_end FROM radius_activesession as rst WHERE True %s %s and ( (date_start between %%s and %%s) or (date_end between %%s and %%s))  order by date_start, date_end;;""" \
+            if nasses:
+                nasses_str = "and nas_int_id in (%s)" %  ','.join(['%s' % x.id for x in nasses])
+                        
+            cur.execute("""select (select username from billservice_account WHERE id=rst.account_id) as username,  case when date_start<%%s then %%s else date_start end as date_start, case when date_end>%%s then %%s else date_end end as date_end FROM radius_activesession as rst WHERE True %s %s and ( (date_start between %%s and %%s) and ((date_end between %%s and %%s) or date_end is Null))  order by date_start, date_end;;""" \
                         % (nasses_str, accounts_str), ( start_date, start_date, end_date, end_date,  start_date, end_date, start_date, end_date))
             res = cur.fetchall()
             
@@ -152,10 +162,12 @@ def charts(request):
                     data[username]=[]
                 #if date_start and date_end:
                 if not username: continue
+                if date_end is None:
+                    date_end = end_date
                 data[username].append((date_start, date_end))
                 
 
-            return render_to_response('onlinesessionschart.html', {'res':data,'reporttype':reporttype})
+            return render_to_response('onlinesessionschart.html', {'res':data, "len":100+int(len(data)/5)+len(data)*40, 'report_name':report_name, 'reporttype':reporttype})
         #динамика прибыли+qiwi+webmoney  select tt.name,  (SELECT sum(summ*(-1)) FROM billservice_transaction WHERE type_id=tt.internal_name) FROM billservice_transactiontype as tt
     else:
         #print form._errors
