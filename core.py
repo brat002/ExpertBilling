@@ -181,7 +181,7 @@ class check_vpn_access(Thread):
 
                         acstatus = acc.account_status==1 and acc.tarif_active==True and (((((subacc.allow_vpn_with_null and acc.ballance+acc.credit >=0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0)\
                                     and \
-                                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))) or  not (rs.guest_pool and ((((subacc.allow_vpn_with_null and acc.ballance+acc.credit >=0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0)\
+                                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))) and  not (rs.guest_pool and ((((subacc.allow_vpn_with_null and acc.ballance+acc.credit >=0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0)\
                                     and \
                                     (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit))))))
                         
