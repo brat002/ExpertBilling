@@ -186,7 +186,7 @@ class check_vpn_access(Thread):
                                     and \
                                     (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))
                         acstatus = acstatus and not acstatus_guest
-                        if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id):
+                        if (acstatus or (rs.guest_pool and acstatus_guest==False)) and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id):
                             #chech whether speed has changed
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
                             
