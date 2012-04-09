@@ -3383,10 +3383,7 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
         
         self.tableWidget.setModel(model)
         model.setIntColumns()
-        self.treeWidget.setDisabled(True)
 
-        
-        self.treeWidget.setDisabled(False)
         id=self.getTarifId()
         #accounts=accounts.toList()
         #print accounts
@@ -3396,9 +3393,15 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
         self.delNodeLocalAction()
         #self.tablewidget.setShowGrid(False)
         self.tableWidget.setSortingEnabled(True)
-        return
         m_ballance = 0
-        disabled_accounts = 0
+        disabled_accounts = 0        
+        for item in accounts:
+            m_ballance+=float(item.ballance)
+            if item.status!=1:
+                disabled_accounts+=1
+        self.statusBar().showMessage(u'Учётных записей:%s. Средний баланс: %.4f. Общий баланс: %.4f. Неактивно: %s' % (len(accounts), m_ballance/(1 if len(accounts)==0 else len(accounts)), m_ballance, disabled_accounts))
+        return
+
         now = datetime.datetime.now()
         i=0
         for a in accounts:    

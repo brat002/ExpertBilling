@@ -14,7 +14,7 @@ $(document).ready(function() {
             plotShadow: false
         },
         title: {
-            text: 'График потребления трафика аккаунтами'
+            text: '{{report_name}}'
         },
         tooltip: {
             formatter: function() {
@@ -39,7 +39,7 @@ $(document).ready(function() {
         },
         series: [{
             type: '{{reporttype}}',
-            name: 'Browser share',
+            name: '{{report_name}}',
             data: [
                 {% for username, bytes in res %}
                 ['{{username}}', {{bytes}}],
