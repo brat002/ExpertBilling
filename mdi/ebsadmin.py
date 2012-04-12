@@ -126,7 +126,7 @@ class HttpBot(object):
     def parse(self, data):
         if not data: return {}
         #print "before parce=", data
-        d = json.loads(data,  object_hook=AttrDict, parse_float=decimal.Decimal,)
+        d = json.loads(data,  object_hook=AttrDict, parse_float=decimal.Decimal)
         #print 'after parce', d
         if hasattr(d, 'status') and d.status==True:
 
@@ -273,7 +273,7 @@ class HttpBot(object):
     def get_model(self, id, table, fields=[], where={}):
         url='http://%s/ebsadmin/api/getmodel/' % self.host 
         
-        d = self.POST(url,{'data':json.dumps({'id':id,  'table':fields, 'fields': fields, 'where':where}, default=default)})
+        d = self.POST(url,{'data':json.dumps({'id':id,  'table':table, 'fields': fields, 'where':where}, default=default)})
         if not d.status:
             self.error(d)
             return
@@ -518,7 +518,9 @@ class HttpBot(object):
         if not d.status:
             self.error(d)
             return
-        return self.postprocess(d, 1)
+        data = self.postprocess(d, 1)
+
+        return data.start, data.end, data.length
 
     def transactiontypes_save(self, model):
         url='http://%s/ebsadmin/transactiontypes/set/' % self.host 
@@ -603,6 +605,15 @@ class HttpBot(object):
             self.error(d)
             return
         return self.postprocess(d)
+
+    def get(self, s):
+        url='http://%s/ebsadmin/sql/' % self.host 
+        
+        d = self.POST(url,{'sql':s})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, 1)
     
     def settlementperiod_delete(self,id):
         url='http://%s/ebsadmin/settlementperiods/delete/' % self.host 
@@ -617,8 +628,10 @@ class HttpBot(object):
         url='http://%s/ebsadmin/organizations/' % self.host 
         
         d = self.POST(url,{'fields':fields, 'id':id, 'account_id':account_id})
-        #print d
-        return d
+        if not d.status:
+            self.error(d)
+            return
+        return  self.postprocess(d, id)    
 
 
        

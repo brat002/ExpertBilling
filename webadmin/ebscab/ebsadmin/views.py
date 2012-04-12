@@ -2766,7 +2766,7 @@ def organizations(request):
     account_id = request.POST.get('account_id',None)
     if id:
         items = Organization.objects.filter(id=id)
-        if not item:
+        if not items:
             return {'status':False, 'message': 'Organization item with id=%s not found' % id}
     elif account_id:
         items = Organization.objects.filter(account__id=account_id)
@@ -5073,7 +5073,7 @@ def sp_info(request):
     elif not sp.autostart or (sp.autostart and not time_start):
         time_start=sp.time_start
         
-    spinfo = settlement_period_info(time_start, sp.length_in, sp.length, curdatetime)
-    return {"status": True, 'records': [spinfo], 'totalCount':1}
+    start, end, length = settlement_period_info(time_start, sp.length_in, sp.length, curdatetime)
+    return {"status": True, 'records': [{'start':start, 'end': end, 'length':length}], 'totalCount':1}
     
     
