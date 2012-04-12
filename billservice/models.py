@@ -1046,6 +1046,7 @@ class SystemUser(models.Model):
             ("list_log_files","Список лог-файлов биллинга"),
             ("view_log_files","Просмотр лог-файлов биллинга"),
             ("transactions_delete","Удаление проводок"),
+            ("sp_info","Метод sp_info"),
             
             )
 

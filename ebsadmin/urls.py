@@ -37,6 +37,7 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^addonservicetariff/$', 'addonservicetariff'),
     
      url(r'^sql/$', 'sql'),
+     url(r'^spinfo/$', 'sp_info'),
      url(r'^traffictransmitservices/$', 'traffictransmitservices'),
      url(r'^radiustrafficservices/$', 'radiustrafficservices'),
      url(r'^radiustrafficservices/nodes/$', 'radiustrafficservices_nodes'),
