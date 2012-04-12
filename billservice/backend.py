@@ -26,10 +26,10 @@ def check_password(obj, row_password):
     #_hash = md5(row_password).hexdigest()
     if isinstance(obj, Account):
         log.debug('Account obj found, try to compare %s == %s' % (obj.password, row_password))
-        return str(obj.password) == str(row_password)
+        return unicode(obj.password) == unicode(row_password)
     else:
         log.debug('SystemUser obj found, try to compare %s == %s' % (obj.text_password, row_password))
-        return str(obj.text_password) == str(row_password) and obj.role in [0,3] #if password is correct and user role admin or member of support team
+        return unicode(obj.text_password) == unicode(row_password) and obj.role in [0,3] #if password is correct and user role admin or member of support team
 
 class LoginUserBackend(object):
     
