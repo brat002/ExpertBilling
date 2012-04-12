@@ -19,6 +19,7 @@ class AttrDict(dict):
                     t = d.pop('__type__')
                     if t == 'datetime':
                         self[key] = datetime.datetime(**d)
+                        print datetime.datetime(**d)
                     else:
                         # Oops... better put this back together.
                         self[key]['__type__'] = t
