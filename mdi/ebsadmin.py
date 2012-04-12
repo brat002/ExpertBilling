@@ -509,8 +509,17 @@ class HttpBot(object):
         if not d.status:
             self.error(d)
             return
-        return self.postprocess(d, id)
+        return self.postprocess(d)
     
+    def sp_info(self, settlement_period_id, time_start=None, curdatetime=None):
+        url='http://%s/ebsadmin/spinfo/' % self.host 
+        
+        d = self.POST(url,{'data':json.dumps({'settlement_period_id':settlement_period_id, 'time_start':time_start, 'curdatetime':curdatetime}, default=default)})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, 1)
+
     def transactiontypes_save(self, model):
         url='http://%s/ebsadmin/transactiontypes/set/' % self.host 
         #print model

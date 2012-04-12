@@ -25,7 +25,7 @@ from ebsadmin.lib import ExtDirectStore, instance_dict
 from billservice.forms import LoginForm, AccountPrepaysRadiusTraficForm, RadiusTrafficForm, RadiusTrafficNodeForm, PrepaidTrafficForm, TrafficTransmitNodeForm,TrafficTransmitServiceForm, PeriodicalServiceForm, OneTimeServiceForm,  TariffForm, AccessParametersForm, SettlementPeriodForm, OrganizationForm, BankDataForm,AccountTariffBathForm
 from billservice.forms import RadiusAttrsForm, IPPoolForm, TimePeriodForm, TimePeriodNodeForm, SystemUserForm, TransactionTypeForm, AccountPrepaysTrafic, TimeAccessNodeForm, ContractTemplateForm, TimeAccessServiceForm, TrafficLimitForm, SpeedLimitForm, AddonServiceTarifForm
 from billservice.forms import ActionLogFilterForm, ManufacturerForm, OperatorForm, DealerPayForm, SaleCardForm, CardForm, DealerForm, NewsForm, TPChangeRuleForm, AccountHardwareForm, ModelHardwareForm, HardwareTypeForm, HardwareForm
-
+from billservice.utility import settlement_period_info
 from billservice import authenticate, log_in, log_out
 from nas.forms import NasForm, TrafficNodeForm, TrafficClassForm, SwitchForm
 from radius.forms import SessionFilterForm
@@ -5052,4 +5052,28 @@ def transactions_delete(request):
             cursor.execute("DELETE FROM %s WHERE id=%%s and created=%%s" % table, (id, date))
     return {"status": True}
 
+@ajax_request
+@login_required
+def sp_info(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.sp_info'):
+        return {'status':False, 'message': u'У вас нет прав на выполнение этой функции'}
+    
+    js = json.loads(request.POST.get('data','{}'))
+    settlement_period_id = js.get("settlement_period_id")
+    time_start=js.get("time_start")
+    curdatetime=js.get("curdatetime")
+    sp = SettlementPeriod.objects.get(id=settlement_period_id)
+    
+    if not curdatetime:
+        curdatetime = datetime.datetime.now()
+    else:
+        curdatetime = datetime.datetime.strptime(curdatetime, "%Y-%m-%d %H:%M:%S")
+    if sp.autostart and time_start:
+        time_start=datetime.datetime.strptime(time_start, "%Y-%m-%d %H:%M:%S")
+    elif not sp.autostart or (sp.autostart and not time_start):
+        time_start=sp.time_start
+        
+    spinfo = settlement_period_info(time_start, sp.length_in, sp.length, curdatetime)
+    return {"status": True, 'records': [spinfo], 'totalCount':1}
+    
     
