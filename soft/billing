@@ -8,7 +8,6 @@ start)
 	/etc/init.d/ebs_nf start
 	/etc/init.d/ebs_rad start
 	/etc/init.d/ebs_core start
-	/etc/init.d/ebs_rpc start
 		;;
 stop)
         echo "Stopping ebs processes"
@@ -16,7 +15,6 @@ stop)
 	/etc/init.d/ebs_nf stop
 	/etc/init.d/ebs_rad stop
 	/etc/init.d/ebs_core stop
-	/etc/init.d/ebs_rpc stop
         ;;
 force-stop)
         echo "Stopping ebs processes"
@@ -30,6 +28,7 @@ restart)
         echo "Restarting ebs processes"
     $0 stop
     $0 start
+    
         ;;
 
 *)

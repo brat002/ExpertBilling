@@ -67,7 +67,7 @@ def stop_processes():
     commands.getstatusoutput('/etc/init.d/ebs_core stop')
     commands.getstatusoutput('/etc/init.d/ebs_nf stop')
     commands.getstatusoutput('/etc/init.d/ebs_rad stop')
-    commands.getstatusoutput('/etc/init.d/ebs_rpc stop')
+    #commands.getstatusoutput('/etc/init.d/ebs_rpc stop')
     commands.getstatusoutput('/etc/init.d/ebs_nfroutine stop')
     print '*'*80
     print 'Stopping complete'
@@ -76,11 +76,10 @@ def start_processes():
     print '*'*80
     print 'Please, start manually billing processess and see logs in /opt/ebs/data/log/'
     print """
-    '/etc/init.d/ebs_core start
-    '/etc/init.d/ebs_nf start
-    '/etc/init.d/ebs_rad start
-    '/etc/init.d/ebs_rpc start
-    '/etc/init.d/ebs_nfroutine start
+    /etc/init.d/ebs_core start
+    /etc/init.d/ebs_nf start
+    /etc/init.d/ebs_rad start
+    /etc/init.d/ebs_nfroutine start
     """
     print '*'*80
     print 'Running complete'
@@ -305,13 +304,13 @@ def setup_init():
     shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_rad'), '/etc/init.d/ebs_rad')
     shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_nf'), '/etc/init.d/ebs_nf')
     shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_nfroutine'), '/etc/init.d/ebs_nfroutine')
-    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_rpc'), '/etc/init.d/ebs_rpc')
+    #shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_rpc'), '/etc/init.d/ebs_rpc')
     print "*"*80  
     status, output = commands.getstatusoutput('update-rc.d ebs_nfroutine defaults')
     status, output = commands.getstatusoutput('update-rc.d ebs_nf defaults')
     status, output = commands.getstatusoutput('update-rc.d ebs_rad defaults')
     status, output = commands.getstatusoutput('update-rc.d ebs_core defaults')
-    status, output = commands.getstatusoutput('update-rc.d ebs_rpc defaults')
+    #status, output = commands.getstatusoutput('update-rc.d ebs_rpc defaults')
     if status!=0:
         print "We have error on init scripts setup. %s" % output
         allow_continue()

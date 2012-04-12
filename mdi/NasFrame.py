@@ -136,6 +136,7 @@ actions = {
                'reset_action': '',
                'radius_speed': {'vendor1':9, 'attrid1':1, 'value1':'lcp:interface-config#1=rate-limit input $max_limit_tx 8000 8000 conform-action transmit exceed-action drop', 'vendor2':9, 'attrid2':1, 'value2':'lcp:interface-config#1=rate-limit output $max_limit_tx 8000 8000 conform-action transmit exceed-action drop'},
                },
+
 'switch':{'user_add_action':'',
               'subacc_add_action':'',
                'user_delete_action':'',
