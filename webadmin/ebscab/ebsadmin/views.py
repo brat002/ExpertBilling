@@ -2770,8 +2770,6 @@ def organizations(request):
             return {'status':False, 'message': 'Organization item with id=%s not found' % id}
     elif account_id:
         items = Organization.objects.filter(account__id=account_id)
-        if not items:
-            return {'status':False, 'message': 'Organization item with account_id=%s not found' % account_id}
     else:
         items = Organization.objects.all()
 
