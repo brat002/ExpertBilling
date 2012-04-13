@@ -21,7 +21,7 @@ def check(request_data):
     data = {'account':None,'error_code':pegas.ERROR_OK,'balance':0,'account_name':u''}
     if form.is_valid():
         try:
-            account = Account.objects.get(username=self.clenaned_data['account_id'], 'is_active'=True)
+            account = Account.objects.get(username=self.clenaned_data['account_id'])
             data['account'] = AccountIdForm.cleaned_data['username']
             data['error_code'] = pegas.ERROR_OK,
             data['balance'] = account.balance

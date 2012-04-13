@@ -173,7 +173,7 @@ class PegasPaymentGateway(BasePaymentGateway):
 
     def command_pay(self):
         response, error, is_error = self.check_params('txn_date','txn_id','account','sum')
-        is_error:
+        if is_error:
             return (response,error)
         try:
             txn_date = self.get_param('txn_date')
@@ -187,8 +187,8 @@ class PegasPaymentGateway(BasePaymentGateway):
                 </response>
                 """
             return (response, error)
-        input_data = {'txn_date':txn_date),
-                      'txn_id':self.get_param('txn_id')}
+        input_data = {'txn_date':txn_date,  'txn_id':self.get_param('txn_id')}
+        
         resp = self.get_callback('pay')(input_data)
         prv_tnx = resp['prv_tnx']
         txn_id = self.params.get(PAYMENT_ID_NAME)
@@ -220,7 +220,7 @@ class PegasPaymentGateway(BasePaymentGateway):
 
     def command_cancel(self):
         response, error, is_error = self.check_params('txn_date','txn_id','account','sum')
-        is_error:
+        if is_error:
             return (response,error)
 
         resp = self.get_callback('cancel')()
