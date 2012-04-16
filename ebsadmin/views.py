@@ -2268,6 +2268,7 @@ def radiusattrs_set(request):
         try:
             model = form.save(commit = False)
             res={"status": True}
+            model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
         except Exception, e:
             res={"status": False, "message": str(e)}
@@ -2770,6 +2771,8 @@ def organizations(request):
             return {'status':False, 'message': 'Organization item with id=%s not found' % id}
     elif account_id:
         items = Organization.objects.filter(account__id=account_id)
+        if items:
+            items = items
     else:
         items = Organization.objects.all()
 
