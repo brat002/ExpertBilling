@@ -1864,10 +1864,9 @@ class AccountWindow(QtGui.QMainWindow):
             organization = self.connection.get_organizations(account_id=self.model.id)
             #organization = None
             self.connection.commit()
-            if organization.status and organization.totalCount==1:
+            if organization:
                 
-                org = organization.records[0]
-                self.organization = org
+                self.organization = organization
                 self.groupBox_urdata.setChecked(True)
                 self.lineEdit_organization.setText(unicode(org.name))
                 self.lineEdit_uraddress.setText(unicode(org.uraddress))

@@ -631,7 +631,7 @@ class HttpBot(object):
         if not d.status:
             self.error(d)
             return
-        return  self.postprocess(d, id)    
+        return  self.postprocess(d, id if id else account_id)    
 
 
        

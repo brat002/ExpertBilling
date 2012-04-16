@@ -3042,13 +3042,12 @@ class RadiusAttrsDialog(QtGui.QDialog):
         model.attrid = unicode(self.lineEdit_attrid.text())
         model.value = unicode(self.lineEdit_value.text())
         print "self.nas_id", self.nas_id
-        try:
+
             
-            self.connection.radiusattrs_save(model)
-            self.connection.commit()
-        except Exception, e:
-            print e
-            self.connection.rollback()
+        self.connection.radiusattrs_save(model)
+        self.connection.commit()
+
+
         self.fixtures()
       
     def delete(self):
