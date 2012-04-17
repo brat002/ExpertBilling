@@ -21,7 +21,7 @@ import isdlogger
 import utilites, saver
 
 import itertools
-import db, utilites
+import db
 
 from decimal import Decimal
 from copy import copy, deepcopy
@@ -39,7 +39,7 @@ from utilites import rosClient, settlement_period_info, in_period, in_period_inf
 from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
 from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
 from db import transaction, transaction_noret, ps_history, get_last_checkout, time_periods_by_tarif_id 
-from db import timetransaction, transaction, set_account_deleted, get_limit_speed, get_last_addon_checkout, addon_history
+from db import timetransaction, set_account_deleted, get_limit_speed, get_last_addon_checkout, addon_history
 
 
 from classes.cacheutils import CacheMaster
