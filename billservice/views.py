@@ -1099,7 +1099,7 @@ def service_action(request, action, id):
 @login_required
 def periodical_service_history(request):
     from lib.paginator import SimplePaginator
-    is_range, addon_query = addon_queryset(request, 'periodical_service_history')
+    is_range, addon_query = addon_queryset(request, 'periodical_service_history', 'created')
     qs = PeriodicalServiceHistory.objects.filter(account=request.user.account, \
                                        **addon_query).order_by('-created')
     paginator = SimplePaginator(request, qs, 100, 'page')
