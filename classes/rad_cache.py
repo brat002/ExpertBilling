@@ -123,9 +123,13 @@ class RadiusAttrsCache(CacheItem):
         self.by_nas_id={}
         for item in self.data:
             if item.tarif_id:
-                self.by_tarif_id[item.tarif_id]=item
+                if item.tarif_id not in self.by_tarif_id:
+                    self.by_tarif_id[item.tarif_id]=[]
+                self.by_tarif_id[item.tarif_id].append(item)
             if item.nas_id:
-                self.by_nas_id[item.nas_id]=item
+                if item.tarif_id not in self.by_tarif_id:
+                    self.by_nas_id[item.nas_id]=[]
+                self.by_nas_id[item.nas_id].append(item)
 
 
 class AddonServiceCache(SimpleDictCache):
