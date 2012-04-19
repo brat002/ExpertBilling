@@ -4291,14 +4291,14 @@ def subaccount_save(request):
                 return {"status": False, 'message':u'Выбранный vpn_ip_address используется в другом аккаунте'}
 
         if str(subacc.ipn_ip_address) not in ('', '0.0.0.0', '0.0.0.0/32'):    
-            print 1
+
             if not id:
-                print 2
+
                 subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_ip_address = subacc.ipn_ip_address ).count()
             else:
-                print 3
+
                 subaccs = SubAccount.objects.exclude(id = id, account__id = account_id).filter(ipn_ip_address = subacc.ipn_ip_address).count()
-            print 4
+
             if subaccs>0:
                 transaction.rollback()
                 return {"status": False, 'message':u'Выбранный ipn_ip_address используется в другом аккаунте'}

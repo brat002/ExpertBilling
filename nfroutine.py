@@ -23,7 +23,6 @@ from threading import Thread, Lock
 from copy import copy, deepcopy
 from collections import deque, defaultdict
 from period_utilities import in_period_info
-from db import delete_transaction, dbRoutine
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
 from db import transaction, transaction_noret, traffictransaction, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
 
