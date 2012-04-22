@@ -496,7 +496,7 @@ if __name__=='__main__':
         prompt_db_access()
         dbconnect()
         installation_date=None
-        create_folders()
+        
         if 'install' in sys.argv:
             if not len(sys.argv)==3:  
                 print "*"*80
@@ -506,6 +506,7 @@ if __name__=='__main__':
             if os.path.exists(BILLING_PATH):
                 print "You cant`t install billing on existing installation"
                 sys.exit() 
+            create_folders()
             create_user()    
             unpack_archive(sys.argv[2])
             import_dump()
@@ -534,7 +535,7 @@ if __name__=='__main__':
                 print "*"*80
                 print 'Please define archive path and name (example: upgrade.py upgrade /opt/12345678901234567890.tar.gz)'
                 sys.exit()
-            
+            create_folders()
             stop_processes()    
             unpack_archive(sys.argv[2])
             
@@ -568,7 +569,7 @@ if __name__=='__main__':
                 print "*"*80
                 print 'Please define archive path and name (example: upgrade.py upgrade /opt/12345678901234567890.tar.gz)'
                 sys.exit()
-            
+            create_folders()
             stop_processes()    
             unpack_archive(sys.argv[2])
             
@@ -602,6 +603,7 @@ if __name__=='__main__':
             upgrade_from_13()
             
         if 'backupdb' in sys.argv:
+            create_folders()
             #allow_continue('Do you want to migrate your accounts database from 1.3 to 1.4 EBS version?')
             auto_backup_db()     
         cleanup()
