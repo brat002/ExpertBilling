@@ -826,7 +826,7 @@ class Transaction(models.Model):
     description = models.TextField(default='', blank=True)
     created=models.DateTimeField(auto_now_add=True, default='')
     promise=models.BooleanField(default=False) 
-    end_promise=models.DateTimeField(auto_now_add=True, default='')
+    end_promise=models.DateTimeField(blank=True, null=True)
     promise_expired = models.BooleanField(default=False)
     systemuser=models.ForeignKey(to='SystemUser', null=True, on_delete = models.SET_NULL)
 
