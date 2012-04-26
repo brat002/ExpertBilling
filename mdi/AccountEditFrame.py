@@ -1868,17 +1868,17 @@ class AccountWindow(QtGui.QMainWindow):
                 
                 self.organization = organization
                 self.groupBox_urdata.setChecked(True)
-                self.lineEdit_organization.setText(unicode(org.name))
-                self.lineEdit_uraddress.setText(unicode(org.uraddress))
-                self.lineEdit_urphone.setText(unicode(org.phone))
-                self.lineEdit_fax.setText(unicode(org.fax))
-                self.lineEdit_okpo.setText(unicode(org.okpo))
-                self.lineEdit_unp.setText(unicode(org.unp))
-                self.lineEdit_kpp.setText(unicode(org.kpp))
-                self.lineEdit_kor_s.setText(unicode(org.kor_s))
+                self.lineEdit_organization.setText(unicode(organization.name))
+                self.lineEdit_uraddress.setText(unicode(organization.uraddress))
+                self.lineEdit_urphone.setText(unicode(organization.phone))
+                self.lineEdit_fax.setText(unicode(organization.fax))
+                self.lineEdit_okpo.setText(unicode(organization.okpo))
+                self.lineEdit_unp.setText(unicode(organization.unp))
+                self.lineEdit_kpp.setText(unicode(organization.kpp))
+                self.lineEdit_kor_s.setText(unicode(organization.kor_s))
                 
                 #print "bank_id",org.bank_id
-                bank = self.connection.get_banks(id=org.bank)
+                bank = self.connection.get_banks(id=organization.bank)
                 self.connection.commit()
                 if bank:
                     self.bank = bank

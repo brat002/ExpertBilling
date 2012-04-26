@@ -530,6 +530,9 @@ class FlowCache(object):
             self.stime = time.time()
             
     def addflow5(self, flow):
+        """
+        Функция добавляет в очередь новый flow и агрегирует пришедшие пакеты
+        """
         global queues, vars
         if 0: assert isinstance(flow, Flow5Data)
         #constructs a key
@@ -561,7 +564,10 @@ class FlowCache(object):
                 
 class FlowDequeThread(Thread):
     '''Gets a keylist with keys to flows that are to be aggregated, waits for aggregation time, pops them from aggregation cache,
-    constructs small lists of flows and appends them to 'databaseQueue'.'''
+    constructs small lists of flows and appends them to 'databaseQueue'.
+    В этом трэде присходит классификация трафика и определение прнадлежности к группам.
+    Каждому flow применяется дата - 20 секунд от текущего времени - бред...
+    '''
     
     def __init__(self):
         self.tname = self.__class__.__name__
@@ -586,8 +592,9 @@ class FlowDequeThread(Thread):
             for tgrp in tarifGroups:
                 if 0: assert isinstance(tgrp, GroupsData)
                 if (not tgrp.trafficclass) or (tgrp.direction == dr):
+                    # Если у группы нет классров или направление группы равно
                     continue
-                group_cls = fcset.intersection(tgrp.trafficclass)
+                group_cls = fcset.intersection(tgrp.trafficclass) # ищем пересечение классов
                 if group_cls:
                     group_add = tgrp[:]
                     group_add[1] = tuple(group_cls)
@@ -595,6 +602,11 @@ class FlowDequeThread(Thread):
             flow.groups = tuple(groupLst)
 
     def run(self):
+        """
+        Что здесь происходит:
+        Каждому flow определяется класс, в который он попал
+        Каждому flow определяется группа, под которую он попал
+        """
         j = 0
         while True:
             if suicideCondition[self.tname]: break
@@ -672,14 +684,14 @@ class FlowDequeThread(Thread):
                                 self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                 nfwrite_list.append(flow)
                                 break                   
-                        #traversed all the nodes
-                        else:
-                            if classLst:
-                                self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
-                                nfwrite_list.append(flow)
-                            else: 
-                                nfwrite_list.append(flow)
-                                continue
+                            #traversed all the nodes
+                            else:
+                                if classLst:
+                                    self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
+                                    nfwrite_list.append(flow)
+                                else: 
+                                    nfwrite_list.append(flow)
+                                    continue
                             
                         #construct a list
                         flst.append(tuple(flow)); fcnt += 1                    

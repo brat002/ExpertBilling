@@ -368,9 +368,9 @@ class AccountFilterDialog(QtGui.QDialog):
         
         res = filter(f,r)
         
-        s= " AND ".join([" %s %s '%s' " % (x[0],x[1],x[2]) if type(x[2])==unicode else " %s %s %s " % (x[0],x[1],x[2])  for x in res])
+        
         #print s
-        self.sql=s
+        self.sql=res
         QtGui.QDialog.accept(self)
         
     def refresh_combo_street(self):
