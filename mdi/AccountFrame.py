@@ -2056,7 +2056,7 @@ class TarifWindow(QtGui.QMainWindow):
                 #nodes = self.model.time_access_service.time_access_nodes.all()
                 
                 nodes = self.connection.get_radiustrafficservices_nodes(service_id=self.model.radius_traffic_transmit_service_id)
-                print nodes
+
                 self.tableWidget_radius_traffic_trafficcost.setRowCount(len(nodes))
                 i=0
                 for node in nodes:
@@ -2212,9 +2212,6 @@ class TarifWindow(QtGui.QMainWindow):
                     self.trafficcost_tableWidget.setRowCount(len(nodes))
                     i = 0
                     for node in nodes:
-                        print node
-                        
-                        #print node.id
                         self.addrow(self.trafficcost_tableWidget, node.id, i, 0, id=node.id)
                         #self.addrow(self.trafficcost_tableWidget, node.edge_value/(1024*1024), i, 1)
                         #self.addrow(self.trafficcost_tableWidget, node.edge_end, i, 2)
@@ -2803,11 +2800,11 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
                 
 
 
-        objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction"], \
+        objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction", "separator","actionRadiusAttrs",], \
                    self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction", "messageDialogAction", "rrdAccountTrafficInfo","radiusauth_logInfo", "actionBalanceLog"], \
-                   self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction"],\
-                   self.toolBar2   :["actionChangeTarif", "actionSetSuspendedPeriod", "connectionAgreementAction", 'separator',  'radiusauth_logInfo', "actionBalanceLog","rrdAccountTrafficInfo", "separator","actionRadiusAttrs",],\
-                   self.menu   :[ 'actionSettlementPeriodInfo', 'separator', "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', 'actionPrepaidRadiusTimeInfo'],\
+                   self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction""separator","actionRadiusAttrs",],\
+                   self.toolBar2   :["actionChangeTarif", "actionSetSuspendedPeriod", "connectionAgreementAction", 'separator',  'radiusauth_logInfo', "actionBalanceLog"],\
+                   self.menu   :[ 'actionSettlementPeriodInfo', 'separator', "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', 'actionPrepaidRadiusTimeInfo',"rrdAccountTrafficInfo"],\
                    self.reports_menu :["actionReports",],
                   }
         self.actionCreator(actList, objDict)
@@ -3350,7 +3347,7 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
         #self.tableWidget.setRowCount(0)
         #import json
 
-        if self.sql:
+        if id==-2000 :
 
             #accounts = self.connection.get_accounts_for_tilter(self.sql)
             accounts = self.connection.accountsfilter(self.sql)

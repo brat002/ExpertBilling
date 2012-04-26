@@ -24,8 +24,8 @@ from copy import copy, deepcopy
 from collections import deque, defaultdict
 from period_utilities import in_period_info
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
-from db import transaction, transaction_noret, traffictransaction, get_last_checkout, time_periods_by_tarif_id, set_account_deleted
-
+from db import traffictransaction
+from bisect import bisect_left
 import twisted.internet
 from twisted.internet.protocol import DatagramProtocol, Factory
 from twisted.protocols.basic import LineReceiver, Int32StringReceiver
@@ -63,11 +63,6 @@ class Picker(object):
 
     def add_summ(self, tts_id, acctf_id, account_id, summ):
         self.data[(tts_id, acctf_id, account_id)] += summ
-
-    def get_list(self):
-        while len(self.data) > 0:
-            #yield {'account':key, 'tarif':self.data[key]['tarif'], 'summ': self.data[key]['summ']}
-            yield self.data.popitem()
             
     def get_data(self):
         return self.data.items()
@@ -175,7 +170,7 @@ class groupDequeThread(Thread):
                 gkey, gkeyTime, groupData = None, None, None
                 with queues.groupLock:
                     #check whether double aggregation time passed - updates are rather costly
-                    if len(queues.groupDeque) > 0 and (queues.groupDeque[0][1] + vars.GROUP_AGGR_TIME*2 < time.time()):
+                    if len(queues.groupDeq2ue) > 0 and (queues.groupDeque[0][1] + vars.GROUP_AGGR_TIME*2 < time.time()):
                         gkey, gkeyTime  = queues.groupDeque.popleft()
 
                 if not gkey: time.sleep(10); continue
@@ -203,7 +198,10 @@ class groupDequeThread(Thread):
                 octets = 0               
                 
                 #second type groups
-                if group_type == 2:                        
+                if group_type == 2:             
+                    """
+                    Место, где определяется максимальный класс
+                    """           
                     max_oct = 0
                     #get class octets, calculate with direction method, find maxes
                     for class_, gdict in groupItems.iteritems():                            
@@ -337,7 +335,7 @@ class statDequeThread(Thread):
                     octlist.append([sdict['INPUT'], sdict['OUTPUT']])              
                     
                 self.cur.execute("""INSERT INTO billservice_globalstat(account_id, bytes_in, bytes_out, datetime, nas_id, classes, classbytes) 
-                                    VALUES(%s, %s, %s, %s::timestamp without time zone, %s, %s::int[], %s::bigint[]);""" , (account_id, octets_in, octets_out, sdate, nas_id, classes, octlist))
+                                    VALUES(%s, %s, %s, %s::timestamp without time zone, %s, %s::bigint[], %s::bigint[]);""" , (account_id, octets_in, octets_out, sdate, nas_id, classes, octlist))
                 self.connection.commit()
                 
                 if flags.writeProf:
@@ -444,32 +442,7 @@ class NetFlowRoutine(Thread):
                 self.connection.commit()
                 with queues.prepaidLock:
                     prepInf[1] -= prep_octets
-        return octets, prepaid_left
-    
-    def edge_bin_search(self, s_array, value):
-        """
-        функция производит поиск ближайшего значения в списке
-        TODO: переписать!
-        """
-        if value >= s_array[-1]:
-            return len(s_array) - 1
-        elif len(s_array) == 1:
-            return len(s_array) - 1
-        else:
-            #lookup_array = s_array
-            start_pos = 0
-            end_pos = len(s_array) - 1
-            while True:
-                bin_pos = (end_pos - start_pos) / 2
-                if s_array[bin_pos] > value:
-                    if (bin_pos - start_pos == 0) or ((bin_pos - 1 >= 0) and s_array[bin_pos - 1] <= value):
-                        break
-                    else:
-                        end_pos = bin_pos
-                else:
-                    start_pos = bin_pos
-        return bin_pos
-                                    
+        return octets, prepaid_left                    
             
     def run(self):
         #connection = persist.connection()
@@ -555,9 +528,9 @@ class NetFlowRoutine(Thread):
                         if not acc:
                             self.cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.status   
                                                 FROM billservice_account as ba
-                                                LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s ORDER BY datetime DESC LIMIT 1)
+                                                LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s and datetime<%s  ORDER BY datetime DESC LIMIT 1)
                                                 LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;
-                                             """, (flow.account_id,))
+                                             """, (flow.account_id, stream_date,))
                             acc = self.cur.fetchone()
                             self.connection.commit()
                             if not acc: 
@@ -590,7 +563,7 @@ class NetFlowRoutine(Thread):
                                     grec = [defaultdict(ddict_IO), (group_id, group_dir, group_type)]
                                     aggrgDict[gkey] = grec
                                     with queues.groupLock:
-                                        queues.groupDeque.append((gkey, time.time()))                      
+                                        queues.groupDeque.append((gkey, time.time()))
                                 #aggregate bytes for every class/direction
                                 for class_ in group_classes:
                                     grec[0][class_][flow.node_direction] += flow.octets                     
@@ -615,7 +588,7 @@ class NetFlowRoutine(Thread):
                         #global data
                         srec[1][1][flow.node_direction] += flow.octets                        
 
-                    tarif_mode = caches.period_cache.in_period.get(acc.traffic_transmit_service_id, False) if acc.traffic_transmit_service_id else False
+                    #WTF??? tarif_mode = caches.period_cache.in_period.get(acc.traffic_transmit_service_id, False) if acc.traffic_transmit_service_id else False
                     
                     if acc.traffic_transmit_service_id and flow.has_groups and flow.groups:
                         octets_summ = 0
@@ -664,7 +637,7 @@ class NetFlowRoutine(Thread):
                                     group_edges = group_edge[group_id]
                                     edge_octets = []
                                     pay_bytes = octets
-                                    cur_edge_pos = self.edge_bin_search(group_edges, tg_bytes)
+                                    cur_edge_pos = bisect_left(group_edges, tg_bytes)
                                     while True:
                                         edge_val = group_edges[cur_edge_pos] * MEGABYTE
                                         if (pay_bytes + tg_bytes <= edge_val) or (cur_edge_pos + 1 >= len(group_edges)):

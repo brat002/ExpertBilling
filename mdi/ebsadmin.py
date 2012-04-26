@@ -1010,7 +1010,8 @@ class HttpBot(object):
     def accountsfilter(self, sql=None, fields=[]):
         url='http://%s/ebsadmin/accountsfilter/' % self.host 
         
-        d = self.POST(url, {'sql': sql})
+        d = self.POST(url, {'data': json.dumps(sql,  ensure_ascii=False, default=default)})
+        
         if not d.status:
             self.error(d)
             return
@@ -1527,7 +1528,7 @@ class HttpBot(object):
     def make_transaction(self, model ):
         url='http://%s/ebsadmin/transaction/set/' % self.host 
         
-        d = self.POST(url,model)
+        d = self.POST(url,{'data':json.dumps(model,  ensure_ascii=False, default=default)})
         #print d
         return d
     
