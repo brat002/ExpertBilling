@@ -710,7 +710,7 @@ class RadiusAccessBill(Thread):
                 if 0: assert isinstance(caches, CoreCaches)
                 
                 cur = self.connection.cursor()
-                cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.bytes_in, rs.bytes_out, rs.interrim_update, rs.date_end, tarif.time_access_service_id, tarif.radius_traffic_transmit_service_id, tarif.id, acc_t.id, rs.lt_time, rs.lt_bytes_in, rs.lt_bytes_out,rs.nas_port_id,rs.nas_int_id  
+                cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.bytes_in, rs.bytes_out, rs.interrim_update, rs.date_start, rs.date_end, tarif.time_access_service_id, tarif.radius_traffic_transmit_service_id, tarif.id, acc_t.id, rs.lt_time, rs.lt_bytes_in, rs.lt_bytes_out,rs.nas_port_id,rs.nas_int_id  
                                  FROM radius_activesession AS rs
                                  JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<rs.date_start ORDER BY datetime DESC LIMIT 1) 
                                  JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
@@ -778,8 +778,8 @@ class RadiusAccessBill(Thread):
                                         logger.debug("RADCOTHREAD: Time for session %s was checkouted", (rs.sessionid, ))
                                     break
                         cur.execute("""UPDATE radius_activesession SET lt_time=%s
-                                       WHERE account_id=%s AND sessionid=%s and nas_port_id=%s and and nas_int_id=%s
-                                    """, (rs.session_time, rs.account_id, unicode(rs.sessionid),rs.nas_port_id, rs.nas_int_id))
+                                       WHERE date_start=%s AND account_id=%s AND sessionid=%s and nas_port_id=%s and and nas_int_id=%s
+                                    """, (rs.session_time, rs.date_start, rs.account_id, unicode(rs.sessionid),rs.nas_port_id, rs.nas_int_id))
                         checkouted=True
                         logger.debug("RADCOTHREAD: Session %s was checkouted (Time)", (rs.sessionid, ))
                         cur.connection.commit()  
@@ -900,8 +900,8 @@ class RadiusAccessBill(Thread):
                                         cur.connection.commit()
                                     break
                             cur.execute("""UPDATE radius_activesession SET lt_bytes_in=%s, lt_bytes_out=%s
-                                           WHERE account_id=%s AND sessionid=%s and nas_port_id=%s and nas_int_id=%s
-                                        """, (rs.bytes_in, rs.bytes_out, rs.account_id, unicode(rs.sessionid), rs.nas_port_id, rs.nas_int_id))
+                                           WHERE date_start=%s account_id=%s AND sessionid=%s and nas_port_id=%s and nas_int_id=%s
+                                        """, (rs.bytes_in, rs.bytes_out, rs.date_start, rs.account_id, unicode(rs.sessionid), rs.nas_port_id, rs.nas_int_id))
                             cur.connection.commit()  
                             checkouted=True
                             logger.debug("RADCOTHREAD: Session %s was checkouted (Traffic)", (rs.sessionid, ))
