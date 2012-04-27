@@ -900,7 +900,7 @@ class RadiusAccessBill(Thread):
                                         cur.connection.commit()
                                     break
                             cur.execute("""UPDATE radius_activesession SET lt_bytes_in=%s, lt_bytes_out=%s
-                                           WHERE date_start=%s account_id=%s AND sessionid=%s and nas_port_id=%s and nas_int_id=%s
+                                           WHERE date_start=%s and account_id=%s AND sessionid=%s and nas_port_id=%s and nas_int_id=%s
                                         """, (rs.bytes_in, rs.bytes_out, rs.date_start, rs.account_id, unicode(rs.sessionid), rs.nas_port_id, rs.nas_int_id))
                             cur.connection.commit()  
                             checkouted=True
