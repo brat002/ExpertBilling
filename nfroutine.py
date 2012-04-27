@@ -170,7 +170,7 @@ class groupDequeThread(Thread):
                 gkey, gkeyTime, groupData = None, None, None
                 with queues.groupLock:
                     #check whether double aggregation time passed - updates are rather costly
-                    if len(queues.groupDeq2ue) > 0 and (queues.groupDeque[0][1] + vars.GROUP_AGGR_TIME*2 < time.time()):
+                    if len(queues.groupDeque) > 0 and (queues.groupDeque[0][1] + vars.GROUP_AGGR_TIME*2 < time.time()):
                         gkey, gkeyTime  = queues.groupDeque.popleft()
 
                 if not gkey: time.sleep(10); continue
