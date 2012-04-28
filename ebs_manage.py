@@ -552,6 +552,10 @@ if __name__=='__main__':
             else:
                 print '*'*80
                 print 'Files copying dont need'
+            
+            commands.getoutput("ln -sf /opt/ebs/web/django /opt/ebs/web/ebscab/django")
+            commands.getoutput("cd  /opt/ebs/web/ebscab/ && python manage.py syncdb --noinput")
+            commands.getoutput("python manage.py syncdb")
             allow_continue('Do you want to setup EBS webcab?')
             setup_webcab()
             print "*"*80
