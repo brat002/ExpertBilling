@@ -4054,7 +4054,7 @@ def account_save(request):
     tarif_id = data.get('tarif_id')
 
     contract = model.get('contract','')
-    print "contract", contract
+
     contracttemplate_id = model.get('contracttemplate_id',None)
 
     username = model.get('username','')
