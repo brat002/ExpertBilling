@@ -43,14 +43,14 @@ class HelpDeskAdminSite(AdminSite):
         extra_context = {'title':u""}
         return super(HelpDeskAdminSite, self).index(request, extra_context)
 
-site = HelpDeskAdminSite()
+#site = HelpDeskAdminSite()
 
-site.register(Ticket, TicketAdmin)
-site.register(Queue, QueueAdmin)
-site.register(FollowUp, FollowUpAdmin)
-site.register(PreSetReply)
+admin.site.register(Ticket, TicketAdmin)
+admin.site.register(Queue, QueueAdmin)
+admin.site.register(FollowUp, FollowUpAdmin)
+admin.site.register(PreSetReply)
 #site.register(EscalationExclusion)
-site.register(EmailTemplate)
-site.register(KBCategory)
-site.register(KBItem, KBItemAdmin)
+admin.site.register(EmailTemplate)
+admin.site.register(KBCategory)
+admin.site.register(KBItem, KBItemAdmin)
 #site.register(IgnoreEmail,IgnoreEmailAdmin)
