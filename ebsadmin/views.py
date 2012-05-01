@@ -4046,6 +4046,7 @@ def account_save(request):
     
     
     data = json.loads(request.POST.get("data", "{}"))
+    
     model = data.get("model")
     bank = data.get("bank")
     organization = data.get("organization")
@@ -4053,6 +4054,7 @@ def account_save(request):
     tarif_id = data.get('tarif_id')
 
     contract = model.get('contract','')
+    print "contract", contract
     contracttemplate_id = model.get('contracttemplate_id',None)
 
     username = model.get('username','')
@@ -4077,8 +4079,6 @@ def account_save(request):
         if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_account'):
             transaction.rollback()
             return {'status':False, 'message':u'У вас нет прав на добавление аккаунта'}
-        if contract!='' or contracttemplate_id:
-
             newcontract=True
         a=AccountForm(model)
 
@@ -4089,7 +4089,7 @@ def account_save(request):
     if a.is_valid():
 
         contr = None
-        if contract:
+        if contract and contracttemplate_id:
 
             contr = ContractTemplate.objects.filter(template=contract)
 
@@ -4194,7 +4194,8 @@ def account_save(request):
 
                 item.contract = contract
                 item.save()
-                contr.save()
+                if contr:
+                    contr.save()
 
             log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
             res={"status": True, 'id':item.id}
