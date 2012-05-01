@@ -1322,6 +1322,7 @@ def news_set(request):
     if form.is_valid():
         try:
             item = form.save(commit=False)
+
             item.save()
             log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
             if not id and accounts:
@@ -3557,7 +3558,7 @@ def contracttemplates_set(request):
     if id:
         if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_contracttemplate'):
             return {'status':False, 'message': u'У вас нет прав на изменение шаблона номера договора'}
-        item = ContractTempalte.objects.get(id=id)
+        item = ContractTemplate.objects.get(id=id)
         form = ContractTemplateForm(request.POST, instance = item)
     else:
         if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_contracttemplate'):

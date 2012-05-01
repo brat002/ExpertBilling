@@ -260,7 +260,7 @@ def upgrade_db():
 def modifydb():
     global cur, conn
     print "*"*80    
-    print "Modifying DB. Deleting unneeded triggers"
+    print "Modifying DB. Creating triggers"
     
     l=[]
     for x in xrange(9,13):

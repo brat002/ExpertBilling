@@ -824,7 +824,7 @@ class Transaction(models.Model):
     tarif=models.ForeignKey(Tariff, blank=True, null=True, on_delete = models.SET_NULL)
     summ=models.DecimalField(default=0, blank=True, decimal_places=10,max_digits=20)
     description = models.TextField(default='', blank=True)
-    created=models.DateTimeField(auto_now_add=True, default='')
+    created=models.DateTimeField()
     promise=models.BooleanField(default=False) 
     end_promise=models.DateTimeField(blank=True, null=True)
     promise_expired = models.BooleanField(default=False)
@@ -1441,7 +1441,7 @@ class AddonServiceTransaction(models.Model):
     
 class News(models.Model):
     body = models.TextField(u'Заголовок новости')
-    age = models.DateTimeField()
+    age = models.DateTimeField(blank=True, null=True)
     public = models.BooleanField(default=False)
     private = models.BooleanField(default=False)
     agent = models.BooleanField(default=False)

@@ -121,7 +121,8 @@ class MessageDialog(QtGui.QDialog):
             
         news_model.body = unicode(body)
         
-        news_model.age = (datetime.datetime.now()+datetime.timedelta(minutes=self.spinBox.value())).strftime('%Y-%m-%d %H:%M:%S')
+        if self.spinBox.value():
+            news_model.age = (datetime.datetime.now()+datetime.timedelta(minutes=self.spinBox.value())).strftime('%Y-%m-%d %H:%M:%S')
 
         if self.checkBox_public.isChecked()==True: 
             news_model.public = True
