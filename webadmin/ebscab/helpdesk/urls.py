@@ -11,9 +11,11 @@ from django.conf import settings
 from django.conf.urls.defaults import *
 from django.contrib.auth.decorators import login_required
 from django.contrib.syndication.views import feed as django_feed
+from django.contrib import admin
 
 from helpdesk.views.feeds import feed_setup
 
+admin.autodiscover()
 urlpatterns = patterns('helpdesk.views.staff',
     url(r'^dashboard/$',
         'dashboard',

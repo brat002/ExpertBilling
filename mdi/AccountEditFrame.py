@@ -1931,11 +1931,13 @@ class AccountWindow(QtGui.QMainWindow):
         model.suspended = self.toolButton_ipn_sleep.isChecked()
 
             
+        if unicode(self.comboBox_agreement_num.currentText())=='':
+            contracttemplate_id = None
         if not contracttemplate_id:
             model.contract=unicode(self.comboBox_agreement_num.currentText())
             print "model.contract", model.contract
         else:
-            model.contract=''
+            model.contract=unicode(self.comboBox_agreement_num.currentText())
             model.contracttemplate_id = contracttemplate_id
 
                 

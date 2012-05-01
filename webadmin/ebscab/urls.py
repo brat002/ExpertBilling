@@ -2,7 +2,7 @@ import os
 from django.conf import settings
 from django.conf.urls.defaults import *
 from django.contrib import admin
-from helpdesk import admin as helpdesk_admin
+#from helpdesk import admin as helpdesk_admin
 
 
 admin.autodiscover()
@@ -11,7 +11,7 @@ urlpatterns = patterns('',
     # Example:
     # (r'^ebscab/', include('ebscab.foo.urls')),
     #(r'^$','ebscab.billing.views.index'),
-    url('^helpdesk/admin/(.*)', helpdesk_admin.site.urls, name='helpdesk_admin'),
+    #url('^helpdesk/admin/(.*)', helpdesk_admin.site.urls, name='helpdesk_admin'),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
     # Uncomment this for admin:
     (r'^objectlog/', include('object_log.urls')),

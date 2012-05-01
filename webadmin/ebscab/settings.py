@@ -145,7 +145,7 @@ PERSONAL_AREA_STAFF_MENU = [
     ('helpdesk_kb_index', u"База знаний"),
     ('helpdesk_report_index', u"Статистика"),
     ('helpdesk_user_settings', u"Ваши настройки"),
-    ('/helpdesk/admin/', u"Конфигурация"),
+    ('/admin/', u"Конфигурация"),
     ('account_logout', u'Выход'),
 ]
 
