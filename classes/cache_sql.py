@@ -13,6 +13,11 @@ nfroutine_sql = \
                                 LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s ORDER BY datetime DESC LIMIT 1)
                                 LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
                                 WHERE ba.deleted is Null;""",
+                                
+               "accounttariffs":"""SELECT act.id, act.account_id, t.traffic_transmit_service_id FROM billservice_accounttarif as act
+                                        JOIN billservice_tariff as t on t.id=act.tarif_id
+                                        WHERE t.traffic_transmit_service_id is not NULL
+                                        ; """,
                'tts'     :"""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""",
                'settlepd':"""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""",
                'period'  :"""SELECT date_trunc('seconds', tpn.time_start), tpn.length, tpn.repeat_after, ttns.traffic_transmit_service_id

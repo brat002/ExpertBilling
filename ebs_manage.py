@@ -185,6 +185,7 @@ def files_for_copy(first_time=False):
 def backup_db():
     global dbhost,dbname,dbuser,dbpassword
     print "*"*80  
+    print "Backup database"
     print "Please, enter password for DB user %s.\nYou can see right password in file /opt/ebs/data/ebs_config.ini" % (dbuser,)
     status, output = commands.getstatusoutput('pg_dump -W -h %s -p %s -U %s -F p -b -S ebs --disable-triggers -f %s %s' % (dbhost,5432,dbuser,"%s%s_db.sql" % (BACKUP_DIR, curdate), dbname))
     if status!=0:
@@ -266,8 +267,8 @@ def modifydb():
     for x in xrange(9,13):
         for i in xrange(1,13):
             print "%.2i%.2i" % (x,i)
-            l.append("""CREATE TRIGGER acc_psh_trg
-              AFTER UPDATE OR DELETE
+            l.append("""DROP TRIGGER acc_psh_trg ON psh20%.2i%.2i01;CREATE TRIGGER acc_psh_trg
+              AFTER INSERT OF UPDATE OR DELETE
               ON psh20%.2i%.2i01
               FOR EACH ROW
               EXECUTE PROCEDURE account_transaction_trg_fn(); """ % (x,i))

@@ -11,11 +11,12 @@ from nfroutine_class.NodesData import NodesData
 from nfroutine_class.AccountGroupBytesData import AccountGroupBytesData
 from nfroutine_class.TarifGroupEdgeData import TarifGroupEdgeData
 from nfroutine_class.GroupBytesDictData import GroupBytesDictData
+from nfroutine_class.AccountTariffTraffServiceData import AccountTariffTraffServiceData
 from decimal import Decimal
 
 class NfroutineCaches(CacheCollection):
     __slots__ = ('account_cache', 'period_cache', 'nodes_cache', 'settlement_cache', \
-                 'traffictransmit_cache', 'prepays_cache', 'storeclass_cache', 'tarifedge_cache', 'accountbytes_cache')
+                 'traffictransmit_cache', 'prepays_cache', 'storeclass_cache', 'tarifedge_cache', 'accountbytes_cache', 'accounttariff_traf_service_cache')
     
     def __init__(self, date, fMem, first_time):
         super(NfroutineCaches, self).__init__(date)
@@ -27,6 +28,7 @@ class NfroutineCaches(CacheCollection):
         self.traffictransmit_cache = TrafficTransmitServiceCache()
         self.storeclass_cache = StoreClassCache()
         self.tarifedge_cache = TarifGroupEdgeCache()
+        self.accounttariff_traf_service_cache=AccountTariffTraffServiceCache()
         if not first_time:                
             self.caches = [self.account_cache, self.period_cache, self.prepays_cache, \
                            self.nodes_cache, self.settlement_cache, self.traffictransmit_cache, \
@@ -51,6 +53,20 @@ class AccountCache(CacheItem):
         self.by_account = {}
         for acct in self.data:
             self.by_account[acct.account_id]  = acct
+
+class AccountTariffTraffServiceCache(CacheItem):
+    __slots__ = ('by_accounttariff',)
+    datatype = AccountTariffTraffServiceData
+    sql = nfroutine_sql['accounttariffs']
+    
+    def __init__(self, date):
+        super(AccountTariffTraffServiceCache, self).__init__()
+
+        
+    def reindex(self):
+        self.by_accounttariff = {}
+        for item in self.data:
+            self.by_accounttariff[item.id]  = item
             
 class PeriodCache(CacheItem):
     __slots__ = ('in_period', 'fMem', 'date')

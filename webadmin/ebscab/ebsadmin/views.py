@@ -1962,7 +1962,7 @@ def accountsfilter(request):
 
     try:
         sql= u" AND ".join([u" %s %s '%s' " % (x[0],x[1], x[2].replace("%", "%%")) if type(x[2])==unicode else u" %s %s %s " % (x[0],x[1],x[2])  for x in data]) or True
-        print sql
+        #print sql
         s=u"""SELECT DISTINCT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tariff, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address
             FROM billservice_account AS acc
             LEFT JOIN billservice_subaccount as subacc ON subacc.account_id=acc.id 
@@ -1971,7 +1971,7 @@ def accountsfilter(request):
             AND 
             %s
             ORDER BY acc.username ASC;"""  % unicode(sql)
-        print s
+        #print s
         
 
         cur.execute(s)

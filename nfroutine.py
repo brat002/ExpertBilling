@@ -147,6 +147,123 @@ class groupDequeThread(Thread):
         Thread.__init__(self)
         self.tname = self.__class__.__name__
 
+    def get_actual_cost(self, octets_summ, stream_date, nodes):
+        """Метод возвращает актуальную цену для направления трафика для пользователя:"""
+        #TODO: check whether differentiated traffic billing us used <edge_start>=0; <edge_end>='infinite'
+        cost, min_from_start = 0, 0
+        for node in nodes:
+            if 0: assert isinstance(node, NodesData)
+            tnc, tkc, from_start, result = fMem.in_period_(node.time_start, node.length, node.repeat_after, stream_date)
+            if result:
+                """
+                Зачем здесь было это делать:
+                Если в тарифном плане с оплатой за трафик в одной ноде указана цена за "круглые сутки", 
+                но в другой ноде указана цена за какой-то конкретный день (к пр. праздник), 
+                который так же попадает под круглые сутки, но цена в "праздник" должна быть другой, 
+                значит смотрим у какой из нод помимо класса трафика попал расчётный период и выбираем из всех нод ту, 
+                у которой расчётный период начался как можно раньше к моменту попадения строки статистики в БД.
+                """
+                if from_start < min_from_start or min_from_start == 0:
+                    min_from_start = from_start
+                    cost = node.traffic_cost
+                    
+        return cost
+
+    def get_prepaid_octets(self, octets_in, prepInf, queues):
+        octets = octets_in
+        prepaid_left = False
+        if prepInf:
+            prepaid_id, prepaid = prepInf[0:2]
+            if prepaid > 0:  
+                prep_octets = 0
+                prepaid_left = True
+                if prepaid>=octets:
+                    #prepaid, octets = prepaid-octets, 0
+                    prep_octets, octets = octets, 0
+                elif octets>=prepaid:
+                    #prepaid, octets = octets-prepaid, abs(prepaid-octets)
+                    prep_octets, octets = prepaid, octets-prepaid
+                    
+                self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prep_octets, prepaid_id,))
+                self.connection.commit()
+                with queues.prepaidLock:
+                    prepInf[1] -= prep_octets
+        return octets, prepaid_left    
+
+    def tarificate(self, account_id, acctf_id, tariff_id, traffic_transmit_service_id, group_id, octets, gdate):
+        if not traffic_transmit_service_id: return
+        octets_summ = 0
+        #loop throungh classes in 'classes' tuple
+        tarif_edges = caches.tarifedge_cache.by_tarif.get(tariff_id)
+        group_edge = {}
+        if tarif_edges:
+            group_edge = tarif_edges.group_edges
+
+        #get a record from prepays cache
+        prepInf = caches.prepays_cache.by_tts_acctf_group.get((traffic_transmit_service_id, acctf_id, group_id))                            
+        octets, prepaid_left = self.get_prepaid_octets(octets, prepInf, queues)
+        traffic_cost = 0
+        summ = 0
+        if octets > 0:
+            #if group_id in group_edge:
+            if False:
+                logger.warning("Group id in group_edge")
+                account_bytes = None
+                try:
+                    sys.setcheckinterval(sys.maxint)    
+                    account_bytes = queues.accountbytes_cache.by_acctf.get(acctf_id)
+                    if not account_bytes:
+                        account_bytes = AccountGroupBytesData._make(account_id, tarif_id, acctf_id, acc.datetime, {}, Lock(), datetime.datetime.now())
+                        queues.accountbytes_cache.by_acctf[acctf_id] = account_bytes
+                finally:
+                    sys.setcheckinterval(100)
+                if not account_bytes:
+                    logger.warning("Account_bytes not resolved for acc %s", acc)
+                    break
+                tg_bytes = 0
+                tg_datetime, tg_current, tg_next = None, None, None
+                with account_bytes.lock:
+                    gbytes = account_bytes.group_data.get(group_id)
+                    if not gbytes:
+                        gbytes = GroupBytesDictData._make((0,))
+                        account_bytes.group_data[group_id] = gbytes
+                    if prepaid_left and gbytes.bytes != 0:
+                        gbytes.bytes = 0
+                    tg_bytes = gbytes.bytes
+                    gbytes.bytes += octets                                        
+                    #tg_datetime, tg_current, tg_next = gbytes.tg_current, gbytes.tg_next
+                    account_bytes.last_accessed = datetime.datetime.now()
+                    
+                #get tarif info
+                group_edges = group_edge[group_id]
+                edge_octets = []
+                pay_bytes = octets
+                cur_edge_pos = bisect_left(group_edges, tg_bytes)
+                while True:
+                    edge_val = group_edges[cur_edge_pos] * MEGABYTE
+                    if (pay_bytes + tg_bytes <= edge_val) or (cur_edge_pos + 1 >= len(group_edges)):
+                        edge_octets.append((group_edges[cur_edge_pos], pay_bytes))
+                        break
+                    else:
+                        pre_edge_bytes = edge_val - (pay_bytes + tg_bytes)
+                        tg_bytes += pre_edge_bytes
+                        pay_bytes -= pre_edge_bytes
+                        cur_edge_pos += 1
+                for edge_fval, pay_fbytes in edge_octets:
+                    nodes = caches.nodes_cache.by_tts_group_edge.get((traffic_transmit_service_id, group_id, edge_fval))
+                    trafic_cost = self.get_actual_cost(pay_fbytes, stream_date, nodes) if nodes else 0
+                    summ += (trafic_cost * pay_fbytes) / MEGABYTE    
+                    
+            else:        
+                nodes = caches.nodes_cache.by_tts_group.get((traffic_transmit_service_id, group_id))
+                trafic_cost = self.get_actual_cost(octets_summ, stream_date, nodes) if nodes else 0
+                summ = (trafic_cost * octets) / MEGABYTE
+                
+        logger.info("traffic_transmit_service_id=%s acctf_id=%s account_id=%s summ=%s", (acc.traffic_transmit_service_id, acctf_id, acc.account_id, summ))
+        if summ <> 0:
+            logger.debug("Tarificate group bytes traffic_transmit_service_id=%s, acctf_id=%s, account_id=%s, summ=%s, created=%s",  (traffic_transmit_service_id, acctf_id, account_id, summ, gdate,))
+            return traffictransaction(self.cur, traffic_transmit_service_id, acctf_id, account_id, summ=summ, created=gdate)
+
     def run(self):
         global queues, flags, vars
         self.connection = get_connection(vars.db_dsn)
@@ -176,8 +293,9 @@ class groupDequeThread(Thread):
                 if not gkey: time.sleep(10); continue
 
                 #get data
-                account_id, kgroup_id, gtime = gkey 
-                dkey = (int(gtime / 667) + account_id) % vars.GROUP_DICTS
+                accounttarif_id, kgroup_id, gtime = gkey 
+                dkey = (int(gtime / 667) + accounttarif_id) % vars.GROUP_DICTS
+                #получить account_id Для вставки!!!
                 aggrgDict = queues.groupAggrDicts[dkey]
                 aggrgLock = queues.groupAggrLocks[dkey]
                 with aggrgLock:
@@ -187,6 +305,9 @@ class groupDequeThread(Thread):
                     logger.info('%s: no groupdata for key: %s', (self.getName(), gkey))
                     continue
                 
+                accsdata = caches.accounttariff_traf_service_cache.by_accounttariff.get(accounttarif_id)
+                if not accsdata: continue
+                account_id = accsdata.account_id
                 groupItems, groupInfo = groupData[0:2]
                 #get needed method
                 group_id, group_dir, group_type = groupInfo
@@ -214,6 +335,7 @@ class groupDequeThread(Thread):
                         
                     octets = max_oct                        
                     if not max_class: continue
+                    transaction_id = self.tarificate(accsdata.account_id, accsdata.id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, group_id, max_class, gdate)
                     self.cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
                     self.connection.commit()
                 #first type groups
@@ -222,7 +344,9 @@ class groupDequeThread(Thread):
                     for class_, gdict in groupItems.iteritems():
                         octs = gop(gdict)
                         octets += octs
-                    self.cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
+                    transaction_id = self.tarificate(accsdata.account_id, accsdata.id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, group_id, octets, gdate)
+                    #self.cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
+                    self.cur.execute("""INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (%s, %s, %s, %s, %s, %s , %s, %s);""", (group_id, account_id, octets, gdate, classes, octlist, max_class, accsdata.id))
                     self.connection.commit()
                 else:
                     continue
@@ -284,7 +408,8 @@ class statDequeThread(Thread):
     def __init__ (self):
         Thread.__init__(self)
         self.tname = self.__class__.__name__
-
+ 
+    
     def run(self):
         global queues, flags, vars
         self.connection = get_connection(vars.db_dsn)
@@ -311,8 +436,9 @@ class statDequeThread(Thread):
 
                 if not skey: time.sleep(10); continue
                 
-                account_id, stime = skey 
-                dkey = (int(stime / 667) + account_id) % vars.STAT_DICTS
+                accounttarif_id, stime = skey 
+                dkey = (int(stime / 667) + accounttarif_id) % vars.STAT_DICTS
+                #получить account_id Для вставки в БД!!!
                 aggrsDict = queues.statAggrDicts[dkey]
                 aggrsLock = queues.statAggrLocks[dkey]
                 with aggrsLock:
@@ -321,7 +447,11 @@ class statDequeThread(Thread):
                 if not statData:
                     logger.info('%s: no statdata for key: %s', (self.getName(), skey))
                     continue
-
+                
+                accsdata = caches.accounttariff_traf_service_cache.by_accounttariff.get(accounttarif_id)
+                if not accsdata: continue
+                account_id = accsdata.account_id
+                
                 statItems, statInfo = statData
                 nas_id, sum_bytes   = statInfo
                 octets_in  = sum_bytes['INPUT']
@@ -401,48 +531,7 @@ class NetFlowRoutine(Thread):
         self.tname = self.__class__.__name__
         self.connection = get_connection(vars.db_dsn, vars.NFR_SESSION)
         
-    def get_actual_cost(self, octets_summ, stream_date, nodes):
-        """Метод возвращает актуальную цену для направления трафика для пользователя:"""
-        #TODO: check whether differentiated traffic billing us used <edge_start>=0; <edge_end>='infinite'
-        cost, min_from_start = 0, 0
-        for node in nodes:
-            if 0: assert isinstance(node, NodesData)
-            tnc, tkc, from_start, result = fMem.in_period_(node.time_start, node.length, node.repeat_after, stream_date)
-            if result:
-                """
-                Зачем здесь было это делать:
-                Если в тарифном плане с оплатой за трафик в одной ноде указана цена за "круглые сутки", 
-                но в другой ноде указана цена за какой-то конкретный день (к пр. праздник), 
-                который так же попадает под круглые сутки, но цена в "праздник" должна быть другой, 
-                значит смотрим у какой из нод помимо класса трафика попал расчётный период и выбираем из всех нод ту, 
-                у которой расчётный период начался как можно раньше к моменту попадения строки статистики в БД.
-                """
-                if from_start < min_from_start or min_from_start == 0:
-                    min_from_start = from_start
-                    cost = node.traffic_cost
-                    
-        return cost
-
-    def get_prepaid_octets(self, octets_in, prepInf, queues):
-        octets = octets_in
-        prepaid_left = False
-        if prepInf:
-            prepaid_id, prepaid = prepInf[0:2]
-            if prepaid > 0:  
-                prep_octets = 0
-                prepaid_left = True
-                if prepaid>=octets:
-                    #prepaid, octets = prepaid-octets, 0
-                    prep_octets, octets = octets, 0
-                elif octets>=prepaid:
-                    #prepaid, octets = octets-prepaid, abs(prepaid-octets)
-                    prep_octets, octets = prepaid, octets-prepaid
-                    
-                self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prep_octets, prepaid_id,))
-                self.connection.commit()
-                with queues.prepaidLock:
-                    prepInf[1] -= prep_octets
-        return octets, prepaid_left                    
+               
             
     def run(self):
         #connection = persist.connection()
@@ -552,8 +641,8 @@ class NetFlowRoutine(Thread):
                         for group_id, group_classes, group_dir, group_type in flow.groups:
                             #group_id, group_classes, group_dir, group_type  = group
                             #calculate a key and check the dictionary
-                            gkey = (flow.account_id, group_id, gtime)
-                            dgkey = (int(gtime / 667) + flow.account_id) % vars.GROUP_DICTS
+                            gkey = (flow.acctf_id, group_id, gtime)
+                            dgkey = (int(gtime / 667) + flow.acctf_id) % vars.GROUP_DICTS
                             aggrgDict = queues.groupAggrDicts[dgkey]
                             aggrgLock = queues.groupAggrLocks[dgkey]
                             with aggrgLock:
@@ -571,8 +660,8 @@ class NetFlowRoutine(Thread):
                                 
                     #global statistics calculation
                     stime = flow.datetime - (flow.datetime % vars.STAT_AGGR_TIME)
-                    skey  = (flow.account_id, stime)
-                    dskey = (int(stime / 667) + flow.account_id) % vars.STAT_DICTS
+                    skey  = (flow.acctf_id, stime)
+                    dskey = (int(stime / 667) + flow.acctf_id) % vars.STAT_DICTS
                     aggrsDict = queues.statAggrDicts[dskey]
                     aggrsLock = queues.statAggrLocks[dskey]
                     with aggrsLock:
@@ -590,79 +679,6 @@ class NetFlowRoutine(Thread):
 
                     #WTF??? tarif_mode = caches.period_cache.in_period.get(acc.traffic_transmit_service_id, False) if acc.traffic_transmit_service_id else False
                     
-                    if acc.traffic_transmit_service_id and flow.has_groups and flow.groups:
-                        octets_summ = 0
-                        #loop throungh classes in 'classes' tuple
-                        tarif_edges = caches.tarifedge_cache.by_tarif.get(acc.tarif_id)
-                        group_edge = {}
-                        if tarif_edges:
-                            group_edge = tarif_edges.group_edges
-                        for group_id, group_classes, group_dir, group_type in flow.groups:
-                            #get a record from prepays cache
-                            prepInf = caches.prepays_cache.by_tts_acctf_group.get((acc.traffic_transmit_service_id, acc.acctf_id, group_id))                            
-                            octets, prepaid_left = self.get_prepaid_octets(flow.octets, prepInf, queues)
-                            traffic_cost = 0
-                            summ = 0
-                            if octets > 0:
-                                #if group_id in group_edge:
-                                if False:
-                                    logger.warning("Group id in group_edge")
-                                    account_bytes = None
-                                    try:
-                                        sys.setcheckinterval(sys.maxint)    
-                                        account_bytes = queues.accountbytes_cache.by_acctf.get(acc.acctf_id)
-                                        if not account_bytes:
-                                            account_bytes = AccountGroupBytesData._make(acc.account_id, acc.tarif_id, acc.acctf_id, acc.datetime, {}, Lock(), datetime.datetime.now())
-                                            queues.accountbytes_cache.by_acctf[acc.acctf_id] = account_bytes
-                                    finally:
-                                        sys.setcheckinterval(100)
-                                    if not account_bytes:
-                                        logger.warning("Account_bytes not resolved for acc %s", acc)
-                                        break
-                                    tg_bytes = 0
-                                    tg_datetime, tg_current, tg_next = None, None, None
-                                    with account_bytes.lock:
-                                        gbytes = account_bytes.group_data.get(group_id)
-                                        if not gbytes:
-                                            gbytes = GroupBytesDictData._make((0,))
-                                            account_bytes.group_data[group_id] = gbytes
-                                        if prepaid_left and gbytes.bytes != 0:
-                                            gbytes.bytes = 0
-                                        tg_bytes = gbytes.bytes
-                                        gbytes.bytes += octets                                        
-                                        #tg_datetime, tg_current, tg_next = gbytes.tg_current, gbytes.tg_next
-                                        account_bytes.last_accessed = datetime.datetime.now()
-                                        
-                                    #get tarif info
-                                    group_edges = group_edge[group_id]
-                                    edge_octets = []
-                                    pay_bytes = octets
-                                    cur_edge_pos = bisect_left(group_edges, tg_bytes)
-                                    while True:
-                                        edge_val = group_edges[cur_edge_pos] * MEGABYTE
-                                        if (pay_bytes + tg_bytes <= edge_val) or (cur_edge_pos + 1 >= len(group_edges)):
-                                            edge_octets.append((group_edges[cur_edge_pos], pay_bytes))
-                                            break
-                                        else:
-                                            pre_edge_bytes = edge_val - (pay_bytes + tg_bytes)
-                                            tg_bytes += pre_edge_bytes
-                                            pay_bytes -= pre_edge_bytes
-                                            cur_edge_pos += 1
-                                    for edge_fval, pay_fbytes in edge_octets:
-                                        nodes = caches.nodes_cache.by_tts_group_edge.get((acc.traffic_transmit_service_id, group_id, edge_fval))
-                                        trafic_cost = self.get_actual_cost(pay_fbytes, stream_date, nodes) if nodes else 0
-                                        summ += (trafic_cost * pay_fbytes) / MEGABYTE    
-                                        
-                                else:        
-                                    nodes = caches.nodes_cache.by_tts_group.get((acc.traffic_transmit_service_id, group_id))
-                                    trafic_cost = self.get_actual_cost(octets_summ, stream_date, nodes) if nodes else 0
-                                    summ = (trafic_cost * octets) / MEGABYTE
-                                    
-                            logger.info("traffic_transmit_service_id=%s acctf_id=%s account_id=%s summ=%s", (acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ))
-                            if summ <> 0:
-                                with queues.pickerLock:
-                                    logger.info("add to picker %s",  (summ,))
-                                    queues.picker.add_summ(acc.traffic_transmit_service_id, acc.acctf_id, acc.account_id, summ)
 
                 if flags.writeProf:
                     icount += 1
