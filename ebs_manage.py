@@ -271,7 +271,7 @@ def modifydb():
               AFTER INSERT OF UPDATE OR DELETE
               ON psh20%.2i%.2i01
               FOR EACH ROW
-              EXECUTE PROCEDURE account_transaction_trg_fn(); """ % (x,i))
+              EXECUTE PROCEDURE account_transaction_trg_fn(); """ % (x,i, x,i))
     
     for sql in l:
         try:

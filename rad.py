@@ -1225,6 +1225,10 @@ class HandlelISGAuth(HandleSAuth):
             logger.warning(left, ())
             return self.auth_NA(authobject) 
 
+        if acc.account_status != 1:
+            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
+            return self.auth_NA(authobject)  
+        
         #print common_vpn,access_type,self.access_type
         if (acc.access_type is None) or (acc.access_type != self.access_type):
             logger.warning("Unallowed Access Type for user %s. Access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
