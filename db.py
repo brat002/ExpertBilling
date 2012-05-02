@@ -310,8 +310,9 @@ def delete_transaction(cursor, id):
 def traffictransaction(cursor, traffictransmitservice_id, accounttarif_id, account_id, summ=0, created=None):
     if not created:
         created=datetime.datetime.now()
-    cursor.execute("""INSERT INTO billservice_traffictransaction(traffictransmitservice_id, accounttarif_id, account_id, summ, created) VALUES (%s, %s, %s, %s, %s);
+    cursor.execute("""INSERT INTO billservice_traffictransaction(traffictransmitservice_id, accounttarif_id, account_id, summ, created) VALUES (%s, %s, %s, %s, %s) RETURNING id;
                    """, (traffictransmitservice_id, accounttarif_id, account_id, summ, created,))
+    return cursor.fetchone()[0]
     
 def timetransaction(cursor, timeaccessservice_id, accounttarif_id, account_id, session_id, summ=0, created=None):
     if not created:
