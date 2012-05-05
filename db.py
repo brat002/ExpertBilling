@@ -264,9 +264,6 @@ def traffictransaction(cursor, traffictransmitservice_id, accounttarif_id, accou
     except psycopg2.ProgrammingError, e:
         if e.pgcode=='42P01':
             raise TraftransTableException()
-            cursor.execute("SELECT traftrans_crt_pdb(%s::date)", (created,))
-            cursor.execute("""INSERT INTO traftrans%s""" % created.strftime("%Y%d01")+"""(traffictransmitservice_id, accounttarif_id, account_id, summ, created) VALUES (%s, %s, %s, %s, %s) RETURNING id;
-                           """, (traffictransmitservice_id, accounttarif_id, account_id, summ, created,))
         else:
             raise e
         

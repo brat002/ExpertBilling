@@ -363,9 +363,6 @@ class groupDequeThread(Thread):
                     except psycopg2.ProgrammingError, e:
                         if e.pgcode=='42P01':
                             raise GpstTableException()
-                            cursor.execute("SELECT gpst_crt_pdb(%s::date)", (gdate,))
-                            self.cur.execute("""INSERT INTO gpst%s""" % gdate.strftime("%Y%m01")+""" (group_id, account_id, bytes, datetime, classes, classbytes, max_class, accounttarif_id, transaction_id) 
-                            VALUES (%s, %s, %s, %s, %s, %s , %s, %s, %s);""", (group_id, account_id, octets, gdate, classes, octlist, max_class, accsdata.id, transaction_id))
 
                         else:
                             self.connection.rollback()
