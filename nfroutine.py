@@ -194,13 +194,13 @@ class groupDequeThread(Thread):
         if not traffic_transmit_service_id: return
         octets_summ = 0
         #loop throungh classes in 'classes' tuple
-        tarif_edges = caches.tarifedge_cache.by_tarif.get(tariff_id)
+        tarif_edges = self.caches.tarifedge_cache.by_tarif.get(tariff_id)
         group_edge = {}
         if tarif_edges:
             group_edge = tarif_edges.group_edges
 
         #get a record from prepays cache
-        prepInf = caches.prepays_cache.by_tts_acctf_group.get((traffic_transmit_service_id, acctf_id, group_id))                            
+        prepInf = self.caches.prepays_cache.by_tts_acctf_group.get((traffic_transmit_service_id, acctf_id, group_id))                            
         octets, prepaid_left = self.get_prepaid_octets(octets, prepInf, queues)
         traffic_cost = 0
         summ = 0
@@ -219,7 +219,7 @@ class groupDequeThread(Thread):
                     sys.setcheckinterval(100)
                 if not account_bytes:
                     logger.warning("Account_bytes not resolved for acc %s", acc)
-                    break
+                    return
                 tg_bytes = 0
                 tg_datetime, tg_current, tg_next = None, None, None
                 with account_bytes.lock:
@@ -250,22 +250,23 @@ class groupDequeThread(Thread):
                         pay_bytes -= pre_edge_bytes
                         cur_edge_pos += 1
                 for edge_fval, pay_fbytes in edge_octets:
-                    nodes = caches.nodes_cache.by_tts_group_edge.get((traffic_transmit_service_id, group_id, edge_fval))
+                    nodes = self.caches.nodes_cache.by_tts_group_edge.get((traffic_transmit_service_id, group_id, edge_fval))
                     trafic_cost = self.get_actual_cost(pay_fbytes, stream_date, nodes) if nodes else 0
                     summ += (trafic_cost * pay_fbytes) / MEGABYTE    
                     
             else:        
-                nodes = caches.nodes_cache.by_tts_group.get((traffic_transmit_service_id, group_id))
-                trafic_cost = self.get_actual_cost(octets_summ, stream_date, nodes) if nodes else 0
+                nodes = self.caches.nodes_cache.by_tts_group.get((traffic_transmit_service_id, group_id))
+                trafic_cost = self.get_actual_cost(octets_summ, gdate, nodes) if nodes else 0
                 summ = (trafic_cost * octets) / MEGABYTE
                 
-        logger.info("traffic_transmit_service_id=%s acctf_id=%s account_id=%s summ=%s", (acc.traffic_transmit_service_id, acctf_id, acc.account_id, summ))
+        logger.info("traffic_transmit_service_id=%s acctf_id=%s account_id=%s summ=%s", (traffic_transmit_service_id, acctf_id, account_id, summ))
         if summ <> 0:
             logger.debug("Tarificate group bytes traffic_transmit_service_id=%s, acctf_id=%s, account_id=%s, summ=%s, created=%s",  (traffic_transmit_service_id, acctf_id, account_id, summ, gdate,))
             return traffictransaction(self.cur, traffic_transmit_service_id, acctf_id, account_id, summ=summ, created=gdate)
 
     def run(self):
-        global queues, flags, vars
+        global CacheMaster, queues, flags, vars
+        dateAT = datetime.datetime(2000, 1, 1)
         self.connection = get_connection(vars.db_dsn)
         self.cur = self.connection.cursor()
         #direction type->operations
@@ -283,7 +284,18 @@ class groupDequeThread(Thread):
                 #Записывать данные для профилирования
                 if flags.writeProf: 
                     a = time.clock()
-                    
+
+                if cacheMaster.date > dateAT:
+                    cacheMaster.lock.acquire()
+                    try:
+                        self.caches = cacheMaster.cache
+                        dateAT = deepcopy(cacheMaster.date)
+                    except Exception, ex:
+                        logger.error("%s: cache exception: %s", (self.getName, repr(ex)))
+                    finally:
+                        cacheMaster.lock.release()
+
+
                 gkey, gkeyTime, groupData = None, None, None
                 with queues.groupLock:
                     #check whether double aggregation time passed - updates are rather costly
@@ -305,7 +317,7 @@ class groupDequeThread(Thread):
                     logger.info('%s: no groupdata for key: %s', (self.getName(), gkey))
                     continue
                 
-                accsdata = caches.accounttariff_traf_service_cache.by_accounttariff.get(accounttarif_id)
+                accsdata = self.caches.accounttariff_traf_service_cache.by_accounttariff.get(accounttarif_id)
                 if not accsdata: continue
                 account_id = accsdata.account_id
                 groupItems, groupInfo = groupData[0:2]
@@ -319,37 +331,46 @@ class groupDequeThread(Thread):
                 octets = 0               
                 
                 #second type groups
-                if group_type == 2:             
+                #if group_type == 2:
+                if True:             
                     """
                     Место, где определяется максимальный класс
                     """           
-                    max_oct = 0
-                    #get class octets, calculate with direction method, find maxes
-                    for class_, gdict in groupItems.iteritems():                            
-                        octs = gop(gdict)
-                        classes.append(class_)
-                        octlist.append(octs)
-                        if octs >= max_oct:
-                            max_oct = octs
-                            max_class = class_                            
-                        
-                    octets = max_oct                        
-                    if not max_class: continue
-                    transaction_id = self.tarificate(accsdata.account_id, accsdata.id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, group_id, max_class, gdate)
-                    self.cur.execute("""SELECT group_type2_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
-                    self.connection.commit()
-                #first type groups
-                elif group_type == 1:
-                    #get class octets, calculate sum with direction method
-                    for class_, gdict in groupItems.iteritems():
-                        octs = gop(gdict)
-                        octets += octs
+                    if group_type==2:
+                        max_oct = 0
+                        #get class octets, calculate with direction method, find maxes
+                        for class_, gdict in groupItems.iteritems():                            
+                            octs = gop(gdict)
+                            classes.append(class_)
+                            octlist.append(octs)
+                            if octs >= max_oct:
+                                max_oct = octs
+                                max_class = class_                            
+                            
+                        octets = max_oct                        
+                        if not max_class: continue
+                    elif group_type == 1:
+                        for class_, gdict in groupItems.iteritems():
+                            octs = gop(gdict)
+                            octets += octs
+                            classes.append(class_)
+                            octlist.append(octs)
+                                      
                     transaction_id = self.tarificate(accsdata.account_id, accsdata.id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, group_id, octets, gdate)
-                    #self.cur.execute("""SELECT group_type1_fn(%s, %s, %s, %s::timestamp without time zone, %s::int[], %s, %s);""" , (group_id, account_id, octets, gdate, classes, octlist, max_class))
-                    self.cur.execute("""INSERT INTO billservice_groupstat (group_id, account_id, bytes, datetime, classes, classbytes, max_class) VALUES (%s, %s, %s, %s, %s, %s , %s, %s);""", (group_id, account_id, octets, gdate, classes, octlist, max_class, accsdata.id))
+                    try:
+                        self.cur.execute("""INSERT INTO gpst%s""" % gdate.strftime("%Y%m01")+""" (group_id, account_id, bytes, datetime, classes, classbytes, max_class, accounttarif_id, transaction_id) 
+                        VALUES (%s, %s, %s, %s, %s, %s , %s, %s, %s);""", (group_id, account_id, octets, gdate, classes, octlist, max_class, accsdata.id, transaction_id))
+                    except psycopg2.ProgrammingError, e:
+                        if e.opcode=='42P01':
+                            cursor.execute("SELECT gpst_crt_pdb(%s::date)", (gdate,))
+                            self.cur.execute("""INSERT INTO gpst%s""" % gdate.strftime("%Y%m01")+""" (group_id, account_id, bytes, datetime, classes, classbytes, max_class, accounttarif_id, transaction_id) 
+                            VALUES (%s, %s, %s, %s, %s, %s , %s, %s, %s);""", (group_id, account_id, octets, gdate, classes, octlist, max_class, accsdata.id, transaction_id))
+
+                        else:
+                            self.connection.rollback()
+                            raise e
                     self.connection.commit()
-                else:
-                    continue
+
                 
                 #write profiling infos
                 if flags.writeProf:
