@@ -232,34 +232,6 @@ def get_account_data_by_username(cursor, username, access_type, station_id, mult
 
     return cursor.fetchone()
 
-def get_account_data_by_username_dhcp(cursor, username):
-    """
-    username = mac address
-    """
-    
-    cursor.execute("""SELECT account.nas_id, account.ipn_ip_address,account.netmask, account.ipn_mac_address,
-        account.ipn_speed
-        FROM billservice_account as account
-        WHERE 
-        (((account.allow_dhcp_null=False and account.ballance+account.credit>=0) or (account.allow_dhcp_null=True)) 
-        OR 
-        ((account.allow_dhcp_block=False and account.balance_blocked=False and account.disabled_by_limit=False and account.status=True) or (account.allow_dhcp_null=True)))=True 
-        AND account.ipn_mac_address=%s LIMIT 1""" , (str(username),))
-
-
-    return cursor.fetchone()
-
-def time_periods_by_tarif_id(cursor, tarif_id):
-    #print 'tarif_id', tarif_id
-    cursor.execute("""
-                   SELECT tpn.time_start::timestamp without time zone as time_start, tpn.length as length, tpn.repeat_after as repeat_after
-                    FROM billservice_timeperiodnode as tpn
-                    JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
-                    JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
-                    JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id
-                    WHERE bst.id=%s""", (int(tarif_id),))
-    return cursor.fetchall()
-
 def transaction(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null', accounttarif='Null'):
     #print 'new transaction'
     if not created:
@@ -276,42 +248,21 @@ def transaction(cursor, account, approved, type, summ, description, created=None
         tr_id=tr_id[0]
     return tr_id
 
-def transaction_noret(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null'):
-    if not created:
-        created=datetime.datetime.now()
-    #UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;
-    cursor.execute("""                   
-                    INSERT INTO billservice_transaction(bill,
-                    account_id, approved, type_id, tarif_id, summ, description, created)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
-                    """ , (bill, account, approved, type, tarif , summ, description, created,))
-    
-def transaction_text(cursor, account, approved, type, summ, description, created=None, bill='', tarif='Null'):
-    if not created:
-        created=datetime.datetime.now()
-    #UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;
-    return """ INSERT INTO billservice_transaction(bill,
-               account_id, approved, type_id, tarif_id, summ, description, created)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id;
-           """ % (bill, account, approved, type, tarif , summ, description, created,)
-
-def delete_transaction(cursor, id):
-
-    cursor.execute("""
-                   DELETE FROM billservice_transaction WHERE id=%s RETURNING account_id, summ;
-                   """ , (id,))
-
-    '''row=cursor.fetchone()
-
-    cursor.execute("""
-                   UPDATE billservice_account
-                   SET ballance=ballance+%s WHERE id=%s""" , (row['summ'], row['account_id'],))'''
 
 def traffictransaction(cursor, traffictransmitservice_id, accounttarif_id, account_id, summ=0, created=None):
     if not created:
         created=datetime.datetime.now()
-    cursor.execute("""INSERT INTO billservice_traffictransaction(traffictransmitservice_id, accounttarif_id, account_id, summ, created) VALUES (%s, %s, %s, %s, %s) RETURNING id;
-                   """, (traffictransmitservice_id, accounttarif_id, account_id, summ, created,))
+    try:
+        cursor.execute("""INSERT INTO traftrans%s""" % created.strftime("%Y%m01")+"""(traffictransmitservice_id, accounttarif_id, account_id, summ, created) VALUES (%s, %s, %s, %s, %s) RETURNING id;
+                       """, (traffictransmitservice_id, accounttarif_id, account_id, summ, created,))
+    except psycopg2.ProgrammingError, e:
+        if e.opcode=='42P01':
+            cursor.execute("SELECT traftrans_crt_pdb(%s::date)", (created,))
+            cursor.execute("""INSERT INTO traftrans%s""" % created.strftime("%Y%d01")+"""(traffictransmitservice_id, accounttarif_id, account_id, summ, created) VALUES (%s, %s, %s, %s, %s) RETURNING id;
+                           """, (traffictransmitservice_id, accounttarif_id, account_id, summ, created,))
+        else:
+            raise e
+        
     return cursor.fetchone()[0]
     
 def timetransaction(cursor, timeaccessservice_id, accounttarif_id, account_id, session_id, summ=0, created=None):

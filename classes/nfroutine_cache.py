@@ -32,12 +32,12 @@ class NfroutineCaches(CacheCollection):
         if not first_time:                
             self.caches = [self.account_cache, self.period_cache, self.prepays_cache, \
                            self.nodes_cache, self.settlement_cache, self.traffictransmit_cache, \
-                           self.storeclass_cache, self.tarifedge_cache]
+                           self.storeclass_cache, self.tarifedge_cache, self.accounttariff_traf_service_cache]
         else:
             self.accountbytes_cache = AccountGroupBytesCache(date)
             self.caches = [self.account_cache, self.period_cache, self.prepays_cache, \
                            self.nodes_cache, self.settlement_cache, self.traffictransmit_cache, \
-                           self.storeclass_cache, self.tarifedge_cache, self.accountbytes_cache]
+                           self.storeclass_cache, self.tarifedge_cache, self.accountbytes_cache, self.accounttariff_traf_service_cache]
 
 class AccountCache(CacheItem):
     __slots__ = ('by_account',)
@@ -56,13 +56,13 @@ class AccountCache(CacheItem):
 
 class AccountTariffTraffServiceCache(CacheItem):
     __slots__ = ('by_accounttariff',)
+    
+    def __init__(self):
+        super(AccountTariffTraffServiceCache, self).__init__()
+        
     datatype = AccountTariffTraffServiceData
     sql = nfroutine_sql['accounttariffs']
-    
-    def __init__(self, date):
-        super(AccountTariffTraffServiceCache, self).__init__()
 
-        
     def reindex(self):
         self.by_accounttariff = {}
         for item in self.data:
