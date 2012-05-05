@@ -8,6 +8,12 @@ from re import  escape
 import os
 from types import InstanceType, StringType, UnicodeType
 
+class GpstTableException(Exception):
+    pass
+
+class TraftransTableException(Exception):
+    pass
+
 def format_update (x,y):
     #print 'y', y, type(y)
     if y!=u'Null' and y!=u'None':
@@ -256,7 +262,8 @@ def traffictransaction(cursor, traffictransmitservice_id, accounttarif_id, accou
         cursor.execute("""INSERT INTO traftrans%s""" % created.strftime("%Y%m01")+"""(traffictransmitservice_id, accounttarif_id, account_id, summ, created) VALUES (%s, %s, %s, %s, %s) RETURNING id;
                        """, (traffictransmitservice_id, accounttarif_id, account_id, summ, created,))
     except psycopg2.ProgrammingError, e:
-        if e.opcode=='42P01':
+        if e.pgcode=='42P01':
+            raise TraftransTableException()
             cursor.execute("SELECT traftrans_crt_pdb(%s::date)", (created,))
             cursor.execute("""INSERT INTO traftrans%s""" % created.strftime("%Y%d01")+"""(traffictransmitservice_id, accounttarif_id, account_id, summ, created) VALUES (%s, %s, %s, %s, %s) RETURNING id;
                            """, (traffictransmitservice_id, accounttarif_id, account_id, summ, created,))

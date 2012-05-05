@@ -24,7 +24,7 @@ from copy import copy, deepcopy
 from collections import deque, defaultdict
 from period_utilities import in_period_info
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
-from db import traffictransaction
+from db import traffictransaction, TraftransTableException, GpstTableException
 from bisect import bisect_left
 import twisted.internet
 from twisted.internet.protocol import DatagramProtocol, Factory
@@ -361,7 +361,8 @@ class groupDequeThread(Thread):
                         self.cur.execute("""INSERT INTO gpst%s""" % gdate.strftime("%Y%m01")+""" (group_id, account_id, bytes, datetime, classes, classbytes, max_class, accounttarif_id, transaction_id) 
                         VALUES (%s, %s, %s, %s, %s, %s , %s, %s, %s);""", (group_id, account_id, octets, gdate, classes, octlist, max_class, accsdata.id, transaction_id))
                     except psycopg2.ProgrammingError, e:
-                        if e.opcode=='42P01':
+                        if e.pgcode=='42P01':
+                            raise GpstTableException()
                             cursor.execute("SELECT gpst_crt_pdb(%s::date)", (gdate,))
                             self.cur.execute("""INSERT INTO gpst%s""" % gdate.strftime("%Y%m01")+""" (group_id, account_id, bytes, datetime, classes, classbytes, max_class, accounttarif_id, transaction_id) 
                             VALUES (%s, %s, %s, %s, %s, %s , %s, %s, %s);""", (group_id, account_id, octets, gdate, classes, octlist, max_class, accsdata.id, transaction_id))
@@ -385,6 +386,88 @@ class groupDequeThread(Thread):
                     except: pass
                 logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
                 continue
+            except TraftransTableException, ex:
+                logger.info("%s : traftrans table not exists. Creating", (self.getName(),  )) 
+                self.connection.rollback()
+                try:
+                    self.cur.execute("SELECT traftrans_crt_pdb(%s::date)", (gdate,))
+                    self.connection.commit()
+                except Exception, ex:
+                    logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
+                    try: 
+                        time.sleep(3)
+                        if self.connection.closed():
+                            try:
+                                self.connection = get_connection(vars.db_dsn)
+                                self.cur = self.connection.cursor()
+                            except:
+                                time.sleep(20)
+                        else:
+                            self.cur.connection.commit()
+                            self.cur = self.connection.cursor()
+                    except: 
+                        time.sleep(10)
+                        try:
+                            self.connection.close()
+                        except: pass
+                        try:
+                            self.connection = get_connection(vars.db_dsn)
+                            self.cur = self.connection.cursor()
+                        except:
+                            time.sleep(20)
+                            
+                if gkey and gkeyTime and groupData:
+                    with aggrgLock:
+                        grec = aggrgDict.get(gkey)
+                        if not grec:
+                            aggrgDict[gkey] = groupData
+                            with queues.groupLock:
+                                queues.groupDeque.appendleft((gkey, gkeyTime))
+                        else:
+                            for gclass, class_io in groupItems.iteritems():
+                                grec[0][gclass]['INPUT']  += class_io['INPUT']
+                                grec[0][gclass]['OUTPUT'] += class_io['OUTPUT']
+            except GpstTableException, ex:
+                logger.info("%s : gpst table not exists. Creating", (self.getName(),  )) 
+                self.connection.rollback()
+                try:
+                    self.cur.execute("SELECT gpst_crt_pdb(%s::date)", (gdate,))
+                    self.connection.commit()
+                except Exception, ex:
+                    logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
+                    try: 
+                        time.sleep(3)
+                        if self.connection.closed():
+                            try:
+                                self.connection = get_connection(vars.db_dsn)
+                                self.cur = self.connection.cursor()
+                            except:
+                                time.sleep(20)
+                        else:
+                            self.cur.connection.commit()
+                            self.cur = self.connection.cursor()
+                    except: 
+                        time.sleep(10)
+                        try:
+                            self.connection.close()
+                        except: pass
+                        try:
+                            self.connection = get_connection(vars.db_dsn)
+                            self.cur = self.connection.cursor()
+                        except:
+                            time.sleep(20)
+                if gkey and gkeyTime and groupData:
+                    with aggrgLock:
+                        grec = aggrgDict.get(gkey)
+                        if not grec:
+                            aggrgDict[gkey] = groupData
+                            with queues.groupLock:
+                                queues.groupDeque.appendleft((gkey, gkeyTime))
+                        else:
+                            for gclass, class_io in groupItems.iteritems():
+                                grec[0][gclass]['INPUT']  += class_io['INPUT']
+                                grec[0][gclass]['OUTPUT'] += class_io['OUTPUT']
+                                
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
                 if ex.__class__ in vars.db_errors:
