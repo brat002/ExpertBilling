@@ -37,7 +37,7 @@ from utilites import parse_custom_speed, parse_custom_speed_lst, cred, get_decim
 from utilites import rosClient, settlement_period_info, in_period, in_period_info
 
 from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
-from db import delete_transaction, get_default_speed_parameters, get_speed_parameters, dbRoutine
+from db import  dbRoutine
 from db import transaction, transaction_noret, ps_history, get_last_checkout, time_periods_by_tarif_id 
 from db import timetransaction, set_account_deleted, get_limit_speed, get_last_addon_checkout, addon_history
 
