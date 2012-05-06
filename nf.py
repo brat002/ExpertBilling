@@ -684,14 +684,14 @@ class FlowDequeThread(Thread):
                                 self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                 nfwrite_list.append(flow)
                                 break                   
-                            #traversed all the nodes
-                            else:
-                                if classLst:
-                                    self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
-                                    nfwrite_list.append(flow)
-                                else: 
-                                    nfwrite_list.append(flow)
-                                    continue
+                        #traversed all the nodes
+                        else:
+                            if classLst:
+                                self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
+                                nfwrite_list.append(flow)
+                            else: 
+                                nfwrite_list.append(flow)
+                                continue
                             
                         #construct a list
                         flst.append(tuple(flow)); fcnt += 1                    
