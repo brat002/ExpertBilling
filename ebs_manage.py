@@ -272,7 +272,16 @@ def modifydb():
               ON psh20%.2i%.2i01
               FOR EACH ROW
               EXECUTE PROCEDURE account_transaction_trg_fn(); """ % (x,i, x,i))
-    
+
+    for x in xrange(9,13):
+        for i in xrange(1,13):
+            print "%.2i%.2i" % (x,i)
+            l.append("""DROP TRIGGER acc_tftrans_trg ON traftrans20%.2i%.2i01;CREATE TRIGGER acc_tftrans_trg
+              AFTER INSERT OF UPDATE OR DELETE
+              ON traftrans20%.2i%.2i01
+              FOR EACH ROW
+              EXECUTE PROCEDURE account_transaction_trg_fn(); """ % (x,i, x,i))
+            
     for sql in l:
         try:
             cur.execute(sql)
