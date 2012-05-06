@@ -31,7 +31,7 @@ from collections import deque, defaultdict
 
 from saver import allowedUsersChecker, setAllowedUsers
 from utilites import in_period,in_period_info, create_speed_string, get_corrected_speed
-from db import get_account_data_by_username_dhcp,get_default_speed_parameters, get_speed_parameters, get_nas_by_ip, get_account_data_by_username, time_periods_by_tarif_id
+
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 from classes.rad_cache import *
