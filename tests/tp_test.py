@@ -1,6 +1,7 @@
 #-*- coding=utf-8 -*-
 import datetime
-
+import sys
+sys.path.insert(0, "../")
 def convert_values(value):
     if str(value).endswith('k'):
         return str(int(str(value)[0:-1])*1000)
@@ -49,8 +50,8 @@ def check_speed(speed):
 
 
 
-from utilites import in_period
-from utilites import in_period_info
+from period_utilities import in_period
+from period_utilities import in_period_info
 
 data = []
 #1 Каждый день
@@ -81,11 +82,16 @@ data.append((datetime.datetime(2008, 12, 31, 0,0,0), 86400*2, 'YEAR', [[datetime
 
 
 #print in_period_info(start, 86400,'YEAR',now)
+import time
+
+a=time.clock()
 
 print "========testing in_period================="
-for d in data:
-    for n in d[3]:
-        print in_period(d[0], d[1], d[2], n[0])==n[1]
+for x in xrange(100000):
+    for d in data:
+        for n in d[3]:
+            in_period(d[0], d[1], d[2], n[0])==n[1]
+print time.clock()-a
 
 print "testing in_period_info"
 for d in data:
