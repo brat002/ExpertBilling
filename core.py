@@ -399,7 +399,7 @@ class periodical_service_bill(Thread):
                     return
                 first_time = False
                 if last_checkout is None:
-                    last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
+                    last_checkout = acc.datetime if ps.created is None or ps.created < period_start else ps.created
                     first_time = True
             elif pss_type == ADDON:
                 #print "addon AT_START"
