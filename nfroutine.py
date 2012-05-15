@@ -173,7 +173,7 @@ class groupDequeThread(Thread):
                     
         return cost
 
-    def get_prepaid_octets(self, octets_in, prepInf, queues):
+    def get_prepaid_octets(self, octets_in, prepInf, queues, force_db=False):
         octets = octets_in
         prepaid_left = False
         if prepInf:
@@ -189,9 +189,10 @@ class groupDequeThread(Thread):
                     prep_octets, octets = prepaid, octets-prepaid
                     
                 self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prep_octets, prepaid_id,))
-                self.connection.commit()
-                with queues.prepaidLock:
-                    prepInf[1] -= prep_octets
+                #self.connection.commit()
+                if force_db==False:
+                    with queues.prepaidLock:
+                        prepInf[1] -= prep_octets
         return octets, prepaid_left    
 
     def tarificate(self, account_id, acctf_id, tariff_id, traffic_transmit_service_id, group_id, octets, gdate, force_db=False):
@@ -214,7 +215,7 @@ class groupDequeThread(Thread):
             prepInf = self.cur.fetchone()
         else:
             prepInf = self.caches.prepays_cache.by_tts_acctf_group.get((traffic_transmit_service_id, acctf_id, group_id))                            
-        octets, prepaid_left = self.get_prepaid_octets(octets, prepInf, queues)
+        octets, prepaid_left = self.get_prepaid_octets(octets, prepInf, queues, force_db)
         traffic_cost = 0
         summ = 0
         if octets > 0:
@@ -353,6 +354,8 @@ class groupDequeThread(Thread):
                         if transaction_id:
                             print "transaction added"
                             self.cur.execute("UPDATE billservice_groupstat SET transaction_id=%s WHERE id=%s ", (transaction_id, _id))
+                        elif _transaction_id:
+                            self.cur.execute("UPDATE billservice_groupstat SET transaction_id=NULL WHERE id=%s ", (_id, ))
                     print "rollback"
                     self.cur.connection.commit()
                     print "ended"
