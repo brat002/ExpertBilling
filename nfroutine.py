@@ -145,7 +145,7 @@ class groupDequeThread(Thread):
     '''Тред выбирает и отсылает в БД статистику по группам-пользователям'''
     def __init__ (self, retarificate=False, date_start=None, date_end=None):
         Thread.__init__(self)
-        self.retarificate = True
+        self.retarificate = retarificate
         self.date_start = date_start
         self.date_end = date_end
         self.tname = self.__class__.__name__
