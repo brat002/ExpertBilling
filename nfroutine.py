@@ -194,7 +194,7 @@ class groupDequeThread(Thread):
                     prepInf[1] -= prep_octets
         return octets, prepaid_left    
 
-    def tarificate(self, account_id, acctf_id, tariff_id, traffic_transmit_service_id, group_id, octets, gdate):
+    def tarificate(self, account_id, acctf_id, tariff_id, traffic_transmit_service_id, group_id, octets, gdate, force_db=False):
         if not traffic_transmit_service_id: return
         octets_summ = 0
         #loop throungh classes in 'classes' tuple
@@ -204,7 +204,16 @@ class groupDequeThread(Thread):
             group_edge = tarif_edges.group_edges
 
         #get a record from prepays cache
-        prepInf = self.caches.prepays_cache.by_tts_acctf_group.get((traffic_transmit_service_id, acctf_id, group_id))                            
+        if force_db==True:
+            self.cur.execute("""
+                SELECT prepais.id, prepais.size
+                FROM billservice_accountprepaystrafic as prepais
+                 JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
+                  WHERE prepais.size>0 and account_tarif_id=%s and prepaidtraffic.group_id=%s and current=True;
+            """, (acctf_id, group_id))
+            prepInf = self.cur.fetchone()
+        else:
+            prepInf = self.caches.prepays_cache.by_tts_acctf_group.get((traffic_transmit_service_id, acctf_id, group_id))                            
         octets, prepaid_left = self.get_prepaid_octets(octets, prepInf, queues)
         traffic_cost = 0
         summ = 0
@@ -340,7 +349,7 @@ class groupDequeThread(Thread):
                             add_prepaid.append(_accounttarif_id)
 
                         print "make transaction", _account_id, _accounttarif_id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, _group_id, _bytes, _datetime
-                        transaction_id = self.tarificate(_account_id, _accounttarif_id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, _group_id, _bytes, _datetime)
+                        transaction_id = self.tarificate(_account_id, _accounttarif_id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, _group_id, _bytes, _datetime, force_db=True)
                         if transaction_id:
                             print "transaction added"
                             self.cur.execute("UPDATE billservice_groupstat SET transaction_id=%s WHERE id=%s ", (transaction_id, _id))
