@@ -109,7 +109,7 @@ class TrafficNode(models.Model):
     traffic_class = models.ForeignKey(TrafficClass)
     name = models.CharField(verbose_name=u'Название направления', max_length=255)
     direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
-    protocol = models.CharField(max_length=10, blank=True, default='')
+    protocol = models.IntegerField(blank=True, default=0, null=True)
 
     src_ip  = IPNetworkField(verbose_name=u'Cеть источника', blank=True, default='0.0.0.0/0')
 #    src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')

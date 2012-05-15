@@ -63,6 +63,30 @@ for account in accounts:
           account['vpn_ipinuse_id'],account['ipn_ipinuse_id'], False, False, False, 
           ))
 
+    cur.execute("SELECT id FROM billservice_city WHERE name='%s';", (account['city'],))
+    city = cur.fetchone()
+    if city:
+        city_id = city[0]
+    else:
+        p_cursor.execute("INSERT INTO billservice_city(name) VALUES(%s) RETURNING id;", (account['city'],))
+        city_id = cur.fetchone()[0]
+
+    cur.execute("SELECT id FROM billservice_street WHERE city_id=%s and name=%s;", (city_id, account['street'],))
+    street = cur.fetchone()
+    if city:
+        street_id = street[0]
+    else:
+        cur.execute("INSERT INTO billservice_street(city_id, name) VALUES(%s, %s) RETURNING id;", (city_id, account['street'],))
+        street_id = cur.fetchone()[0]
+        
+    cur.execute("SELECT id FROM billservice_house WHERE street_id=%s and name=%s;", (street_id, account['house'],))
+    house = cur.fetchone()
+    if city:
+        house_id = house[0]
+    else:
+        cur.execute("INSERT INTO billservice_house(street_id, name) VALUES(%s, %s) RETURNING id;", (street_id, account['house'],))
+        house_id = cur.fetchone()[0]
+        
 cur.execute("UPDATE billservice_accountaddonservice as accs SET account_id=Null, subaccount_id=(SELECT id FROM billservice_subaccount  WHERE account_id=accs.account_id LIMIT 1) WHERE accs.deactivated is Null")
-cur.execute("UPDATE billservice_account set nas_id = Null")
+cur.execute("UPDATE billservice_account set city_id=%s, street_id=%s, house_id=%s", (city_id, street_id, house_id, ))
 conn.commit()

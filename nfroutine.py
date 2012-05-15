@@ -143,8 +143,11 @@ class DepickerThread(Thread):
   
 class groupDequeThread(Thread):
     '''Тред выбирает и отсылает в БД статистику по группам-пользователям'''
-    def __init__ (self):
+    def __init__ (self, retarificate=False, date_start=None, date_end=None):
         Thread.__init__(self)
+        self.retarificate = True
+        self.date_start = date_start
+        self.date_end = date_end
         self.tname = self.__class__.__name__
 
     def get_actual_cost(self, octets_summ, stream_date, nodes):
@@ -295,7 +298,19 @@ class groupDequeThread(Thread):
                     finally:
                         cacheMaster.lock.release()
 
-
+                if self.retarificate:
+                    self.cur.execute("""
+                    SELECT id, group_id, account_id, bytes, datetime, 
+                    COALESCE(accounttarif_id, (SELECT id FROM billservice_accounttarif WHERE account_id=gpst.account_id and datetime<gpst.datetime ORDER by datetime DESC limit 1)), transaction_id
+                    FROM billservice_groupstat as gpst WHERE datetime between %s and %s ORDER BY account_id, datetime;
+                      """, (self.date_start, self.date_end))
+                    for item in self.cur.fetchall():
+                        __id, __group_id, __account_id, __bytes, __datetime, __accounttarif_id, __transaction_id = item
+                        accsdata = self.caches.accounttariff_traf_service_cache.by_accounttariff.get(__accounttarif_id)
+                        transaction_id = self.tarificate(__account_id, __accounttarif_id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, __group_id, __bytes, __datetime)
+                        if transaction_id:
+                            cur.execute("UPDATE billservice_groupstat SET transaction_id=%s WHERE id=%s ", (transaction_id, __id))
+                    sys.exit()
                 gkey, gkeyTime, groupData = None, None, None
                 with queues.groupLock:
                     #check whether double aggregation time passed - updates are rather costly
@@ -1062,22 +1077,32 @@ def main():
     global cacheMaster, suicideCondition
     global threads, cacheThr, NfAsyncUDPServer
     threads=[]
-    for i in xrange(vars.ROUTINE_THREADS):
-        newNfr = NetFlowRoutine()
-        newNfr.setName('NFR:#%i: NetFlowRoutine' % i)
-        threads.append(newNfr)
-    for i in xrange(vars.GROUPSTAT_THREADS):
-        grdqTh = groupDequeThread()
+    if os.path.exists("/opt/ebs/data/retarificate.ini"):
+        print "Retarificate instructions file found /opt/ebs/data/retarificate.ini"
+        print "parsing"
+        import ConfigParser
+        config = ConfigParser.ConfigParser()
+        config.read("/opt/ebs/data/retarificate.ini")
+        date_start = datetime.strptime(config.get("data", "date_start"), "%d.%m.%Y %H:%M:%S")
+        date_end = datetime.strptime(config.get("data", "date_end"), "%d.%m.%Y %H:%M:%S")
+        print "from %s to %s" % (date_start, date_end)
+        grdqTh = groupDequeThread(retarificate=True, date_start=date_start, date_end=date_end)
         grdqTh.setName('GDT:#%i: groupDequeThread' % i)
         threads.append(grdqTh)
-    for i in xrange(vars.GLOBALSTAT_THREADS):
-        stdqTh = statDequeThread()
-        stdqTh.setName('SDS:#%i: statDequeThread' % i)
-        threads.append(stdqTh)
-    for i in xrange(vars.BILL_THREADS):
-        depTh = DepickerThread()
-        depTh.setName('DET:#%i: billThread' % i)
-        threads.append(depTh)
+    else:
+        for i in xrange(vars.ROUTINE_THREADS):
+            newNfr = NetFlowRoutine()
+            newNfr.setName('NFR:#%i: NetFlowRoutine' % i)
+            threads.append(newNfr)
+        for i in xrange(vars.GROUPSTAT_THREADS):
+            grdqTh = groupDequeThread()
+            grdqTh.setName('GDT:#%i: groupDequeThread' % i)
+            threads.append(grdqTh)
+        for i in xrange(vars.GLOBALSTAT_THREADS):
+            stdqTh = statDequeThread()
+            stdqTh.setName('SDS:#%i: statDequeThread' % i)
+            threads.append(stdqTh)
+
     
     cacheThr = AccountServiceThread()
     cacheThr.setName('AST: AccountServiceThread')

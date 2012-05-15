@@ -2110,6 +2110,7 @@ def trafficclassnodes_set(request):
     if form.is_valid():
         try:
             model = form.save(commit = False)
+            model.next_hop = '0.0.0.0'
             model.save()
             res={"status": True}
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
