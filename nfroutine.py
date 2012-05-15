@@ -1130,8 +1130,9 @@ def main():
         config = ConfigParser.ConfigParser()
         config.read("/opt/ebs/data/retarificate.ini")
         print dir(datetime)
-        date_start = datetime.datetime.strptime(config.get("data", "date_start"), "%d.%m.%Y %H:%M:%S")
-        date_end = datetime.datetime.strptime(config.get("data", "date_end"), "%d.%m.%Y %H:%M:%S")
+        
+        date_start = datetime.datetime(*(time.strptime(config.get("data", "date_start"), "%d.%m.%Y %H:%M:%S")[0:6]))
+        date_end = datetime.datetime(*(time.strptime(config.get("data", "date_end"), "%d.%m.%Y %H:%M:%S")[0:6]))
         print "from %s to %s" % (date_start, date_end)
         grdqTh = groupDequeThread(retarificate=True, date_start=date_start, date_end=date_end)
         grdqTh.setName('GDT:#%i: groupDequeThread' %1)
