@@ -345,7 +345,7 @@ class groupDequeThread(Thread):
                                 if period_end and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta and vars.USE_COEFF_FOR_PREPAID==True:
                                     delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)                                
                                 self.cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s, %s, %s::timestamp without time zone);", 
-                                        (_account_id, _accounttarif_id, accsdata.traffic_transmit_service_id, False, delta_coef, prep_date))
+                                        (_account_id, _accounttarif_id, accsdata.traffic_transmit_service_id, True, delta_coef, prep_date))
                             add_prepaid.append(_accounttarif_id)
 
                         print "make transaction", _account_id, _accounttarif_id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, _group_id, _bytes, _datetime
