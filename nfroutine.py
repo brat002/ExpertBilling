@@ -44,6 +44,7 @@ from classes.flags import NfrFlags
 from classes.vars import NfrVars, NfrQueues, install_logger
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
                      STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
+from utilites import settlement_period_info
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
@@ -299,17 +300,54 @@ class groupDequeThread(Thread):
                         cacheMaster.lock.release()
 
                 if self.retarificate:
+                    add_prepaid = []
+
+                    #Делаем выборку статистики, попавшей в диапазон
                     self.cur.execute("""
                     SELECT id, group_id, account_id, bytes, datetime, 
                     COALESCE(accounttarif_id, (SELECT id FROM billservice_accounttarif WHERE account_id=gpst.account_id and datetime<gpst.datetime ORDER by datetime DESC limit 1)), transaction_id
                     FROM billservice_groupstat as gpst WHERE datetime between %s and %s ORDER BY account_id, datetime;
                       """, (self.date_start, self.date_end))
                     for item in self.cur.fetchall():
-                        __id, __group_id, __account_id, __bytes, __datetime, __accounttarif_id, __transaction_id = item
-                        accsdata = self.caches.accounttariff_traf_service_cache.by_accounttariff.get(__accounttarif_id)
-                        transaction_id = self.tarificate(__account_id, __accounttarif_id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, __group_id, __bytes, __datetime)
+                        #print item
+                        _id, _group_id, _account_id, _bytes, _datetime, _accounttarif_id, _transaction_id = item
+                        gdate = _datetime
+                        gkey = None
+                        accsdata = self.caches.accounttariff_traf_service_cache.by_accounttariff.get(_accounttarif_id)
+                        if _accounttarif_id not in add_prepaid:
+                            print "delete transactions"
+                            self.cur.execute("DELETE from billservice_traffictransaction WHERE created between %s and %s and  accounttarif_id=%s", (self.date_start, self.date_end, _accounttarif_id, ))
+                            #Сбросили предоплаченный трафик товарищам, попавшим в указанный диапазон
+                            print "select prepaistraffic"
+                            self.cur.execute("SELECT id, datetime from billservice_accountprepaystrafic WHERE current=True and account_tarif_id=%s", (_accounttarif_id, ))
+                            d = self.cur.fetchone()
+                            if d:
+                                prep_id, prep_date=d
+                                print "delete prepaistraffic"
+                                self.cur.execute("DELETE from billservice_accountprepaystrafic WHERE account_tarif_id=%s", (_accounttarif_id, ))
+                                #начисляем предоплаченный трафик
+                                print "add prepaid"
+                                delta_coef=1
+                                acc = self.caches.account_cache.by_account.get(_account_id)
+                                sp = self.caches.settlement_cache.by_id.get(acc.settlement_period_id)
+
+                                time_start = acc.datetime if sp.autostart else sp.time_start
+                                period_start, period_end, delta = fMem.settlement_period_(time_start, sp.length_in, sp.length, _datetime)
+                                if period_end and ((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)<delta and vars.USE_COEFF_FOR_PREPAID==True:
+                                    delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)                                
+                                self.cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s, %s, %s::timestamp without time zone);", 
+                                        (_account_id, _accounttarif_id, accsdata.traffic_transmit_service_id, False, delta_coef, prep_date))
+                            add_prepaid.append(_accounttarif_id)
+
+                        print "make transaction", _account_id, _accounttarif_id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, _group_id, _bytes, _datetime
+                        transaction_id = self.tarificate(_account_id, _accounttarif_id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, _group_id, _bytes, _datetime)
                         if transaction_id:
-                            cur.execute("UPDATE billservice_groupstat SET transaction_id=%s WHERE id=%s ", (transaction_id, __id))
+                            print "transaction added"
+                            self.cur.execute("UPDATE billservice_groupstat SET transaction_id=%s WHERE id=%s ", (transaction_id, _id))
+                    print "rollback"
+                    self.cur.connection.commit()
+                    print "ended"
+                    
                     sys.exit()
                 gkey, gkeyTime, groupData = None, None, None
                 with queues.groupLock:
@@ -834,9 +872,10 @@ class NetFlowRoutine(Thread):
 
 #periodical function memoize class
 class pfMemoize(object):
-    __slots__ = ('periodCache')
+    __slots__ = ('periodCache', 'settlementCache')
     def __init__(self):
         self.periodCache = {}
+        self.settlementCache ={}
         
     def in_period_(self, time_start, length, repeat_after, date_):
         res = self.periodCache.get((time_start, length, repeat_after, date_))
@@ -845,6 +884,12 @@ class pfMemoize(object):
             self.periodCache[(time_start, length, repeat_after, date_)] = res
         return res
     
+    def settlement_period_(self, time_start, length, repeat_after, stream_date):
+        res = self.settlementCache.get((time_start, length, repeat_after, stream_date))
+        if res is None:
+            res = settlement_period_info(time_start, length, repeat_after, stream_date)
+            self.settlementCache[(time_start, length, repeat_after, stream_date)] = res
+        return res
     
 class AccountServiceThread(Thread):
     '''Handles simultaniously updated READ ONLY caches connected to account-tarif tables'''
@@ -1081,13 +1126,15 @@ def main():
         print "Retarificate instructions file found /opt/ebs/data/retarificate.ini"
         print "parsing"
         import ConfigParser
+        import datetime
         config = ConfigParser.ConfigParser()
         config.read("/opt/ebs/data/retarificate.ini")
-        date_start = datetime.strptime(config.get("data", "date_start"), "%d.%m.%Y %H:%M:%S")
-        date_end = datetime.strptime(config.get("data", "date_end"), "%d.%m.%Y %H:%M:%S")
+        print dir(datetime)
+        date_start = datetime.datetime.strptime(config.get("data", "date_start"), "%d.%m.%Y %H:%M:%S")
+        date_end = datetime.datetime.strptime(config.get("data", "date_end"), "%d.%m.%Y %H:%M:%S")
         print "from %s to %s" % (date_start, date_end)
         grdqTh = groupDequeThread(retarificate=True, date_start=date_start, date_end=date_end)
-        grdqTh.setName('GDT:#%i: groupDequeThread' % i)
+        grdqTh.setName('GDT:#%i: groupDequeThread' %1)
         threads.append(grdqTh)
     else:
         for i in xrange(vars.ROUTINE_THREADS):

@@ -233,7 +233,7 @@ class NfrVars(Vars):
     __slots__ = ('NFR_SESSION', 'HOST', 'PORT', 'ADDR', 'sendFlag', 'SAVE_DIR', 'GROUP_AGGR_TIME', 'STAT_AGGR_TIME',\
                  'STAT_DICTS', 'GROUP_DICTS', 'SOCK_TYPE', 'STORE_NA_TARIF', 'STORE_NA_ACCOUNT', 'MAX_DATAGRAM_LEN',\
                  'PICKER_AGGR_TIME', 'ROUTINE_THREADS', 'GROUPSTAT_THREADS', 'GLOBALSTAT_THREADS', 'BILL_THREADS',\
-                 'ALLOWED_NF_IP_LIST', 'NFR_DELIMITER')
+                 'ALLOWED_NF_IP_LIST', 'NFR_DELIMITER', 'USE_COEFF_FOR_PREPAID')
     
     def __init__(self):
         super(NfrVars, self).__init__()
@@ -258,6 +258,7 @@ class NfrVars(Vars):
         self.BILL_THREADS = 1
         self.ALLOWED_NF_IP_LIST = ['127.0.0.1']
         self.NFR_DELIMITER = '--NFRP--'
+        self.USE_COEFF_FOR_PREPAID = True
         
     def get_dynamic(self, **kwargs):
         super(NfrVars, self).get_dynamic(**kwargs)
@@ -292,6 +293,7 @@ class NfrVars(Vars):
         if config.has_option(name, 'globalstat_threads'): self.GLOBALSTAT_THREADS = config.getint(name, 'globalstat_threads')
         if config.has_option(name, 'bill_threads'):       self.BILL_THREADS = config.getint(name, 'bill_threads')
         if config.has_option(name, 'allowed_nf_ip_list'): self.ALLOWED_NF_IP_LIST = config.get(name, 'allowed_nf_ip_list').split(',')
+        if config.has_option('core', 'use_coeff_for_prepaid'):         self.USE_COEFF_FOR_PREPAID = config.get('core', 'use_coeff_for_prepaid')
             
     def get_static(self, **kwargs):
         super(NfrVars, self).get_static(**kwargs)

@@ -2119,10 +2119,8 @@ if __name__ == "__main__":
         fMem = pfMemoize()
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        tmpconnection = get_connection(vars.db_dsn)
-        allowedUsers = setAllowedUsers(_1i(), tmpconnection)        
-        logger.info("Allowed users: %s", (allowedUsers(),))
-
+        allowedUsers = setAllowedUsers(_1i())        
+        allowedUsers()
         queues.sessions = util_DictSession(u_get_db_data, u_simple_list_index)
         #-------------------
         print "ebs: rad: configs read, about to start"
