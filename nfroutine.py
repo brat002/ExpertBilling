@@ -593,7 +593,15 @@ class statDequeThread(Thread):
                     break
                 if flags.writeProf:
                     a = time.clock()
-                    
+                if cacheMaster.date > dateAT:
+                    cacheMaster.lock.acquire()
+                    try:
+                        self.caches = cacheMaster.cache
+                        dateAT = deepcopy(cacheMaster.date)
+                    except Exception, ex:
+                        logger.error("%s: cache exception: %s", (self.getName, repr(ex)))
+                    finally:
+                        cacheMaster.lock.release()                    
                 skey, skeyTime, statData = None, None, None
                 with queues.statLock:
                     #check whether double aggregation time passed - updates are rather costly
@@ -614,7 +622,7 @@ class statDequeThread(Thread):
                     logger.info('%s: no statdata for key: %s', (self.getName(), skey))
                     continue
                 
-                accsdata = caches.accounttariff_traf_service_cache.by_accounttariff.get(accounttarif_id)
+                accsdata = self.caches.accounttariff_traf_service_cache.by_accounttariff.get(accounttarif_id)
                 if not accsdata: continue
                 account_id = accsdata.account_id
                 
