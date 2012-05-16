@@ -1026,6 +1026,14 @@ class HttpBot(object):
             return
         return self.postprocess(d, id)
     
+    def groups_detail(self):
+        url='http://%s/ebsadmin/groups_detail/' % self.host 
+        
+        d = self.POST(url)
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
     
     def get_trafficclasses(self, id=None, fields=[]):
         url='http://%s/ebsadmin/trafficclasses/' % self.host 

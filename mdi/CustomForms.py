@@ -2092,7 +2092,7 @@ class GroupsDialog(QtGui.QDialog):
         self.tableWidget.setItem(x,y,headerItem)
         
     def fixtures(self):
-        groups = self.connection.sql("SELECT gr.*, ARRAY((SELECT name FROM nas_trafficclass WHERE id IN (SELECT trafficclass_id FROM billservice_group_trafficclass WHERE group_id=gr.id))) as classnames FROM billservice_group as gr")
+        groups = self.connection.groups_detail()
         self.connection.commit()
         self.tableWidget.clearContents()
         self.tableWidget.setRowCount(len(groups))

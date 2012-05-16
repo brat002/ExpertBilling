@@ -60,6 +60,8 @@ urlpatterns += patterns('ebsadmin.views',
      
      url(r'^nasses/$', 'nasses'),
      url(r'^groups/$', 'groups'),
+     url(r'^groups_detail/$', 'groups_detail'),
+     
      url(r'^groups/set/$', 'groups_save'),
      url(r'^groups/delete/$', 'groups_delete'),
      url(r'^periodicalservices/$', 'periodicalservices'),

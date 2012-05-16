@@ -1396,7 +1396,7 @@ class AddonServiceTarif(models.Model):
            )
         
 class AccountAddonService(models.Model):    
-    service = models.ForeignKey(AddonService, null=True, on_delete = models.SET_NULL)    
+    service = models.ForeignKey(AddonService, null=True, on_delete = models.CASCADE)    
     account = models.ForeignKey(Account, blank=True, null=True)   
     subaccount = models.ForeignKey('SubAccount', blank=True, null=True) 
     activated = models.DateTimeField()    
