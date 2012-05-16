@@ -77,7 +77,15 @@ class MyTableModel(QtCore.QAbstractTableModel):
         if column=='address':
 
             return QtCore.QVariant(unicode(u"%s %s" % (value, getattr(self.arraydata[index.row()], 'room'))))
+
+        if column=='ballance':
+
+            return QtCore.QVariant(unicode("%.2f" % value))
         
+        if column=='credit':
+
+            return QtCore.QVariant(unicode("%.2f" % value))
+          
         if column=='fullname':
 
             return QtCore.QVariant(unicode(value if value else getattr(self.arraydata[index.row()], 'org_name')))
