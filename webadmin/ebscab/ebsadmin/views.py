@@ -1834,8 +1834,9 @@ def cards_delete(request):
     id = int(request.POST.get('id',0))
     if id:
         model = Card.objects.filter(id=id)
-        log('DELETE', request.user, model)
-        model.delete()
+        if model:
+            log('DELETE', request.user, model[0])
+            model.delete()
         return {"status": True}
     else:
         return {"status": False, "message": "Card not found"}
@@ -2557,6 +2558,26 @@ def groups(request):
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def groups_detail(request):
+    if  not request.user.is_staff==True and not request.user.has_perm('group.view'):
+        return {'status':True, 'records':[], 'totalCount':0}
+
+    from django.db import connection
+    
+    cur = connection.cursor()
+    cur.execute("SELECT gr.*, ARRAY((SELECT name FROM nas_trafficclass WHERE id IN (SELECT trafficclass_id FROM billservice_group_trafficclass WHERE group_id=gr.id))) as classnames FROM billservice_group as gr")
+
+    items = cur.fetchall()
+    
+    res=[]
+    for item in items:
+        id, name, direction, grtype, classnames = item
+        res.append({'id':id, 'name': name, 'direction':direction, 'type': grtype, 'classnames': classnames})
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
