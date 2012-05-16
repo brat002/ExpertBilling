@@ -71,7 +71,8 @@ def simple_login(request):
             else:
                 return {"status":False, "message":"Login forbidden to this action"}
                 
-        except:
+        except Exception, e:
+            print e
             return {"status":False, "message":"Login can`t be authenticated"}
     return {"status":False,"message":"Login not found"}
 

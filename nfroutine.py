@@ -577,7 +577,9 @@ class statDequeThread(Thread):
  
     
     def run(self):
-        global queues, flags, vars
+        global queues, flags, vars, CacheMaster, queues
+
+        dateAT = datetime.datetime(2000, 1, 1)
         self.connection = get_connection(vars.db_dsn)
         self.cur = self.connection.cursor()
         
