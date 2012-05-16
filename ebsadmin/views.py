@@ -3848,7 +3848,7 @@ def get_accounts_for_cashier(request):
         return {'status':True, 'records':[], 'totalCount':0}
     
     data = json.loads(request.POST.get("data", "{}"))
-    fullname, city, street, house, bulk, room, username, agreement, phone_h, phone_m = \
+    fullname, city, street, house, bulk, room, username, contract, phone_h, phone_m = \
     data.get("fullname"), data.get("city"), data.get("street"),  data.get("house"), data.get("bulk"),data.get("room"),  data.get("username"), data.get("agreement"), data.get("phone_h"),data.get("phone_m"),  
     items = Account.objects.all()
     
@@ -3873,14 +3873,14 @@ def get_accounts_for_cashier(request):
     if username:
         items = items.filter(username__icontains=username)
 
-    if agreement:
-        items = items.filter(agreement__icontains=agreement)
+    if contract:
+        items = items.filter(contract__icontains=contract)
       
     if phone_h:
-        items = items.filter(phone_h__icontains=agreement)
+        items = items.filter(phone_h__icontains=phone_h)
 
     if phone_m:
-        items = items.filter(phone_m__icontains=agreement)
+        items = items.filter(phone_m__icontains=phone_m)
      
     #id, contract,username,fullname,ballance,credit,status,created,(SELECT name FROM billservice_street WHERE id=account.street_id) as street,(SELECT name FROM billservice_house WHERE id=account.house_id) as house,house_bulk,room, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name
     items = items.extra(select={"tarif_name": "(SELECT name FROM billservice_tariff WHERE id=get_tarif(billservice_account.id))"}).values('id', 'contract','username','fullname','ballance','credit','status','created', "street__name", 'house__name', 'house_bulk', 'room', 'tarif_name')
