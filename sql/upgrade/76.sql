@@ -4,4 +4,4 @@ ALTER TABLE billservice_groupstat
 ALTER TABLE billservice_globalstat
    ADD COLUMN accounttarif_id integer;
    
-ALTER TABLE billservice_groupstat DROP CONSTRAINT billservice_groupstat_group_id_key;
+ALTER TABLE billservice_groupstat DROP CONSTRAINT  IF EXISTS  billservice_groupstat_group_id_key  ;
