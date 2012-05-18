@@ -3,7 +3,7 @@
 	<div class="last-news">
 		{% for article in news %}
             <p class="date">{{ article.created|date:"d.m.Y  H:i" }}</p>
-			<p class="body">{{ article.body }}</p>
+			<p class="body">{{ article.body|safe  }}</p>
             <p style="text-align: center; line-height: 2em;"> &nbsp; </p>
 		{% endfor %}
 	</div>
