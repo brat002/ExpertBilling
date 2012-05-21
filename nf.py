@@ -399,7 +399,7 @@ def nfPacketHandle(data, addrport, flowCache):
         nas_id = None
         nasses_list=[nasitem.id for nasitem in nasses]
 
-        acc_data_src,acc_data_dst, nas_id = find_account_by_port(nasses, flow)
+        acc_data_src,acc_data_dst, nas_id = None, None, None #find_account_by_port(nasses, flow)
         acc_data_src_ip, acc_data_dst_ip, nas_id_ip=None,None,None
         
         if acc_data_src:
@@ -431,21 +431,23 @@ def nfPacketHandle(data, addrport, flowCache):
         else:
             nas_id=nas_id_ip
 
-        logger.debug("VPN Account with nas for flow src(%s) dst(%s) default nas(%s)", (acc_data_src, acc_data_dst, nas_id, ))
+        logger.debug("Account with nas for flow src(%s) dst(%s) default nas(%s)", (acc_data_src, acc_data_dst, nas_id, ))
         #Проверка на IPN сеть
-        if not acc_data_src and caches.account_cache.ipn_range:
-            for src_ip, src_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
-                if (acc_nas_id in nasses_list or acc_nas_id is None) and (flow.src_addr & src_mask) == src_ip:
-                    acc_data_src = account_data
-                    nas_id=acc_nas_id
-                    break
-        if not acc_data_dst and caches.account_cache.ipn_range:
-            for dst_ip, dst_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
-                if (acc_nas_id in nasses_list  or acc_nas_id is None) and (flow.dst_addr & dst_mask) == dst_ip:
-                    acc_data_dst = account_data
-                    nas_id=acc_nas_id
-                    break
-        logger.debug("IPN Account for flow src(%s) dst(%s)", (acc_data_src, acc_data_dst, ))
+        #=======================================================================
+        # if not acc_data_src and caches.account_cache.ipn_range:
+        #    for src_ip, src_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
+        #        if (acc_nas_id in nasses_list or acc_nas_id is None) and (flow.src_addr & src_mask) == src_ip:
+        #            acc_data_src = account_data
+        #            nas_id=acc_nas_id
+        #            break
+        # if not acc_data_dst and caches.account_cache.ipn_range:
+        #    for dst_ip, dst_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
+        #        if (acc_nas_id in nasses_list  or acc_nas_id is None) and (flow.dst_addr & dst_mask) == dst_ip:
+        #            acc_data_dst = account_data
+        #            nas_id=acc_nas_id
+        #            break
+        # logger.debug("IPN Account for flow src(%s) dst(%s)", (acc_data_src, acc_data_dst, ))
+        #=======================================================================
         local = bool(acc_data_src and acc_data_dst)
         if local:
             logger.debug("Flow is local",())

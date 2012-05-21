@@ -288,6 +288,7 @@ def ps_history(cursor, ps_id, accounttarif, account_id, type_id, summ=0, created
     cursor.execute("""
                    INSERT INTO billservice_periodicalservicehistory(service_id, accounttarif_id, account_id, type_id, summ, created) VALUES (%s, %s, %s, %s, %s, %s);
                    """, (ps_id, accounttarif, account_id, type_id, summ, created,))
+    
 def addon_history(cursor, addon_id, service_type, ps_id, accounttarif, account_id, type_id, summ=0, created=None):
     if not created:
         created=datetime.datetime.now()
