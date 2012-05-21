@@ -1,0 +1,1 @@
+ALTER TABLE billservice_periodicalservicehistory DISABLE TRIGGER acc_psh_trg;
