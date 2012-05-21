@@ -269,7 +269,7 @@ def modifydb():
             print "%.2i%.2i" % (x,i)
             l.append("""DROP TRIGGER acc_psh_trg ON psh20%.2i%.2i01;""" % (x,i,))
             l.append("""CREATE TRIGGER acc_psh_trg
-              AFTER INSERT OR UPDATE OR DELETE
+              AFTER UPDATE OR DELETE
               ON psh20%.2i%.2i01
               FOR EACH ROW
               EXECUTE PROCEDURE account_transaction_trg_fn(); """ % ( x,i))
@@ -533,6 +533,7 @@ if __name__=='__main__':
             setup_config()
             start_processes()
             setup_webcab()
+            commands.getoutput("ln -sf /opt/ebs/web/django /opt/ebs/web/ebscab/django")
             print "*"*80
             print "   CONGRATULATIONS!!! Your ExpertBilling copy was sucefully installed!"
             print "   Default admin username/password: admin/admin"
@@ -565,11 +566,12 @@ if __name__=='__main__':
                 print '*'*80
                 print 'Files copying dont need'
             
-            commands.getoutput("ln -sf /opt/ebs/web/django /opt/ebs/web/ebscab/django")
-            commands.getoutput("cd  /opt/ebs/web/ebscab/ && python manage.py syncdb --noinput")
-            commands.getoutput("python manage.py syncdb")
+            
+            #commands.getoutput("cd  /opt/ebs/web/ebscab/ && python manage.py syncdb --noinput")
+            #commands.getoutput("python manage.py syncdb")
             allow_continue('Do you want to setup EBS webcab?')
             setup_webcab()
+            commands.getoutput("ln -sf /opt/ebs/web/django /opt/ebs/web/ebscab/django")
             print "*"*80
             print "   CONGRATULATIONS!!! Your ExpertBilling copy was upgraded!"
             print "   Now start billing processes by running 'billing start' command!"            
