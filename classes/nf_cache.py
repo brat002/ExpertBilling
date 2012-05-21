@@ -108,9 +108,12 @@ class AccountCache(CacheItem):
                 except:
                     continue
                 
-                
+                if acct[0]==29:
+                    pass
                 if type(nas_id)==str and nas_id not in ['None', '', None]:
                     nas_id=int(nas_id)
+                if nas_id==0:
+                    nas_id = None
                 if vpn_ip  not in ['0.0.0.0/32', '0.0.0.0', '']:
                     self.vpn_ips[(parseAddress(vpn_ip.split('/')[0])[0], nas_id)] = account_object
                 if ipn_ip not in ['0.0.0.0/32', '0.0.0.0', '']:
