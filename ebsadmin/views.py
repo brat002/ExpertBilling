@@ -32,6 +32,7 @@ from radius.forms import SessionFilterForm
 import ipaddr
 from django.db.models import Q
 from django.db import transaction
+from django.contrib.auth.models import Group as AuthGroup
 from object_log.models import LogItem
 log = LogItem.objects.log_action
 
@@ -72,7 +73,7 @@ def simple_login(request):
                 return {"status":False, "message":"Login forbidden to this action"}
                 
         except Exception, e:
-            print e
+            #print e
             return {"status":False, "message":"Login can`t be authenticated"}
     return {"status":False,"message":"Login not found"}
 
@@ -226,6 +227,25 @@ def addonservices(request):
     res=[]
     for item in items:
         res.append(instance_dict(item,normal_fields=normal_fields))
+
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
+@ajax_request
+@login_required
+def authgroups(request):
+    if  not request.user.is_staff==True:
+        return {'status':True, 'records':[], 'totalCount':0}
+    id = request.POST.get('id', None)
+    
+
+    if id and id!= '':
+        items = AuthGroup.objects.filter(id=id)
+    else:
+        items = AuthGroup.objects.all().order_by('name')
+
+    res=[]
+    for item in items:
+        res.append(instance_dict(item))
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
@@ -2805,7 +2825,7 @@ def organizations(request):
     elif account_id:
         items = Organization.objects.filter(account__id=account_id)
         if items:
-            items = items
+            items = items[0]
     else:
         items = Organization.objects.all()
 
