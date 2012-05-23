@@ -34,7 +34,7 @@ python ebs_manage.py install имя распакованного архива с
 #cd /opt/ebs/web/ebscab/
 #ln -s ../django django
 #python manage.py syncdb --noinput
-#/etc/init.d/apache reload
+#/etc/init.d/apache2 reload
 
 Внимание!!! Это версия 1.4.1. В ней RPC сервер не используется. Вместо него интефрейс администратора подключается к веб-серверу. 
 Перед запуском EBSAdmin убедитесь, что веб-кабинет настроен и работает. Логи веб-кабинета находятся в

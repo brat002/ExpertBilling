@@ -931,7 +931,8 @@ class HandleSAuth(HandleSBase):
         nas_id = subacc.nas_id
 
         if self.access_type=='W802.1x':
-            nas = self.caches.nas_cache.by_id.get(subacc.switch_id, None)
+            #nas = self.caches.nas_cache.by_id.get(subacc.switch_id, None) # Пока не реализована нужна логика на стороне интерфейса
+            nas = self.caches.nas_cache.by_id.get(nas_id)
         else:
             nas = self.caches.nas_cache.by_id.get(nas_id)
         
