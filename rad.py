@@ -935,7 +935,7 @@ class HandleSAuth(HandleSBase):
             nas = self.caches.nas_cache.by_id.get(nas_id)
         else:
             nas = self.caches.nas_cache.by_id.get(nas_id)
-        
+        logger.info("Nas id for user %s: %s ", (user_name, nas_id))
         if self.access_type in ['PPTP','L2TP'] and subacc.associate_pptp_ipn_ip and not (subacc.ipn_ip_address == station_id):
             logger.warning("Unallowed dialed ipn_ip_address for user %s vpn: station_id - %s , ipn_ip - %s; vpn_ip - %s access_type: %s", (user_name, station_id, subacc.ipn_ip_address, subacc.vpn_ip_address, self.access_type))
             sqlloggerthread.add_message(nas=nas_id, type="AUTH_ASSOC_PPTP_IPN_IP", service=self.access_type, cause=u'Попытка авторизации с неразрешённого IPN IP адреса %s.' % (station_id,), datetime=self.datetime)
@@ -959,7 +959,7 @@ class HandleSAuth(HandleSBase):
             Иначе, если указан любой NAS - берём первый из списка совпавших по IP
             """
             nas = nasses[0]
-        elif self.access_type=='W802.1x' and not nas:
+        elif (nas and nas not in nasses)  and self.access_type=='W802.1x':
             sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_8021x_NAS", service=self.access_type, cause=u'Для 802.1x авторизации должен быть указан коммутатор. Запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
             logger.warning("Requested 802.1x authorization nas(%s) not assigned to user %s", (repr(nas), repr(subacc),))
             return self.auth_NA(authobject)            
