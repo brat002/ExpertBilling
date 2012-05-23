@@ -35,7 +35,7 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^trafficlimites/$', 'trafficlimites'),
      url(r'^speedlimites/$', 'speedlimites'),
      url(r'^addonservicetariff/$', 'addonservicetariff'),
-    
+     url(r'^authgroups/$', 'authgroups'),
      url(r'^sql/$', 'sql'),
      url(r'^spinfo/$', 'sp_info'),
      url(r'^traffictransmitservices/$', 'traffictransmitservices'),

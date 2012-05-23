@@ -217,6 +217,15 @@ class HttpBot(object):
             return
         return self.postprocess(d)
 
+    def get_authgroups(self, id=None, fields=[]):
+        url='http://%s/ebsadmin/authgroups/' % self.host 
+        
+        d = self.POST(url,{ 'id':id})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d, id)
+    
     def postprocess(self,response, id=None):
         if id:
             if response.totalCount==1:

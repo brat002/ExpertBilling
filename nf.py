@@ -399,7 +399,7 @@ def nfPacketHandle(data, addrport, flowCache):
         nas_id = None
         nasses_list=[nasitem.id for nasitem in nasses]
 
-        acc_data_src,acc_data_dst, nas_id = None, None, None #find_account_by_port(nasses, flow)
+        acc_data_src,acc_data_dst, nas_id = find_account_by_port(nasses, flow)
         acc_data_src_ip, acc_data_dst_ip, nas_id_ip=None,None,None
         
         if acc_data_src:

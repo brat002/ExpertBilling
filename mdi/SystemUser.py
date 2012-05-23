@@ -422,9 +422,10 @@ class SystemUserFrame(QtGui.QDialog):
     def fixtures(self):
         
         i=0
+        roles = self.connection.get_authgroups()
         for role in roles:
-            self.comboBox_role.addItem(role)
-            self.comboBox_role.setItemData(i, QtCore.QVariant(i))
+            self.comboBox_role.addItem(role.name)
+            self.comboBox_role.setItemData(i, QtCore.QVariant(role.idi))
             i+=1
             
         #print "current index", self.model.role
