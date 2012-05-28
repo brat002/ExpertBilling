@@ -22,6 +22,7 @@ urlpatterns += patterns('ebsadmin.views',
      
      url(r'^accountsfortariff/$', 'accounts_for_tarif'),
      url(r'^accountsforcashier/$', 'get_accounts_for_cashier'),
+     url(r'^systemuser_groups/$', 'systemuser_groups'),
      
      url(r'^timeperiods/save/$', 'timeperiods_save'),
      url(r'^timeperiods/delete/$', 'timeperiods_delete'),

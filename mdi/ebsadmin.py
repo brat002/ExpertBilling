@@ -291,7 +291,16 @@ class HttpBot(object):
     def get_models(self, table, fields=[], where={}, order = {'id':'ASC',}):
         url='http://%s/ebsadmin/api/getmodels/' % self.host 
         
-        d = self.POST(url,{'data':json.dumps({'order':order,  'table':fields, 'fields': fields, 'where':where}, default=default)})
+        d = self.POST(url,{'data':json.dumps({'order':order,  'table':table, 'fields': fields, 'where':where}, default=default)})
+        if not d.status:
+            self.error(d)
+            return
+        return self.postprocess(d)
+    
+    def get_systemuser_groups(self, systemuser_id):
+        url='http://%s/ebsadmin/systemuser_groups/' % self.host 
+        
+        d = self.POST(url,{'data':json.dumps({'systemuser_id':systemuser_id}, default=default)})
         if not d.status:
             self.error(d)
             return
@@ -1331,7 +1340,7 @@ class HttpBot(object):
             return
         return self.postprocess(d, id)
     
-    
+
     def get_radiustrafficservices_nodes(self, id=None, service_id=None, fields=[], normal_fields=True):
         url='http://%s/ebsadmin/radiustrafficservices/nodes/' % self.host 
         
@@ -1431,10 +1440,10 @@ class HttpBot(object):
             return
         return True
     
-    def systemusers_save(self, model):
+    def systemusers_save(self, model, groups_to_add, groups_to_del):
         url='http://%s/ebsadmin/systemusers/set/' % self.host 
         #print model
-        d = self.POST(url,model)
+        d = self.POST(url,{'data':json.dumps({'model':model, 'groups_to_add':groups_to_add, "groups_to_del":groups_to_del},  ensure_ascii=False, default=default)})
         if not d.status:
             self.error(d)
             return

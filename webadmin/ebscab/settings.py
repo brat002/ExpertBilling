@@ -24,8 +24,17 @@ DATABASES = {
 
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'localmem',
+        'TIMEOUT': 60
+    }
+}
+
 # system time zone.
-TIME_ZONE = 'Europe/Minsk'
+TIME_ZONE = None # This will use system timezone. Don`t touch this.
+
 LANGUAGE_CODE = 'ru-Ru'
 SITE_ID = 1
 

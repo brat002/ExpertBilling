@@ -269,7 +269,8 @@ class HouseForm(ModelForm):
    
 class SystemUserForm(ModelForm):
     class Meta:
-        model = SystemUser     
+        model = SystemUser
+    is_superuser = forms.CheckboxInput()     
     
 class TimePeriodForm(ModelForm):
     class Meta:

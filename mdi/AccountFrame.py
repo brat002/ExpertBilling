@@ -2920,7 +2920,7 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
         tarif_id = None
         ids = self.get_selected_accounts()
         account=None
-        print "ids", ids
+        #print "ids", ids
         if len(ids)==1:
             child=AddAccountTarif(connection=self.connection, account=account, get_info = True)
         else:
@@ -3127,7 +3127,7 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
     def editframe(self, *args, **kwargs):
         #print self.tableWidget.item(self.tableWidget.currentRow(), 0).text()
         id=self.getSelectedId()
-        print "id", id
+        #print "id", id
         #print id
         if id == 0:
             return
@@ -3358,7 +3358,7 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
             #self.sql=''
         elif id!=-2000:
             #print "account for tarif", id
-            print "id===", id
+            #print "id===", id
             accounts = self.connection.accountsfortariff(id)
             #self.genericThread = AccountsRefreshThread(self.connection, self.getTarifId())
             #self.connect(self.genericThread, QtCore.SIGNAL("accountsRefresh(QVariant)"), self.fix)
@@ -3369,14 +3369,14 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
         
         if id==-1000 or id==-2000 or id==-4000 or id==-5000 or id==-12000:
             #self.sql=''
-            columns=[u'#', u'Аккаунт', u"Договор",u'Тарифный план', u'Баланс', u"Кредит", u'ФИО',  u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'Блокировка по балансу', u'Блокировка по лимитам' ,  u'Сессия активна',  u'Создан', u"Комментарий"]
+            columns=[u'#', u'Аккаунт', u"Договор",u'Тарифный план', u'Баланс', u"Кредит", u'ФИО',  u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'Блокировка по балансу', u'Блокировка по лимитам' ,  u'Сессия активна',  u"Конец пакета", u'Создан',  u"Комментарий"]
             model = MyTableModel(datain = accounts, columns = columns)
-            model.int_columns = ['id', 'username', 'contract',  'tariff', 'ballance', 'credit', 'fullname',  'address',  'vpn_ips', 'ipn_ips', 'ipn_macs', 'balance_blocked', 'disabled_by_limit', 'account_online', 'created', 'comment']
+            model.int_columns = ['id', 'username', 'contract',  'tariff_name', 'ballance', 'credit', 'fullname',  'address',  'vpn_ips', 'ipn_ips', 'ipn_macs', 'balance_blocked', 'disabled_by_limit', 'account_online', "sp_end", 'created',  'comment']
         else:
-            columns=[u'#', u'Аккаунт',  u"Договор", u'Баланс', u"Кредит", u'ФИО', u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'Блокировка по балансу', u'Блокировка по лимитам' ,  u'Сессия активна',  u'Создан', u"Комментарий"]
+            columns=[u'#', u'Аккаунт',  u"Договор", u'Баланс', u"Кредит", u'ФИО', u'Адрес', u"VPN IP", u"IPN IP", u"MAC", u'Блокировка по балансу', u'Блокировка по лимитам' ,  u'Сессия активна',  u"Конец пакета", u'Создан',  u"Комментарий"]
             
             model = MyTableModel(datain = accounts, columns = columns)
-            model.int_columns = ['id', 'username', 'contract', 'ballance', 'credit', 'fullname',  'address',  'vpn_ips', 'ipn_ips', 'ipn_macs', 'balance_blocked', 'disabled_by_limit', 'account_online', 'created', 'comment']
+            model.int_columns = ['id', 'username', 'contract', 'ballance', 'credit', 'fullname',  'address',  'vpn_ips', 'ipn_ips', 'ipn_macs', 'balance_blocked', 'disabled_by_limit', 'account_online',  "sp_end", 'created', 'comment']
         
         self.tableWidget.setModel(model)
         model.setIntColumns()

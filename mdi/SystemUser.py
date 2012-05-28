@@ -18,9 +18,11 @@ except AttributeError:
     _fromUtf8 = lambda s: s
     
 class GroupSelectDialog(QtGui.QDialog):
-    def __init__(self, systemuser_model=None, connection=None):
+    def __init__(self, new_user=False, systemuser_model=None, connection=None):
         super(GroupSelectDialog, self).__init__()
-        
+        self.groups_to_add = []
+        self.groups_to_del = []
+        self.new_user = new_user
         self.systemuser_model = systemuser_model
         self.connection = connection
         self.setObjectName("GroupSelectDialog")
@@ -35,12 +37,13 @@ class GroupSelectDialog(QtGui.QDialog):
         self.listWidget.setObjectName("listWidget")
         self.gridLayout.addWidget(self.listWidget, 1, 0, 1, 1)
         self.gridLayout_2.addWidget(self.groupBox, 0, 0, 1, 2)
-        self.commandLinkButton_add = QtGui.QCommandLinkButton(self)
-        self.commandLinkButton_add.setObjectName("commandLinkButton_add")
-        self.gridLayout_2.addWidget(self.commandLinkButton_add, 1, 0, 1, 1)
-        self.commandLinkButton_del = QtGui.QCommandLinkButton(self)
-        self.commandLinkButton_del.setObjectName("commandLinkButton_del")
-        self.gridLayout_2.addWidget(self.commandLinkButton_del, 1, 1, 1, 1)
+        self.linklabel = QtGui.QLabel(self)
+        self.linklabel.setObjectName("linklabel")
+        self.linklabel.setOpenExternalLinks( True )
+        self.gridLayout_2.addWidget(self.linklabel, 1, 0, 1, 1)
+        #self.commandLinkButton_del = QtGui.QCommandLinkButton(self)
+        #self.commandLinkButton_del.setObjectName("commandLinkButton_del")
+       # self.gridLayout_2.addWidget(self.commandLinkButton_del, 1, 1, 1, 1)
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
@@ -49,8 +52,7 @@ class GroupSelectDialog(QtGui.QDialog):
 
         self.retranslateUi()
         self.fixtures()
-        QtCore.QObject.connect(self.commandLinkButton_add, QtCore.SIGNAL("clicked()"), self.add)
-        QtCore.QObject.connect(self.commandLinkButton_del, QtCore.SIGNAL("clicked()"), self.delete)
+
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), self.reject)
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -58,52 +60,32 @@ class GroupSelectDialog(QtGui.QDialog):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("Dialog", "Список пользователей в группе", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox.setTitle(QtGui.QApplication.translate("Dialog", "Группы", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_add.setText(QtGui.QApplication.translate("Dialog", "Добавить", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_add.setDescription(QtGui.QApplication.translate("Dialog", "Добавить новую группу", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_del.setText(QtGui.QApplication.translate("Dialog", "Удалить", None, QtGui.QApplication.UnicodeUTF8))
-        self.commandLinkButton_del.setDescription(QtGui.QApplication.translate("Dialog", "Удалить группу", None, QtGui.QApplication.UnicodeUTF8))
-        
+        self.linklabel.setText(QtGui.QApplication.translate("Dialog", u"<qt><a href='%s/admin/auth/group/'>Настройка групп</a></qt>" % self.connection.host, None, QtGui.QApplication.UnicodeUTF8))
 
-    def add(self):
-        text = QtGui.QInputDialog.getText(self,u"Введите название название", u"Название:", QtGui.QLineEdit.Normal, "")        
-        if text[0].isEmpty()==True and text[1]:
-            QtGui.QMessageBox.warning(self, unicode(u"Ошибка"), unicode(u"Введено пустое название."))
-            return
-        model = Object()
-        model.name = unicode(text[0])
-        self.connection.save(model, "billservice_systemgroup")
-        self.connection.commit()
-        self.fixtures()
         
-    def delete(self):
-        
-        item = self.listWidget.currentItem()
-        
-        if not item: return
-        
-        id = item.id
-        self.connection.iddelete(id, "billservice_systemgroup")
-        self.connection.commit()
-        self.fixtures()
-
 
     def fixtures(self):
         self.listWidget.clear()
         self.connection.commit()
-        groups = self.connection.get_models("billservice_systemgroup")
+        
+        groups = self.connection.get_authgroups()
         self.connection.commit()
         
-        self.selected_ids = self.connection.sql("SELECT id, systemgroup_id FROM billservice_systemuser_group WHERE systemuser_id=%s" % self.systemuser_model.id)
-        self.connection.commit()
-        self.selected_nodes = [x.id for x in self.selected_ids]
-        self.selected_groups = [x.systemgroup_id for x in self.selected_ids]
+        if self.new_user==False:
+            self.selected_groups = self.connection.get_systemuser_groups(self.systemuser_model.id)
+        else:
+            self.selected_groups = []
+
         for group in groups:
             
             item = QtGui.QListWidgetItem(self.listWidget)
             item.setText(unicode(group.name))
             item.id = group.id
-            if item.id in self.selected_groups:
-                item.setCheckState(QtCore.Qt.Checked)
+            if self.new_user==False:
+                if item.id in self.selected_groups:
+                    item.setCheckState(QtCore.Qt.Checked)
+                else:
+                    item.setCheckState(QtCore.Qt.Unchecked)
             else:
                 item.setCheckState(QtCore.Qt.Unchecked)
             self.listWidget.addItem(item)
@@ -114,16 +96,11 @@ class GroupSelectDialog(QtGui.QDialog):
         for i in xrange(self.listWidget.count()):
             item = self.listWidget.item(i)
             if item.checkState()==QtCore.Qt.Checked and item.id not in self.selected_groups:
-                model = Object()
-                model.systemuser_id = self.systemuser_model.id
-                model.systemgroup_id = item.id
-                self.connection.save(model, "billservice_systemuser_group")
-                self.connection.commit()
+                self.groups_to_add.append(item.id)
             
             
             if item.checkState()==QtCore.Qt.Unchecked and item.id  in self.selected_groups:
-                self.connection.command("DELETE FROM billservice_systemuser_group WHERE systemuser_id=%s and systemgroup_id=%s" % (self.systemuser_model.id, item.id,))
-                self.connection.commit() 
+                self.groups_to_del.append(item.id)
         
         QtGui.QDialog.accept(self)
         
@@ -193,7 +170,11 @@ class SystemUserFrame(QtGui.QDialog):
         super(SystemUserFrame, self).__init__()
         self.setObjectName("SystemUserMDI")
         self.connection = connection
-        self.connection.commit()
+        if model:
+            self.group_select_dialog = GroupSelectDialog(systemuser_model = model, connection = self.connection)
+        else:
+            self.group_select_dialog = GroupSelectDialog(new_user = True, connection = self.connection)
+            
         self.model = model
         self.password = ''
        
@@ -295,10 +276,10 @@ class SystemUserFrame(QtGui.QDialog):
         self.label_role = QtGui.QLabel(self)
         self.label_role.setObjectName(_fromUtf8("label_role"))
         self.gridLayout_2.addWidget(self.label_role, 3, 0, 1, 1)
-        self.comboBox_role = QtGui.QComboBox(self)
-        self.comboBox_role.setMinimumSize(QtCore.QSize(0, 0))
-        self.comboBox_role.setObjectName(_fromUtf8("comboBox_role"))
-        self.gridLayout_2.addWidget(self.comboBox_role, 3, 1, 1, 1)
+        self.checkBox_role = QtGui.QCheckBox(self)
+        self.checkBox_role.setMinimumSize(QtCore.QSize(0, 0))
+        self.checkBox_role.setObjectName(_fromUtf8("checkBox_role"))
+        self.gridLayout_2.addWidget(self.checkBox_role, 3, 1, 1, 1)
         self.status_checkBox = QtGui.QCheckBox(self)
         self.status_checkBox.setObjectName(_fromUtf8("status_checkBox"))
         self.gridLayout_2.addWidget(self.status_checkBox, 3, 2, 1, 1)
@@ -306,12 +287,17 @@ class SystemUserFrame(QtGui.QDialog):
         self.password_pushButton.setFlat(False)
         self.password_pushButton.setObjectName(_fromUtf8("password_pushButton"))
         self.gridLayout_2.addWidget(self.password_pushButton, 4, 0, 1, 1)
+        self.password_accessgroups = QtGui.QPushButton(self)
+        self.password_accessgroups.setFlat(False)
+        self.password_accessgroups.setObjectName(_fromUtf8("password_accessgroups"))
+        self.gridLayout_2.addWidget(self.password_accessgroups, 4, 1, 1, 1)
+        
         self.buttonBox = QtGui.QDialogButtonBox(self)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(False)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.gridLayout_2.addWidget(self.buttonBox, 4, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.buttonBox, 4, 2, 1, 1)
 
         
         self.ipRx = QtCore.QRegExp(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?:/[0-9][0-9]?)?\b")
@@ -322,6 +308,8 @@ class SystemUserFrame(QtGui.QDialog):
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"),self.accept)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),self.reject)
         QtCore.QObject.connect(self.password_pushButton, QtCore.SIGNAL("clicked()"),self.setPassword)
+        QtCore.QObject.connect(self.password_accessgroups, QtCore.SIGNAL("clicked()"),self.setAuthGroup)
+        
         #QtCore.QObject.connect(self.hosts_pushButton, QtCore.SIGNAL("clicked()"), self.setHosts)
         #QtCore.QMetaObject.connectSlotsByName(Dialog)
 
@@ -348,7 +336,8 @@ class SystemUserFrame(QtGui.QDialog):
         #self.comboBox_role.setItemText(2, QtGui.QApplication.translate("Dialog", "Веб-кабинет", None, QtGui.QApplication.UnicodeUTF8))
         self.status_checkBox.setText(QtGui.QApplication.translate("Dialog", "Активен", None, QtGui.QApplication.UnicodeUTF8))
         self.password_pushButton.setText(QtGui.QApplication.translate("Dialog", "Новый пароль", None, QtGui.QApplication.UnicodeUTF8))
-   
+        self.password_accessgroups.setText(QtGui.QApplication.translate("Dialog", "Группы доступа", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_role.setText(QtGui.QApplication.translate("Dialog", "Суперадминистратор(все права)", None, QtGui.QApplication.UnicodeUTF8))
         
         self.hosts_lineEdit.setValidator(self.ipValidator)
         
@@ -360,6 +349,12 @@ class SystemUserFrame(QtGui.QDialog):
                 self.password = unicode(child.password.toHex())
                 self.text_password = child.text_password
                 
+    def setAuthGroup(self):
+
+       if self.group_select_dialog.exec_()==1:
+           self.refresh()
+       return          
+       
     def check_ips(self, ipsstr):
         ips = ipsstr.split(',')
 
@@ -398,7 +393,7 @@ class SystemUserFrame(QtGui.QDialog):
             model.username = unicode(self.username_edit.text())
             model.description = unicode(self.comment_edit.text()) or ""
             model.status = self.status_checkBox.checkState()==2
-            model.role = self.comboBox_role.currentIndex()
+            model.is_superuser = self.checkBox_role.isChecked()
 
             model.email=unicode(self.lineEdit_email.text())
             model.job=unicode(self.lineEdit_job.text())
@@ -413,7 +408,7 @@ class SystemUserFrame(QtGui.QDialog):
             model.im = unicode(self.lineEdit_im.text())
                         
 
-            if self.connection.systemusers_save(model):
+            if self.connection.systemusers_save(model, groups_to_add = self.group_select_dialog.groups_to_add, groups_to_del = self.group_select_dialog.groups_to_del):
                 QtGui.QDialog.accept(self)
         else:
             QtGui.QMessageBox.warning(self, u"Внимание", unicode(u"Введите необходимые данные"))
@@ -421,20 +416,17 @@ class SystemUserFrame(QtGui.QDialog):
 
     def fixtures(self):
         
-        i=0
-        roles = self.connection.get_authgroups()
-        for role in roles:
-            self.comboBox_role.addItem(role.name)
-            self.comboBox_role.setItemData(i, QtCore.QVariant(role.idi))
-            i+=1
+       
             
         #print "current index", self.model.role
         if self.model:
+            if self.model.is_superuser:
+                self.checkBox_role.setChecked(self.model.is_superuser)
             self.username_edit.setText(unicode(self.model.username))
             self.comment_edit.setText(unicode(self.model.description))
             self.status_checkBox.setCheckState(self.model.status == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked )
             self.hosts_lineEdit.setText(unicode(self.model.host))
-            self.comboBox_role.setCurrentIndex(int(self.model.role))
+
             self.lineEdit_email.setText(unicode(self.model.email))
             self.lineEdit_job.setText(unicode(self.model.job))
             self.lineEdit_fullname.setText(unicode(self.model.fullname))
@@ -518,10 +510,10 @@ class SystemEbs(ebsTableWindow):
 
         #=======================================================================
         # if self.tableWidget.currentColumn()==7:
-        #    child = GroupSelectDialog(systemuser_model=model, connection = self.connection)
-        #    if child.exec_()==1:
-        #        self.refresh()
-        #    return            
+        #   child = GroupSelectDialog(systemuser_model=model, connection = self.connection)
+        #   if child.exec_()==1:
+        #       self.refresh()
+        #   return            
         #=======================================================================
 
         addf = SystemUserFrame(connection=self.connection, model=model)

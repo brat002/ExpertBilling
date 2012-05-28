@@ -30,7 +30,7 @@ from django import template
 from django.contrib.auth.decorators import login_required
 
 from lib.http import JsonResponse
-from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
+from billservice.models import Account, AccountTarif, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
 from billservice.models import SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime, SuspendedPeriod, GroupStat
 
 from billservice.forms import LoginForm, PasswordForm, EmailForm, SimplePasswordForm, ActivationCardForm, ChangeTariffForm, PromiseForm, StatististicForm
@@ -252,16 +252,6 @@ def index(request):
             'next_tariff':next_tariff,
             'subaccounts':subaccounts,
             'user':request.user.account
-            }
-
-@render_to('accounts/netflowstream_info.html')
-@login_required
-def netflowstream_info(request):
-    from lib.paginator import SimplePaginator
-    paginator = SimplePaginator(request, NetFlowStream.objects.filter(account=request.user.account).order_by('-date_start'), 500, 'page')
-    return {
-            'net_flow_streams':paginator.get_page_items(),
-            'paginator': paginator,
             }
 
 
