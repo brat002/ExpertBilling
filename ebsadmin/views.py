@@ -34,6 +34,8 @@ from django.db.models import Q
 from django.db import transaction
 from django.contrib.auth.models import Group as AuthGroup
 from object_log.models import LogItem
+from django.contrib.auth.models import User
+from django.core.cache import cache
 log = LogItem.objects.log_action
 
 try:
@@ -68,12 +70,14 @@ def simple_login(request):
                     except Exception, e:
                         return {"status":False,"message":"Login error. May be systemuser host syntax error"}
                 log_in(request, user)
+                user.account.last_login = datetime.datetime.now()
+                user.account.last_ip = request.META.get("REMOTE_ADDR")
+                user.account.save()
                 return {"status":True,"message":"Login succeful"}
             else:
                 return {"status":False, "message":"Login forbidden to this action"}
                 
         except Exception, e:
-            #print e
             return {"status":False, "message":"Login can`t be authenticated"}
     return {"status":False,"message":"Login not found"}
 
@@ -160,7 +164,7 @@ def generate_credentials(request):
 @ajax_request
 @login_required
 def get_mac_for_ip(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('subaccount.getmacforip'):
+    if  not (request.user.is_staff==True and request.user.has_perm('subaccount.getmacforip')):
         return {'status':False, 'message':u'Недостаточно прав для выполнения операции'}
     
     nas_id = request.POST.get('nas_id', None)
@@ -193,7 +197,7 @@ def get_mac_for_ip(request):
 @login_required
 @ajax_request
 def subaccounts(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('subaccount.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.subaccount_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id', None)
     id = request.POST.get('id', None)
@@ -214,7 +218,7 @@ def subaccounts(request):
 @ajax_request
 @login_required
 def addonservices(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('addonservice.view'):
+    if  not (request.user.is_staff==True and  request.user.has_perm('billservice.addonservice_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     id = request.POST.get('id', None)
     
@@ -252,7 +256,7 @@ def authgroups(request):
 @ajax_request
 @login_required
 def document(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('document.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.document_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id')
 
@@ -268,7 +272,7 @@ def document(request):
 @ajax_request
 @login_required
 def templates(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('template.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.template_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -294,7 +298,7 @@ def templates(request):
 @ajax_request
 @login_required
 def sessions(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('activesession.view'):
+    if  not (request.user.is_staff==True and  request.user.has_perm('radius.activesession_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     form = SessionFilterForm(request.POST)
     if form.is_valid():
@@ -330,7 +334,7 @@ def sessions(request):
 @ajax_request
 @login_required
 def settlementperiods(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_settlementperiod'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_settlementperiod')):
         return {'status':True, 'records':[], 'totalCount':0}
     js = json.loads(request.POST.get('data','{}'))
     fields = js.get('fields',[])
@@ -362,7 +366,7 @@ def settlementperiods(request):
 @ajax_request
 @login_required
 def accessparameters(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('tariff.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -387,7 +391,7 @@ def accessparameters(request):
 @ajax_request
 @login_required
 def timeperiods(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('timeperiod.view'):
+    if  not (request.user.is_staff==True and  request.user.has_perm('billservice.timeperiod_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -413,12 +417,12 @@ def timeperiods_save(request):
 
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_change'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.timeperiod_change')):
             return {'status':False, 'message':u'У вас недостатчно прав для изменения периодов тарификации'}
         item = TimePeriod.objects.get(id=id)
         form = TimePeriodForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_add'):
+        if  not (request.user.is_staff==True and  request.user.has_perm('billservice.timeperiod_add')):
             return {'status':False, 'message':u'У вас недостатчно прав для создания периодов тарификации'}
         form = TimePeriodForm(request.POST)
         
@@ -439,7 +443,7 @@ def timeperiods_save(request):
 @ajax_request
 @login_required
 def timeperiods_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_delete'):
+    if  not (request.user.is_staff==True and  request.user.has_perm('billservice.timeperiod_delete')):
         return {'status':False, 'message':u'У вас недостатчно прав для удаления периодов тарификации'}
     id = int(request.POST.get('id',0))
     if id:
@@ -454,7 +458,7 @@ def timeperiods_delete(request):
 @ajax_request
 @login_required
 def timeperiodnodes_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_delete'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.timeperiod_delete')):
         return {'status':False, 'message':u'У вас недостатчно прав для удаления периодов тарификации'}
     id = int(request.POST.get('id',0))
     if id:
@@ -468,7 +472,7 @@ def timeperiodnodes_delete(request):
 @ajax_request
 @login_required
 def timeperiodnodes(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('timeperiodnode.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.timeperiodnode_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
@@ -501,10 +505,10 @@ def timeperiodnodes_save(request):
     if id:
         item = TimePeriodNode.objects.get(id=id)
         form = TimePeriodNodeForm(request.POST, instance=item)
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_timeperiodnode'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_timeperiodnode')):
             return {'status':False, 'message':u"У вас недостаточно прав для изменения составляющих периодов"}
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_timeperiodnode'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_timeperiodnode')):
             return {'status':False, 'message':u"У вас недостаточно прав для добавления составляющих периодов"}
         form = TimePeriodNodeForm(request.POST)
         
@@ -525,7 +529,7 @@ def timeperiodnodes_save(request):
 @ajax_request
 @login_required
 def timeperiodnodes_m2m_save(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_change'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.timeperiod_change')):
         return {'status':False, 'message':u'У вас недостатчно прав для изменения периодов тарификации'}
     timeperiod_id = request.POST.get('timeperiod')
     timeperiodnode_id = request.POST.get('timeperiodnode')
@@ -544,7 +548,7 @@ def timeperiodnodes_m2m_save(request):
 @ajax_request
 @login_required
 def timeperiodnodes_m2m_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.timeperiod_change'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.timeperiod_change')):
         return {'status':False, 'message':u'У вас недостатчно прав для изменения периодов тарификации'}
     timeperiod_id = request.POST.get('period_id')
     timeperiodnode_id = request.POST.get('node_id')
@@ -565,7 +569,7 @@ def timeperiodnodes_m2m_delete(request):
 @ajax_request
 @login_required
 def timeaccessservices(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('timeaccessservice.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.timeaccessservice_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -588,7 +592,7 @@ def timeaccessservices(request):
 @ajax_request
 @login_required
 def radiustrafficservices(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('radiustraffic.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.radiustraffic_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -612,7 +616,7 @@ def radiustrafficservices(request):
 @ajax_request
 @login_required
 def traffictransmitservices(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('traffictransmitservice.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.traffictransmitservice_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -644,7 +648,7 @@ def dictfetchall(cursor):
 @ajax_request
 @login_required
 def sql(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('rawsqlexecution'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.rawsqlexecution')):
         return {'status':False, 'records':[], 'totalCount':0}
     
     s = request.POST.get('sql','')
@@ -674,7 +678,7 @@ def sql(request):
 @ajax_request
 @login_required
 def radiustrafficservices_nodes(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('radiustrafficnode.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.radiustrafficnode_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields', [])
     id = request.POST.get('id', None)
@@ -700,7 +704,7 @@ def radiustrafficservices_nodes(request):
 @ajax_request
 @login_required
 def traffictransmit_nodes(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('traffictransmitnodes.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.traffictransmitnodes_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields', [])
     id = request.POST.get('id', None)
@@ -727,7 +731,7 @@ def traffictransmit_nodes(request):
 @ajax_request
 @login_required
 def prepaidtraffic(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('prepaidtraffic.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.prepaidtraffic_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields', [])
@@ -754,7 +758,7 @@ def prepaidtraffic(request):
 @ajax_request
 @login_required
 def timeaccessservices_nodes(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('timeaccessnode.view'):
+    if  not (request.user.is_staff==True and  request.user.has_perm('billservice.timeaccessnode_/admin/auth/group/view')):
         return {'status':False, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields', [])
@@ -781,7 +785,7 @@ def timeaccessservices_nodes(request):
 @ajax_request
 @login_required
 def timespeeds(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('timespeed.view'):
+    if  not (request.user.is_staff==True and  request.user.has_perm('billservice.timespeed_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
@@ -807,7 +811,8 @@ def timespeeds(request):
 @ajax_request
 @login_required
 def systemusers(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.view'):
+
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.systemuser_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
@@ -824,14 +829,20 @@ def systemusers(request):
         
     res=[]
     for item in items:
-        res.append(instance_dict(item, fields=fields))
+        is_superuser = False
+        u = User.objects.filter(username=item.username)
+        if u:
+            is_superuser = u[0].is_superuser
+        data = instance_dict(item, fields=fields)
+        data["is_superuser"] = is_superuser
+        res.append(data)
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 @ajax_request
 @login_required
 def tpchangerules(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('tpchangerule.view'):
+    if  not (request.user.is_staff==True and  request.user.has_perm('billservice.tpchangerule_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -858,12 +869,12 @@ def tpchangerules_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_tpchangerule'):
+        if  not (request.user.is_staff==True and  request.user.has_perm('billservice.change_tpchangerule')):
             return {'status':False, 'message': u'У вас нет прав на изменение правила смены тарифных планов'}
         item = TPChangeRule.objects.get(id=id)
         form = TPChangeRuleForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_tpchangerule'):
+        if  not (request.user.is_staff==True and  request.user.has_perm('billservice.add_tpchangerule')):
             return {'status':False,  'message': u'У вас нет прав на добавление правила смены тарифных планов'}
         form = TPChangeRuleForm(request.POST)
         
@@ -884,7 +895,7 @@ def tpchangerules_set(request):
 @ajax_request
 @login_required
 def tpchangerules_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_tpchangerule'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_tpchangerule')):
         return {'status':False,  'message': u'У вас нет прав на удаление правила смены тарифных планов'}
     id = int(request.POST.get('id',0))
     if id:
@@ -899,20 +910,39 @@ def tpchangerules_delete(request):
 @login_required
 def systemusers_set(request):
     
-    id = request.POST.get('id')
+    
+    data = json.loads(request.POST.get('data'))
+    groups_to_add, groups_to_del = data.get("groups_to_add"), data.get("groups_to_del")
+    model = data.get('model')
+    id = model.get("id")
+
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_systemuser'):
+        if  not (request.user.is_staff==True and  request.user.has_perm('billservice.change_systemuser')):
             return {'status':False,  'message': u'У вас нет прав на изменение администратора'}
         item = SystemUser.objects.get(id=id)
-        form = SystemUserForm(request.POST, instance=item)
+        form = SystemUserForm(model, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_systemuser'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_systemuser')):
             return {'status':False,  'message': u'У вас нет прав на добавление администратора'}
-        form = SystemUserForm(request.POST)
+        form = SystemUserForm(model)
         
     if form.is_valid():
         try:
             model = form.save(commit=False)
+            u = User.objects.filter(username=model.username)
+            if not u:
+                u = User.objects.create_user(model.username, model.email, model.text_password)
+            else:
+                u=u[0]
+            for item in groups_to_add:
+                u.groups.add(AuthGroup.objects.get(id=item))
+            for item in groups_to_del:
+                u.groups.remove(AuthGroup.objects.get(id=item))
+                
+            u.is_staff = True
+            u.is_active = model.status
+            u.is_superuser = data.get("model").get("is_superuser")
+            u.save()
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             res={"status": True, 'id':model.id}
@@ -927,11 +957,12 @@ def systemusers_set(request):
 @ajax_request
 @login_required
 def systemusers_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_systemuser'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_systemuser')):
         return {'status':False,  'message': u'У вас нет прав на удаление администратора'}
     id = int(request.POST.get('id',0))
     if id:
         model = SystemUser.objects.get(id=id)
+        User.objects.filter(username=model.username).delete()
         log('DELETE', request.user, model)
         model.delete()
         return {"status": True}
@@ -941,7 +972,7 @@ def systemusers_delete(request):
 @ajax_request
 @login_required
 def contracttemplates(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('contracttemplate.view'):
+    if  not (request.user.is_staff==True and  request.user.has_perm('billservice.contracttemplate_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
@@ -966,7 +997,7 @@ def contracttemplates(request):
 @login_required
 def ipnforvpn(request):
 
-    if  not request.user.is_staff==True and not request.user.has_perm('account.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.account_view')):
         return {'status':True, 'result':False}
     id = request.POST.get('id',None)
     res = False
@@ -985,7 +1016,7 @@ def ipnforvpn(request):
 @ajax_request
 @login_required
 def session_reset(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('activesessions.session_reset'):
+    if  not (request.user.is_staff==True and request.user.has_perm('activesessions.session_reset')):
         return {'status':False, 'message':u'У вас нет прав на сброс сессии'}
     
     id = request.POST.get('id',None)
@@ -1024,7 +1055,7 @@ def session_reset(request):
 @login_required
 @ajax_request
 def tariffforaccount(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('account.get_tariff'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.get_tariff')):
         return {'status':False, 'message':u'У вас нет прав на получение тарифа пользователя'}
     id = request.POST.get('id',None)
     res = False
@@ -1042,7 +1073,7 @@ def tariffforaccount(request):
 @ajax_request
 @login_required
 def operator(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('operator.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.operator_view')):
         return {'status':False, 'message':u'У вас нет прав на получение информации о провайдере'}
     try:
         item = Operator.objects.all()[0]
@@ -1062,12 +1093,12 @@ def operator_set(request):
     bank_model_id = bank_model.get('id')
     op_model_id = op_model.get('id')
     if op_model_id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_operator'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_operator')):
             return {'status':False, 'message':u'У вас нет прав на изменение информации о провайдере'}
         item = Operator.objects.get(id=op_model_id)
         form = OperatorForm(op_model, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_operator'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_operator')):
             return {'status':False, 'message':u'У вас нет прав на сохранение информации о провайдере'}
         form = OperatorForm(op_model)
 
@@ -1101,7 +1132,7 @@ def operator_set(request):
 @ajax_request
 @login_required
 def get_pool_by_ipinuse(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('ippool.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.ippool_view')):
         return {'status':True,'result':None}
     ipinuse = request.POST.get('ipinuse',None)
     res = None
@@ -1135,7 +1166,7 @@ def account_exists(request):
 @ajax_request
 @login_required
 def tariffs(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('tariff.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
         return {'status':True,'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1160,7 +1191,7 @@ def tariffs(request):
 @ajax_request
 @login_required
 def cities(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('city.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.city_view')):
         return {'status':True,'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1186,12 +1217,12 @@ def cities_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_city'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_city')):
             return {'status':False, 'message':u'У вас нет прав на изменение городов'}
         item = City.objects.get(id=id)
         form = CityForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_city'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_city')):
             return {'status':False, 'message':u'У вас нет прав на добавление городов'}
         form = CityForm(request.POST)
         
@@ -1212,7 +1243,7 @@ def cities_set(request):
 @ajax_request
 @login_required
 def cities_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_city'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_city')):
         return {'status':False, 'message':u'У вас нет прав на удаление городов'}
     id = int(request.POST.get('id',0))
     if id:
@@ -1227,7 +1258,7 @@ def cities_delete(request):
 @ajax_request
 @login_required
 def accounthardware(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('accounthardware.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.accounthardware_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1260,12 +1291,12 @@ def accounthardware_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accounthardware'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accounthardware')):
             return {'status':False, 'message':u'У вас нет прав на изменение оборудования аккаунта'}
         item = AccountHardware.objects.get(id=id)
         form = AccountHardwareForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accounthardware'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accounthardware')):
             return {'status':False, 'message':u'У вас нет прав на добавление оборудования аккаунта'}
         form = AccountHardwareForm(request.POST)
         
@@ -1285,7 +1316,7 @@ def accounthardware_set(request):
 @ajax_request
 @login_required
 def accounthardware_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_accounthardware'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_accounthardware')):
         return {'status':False, 'message':u'У вас нет прав на удаление оборудования аккаунта'}
     id = int(request.POST.get('id',0))
     if id:
@@ -1299,7 +1330,7 @@ def accounthardware_delete(request):
 @ajax_request
 @login_required
 def news(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('news.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.news_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1331,12 +1362,12 @@ def news_set(request):
     accounts = data.get('accounts')
     model = data.get('model')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_news'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_news')):
             return {'status':False, 'message':u'У вас нет прав на изменение новости'}
         item = News.objects.get(id=id)
         form = NewsForm(model, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_news'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_news')):
             return {'status':False, 'message':u'У вас нет прав на добавление новости'}
         form = NewsForm(model)
         
@@ -1364,7 +1395,7 @@ def news_set(request):
 @ajax_request
 @login_required
 def news_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_news'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_news')):
         return {'status':False, 'message':u'У вас нет прав на удаление новости'}
     id = int(request.POST.get('id',0))
     if id:
@@ -1379,7 +1410,7 @@ def news_delete(request):
 @login_required
 def accounttariffs(request):
     
-    if  not request.user.is_staff==True and not request.user.has_perm('accounttarif.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.accounttarif_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id')
     
@@ -1396,7 +1427,7 @@ def accounttariffs(request):
 @login_required
 def nasses(request):
 
-    if  not request.user.is_staff==True and not request.user.has_perm('nas.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('nas.nas_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
@@ -1420,7 +1451,7 @@ def nasses(request):
 @ajax_request
 @login_required
 def hardware(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('hardware.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.hardware_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1449,12 +1480,12 @@ def hardware_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_hardware'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_hardware')):
             return {'status':False, 'message': u'У вас нет прав на изменение оборудования'}
         item = Hardware.objects.get(id=id)
         form = HardwareForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_hardware'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_hardware')):
             return {'status':False, 'message': u'У вас нет прав на добавление оборудования'}
         form = HardwareForm(request.POST)
         
@@ -1475,7 +1506,7 @@ def hardware_set(request):
 @ajax_request
 @login_required
 def hardware_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_hardware'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_hardware')):
         return {'status':False, 'message': u'У вас нет прав на удаление оборудования'}
     id = int(request.POST.get('id',0))
     if id:
@@ -1516,7 +1547,7 @@ def actionlogs(request):
 @ajax_request
 @login_required
 def manufacturers(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('manufacturer.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.manufacturer_view')):
         return {'status':False, 'records': [], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1543,12 +1574,12 @@ def manufacturers_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_manufacturer'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_manufacturer')):
             return {'status':False, 'message': u'У вас нет прав на изменение производителя'}
         item = Manufacturer.objects.get(id=id)
         form = ManufacturerForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_manufacturer'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_manufacturer')):
             return {'status':False, 'message': u'У вас нет прав на добавление производителя'}
         form = ManufacturerForm(request.POST)
         
@@ -1569,7 +1600,7 @@ def manufacturers_set(request):
 @ajax_request
 @login_required
 def manufacturers_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_manufacturer'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_manufacturer')):
         return {'status':False, 'message': u'У вас нет прав на удаление производителя'}
     id = int(request.POST.get('id',0))
     if id:
@@ -1584,7 +1615,7 @@ def manufacturers_delete(request):
 @ajax_request
 @login_required
 def models(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('model.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.model_view')):
         return {'status':False, 'records': [], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1616,12 +1647,12 @@ def models_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_model'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_model')):
             return {'status':False, 'message': u'У вас нет прав на изменение модели'}
         item = Model.objects.get(id=id)
         form = ModelHardwareForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_model'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_model')):
             return {'status':False, 'message': u'У вас нет прав на изменение модели'}
         form = ModelHardwareForm(request.POST)
         
@@ -1642,7 +1673,7 @@ def models_set(request):
 @ajax_request
 @login_required
 def models_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_model'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_model')):
         return {'status':False, 'message': u'У вас нет прав на удаление модели'}
     id = int(request.POST.get('id',0))
     if id:
@@ -1656,7 +1687,7 @@ def models_delete(request):
 @ajax_request
 @login_required
 def hardwaretypes(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('hardwaretype.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.hardwaretype_view')):
         return {'status':False, 'records': [], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1682,7 +1713,7 @@ def hardwaretypes(request):
 @login_required
 def dealers(request):
     
-    if  not request.user.is_staff==True and not request.user.has_perm('dealer.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.dealer_view')):
         return {'status':False, 'records': [], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
@@ -1710,12 +1741,12 @@ def dealers_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_dealer'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_dealer')):
             return {'status':False, 'message': u'У вас нет прав на изменение дилера'}
         item = Dealer.objects.get(id=id)
         form = DealerForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_dealer'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_dealer')):
             return {'status':False, 'message': u'У вас нет прав на изменение дилера'}
         form = DealerForm(request.POST)
         
@@ -1735,7 +1766,7 @@ def dealers_set(request):
 @ajax_request
 @login_required
 def dealers_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_dealer'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_dealer')):
         return {'status':False, 'message': u'У вас нет прав на удаление дилера'}
     id = int(request.POST.get('id',0))
     if id:
@@ -1752,12 +1783,12 @@ def hardwaretypes_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_hardwaretype'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_hardwaretype')):
             return {'status':False, 'message': u'У вас нет прав на изменение типа оборудования'}
         item = HardwareType.objects.get(id=id)
         form = HardwareTypeForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_hardwaretype'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_hardwaretype')):
             return {'status':False, 'message': u'У вас нет прав на добавление типа оборудования'}
         form = HardwareTypeForm(request.POST)
         
@@ -1779,7 +1810,7 @@ def hardwaretypes_set(request):
 @ajax_request
 @login_required
 def getnotsoldcards(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('card.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.card_view')):
         return {'status':False, 'records': [], 'totalCount':0}
     ids = request.POST.get('ids',None).split(',')
 
@@ -1797,7 +1828,7 @@ def getnotsoldcards(request):
 @ajax_request
 @login_required
 def cards(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('card.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.card_view')):
         return {'status':False, 'records': [], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1824,12 +1855,12 @@ def cards_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_card'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_card')):
             return {'status':False, 'message': u'У вас нет прав на изменение карты'}
         item = Card.objects.get(id=id)
         form = CardForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_card'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_card')):
             return {'status':False, 'message': u'У вас нет прав на добавление карты'}
         form = CardForm(request.POST)
         
@@ -1849,7 +1880,7 @@ def cards_set(request):
 @ajax_request
 @login_required
 def cards_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_card'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_card')):
         return {'status':False, 'message': u'У вас нет прав на удаление карт'}
     id = int(request.POST.get('id',0))
     if id:
@@ -1866,7 +1897,7 @@ def cards_delete(request):
 @ajax_request
 @login_required
 def cardsstatus_set(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_card'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_card')):
         return {'status':False, 'message': u'У вас нет прав на изменение карты'}
     data = json.loads(request.POST.get('data', '{}'))
     ids = data.get('ids',[])
@@ -1883,7 +1914,7 @@ def cardsstatus_set(request):
 @login_required
 def get_model(request):
     
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.get_model'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.get_model')):
         return {'status':False, 'message': u'У вас нет прав на выполнение такого запроса'}
     
     data = json.loads(request.POST.get('data', '{}'))
@@ -1907,7 +1938,7 @@ def get_model(request):
 @ajax_request
 @login_required
 def get_models(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.get_model'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.get_model')):
         return {'status':False, 'message': u'У вас нет прав на выполнение такого запроса'}
     data = json.loads(request.POST.get('data', '{}'))
 
@@ -1926,10 +1957,33 @@ def get_models(request):
 
     return res
 
+
+
+@ajax_request
+@login_required
+def systemuser_groups(request):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.auth_groups')):
+        return {'status':False, 'message': u'У вас нет прав на получение груп пользователя'}
+    
+    data = json.loads(request.POST.get('data', '{}'))
+
+    systemuser_id = data.get('systemuser_id',None)
+
+    if systemuser_id:
+        res = User.objects.filter(username=SystemUser.objects.get(id=systemuser_id).username)
+        if not res:
+            return {"records": [], 'status':True, 'totalCount':0}
+        res = res[0]
+        res = res.groups.all().values("id")
+        res = [x.get("id") for x in res]
+    else:
+            return {'status':False, 'message': u'Не выбран пользвоатель'}
+    return {"records": res, 'status':True, 'totalCount':len(res)}
+
 @ajax_request
 @login_required
 def hardwaretypes_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_hardwaretype'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_hardwaretype')):
         return {'status':False, 'message': u'У вас нет прав на удаление типа оборудования'}
     id = int(request.POST.get('id',0))
     if id:
@@ -1944,7 +1998,7 @@ def hardwaretypes_delete(request):
 @ajax_request
 @login_required
 def account(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('account.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.account_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     
     data = json.loads(request.POST.get('data', '{}'))
@@ -1973,7 +2027,7 @@ def account(request):
 @login_required
 def accountsfilter(request):
 
-    if  not request.user.is_staff==True and not request.user.has_perm('account.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.account_view')):
         return {'status':True, 'records':[], 'totalCount':0}
 
     data = json.loads(request.POST.get('data', '[]'))
@@ -1985,7 +2039,7 @@ def accountsfilter(request):
     try:
         sql= u" AND ".join([u" %s %s '%s' " % (x[0],x[1], x[2].replace("%", "%%")) if type(x[2])==unicode else u" %s %s %s " % (x[0],x[1],x[2])  for x in data]) or True
         #print sql
-        s=u"""SELECT DISTINCT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tariff, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address
+        s=u"""SELECT DISTINCT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tariff_name, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address
             FROM billservice_account AS acc
             LEFT JOIN billservice_subaccount as subacc ON subacc.account_id=acc.id 
             LEFT JOIN billservice_organization as org ON org.account_id=acc.id
@@ -2011,7 +2065,7 @@ def accountsfilter(request):
 @ajax_request
 @login_required
 def trafficclasses(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('trafficclass.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.trafficclass_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2041,12 +2095,12 @@ def trafficclasses_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('nas.change_trafficclass'):
+        if  not (request.user.is_staff==True and request.user.has_perm('nas.change_trafficclass')):
             return {'status':False, 'message':u'У вас нет прав на изменение класса трафика'}
         item = TrafficClass.objects.get(id=id)
         form = TrafficClassForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('nas.add_trafficclass'):
+        if  not (request.user.is_staff==True and request.user.has_perm('nas.add_trafficclass')):
             return {'status':False, 'message':u'У вас нет прав на добавление класса трафика'}
         form = TrafficClassForm(request.POST)
         
@@ -2076,7 +2130,7 @@ def trafficclasses_set(request):
 @ajax_request
 @login_required
 def trafficclasses_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('nas.delete_trafficclass'):
+    if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_trafficclass')):
         return {'status':True, 'message':u'У вас нет прав на удаление класса трафика'}
     id = int(request.POST.get('id',0))
     if id:
@@ -2090,7 +2144,7 @@ def trafficclasses_delete(request):
 @ajax_request
 @login_required
 def trafficclassnodes(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('trafficclass.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.trafficclass_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2120,12 +2174,12 @@ def trafficclassnodes_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('nas.change_trafficclass'):
+        if  not (request.user.is_staff==True and request.user.has_perm('nas.change_trafficclass')):
             return {'status':False, 'message':u'У вас нет прав на изменение класса трафика'}
         item = TrafficNode.objects.get(id=id)
         form = TrafficNodeForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('nas.add_trafficclass'):
+        if  not (request.user.is_staff==True and request.user.has_perm('nas.add_trafficclass')):
             return {'status':False, 'message':u'У вас нет прав на добавление класса трафика'}
         form = TrafficNodeForm(request.POST)
         
@@ -2146,7 +2200,7 @@ def trafficclassnodes_set(request):
 @ajax_request
 @login_required
 def trafficclassnodes_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('nas.delete_trafficclass'):
+    if  not (request.user.is_staff==True and  request.user.has_perm('nas.delete_trafficclass')):
         return {'status':False, 'message':u'У вас нет прав на изменение класса трафика'}
     id = int(request.POST.get('id',0))
     if id:
@@ -2161,7 +2215,7 @@ def trafficclassnodes_delete(request):
 @ajax_request
 @login_required
 def classforgroup(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('group.view'):
+    if  not (request.user.is_staff==True and not request.user.has_perm('billservice.group_view')):
         return {'status':False, 'message':u'У вас нет прав на просмотр группы трафика'}
     
     fields = request.POST.get('fields',[])
@@ -2184,7 +2238,7 @@ def classforgroup(request):
 @ajax_request
 @login_required
 def ippools(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('ippool.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.ippool_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2214,12 +2268,12 @@ def ippools_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_ippool'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_ippool')):
             return {'status':False, 'message': u"У вас нет прав на изменение IP пула"}
         item = IPPool.objects.get(id=id)
         form = IPPoolForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_ippool'):
+        if  not (request.user.is_staff==True and not request.user.has_perm('billservice.add_ippool')):
             return {'status':False, 'message': u"У вас нет прав на добавление IP пула"}
         form = IPPoolForm(request.POST)
         
@@ -2239,7 +2293,7 @@ def ippools_set(request):
 @ajax_request
 @login_required
 def ippools_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_ippool'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_ippool')):
         return {'status':False, 'message': u"У вас нет прав на удаление IP пула"}
     id = int(request.POST.get('id',0))
     if id:
@@ -2254,7 +2308,7 @@ def ippools_delete(request):
 @ajax_request
 @login_required
 def radiusattrs(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('radiusattrs.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.radiusattrs_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
@@ -2288,12 +2342,12 @@ def radiusattrs_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_radiusattrs'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_radiusattrs')):
             return {'status':False, 'message': u"У вас нет прав на изменение RADIUS атрибутов"}
         item = RadiusAttrs.objects.get(id=id)
         form = RadiusAttrsForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_radiusattrs'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_radiusattrs')):
             return {'status':False, 'message': u"У вас нет прав на добавление RADIUS атрибутов"}
         form = RadiusAttrsForm(request.POST)
         
@@ -2313,7 +2367,7 @@ def radiusattrs_set(request):
 @ajax_request
 @login_required
 def radiusattrs_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_radiusattrs'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_radiusattrs')):
         return {'status':False, 'message': u"У вас нет прав на удаление RADIUS атрибутов"}
     id = int(request.POST.get('id',0))
     if id:
@@ -2331,12 +2385,12 @@ def templates_save(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_template'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_template')):
             return {'status':False, 'message': u"У вас нет прав на изменение шаблона"}
         item = Template.objects.get(id=id)
         form = TemplateForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_template'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_template')):
             return {'status':False, 'message': u"У вас нет прав на добавление шаблона"}
         form = TemplateForm(request.POST)
         
@@ -2358,7 +2412,7 @@ def templates_save(request):
 @ajax_request
 @login_required
 def accountprepaystrafic(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('accountprepaystraffic.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountprepaystraffic_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2385,12 +2439,12 @@ def accountprepaystrafic_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accountprepaystraffic'):
+        if  not (request.user.is_staff==True and  request.user.has_perm('billservice.change_accountprepaystraffic')):
             return {'status':True, 'message': u'У вас нет прав на изменение размера предоплаченного трафика'}
         item = AccountPrepaysTrafic.objects.get(id=id)
         form = AccountPrepaysTraficForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accountprepaystraffic'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountprepaystraffic')):
             return {'status':True, 'message': u'У вас нет прав на добавление предоплаченного трафика'}
         form = AccountPrepaysTraficForm(request.POST)
         
@@ -2412,7 +2466,7 @@ def accountprepaystrafic_set(request):
 @ajax_request
 @login_required
 def accountprepaysradiustrafic(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('accountprepaysradiustrafic.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountprepaysradiustrafic_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2438,13 +2492,13 @@ def accountprepaysradiustrafic_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accountprepaysradiustraffic'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountprepaysradiustraffic')):
             return {'status':True, 'message': u'У вас нет прав на изменение размера предоплаченного RADIUS трафика'}
 
         item = AccountPrepaysRadiusTrafic.objects.get(id=id)
         form = AccountPrepaysRadiusTraficForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accountprepaysradiustraffic'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountprepaysradiustraffic')):
             return {'status':True, 'message': u'У вас нет прав на добавление предоплаченного RADIUS трафика'}
         form = AccountPrepaysRadiusTraficForm(request.POST)
         
@@ -2464,7 +2518,7 @@ def accountprepaysradiustrafic_set(request):
 @ajax_request
 @login_required
 def templates_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_template'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_template')):
         return {'status':False, 'message': u'У вас нет прав на удаление шаблона'}
     id = int(request.POST.get('id',0))
     if id:
@@ -2478,7 +2532,7 @@ def templates_delete(request):
 @ajax_request
 @login_required
 def templatetypes(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('templatetype.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.templatetype_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2503,7 +2557,7 @@ def templatetypes(request):
 @ajax_request
 @login_required
 def periodicalservices(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('periodicalservice.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.periodicalservice_view')):
         return {'status':True, 'records':[], 'totalCount':0}
 
     fields = request.POST.get('fields',[])
@@ -2535,7 +2589,7 @@ def periodicalservices(request):
 @ajax_request
 @login_required
 def transactions(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('transaction.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.transaction_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2561,7 +2615,7 @@ def transactions(request):
 @ajax_request
 @login_required
 def groups(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('group.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.group_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2584,7 +2638,7 @@ def groups(request):
 @ajax_request
 @login_required
 def groups_detail(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('group.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.group_view')):
         return {'status':True, 'records':[], 'totalCount':0}
 
     from django.db import connection
@@ -2604,7 +2658,7 @@ def groups_detail(request):
 @ajax_request
 @login_required
 def onetimeservices(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('onetimeservice.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.onetimeservice_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2632,7 +2686,7 @@ def onetimeservices(request):
 @ajax_request
 @login_required
 def trafficlimites(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('trafficlimit.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.trafficlimit_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2660,7 +2714,7 @@ def trafficlimites(request):
 @ajax_request
 @login_required
 def speedlimites(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('speedlimit.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.speedlimit_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2688,7 +2742,7 @@ def speedlimites(request):
 @ajax_request
 @login_required
 def addonservicetariff(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('addonservicetarif.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.addonservicetarif_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2717,7 +2771,7 @@ def addonservicetariff(request):
 @ajax_request
 @login_required
 def get_cards_nominal(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('card.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.card_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     from django.db import connection
     cur = connection.cursor()
@@ -2730,7 +2784,7 @@ def get_cards_nominal(request):
 @ajax_request
 @login_required
 def get_next_cardseries(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('card.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.card_view')):
         return {'status':True, 'records':[0], 'totalCount':1}
     from django.db import connection
     cur = connection.cursor()
@@ -2747,7 +2801,7 @@ def get_next_cardseries(request):
 @ajax_request
 @login_required
 def switches(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('switch.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('nas.switch_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2772,12 +2826,12 @@ def switches_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_switch'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_switch')):
             return {'status':False, 'message': u'У вас нет прав на изменение коммутаторов'}
         item = Switch.objects.get(id=id)
         form = SwitchForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_switch'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_switch')):
             return {'status':False, 'message': u'У вас нет прав на добавление коммутаторов'}
         form = SwitchForm(request.POST)
         
@@ -2797,7 +2851,7 @@ def switches_set(request):
 @ajax_request
 @login_required
 def switches_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_switch'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_switch')):
         return {'status':False, 'message': u'У вас нет прав на удаление коммутаторов'}
         
     id = int(request.POST.get('id',0))
@@ -2812,7 +2866,7 @@ def switches_delete(request):
 @ajax_request
 @login_required
 def organizations(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('organization.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.organization_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
@@ -2824,8 +2878,7 @@ def organizations(request):
             return {'status':False, 'message': 'Organization item with id=%s not found' % id}
     elif account_id:
         items = Organization.objects.filter(account__id=account_id)
-        if items:
-            items = items[0]
+
     else:
         items = Organization.objects.all()
 
@@ -2838,7 +2891,7 @@ def organizations(request):
 @ajax_request
 @login_required
 def banks(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('bankdata.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.bankdata_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
@@ -2862,12 +2915,12 @@ def banks_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_bankdata'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_bankdata')):
             return {'status':False, 'message': u'У вас нет прав на изменение банка'}
         item = BankData.objects.get(id=id)
         form =BankDataForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_bankdata'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_bankdata')):
             return {'status':False, 'message': u'У вас нет прав на добавление банка'}
         form = BankDataForm(request.POST)
         
@@ -2888,7 +2941,7 @@ def banks_set(request):
 @login_required
 def dealerpays(request):
 
-    if  not request.user.is_staff==True and not request.user.has_perm('dealerpay.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.dealerpay_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2915,12 +2968,12 @@ def dealerpay_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_dealerpay'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_dealerpay')):
             return {'status':False, 'message': u'У вас нет прав на изменение платежа'}
         item = DealerPay.objects.get(id=id)
         form = DealerPayForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_dealerpay'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_dealerpay')):
             return {'status':False, 'message': u'У вас нет прав на добавление платежа'}
         form = DealerPayForm(request.POST)
         
@@ -2940,7 +2993,7 @@ def dealerpay_set(request):
 @ajax_request
 @login_required
 def returncards(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_card'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_card')):
         return {'status':False, 'message': u'У вас нет прав на изменение состояния карт'}
     data = json.loads(request.POST.get('data', '{}'))
     dealer_id = data.get('dealer_id',None)
@@ -2964,7 +3017,7 @@ def returncards(request):
 @ajax_request
 @login_required
 def salecards(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('salecard.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.salecard_view')):
         return {'status':False, 'records':[], 'totalCount':0}
     
     fields = request.POST.get('fields',[])
@@ -2996,12 +3049,12 @@ def salecards_set(request):
     id = data.get('model',{}).get('id')
     cards = data.get('cards',[])
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_salecard'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_salecard')):
             return {'status':False, 'message': u'У вас нет прав на изменение продажи карт'}
         item = SaleCard.objects.get(id=id)
         form =SaleCardForm(data.get('model',{}), instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_salecard'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_salecard')):
             return {'status':False, 'message': u'У вас нет прав на добавление продажи карт'}
         form = SaleCardForm(data.get('model',{}))
         
@@ -3027,7 +3080,7 @@ def salecards_set(request):
 @ajax_request
 @login_required
 def salecards_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_salecard'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_salecard')):
         return {'status':False, 'message': u'У вас нет прав на удаление продажи карт'}
     id = int(request.POST.get('id',0))
     if id:
@@ -3045,12 +3098,12 @@ def tpchange_save(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accounttarif'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accounttarif')):
             return {'status':False, 'message': u'У вас нет прав на изменение связки тарифного плана'}
         item = AccountTarif.objects.get(id=id)
         form = AccountTariffForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accounttarif'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accounttarif')):
             return {'status':False, 'message': u'У вас нет прав на добавяление связки тарифного плана продажи карт'}
         form = AccountTariffForm(request.POST)
         
@@ -3076,7 +3129,7 @@ def tpchange_save(request):
 def tariffs_set(request):
     
     if  not request.user.is_staff==True:
-        return {'status':False, 'message': u'У вас нет прав на изменение тарифного плана'}
+        return {'status':False, 'message': u'У вас нет прав на создание/изменение тарифного плана'}
 
     
     data = request.POST.get("data", {})
@@ -3119,10 +3172,11 @@ def tariffs_set(request):
                 transaction.rollback()
                 return {'status':False, 'errors': form._errors}
             speeditem_ids.append(speeditem.id)
-        if speeditem_ids:
-            for d in TimeSpeed.objects.filter(access_parameters=access_parameters).exclude(id__in=speeditem_ids):
-                log('DELETE', request.user, d)
-                d.delete()
+
+
+        for d in TimeSpeed.objects.filter(access_parameters=access_parameters).exclude(id__in=speeditem_ids):
+            log('DELETE', request.user, d)
+            d.delete()
                 
     if js.get('model'):
         if js.get('model').get('id'):
@@ -3539,13 +3593,13 @@ def groups_save(request):
     id = request.POST.get('id')
     traffic_classes = request.POST.get('traffic_classes','').split(',')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_group'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_group')):
             return {'status':False, 'message': u'У вас нет прав на изменение группы трафика'}
 
         item = Group.objects.get(id=id)
         form = GroupForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_group'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_group')):
             return {'status':False, 'message': u'У вас нет прав на добавление группы трафика'}
         form = GroupForm(request.POST)
         
@@ -3575,12 +3629,12 @@ def nas_save(request):
     id = request.POST.get('id')
 
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('nas.change_nas'):
+        if  not (request.user.is_staff==True and request.user.has_perm('nas.change_nas')):
             return {'status':False, 'message': u'У вас нет прав на изменение сервера доступа'}
         nas = Nas.objects.get(id=id)
         form = NasForm(request.POST, instance = nas)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('nas.add_nas'):
+        if  not (request.user.is_staff==True and request.user.has_perm('nas.add_nas')):
             return {'status':False, 'message': u'У вас нет прав на добавление сервера доступа'}
         form = NasForm(request.POST)
         
@@ -3599,12 +3653,12 @@ def contracttemplates_set(request):
     id = request.POST.get('id')
 
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_contracttemplate'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_contracttemplate')):
             return {'status':False, 'message': u'У вас нет прав на изменение шаблона номера договора'}
         item = ContractTemplate.objects.get(id=id)
         form = ContractTemplateForm(request.POST, instance = item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_contracttemplate'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_contracttemplate')):
             return {'status':False, 'message': u'У вас нет прав на добавление шаблона номера договора'}
         form = ContractTemplateForm(request.POST)
         
@@ -3620,7 +3674,7 @@ def contracttemplates_set(request):
 @ajax_request
 @login_required
 def contracttemplate_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_contracttemplate'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_contracttemplate')):
         return {'status':False, 'message': u'У вас нет прав на удаление шаблона номера договора'}
     id = int(request.POST.get('id',0))
     if id:
@@ -3638,12 +3692,12 @@ def settlementperiod_save(request):
     id = request.POST.get('id')
 
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_settlementperiod'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_settlementperiod')):
             return {'status':False, 'message': u'У вас нет прав на изменение расчётного периода'}
         item = SettlementPeriod.objects.get(id=id)
         form = SettlementPeriodForm(request.POST, instance = item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_settlementperiod'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_settlementperiod')):
             return {'status':False, 'message': u'У вас нет прав на добавление расчётного периода'}
         form = SettlementPeriodForm(request.POST)
         
@@ -3663,12 +3717,12 @@ def addonservices_set(request):
     data = json.loads(request.POST.get('data', "{}"))
     id = data.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_addonservice'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_addonservice')):
             return {'status':False, 'message': u'У вас нет прав на изменение подключаемой услуги'}
         item = AddonService.objects.get(id=id)
         form = AddonServiceForm(data, instance = item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_addonservice'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_addonservice')):
             return {'status':False, 'message': u'У вас нет прав на изменение подключаемой услуги'}
         form = AddonServiceForm(data)
         
@@ -3684,7 +3738,7 @@ def addonservices_set(request):
 @ajax_request
 @login_required
 def settlementperiod_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_settlementperiod'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_settlementperiod')):
         return {'status':False, 'message': u'У вас нет прав на удаление расчётного периода'}
     id = int(request.POST.get('id',0))
     if id:
@@ -3698,7 +3752,7 @@ def settlementperiod_delete(request):
 @ajax_request
 @login_required
 def addonservices_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_addonservice'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_addonservice')):
         return {'status':False, 'message': u'У вас нет прав на удаление подключаемой услуги'}
     id = int(request.POST.get('id',0))
     if id:
@@ -3714,7 +3768,7 @@ def addonservices_delete(request):
 @ajax_request
 @login_required
 def groups_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_group'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_group')):
         return {'status':False, 'message': u'У вас нет прав на удаление группы трафика'}
     id = int(request.POST.get('id',0))
     if id:
@@ -3729,7 +3783,7 @@ def groups_delete(request):
 @ajax_request
 @login_required
 def tariffs_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_tariff'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_tariff')):
         return {'status':False, 'message': u'У вас нет прав на удаление тарифа'}
     id = int(request.POST.get('id',0))
     if id:
@@ -3752,7 +3806,7 @@ def tariffs_delete(request):
 @ajax_request
 @login_required
 def accounttariffs_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_accounttarif'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_accounttarif')):
         return {'status':False, 'message': u'У вас нет прав на удаление связки тарифа'}
     id = int(request.POST.get('id',0))
     if id:
@@ -3771,7 +3825,7 @@ def accounttariffs_delete(request):
 @ajax_request
 @login_required
 def suspendedperiod_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_suspendedperiod'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_suspendedperiod')):
         return {'status':False, 'message': u'У вас нет прав на удаление периода простоя'}
     id = int(request.POST.get('id',0))
     if id:
@@ -3788,7 +3842,7 @@ def suspendedperiod_delete(request):
 @ajax_request
 @login_required
 def get_tariffs(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('tariff.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     items = Tariff.objects.all_with_deleted().order_by('name')
     res=[]
@@ -3805,20 +3859,25 @@ def get_tariffs(request):
 @login_required
 def accounts_for_tarif(request):
     
-    if  not request.user.is_staff==True and not request.user.has_perm('account.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.account_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     
     tarif_id = int(request.POST.get('tarif_id', -1000))
+    
+
+    items = cache.get(str(tarif_id))
+    if items:
+        return {"records": items, 'status':True, 'totalCount':len(items)}
     
     from django.db import connection
     
     cur = connection.cursor()
     
-
     items = []
     if tarif_id==-3000:
         try:
-            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name,org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address 
+            
+            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address 
             FROM billservice_account AS acc 
             LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
             WHERE acc.deleted is Null and get_tarif(acc.id) is Null ORDER BY acc.username ASC;""")
@@ -3829,8 +3888,10 @@ def accounts_for_tarif(request):
     elif tarif_id==-1000:
 
         try:
-            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tariff, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address
+            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  tariff.name as tariff_name, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
             FROM billservice_account AS acc 
+            LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+            JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
             LEFT JOIN billservice_organization as org ON org.account_id=acc.id
             WHERE acc.deleted is Null 
             ORDER BY acc.username ASC;""" )
@@ -3841,8 +3902,10 @@ def accounts_for_tarif(request):
 
     elif tarif_id==-4000:#Физ лица
         try:
-            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tariff, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address
+            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  tariff.name as tariff_name, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
             FROM billservice_account AS acc 
+            LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+            JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
             LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
             WHERE  acc.deleted is Null and  acc.id not IN (SELECT account_id FROM billservice_organization) ORDER BY acc.username ASC;""" )
             items = dictfetchall(cur)
@@ -3851,8 +3914,10 @@ def accounts_for_tarif(request):
 
     elif tarif_id==-5000:#Юр лица
         try:
-            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tariff, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address
+            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  tariff.name as tariff_name, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
             FROM billservice_account AS acc 
+            LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+            JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
             LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
             WHERE acc.deleted is Null and  acc.id IN (SELECT account_id FROM billservice_organization)  ORDER BY acc.username ASC;""" )
             items = dictfetchall(cur)
@@ -3861,32 +3926,53 @@ def accounts_for_tarif(request):
 
     elif tarif_id==-12000:#Архив
         try:
-            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, (SELECT name FROM billservice_tariff WHERE id=get_tarif(acc.id)) as tariff, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address
+            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,   tariff.name as tariff_name, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
             FROM billservice_account AS acc 
+            LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+            JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
             LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
-            WHERE deleted is not Null  ORDER BY acc.username ASC;""" )
+            WHERE acc.deleted is not Null  ORDER BY acc.username ASC;""" )
             items = dictfetchall(cur)
         except Exception, e:
             return { 'status':False, 'message':str(e)}   
     else:
         
         try:
-            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, acc.last_balance_null, (SELECT name FROM nas_nas where id = acc.nas_id) AS nas_name, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,(SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address
+            cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs, COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
             FROM billservice_account AS acc 
+            JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+            JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
             LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
             WHERE acc.deleted is Null and %s=get_tarif(acc.id)  ORDER BY acc.username ASC;""", (tarif_id,) )
             items = dictfetchall(cur)
         except Exception, e:
             return { 'status':False, 'message':str(e)}   
-        
-    res=[]
+    sps = SettlementPeriod.objects.all().values("id", "time_start", "autostart", "length", "length_in")
+    sps_dict = {}
+    for sp in sps:
+        sps_dict[sp.get("id")] = sp
+    #iterate accounts
+    res = []
+    for item in items:
+        sp = sps_dict.get(item.get("settlement_period_id"))
+        if sp:
+                
+            if sp.get("autostart"):
+                time_start = item.get("accounttarif_datetime")
+            else:
+                time_start = sp.get("time_start")
+            start, end,length = settlement_period_info(time_start, sp.get("length_in"), sp.get("length"))
+            item['sp_end'] = end
+        res.append(item)
 
-    return {"records": items, 'status':True, 'totalCount':len(items)}
+
+    cache.set(str(tarif_id), res, 60)
+    return {"records": res, 'status':True, 'totalCount':len(res)}
     
 @ajax_request
 @login_required
 def get_accounts_for_cashier(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('account.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.cashier_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     
     data = json.loads(request.POST.get("data", "{}"))
@@ -3935,7 +4021,7 @@ def get_accounts_for_cashier(request):
 @ajax_request
 @login_required
 def nas_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('nas.delete_nas'):
+    if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_nas')):
         return {'status':True, 'message': u'У вас нет прав на удаление сервера доступа'}
     id = request.POST.get('id')
     if id:
@@ -3950,7 +4036,7 @@ def nas_delete(request):
 @ajax_request
 @login_required
 def subaccount_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_subaccount'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_subaccount')):
         return {'status':True, 'message': u'У вас нет прав на удаление субаккаунта'}
     id = request.POST.get('id')
     if id:
@@ -3980,7 +4066,7 @@ def subaccount_delete(request):
 @login_required
 def account_delete(request):
     id = request.POST.get('id')
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_account'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_account')):
         return {'status':True, 'message': u'У вас нет прав на удаление аккаунта'}
     if id:
         try:
@@ -4021,7 +4107,7 @@ def document_save(request):
 @ajax_request
 @login_required
 def streets(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('street.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.street_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     city_id = request.POST.get('city_id')
     id = request.POST.get('id')
@@ -4044,12 +4130,12 @@ def streets_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_street'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_street')):
             return {'status':False, 'message':u'У вас нет прав на изменение улицы'}
         item = Street.objects.get(id=id)
         form = StreetForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_street'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_street')):
             return {'status':False, 'message':u'У вас нет прав на добавление улицы'}
         form = StreetForm(request.POST)
         
@@ -4070,7 +4156,7 @@ def streets_set(request):
 @ajax_request
 @login_required
 def streets_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_street'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_street')):
         return {'status':False, 'message':u'У вас нет прав на удаление улицы'}
     id = int(request.POST.get('id',0))
     if id:
@@ -4107,8 +4193,8 @@ def account_save(request):
     newcontract=False
     acc = None
     if id:
-
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_account'):
+        print "change", request.user.has_perm('billservice.change_account')
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_account')):
             transaction.rollback()
             return {'status':False, 'message':u'У вас нет прав на изменение аккаунта'}
         acc = Account.objects.all_with_deleted().get(id=id)
@@ -4119,7 +4205,7 @@ def account_save(request):
             newcontract=True
         a=AccountForm(model, instance=acc)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_account'):
+        if  not (request.user.is_staff==True and  request.user.has_perm('billservice.add_account')):
             transaction.rollback()
             return {'status':False, 'message':u'У вас нет прав на добавление аккаунта'}
             newcontract=True
@@ -4249,6 +4335,7 @@ def account_save(request):
         
         res={"status": False, "errors": a._errors, 'msg':u"Поля с ошибками:"+unicode('\n'.join([u'%s:%s' %(x,a._errors.get(x)) for x in a._errors]))}
     transaction.commit()
+    cache.clear()
     return res
 
 @login_required
@@ -4284,7 +4371,7 @@ def subaccount_save(request):
         
     cc=None
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_subaccount'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_subaccount')):
             transaction.rollback()
             return {'status':False, 'message':u'У вас нет прав на изменение субаккаунта'}
         cc = SubAccount.objects.get(id=id)
@@ -4292,7 +4379,7 @@ def subaccount_save(request):
         a=SubAccountForm(request.POST,instance=cc)
         f=SubAccountForm(request.POST)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_subaccount'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_subaccount')):
             transaction.rollback()
             return {'status':False, 'message':u'У вас нет прав на добавление субаккаунта'}
         a=SubAccountForm(request.POST)
@@ -4463,7 +4550,7 @@ def subaccount_save(request):
 @login_required
 def subaccount_delete(request):
     
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_subaccount'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_subaccount')):
         return {'status':False, 'message':u'У вас нет прав на удаление субаккаунта'}
     id=request.POST.get('id')
     if id:
@@ -4477,7 +4564,7 @@ def subaccount_delete(request):
 @ajax_request
 @login_required
 def getipfrompool(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('ippool.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.ippool_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     default_ip='0.0.0.0'
     if default_ip:
@@ -4523,7 +4610,7 @@ def getipfrompool(request):
 @ajax_request
 @login_required
 def houses(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('house.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.house_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     street_id = request.POST.get('street_id')
     id = request.POST.get('id')
@@ -4547,12 +4634,12 @@ def houses_set(request):
     
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_house'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_house')):
             return {'status':False, 'message': u'У вас нет прав на редактирование домов'}
         item = House.objects.get(id=id)
         form = HouseForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_house'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_house')):
             return {'status':False, 'message': u'У вас нет прав на добавление домов'}
         form = HouseForm(request.POST)
         
@@ -4573,7 +4660,7 @@ def houses_set(request):
 @ajax_request
 @login_required
 def houses_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.delete_house'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_house')):
         return {'status':False, 'message': u'У вас нет прав на удаление домов'}
     id = int(request.POST.get('id',0))
     if id:
@@ -4587,7 +4674,7 @@ def houses_delete(request):
 @ajax_request
 @login_required
 def accountaddonservices(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('accountaddonservice.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountaddonservice_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id')
     subaccount_id = request.POST.get('subaccount_id')
@@ -4617,12 +4704,12 @@ def accountaddonservices_set(request):
     id = request.POST.get('id')
     
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accountaddonservice'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountaddonservice')):
             return {'status':False, 'message': u'У вас нет прав на редактирование связок подключаемых услуг'}
         item = AccountAddonService.objects.get(id=id)
         form = AccountAddonServiceModelForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accountaddonservice'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountaddonservice')):
             return {'status':False, 'message': u'У вас нет прав на добавление связок подключаемых услуг'}
 
         form = AccountAddonServiceModelForm(request.POST)
@@ -4643,13 +4730,13 @@ def accounttariffs_set(request):
     id = request.POST.get('id')
     
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_accounttariff'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accounttariff')):
             return {'status':False, 'message': u'У вас нет прав на редактирование связок тарифных планов'}
 
         item = AccountTarif.objects.get(id=id)
         form = AccountTariffForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accounttariff'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accounttariff')):
             return {'status':False, 'message': u'У вас нет прав на добавление связок тарифных планов'}
         form = AccountTariffForm(request.POST)
         
@@ -4666,7 +4753,7 @@ def accounttariffs_set(request):
 @ajax_request
 @login_required
 def accounttariffs_bathset(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_accounttariff'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accounttariff')):
         return {'status':False, 'message': u'У вас нет прав на добавление связок тарифных планов'}
 
     form = AccountTariffBathForm(request.POST)
@@ -4699,7 +4786,7 @@ def accounttariffs_bathset(request):
 @ajax_request
 @login_required
 def suspendedperiods(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('suspendedperiod.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.suspendedperiod_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     account_id = request.POST.get('account_id')
     id = request.POST.get('id')
@@ -4718,13 +4805,13 @@ def suspendedperiods(request):
 def suspendedperiod_set(request):
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_suspendedperiod'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_suspendedperiod')):
             return {'status':False, 'message': u'У вас нет прав на редактирование периодов без списаний'}
 
         item = SuspendedPeriod.objects.get(id=id)
         form = SuspendedPeriodModelForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_suspendedperiod'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_suspendedperiod')):
             return {'status':False, 'message': u'У вас нет прав на создание периодов без списаний'}
 
         form = SuspendedPeriodModelForm(request.POST)
@@ -4746,7 +4833,7 @@ def suspendedperiod_set(request):
 @ajax_request
 @login_required
 def transaction_set(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_transaction'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_transaction')):
         return {'status':False, 'message': u'У вас нет прав на создание платежей'}
     
     js = json.loads(request.POST.get('data','{}'))
@@ -4771,7 +4858,7 @@ def transaction_set(request):
 @login_required
 @ajax_request
 def transactiontypes(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('transactiontype.view'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.transactiontype_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     id = request.POST.get('id')
     if id:
@@ -4790,12 +4877,12 @@ def transactiontypes(request):
 def transactiontypes_set(request):
     id = request.POST.get('id')
     if id:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.change_transactiontype'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_transactiontype')):
             return {'status':False, 'message': u'У вас нет прав на редактирование типов списаний'}
         item = TransactionType.objects.get(id=id)
         form = TransactionTypeForm(request.POST, instance=item)
     else:
-        if  not request.user.is_staff==True and not request.user.has_perm('billservice.add_transactiontype'):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_transactiontype')):
             return {'status':False, 'message': u'У вас нет прав на создание типов списаний'}
         form = TransactionTypeForm(request.POST)
         
@@ -4816,7 +4903,7 @@ def transactiontypes_set(request):
 @ajax_request
 @login_required
 def actions_set(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.actions_set'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.actions_set')):
         return {'status':False, 'message': u'У вас нет прав на управление состоянием субаккаунтов'}
     subaccount = request.POST.get('subaccount_id')
     action = request.POST.get('action')
@@ -4892,7 +4979,7 @@ def actions_set(request):
 @ajax_request
 @login_required 
 def documentrender(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.documentrender'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.documentrender')):
         return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
     form = DocumentRenderForm(request.POST)
     if form.is_valid():
@@ -4930,7 +5017,7 @@ def documentrender(request):
 @ajax_request
 @login_required 
 def cheque_render(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.documentrender'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.documentrender')):
         return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
     id = request.POST.get('id')#transaction_id
     transaction = Transaction.objects.get(id=id)
@@ -4963,7 +5050,7 @@ def cheque_render(request):
 @login_required 
 @ajax_request
 def testCredentials(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.testcredentials'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.testcredentials')):
         return {'status':False, 'message': u'У вас нет на тестирование подключения'}
     host, login, password = request.POST.get('host'),request.POST.get('login'),request.POST.get('password')
     try:
@@ -4977,7 +5064,7 @@ def testCredentials(request):
 @login_required 
 @ajax_request
 def get_ports_status(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.getportsstatus'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.getportsstatus')):
         return {'status':False, 'message': u'У вас нет прав на получение статуса портов'}
     switch_id = request.POST.get('switch_id')
     if not switch_id: 
@@ -5022,7 +5109,7 @@ def get_ports_status(request):
 @login_required 
 @ajax_request
 def set_ports_status(self, switch_id):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.setportsstatus'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.setportsstatus')):
         return {'status':False, 'message': u'У вас нет на установку статуса портов'}
     switch_id = request.POST.get('switch_id')
     if not switch_id: 
@@ -5070,7 +5157,7 @@ def set_ports_status(self, switch_id):
 @login_required 
 @ajax_request
 def list_logfiles(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.list_log_files'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.list_log_files')):
         return {'status':False, 'message': u'У вас нет на получение списка лог-файлов'}
     
     logfiles = os.listdir('/opt/ebs/data/log/')
@@ -5079,7 +5166,7 @@ def list_logfiles(request):
 @login_required 
 @ajax_request
 def get_tail_log(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.view_log_files'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.view_log_files')):
         return {'status':False, 'message': u'У вас нет на получение списка лог-файлов'}
     log_name = request.POST.get("log_name")
     count =  request.POST.get("log_count", 0)
@@ -5097,7 +5184,7 @@ def get_tail_log(request):
 @ajax_request
 @login_required
 def transactions_delete(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.transactions_delete'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.transactions_delete')):
         return {'status':False, 'message':u'У вас недостатчно прав для удаления проводок'}
     js = json.loads(request.POST.get('data','{}'))
     if js:
@@ -5109,7 +5196,7 @@ def transactions_delete(request):
 @ajax_request
 @login_required
 def sp_info(request):
-    if  not request.user.is_staff==True and not request.user.has_perm('systemuser.sp_info'):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.sp_info')):
         return {'status':False, 'message': u'У вас нет прав на выполнение этой функции'}
     
     js = json.loads(request.POST.get('data','{}'))

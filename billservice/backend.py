@@ -29,9 +29,9 @@ def check_password(obj, row_password):
         return unicode(obj.password) == unicode(row_password)
     else:
         log.debug('SystemUser obj found, try to compare %s == %s' % (obj.text_password, row_password))
-        return unicode(obj.text_password) == unicode(row_password) and obj.role in [0,3] #if password is correct and user role admin or member of support team
+        return unicode(obj.text_password) == unicode(row_password) #if password is correct and user role admin or member of support team
 
-class LoginUserBackend(object):
+class LoginUserBackend(ModelBackend):
     
     def authenticate(self, username=None, password=None):
         log.debug("auth called with args: %r"%locals())

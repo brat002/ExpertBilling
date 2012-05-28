@@ -133,7 +133,7 @@ class TimePeriodNode(models.Model):
         verbose_name = u"Нода временного периода"
         verbose_name_plural = u"Ноды временных периодов"
         permissions = (
-            ("view", u"Просмотр нод временных периодов"),
+            ("timeperiodnode_view", u"Просмотр нод временных периодов"),
             )
 
 class TimePeriod(models.Model):
@@ -158,7 +158,7 @@ class TimePeriod(models.Model):
         verbose_name = u"Временной период"
         verbose_name_plural = u"Временные периоды"
         permissions = (
-            ("view", u"Просмотр временных периодов"),
+            ("timeperiod_view", u"Просмотр временных периодов"),
             )
 
 
@@ -185,7 +185,7 @@ class SettlementPeriod(models.Model):
         verbose_name = u"Расчетный период"
         verbose_name_plural = u"Расчетные периоды"
         permissions = (
-            ("view", u"Просмотр расчётных периодов"),
+            ("settlementperiod_view", u"Просмотр расчётных периодов"),
             )
         
 class PeriodicalService(models.Model):
@@ -216,7 +216,7 @@ class PeriodicalService(models.Model):
         verbose_name = u"Периодическая услуга"
         verbose_name_plural = u"Периодические услуги"
         permissions = (
-            ("view", u"Просмотр периодических услуг"),
+            ("periodicalservice_view", u"Просмотр периодических услуг"),
             )
         
 class PeriodicalServiceHistory(models.Model):
@@ -240,7 +240,10 @@ class PeriodicalServiceHistory(models.Model):
         ordering = ['-created']
         verbose_name = u"История по пер. услугам"
         verbose_name_plural = u"История по пер. услугам"
-
+        permissions = (
+            ("periodicalservicehistory_view", u"Просмотр списаний"),
+            )
+        
 class OneTimeService(models.Model):
     """
     Справочник разовых услуг
@@ -263,7 +266,7 @@ class OneTimeService(models.Model):
         verbose_name = u"Разовая услуга"
         verbose_name_plural = u"Разовые услуги"
         permissions = (
-            ("view", u"Просмотр разовых услуг"),
+            ("onetimeservice_view", u"Просмотр услуг"),
             )
 class OneTimeServiceHistory(models.Model):
     onetimeservice = models.ForeignKey(OneTimeService, null=True, on_delete=models.SET_NULL)
@@ -274,7 +277,12 @@ class OneTimeServiceHistory(models.Model):
     
     class Meta:
         ordering = ['-created']
-
+        verbose_name = u"Списание по разовым услугам"
+        verbose_name_plural = u"Списания по разовым услугам"
+        permissions = (
+            ("onetimeservicehistory_view", u"Просмотр услуг"),
+            )
+        
 class TimeAccessService(models.Model):
     """
     Доступ с тарификацией по времени
@@ -297,7 +305,7 @@ class TimeAccessService(models.Model):
         verbose_name = u"Доступ с учётом времени"
         verbose_name_plural = u"Доступ с учётом времени"
         permissions = (
-            ("view", u"Просмотр услуг доступа по времени"),
+            ("timeaccessservice_view", u"Просмотр услуг доступа по времени"),
             )
         
 class TimeAccessNode(models.Model):
@@ -320,8 +328,9 @@ class TimeAccessNode(models.Model):
         verbose_name = u"Период доступа"
         verbose_name_plural = u"Периоды доступа"
         permissions = (
-            ("view", u"Просмотр нод доступа по времени"),
+            ("timeacessnode_view", u"Просмотр"),
             )
+        
 class AccessParameters(models.Model):
     #name              = models.CharField(max_length=255, verbose_name=u'Название вида доступа')
     access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, default='PPTP', blank=True, verbose_name=u'Вид доступа')
@@ -348,7 +357,7 @@ class AccessParameters(models.Model):
         verbose_name = u"Параметры доступа"
         verbose_name_plural = u"Параметры доступа"
         permissions = (
-            ("view", u"Просмотр параметров доступа"),
+            ("accessparameters_view", u"Просмотр параметров доступа"),
             )
         
 class TimeSpeed(models.Model):
@@ -372,10 +381,10 @@ class TimeSpeed(models.Model):
         pass
 
     class Meta:
-        verbose_name = u"настройка скорости"
+        verbose_name = u"Настройка скорости"
         verbose_name_plural = u"Настройки скорости"
         permissions = (
-            ("view", u"Просмотр времени изменения скорости"),
+            ("timespeed_view", u"Просмотр"),
             )
         
 class PrepaidTraffic(models.Model):
@@ -398,7 +407,7 @@ class PrepaidTraffic(models.Model):
         verbose_name = u"Предоплаченный трафик"
         verbose_name_plural = u"Предоплаченный трафик"
         permissions = (
-            ("view", u"Просмотр редопл. трафика"),
+            ("prepaidtraffic_view", u"Просмотр"),
             )
 
 class TrafficTransmitService(models.Model):
@@ -420,8 +429,9 @@ class TrafficTransmitService(models.Model):
         verbose_name = u"Доступ с учётом трафика"
         verbose_name_plural = u"Доступ с учётом трафика"
         permissions = (
-            ("view", u"Просмотр услуги тарификации NetFlow"),
+            ("traffictransmitservice_view", u"Просмотр"),
             )
+        
 class TrafficTransmitNodes(models.Model):
     traffic_transmit_service = models.ForeignKey(to=TrafficTransmitService, verbose_name=u"Услуга доступа по трафику", related_name="traffic_transmit_nodes")
     #traffic_class     = models.ManyToManyField(to=TrafficClass, verbose_name=u'Классы трафика')
@@ -442,10 +452,10 @@ class TrafficTransmitNodes(models.Model):
 
 
     class Meta:
-        verbose_name = u"цена за направление"
+        verbose_name = u"Цена за направление"
         verbose_name_plural = u"Цены за направления трафика"
         permissions = (
-           ("view", u"Просмотр составляющих услуги тарификации NetFlow"),
+           ("traffictransmitnodes_view", u"Просмотр"),
             )
 
 class AccountPrepaysTrafic(models.Model):
@@ -472,7 +482,7 @@ class AccountPrepaysTrafic(models.Model):
         verbose_name = u"Предоплаченый трафик"
         verbose_name_plural = u"Предоплаченный трафик"
         permissions = (
-           ("view", u"Просмотр предоплаченного трафика по NetFlow"),
+           ("account_prepaystraffic_view", u"Просмотр"),
             )
         
 class AccountPrepaysRadiusTrafic(models.Model):
@@ -502,7 +512,7 @@ class AccountPrepaysRadiusTrafic(models.Model):
         verbose_name_plural = u"Предоплаченный radius трафик"
 
         permissions = (
-           ("view", u"Просмотр предоплаченного трафика по RADIUS"),
+           ("accountprepaysradiustraffic_view", u"Просмотр"),
             )
 
 
@@ -522,7 +532,7 @@ class AccountPrepaysTime(models.Model):
         verbose_name = u"Предоплаченное время пользователя"
         verbose_name_plural = u"Предоплаченное время пользователей"
         permissions = (
-           ("view", u"Просмотр предоплаченного времени"),
+           ("accountprepaystime_view", u"Просмотр"),
             )
         
 class TrafficLimit(models.Model):
@@ -543,10 +553,10 @@ class TrafficLimit(models.Model):
 
     class Meta:
         ordering = ['name']
-        verbose_name = u"лимит трафика"
+        verbose_name = u"Лимит трафика"
         verbose_name_plural = u"Лимиты трафика"
         permissions = (
-           ("view", u"Просмотр лимитов трафика"),
+           ("trafficlimit_view", u"Просмотр"),
             )
         
 class Tariff(models.Model):
@@ -589,7 +599,7 @@ class Tariff(models.Model):
         verbose_name = u"Тариф"
         verbose_name_plural = u"Тарифы"
         permissions = (
-           ("view", u"Просмотр тарифного плана"),
+           ("tariff_view", u"Просмотр"),
             )
         
     def delete(self):
@@ -609,7 +619,10 @@ ACCOUNT_STATUS = (
                   (NOT_ACTIVE_WRITING_OFF, u'Неактивен, списывать периодические услуги'),
                   )
 
-
+class PeriodicalServiceTariff(models.Model):
+    tariff = models.ForeignKey(Tariff, on_delete = models.CASCADE) 
+    periodicalservice = models.ForeignKey(PeriodicalService, on_delete = models.CASCADE)
+    
 class Account(models.Model):
     """
     Если стоят галочки assign_vpn_ip_from_dhcp или assign_ipn_ip_from_dhcp,
@@ -713,16 +726,17 @@ class Account(models.Model):
         #list_display = ('user', 'vpn_ip_address', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')
         #list_filter = ('username')
 
-    def __str__(self):
-        return '%s' % self.id
+    def __unicode__(self):
+        return '%s' % self.username
 
     class Meta:
         ordering = ['username']
         verbose_name = u"Аккаунт"
         verbose_name_plural = u"Аккаунты"
         permissions = (
-           ("view", u"Просмотр аккаунта"),
+           ("account_view", u"Просмотр"),
            ("get_tariff", u"Получить тариф для аккаунта"),
+           ("cashier_view", u"Список аккаунтов для кассира")
             )
         
     def _ips(self):
@@ -789,7 +803,7 @@ class Organization(models.Model):
 
     class Meta:
         permissions = (
-           ("view", u"Просмотр организации"),
+           ("organization_view", u"Просмотр организации"),
             )
 
 class TransactionType(models.Model):
@@ -809,7 +823,7 @@ class TransactionType(models.Model):
         verbose_name = u"Тип проводки"
         verbose_name_plural = u"Типы проводок"
         permissions = (
-           ("view", u"Просмотр типа списания"),
+           ("transactiontype_view", u"Просмотр"),
             )
 #===============================================================================
 
@@ -842,7 +856,7 @@ class Transaction(models.Model):
         verbose_name = u"Проводка"
         verbose_name_plural = u"Проводки"
         permissions = (
-           ("view", u"Просмотр списания"),
+           ("transaction_view", u"Просмотр"),
             )
         
     def human_sum(self):
@@ -865,10 +879,10 @@ class AccountTarif(models.Model):
 
     class Meta:
         ordering = ['-datetime']
-        verbose_name = u"привязка"
-        verbose_name_plural = u"Привязки аккаунтов к тарифам"
+        verbose_name = u"Тариф аккаунта"
+        verbose_name_plural = u"Тариф аккаунта"
         permissions = (
-           ("view", u"Просмотр связки  аккаунта и тарифа"),
+           ("accounttarif_view", u"Просмотр"),
             )
         
 class AccountIPNSpeed(models.Model):
@@ -889,69 +903,9 @@ class AccountIPNSpeed(models.Model):
           pass
 
       class Meta:
-        verbose_name = u"скорости IPN клиентов"
+        verbose_name = u"Скорость IPN клиента"
         verbose_name_plural = u"Скорости IPN клиентов"
 
-
-#===============================================================================
-# class RawNetFlowStream(models.Model):
-#    nas = models.ForeignKey(Nas)
-#    date_start = models.DateTimeField(auto_now_add=True, default='')
-#    src_addr = models.IPAddressField()
-#    traffic_class = models.ForeignKey(to=TrafficClass, related_name='rawnetflow_class', verbose_name=u'Направление трафика', blank=True, null=True)
-#    direction = models.CharField(verbose_name=u"Тип трафика", choices=DIRECTIONS_LIST, max_length=32)
-#    dst_addr = models.IPAddressField()
-#    next_hop = models.IPAddressField()
-#    in_index = models.IntegerField()
-#    out_index = models.IntegerField()
-#    packets = models.IntegerField()
-#    octets = models.IntegerField()
-#    src_port = models.IntegerField()
-#    dst_port = models.IntegerField()
-#    tcp_flags = models.IntegerField()
-#    protocol = models.IntegerField()
-#    tos = models.IntegerField()
-#    source_as = models.IntegerField()
-#    dst_as =  models.IntegerField()
-#    src_netmask_length = models.IntegerField()
-#    dst_netmask_length = models.IntegerField()
-#    fetched=models.BooleanField(blank=True, default=False)
-# 
-#    class Admin:
-#        ordering = ['-date_start']
-#        list_display = ('nas', 'traffic_class','date_start','src_addr','dst_addr','next_hop','src_port','dst_port','octets')
-# 
-#    class Meta:
-#        verbose_name = u"Сырая NetFlow статистика"
-#        verbose_name_plural = u"Сырая NetFlow статистика"
-# 
-#    def __unicode__(self):
-#        return u"%s" % self.nas
-#    
-#    def get_protocol(self):
-#        print 
-#===============================================================================
-
-class NetFlowStream(models.Model):
-    nas = models.ForeignKey(Nas, blank=True, null=True)
-    account=models.ForeignKey(Account, related_name='account_netflow')
-    tarif = models.ForeignKey(Tariff, related_name='tarif_netflow')
-    date_start = models.DateTimeField(auto_now_add=True)
-    src_addr = models.IPAddressField()
-    #traffic_class = models.ForeignKey(to=TrafficClass, related_name='netflow_class', verbose_name=u'Класс трафика', blank=True, null=True)
-    direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
-    traffic_transmit_node = models.ForeignKey(to=TrafficTransmitNodes, blank=True, null=True, editable=False)
-    dst_addr = models.IPAddressField()
-    octets = models.IntegerField()
-    src_port = models.IntegerField()
-    dst_port = models.IntegerField()
-    protocol = models.IntegerField()
-    checkouted = models.BooleanField(blank=True, default=False)
-    for_checkout = models.BooleanField(blank=True, default=False)
-
-
-    class Admin:
-        abstract = True
 
 class SheduleLog(models.Model):
     account = models.ForeignKey(to=Account, unique=True)
@@ -966,34 +920,12 @@ class SheduleLog(models.Model):
         pass
 
     class Meta:
-        verbose_name = u"Периодическая операция"
-        verbose_name_plural = u"Периодиеские операции"
+        verbose_name = u"История периодических операций"
+        verbose_name_plural = u"История периодических операций"
 
 
-    
-"""
-    Для SystemGroup есть 3 предопределенные группы
-    ADMINISTRATORS - высший приоритет, видит тикеты суппорта и техников
-    SUPPORT - средний преоритет, видит тикеты техников
-    TECHNICS - минимальный приоритет, видит только свои тикеты
-"""
-
-class SystemGroup(models.Model):
-    
-    name = models.CharField(max_length=255)
-    system = models.BooleanField(blank=True, default=False)
-    system_name = models.CharField(max_length=255, blank=True, null=True)
-    
     def __unicode__(self):
-        return u'%s' %self.name
-    
-    def get_users(self):
-        return SystemUser.objects.filter(group=self)
-    
-    def get_tickets(self):
-        from helpdesk.models import Ticket
-        ctype = ContentType.objects.get_for_model(self)
-        return Ticket.objects.filter(content_type=ctype, object_id=self.id, archived=False)
+        return u'%s' % self.account.username
     
 class SystemUser(models.Model):
     username = models.CharField(max_length=255, unique=True)
@@ -1011,7 +943,6 @@ class SystemUser(models.Model):
     status = models.BooleanField(default=False)
     host = models.CharField(max_length=255, blank=True, null=True, default="0.0.0.0/0")
     #group = models.ManyToManyField(SystemGroup)
-    role = models.IntegerField(default=100)
     text_password = models.CharField(max_length=255)
     email = models.EmailField(blank=True, null=True)
     passport  = models.CharField(max_length=512, blank=True, default ='')
@@ -1035,8 +966,10 @@ class SystemUser(models.Model):
     
     class Meta:
         ordering = ['username']
+        verbose_name = u"Пользователь системы"
+        verbose_name_plural = u"Пользователи системы"
         permissions = (
-           ("view", u"Просмотр администраторов"),
+           ("systemuser_view", u"Просмотр администраторов"),
             ("get_model", "Получение любой модели методом get_model"),
             ("actions_set", "Установка IPN статуса на сервере доступаl"),
             ("documentrender", "Серверный рендеринг документов"),
@@ -1047,6 +980,8 @@ class SystemUser(models.Model):
             ("view_log_files","Просмотр лог-файлов биллинга"),
             ("transactions_delete","Удаление проводок"),
             ("sp_info","Метод sp_info"),
+            ("auth_groups", "Просмотр груп доступа"),
+            ("rawsqlexecution", "Выполнение любого sql запроса")
             
             )
 
@@ -1061,8 +996,10 @@ class TemplateType(models.Model):
         
     class Meta:
         ordering = ['id']
+        verbose_name = u"Тип шаблона"
+        verbose_name_plural = u"Типы шаблонов"
         permissions = (
-           ("view", u"Просмотр типов шаблонов"),
+           ("templatetype_view", u"Просмотр"),
            )
 class Template(models.Model):
     name = models.CharField(max_length=255)
@@ -1074,8 +1011,10 @@ class Template(models.Model):
     
     class Meta:
         ordering = ['type']
+        verbose_name = u"Шаблон"
+        verbose_name_plural = u"Шаблоны"
         permissions = (
-           ("view", u"Просмотр шаблонов"),
+           ("template_view", u"Просмотр"),
            )
 class Card(models.Model):
     series = models.IntegerField()
@@ -1096,11 +1035,14 @@ class Card(models.Model):
     ip = models.CharField(max_length=20,blank=True, default='')
     ipinuse = models.ForeignKey("IPInUse", blank=True, null=True)
     ippool = models.ForeignKey("IPPool", blank=True, null=True)
+    ext_id = models.CharField(max_length=512)
     
     class Meta:
         ordering = ['-series', '-created', 'activated']
+        verbose_name = u"Карта"
+        verbose_name_plural = u"Карты"
         permissions = (
-           ("view", u"Просмотр карт"),
+           ("card_view", u"Просмотр карт"),
            )
 class BankData(models.Model):
     bank = models.CharField(max_length=255)
@@ -1113,6 +1055,8 @@ class BankData(models.Model):
     
     class Meta:
         ordering = ['bank']
+        verbose_name = u"Банк"
+        verbose_name_plural = u"Банки"
         permissions = (
            ("view", u"Просмотр банков"),
            )
@@ -1132,8 +1076,10 @@ class Operator(models.Model):
 
     class Meta:
         ordering = ['bank']
+        verbose_name = u"Информация о провайдере"
+        verbose_name_plural = u"Информация о провайдере"
         permissions = (
-           ("view", u"Просмотр информации о провайдере"),
+           ("operator_view", u"Просмотр"),
            )
 
 class Dealer(models.Model):
@@ -1158,8 +1104,10 @@ class Dealer(models.Model):
     
     class Meta:
         ordering = ['organization']
+        verbose_name = u"Дилер"
+        verbose_name_plural = u"Дилеры"
         permissions = (
-           ("view", u"Просмотр дилера"),
+           ("dealer_view", u"Просмотр"),
            )
         
     def delete(self):
@@ -1182,8 +1130,10 @@ class SaleCard(models.Model):
     
     class Meta:
         ordering = ['-created']
+        verbose_name = u"Накладная на карты"
+        verbose_name_plural = u"накладные на карты"
         permissions = (
-           ("view", u"Просмотр продаж карт дилеру"),
+           ("salecard_view", u"Просмотр"),
            )
         
 class DealerPay(models.Model):
@@ -1194,8 +1144,10 @@ class DealerPay(models.Model):
 
     class Meta:
         ordering = ['-created']
+        verbose_name = u"Платёж дилера"
+        verbose_name_plural = u"Платежи дилера"
         permissions = (
-           ("view", u"Просмотр платежей дилера"),
+           ("dealerpay_view", u"Просмотр"),
            )
         
 class Document(models.Model):
@@ -1218,8 +1170,10 @@ class SuspendedPeriod(models.Model):
     
     class Meta:
         ordering = ['-start_date']
+        verbose_name = u"Период без списаний"
+        verbose_name_plural = u"Периоды без списаний"
         permissions = (
-           ("view", u"Просмотр периодов без списаний"),
+           ("suspendedperiod_view", u"Просмотр"),
            )
 class Group(models.Model):
     #make it an array
@@ -1236,8 +1190,10 @@ class Group(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = u"Группа трафика"
+        verbose_name_plural = u"Группы трафика"
         permissions = (
-           ("view", u"Просмотр групп трафика"),
+           ("group_view", u"Просмотр"),
            )
         
 class GroupTrafficClass(models.Model):
@@ -1290,17 +1246,30 @@ class IPPool(models.Model):
     
     class Meta:
         ordering = ['name']
+        verbose_name = u"IP пул"
+        verbose_name_plural = u"IP пулы"
         permissions = (
-           ("view", u"Просмотр IP пулов"),
+           ("ippool_view", u"Просмотр"),
            )
-        
+    def __unicode__(self):
+        return u"%s-%s" % (self.start_ip, self.end_ip)
+    
 class IPInUse(models.Model):
     pool = models.ForeignKey(IPPool)
     ip = models.CharField(max_length=255)
     datetime = models.DateTimeField()
     disabled = models.DateTimeField(blank=True, null=True)
     dynamic = models.BooleanField(default=False)
-    
+
+    class Meta:
+        ordering = ['ip']
+        verbose_name = u"Занятый IP адрес"
+        verbose_name_plural =  u"Занятые IP адреса"
+        permissions = (
+           ("ipinuse_view", u"Просмотр"),
+           )
+    def __unicode__(self):
+        return u"%s" % self.ip
 
 class TrafficTransaction(models.Model):
     traffictransmitservice = models.ForeignKey(TrafficTransmitService, null=True, on_delete=models.SET_NULL) # ON DELETE SET NULL
@@ -1311,7 +1280,12 @@ class TrafficTransaction(models.Model):
     
     class Meta:
         ordering = ['-created']
-    
+        verbose_name = u"Списание за трафик"
+        verbose_name_plural = u"Списания за трафик"
+        permissions = (
+           ("traffictransaction_view", u"Просмотр"),
+           )
+        
 class TPChangeRule(models.Model):
     from_tariff = models.ForeignKey(Tariff, related_name="from_tariff")
     to_tariff = models.ForeignKey(Tariff, related_name="to_tariff")
@@ -1323,8 +1297,10 @@ class TPChangeRule(models.Model):
     
     class Meta:
         ordering = ['from_tariff', 'to_tariff']
+        verbose_name = u"Правило смены тарифов"
+        verbose_name_plural = u"Правила смены тарифов"
         permissions = (
-           ("view", u"Просмотр правил изменения тарифов"),
+           ("tpchangerule_view", u"Просмотр"),
            )
         
 class RadiusAttrs(models.Model):
@@ -1336,8 +1312,10 @@ class RadiusAttrs(models.Model):
      
     class Meta:
         ordering = ['vendor', 'attrid']
+        verbose_name = u"Custom RADIUS атрибут"
+        verbose_name_plural = u"Custom RADIUS атрибуты"
         permissions = (
-           ("view", u"Просмотр RADIUS аттрибутов"),
+           ("radiusattrs_view", u"Просмотр"),
            )
         
 class AddonService(models.Model):    
@@ -1378,8 +1356,10 @@ class AddonService(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = u"Подключаемая услуга"
+        verbose_name_plural = u"Подключаемые услуги"
         permissions = (
-           ("view", u"Просмотр подключаемых услуг"),
+           ("addonservice_view", u"Просмотр"),
            )
         
 class AddonServiceTarif(models.Model):    
@@ -1391,8 +1371,10 @@ class AddonServiceTarif(models.Model):
     
     class Meta:
         ordering = ['id']
+        verbose_name = u"Разрешённая подключаемая услуга"
+        verbose_name_plural = u"Разрешённые подключаемые услуги"
         permissions = (
-           ("view", u"Просмотр подкл. услуг в тарифе"),
+           ("addonservicetarif_view", u"Просмотр"),
            )
         
 class AccountAddonService(models.Model):    
@@ -1408,8 +1390,10 @@ class AccountAddonService(models.Model):
 
     class Meta:
         ordering = ['-activated', '-deactivated']
+        verbose_name = u"Подключённая услуга"
+        verbose_name_plural = u"Подключённые услуги"
         permissions = (
-           ("view", u"Просмотр связок подкл. услуг"),
+           ("accountaddonservice_view", u"Просмотр"),
            )
         
 class AddonServiceTransaction(models.Model):
@@ -1424,20 +1408,12 @@ class AddonServiceTransaction(models.Model):
     
     class Meta:
         ordering = ['-created']
-        
-#===============================================================================
-# class AccountAttributes(models.Model):
-#    name = models.CharField(max_length=100)
-#    internal_name = models.SlugField(max_length=32 )
-#    type = models.CharField(max_length=20)#date, text, int, bool
-#    ordering = models.IntegerField()
-#    user_created = models.BooleanField()
-#    
-# class AccountAttributesData(models.Model):
-#    account = models.ForeignKey(Account)
-#    attribute = models.ForeignKey(AccountAttributes)
-#    value = models.CharField(max_length=1024)
-#===============================================================================
+        verbose_name = u"Списание по подключаемой услуге"
+        verbose_name_plural = u"Списания по подключаемым услугам"
+        permissions = (
+           ("accountaddonservicetransaction_view", u"Просмотр"),
+           )
+
     
 class News(models.Model):
     body = models.TextField(u'Заголовок новости')
@@ -1449,8 +1425,10 @@ class News(models.Model):
     
     class Meta:
         ordering = ['-created']
+        verbose_name = u"Новость"
+        verbose_name_plural = u"Новости"
         permissions = (
-           ("view", u"Просмотр сообщений абонентам"),
+           ("news_view", u"Просмотр"),
            )
         
 class AccountViewedNews(models.Model):
@@ -1460,14 +1438,7 @@ class AccountViewedNews(models.Model):
 
         
     
-class Log(models.Model):
-    systemuser = models.ForeignKey(SystemUser)
-    text = models.TextField()
-    created = models.DateTimeField()
-    
-    class Meta:
-        ordering = ['-created']
-        
+       
 class SubAccount(models.Model):
     account = models.ForeignKey(Account, related_name='subaccounts')
     username = models.CharField(max_length=512, blank=True)
@@ -1514,9 +1485,11 @@ class SubAccount(models.Model):
 
     class Meta:
         ordering = ['-username']
+        verbose_name = u"Субаккаунт"
+        verbose_name_plural = u"Субаккаунт"
         permissions = (
-            ("view", "Can view subaccounts"),
-            ("getmacforip", "Get mac address by ip address"),
+            ("subaccount_view", "Просмотр"),
+            ("getmacforip", "Получение mac адреса по IP"),
             )
         
 class BalanceHistory(models.Model):
@@ -1526,7 +1499,11 @@ class BalanceHistory(models.Model):
     
     class Meta:
         ordering = ['-datetime']
-        
+        verbose_name = u"История изменения баланса"
+        verbose_name_plural =  u"История изменения баланса"
+        permissions = (
+            ("balancehistory_view", "Просмотр"),
+            )
     
 class City(models.Model):
     name = models.CharField(max_length=320)
@@ -1536,8 +1513,10 @@ class City(models.Model):
     
     class Meta:
         ordering = ['name']
+        verbose_name = u"Город"
+        verbose_name_plural =  u"Города"
         permissions = (
-           ("view", u"Просмотр городов"),
+           ("city_view", u"Просмотр"),
            )
         
 class Street(models.Model):
@@ -1549,8 +1528,10 @@ class Street(models.Model):
     
     class Meta:
         ordering = ['name']
+        verbose_name = u"Улица"
+        verbose_name_plural =  u"Улицы"
         permissions = (
-           ("view", u"Просмотр улиц"),
+           ("street_view", u"Просмотр"),
            )
         
 class House(models.Model):
@@ -1561,8 +1542,10 @@ class House(models.Model):
     
     class Meta:
         ordering = ['name']
+        verbose_name = u"Дом"
+        verbose_name_plural =  u"Дома"
         permissions = (
-           ("view", u"Просмотр домов"),
+           ("house_view", u"Просмотр"),
            )
         
 class RadiusTraffic(models.Model):
@@ -1576,9 +1559,12 @@ class RadiusTraffic(models.Model):
     deleted = models.DateTimeField(blank=True, null=True)
 
     class Meta:
+        verbose_name = u"Услуга тарификации RADIUS трафика"
+        verbose_name_plural = u"Услуги тарификации RADIUS трафика"
         permissions = (
-           ("view", u"Просмотр услуги тарификации RADIUS трафика"),
+           ("radiustraffic_view", u"Просмотр"),
            )
+        
 class RadiusTrafficNode(models.Model):
     radiustraffic = models.ForeignKey(RadiusTraffic)
     value = models.DecimalField(max_digits=30, decimal_places=20)
@@ -1586,8 +1572,10 @@ class RadiusTrafficNode(models.Model):
     cost = models.DecimalField(max_digits=30, decimal_places=20)
     class Meta:
         ordering = ['value']
+        verbose_name = u"Настройка тарификации RADIUS трафика"
+        verbose_name_plural = u"Настройка тарификации RADIUS трафика"
         permissions = (
-           ("view", u"Просмотр составляющих тарификации RADIUS трафика"),
+           ("radiustrafficnode_view", u"Просмотр"),
            )
         
 class ContractTemplate(models.Model):
@@ -1595,9 +1583,12 @@ class ContractTemplate(models.Model):
     counter = models.IntegerField()
     class Meta:
         ordering = ['template']
+        verbose_name =u"Шаблон номера договора"
+        verbose_name_plural =u"Шаблоны номеров договоров"
         permissions = (
-           ("view", u"Просмотр шаблонов номеров договоров"),
+           ("contracttemplate_view", u"Просмотр"),
            )
+        
 class Manufacturer(models.Model):
     name = models.TextField()
 
@@ -1606,9 +1597,12 @@ class Manufacturer(models.Model):
     
     class Meta:
         ordering = ['name']
+        verbose_name =u"Производитель"
+        verbose_name_plural =u"Производители"
         permissions = (
-           ("view", u"Просмотр производителей"),
+           ("manufacturer_view", u"Просмотр"),
            )
+        
 class HardwareType(models.Model):
     name = models.TextField()
     
@@ -1616,8 +1610,10 @@ class HardwareType(models.Model):
         return u'%s' % self.name
     class Meta:
         ordering = ['name']
+        verbose_name =u"Тип оборудования"
+        verbose_name_plural =u"Типы оборудования"
         permissions = (
-           ("view", u"Просмотр типов оборудования"),
+           ("hardwaretype_view", u"Просмотр"),
            )
         
 class Model(models.Model):
@@ -1629,8 +1625,10 @@ class Model(models.Model):
         return u'%s/%s/%s' % (self.hardwaretype, self.manufacturer, self.name)
     class Meta:
         ordering = ['name']
+        verbose_name =u"Модель оборудования"
+        verbose_name_plural =u"Модель оборудования"
         permissions = (
-           ("view", u"Просмотр моделей оборудования"),
+           ("model_view", u"Просмотр"),
            )
         
 class Hardware(models.Model):
@@ -1650,8 +1648,10 @@ class Hardware(models.Model):
         return u'%s' % self.name
     class Meta:
         ordering = ['name']
+        verbose_name =u"Устройство"
+        verbose_name_plural =u"Устройства"
         permissions = (
-           ("view", u"Просмотр оборудования"),
+           ("hardware_view", u"Просмотр"),
            )
         
 class AccountHardware(models.Model):
@@ -1663,8 +1663,10 @@ class AccountHardware(models.Model):
 
     class Meta:
         ordering = ['datetime']
+        verbose_name =u"Устройство у абонента"
+        verbose_name_plural =u"Устройства у абонентов"
         permissions = (
-           ("view", u"Просмотр связок оборудования"),
+           ("accounthardware_view", u"Просмотр"),
            )
 
 class TotalTransactionReport(models.Model):
@@ -1693,4 +1695,3 @@ class PeriodicalServiceLog(models.Model):
       
     class Meta:
         ordering = ['-datetime']
-          
