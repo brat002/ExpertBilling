@@ -1,18 +1,127 @@
-SET search_path = public, pg_catalog;
-
 SELECT pg_catalog.setval('auth_group_id_seq', 4, true);
+
 
 SELECT pg_catalog.setval('auth_group_permissions_id_seq', 2575, true);
 
+
 SELECT pg_catalog.setval('auth_permission_id_seq', 825, true);
+
+
+SELECT pg_catalog.setval('django_content_type_id_seq', 105, true);
 
 DELETE FROM auth_group_permissions CASCADE;
 DELETE FROM auth_group CASCADE;
 DELETE FROM auth_permission CASCADE;
+DELETE FROM django_content_type CASCADE;
 
 INSERT INTO auth_group VALUES (3, 'Менеджеры');
 INSERT INTO auth_group VALUES (2, 'Кассиры');
 INSERT INTO auth_group VALUES (4, 'Администраторы');
+
+
+INSERT INTO django_content_type VALUES (1, 'permission', 'auth', 'permission');
+INSERT INTO django_content_type VALUES (2, 'group', 'auth', 'group');
+INSERT INTO django_content_type VALUES (3, 'user', 'auth', 'user');
+INSERT INTO django_content_type VALUES (4, 'message', 'auth', 'message');
+INSERT INTO django_content_type VALUES (5, 'content type', 'contenttypes', 'contenttype');
+INSERT INTO django_content_type VALUES (6, 'session', 'sessions', 'session');
+INSERT INTO django_content_type VALUES (7, 'site', 'sites', 'site');
+INSERT INTO django_content_type VALUES (8, 'log entry', 'admin', 'logentry');
+INSERT INTO django_content_type VALUES (9, 'active session', 'radius', 'activesession');
+INSERT INTO django_content_type VALUES (10, 'auth log', 'radius', 'authlog');
+INSERT INTO django_content_type VALUES (11, 'Сервер доступа', 'nas', 'nas');
+INSERT INTO django_content_type VALUES (12, 'Класс трафика', 'nas', 'trafficclass');
+INSERT INTO django_content_type VALUES (13, 'Направление трафика', 'nas', 'trafficnode');
+INSERT INTO django_content_type VALUES (14, 'switch', 'nas', 'switch');
+INSERT INTO django_content_type VALUES (15, 'Нода временного периода', 'billservice', 'timeperiodnode');
+INSERT INTO django_content_type VALUES (16, 'Временной период', 'billservice', 'timeperiod');
+INSERT INTO django_content_type VALUES (17, 'Расчетный период', 'billservice', 'settlementperiod');
+INSERT INTO django_content_type VALUES (18, 'Периодическая услуга', 'billservice', 'periodicalservice');
+INSERT INTO django_content_type VALUES (19, 'История по пер. услугам', 'billservice', 'periodicalservicehistory');
+INSERT INTO django_content_type VALUES (20, 'Разовая услуга', 'billservice', 'onetimeservice');
+INSERT INTO django_content_type VALUES (21, 'one time service history', 'billservice', 'onetimeservicehistory');
+INSERT INTO django_content_type VALUES (22, 'Доступ с учётом времени', 'billservice', 'timeaccessservice');
+INSERT INTO django_content_type VALUES (23, 'Период доступа', 'billservice', 'timeaccessnode');
+INSERT INTO django_content_type VALUES (24, 'Параметры доступа', 'billservice', 'accessparameters');
+INSERT INTO django_content_type VALUES (25, 'настройка скорости', 'billservice', 'timespeed');
+INSERT INTO django_content_type VALUES (26, 'Предоплаченный трафик', 'billservice', 'prepaidtraffic');
+INSERT INTO django_content_type VALUES (27, 'Доступ с учётом трафика', 'billservice', 'traffictransmitservice');
+INSERT INTO django_content_type VALUES (28, 'цена за направление', 'billservice', 'traffictransmitnodes');
+INSERT INTO django_content_type VALUES (29, 'Предоплаченый трафик', 'billservice', 'accountprepaystrafic');
+INSERT INTO django_content_type VALUES (30, 'Предоплаченый radius трафик ', 'billservice', 'accountprepaysradiustrafic');
+INSERT INTO django_content_type VALUES (31, 'Предоплаченное время пользователя', 'billservice', 'accountprepaystime');
+INSERT INTO django_content_type VALUES (32, 'лимит трафика', 'billservice', 'trafficlimit');
+INSERT INTO django_content_type VALUES (33, 'Тариф', 'billservice', 'tariff');
+INSERT INTO django_content_type VALUES (34, 'Аккаунт', 'billservice', 'account');
+INSERT INTO django_content_type VALUES (35, 'organization', 'billservice', 'organization');
+INSERT INTO django_content_type VALUES (36, 'Тип проводки', 'billservice', 'transactiontype');
+INSERT INTO django_content_type VALUES (37, 'Проводка', 'billservice', 'transaction');
+INSERT INTO django_content_type VALUES (38, 'привязка', 'billservice', 'accounttarif');
+INSERT INTO django_content_type VALUES (39, 'скорости IPN клиентов', 'billservice', 'accountipnspeed');
+INSERT INTO django_content_type VALUES (41, 'Периодическая операция', 'billservice', 'shedulelog');
+INSERT INTO django_content_type VALUES (43, 'system user', 'billservice', 'systemuser');
+INSERT INTO django_content_type VALUES (44, 'document type', 'billservice', 'documenttype');
+INSERT INTO django_content_type VALUES (45, 'template type', 'billservice', 'templatetype');
+INSERT INTO django_content_type VALUES (46, 'template', 'billservice', 'template');
+INSERT INTO django_content_type VALUES (47, 'card', 'billservice', 'card');
+INSERT INTO django_content_type VALUES (48, 'bank data', 'billservice', 'bankdata');
+INSERT INTO django_content_type VALUES (49, 'operator', 'billservice', 'operator');
+INSERT INTO django_content_type VALUES (50, 'dealer', 'billservice', 'dealer');
+INSERT INTO django_content_type VALUES (51, 'sale card', 'billservice', 'salecard');
+INSERT INTO django_content_type VALUES (52, 'dealer pay', 'billservice', 'dealerpay');
+INSERT INTO django_content_type VALUES (53, 'document', 'billservice', 'document');
+INSERT INTO django_content_type VALUES (54, 'suspended period', 'billservice', 'suspendedperiod');
+INSERT INTO django_content_type VALUES (55, 'group', 'billservice', 'group');
+INSERT INTO django_content_type VALUES (56, 'group traffic class', 'billservice', 'grouptrafficclass');
+INSERT INTO django_content_type VALUES (57, 'group stat', 'billservice', 'groupstat');
+INSERT INTO django_content_type VALUES (58, 'speed limit', 'billservice', 'speedlimit');
+INSERT INTO django_content_type VALUES (59, 'account speed limit', 'billservice', 'accountspeedlimit');
+INSERT INTO django_content_type VALUES (60, 'ip pool', 'billservice', 'ippool');
+INSERT INTO django_content_type VALUES (61, 'ip in use', 'billservice', 'ipinuse');
+INSERT INTO django_content_type VALUES (62, 'traffic transaction', 'billservice', 'traffictransaction');
+INSERT INTO django_content_type VALUES (63, 'tp change rule', 'billservice', 'tpchangerule');
+INSERT INTO django_content_type VALUES (64, 'radius attrs', 'billservice', 'radiusattrs');
+INSERT INTO django_content_type VALUES (65, 'addon service', 'billservice', 'addonservice');
+INSERT INTO django_content_type VALUES (66, 'addon service tarif', 'billservice', 'addonservicetarif');
+INSERT INTO django_content_type VALUES (67, 'account addon service', 'billservice', 'accountaddonservice');
+INSERT INTO django_content_type VALUES (68, 'addon service transaction', 'billservice', 'addonservicetransaction');
+INSERT INTO django_content_type VALUES (69, 'news', 'billservice', 'news');
+INSERT INTO django_content_type VALUES (70, 'account viewed news', 'billservice', 'accountviewednews');
+INSERT INTO django_content_type VALUES (72, 'sub account', 'billservice', 'subaccount');
+INSERT INTO django_content_type VALUES (73, 'balance history', 'billservice', 'balancehistory');
+INSERT INTO django_content_type VALUES (74, 'city', 'billservice', 'city');
+INSERT INTO django_content_type VALUES (75, 'street', 'billservice', 'street');
+INSERT INTO django_content_type VALUES (76, 'house', 'billservice', 'house');
+INSERT INTO django_content_type VALUES (77, 'radius traffic', 'billservice', 'radiustraffic');
+INSERT INTO django_content_type VALUES (78, 'radius traffic node', 'billservice', 'radiustrafficnode');
+INSERT INTO django_content_type VALUES (79, 'contract template', 'billservice', 'contracttemplate');
+INSERT INTO django_content_type VALUES (80, 'manufacturer', 'billservice', 'manufacturer');
+INSERT INTO django_content_type VALUES (81, 'hardware type', 'billservice', 'hardwaretype');
+INSERT INTO django_content_type VALUES (82, 'model', 'billservice', 'model');
+INSERT INTO django_content_type VALUES (83, 'hardware', 'billservice', 'hardware');
+INSERT INTO django_content_type VALUES (84, 'account hardware', 'billservice', 'accounthardware');
+INSERT INTO django_content_type VALUES (85, 'total transaction report', 'billservice', 'totaltransactionreport');
+INSERT INTO django_content_type VALUES (86, 'periodical service log', 'billservice', 'periodicalservicelog');
+INSERT INTO django_content_type VALUES (87, 'payment', 'webmoney', 'payment');
+INSERT INTO django_content_type VALUES (88, 'invoice', 'qiwi', 'invoice');
+INSERT INTO django_content_type VALUES (89, 'queue', 'helpdesk', 'queue');
+INSERT INTO django_content_type VALUES (90, 'ticket', 'helpdesk', 'ticket');
+INSERT INTO django_content_type VALUES (91, 'follow up', 'helpdesk', 'followup');
+INSERT INTO django_content_type VALUES (92, 'ticket change', 'helpdesk', 'ticketchange');
+INSERT INTO django_content_type VALUES (93, 'attachment', 'helpdesk', 'attachment');
+INSERT INTO django_content_type VALUES (94, 'pre set reply', 'helpdesk', 'presetreply');
+INSERT INTO django_content_type VALUES (95, 'escalation exclusion', 'helpdesk', 'escalationexclusion');
+INSERT INTO django_content_type VALUES (96, 'email template', 'helpdesk', 'emailtemplate');
+INSERT INTO django_content_type VALUES (97, 'knowledge base category', 'helpdesk', 'kbcategory');
+INSERT INTO django_content_type VALUES (98, 'knowledge base item', 'helpdesk', 'kbitem');
+INSERT INTO django_content_type VALUES (99, 'saved search', 'helpdesk', 'savedsearch');
+INSERT INTO django_content_type VALUES (100, 'User Settings', 'helpdesk', 'usersettings');
+INSERT INTO django_content_type VALUES (101, 'ignored email', 'helpdesk', 'ignoreemail');
+INSERT INTO django_content_type VALUES (102, 'ticket CC', 'helpdesk', 'ticketcc');
+INSERT INTO django_content_type VALUES (103, 'log action', 'object_log', 'logaction');
+INSERT INTO django_content_type VALUES (104, 'log item', 'object_log', 'logitem');
+INSERT INTO django_content_type VALUES (105, 'periodical service tariff', 'billservice', 'periodicalservicetariff');
+
 
 INSERT INTO auth_permission VALUES (440, 'Can add permission', 1, 'add_permission');
 INSERT INTO auth_permission VALUES (441, 'Can change permission', 1, 'change_permission');
@@ -401,12 +510,6 @@ INSERT INTO auth_permission VALUES (823, 'Can change periodical service tariff',
 INSERT INTO auth_permission VALUES (824, 'Can delete periodical service tariff', 105, 'delete_periodicalservicetariff');
 INSERT INTO auth_permission VALUES (825, 'Выполнение любого sql запроса', 43, 'rawsqlexecution');
 
-
---
--- TOC entry 3348 (class 0 OID 84478)
--- Dependencies: 554 3347 3349
--- Data for Name: auth_group_permissions; Type: TABLE DATA; Schema: public; Owner: ebs
---
 
 INSERT INTO auth_group_permissions VALUES (2193, 4, 440);
 INSERT INTO auth_group_permissions VALUES (2194, 4, 441);

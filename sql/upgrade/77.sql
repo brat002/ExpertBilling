@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS auth_user;
 CREATE TABLE auth_user
 (
   id serial NOT NULL,
