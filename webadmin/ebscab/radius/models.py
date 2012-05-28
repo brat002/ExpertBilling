@@ -74,7 +74,11 @@ class ActiveSession(models.Model):
         list_display = ('account','bytes_in','bytes_out','sessionid', 'date_start', 'interrim_update','date_end','caller_id','called_id','session_time', 'session_status')
 
     class Meta:
-        pass
+        verbose_name = u"RADIUS сессия"
+        verbose_name_plural = u"RADIUS сессии"
+        permissions = (
+           ("activesession_view", u"Просмотр"),
+           )
 
     def __unicode__(self):
         return u"%s" % self.sessionid

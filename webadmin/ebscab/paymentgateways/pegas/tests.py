@@ -8,7 +8,7 @@ from django.core.management.commands import test
 from django.contrib.auth.models import User
 #from testcases.models import create_user
 from ebscab.nas.models import Nas, TrafficClass
-from billservice.models import Account, AccountTarif, NetFlowStream, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, News, AccountViewedNews
+from billservice.models import Account, AccountTarif, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, News, AccountViewedNews
 from paymentgateways.gateways.pegas import PegasPaymentGateway
 
 class CheckAccountTestCase(unittest.TestCase):

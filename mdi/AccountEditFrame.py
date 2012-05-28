@@ -333,6 +333,9 @@ class SubaccountLinkDialog(QtGui.QDialog):
         self.connect(self.commandLinkButton, QtCore.SIGNAL("clicked()"), self.addAddonService)
         self.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int, int)"), self.editAddonService)
         
+        
+        
+        
         self.connect(self.comboBox_vpn_pool, QtCore.SIGNAL("currentIndexChanged(int)"), self.combobox_vpn_pool_action)
         self.connect(self.comboBox_vpn_ipv6_pool, QtCore.SIGNAL("currentIndexChanged(int)"), self.combobox_vpn_ipv6_pool_action)
         self.connect(self.comboBox_ipn_pool, QtCore.SIGNAL("currentIndexChanged(int)"), self.combobox_ipn_pool_action)
@@ -447,8 +450,9 @@ class SubaccountLinkDialog(QtGui.QDialog):
             
            
         widget.setItem(x,y,headerItem)
+    
+
         
-          
     def getSelectedId(self, table):
         try:
             return int(table.item(table.currentRow(), 0).text())
@@ -1015,6 +1019,7 @@ class AccountWindow(QtGui.QMainWindow):
         self.tarif_id = tarif_id
         self.organization = None
         self.bank = None
+        self.tab_loaded = []
         self.parent_window=parent
         self.setObjectName("AccountWindow")
         bhdr = HeaderUtil.getBinaryHeader('AccountWindow-account_info')
@@ -1430,6 +1435,8 @@ class AccountWindow(QtGui.QMainWindow):
         self.connect(self.toolButton_ipn_sleep,QtCore.SIGNAL("clicked()"),self.subAccountIpnSleep)
         
         shortEditAgreement = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_E), self)
+
+        self.connect(self.tabWidget, QtCore.SIGNAL("currentChanged (int)"), self.loadRequestedTab)
         
         self.fixtures()
         if not bhdr.isEmpty():
@@ -1591,6 +1598,19 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_status.addItem(u"Пользовательская блокировка.")
         self.comboBox_status.setItemData(3, QtCore.QVariant(4))
         
+    def loadRequestedTab(self, i):
+        if i==1 and i not in self.tab_loaded:
+            self.subAccountLinkRefresh()
+        elif i==3 and i not in self.tab_loaded:
+            self.suspendedPeriodRefresh()
+        elif i==4 and i not in self.tab_loaded:
+            self.accountTarifRefresh()
+        elif i==5 and i not in self.tab_loaded:
+            self.accountAddonServiceRefresh()
+        elif i==6 and i not in self.tab_loaded:
+            self.accountHardwareRefresh()
+        self.tab_loaded.append(i)
+
     def refresh_combo_city(self):
         pass
     
@@ -1889,11 +1909,7 @@ class AccountWindow(QtGui.QMainWindow):
             else:
                 #self.groupBox_urdata.setChecked(False)
                 pass
-            self.accountTarifRefresh()
-            self.suspendedPeriodRefresh()
-            self.accountAddonServiceRefresh()
-            self.subAccountLinkRefresh()
-            self.accountHardwareRefresh()
+
         else:
             for i in xrange(self.tableWidget.rowCount()):
                 self.addrow(self.tableWidget, '', i,1)

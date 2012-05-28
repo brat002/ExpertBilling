@@ -76,7 +76,10 @@ class Nas(models.Model):
     class Meta:
         verbose_name = u"Сервер доступа"
         verbose_name_plural = u"Сервера доступа"
-
+        permissions = (
+           ("nas_view", u"Просмотр"),
+           )
+        
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -101,7 +104,10 @@ class TrafficClass(models.Model):
     class Meta:
         verbose_name = u"Класс трафика"
         verbose_name_plural = u"Классы трафика"
-
+        permissions = (
+           ("trafficclass_view", u"Просмотр"),
+           )
+        
 class TrafficNode(models.Model):
     """
     Направления трафика. Внутри одного класса не должно быть пересекающихся направлений
@@ -136,6 +142,9 @@ class TrafficNode(models.Model):
     class Meta:
         verbose_name = u"Направление трафика"
         verbose_name_plural = u"Направления трафика"
+        permissions = (
+           ("trafficnode_view", u"Просмотр"),
+           )
         
 class Switch(models.Model):
     manufacturer = models.CharField(max_length=250, blank=True, default='')
@@ -173,6 +182,10 @@ class Switch(models.Model):
     def __unicode__(self):
         return u"%s" % self.name
     
-
-    
+    class Meta:
+        verbose_name = u"Коммутатор"
+        verbose_name_plural = u"Коммутаторы"
+        permissions = (
+           ("switch_view", u"Просмотр"),
+           )
     

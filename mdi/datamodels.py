@@ -15,7 +15,7 @@ class MyTableModel(QtCore.QAbstractTableModel):
         self.arraydata = datain
         self.columns =columns
         
-        self.int_columns = ['id', 'username', 'contract', 'ballance', 'credit', 'fullname',  'address',  'vpn_ips', 'ipn_ips', 'ipn_macs', 'balance_blocked', 'disabled_by_limit', 'account_online', 'created', 'comment']
+        self.int_columns = ['id', 'username', 'contract', 'ballance', 'credit', 'fullname',  'address',  'vpn_ips', 'ipn_ips', 'ipn_macs', 'balance_blocked', 'disabled_by_limit', 'account_online', "sp_end", 'created', 'comment', ]
 
     def rowCount(self, parent):
         return len(self.arraydata)
@@ -50,7 +50,7 @@ class MyTableModel(QtCore.QAbstractTableModel):
         column = self.int_columns[index.column()]
         #print "column=", column
         if role == QtCore.Qt.ForegroundRole:
-            if self.int_columns[index.column()]=='ballance':
+            if column=='ballance':
                 if value<0:
                     return QtGui.QBrush(QtGui.QColor('#ffffff')) 
             return QtCore.QVariant()
@@ -64,7 +64,23 @@ class MyTableModel(QtCore.QAbstractTableModel):
                     return QtGui.QBrush(QtGui.QColor('#ffdc51')) 
                 else:
                     return QtCore.QVariant()
-                    
+            if column=="account_online":
+                if value==True:
+                    return QtGui.QBrush(QtGui.QColor('green'))
+                else:
+                    return QtGui.QBrush(QtGui.QColor('lightblue'))
+
+            if column=="balance_blocked":
+                if value==True:
+                    return QtGui.QBrush(QtGui.QColor('red'))
+                else:
+                    return QtGui.QBrush(QtGui.QColor('green'))
+            if column=="disabled_by_limit":
+                if value==True:
+                    return QtGui.QBrush(QtGui.QColor('red'))
+                else:
+                    return QtGui.QBrush(QtGui.QColor('green'))
+
             else:
                 return QtCore.QVariant()
         elif role == QtCore.Qt.DecorationRole:
@@ -75,8 +91,9 @@ class MyTableModel(QtCore.QAbstractTableModel):
             return QtCore.QVariant()
         
         if column=='address':
-
-            return QtCore.QVariant(unicode(u"%s %s" % (value, getattr(self.arraydata[index.row()], 'room'))))
+            address = unicode(u"%s %s" % (value or "", getattr(self.arraydata[index.row()], 'room') or ""))
+            #print address, type(address)
+            return QtCore.QVariant("" if address in [None, u"None"] else address)
 
         if column=='ballance':
 
@@ -88,7 +105,7 @@ class MyTableModel(QtCore.QAbstractTableModel):
           
         if column=='fullname':
 
-            return QtCore.QVariant(unicode(value if value else getattr(self.arraydata[index.row()], 'org_name')))
+            return QtCore.QVariant(unicode(value if value else getattr(self.arraydata[index.row()], 'org_name') or ""))
         if type(value)==list:
             value = ','.join(value)
         
@@ -98,7 +115,7 @@ class MyTableModel(QtCore.QAbstractTableModel):
         if value in [None, 'None']:
             value = ''
         if type(value)==bool:
-            value = u'Да' if value=='True' else u'Нет'
+            value = u'Да' if value==True else u'Нет'
             
         if isinstance(value,datetime.datetime):
             return QtCore.QDateTime(value)
