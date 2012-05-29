@@ -1,19 +1,126 @@
-SELECT pg_catalog.setval('auth_group_id_seq', 4, true);
+
+DROP TABLE IF EXISTS auth_group_permissions;
+DROP TABLE  IF EXISTS auth_group;
+
+DROP TABLE IF EXISTS auth_permission;
+DROP TABLE auth_group_permissions;
+
+DROP TABLE IF EXISTS django_content_type CASCADE;
+
+CREATE TABLE django_content_type
+(
+  id serial NOT NULL,
+  name character varying(100) NOT NULL,
+  app_label character varying(100) NOT NULL,
+  model character varying(100) NOT NULL,
+  CONSTRAINT django_content_type_pkey PRIMARY KEY (id ),
+  CONSTRAINT django_content_type_app_label_model_key UNIQUE (app_label , model )
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE django_content_type
+  OWNER TO ebs;
+  
 
 
-SELECT pg_catalog.setval('auth_group_permissions_id_seq', 2575, true);
+
+CREATE TABLE auth_permission
+(
+  id serial NOT NULL,
+  name character varying(50) NOT NULL,
+  content_type_id integer NOT NULL,
+  codename character varying(100) NOT NULL,
+  CONSTRAINT auth_permission_pkey PRIMARY KEY (id ),
+  CONSTRAINT content_type_id_refs_id_728de91f FOREIGN KEY (content_type_id)
+      REFERENCES django_content_type (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT auth_permission_content_type_id_codename_key UNIQUE (content_type_id , codename )
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE auth_permission
+  OWNER TO ebs;
 
 
-SELECT pg_catalog.setval('auth_permission_id_seq', 825, true);
+CREATE INDEX auth_permission_content_type_id
+  ON auth_permission
+  USING btree
+  (content_type_id );
+  
+CREATE TABLE auth_group_permissions
+(
+  id serial NOT NULL,
+  group_id integer NOT NULL,
+  permission_id integer NOT NULL,
+  CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id ),
+  CONSTRAINT auth_group_permissions_permission_id_fkey FOREIGN KEY (permission_id)
+      REFERENCES auth_permission (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT group_id_refs_id_3cea63fe FOREIGN KEY (group_id)
+      REFERENCES auth_group (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT auth_group_permissions_group_id_permission_id_key UNIQUE (group_id , permission_id )
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE auth_group_permissions
+  OWNER TO ebs;
 
+-- Index: auth_group_permissions_group_id
 
-SELECT pg_catalog.setval('django_content_type_id_seq', 105, true);
+-- DROP INDEX auth_group_permissions_group_id;
 
-DELETE FROM auth_group_permissions CASCADE;
-DELETE FROM auth_group CASCADE;
-DELETE FROM auth_permission CASCADE;
-DELETE FROM django_content_type CASCADE;
+CREATE INDEX auth_group_permissions_group_id
+  ON auth_group_permissions
+  USING btree
+  (group_id );
 
+-- Index: auth_group_permissions_permission_id
+
+-- DROP INDEX auth_group_permissions_permission_id;
+
+CREATE INDEX auth_group_permissions_permission_id
+  ON auth_group_permissions
+  USING btree
+  (permission_id );
+  
+CREATE TABLE auth_group
+(
+  id serial NOT NULL,
+  name character varying(80) NOT NULL,
+  CONSTRAINT auth_group_pkey PRIMARY KEY (id ),
+  CONSTRAINT auth_group_name_key UNIQUE (name )
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE auth_group
+  OWNER TO ebs;
+  
+CREATE TABLE auth_group_permissions
+(
+  id serial NOT NULL,
+  group_id integer NOT NULL,
+  permission_id integer NOT NULL,
+  CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id ),
+  CONSTRAINT auth_group_permissions_permission_id_fkey FOREIGN KEY (permission_id)
+      REFERENCES auth_permission (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT group_id_refs_id_3cea63fe FOREIGN KEY (group_id)
+      REFERENCES auth_group (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT auth_group_permissions_group_id_permission_id_key UNIQUE (group_id , permission_id )
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE auth_group_permissions
+  OWNER TO ebs;
+
+  
 INSERT INTO auth_group VALUES (3, 'Менеджеры');
 INSERT INTO auth_group VALUES (2, 'Кассиры');
 INSERT INTO auth_group VALUES (4, 'Администраторы');
