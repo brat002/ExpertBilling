@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS auth_user;
+DROP TABLE IF EXISTS auth_user CASCADE;
 CREATE TABLE auth_user
 (
   id serial NOT NULL,

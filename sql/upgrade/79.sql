@@ -10,17 +10,7 @@ BEGIN
 BEGIN
     
     EXECUTE gpst_inserter(NEW);
--- Complet
--- Completed on 2012-05-28 20:30:34 FET
 
---
--- PostgreSQL database dump complete
---
-ed on 2012-05-28 20:30:34 FET
-
---
--- PostgreSQL database dump complete
---
     
 EXCEPTION 
   WHEN undefined_table THEN
@@ -33,15 +23,10 @@ EXCEPTION
 END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
--- Completed on 2012-05-28 20:30:34 FET
 
---
--- PostgreSQL database dump complete
---
-  
   COST 100;
 
-DROP FUNCTION gpst_crt_pdb(date);
+DROP FUNCTION IF EXISTS gpst_crt_pdb(date);
 CREATE OR REPLACE FUNCTION gpst_crt_pdb(datetx date)
   RETURNS void AS
 $BODY$
@@ -89,19 +74,13 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
 
-DROP FUNCTION gpst_inserter(billservice_groupstat);
+DROP FUNCTION IF EXISTS gpst_inserter(billservice_groupstat);
 
 CREATE OR REPLACE FUNCTION gpst_inserter(gpstr billservice_groupstat)
   RETURNS void AS
 $BODY$
 DECLARE
-    datetx_ text := to_char(gps
--- Completed on 2012-05-28 20:30:34 FET
-
---
--- PostgreSQL database dump complete
---
-    tr.datetime::date, 'YYYYMM01');
+    datetx_ text := to_char(gpstr.datetime::date, 'YYYYMM01');
     insq_   text;
     ttrn_classes_ text; 
     ttrn_classbytes_ text; 
@@ -148,10 +127,7 @@ END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
-  
-  -- Function: traftrans_crt_pdb(date)
 
--- DROP FUNCTION traftrans_crt_pdb(date);
 
 CREATE OR REPLACE FUNCTION traftrans_crt_pdb(datetx date)
   RETURNS integer AS
