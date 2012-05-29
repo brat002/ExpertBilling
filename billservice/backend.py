@@ -48,7 +48,7 @@ class LoginUserBackend(ModelBackend):
                 if isinstance(account, SystemUser):
                     log.debug("superuser!")
                     user.is_staff = True
-                    if account.role==0:
+                    if account.username=='admin':
                         user.is_superuser = True
                 user.save()
             log.debug("User authorized: account is %s, user is %s" % (account, user))
