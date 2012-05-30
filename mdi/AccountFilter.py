@@ -199,6 +199,8 @@ class AccountFilterDialog(QtGui.QDialog):
         self.connect(self.comboBox_balance_condition, QtCore.SIGNAL("currentIndexChanged(int)"), self.balance_condition)
         self.connect(self.comboBox_credit_condition, QtCore.SIGNAL("currentIndexChanged(int)"), self.credit_condition)
 
+        self.comboBox_bulk.setEditable(True)
+        self.comboBox_stage.setEditable(True)
         self.setTabOrder(self.lineEdit_agreement, self.lineEdit_account)
         self.setTabOrder(self.lineEdit_account, self.lineEdit_subaccount)
         self.setTabOrder(self.lineEdit_subaccount, self.lineEdit_fullname)
@@ -335,6 +337,14 @@ class AccountFilterDialog(QtGui.QDialog):
         manager_id = self.comboBox_manager.itemData(self.comboBox_manager.currentIndex()).toInt()[0]
         if manager_id!=0:
             r.append(('acc.systemuser_id', ' = ',manager_id))
+            
+        row = unicode(self.comboBox_stage.currentText())
+        if row!=0:
+            r.append(('acc.row', ' = ',row))
+
+        bulk = unicode(self.comboBox_bulk.currentText())
+        if bulk!=0:
+            r.append(('acc.house_bulk', ' = ',bulk))
             
         organization_id = self.comboBox_ur_name.itemData(self.comboBox_ur_name.currentIndex()).toInt()[0]
         if organization_id!=0:

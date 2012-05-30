@@ -21,6 +21,7 @@ from json import JSONDecoder
 import datetime
 import decimal
 from db import AttrDict
+import simplejson
 
 def default(obj):
     '''Convert object to JSON encodable type.'''
@@ -29,7 +30,7 @@ def default(obj):
     if isinstance(obj, datetime.datetime):
         return obj.strftime('%Y-%m-%d %H:%M:%S')
 
-    return simplejson.JSONEncoder.default(self, obj)
+    return simplejson.JSONEncoder().encode(obj)
 
 def default_detail(obj):
     '''Convert object to JSON encodable type.'''
@@ -38,7 +39,7 @@ def default_detail(obj):
     if isinstance(obj, datetime.datetime):
         return obj.strftime('%Y-%m-%d %H:%M:%S.%f')
 
-    return simplejson.JSONEncoder.default(self, obj)
+    return simplejson.JSONEncoder.default(None, obj)
 
 class HttpBot(object):
     """an HttpBot represents one browser session, with cookies."""
