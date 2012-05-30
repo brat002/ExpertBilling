@@ -7,6 +7,17 @@ DROP TABLE IF EXISTS auth_group_permissions;
 
 DROP TABLE IF EXISTS django_content_type CASCADE;
 
+DROP TABLE IF EXISTS auth_user_user_permissions;
+
+
+DROP TABLE IF EXISTS auth_user_groups;
+
+
+
+
+
+
+
 CREATE TABLE django_content_type
 (
   id serial NOT NULL,
@@ -120,6 +131,81 @@ WITH (
 ALTER TABLE auth_group_permissions
   OWNER TO ebs;
 
+ CREATE TABLE auth_user_user_permissions
+(
+  id serial NOT NULL,
+  user_id integer NOT NULL,
+  permission_id integer NOT NULL,
+  CONSTRAINT auth_user_user_permissions_pkey PRIMARY KEY (id ),
+  CONSTRAINT auth_user_user_permissions_permission_id_fkey FOREIGN KEY (permission_id)
+      REFERENCES auth_permission (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT user_id_refs_id_dfbab7d FOREIGN KEY (user_id)
+      REFERENCES auth_user (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT auth_user_user_permissions_user_id_permission_id_key UNIQUE (user_id , permission_id )
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE auth_user_user_permissions
+  OWNER TO ebs;
+
+-- Index: auth_user_user_permissions_permission_id
+
+-- DROP INDEX auth_user_user_permissions_permission_id;
+
+CREATE INDEX auth_user_user_permissions_permission_id
+  ON auth_user_user_permissions
+  USING btree
+  (permission_id );
+
+-- Index: auth_user_user_permissions_user_id
+
+-- DROP INDEX auth_user_user_permissions_user_id;
+
+CREATE INDEX auth_user_user_permissions_user_id
+  ON auth_user_user_permissions
+  USING btree
+  (user_id );
+ 
+CREATE TABLE auth_user_groups
+(
+  id serial NOT NULL,
+  user_id integer NOT NULL,
+  group_id integer NOT NULL,
+  CONSTRAINT auth_user_groups_pkey PRIMARY KEY (id ),
+  CONSTRAINT auth_user_groups_group_id_fkey FOREIGN KEY (group_id)
+      REFERENCES auth_group (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT user_id_refs_id_7ceef80f FOREIGN KEY (user_id)
+      REFERENCES auth_user (id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
+  CONSTRAINT auth_user_groups_user_id_group_id_key UNIQUE (user_id , group_id )
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE auth_user_groups
+  OWNER TO ebs;
+
+-- Index: auth_user_groups_group_id
+
+-- DROP INDEX auth_user_groups_group_id;
+
+CREATE INDEX auth_user_groups_group_id
+  ON auth_user_groups
+  USING btree
+  (group_id );
+
+-- Index: auth_user_groups_user_id
+
+-- DROP INDEX auth_user_groups_user_id;
+
+CREATE INDEX auth_user_groups_user_id
+  ON auth_user_groups
+  USING btree
+  (user_id );
   
 INSERT INTO auth_group VALUES (3, 'Менеджеры');
 INSERT INTO auth_group VALUES (2, 'Кассиры');
