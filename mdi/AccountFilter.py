@@ -344,7 +344,7 @@ class AccountFilterDialog(QtGui.QDialog):
 
         bulk = unicode(self.comboBox_bulk.currentText())
         if bulk!=0:
-            r.append(('acc.house_bulk', ' = ',bulk))
+            r.append(('acc.house_bulk3', ' = ',bulk))
             
         organization_id = self.comboBox_ur_name.itemData(self.comboBox_ur_name.currentIndex()).toInt()[0]
         if organization_id!=0:

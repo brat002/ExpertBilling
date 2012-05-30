@@ -269,7 +269,7 @@ def modifydb():
             print "%.2i%.2i" % (x,i)
             l.append("""DROP TRIGGER acc_psh_trg ON psh20%.2i%.2i01;""" % (x,i,))
             l.append("""CREATE TRIGGER acc_psh_trg
-              AFTER UPDATE OR DELETE
+              AFTER INSERT OR UPDATE OR DELETE
               ON psh20%.2i%.2i01
               FOR EACH ROW
               EXECUTE PROCEDURE account_transaction_trg_fn(); """ % ( x,i))

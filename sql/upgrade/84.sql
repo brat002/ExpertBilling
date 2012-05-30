@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS auth_group_permissions;
 DROP TABLE  IF EXISTS auth_group;
 
 DROP TABLE IF EXISTS auth_permission;
-DROP TABLE auth_group_permissions;
+DROP TABLE IF EXISTS auth_group_permissions;
 
 DROP TABLE IF EXISTS django_content_type CASCADE;
 
