@@ -59,6 +59,19 @@ CREATE INDEX auth_permission_content_type_id
   ON auth_permission
   USING btree
   (content_type_id );
+
+CREATE TABLE auth_group
+(
+  id serial NOT NULL,
+  name character varying(80) NOT NULL,
+  CONSTRAINT auth_group_pkey PRIMARY KEY (id ),
+  CONSTRAINT auth_group_name_key UNIQUE (name )
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE auth_group
+  OWNER TO ebs;
   
 CREATE TABLE auth_group_permissions
 (
@@ -98,38 +111,7 @@ CREATE INDEX auth_group_permissions_permission_id
   USING btree
   (permission_id );
   
-CREATE TABLE auth_group
-(
-  id serial NOT NULL,
-  name character varying(80) NOT NULL,
-  CONSTRAINT auth_group_pkey PRIMARY KEY (id ),
-  CONSTRAINT auth_group_name_key UNIQUE (name )
-)
-WITH (
-  OIDS=FALSE
-);
-ALTER TABLE auth_group
-  OWNER TO ebs;
-  
-CREATE TABLE auth_group_permissions
-(
-  id serial NOT NULL,
-  group_id integer NOT NULL,
-  permission_id integer NOT NULL,
-  CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id ),
-  CONSTRAINT auth_group_permissions_permission_id_fkey FOREIGN KEY (permission_id)
-      REFERENCES auth_permission (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
-  CONSTRAINT group_id_refs_id_3cea63fe FOREIGN KEY (group_id)
-      REFERENCES auth_group (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED,
-  CONSTRAINT auth_group_permissions_group_id_permission_id_key UNIQUE (group_id , permission_id )
-)
-WITH (
-  OIDS=FALSE
-);
-ALTER TABLE auth_group_permissions
-  OWNER TO ebs;
+
 
  CREATE TABLE auth_user_user_permissions
 (
