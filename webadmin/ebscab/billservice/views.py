@@ -530,10 +530,10 @@ def vpn_session(request):
             'rec_count':rec_count,
             'bytes_in':bytes_in,
             'bytes_out':bytes_out,
-            'bytes_all':bytes_in,
+            'bytes_all':bytes_all,
             'bytes_in_on_page':bytes_in_on_page,
             'bytes_out_on_page':bytes_out_on_page,
-            'bytes_all_on_page':bytes_in_on_page,
+            'bytes_all_on_page':bytes_all_on_page,
             'is_range':is_range,
             'active_class':'statistic-img',
             }

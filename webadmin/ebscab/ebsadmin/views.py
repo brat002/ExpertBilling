@@ -2065,7 +2065,7 @@ def accountsfilter(request):
 @ajax_request
 @login_required
 def trafficclasses(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.trafficclass_view')):
+    if  not (request.user.is_staff==True and request.user.has_perm('nas.trafficclass_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2144,7 +2144,7 @@ def trafficclasses_delete(request):
 @ajax_request
 @login_required
 def trafficclassnodes(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.trafficclass_view')):
+    if  not (request.user.is_staff==True and request.user.has_perm('nas.trafficclass_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2164,7 +2164,7 @@ def trafficclassnodes(request):
     res=[]
     for item in items:
         res.append(instance_dict(item, fields=fields))
-    
+
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 
@@ -2186,7 +2186,7 @@ def trafficclassnodes_set(request):
     if form.is_valid():
         try:
             model = form.save(commit = False)
-            model.next_hop = '0.0.0.0'
+            #model.next_hop = '0.0.0.0'
             model.save()
             res={"status": True}
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 

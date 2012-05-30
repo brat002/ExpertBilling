@@ -134,6 +134,12 @@ def charts(request):
             res = cur.fetchall()
             return render_to_response('grouptrafficpiechart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype})
 
+        if report=='balancehistory':
+            cur.execute("""select date_trunc(%%s, datetime) as dt, sum(balance)  FROM billservice_balancehistory WHERE True %s and datetime between %%s and %%s GROUP BY date_trunc(%%s, datetime) ORDER BY dt asc;""" \
+                        % (accounts_str,), (grouping, start_date, end_date, grouping))
+            res = cur.fetchall()
+            return render_to_response('trafficvolumechart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype})
+
         if report=='accountstraffic':
             cur.execute("""select date_trunc(%%s, datetime) as dt,  sum(bytes)/(1024*1024) FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by date_trunc(%%s, datetime) ORDER BY dt ASC;""" \
                         % (accounts_str, groups_str), ( grouping, start_date, end_date, grouping))

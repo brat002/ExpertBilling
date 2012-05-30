@@ -166,6 +166,12 @@ class NetworksImportDialog(QtGui.QDialog):
                 model = AttrDict()
                 model.traffic_class = self.class_id
                 model.name = nn                
+                model.src_port = 0
+                model.dst_port = 0
+                model.next_hop = "0.0.0.0"
+                model.in_index = 0
+                model.out_index = 0
+                model.protocol = 0
                 
                 if (net, l) not in nodes: 
                     #self.connection.create_class_node(class_id, name, src_net, dst_net)
@@ -173,6 +179,8 @@ class NetworksImportDialog(QtGui.QDialog):
                     model.direction = 'INPUT'
                     model.src_ip = net
                     model.dst_ip = l
+                    nodes.append((net, l))
+                    self.connection.classnodes_save(model)
                     
                 if (l, net) not in nodes:
                     #Создать ноду
@@ -180,7 +188,8 @@ class NetworksImportDialog(QtGui.QDialog):
                     model.direction = 'OUTPUT'
                     model.src_ip = l
                     model.dst_ip = net
-                self.connection.classnodes_save(model)
+                    nodes.append((l, net))
+                    self.connection.classnodes_save(model)
                 
         QtGui.QDialog.accept(self)
         
