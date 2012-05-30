@@ -22,7 +22,7 @@ chartdata = {
 'accountsincrease': {'name':u'Динамика абонентской базы ', 'tabs':[]},
 'moneydynamic': {'name':u'Динамика прибыли ', 'tabs':[]},
 'disttransactiontypes': {'name':u'Распределение платежей/списаний по типам ', 'tabs':[]},
-'balancehistory': {'name':u'Динамика изменения баланса ', 'tabs':['accountsTab']},
+'balancehistory': {'name':u'Динамика изменения баланса ', 'tabs':['accountsTab'], 'yaxis': u"Баланс"},
 }
 
 """
@@ -102,6 +102,7 @@ def charts(request):
         
         rep = chartdata.get(report)
         report_name = rep.get("name")
+        report_yaxis = rep.get("yaxis")
         if accounts:
             accounts_str = " and account_id in (%s)" %  ','.join(['%s' % x.id for x in accounts])
         if groups:
@@ -135,10 +136,21 @@ def charts(request):
             return render_to_response('grouptrafficpiechart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype})
 
         if report=='balancehistory':
-            cur.execute("""select date_trunc(%%s, datetime) as dt, sum(balance)  FROM billservice_balancehistory WHERE True %s and datetime between %%s and %%s GROUP BY date_trunc(%%s, datetime) ORDER BY dt asc;""" \
+            cur.execute("""select (select username from billservice_account WHERE id=bh.account_id) as username, date_trunc(%%s, datetime) as dt, avg(balance)  FROM billservice_balancehistory as bh WHERE True %s and datetime between %%s and %%s GROUP BY account_id, date_trunc(%%s, datetime) ORDER BY account_id, dt asc;""" \
                         % (accounts_str,), (grouping, start_date, end_date, grouping))
-            res = cur.fetchall()
-            return render_to_response('trafficvolumechart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype})
+            res = []
+            subitems = []
+            previtem = None
+            for item in  cur.fetchall():
+                if item[0]==previtem or previtem==None :
+                    subitems.append((item[1], item[2]))
+                else:
+                    res.append((previtem, subitems))
+                    subitems=[]
+                    subitems.append((item[1], item[2]))
+                previtem = item[0]
+            
+            return render_to_response('multiitem_line_chart.html', {'res':res, 'report_name':report_name, 'reporttype':reporttype, "yaxis":report_yaxis})
 
         if report=='accountstraffic':
             cur.execute("""select date_trunc(%%s, datetime) as dt,  sum(bytes)/(1024*1024) FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by date_trunc(%%s, datetime) ORDER BY dt ASC;""" \
