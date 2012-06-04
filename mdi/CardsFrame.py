@@ -278,7 +278,7 @@ class SaleCards(QtGui.QDialog):
             return
 
         try:
-            bank =self.connection.get_bank_for_operator(operator.id)
+            bank =self.connection.get_banks(id=operator.bank_id)
         except Exception, e:
             print e
             QtGui.QMessageBox.warning(self, u"Внимание!", u"Заполните информацию о провайдере в меню Help!")
@@ -934,6 +934,7 @@ class AddCards(QtGui.QDialog):
         card.pin = GenPasswd2(length=self.pin_spinBox.text().toInt()[0],chars=pin_mask)
         card.login = GenPasswd2(length=self.spinBox_login_from.text().toInt()[0],chars=login_mask)
         card.nominal = unicode(self.spinBox_nominal.text())
+        card.id = unicode("100")
         card.start_date = self.start_dateTimeEdit.currentDate()
         card.end_date = self.end_dateTimeEdit.currentDate()
         card.series = unicode(self.series_spinBox.value())
