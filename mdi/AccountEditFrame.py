@@ -1272,7 +1272,23 @@ class AccountWindow(QtGui.QMainWindow):
         self.comboBox_nas.setMaximumSize(QtCore.QSize(16777215, 20))
         self.comboBox_nas.setObjectName("comboBox_nas")
         self.gridLayout_14.addWidget(self.comboBox_nas, 0, 1, 1, 1)
+        
+        self.label_max_promise = QtGui.QLabel(self.groupBox_nas)
+        self.label_max_promise.setObjectName("label_max_promise")
+        self.gridLayout_14.addWidget(self.label_max_promise, 1, 0, 1, 1)
+        self.lineEdit_max_promise = QtGui.QLineEdit(self.groupBox_nas)
+        self.lineEdit_max_promise.setMaximumWidth(200)
+        self.lineEdit_max_promise.setObjectName("lineEdit_max_promise")
+        self.gridLayout_14.addWidget(self.lineEdit_max_promise, 1, 1, 1, 1)
+
+        self.label_block_writeoff_summ = QtGui.QLabel(self.groupBox_nas)
+        self.gridLayout_14.addWidget(self.label_block_writeoff_summ, 2, 0, 1, 1)
+        self.lineEdit_block_writeoff_summ = QtGui.QLineEdit(self.groupBox_nas)
+
+        self.gridLayout_14.addWidget(self.lineEdit_block_writeoff_summ, 2, 1, 1, 1)
+        
         self.gridLayout_17.addWidget(self.groupBox_nas, 0, 0, 1, 2)
+        
 ####
         self.groupBox_ipn_status = QtGui.QGroupBox(self.tab_network_settings)
         self.groupBox_ipn_status.setObjectName(_fromUtf8("groupBox_ipn_status"))
@@ -1481,6 +1497,8 @@ class AccountWindow(QtGui.QMainWindow):
         self.groupBox_nas.setTitle(QtGui.QApplication.translate("MainWindow", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
         self.label_nas.setText(QtGui.QApplication.translate("MainWindow", "Сервер доступа аккаунта", None, QtGui.QApplication.UnicodeUTF8))
         self.label_bank_code.setText(QtGui.QApplication.translate("MainWindow", "Код", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_max_promise.setText(QtGui.QApplication.translate("MainWindow", "Максимальный обещаный платёж", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_block_writeoff_summ.setText(QtGui.QApplication.translate("MainWindow", "Блокировка списаний после баланса", None, QtGui.QApplication.UnicodeUTF8))
         #self.label_manager.setText(QtGui.QApplication.translate("MainWindow", "Менеджер", None, QtGui.QApplication.UnicodeUTF8))
         self.tableWidget.setColumnHidden(0, False)
         self.groupBox_nas.setTitle(QtGui.QApplication.translate("MainWindow", "Сервер доступа", None, QtGui.QApplication.UnicodeUTF8))
