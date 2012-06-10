@@ -1,0 +1,350 @@
+{% extends "ebsadmin/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+<ul class="nav nav-tabs" id="myTab">
+  <li class="active"><a href="#profile">Отчёт</a></li>
+  <li><a href="#home">Фильтр</a></li>  
+  <li><a href="#messages">Messages</a></li>
+  <li><a href="#settings">Settings</a></li>
+</ul>
+
+ {% load render_table from django_tables2 %}
+<div class="tab-content">
+  <div class="tab-pane active" id="profile">
+  
+  <div class="row-fluid">
+        <div class="span12">
+            <form class="well form-horizontal">
+                <fieldset>
+                    <legend>Данные аккаунта</legend>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">Номер договора</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" id="input-agreement-no">
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-uid">UID аккаунта</label>
+                            <div class="controls">
+                                <input type="text" class="input-small" id="input-uid">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">Баланс</label>
+                            <div class="controls">
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option1" id="" name="radios-balance"> Больше
+                                </label>
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option2" id="" name="radios-balance"> Меньше
+                                </label>
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option3" id="" name="radios-balance"> Не важно
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-balance-sum">Σ</label>
+                            <div class="controls">
+                                <input type="text" class="input-small" id="input-balance-sum">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">Кредит</label>
+                            <div class="controls">
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option1" id="" name="radios-credit"> Больше
+                                </label>
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option2" id="" name="radios-credit"> Меньше
+                                </label>
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option3" id="" name="radios-credit"> Не важно
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-credit-sum">Σ</label>
+                            <div class="controls">
+                                <input type="text" class="input-small" id="input-credit-sum">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-vpn-ip">VPN IP</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" id="input-vpn-ip">
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-ipn-ip">IPN IP</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" id="input-ipn-ip">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="input-server-access">Сервер доступа</label>
+                        <div class="controls">
+                            <select id="server-access" multiple="multiple">
+                                <option>Atlant</option>
+                                <option>Omega</option>
+                                <option>Mnemonica</option>
+                                <option>Dallas</option>
+                                <option>Orion</option>
+                                <option>Detroit</option>
+                                <option>...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-entrance">Дата создания</label>
+                            <div class="controls">
+                                <input data-datepicker="datepicker" class="input-small" type="text" value="2011-06-08"><div class="datepicker" style="display: none; "><div class="nav"><div class="months"><span class="prev button">←</span><span class="name"><div class="fg">June</div></span><span class="next button">→</span></div><div class="years"><span class="prev button">←</span><span class="name"><div class="fg">2011</div></span><span class="next button">→</span></div></div><div class="calendar"><div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div><div class="dow">Sun</div><div class="days"><div date="2011-05-30" class="overlap">30</div><div date="2011-05-31" class="overlap">31</div><div date="2011-06-01">1</div><div date="2011-06-02">2</div><div date="2011-06-03">3</div><div date="2011-06-04">4</div><div date="2011-06-05">5</div><div date="2011-06-06">6</div><div date="2011-06-07">7</div><div date="2011-06-08" class="selected">8</div><div date="2011-06-09">9</div><div date="2011-06-10">10</div><div date="2011-06-11">11</div><div date="2011-06-12">12</div><div date="2011-06-13">13</div><div date="2011-06-14">14</div><div date="2011-06-15">15</div><div date="2011-06-16">16</div><div date="2011-06-17">17</div><div date="2011-06-18">18</div><div date="2011-06-19">19</div><div date="2011-06-20">20</div><div date="2011-06-21">21</div><div date="2011-06-22">22</div><div date="2011-06-23">23</div><div date="2011-06-24">24</div><div date="2011-06-25">25</div><div date="2011-06-26">26</div><div date="2011-06-27">27</div><div date="2011-06-28">28</div><div date="2011-06-29">29</div><div date="2011-06-30">30</div><div date="2011-07-01" class="overlap">1</div><div date="2011-07-02" class="overlap">2</div><div date="2011-07-03" class="overlap">3</div></div></div></div>
+                                по: 
+                                <input data-datepicker="datepicker" class="input-small" type="text" value="2012-06-08"><div class="datepicker" style="display: none; "><div class="nav"><div class="months"><span class="prev button">←</span><span class="name"><div class="fg">June</div></span><span class="next button">→</span></div><div class="years"><span class="prev button">←</span><span class="name"><div class="fg">2012</div></span><span class="next button">→</span></div></div><div class="calendar"><div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div><div class="dow">Sun</div><div class="days"><div date="2012-05-28" class="overlap">28</div><div date="2012-05-29" class="overlap">29</div><div date="2012-05-30" class="overlap">30</div><div date="2012-05-31" class="overlap">31</div><div date="2012-06-01">1</div><div date="2012-06-02">2</div><div date="2012-06-03">3</div><div date="2012-06-04">4</div><div date="2012-06-05">5</div><div date="2012-06-06">6</div><div date="2012-06-07">7</div><div date="2012-06-08" class="selected">8</div><div date="2012-06-09">9</div><div date="2012-06-10" class="today">10</div><div date="2012-06-11">11</div><div date="2012-06-12">12</div><div date="2012-06-13">13</div><div date="2012-06-14">14</div><div date="2012-06-15">15</div><div date="2012-06-16">16</div><div date="2012-06-17">17</div><div date="2012-06-18">18</div><div date="2012-06-19">19</div><div date="2012-06-20">20</div><div date="2012-06-21">21</div><div date="2012-06-22">22</div><div date="2012-06-23">23</div><div date="2012-06-24">24</div><div date="2012-06-25">25</div><div date="2012-06-26">26</div><div date="2012-06-27">27</div><div date="2012-06-28">28</div><div date="2012-06-29">29</div><div date="2012-06-30">30</div><div date="2012-07-01" class="overlap">1</div></div></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="input-server-access">Тарифный план</label>
+                        <div class="controls">
+                            <select id="server-access" multiple="multiple">
+                                <option>Alfa</option>
+                                <option>Omega</option>
+                                <option>Gamma</option>
+                                <option>Epsilon</option>
+                                <option>Quarte</option>
+                                <option>Septa</option>
+                                <option>...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">IPN статус</label>
+                        <div class="controls">
+                            <label class="radio inline">
+                                <input type="radio" checked="" value="option1" id="" name="radios-ipn-status"> Активен
+                            </label>
+                            <label class="radio inline">
+                                <input type="radio" checked="" value="option2" id="" name="radios-ipn-status"> Неактивен
+                            </label>
+                            <label class="radio inline">
+                                <input type="radio" checked="" value="option3" id="" name="radios-ipn-status"> Неважно
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Статус аккаунта</label>
+                        <div class="controls">
+                            <label class="radio inline">
+                                <input type="radio" checked="" value="option1" id="" name="radios-account-status"> Активен
+                            </label>
+                            <label class="radio inline">
+                                <input type="radio" checked="" value="option2" id="" name="radios-account-status"> Неактивен
+                            </label>
+                            <label class="radio inline">
+                                <input type="radio" checked="" value="option3" id="" name="radios-account-status"> Неважно
+                            </label>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Персональные данные</legend>
+
+                    <div class="control-group">
+                        <label class="control-label" for="input-username">Username</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" id="input-username">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-name">ФИО</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" id="input-name">
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-cperson">Контактное лицо</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" id="input-cperson">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-phone">Телефон</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" id="input-passport">
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-passport">Номер паспорта</label>
+                            <div class="controls">
+                                <input type="text" class="input-small" id="input-passport">
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <fieldset>
+                    <legend>Адрес</legend>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-city">Город</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" id="input-city">
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-street">Улица</label>
+                            <div class="controls">
+                                <input type="text" class="input-large" id="input-street">
+                                <input type="text" class="input-small input-xsmall input-street-no" id="input-street-no" placeholder="№">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="input-entrance">Подъезд</label>
+                        <div class="controls">
+                            <input type="text" class="input-small input-xsmall" id="input-entrance">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="input-floor">Этаж</label>
+                        <div class="controls">
+                            <input type="text" class="input-small input-xsmall" id="input-floor">
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="input-floor">От лифта</label>
+                        <div class="controls">
+                            <select id="" class="span3">
+                                <option>Слева</option>
+                                <option>Справа</option>
+                                <option>Прямо</option>
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Блокировка</legend>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label">По балансу</label>
+                            <div class="controls">
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option1" id="" name="radios-block-balance"> Да
+                                </label>
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option2" id="" name="radios-block-balance"> Нет
+                                </label>
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option3" id="" name="radios-block-balance"> Не важно
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label">По лимитам</label>
+                            <div class="controls">
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option1" id="" name="radios-block-limits"> Да
+                                </label>
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option2" id="" name="radios-block-limits"> Нет
+                                </label>
+                                <label class="radio inline">
+                                    <input type="radio" checked="" value="option3" id="" name="radios-block-limits"> Не важно
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Юридическое лицо</legend>
+
+                    <div class="control-group">
+                        <label class="control-label">Юрлицо</label>
+                        <div class="controls">
+                            <label class="radio inline">
+                                <input type="radio" checked="" value="option1" id="" name="radios-block-jp"> Да
+                            </label>
+                            <label class="radio inline">
+                                <input type="radio" checked="" value="option2" id="" name="radios-block-jp"> Нет
+                            </label>
+                            <label class="radio inline">
+                                <input type="radio" checked="" value="option3" id="" name="radios-block-jp"> Не важно
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-company">Наименование</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" id="input-company">
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-settlement-account">Расчетный счет</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" id="input-settlement-account">
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">Подобрать результаты</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+  
+  </div>
+  <div class="tab-pane" id="home">{% if table %}{% render_table table %}{% endif %}</div>
+  <div class="tab-pane" id="messages">...</div>
+  <div class="tab-pane" id="settings">...</div>
+</div>
+ {% endblock %}
+</body>
+</html>
