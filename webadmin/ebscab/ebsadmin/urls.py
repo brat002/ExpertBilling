@@ -1,13 +1,22 @@
 from django.conf.urls.defaults import *
+import transactionreport
 
 urlpatterns = patterns('ebsadmin.transactionreport',
                        url(r'^transactionreport/$', 'transactionreport'),
+                       url(r'^transactionreport2/$', 'transactionreport2'),
+                       url(r'^accountsreport/$', 'accountsreport'),
+                       url(r'^activesessionreport/$', 'activesessionreport'),
                        )
 urlpatterns += patterns('ebsadmin.charts',
                        url(r'^charts/$', 'charts'),
                        
                        )
-
+urlpatterns += patterns('',
+    url('account_detail/(\d+)/', transactionreport.accountedit, name='account_detail'),
+    
+    url('subaccount_details/(\d+)/', transactionreport.subaccountedit, name='subaccount_detail')
+    
+)
 
 urlpatterns += patterns('ebsadmin.views',
      #url(r'^accounts/$', 'jsonaccounts'),

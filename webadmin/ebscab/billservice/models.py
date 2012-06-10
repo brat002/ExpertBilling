@@ -619,9 +619,9 @@ ACCOUNT_STATUS = (
                   (NOT_ACTIVE_WRITING_OFF, u'Неактивен, списывать периодические услуги'),
                   )
 
-class PeriodicalServiceTariff(models.Model):
-    tariff = models.ForeignKey(Tariff, on_delete = models.CASCADE) 
-    periodicalservice = models.ForeignKey(PeriodicalService, on_delete = models.CASCADE)
+#class PeriodicalServiceTariff(models.Model):
+#    tariff = models.ForeignKey(Tariff, on_delete = models.CASCADE) 
+#    periodicalservice = models.ForeignKey(PeriodicalService, on_delete = models.CASCADE)
     
 class Account(models.Model):
     """
@@ -651,8 +651,7 @@ class Account(models.Model):
 
     ipn_added = models.BooleanField(verbose_name=u"Добавлен на сервере доступа", default=False, blank=True)
     ipn_status = models.BooleanField(verbose_name=u"Статус на сервере доступа", default=False, blank=True)
-    status=models.IntegerField(verbose_name=u'Статус пользователя', default=1)
-    suspended = models.BooleanField(verbose_name=u'Списывать периодическое услуги', help_text=u'Производить списывание денег по периодическим услугам', default=True)
+    status=models.IntegerField(verbose_name=u'Статус пользователя', default=1, choices=((1, u"Активен"), (2, u"Не активен, списывать периодические услуги"), (3, u"Не активен, не списывать периодические услуги"), (4, u"Пользовательская блокировка"),))
     created=models.DateTimeField(verbose_name=u'Создан', blank=True,null=True,default='')
     #NOTE: baLance
     ballance=models.DecimalField(u'Баланс', blank=True, default=0,decimal_places=10,max_digits=20)
@@ -674,7 +673,7 @@ class Account(models.Model):
     contactperson = models.CharField(blank=True, max_length=256)
     passport_given = models.CharField(blank=True, null=True, max_length=128)
     contract = models.TextField(blank=True)
-    systemuser = models.ForeignKey('SystemUser',blank=True,null=True, on_delete = models.SET_NULL)
+    systemuser = models.ForeignKey('SystemUser',verbose_name=u'Менеджер', blank=True,null=True, on_delete = models.SET_NULL)
     last_balance_null = models.DateTimeField(blank=True)
     entrance_code = models.CharField(blank=True, max_length=256)
     private_passport_number = models.CharField(blank=True, max_length=128)
@@ -829,20 +828,20 @@ class TransactionType(models.Model):
 
 
 class Transaction(models.Model):
-    bill = models.CharField(blank=True, default = "", max_length=255)
-    account=models.ForeignKey(Account, on_delete = models.CASCADE)
+    bill = models.CharField(blank=True, default = "", max_length=255, verbose_name=u"Платёжный документ")
+    account=models.ForeignKey(Account, on_delete = models.CASCADE, verbose_name=u"Аккаунт")
     accounttarif=models.ForeignKey('AccountTarif', blank=True, null=True, on_delete = models.CASCADE)
-    type = models.ForeignKey(to=TransactionType, null=True, to_field='internal_name', on_delete = models.SET_NULL)
+    type = models.ForeignKey(to=TransactionType, null=True, to_field='internal_name', verbose_name=u"Тип операции", on_delete = models.SET_NULL)
     
     approved = models.BooleanField(default=True)
     tarif=models.ForeignKey(Tariff, blank=True, null=True, on_delete = models.SET_NULL)
-    summ=models.DecimalField(default=0, blank=True, decimal_places=10,max_digits=20)
-    description = models.TextField(default='', blank=True)
-    created=models.DateTimeField()
-    promise=models.BooleanField(default=False) 
-    end_promise=models.DateTimeField(blank=True, null=True)
-    promise_expired = models.BooleanField(default=False)
-    systemuser=models.ForeignKey(to='SystemUser', null=True, on_delete = models.SET_NULL)
+    summ=models.DecimalField(default=0, blank=True, verbose_name=u"Сумма", decimal_places=10,max_digits=20)
+    description = models.TextField(default='', blank=True, verbose_name=u"Комментарий")
+    created=models.DateTimeField(verbose_name=u"Дата")
+    promise=models.BooleanField(default=False, verbose_name=u"Обещанный платёж") 
+    end_promise=models.DateTimeField(blank=True, null=True, verbose_name=u"Окончание обещанного платежа")
+    promise_expired = models.BooleanField(default=False, verbose_name=u"Обещанный платёж истек")
+    systemuser=models.ForeignKey(to='SystemUser', null=True, on_delete = models.SET_NULL, verbose_name=u"Администратор" )
 
     #def update_ballance(self):
     #    Account.objects.filter(id=self.account_id).update(ballance=F('ballance')+self.summ)
@@ -1035,7 +1034,7 @@ class Card(models.Model):
     ip = models.CharField(max_length=20,blank=True, default='')
     ipinuse = models.ForeignKey("IPInUse", blank=True, null=True)
     ippool = models.ForeignKey("IPPool", blank=True, null=True)
-    ext_id = models.CharField(max_length=512)
+    ext_id = models.CharField(max_length=512,  blank=True, null=True)
     
     class Meta:
         ordering = ['-series', '-created', 'activated']
@@ -1285,7 +1284,7 @@ class TrafficTransaction(models.Model):
         permissions = (
            ("traffictransaction_view", u"Просмотр"),
            )
-        
+
 class TPChangeRule(models.Model):
     from_tariff = models.ForeignKey(Tariff, related_name="from_tariff")
     to_tariff = models.ForeignKey(Tariff, related_name="to_tariff")
@@ -1368,7 +1367,7 @@ class AddonServiceTarif(models.Model):
     activation_count = models.IntegerField(blank=True, default=0)    
     activation_count_period = models.ForeignKey(SettlementPeriod, blank=True, null=True)    
     type=models.IntegerField(default=0)# 0-Account, 1-Subaccount
-    
+
     class Meta:
         ordering = ['id']
         verbose_name = u"Разрешённая подключаемая услуга"
@@ -1376,7 +1375,7 @@ class AddonServiceTarif(models.Model):
         permissions = (
            ("addonservicetarif_view", u"Просмотр"),
            )
-        
+
 class AccountAddonService(models.Model):    
     service = models.ForeignKey(AddonService, null=True, on_delete = models.CASCADE)    
     account = models.ForeignKey(Account, blank=True, null=True)   

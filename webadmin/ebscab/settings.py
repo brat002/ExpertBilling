@@ -43,7 +43,7 @@ USE_I18N = True
 MEDIA_URL = '/media/'
 
 
-STATIC_URL = '/media/'
+STATIC_URL = '/static/'
 
 ADMIN_MEDIA_PREFIX = '/admin_media/'
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -107,10 +107,29 @@ INSTALLED_APPS = (
     'paymentgateways.webmoney',
     'paymentgateways.qiwi',
     'helpdesk',
-    'object_log'
+    'object_log',
+    'django_tables2',
+    'crispy_forms',
+    'ajax_select'
 
     
 )
+
+AJAX_LOOKUP_CHANNELS = {
+    #   pass a dict with the model and the field to search against
+    'account_fts'  : ('billservice.lookups', 'AccountFTSLookup'),
+    'account_fullname'  : ('billservice.lookups', 'AccountFullnameLookup'),
+    'account_contract': ('billservice.lookups', 'AccountContractLookup'),
+    'account_contactperson': ('billservice.lookups', 'AccountContactPersonLookup'),
+    'city_name': ('billservice.lookups', 'CityLookup'),
+    'street_name': ('billservice.lookups', 'StreetLookup'),
+    'house_name': ('billservice.lookups', 'HouseLookup'),
+    
+    
+}
+
+AJAX_SELECT_BOOTSTRAP = False
+AJAX_SELECT_INLINES = 'inline'
 
 AUTHENTICATION_BACKENDS = (
     #'helpdesk.backend.LoginSystemUserBackend',

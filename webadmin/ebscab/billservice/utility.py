@@ -1,4 +1,4 @@
-﻿# -*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 from dateutil.relativedelta import relativedelta
 import datetime
 from django.http import HttpResponse
@@ -114,12 +114,21 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0, 
         nums,ost= divmod(delta_days.days*86400+delta_days.seconds, length)
         tnc=time_start+relativedelta(weeks=nums)
         tkc=tnc+relativedelta(weeks=1)
-
         return (tnc, tkc, length)
+    
     elif repeat_after=='MONTH':
         rdelta = relativedelta(now, time_start) if not prev else relativedelta(now-relativedelta(months=1),time_start)
         tnc=time_start+relativedelta(months=rdelta.months, years = rdelta.years)
+        
+        n_days=calendar.mdays[tnc.month]
         tkc=tnc+relativedelta(months=1)
+        days=calendar.mdays[tkc.month]
+        if time_start.day>tkc.day and days>=tkc.day:
+            tkc=tkc.replace(day=days)
+        #Если начало - конец месяца, то во всех следующих месяцах выбираем максимальный день месяца
+        #if tnc.day>tkc.day and days>tkc.day:
+        #    
+        #    tkc=tnc.replace(month=tnc.month+1)
         delta=tkc-tnc
 
         return (tnc, tkc, delta.days*86400+delta.seconds)
