@@ -337,6 +337,7 @@ def get_promise(request):
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
 
+
 @login_required
 @render_to('accounts/make_payment.html')
 def make_payment(request):

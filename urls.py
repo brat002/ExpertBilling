@@ -4,6 +4,8 @@ from django.conf.urls.defaults import *
 from django.contrib import admin
 #from helpdesk import admin as helpdesk_admin
 
+from ajax_select import urls as ajax_select_urls
+
 
 admin.autodiscover()
 
@@ -18,7 +20,9 @@ urlpatterns = patterns('',
     (r'^helpdesk/', include('helpdesk.urls')),
     (r'^webmoney/', include('paymentgateways.webmoney.urls')),
     (r'^ebsadmin/', include('ebsadmin.urls')),
+    (r'^admin/lookups/', include(ajax_select_urls)),
     (r'^admin/', include(admin.site.urls)),
+    (r'^admin_media/jsi18n', 'django.views.i18n.javascript_catalog'),
     
 
 )
@@ -28,6 +32,7 @@ urlpatterns += patterns('billservice.views',
      #(r'^$', 'index'),
      url(r'^$', 'index', name='billservice_index'),
      (r'^login/$', 'login'),
+     
      (r'^simple_login/$', 'simple_login'),
      (r'^get_ballance/$', 'get_ballance'),
      (r'^prepaid/$', 'account_prepays_traffic'),
