@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 from django import forms
+from django.contrib.admin import widgets   
 from datetime import datetime, date
 from django.forms import ModelForm
 from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
@@ -7,6 +8,16 @@ from billservice.models import PeriodicalService, TimePeriod, SystemUser, Transa
 from billservice.models import Organization, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService
 from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
 from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware
+
+from nas.models import Nas
+
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Div, Submit, Reset,  HTML, Button, Row, Field
+from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
+
+
+from ajax_select.fields import AutoCompleteSelectMultipleField
+
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
@@ -56,13 +67,43 @@ class StatististicForm(forms.Form):
     
     
 class SearchAccountForm(forms.Form):
-    contract = forms.CharField(required=False)
-    username = forms.CharField(required=False)
-    fullname = forms.CharField(required=False)
-    contactperson = forms.CharField(required=False)
-    city = forms.CharField(required=False)
-    street = forms.CharField(required=False)
-    house = forms.CharField(required=False)
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.form_method= "GET"
+        self.helper.form_action = "/ebsadmin/accountsreport/"
+        self.helper.layout = Layout(
+            FormActions(
+                Submit('all', 'На одной странице', css_class="btn btn-success"),
+                Submit('paging', 'С пагинацией', css_class="btn-primary"),
+                Reset('reset', 'Очистить',  css_class="btn"),
+            ),
+            Field('account', css_class='input-xlarge'),
+            Field('created_from', css_class='input-small'),
+            Field('created_to', css_class='input-small'),
+            Field('contract', css_class='input-xlarge'),
+            Field('fullname', css_class='input-xlarge'),
+            Field('contactperson', css_class='input-xlarge'),
+            Field('city', css_class='input-xlarge'),
+            
+            Field('street', css_class='input-xlarge'),
+            Field('house', css_class='input-xlarge'),
+            FormActions(
+                Submit('all', 'На одной странице', css_class="btn btn-success"),
+                Submit('paging', 'С пагинацией', css_class="btn-primary"),
+                Reset('reset', 'Очистить'),
+            ),
+
+        )
+        super(SearchAccountForm, self).__init__(*args, **kwargs)
+    account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
+    contract = AutoCompleteSelectMultipleField( 'account_contract', label = u"Номер договора", required = False)
+    username = AutoCompleteSelectMultipleField( 'account_username', required = False, help_text=u"Введите часть фразы для поиска")
+    fullname = AutoCompleteSelectMultipleField( 'account_fullname', required = False, help_text=u"Введите часть фразы для поиска")
+    contactperson = AutoCompleteSelectMultipleField( 'account_contactperson', required = False, help_text=u"Введите часть фразы для поиска")
+    city = AutoCompleteSelectMultipleField( 'city_name', required = False, help_text=u"Введите часть фразы для поиска")
+    street = AutoCompleteSelectMultipleField( 'street_name', required = False, help_text=u"Введите часть фразы для поиска")
+    house = AutoCompleteSelectMultipleField( 'house_name', required = False, help_text=u"Введите часть фразы для поиска")
     house_bulk = forms.CharField(required=False)
     room = forms.CharField(required=False)
     status = forms.IntegerField(required=False)
@@ -70,17 +111,17 @@ class SearchAccountForm(forms.Form):
     ballance = forms.DecimalField(required=False)
     credit_exp = forms.CharField(required=False)
     credit = forms.DecimalField(required=False)
-    tariff_filter = forms.MultipleChoiceField(required=False)
+    tariff = forms.ModelMultipleChoiceField(queryset=Nas.objects.all(), required=False)
     group_filter = forms.MultipleChoiceField(required=False)
     ballance_blocked = forms.CheckboxInput()
     limit_blocked = forms.CheckboxInput()
-    nas_filter = forms.MultipleChoiceField(required=False)
+    nas = forms.ModelMultipleChoiceField(queryset=Nas.objects.all(), required=False)
     ipn_added = forms.CheckboxInput()
     ipn_enabled = forms.CheckboxInput()
     ipn_sleep = forms.CheckboxInput()
     systemuser_filter = forms.MultipleChoiceField(required=False)
-    created_from = forms.DateTimeField(required=False)
-    created_to = forms.DateTimeField(required=False)
+    created_from = forms.DateField(required=False, label=u"C", widget =  widgets.AdminDateWidget )
+    created_to = forms.DateField(required=False, label=u"по", widget =  widgets.AdminDateWidget)
 
 class AccountAddonForm(forms.Form):
     account = forms.IntegerField(required=False)
@@ -99,15 +140,47 @@ class DocumentRenderForm(forms.Form):
     date_end = forms.DateTimeField(required=False)
 
 class TransactionReportForm(forms.Form):
-    account = forms.IntegerField(required=False)
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.form_method= "GET"
+        self.helper.form_action = "/ebsadmin/transactionreport2/"
+        self.helper.layout = Layout(
+            FormActions(
+                Submit('all', 'На одной странице', css_class="btn btn-success"),
+                Submit('paging', 'С пагинацией', css_class="btn-primary"),
+                Reset('reset', 'Очистить',  css_class="btn"),
+            ),
+            Field('account', css_class='input-xlarge'),
+            'start_date',
+            'end_date',
+            Field('tarif', css_class='input-xlarge'),
+            Field('transactiontype', css_class='input-xlarge'),
+            Field('promise', css_class='input-xlarge'),
+            Field('promise_expired', css_class='input-xlarge'),
+            
+            Field('periodicalservice', css_class='input-xlarge'),
+            Field('addonservice', css_class='input-xlarge'),
+            'systemuser',
+            FormActions(
+                Submit('all', 'На одной странице', css_class="btn btn-success"),
+                Submit('paging', 'С пагинацией', css_class="btn-primary"),
+                Reset('reset', 'Очистить'),
+            ),
+
+        )
+        super(TransactionReportForm, self).__init__(*args, **kwargs)
+    account = forms.ModelMultipleChoiceField(label=u"Аккаунт", queryset=Account.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
     #subaccount = forms.IntegerField(required=False)
-    tarif = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False)
-    addonservice = forms.ModelMultipleChoiceField(queryset=AddonService.objects.all(), required=False)
-    systemuser = forms.ModelMultipleChoiceField(queryset=SystemUser.objects.all(), required=False)
-    periodicalservice = forms.ModelMultipleChoiceField(queryset=PeriodicalService.objects.all(), required=False)
-    transactiontype = forms.MultipleChoiceField(choices=[(x.internal_name, x.name) for x in TransactionType.objects.all()], required=False)
-    start_date = forms.DateTimeField(required=True)
-    end_date = forms.DateTimeField(required=False)
+    #tarif = forms.ModelMultipleChoiceField(label=u"Тарифный план",queryset=Tariff.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
+    #addonservice = forms.ModelMultipleChoiceField(label=u"Подключаемая услуга",queryset=AddonService.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
+    systemuser = forms.ModelMultipleChoiceField(label=u"Администратор",queryset=SystemUser.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
+    #periodicalservice = forms.ModelMultipleChoiceField(label=u"Периодическая услуга",queryset=PeriodicalService.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
+    transactiontype = forms.MultipleChoiceField(label=u"Тип проводки",choices=[(x.internal_name, x.name) for x in TransactionType.objects.all()], widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
+    start_date = forms.DateTimeField(label=u"Начало",required=True, widget =  widgets.AdminSplitDateTime )
+    end_date = forms.DateTimeField(label=u"Конец",required=False, widget =  widgets.AdminSplitDateTime)
+    promise = forms.BooleanField(required=False, label=u"Только обещанный платёж")
+    promise_expired = forms.BooleanField(required=False, label=u"Только обещанный платёж погашен")
     
 class ActionLogFilterForm(forms.Form):
     systemuser = forms.ModelChoiceField(queryset=SystemUser.objects.all(), required=False)
@@ -137,6 +210,27 @@ class SuspendedPeriodModelForm(ModelForm):
         exclude = ('activated_by_account',)
 
 class TransactionModelForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal'
+        self.helper.layout = Layout(
+            FormActions(
+                Submit('filter', 'Фильтровать', css_class="btn-primary"),
+                Reset('reset', 'Очистить'),
+            ),
+            Field('account', css_class='input-xlarge'),
+            Field('type', css_class='input-xlarge'),
+            Field('description', css_class='input-xlarge'),
+            Field('summ', css_class='input-xlarge'),
+            Field('bill', css_class='input-xlarge'),
+            Field('tarif', css_class='input-xlarge'),
+            'created',
+            'systemuser',
+
+
+        )
+        super(TransactionModelForm, self).__init__(*args, **kwargs)
+    created = forms.DateTimeField(required=True, widget =  widgets.AdminSplitDateTime)
     class Meta:
         model = Transaction
         exclude = ('systemuser',)
@@ -158,6 +252,27 @@ class BankDataForm(ModelForm):
         model = BankData
               
 class AccountForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_class = 'form-horizontal container-fluid'
+        self.helper.layout = Layout(
+            FormActions(
+                Submit('filter', 'Сохранить', css_class="btn-primary"),
+                Submit('filter', 'Удалить', css_class="btn btn-danger"),
+            ),
+            Field('username', css_class='input-xlarge'),
+            Field('pasword', css_class='input-xlarge'),
+            Field('fullname', css_class='input-xlarge'),
+            Field('ballance', css_class='input-xlarge'),
+            Field('credit', css_class='input-xlarge'),
+            Field('tarif', css_class='input-xlarge'),
+            'created',
+            'systemuser',
+
+
+        )
+        super(AccountForm, self).__init__(*args, **kwargs)
+        
     class Meta:
         model = Account
         exclude = ('ballance',)

@@ -84,6 +84,8 @@ def simple_login(request):
 @ajax_request
 @login_required
 def jsonaccounts(request):
+    if  not request.user.is_staff==True:
+        return {'status':False, 'message':u'Недостаточно прав для выполнения операции'}
     extra={'start':int(request.POST.get('start',0)), 'limit':int(request.POST.get('limit',100))}
     if request.POST.get('sort',''):
         extra['sort'] = request.POST.get('sort','')
@@ -116,6 +118,9 @@ def jsonaccounts(request):
 @ajax_request
 @login_required
 def addonservice(request):
+    if  not request.user.is_staff==True:
+        return {'status':False, 'message':u'Недостаточно прав для выполнения операции'}
+    
     extra={'start':int(request.POST.get('start',0)), 'limit':int(request.POST.get('limit',100))}
     if request.POST.get('sort',''):
         extra['sort'] = request.POST.get('sort','')
@@ -2215,7 +2220,7 @@ def trafficclassnodes_delete(request):
 @ajax_request
 @login_required
 def classforgroup(request):
-    if  not (request.user.is_staff==True and not request.user.has_perm('billservice.group_view')):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.group_view')):
         return {'status':False, 'message':u'У вас нет прав на просмотр группы трафика'}
     
     fields = request.POST.get('fields',[])
@@ -2273,7 +2278,7 @@ def ippools_set(request):
         item = IPPool.objects.get(id=id)
         form = IPPoolForm(request.POST, instance=item)
     else:
-        if  not (request.user.is_staff==True and not request.user.has_perm('billservice.add_ippool')):
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_ippool')):
             return {'status':False, 'message': u"У вас нет прав на добавление IP пула"}
         form = IPPoolForm(request.POST)
         
