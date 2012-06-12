@@ -2801,7 +2801,7 @@ class AccountsMdiEbs(ebsTableView_n_TreeWindow):
 
 
         objDict = {self.treeWidget :["editTarifAction", "addTarifAction", "delTarifAction", "separator","actionRadiusAttrs",], \
-                   self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction", "messageDialogAction", "rrdAccountTrafficInfo","radiusauth_logInfo", "actionBalanceLog"], \
+                   self.tableWidget:["transactionAction", "addAction", "editAccountAction",  "delAction", "messageDialogAction", "rrdAccountTrafficInfo","radiusauth_logInfo", "transactionReportAction", "actionBalanceLog", "actionPrepaidTrafficInfo", "actionPrepaidRadiusTrafficInfo", "actionPrepaidRadiusTimeInfo", "actionChangeTarif"], \
                    self.toolBar    :["addTarifAction", "delTarifAction", "separator", "actionAccountFilter", "addAction", "delAction", "separator", "transactionAction", "transactionReportAction", "messageDialogAction""separator","actionRadiusAttrs",],\
                    self.toolBar2   :["actionChangeTarif", "actionSetSuspendedPeriod", "connectionAgreementAction", 'separator',  'radiusauth_logInfo', "actionBalanceLog"],\
                    self.menu   :[ 'actionSettlementPeriodInfo', 'separator', "separator", "actionLimitInfo", "separator", "actionPrepaidTrafficInfo", 'actionPrepaidRadiusTrafficInfo', 'actionPrepaidRadiusTimeInfo',"rrdAccountTrafficInfo"],\

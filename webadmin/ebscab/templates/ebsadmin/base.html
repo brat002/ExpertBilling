@@ -9,6 +9,7 @@
 <link rel="stylesheet" type="text/css" href="/admin_media/css/forms.css">
 
 
+
 <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/admin_media/css/ie.css" /><![endif]-->
 
 <script type="text/javascript">window.__admin_media_prefix__ = "/admin_media/";</script>
@@ -37,7 +38,8 @@ $(document).ready(function() {
 
 <script type="text/javascript" src="/admin_media/js/admin/DateTimeShortcuts.js"></script>
 <meta name="robots" content="NONE,NOARCHIVE">
-
+{% block extra_head %}
+{% endblock %}
 </head>
 <body style="padding-top: 60px;" >
 {% load render_table from django_tables2 %}

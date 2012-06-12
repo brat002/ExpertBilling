@@ -1,7 +1,37 @@
 {% extends "ebsadmin/base.html" %}
 {% load crispy_forms_tags %}
+{% block extra_head %}
+        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
+        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
+        <link rel="stylesheet" href="/media/css/jquery-ui-1.7.1.custom.css" type="text/css" title="ui-theme" />
+        <script type="text/javascript"> 
+            $(function(){
+                if($(window.parent.document).find('iframe').size()){
+                    var inframe = true;
+                }
+                 $('#id_created').daterangepicker({
+                	  presetRanges: [
+                	                 {text: 'Сейчас', dateStart: 'Now', dateEnd: 'Now' }
+                	               ],
+                	  presets: {specificDate: 'Указанная дата',
+                		  'allDatesBefore': 'До даты', 
+                		  'allDatesAfter': 'После даты', 
+                		  'dateRange': 'Диапазон дат'},
+                      rangeStartTitle: 'С',
+                      rangeEndTitle: 'По',
+                      doneButtonText: 'Выбрать',
+                      prevLinkText:'Назад',
+                      nextLinkText: 'Вперёд',
+                	  dateFormat: 'yy-mm-dd'
+                 }); 
+    
+             });
+        </script>
+
+{% endblock %}
 {% block body %}
+<div class="container">
 <ul class="nav nav-tabs" id="myTab">
   <li class="active"><a href="#profile">Отчёт</a></li>
   <li><a href="#home">Фильтр</a></li>  
@@ -15,203 +45,334 @@
   
   <div class="row-fluid">
         <div class="span12">
-            <form class="well form-horizontal">
+            <form action="{{form.action}}" method="GET" class="well form-horizontal">
+            {{ form.non_field_errors }}
                 <fieldset>
                     <legend>Данные аккаунта</legend>
 
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-agreement-no">Номер договора</label>
+                            <label class="control-label" for="input-agreement-no">{{form.contract.label}}</label>
                             <div class="controls">
-                                <input type="text" class="input-xlarge" id="input-agreement-no">
+					        {{ form.contract }}
+					        {% if form.contract.errors %}
+					            <span class="help-inline">{% for error in form.contract.errors %}{{ error }}<br/> {% endfor %}</span>
+					        {% endif %}
+					        {% if form.contract.help_text%}
+					            <p class="help-block">
+					                {{ form.contract.help_text|safe }}
+					            </p>
+					        {% endif %}
                             </div>
                         </div>
 
                         <div class="control-row">
-                            <label class="control-label" for="input-uid">UID аккаунта</label>
+                            <label class="control-label" for="input-uid">{{form.id.label}}</label>
                             <div class="controls">
-                                <input type="text" class="input-small" id="input-uid">
+                            {{ form.id }}
+                            {% if form.id.errors %}
+                                <span class="help-inline">{% for error in form.id.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.id.help_text%}
+                                <p class="help-block">
+                                    {{ form.id.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
                     </div>
 
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-agreement-no">Баланс</label>
+                            <label class="control-label" for="input-agreement-no">{{form.ballance.label}}</label>
                             <div class="controls">
-                                <label class="radio inline">
-                                    <input type="radio" checked="" value="option1" id="" name="radios-balance"> Больше
-                                </label>
-                                <label class="radio inline">
-                                    <input type="radio" checked="" value="option2" id="" name="radios-balance"> Меньше
-                                </label>
-                                <label class="radio inline">
-                                    <input type="radio" checked="" value="option3" id="" name="radios-balance"> Не важно
-                                </label>
+                             {{ form.ballance_exp }}
+                            {% if form.ballance_exp.errors %}
+                                <span class="help-inline">{% for error in form.ballance_exp.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.ballance_exp.help_text%}
+                                <p class="help-block">
+                                    {{ form.ballance_exp.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
 
                         <div class="control-row">
-                            <label class="control-label" for="input-balance-sum">Σ</label>
+                            <label class="control-label" for="input-balance-sum">Сумма на балансе</label>
                             <div class="controls">
-                                <input type="text" class="input-small" id="input-balance-sum">
+                             {{ form.ballance }}
+                            {% if form.ballance.errors %}
+                                <span class="help-inline">{% for error in form.ballance.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.ballance.help_text%}
+                                <p class="help-block">
+                                    {{ form.ballance.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
                     </div>
 
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-agreement-no">Кредит</label>
+                            <label class="control-label" for="input-agreement-no">{{form.credit.label}}</label>
                             <div class="controls">
-                                <label class="radio inline">
-                                    <input type="radio" checked="" value="option1" id="" name="radios-credit"> Больше
-                                </label>
-                                <label class="radio inline">
-                                    <input type="radio" checked="" value="option2" id="" name="radios-credit"> Меньше
-                                </label>
-                                <label class="radio inline">
-                                    <input type="radio" checked="" value="option3" id="" name="radios-credit"> Не важно
-                                </label>
+                             {{ form.credit_exp }}
+                            {% if form.credit_exp.errors %}
+                                <span class="help-inline">{% for error in form.credit_exp.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.credit_exp.help_text%}
+                                <p class="help-block">
+                                    {{ form.credit_exp.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
 
                         <div class="control-row">
-                            <label class="control-label" for="input-credit-sum">Σ</label>
+                            <label class="control-label" for="input-credit-sum">Сумма кредита</label>
                             <div class="controls">
-                                <input type="text" class="input-small" id="input-credit-sum">
+                             {{ form.credit }}
+                            {% if form.credit.errors %}
+                                <span class="help-inline">{% for error in form.credit.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.credit.help_text%}
+                                <p class="help-block">
+                                    {{ form.credit.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
+                        
                     </div>
-
-                    <div class="control-group">
-                        <div class="control-row">
-                            <label class="control-label" for="input-vpn-ip">VPN IP</label>
-                            <div class="controls">
-                                <input type="text" class="input-xlarge" id="input-vpn-ip">
-                            </div>
-                        </div>
-
-                        <div class="control-row">
-                            <label class="control-label" for="input-ipn-ip">IPN IP</label>
-                            <div class="controls">
-                                <input type="text" class="input-xlarge" id="input-ipn-ip">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-                        <label class="control-label" for="input-server-access">Сервер доступа</label>
-                        <div class="controls">
-                            <select id="server-access" multiple="multiple">
-                                <option>Atlant</option>
-                                <option>Omega</option>
-                                <option>Mnemonica</option>
-                                <option>Dallas</option>
-                                <option>Orion</option>
-                                <option>Detroit</option>
-                                <option>...</option>
-                            </select>
-                        </div>
-                    </div>
-
                     <div class="control-group">
                         <div class="control-row">
                             <label class="control-label" for="input-entrance">Дата создания</label>
                             <div class="controls">
-                                <input data-datepicker="datepicker" class="input-small" type="text" value="2011-06-08"><div class="datepicker" style="display: none; "><div class="nav"><div class="months"><span class="prev button">←</span><span class="name"><div class="fg">June</div></span><span class="next button">→</span></div><div class="years"><span class="prev button">←</span><span class="name"><div class="fg">2011</div></span><span class="next button">→</span></div></div><div class="calendar"><div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div><div class="dow">Sun</div><div class="days"><div date="2011-05-30" class="overlap">30</div><div date="2011-05-31" class="overlap">31</div><div date="2011-06-01">1</div><div date="2011-06-02">2</div><div date="2011-06-03">3</div><div date="2011-06-04">4</div><div date="2011-06-05">5</div><div date="2011-06-06">6</div><div date="2011-06-07">7</div><div date="2011-06-08" class="selected">8</div><div date="2011-06-09">9</div><div date="2011-06-10">10</div><div date="2011-06-11">11</div><div date="2011-06-12">12</div><div date="2011-06-13">13</div><div date="2011-06-14">14</div><div date="2011-06-15">15</div><div date="2011-06-16">16</div><div date="2011-06-17">17</div><div date="2011-06-18">18</div><div date="2011-06-19">19</div><div date="2011-06-20">20</div><div date="2011-06-21">21</div><div date="2011-06-22">22</div><div date="2011-06-23">23</div><div date="2011-06-24">24</div><div date="2011-06-25">25</div><div date="2011-06-26">26</div><div date="2011-06-27">27</div><div date="2011-06-28">28</div><div date="2011-06-29">29</div><div date="2011-06-30">30</div><div date="2011-07-01" class="overlap">1</div><div date="2011-07-02" class="overlap">2</div><div date="2011-07-03" class="overlap">3</div></div></div></div>
-                                по: 
-                                <input data-datepicker="datepicker" class="input-small" type="text" value="2012-06-08"><div class="datepicker" style="display: none; "><div class="nav"><div class="months"><span class="prev button">←</span><span class="name"><div class="fg">June</div></span><span class="next button">→</span></div><div class="years"><span class="prev button">←</span><span class="name"><div class="fg">2012</div></span><span class="next button">→</span></div></div><div class="calendar"><div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div><div class="dow">Sun</div><div class="days"><div date="2012-05-28" class="overlap">28</div><div date="2012-05-29" class="overlap">29</div><div date="2012-05-30" class="overlap">30</div><div date="2012-05-31" class="overlap">31</div><div date="2012-06-01">1</div><div date="2012-06-02">2</div><div date="2012-06-03">3</div><div date="2012-06-04">4</div><div date="2012-06-05">5</div><div date="2012-06-06">6</div><div date="2012-06-07">7</div><div date="2012-06-08" class="selected">8</div><div date="2012-06-09">9</div><div date="2012-06-10" class="today">10</div><div date="2012-06-11">11</div><div date="2012-06-12">12</div><div date="2012-06-13">13</div><div date="2012-06-14">14</div><div date="2012-06-15">15</div><div date="2012-06-16">16</div><div date="2012-06-17">17</div><div date="2012-06-18">18</div><div date="2012-06-19">19</div><div date="2012-06-20">20</div><div date="2012-06-21">21</div><div date="2012-06-22">22</div><div date="2012-06-23">23</div><div date="2012-06-24">24</div><div date="2012-06-25">25</div><div date="2012-06-26">26</div><div date="2012-06-27">27</div><div date="2012-06-28">28</div><div date="2012-06-29">29</div><div date="2012-06-30">30</div><div date="2012-07-01" class="overlap">1</div></div></div></div>
+                              
+                            {{ form.created }}
+                            {% if form.created.errors %}
+                                <span class="help-inline">{% for error in form.created.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.created.help_text%}
+                                <p class="help-block">
+                                    {{ form.created.help_text|safe }}
+                                </p>
+                            {% endif %}
+                              
+                            </div>
+                            
+                        </div>
+                                            <div class="control-row">
+                        <label class="control-label">Статус аккаунта</label>
+                        <div class="controls">
+                             {{ form.status }}
+                            {% if form.status.errors %}
+                                <span class="help-inline">{% for error in form.status.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.status.help_text%}
+                                <p class="help-block">
+                                    {{ form.status.help_text|safe }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="input-server-access">{{form.tariff.label}}</label>
+                        <div class="controls">
+                             {{ form.tariff }}
+                            {% if form.tariff.errors %}
+                                <span class="help-inline">{% for error in form.tariff.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.tariff.help_text%}
+                                <p class="help-block">
+                                    {{ form.tariff.help_text|safe }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+           </fieldset>
+                           <fieldset>
+                    <legend>Сетевая идентификация</legend>
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-vpn-ip">{{form.vpn_ip_address.label}}</label>
+                            <div class="controls">
+                             {{ form.vpn_ip_address }}
+                            {% if form.vpn_ip_address.errors %}
+                                <span class="help-inline">{% for error in form.vpn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.vpn_ip_address.help_text%}
+                                <p class="help-block">
+                                    {{ form.vpn_ip_address.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-ipn-ip">{{form.ipn_ip_address.label}}</label>
+                            <div class="controls">
+                             {{ form.ipn_ip_address }}
+                            {% if form.ipn_ip_address.errors %}
+                                <span class="help-inline">{% for error in form.ipn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.ipn_ip_address.help_text%}
+                                <p class="help-block">
+                                    {{ form.ipn_ip_address.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="input-server-access">Тарифный план</label>
+                        <div class="control-row">
+                        <label class="control-label" for="input-server-access">{{form.nas.label}}</label>
                         <div class="controls">
-                            <select id="server-access" multiple="multiple">
-                                <option>Alfa</option>
-                                <option>Omega</option>
-                                <option>Gamma</option>
-                                <option>Epsilon</option>
-                                <option>Quarte</option>
-                                <option>Septa</option>
-                                <option>...</option>
-                            </select>
+                             {{ form.nas }}
+                            {% if form.nas.errors %}
+                                <span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.nas.help_text%}
+                                <p class="help-block">
+                                    {{ form.nas.help_text|safe }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-mac-address">{{form.ipn_mac_address.label}}</label>
+                            <div class="controls">
+                             {{ form.ipn_mac_address }}
+                            {% if form.ipn_mac_address.errors %}
+                                <span class="help-inline">{% for error in form.ipn_mac_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.ipn_mac_address.help_text%}
+                                <p class="help-block">
+                                    {{ form.ipn_mac_address.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
                         </div>
                     </div>
-
+                    
                     <div class="control-group">
+                    <div class="control-row">
+                        
+                        <div class="controls">
+                             &nbsp;
+                        </div>
+                    </div>
+                    <div class="control-row">
                         <label class="control-label">IPN статус</label>
                         <div class="controls">
-                            <label class="radio inline">
-                                <input type="radio" checked="" value="option1" id="" name="radios-ipn-status"> Активен
-                            </label>
-                            <label class="radio inline">
-                                <input type="radio" checked="" value="option2" id="" name="radios-ipn-status"> Неактивен
-                            </label>
-                            <label class="radio inline">
-                                <input type="radio" checked="" value="option3" id="" name="radios-ipn-status"> Неважно
-                            </label>
+                             {{ form.ipn_status }}
+                            {% if form.ipn_status.errors %}
+                                <span class="help-inline">{% for error in form.ipn_status.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.ipn_status.help_text%}
+                                <p class="help-block">
+                                    {{ form.ipn_status.help_text|safe }}
+                                </p>
+                            {% endif %}
                         </div>
+                    </div>
                     </div>
 
-                    <div class="control-group">
-                        <label class="control-label">Статус аккаунта</label>
-                        <div class="controls">
-                            <label class="radio inline">
-                                <input type="radio" checked="" value="option1" id="" name="radios-account-status"> Активен
-                            </label>
-                            <label class="radio inline">
-                                <input type="radio" checked="" value="option2" id="" name="radios-account-status"> Неактивен
-                            </label>
-                            <label class="radio inline">
-                                <input type="radio" checked="" value="option3" id="" name="radios-account-status"> Неважно
-                            </label>
-                        </div>
-                    </div>
+
+
+
+
+
+
+
                 </fieldset>
 
                 <fieldset>
                     <legend>Персональные данные</legend>
 
                     <div class="control-group">
-                        <label class="control-label" for="input-username">Username</label>
+                    <div class="control-row">
+                        <label class="control-label" for="input-username">{{form.username.label}}</label>
                         <div class="controls">
-                            <input type="text" class="input-xlarge" id="input-username">
+                             {{ form.username }}
+                            {% if form.username.errors %}
+                                <span class="help-inline">{% for error in form.username.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.username.help_text%}
+                                <p class="help-block">
+                                    {{ form.username.help_text|safe }}
+                                </p>
+                            {% endif %}
                         </div>
                     </div>
-
+                        <div class="control-row">
+                            <label class="control-label" for="input-phone">{{form.phone.label}}</label>
+                            <div class="controls">
+                             {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <span class="help-inline">{% for error in form.phone.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.phone.help_text%}
+                                <p class="help-block">
+                                    {{ form.phone.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                            </div>
+                   </div>
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-name">ФИО</label>
+                            <label class="control-label" for="input-name">{{form.fullname.label}}</label>
                             <div class="controls">
-                                <input type="text" class="input-xlarge" id="input-name">
+                             {{ form.fullname }}
+                            {% if form.fullname.errors %}
+                                <span class="help-inline">{% for error in form.fullname.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.fullname.help_text%}
+                                <p class="help-block">
+                                    {{ form.fullname.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
 
                         <div class="control-row">
-                            <label class="control-label" for="input-cperson">Контактное лицо</label>
+                            <label class="control-label" for="input-cperson">{{form.contactperson.label}}</label>
                             <div class="controls">
-                                <input type="text" class="input-xlarge" id="input-cperson">
+                             {{ form.contactperson }}
+                            {% if form.contactperson.errors %}
+                                <span class="help-inline">{% for error in form.contactperson.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.contactperson.help_text%}
+                                <p class="help-block">
+                                    {{ form.contactperson.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
                             </div>
                         </div>
-                    </div>
+                    
 
-                    <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-phone">Телефон</label>
+                            <label class="control-label" for="input-passport">{{form.passport.label}}</label>
                             <div class="controls">
-                                <input type="text" class="input-xlarge" id="input-passport">
+                             {{ form.passport }}
+                            {% if form.passport.errors %}
+                                <span class="help-inline">{% for error in form.passport.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.passport.help_text%}
+                                <p class="help-block">
+                                    {{ form.passport.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
-
-                        <div class="control-row">
-                            <label class="control-label" for="input-passport">Номер паспорта</label>
-                            <div class="controls">
-                                <input type="text" class="input-small" id="input-passport">
-                            </div>
-                        </div>
-                    </div>
+            
                 </fieldset>
                 
                 <fieldset>
@@ -219,32 +380,81 @@
 
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-city">Город</label>
+                            <label class="control-label" for="input-city">{{form.city.label}}</label>
                             <div class="controls">
-                                <input type="text" class="input-xlarge" id="input-city">
+                             {{ form.city }}
+                            {% if form.city.errors %}
+                                <span class="help-inline">{% for error in form.city.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.city.help_text%}
+                                <p class="help-block">
+                                    {{ form.city.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
 
                         <div class="control-row">
-                            <label class="control-label" for="input-street">Улица</label>
+                            <label class="control-label" for="input-street">{{form.street.label}}</label>
                             <div class="controls">
-                                <input type="text" class="input-large" id="input-street">
-                                <input type="text" class="input-small input-xsmall input-street-no" id="input-street-no" placeholder="№">
+                             {{ form.street }}
+                            {% if form.street.errors %}
+                                <span class="help-inline">{% for error in form.street.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.street.help_text%}
+                                <p class="help-block">
+                                    {{ form.street.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            {{ form.house }}
+                            {% if form.house.errors %}
+                                <span class="help-inline">{% for error in form.house.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.house.help_text%}
+                                <p class="help-block">
+                                    {{ form.house.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            {{ form.room }}
+                            {% if form.room.errors %}
+                                <span class="help-inline">{% for error in form.room.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.room.help_text%}
+                                <p class="help-block">
+                                    {{ form.room.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="input-entrance">Подъезд</label>
+                        <label class="control-label" for="input-entrance">{{form.house_bulk.label}}</label>
                         <div class="controls">
-                            <input type="text" class="input-small input-xsmall" id="input-entrance">
+                            {{ form.house_bulk }}
+                            {% if form.house_bulk.errors %}
+                                <span class="help-inline">{% for error in form.house_bulk.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.house_bulk.help_text%}
+                                <p class="help-block">
+                                    {{ form.house_bulk.help_text|safe }}
+                                </p>
+                            {% endif %}
                         </div>
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="input-floor">Этаж</label>
+                        <label class="control-label" for="input-floor">{{form.row.label}}</label>
                         <div class="controls">
-                            <input type="text" class="input-small input-xsmall" id="input-floor">
+                            {{ form.row }}
+                            {% if form.row.errors %}
+                                <span class="help-inline">{% for error in form.row.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.row.help_text%}
+                                <p class="help-block">
+                                    {{ form.row.help_text|safe }}
+                                </p>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -345,6 +555,6 @@
   <div class="tab-pane" id="messages">...</div>
   <div class="tab-pane" id="settings">...</div>
 </div>
+</div>
  {% endblock %}
-</body>
-</html>
+

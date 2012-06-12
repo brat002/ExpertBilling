@@ -976,7 +976,7 @@ class AddCards(QtGui.QDialog):
 
 class CardsChildEbs(ebsTableWindow):
     def __init__(self, connection):
-        columns=['#', u'Серия', u'Номинал', u'Тип', u'Пул', u'Логин', u'PIN',  u'Тариф', u'NAS', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
+        columns=['#', u'Серия', u'Номинал', u'Тип', u'Пул', u'Логин', u'PIN',  u'Ext ID', u'Тариф', u'NAS', u"Продано", u"Активировано", u'Активировать c', u'Активировать по']
         initargs = {"setname":"cards_frame", "objname":"CardsFrameMDI", "winsize":(0,0,947, 619), "wintitle":"Система карт оплаты", "tablecolumns":columns}
         super(CardsChildEbs, self).__init__(connection, initargs)
         
@@ -1247,10 +1247,10 @@ class CardsChildEbs(ebsTableWindow):
                 sql+=" AND activated>'%s' and activated<'%s'" % (start_date, end_date)
             
             if self.checkBox_sold.checkState() == 2:
-                sql+=" AND sold>'%s' and sold<'%s'" % (start_date, end_date)
+                sql+=" OR sold>'%s' and sold<'%s'" % (start_date, end_date)
                 
             if self.checkBox_sold.checkState() == 0 and self.checkBox_activated.checkState() == 0:
-                sql+=" AND start_date>'%s' and end_date<'%s'" % (start_date, end_date)
+                sql+=" OR start_date>'%s' and end_date<'%s'" % (start_date, end_date)
         else:
             sql+=" WHERE sold is Null"
             
@@ -1260,16 +1260,7 @@ class CardsChildEbs(ebsTableWindow):
 
             
         self.tableWidget.clearContents()
-        self.connection.commit()
-        self.genericThread = GenericThread(self.connection, sql)
-        self.connect(self.genericThread, QtCore.SIGNAL("refresh(QVariant)"), self.fix)
-        self.genericThread.start()
-
-    
-    def fix(self, nodes):
-        self.genericThread.terminate()
-        self.connection.commit()
-        nodes=nodes.toList()
+        nodes=self.connection.sql(sql)
         #print nodes
         tariffs = self.connection.get_tariffs(fields=['id', 'name'])
         t={}
@@ -1286,7 +1277,6 @@ class CardsChildEbs(ebsTableWindow):
         
         card_types=[u'Карта экспресс-оплаты',u'HotSpot карта',u'VPN карта доступа',u"Телефонные карты"]
         for node in nodes:
-            node=node.toPyObject()
             self.addrow(node.id, i,0, status = node.disabled, activated=node.activated, id=node.id)
             self.addrow(node.series, i,1, status = node.disabled, activated=node.activated)
             self.addrow(node.nominal, i,2, status = node.disabled, activated=node.activated)
@@ -1294,13 +1284,14 @@ class CardsChildEbs(ebsTableWindow):
             self.addrow(node.pool_name, i,4, status = node.disabled, activated=node.activated)
             self.addrow(node.login, i,5, status = node.disabled, activated=node.activated)
             self.addrow(node.pin, i,6, status = node.disabled, activated=node.activated)
-            self.addrow(t.get("%s" % node.tarif_id), i,7, status = node.disabled, activated=node.activated)
-            self.addrow(n.get("%s" % node.nas_id), i,8, status = node.disabled, activated=node.activated)
+            self.addrow(node.ext_id, i,7, status = node.disabled, activated=node.activated)
+            self.addrow(t.get("%s" % node.tarif_id), i,8, status = node.disabled, activated=node.activated)
+            self.addrow(n.get("%s" % node.nas_id), i,9, status = node.disabled, activated=node.activated)
             
-            self.addrow(node.sold, i,9, status = node.disabled, activated=node.activated)
-            self.addrow(node.activated, i,10, status = node.disabled, activated=node.activated)
-            self.addrow(node.start_date.strftime(self.strftimeFormat), i,11, status = node.disabled, activated=node.activated)
-            self.addrow(node.end_date.strftime(self.strftimeFormat), i,12, status = node.disabled, activated=node.activated)
+            self.addrow(node.sold, i,10, status = node.disabled, activated=node.activated)
+            self.addrow(node.activated, i,11, status = node.disabled, activated=node.activated)
+            self.addrow(node.start_date.strftime(self.strftimeFormat), i,12, status = node.disabled, activated=node.activated)
+            self.addrow(node.end_date.strftime(self.strftimeFormat), i,13, status = node.disabled, activated=node.activated)
             i+=1
             
         self.statusBar().showMessage(u"Данные получены")

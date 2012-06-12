@@ -4198,7 +4198,7 @@ def account_save(request):
     newcontract=False
     acc = None
     if id:
-        print "change", request.user.has_perm('billservice.change_account')
+        #print "change", request.user.has_perm('billservice.change_account')
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_account')):
             transaction.rollback()
             return {'status':False, 'message':u'У вас нет прав на изменение аккаунта'}

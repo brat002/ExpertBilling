@@ -33,6 +33,13 @@ INSERT INTO billservice_transaction(
             created)
     VALUES (%(ACC_ID)s, '%(PAYMENT_TYPE)s', True, (-1)*%(SUM)s,  '%(DATETIME)s');
 """
+reversal_transaction_pattern=u"""
+INSERT INTO billservice_transaction(
+            account_id, type_id, approved, (-1)*summ,
+            created)
+    VALUES (%(ACC_ID)s, '%(PAYMENT_TYPE)s', True, %(SUM)s,  '%(DATETIME)s');
+"""
+
 curdir='/opt/ebs/data/scripts/payments/'
 #curdir='d:/projects/mikrobill/scripts/payments/'
 config.read(curdir+"pattern.ini")
@@ -89,6 +96,8 @@ if __name__=='__main__':
         active = config.get(payment_system, 'active')
         file_mask = config.get(payment_system, 'file_mask')
         exclude_mask = config.get(payment_system, 'exclude_mask')
+        reversal_payments=config.getboolean(payment_system, 'exclude_mask') or False
+        
         skip_firstline = config.getboolean(payment_system, 'skip_firstline') if config.has_option(payment_system, 'skip_firstline') else False
         
         folder_in, folder_out, folder_err = config.get(payment_system, 'folder_in'),config.get(payment_system, 'folder_out'),config.get(payment_system, 'folder_err')
@@ -127,8 +136,12 @@ if __name__=='__main__':
                     res_dict['ACC_ID']=acc_id
                     if check_dublicates(cur, res_dict)==True:
                         continue
-
-                    s=transaction_pattern % res_dict
+                    
+                    
+                    if reversal_payments==True:
+                        s=reversal_transaction_pattern % res_dict
+                    else:
+                        s=transaction_pattern % res_dict
                     print "INSERT\n"
                     print "*"*10
                     cur.execute(s)

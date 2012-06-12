@@ -4,7 +4,7 @@ import transactionreport
 urlpatterns = patterns('ebsadmin.transactionreport',
                        url(r'^transactionreport/$', 'transactionreport'),
                        url(r'^transactionreport2/$', 'transactionreport2'),
-                       url(r'^accountsreport/$', 'accountsreport'),
+                       url(r'^accountsreport/$', 'accountsreport', name='accounts_report'),
                        url(r'^activesessionreport/$', 'activesessionreport'),
                        )
 urlpatterns += patterns('ebsadmin.charts',
