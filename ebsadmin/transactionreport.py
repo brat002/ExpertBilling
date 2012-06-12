@@ -494,20 +494,96 @@ def accountsreport(request):
         #pageitems = 100
         form = SearchAccountForm(data)
         if form.is_valid():
+            date_start, date_end = None, None
+            account = form.cleaned_data.get('account')+form.cleaned_data.get('fullname')+form.cleaned_data.get('contactperson')+form.cleaned_data.get('username')
+            id = form.cleaned_data.get('id')
+            passport = form.cleaned_data.get('passport')
+            created = form.cleaned_data.get('created')
+            tariff = form.cleaned_data.get('tariff')
+            street = form.cleaned_data.get('street')
+            room = form.cleaned_data.get('room')
+            row = form.cleaned_data.get('row')
+            house = form.cleaned_data.get('house')
+            house_bulk = form.cleaned_data.get('house_bulk')
+            ballance = form.cleaned_data.get('ballance')
+            ballance_exp = form.cleaned_data.get('ballance_exp')
+            vpn_ip_address = form.cleaned_data.get('vpn_ip_address')
+            ipn_ip_address = form.cleaned_data.get('ipn_ip_address')
+            ipn_mac_address = form.cleaned_data.get('ipn_mac_address')
+            nas = form.cleaned_data.get('nas')
 
-            account = form.cleaned_data.get('account')
-            date_start = form.cleaned_data.get('created_from')
-            date_end = form.cleaned_data.get('created_to')
+            credit = form.cleaned_data.get('credit')
+            credit_exp = form.cleaned_data.get('credit_exp')
+                        
+            status = int(form.cleaned_data.get('status', 0))
+            
+            if type(created)==tuple:
+                date_start, date_end = created
             systemusers = form.cleaned_data.get('systemuser')
 
             
             res = Account.objects.all()
+            if id:
+                res = Account.objects.filter(id=id)
+            if room:
+                res = Account.objects.filter(room__icontains=room)
+
+                
             if account:
                 res = Account.objects.filter(id__in=account)
             if date_start:
                 res = res.filter(created__gte=date_start)
             if date_end:
                 res = res.filter(created__lte=date_end)
+                
+            if not (date_start and date_end) and created:
+                res = res.filter(created=created)
+            if tariff:
+                res = res.extra(where=['billservice_account.id in (SELECT account_id FROM billservice_accounttarif WHERE tarif_id in (%s))'], params=[ ','.join(['%s' % x.id for x in tariff]) ])
+            
+            if street:
+                res = res.filter(street__name__icontains=street)
+
+            if house:
+                res = res.filter(house__name__icontains=house)
+
+            if row:
+                res = Account.objects.filter(row=row)
+                
+            if status:
+                res = res.filter(status=status)
+
+            if passport:
+                res = res.filter(passport__icontains=passport)
+                
+            if vpn_ip_address:
+                res = res.filter(subaccounts__vpn_ip_address__icontains=vpn_ip_address)
+
+            if ipn_ip_address:
+                res = res.filter(subaccounts__ipn_ip_address__icontains=ipn_ip_address)
+
+            if ipn_mac_address:
+                res = res.filter(subaccounts__ipn_mac_address__icontains=ipn_mac_address)
+
+            if nas:
+                res = res.filter(subaccounts__nas__in=nas)
+                                 
+            if ballance_exp:
+                if ballance_exp=='>':
+                    res = res.filter(ballance__gte=ballance)
+                elif ballance_exp=='<':
+                    res = res.filter(ballance__lte=ballance)
+                else:
+                    res = res.filter(ballance=ballance)
+                    
+            if credit_exp:
+                if credit_exp=='>':
+                    res = res.filter(credit__gte=credit)
+                elif credit_exp=='<':
+                    res = res.filter(credit__lte=credit)
+                else:
+                    res = res.filter(credit=credit)
+                    
             table = TotalTransactionReportTable(res)
             RequestConfig(request, paginate = True).configure(table)
 
@@ -517,10 +593,9 @@ def accountsreport(request):
             return {"table": table,  'form':form}   
     
         else:
-    
-            return {'status':False, 'errors':form._errors}
+            return {'status':False, 'form':form}
     else:
-        form = SearchAccountForm(request.GET)
+        form = SearchAccountForm()
         return { 'form':form}   
     
 @login_required

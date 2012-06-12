@@ -119,6 +119,7 @@ AJAX_LOOKUP_CHANNELS = {
     #   pass a dict with the model and the field to search against
     'account_fts'  : ('billservice.lookups', 'AccountFTSLookup'),
     'account_fullname'  : ('billservice.lookups', 'AccountFullnameLookup'),
+    'account_username'  : ('billservice.lookups', 'AccountUsernameLookup'),
     'account_contract': ('billservice.lookups', 'AccountContractLookup'),
     'account_contactperson': ('billservice.lookups', 'AccountContactPersonLookup'),
     'city_name': ('billservice.lookups', 'CityLookup'),
