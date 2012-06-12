@@ -1371,14 +1371,23 @@ class settlement_period_service_dog(Thread):
                         if ex.__class__ in vars.db_errors: raise ex
                 cur.connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
-                cur.execute("""UPDATE billservice_transaction as tr
-                              SET promise_expired = True, summ=0, description='Обнуление обещанного платежа на сумму ' || summ*(-1) 
-                              WHERE 
-                              promise_expired = False and promise = True and
-                              (SELECT sum(summ*(-1)) FROM billservice_transaction WHERE account_id=tr.account_id and promise=False and summ<0 and created>tr.created)>=summ""")
-                
-                cur.execute("""UPDATE billservice_transaction as tr SET summ=0, description='Обнуление обещанного платежа на сумму ' || summ*(-1), promise_expired = True 
-                                WHERE promise=True and promise_expired = False and end_promise<=now();""")
+                cur.execute("""SELECT tr.id
+                                    FROM billservice_transaction as tr
+                                    WHERE 
+                                    promise_expired = False and type_id='PROMISE_PAYMENT' and
+                                    (end_promise<now() or (SELECT sum(summ*(-1)) FROM billservice_transaction WHERE account_id=account_id and type_id!='PROMISE_PAYMENT' and summ<0 and created>created)>=summ)""")
+                promises = cur.fetchall()
+
+                if promises:
+                    cur.execute("""
+                            INSERT INTO billservice_transaction(bill, account_id, type_id, approved, summ, description, created, promise_expired) 
+                            SELECT id,account_id, 'PROMISE_DEBIT', approved, (-1)*summ, description, now(), True
+                              FROM billservice_transaction as tr
+                              WHERE tr.id in (%s);
+                    """ % ', '.join([str(x[0]) for x in promises]))
+                    
+                cur.execute("""UPDATE billservice_transaction as tr SET promise_expired = True 
+                                WHERE id in (%s);""" % ', '.join([str(x[0]) for x in promises]))
                 cur.connection.commit()
                 for account in caches.account_cache.data:
                     if account.account_status==4:

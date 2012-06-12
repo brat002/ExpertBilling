@@ -15,10 +15,82 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, Reset,  HTML, Button, Row, Field
 from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
+from django.core.urlresolvers import reverse
+from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectMultipleWidget
+from itertools import chain
 
-from ajax_select.fields import AutoCompleteSelectMultipleField
+class DateRangeField(forms.DateField):
+    def clean(self, value):
+        if isinstance(value, unicode):
+            if value.rfind(" - ")!=-1:
+                date_start, date_end = value.split(" - ")
+                date_start = self.to_python(date_start)
+                self.validate(date_start)
+                self.run_validators(date_start)
+                date_end = self.to_python(date_end)
+                self.validate(date_end)
+                self.run_validators(date_end)
+                return date_start, date_end
+        return super(DateRangeField, self).clean(value)
+
+from django.utils.html import conditional_escape
+from django.utils.safestring import mark_safe
+from django.utils.encoding import force_unicode
 
 
+class MyRadioInput(forms.widgets.RadioInput):
+    def __unicode__(self):
+        if 'id' in self.attrs:
+            label_for = ' for="%s_%s"' % (self.attrs['id'], self.index)
+        else:
+            label_for = ''
+        choice_label = conditional_escape(force_unicode(self.choice_label))
+        return mark_safe(u'<label class="radio inline" %s>%s %s</label>' % (label_for,  self.tag(), choice_label,))
+    
+    
+
+class MyCustomRenderer(forms.widgets.RadioFieldRenderer ):
+
+    def __iter__(self):
+        for i, choice in enumerate(self.choices):
+            yield MyRadioInput(self.name, self.value, self.attrs.copy(), choice, i)
+
+    def __getitem__(self, idx):
+        choice = self.choices[idx] # Let the IndexError propogate
+        return MyRadioInput(self.name, self.value, self.attrs.copy(), choice, idx)
+    
+    def render(self):
+        return mark_safe(u'\n'.join([u'%s' %
+                         force_unicode(w) for w in self]))
+
+###
+
+class MyMultipleCheckBoxInput(forms.widgets.CheckboxSelectMultiple):
+    def render(self, name, value, attrs=None, choices=()):
+        if value is None: value = []
+        has_id = attrs and 'id' in attrs
+        final_attrs = self.build_attrs(attrs, name=name)
+        output = []
+        # Normalize to strings
+        str_values = set([force_unicode(v) for v in value])
+        for i, (option_value, option_label) in enumerate(chain(self.choices, choices)):
+            # If an ID attribute was given, add a numeric index as a suffix,
+            # so that the checkboxes don't all have the same ID attribute.
+            if has_id:
+                final_attrs = dict(final_attrs, id='%s_%s' % (attrs['id'], i))
+                label_for = u' for="%s"' % final_attrs['id']
+            else:
+                label_for = ''
+
+            cb = forms.CheckboxInput(final_attrs, check_test=lambda value: value in str_values)
+            option_value = force_unicode(option_value)
+            rendered_cb = cb.render(name, option_value)
+            option_label = conditional_escape(force_unicode(option_label))
+            output.append(u'<label class="radio inline" %s>%s %s</label>' % (label_for, rendered_cb, option_label))
+        return mark_safe(u'\n'.join(output))
+    
+       
+                
 class LoginForm(forms.Form):
     username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
     user = forms.CharField(label=u"User", required = False)
@@ -68,60 +140,47 @@ class StatististicForm(forms.Form):
     
 class SearchAccountForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        self.helper = FormHelper()
-        self.helper.form_class = 'form-horizontal'
-        self.helper.form_method= "GET"
-        self.helper.form_action = "/ebsadmin/accountsreport/"
-        self.helper.layout = Layout(
-            FormActions(
-                Submit('all', 'На одной странице', css_class="btn btn-success"),
-                Submit('paging', 'С пагинацией', css_class="btn-primary"),
-                Reset('reset', 'Очистить',  css_class="btn"),
-            ),
-            Field('account', css_class='input-xlarge'),
-            Field('created_from', css_class='input-small'),
-            Field('created_to', css_class='input-small'),
-            Field('contract', css_class='input-xlarge'),
-            Field('fullname', css_class='input-xlarge'),
-            Field('contactperson', css_class='input-xlarge'),
-            Field('city', css_class='input-xlarge'),
-            
-            Field('street', css_class='input-xlarge'),
-            Field('house', css_class='input-xlarge'),
-            FormActions(
-                Submit('all', 'На одной странице', css_class="btn btn-success"),
-                Submit('paging', 'С пагинацией', css_class="btn-primary"),
-                Reset('reset', 'Очистить'),
-            ),
-
-        )
+        self.action = reverse('accounts_report')
         super(SearchAccountForm, self).__init__(*args, **kwargs)
+        
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
-    contract = AutoCompleteSelectMultipleField( 'account_contract', label = u"Номер договора", required = False)
-    username = AutoCompleteSelectMultipleField( 'account_username', required = False, help_text=u"Введите часть фразы для поиска")
-    fullname = AutoCompleteSelectMultipleField( 'account_fullname', required = False, help_text=u"Введите часть фразы для поиска")
-    contactperson = AutoCompleteSelectMultipleField( 'account_contactperson', required = False, help_text=u"Введите часть фразы для поиска")
-    city = AutoCompleteSelectMultipleField( 'city_name', required = False, help_text=u"Введите часть фразы для поиска")
-    street = AutoCompleteSelectMultipleField( 'street_name', required = False, help_text=u"Введите часть фразы для поиска")
-    house = AutoCompleteSelectMultipleField( 'house_name', required = False, help_text=u"Введите часть фразы для поиска")
-    house_bulk = forms.CharField(required=False)
-    room = forms.CharField(required=False)
-    status = forms.IntegerField(required=False)
-    ballance_exp = forms.CharField(required=False)
-    ballance = forms.DecimalField(required=False)
-    credit_exp = forms.CharField(required=False)
-    credit = forms.DecimalField(required=False)
-    tariff = forms.ModelMultipleChoiceField(queryset=Nas.objects.all(), required=False)
+    contract = AutoCompleteSelectMultipleField( 'account_contract', label = u"Номер договора", required = False, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    username = AutoCompleteSelectMultipleField( 'account_username', required = False, label=u"Имя аккаунта")
+    fullname = AutoCompleteSelectMultipleField( 'account_fullname', required = False, label=u"ФИО")
+    contactperson = AutoCompleteSelectMultipleField( 'account_contactperson', required = False, label =u"Контактное лицо")
+    city = AutoCompleteSelectMultipleField( 'city_name', required = False, label= u"Город")
+    street = forms.CharField(label =u"Адрес", required=False, widget = forms.TextInput(attrs={'class': 'input-large', 'placeholder': u'Улица'}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
+    house = forms.CharField(label =u"Дом", required=False, widget = forms.TextInput(attrs={'class': 'input-xsmall', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
+    house_bulk = forms.CharField(label =u"Подъезд", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    room = forms.CharField(label =u"Квартира", required=False, widget = forms.TextInput(attrs={'class': 'input-xsmall', 'placeholder': u'Кв'}))
+    status = forms.ChoiceField(required=False, choices = (('0', u"--Любой--", ), ('1', u'Активен'), ('2', u'Не активен, списывать периодические услуги'),('3', u'Не активен, не списывать периодические услуги'),('4', u'Пользовательская блокировка'),))
+    id = forms.IntegerField(required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    ballance_exp = forms.ChoiceField(required=False, choices = (('>', u"Больше", ), ('<', u'Меньше'), ('', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
+    ballance = forms.DecimalField(label =u"Баланс", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    credit_exp = forms.ChoiceField(required=False, choices = (('>', u"Больше", ), ('<', u'Меньше'), ('', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
+    credit = forms.DecimalField(label =u"Кредит", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    
+    vpn_ip_address = forms.CharField(label=u"VPN IP адрес", required = False)
+    ipn_ip_address = forms.CharField(label=u"IPN IP адрес", required = False)
+    ipn_mac_address = forms.CharField(label=u"MAC адрес", required = False)
+    
+    ipn_status = forms.MultipleChoiceField(required=False, choices = (('added', u"Добавлен", ), ('enabled', u'Активен'), ('undefined', u'Не важно'),), widget=MyMultipleCheckBoxInput, initial = ["undefined", ])
+    
+    
+    phone = forms.CharField(label=u"Телефон", required = False)
+    passport = forms.CharField(label=u"№ паспорта", required = False)
+    row = forms.CharField(label=u"Этаж", required = False, widget = forms.TextInput(attrs={'class': 'input-small',}))
+    
+    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False)
     group_filter = forms.MultipleChoiceField(required=False)
     ballance_blocked = forms.CheckboxInput()
     limit_blocked = forms.CheckboxInput()
-    nas = forms.ModelMultipleChoiceField(queryset=Nas.objects.all(), required=False)
+    nas = forms.ModelMultipleChoiceField(label=u"Сервер доступа субаккаунта", queryset=Nas.objects.all(), required=False)
     ipn_added = forms.CheckboxInput()
     ipn_enabled = forms.CheckboxInput()
     ipn_sleep = forms.CheckboxInput()
     systemuser_filter = forms.MultipleChoiceField(required=False)
-    created_from = forms.DateField(required=False, label=u"C", widget =  widgets.AdminDateWidget )
-    created_to = forms.DateField(required=False, label=u"по", widget =  widgets.AdminDateWidget)
+    created = DateRangeField(required=False, label=u"Создан")
 
 class AccountAddonForm(forms.Form):
     account = forms.IntegerField(required=False)
