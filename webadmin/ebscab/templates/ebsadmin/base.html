@@ -20,10 +20,18 @@
 <script type="text/javascript" src="/admin_media/js/admin/RelatedObjectLookups.js"></script>
 <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+
+<script type="text/javascript" src="/media/jdialogs/lib/jquery.dialog2.js"></script>
+
+<script type="text/javascript" src="/media/jdialogs/lib/jquery.dialog2.helpers.js"></script>
+<script type="text/javascript" src="/media/jquery/js/jquery.controls.js"></script>
+<script type="text/javascript" src="/media/jquery/js/jquery.form.js"></script>
+
+<link type="text/css" rel="stylesheet" href="/media/jdialogs/css/jquery-dialog2/jquery.dialog2.css">
 <link type="text/css" rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/smoothness/jquery-ui.css">
 <script  type="text/javascript" >
 $(document).ready(function() {
-    $('#myTab a').click(function (e) {
+    $('#tab-control a').click(function (e) {
           e.preventDefault();
           $(this).tab('show');
         })
@@ -33,11 +41,18 @@ $(document).ready(function() {
 <script src="/media/bootstrap/js/bootstrap.js"></script>
 <script src="/media/bootstrap/js/bootstrap-dropdown.js"></script>
 <script src="/media/bootstrap/js/bootstrap-tab.js"></script>
+<script src="/media/bootstrap/js/bootstrap-modal.js"></script>
+<script src="/media/bootstrap/js/jquery-ui-timepicker-addon.js"></script>
 <script type="text/javascript" src="/admin_media/js/calendar.js"></script>
 
 
 <script type="text/javascript" src="/admin_media/js/admin/DateTimeShortcuts.js"></script>
 <meta name="robots" content="NONE,NOARCHIVE">
+<script type="text/javascript"> 
+    $(function(){
+        $('.dropdown-toggle').dropdown()
+    });
+</script>
 {% block extra_head %}
 {% endblock %}
 </head>
@@ -55,22 +70,35 @@ $(document).ready(function() {
   <li class="active">
     <a href="#">Dashboard</a>
   </li>
-  <li><a href="/ebsadmin/accountsreport/">Аккаунты</a></li>
+   <ul class="nav">
+     <li class="dropdown">
+       <a href="#"
+             class="dropdown-toggle"
+             data-toggle="dropdown">
+             Аккаунты
+             <b class="caret"></b>
+       </a>
+       <ul class="dropdown-menu">
+         <li><a href="{% url account_new %}">Новый аккаунт</a></li>
+         <li><a href="{% url account_list %}">Поиск</a></li>
+       </ul>
+     </li>
+   </ul>
   <li><a href="#">Сервера доступа</a></li>
   <li><a href="#">Расчётные периоды</a></li>
-    <ul class="nav">
-      <li class="dropdown">
-        <a href="#"
-              class="dropdown-toggle"
-              data-toggle="dropdown">
-              Отчёты
-              <b class="caret"></b>
-        </a>
-        <ul class="dropdown-menu">
-          <li><a href="#">Операции с л/c</a></li>
-        </ul>
-      </li>
-    </ul>
+   <ul class="nav">
+     <li class="dropdown">
+       <a href="#"
+             class="dropdown-toggle"
+             data-toggle="dropdown">
+             Отчёты
+             <b class="caret"></b>
+       </a>
+       <ul class="dropdown-menu">
+         <li><a href="#">Операции с л/c</a></li>
+       </ul>
+     </li>
+   </ul>
 
   <li><a href="#">Справочники</a></li>
   <li><a href="#">Карточная система</a></li>
@@ -84,6 +112,6 @@ $(document).ready(function() {
 </div>
 {% load crispy_forms_tags %}
 
-{% block body %} {% endblock %}
+<div class="container">{% block body %} {% endblock %}</div>
 </body>
 </html>

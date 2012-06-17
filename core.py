@@ -252,7 +252,7 @@ class check_vpn_access(Thread):
                     except Exception, ex:
                         logger.error("%s: row exec exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                         if isinstance(ex, vars.db_errors): raise ex
-                cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE dynamic=True and disabled is Null and ip::inet not in (SELECT DISTINCT framed_ip_address::inet FROM radius_activesession WHERE ipinuse_id is not NUll and (session_status='ACTIVE' or session_status='NACK'));")    
+                cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE dynamic=True and disabled is Null and ip::inet not in (SELECT DISTINCT framed_ip_address::inet FROM radius_activesession WHERE ipinuse_id is not NUll and (session_status='ACTIVE'));")    
                 cur.connection.commit()   
                 cur.close()
                 logger.info("VPNALIVE: VPN thread run time: %s", time.clock() - a)

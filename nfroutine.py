@@ -799,7 +799,7 @@ class NetFlowRoutine(Thread):
                             acc = self.cur.fetchone()
                             self.connection.commit()
                             if not acc: 
-                                logger.info("Account for packet %s by date %s not found: %s ",(str(flow),str(stream_date),))
+                                logger.info("Account for packet %s by date %s not found ",(str(flow),str(stream_date),))
                                 continue
                             acc = AccountData(*acc)
                             oldAcct[flow.acctf_id] = acc                           

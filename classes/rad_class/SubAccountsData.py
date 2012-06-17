@@ -5,7 +5,7 @@ class SubAccountsData(tuple):
 
     __slots__ = () 
 
-    _fields = ('id', 'account_id', 'username', 'password', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'nas_id', 'ipn_added', 'ipn_enabled', 'need_resync', 'speed', 'switch_id', 'switch_port', 'allow_dhcp', 'allow_dhcp_with_null', 'allow_dhcp_with_minus', 'allow_dhcp_with_block', 'allow_vpn_with_null', 'allow_vpn_with_minus', 'allow_vpn_with_block', 'associate_pptp_ipn_ip', 'associate_pppoe_ipn_mac', 'ipn_speed', 'vpn_speed', 'allow_addonservice', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'allow_ipn_with_block', 'vlan', 'vpn_ipv6_ip_address', 'ipv4_ipn_pool_id', 'ipv4_vpn_pool_id') 
+    _fields = ('id', 'account_id', 'username', 'password', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'nas_id', 'ipn_added', 'ipn_enabled', 'need_resync', 'speed', 'switch_id', 'switch_port', 'allow_dhcp', 'allow_dhcp_with_null', 'allow_dhcp_with_minus', 'allow_dhcp_with_block', 'allow_vpn_with_null', 'allow_vpn_with_minus', 'allow_vpn_with_block', 'associate_pptp_ipn_ip', 'associate_pppoe_ipn_mac', 'ipn_speed', 'vpn_speed', 'allow_addonservice', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'allow_ipn_with_block', 'vlan', 'vpn_ipv6_ip_address', 'ipv4_ipn_pool_id', 'ipv4_vpn_pool_id', ) 
 
     def __new__(cls, id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice, allow_ipn_with_null, allow_ipn_with_minus, allow_ipn_with_block, vlan, vpn_ipv6_ip_address,ipv4_ipn_pool_id,ipv4_vpn_pool_id):
         return tuple.__new__(cls, (id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice, allow_ipn_with_null, allow_ipn_with_minus, allow_ipn_with_block, vlan, vpn_ipv6_ip_address,ipv4_ipn_pool_id,ipv4_vpn_pool_id)) 
@@ -27,7 +27,7 @@ class SubAccountsData(tuple):
 
     def _replace(self, **kwds):
         'Return a new RadiusAttrsData object replacing specified fields with new values'
-        result = self._make(map(kwds.pop, ('id', 'account_id', 'username', 'password', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'nas_id', 'ipn_added', 'ipn_enabled', 'need_resync', 'speed', 'switch_id', 'switch_port', 'allow_dhcp', 'allow_dhcp_with_null', 'allow_dhcp_with_minus', 'allow_dhcp_with_block', 'allow_vpn_with_null', 'allow_vpn_with_minus', 'allow_vpn_with_block', 'associate_pptp_ipn_ip', 'associate_pppoe_ipn_mac', 'ipn_speed', 'vpn_speed', 'allow_addonservice', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'allow_ipn_with_block', 'vlan', 'vpn_ipv6_ip_address','ipv4_ipn_pool_id', 'ipv4_vpn_pool_id'), self))
+        result = self._make(map(kwds.pop, ('id', 'account_id', 'username', 'password', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'nas_id', 'ipn_added', 'ipn_enabled', 'need_resync', 'speed', 'switch_id', 'switch_port', 'allow_dhcp', 'allow_dhcp_with_null', 'allow_dhcp_with_minus', 'allow_dhcp_with_block', 'allow_vpn_with_null', 'allow_vpn_with_minus', 'allow_vpn_with_block', 'associate_pptp_ipn_ip', 'associate_pppoe_ipn_mac', 'ipn_speed', 'vpn_speed', 'allow_addonservice', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'allow_ipn_with_block', 'vlan', 'vpn_ipv6_ip_address','ipv4_ipn_pool_id', 'ipv4_vpn_pool_id',), self))
         if kwds:
             raise ValueError('Got unexpected field names: %r' % kwds.keys())
         return result 
@@ -68,6 +68,6 @@ class SubAccountsData(tuple):
     vpn_ipv6_ip_address = property(itemgetter(30))
     ipv4_ipn_pool_id = property(itemgetter(31))
     ipv4_vpn_pool_id = property(itemgetter(32))
-    
+
     
     

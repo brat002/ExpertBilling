@@ -1,21 +1,24 @@
 from django.conf.urls.defaults import *
-import transactionreport
+import wi
 
 urlpatterns = patterns('ebsadmin.transactionreport',
                        url(r'^transactionreport/$', 'transactionreport'),
-                       url(r'^transactionreport2/$', 'transactionreport2'),
-                       url(r'^accountsreport/$', 'accountsreport', name='accounts_report'),
-                       url(r'^activesessionreport/$', 'activesessionreport'),
                        )
 urlpatterns += patterns('ebsadmin.charts',
                        url(r'^charts/$', 'charts'),
                        
                        )
-urlpatterns += patterns('',
-    url('account_detail/(\d+)/', transactionreport.accountedit, name='account_detail'),
+urlpatterns += patterns('ebsadmin.wi',
+    url('account/(\d+)/', wi.accountedit, name='account_edit'),
+    url('account/new/', wi.accountedit, name='account_new'),
+    url('accounttariff/edit/', wi.accounttarif_edit, name='accounttariff_edit'),
+    url('transaction/edit/', wi.transaction, name='transaction_edit'),
+    url('accountaddonservice/edit/(\d+)/', wi.accountaddonservice_edit, name='accountaddonservice_edit'),
     
-    url('subaccount_details/(\d+)/', transactionreport.subaccountedit, name='subaccount_detail')
-    
+    url('subaccount_details/(\d+)/', wi.subaccountedit, name='subaccount_detail'),
+    url(r'^transactionreport2/$', 'transactionreport2', name='transactionreport2'),
+    url(r'^accountsreport/$', 'accountsreport', name='account_list'),
+    url(r'^activesessionreport/$', 'activesessionreport'),
 )
 
 urlpatterns += patterns('ebsadmin.views',
@@ -220,7 +223,7 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^subaccounts/set/$', 'subaccount_save'),
      url(r'^subaccounts/delete/$', 'subaccount_delete'),
      url(r'^ipaddress/getfrompool/$', 'getipfrompool'),
-     #url(r'^credentials/gen/$', 'generate_credentials'),
+     url(r'^credentials/gen/$', 'generate_credentials', name="generate_credentials"),
      url(r'^getmacforip/$', 'get_mac_for_ip'),
      #url(r'^contracttemplate/$', 'contracttemplate'),
      url(r'^contracttemplate/set/$', 'contracttemplates_set'),

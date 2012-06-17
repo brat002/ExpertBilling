@@ -126,12 +126,12 @@ class TarifWindow(QtGui.QMainWindow):
         self.comboBox_contracttemplate = QtGui.QComboBox(self.tab_1)
         self.comboBox_contracttemplate.setObjectName(_fromUtf8("comboBox_contracttemplate"))
         self.gridLayout_28.addWidget(self.comboBox_contracttemplate, 3, 1, 1, 3)
-        self.label_systemgroup = QtGui.QLabel(self.tab_1)
-        self.label_systemgroup.setObjectName(_fromUtf8("label_systemgroup"))
-        self.gridLayout_28.addWidget(self.label_systemgroup, 4, 0, 1, 1)
-        self.comboBox_system_group = QtGui.QComboBox(self.tab_1)
-        self.comboBox_system_group.setObjectName(_fromUtf8("comboBox_system_group"))
-        self.gridLayout_28.addWidget(self.comboBox_system_group, 4, 1, 1, 4)
+        self.label_sessionscount = QtGui.QLabel(self.tab_1)
+        self.label_sessionscount.setObjectName(_fromUtf8("label_sessionscount"))
+        self.gridLayout_28.addWidget(self.label_sessionscount, 4, 0, 1, 1)
+        self.lineEdit_sessioncount = QtGui.QLineEdit(self.tab_1)
+        self.lineEdit_sessioncount.setObjectName(_fromUtf8("lineEdit_sessioncount"))
+        self.gridLayout_28.addWidget(self.lineEdit_sessioncount, 4, 1, 1, 4)
         self.access_time_label = QtGui.QLabel(self.tab_1)
         self.access_time_label.setObjectName(_fromUtf8("access_time_label"))
         self.gridLayout_28.addWidget(self.access_time_label, 5, 0, 1, 1)
@@ -732,11 +732,11 @@ class TarifWindow(QtGui.QMainWindow):
         self.label_contracttemplate.setText(QtGui.QApplication.translate("MainWindow", "Шаблон номера договора", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox_contracttemplate.setToolTip(QtGui.QApplication.translate("MainWindow", "Шаблон номера договора для создаваемых на данном тарифном плане абонентов.", None, QtGui.QApplication.UnicodeUTF8))
         self.comboBox_contracttemplate.setWhatsThis(QtGui.QApplication.translate("MainWindow", "Шаблон номера договора для создаваемых на данном тарифном плане абонентов.", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_systemgroup.setToolTip(QtGui.QApplication.translate("MainWindow", "Настройки видимости тарифного плана для системных пользователей", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_systemgroup.setWhatsThis(QtGui.QApplication.translate("MainWindow", "Настройки видимости тарифного плана для системных пользователей", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_systemgroup.setText(QtGui.QApplication.translate("MainWindow", "Видимость для группы", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_system_group.setToolTip(QtGui.QApplication.translate("MainWindow", "Настройки видимости тарифного плана для системных пользователей", None, QtGui.QApplication.UnicodeUTF8))
-        self.comboBox_system_group.setWhatsThis(QtGui.QApplication.translate("MainWindow", "Настройки видимости тарифного плана для системных пользователей", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_sessionscount.setToolTip(QtGui.QApplication.translate("MainWindow", "Количество одноверменных RADIUS сессий на субаккаунт", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_sessionscount.setWhatsThis(QtGui.QApplication.translate("MainWindow", "Количество одноверменных RADIUS сессий на субаккаунт", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_sessionscount.setText(QtGui.QApplication.translate("MainWindow", "RADIUS сессий на субаккаунт", None, QtGui.QApplication.UnicodeUTF8))
+        self.lineEdit_sessioncount.setToolTip(QtGui.QApplication.translate("MainWindow", "Количество одноверменных RADIUS сессий на субаккаунт для PPTP/PPPOE/L2TP тарифных планов", None, QtGui.QApplication.UnicodeUTF8))
+        self.lineEdit_sessioncount.setWhatsThis(QtGui.QApplication.translate("MainWindow", "Количество одноверменных RADIUS сессий на субаккаунт для PPTP/PPPOE/L2TP тарифных планов", None, QtGui.QApplication.UnicodeUTF8))
         self.access_time_label.setToolTip(QtGui.QApplication.translate("MainWindow", "Разрешённое время доступа/авторизации для абонентов", None, QtGui.QApplication.UnicodeUTF8))
         self.access_time_label.setWhatsThis(QtGui.QApplication.translate("MainWindow", "Разрешённое время доступа/авторизации для абонентов", None, QtGui.QApplication.UnicodeUTF8))
         self.access_time_label.setText(QtGui.QApplication.translate("MainWindow", "Время доступа", None, QtGui.QApplication.UnicodeUTF8))
@@ -884,8 +884,8 @@ class TarifWindow(QtGui.QMainWindow):
         self.setTabOrder(self.checkBox_ip_telephony, self.sp_name_edit)
         self.setTabOrder(self.sp_name_edit, self.comboBox_contracttemplate)
         self.setTabOrder(self.comboBox_contracttemplate, self.toolButton)
-        self.setTabOrder(self.toolButton, self.comboBox_system_group)
-        self.setTabOrder(self.comboBox_system_group, self.access_time_edit)
+        self.setTabOrder(self.toolButton, self.lineEdit_sessioncount)
+        self.setTabOrder(self.lineEdit_sessioncount, self.access_time_edit)
         self.setTabOrder(self.access_time_edit, self.access_type_edit)
         self.setTabOrder(self.access_type_edit, self.checkBox_ipn_actions)
         self.setTabOrder(self.checkBox_ipn_actions, self.comboBox_vpn_ippool)
@@ -1911,13 +1911,7 @@ class TarifWindow(QtGui.QMainWindow):
         systemgroups = [] #self.connection.get_models("billservice_systemgroup")
         
 
-        self.comboBox_system_group.addItem(unicode(u"--Доступно всем--"))
-        self.comboBox_system_group.setItemData(0, QtCore.QVariant(None))
-        i=1
-        for systemgroup in systemgroups:
-            self.comboBox_system_group.addItem(unicode(systemgroup.name))
-            self.comboBox_system_group.setItemData(i, QtCore.QVariant(systemgroup.id))
-            i+=1
+        self.lineEdit_sessioncount.setText(unicode(access_parameters.sessionscount))
         
         
         i=0
@@ -2310,6 +2304,7 @@ class TarifWindow(QtGui.QMainWindow):
             access_parameters.burst_time = u"%s/%s" % (self.speed_burst_time_in_edit.text() or 0, self.speed_burst_time_out_edit.text() or 0)
             access_parameters.priority = unicode(self.speed_priority_edit.text()) or 8
             access_parameters.ipn_for_vpn = self.checkBox_ipn_actions.checkState()==2
+            access_parameters.sessionscount = unicode(self.lineEdit_sessioncount.text())
             
             model.allow_userblock = self.groupBox_allowuserblock.isChecked()
             if model.allow_userblock:
@@ -2340,8 +2335,8 @@ class TarifWindow(QtGui.QMainWindow):
 
             #model.access_parameters_id=self.connection.save(access_parameters, "billservice_accessparameters")
             
-            gr_id = self.comboBox_system_group.itemData(self.comboBox_system_group.currentIndex()).toInt()[0]
-            model.systemgroup = None if gr_id == 0 else gr_id
+            #gr_id = self.comboBox_system_group.itemData(self.comboBox_system_group.currentIndex()).toInt()[0]
+            
             self.connection.commit()
             #Таблица скоростей
             
