@@ -1716,9 +1716,6 @@ class AccountWindow(QtGui.QMainWindow):
                 self.toolButton_ipn_added.setText(unicode(u"Не добавлен"))
 
     def checkActions(self):
-        if self.model.suspended:
-            self.toolButton_ipn_sleep.setChecked(self.model.suspended)
-            self.toolButton_ipn_sleep.setText(unicode(u"Не управлять"))
         
         if self.model.ipn_added:
             self.toolButton_ipn_added.setChecked(self.model.ipn_added)
@@ -1962,7 +1959,7 @@ class AccountWindow(QtGui.QMainWindow):
             #model.user_id=1
         model.ipn_status = self.toolButton_ipn_enabled.isChecked()
         model.ipn_added = self.toolButton_ipn_added.isChecked()
-        model.suspended = self.toolButton_ipn_sleep.isChecked()
+        #model.suspended = self.toolButton_ipn_sleep.isChecked()
 
             
         if unicode(self.comboBox_agreement_num.currentText())=='':

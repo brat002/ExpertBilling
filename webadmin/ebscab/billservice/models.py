@@ -344,7 +344,8 @@ class AccessParameters(models.Model):
     burst_time     = models.CharField(verbose_name=u"Burst Time", blank=True, max_length=64, default="")
     #от 1 до 8
     priority             = models.IntegerField(verbose_name=u"Приоритет", blank=True, default=8)
-
+    sessionscount = models.IntegerField(verbose_name=u"Одноверменных RADIUS сессий на субаккаунт", blank=True, default=0)
+    
     def __unicode__(self):
         return u"%s" % self.id
 
@@ -652,15 +653,15 @@ class Account(models.Model):
     ipn_added = models.BooleanField(verbose_name=u"Добавлен на сервере доступа", default=False, blank=True)
     ipn_status = models.BooleanField(verbose_name=u"Статус на сервере доступа", default=False, blank=True)
     status=models.IntegerField(verbose_name=u'Статус пользователя', default=1, choices=((1, u"Активен"), (2, u"Не активен, списывать периодические услуги"), (3, u"Не активен, не списывать периодические услуги"), (4, u"Пользовательская блокировка"),))
-    created=models.DateTimeField(verbose_name=u'Создан', blank=True,null=True,default='')
+    created=models.DateTimeField(verbose_name=u'Создан', default='')
     #NOTE: baLance
     ballance=models.DecimalField(u'Баланс', blank=True, default=0,decimal_places=10,max_digits=20)
     credit = models.DecimalField(verbose_name=u'Размер кредита',decimal_places=10,max_digits=20, help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
     balance_blocked = models.BooleanField(blank=True, default=False)
 
-    allow_webcab = models.BooleanField()
-    allow_expresscards = models.BooleanField()
+    allow_webcab = models.BooleanField(verbose_name=u"Разрешить пользоваться веб-кабдинетом", blank=True, default=True)
+    allow_expresscards = models.BooleanField(verbose_name=u"Разрешить активацию карт экспресс-оплаты", blank=True, default=True)
 
     passport = models.CharField(blank=True, max_length=64)
     passport_date = models.CharField(blank=True, max_length=64)
@@ -1454,28 +1455,28 @@ class SubAccount(models.Model):
     speed = models.TextField(blank=True)
     switch = models.ForeignKey(Switch, blank=True, null=True, on_delete = models.SET_NULL)
     switch_port = models.IntegerField(blank=True, null=True)
-    allow_dhcp = models.BooleanField(blank=True, default=False)
-    allow_dhcp_with_null = models.BooleanField(blank=True, default=False)    
-    allow_dhcp_with_minus = models.BooleanField(blank=True, default=False)    
-    allow_dhcp_with_block = models.BooleanField(blank=True, default=False)    
-    allow_vpn_with_null = models.BooleanField(blank=True, default=False)    
-    allow_vpn_with_minus = models.BooleanField(blank=True, default=False)    
-    allow_vpn_with_block = models.BooleanField(blank=True, default=False)   
-    allow_ipn_with_null = models.BooleanField(blank=True, default=False)    
-    allow_ipn_with_minus = models.BooleanField(blank=True, default=False)    
-    allow_ipn_with_block = models.BooleanField(blank=True, default=False)  
-    associate_pptp_ipn_ip = models.BooleanField(blank=True, default=False)
-    associate_pppoe_ipn_mac = models.BooleanField(blank=True, default=False)
-    ipn_speed = models.TextField(blank=True)
-    vpn_speed = models.TextField(blank=True)
-    allow_addonservice = models.BooleanField(blank=True, default=False)
+    allow_dhcp = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать получать IP адреса по DHCP")
+    allow_dhcp_with_null = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать получать IP адреса по DHCP при нулевом балансе")    
+    allow_dhcp_with_minus = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать получать IP адреса по DHCP при отрицатеьлном балансе")    
+    allow_dhcp_with_block = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать получать IP адреса по DHCP при наличии блокировок по лимитам или балансу")    
+    allow_vpn_with_null = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать RADIUS авторизацию при нулевом балансе")    
+    allow_vpn_with_minus = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать RADIUS авторизацию при отрицательном балансе балансе")    
+    allow_vpn_with_block = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать RADIUS авторизацию при наличии блокировок по лимитам или балансу")   
+    allow_ipn_with_null = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать IPN авторизацию при нулевом балансе")
+    allow_ipn_with_minus = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать IPN авторизацию при отрицательном балансе")
+    allow_ipn_with_block = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать IPN авторизацию при нулевом балансе")  
+    associate_pptp_ipn_ip = models.BooleanField(blank=True, default=False, verbose_name=u"Привязать PPTP/L2TP авторизацию к IPN IP")  
+    associate_pppoe_ipn_mac = models.BooleanField(blank=True, default=False, verbose_name=u"Привязать PPPOE авторизацию к IPN MAC")  
+    ipn_speed = models.TextField(blank=True, help_text=u"Не менять указанные настройки скорости")
+    vpn_speed = models.TextField(blank=True, help_text=u"Не менять указанные настройки скорости")
+    allow_addonservice = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешить самостоятельную активацию подключаемых услуг на этот субаккаунт")  
     vpn_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_vpn_ipinuse_set', on_delete=models.SET_NULL)
     ipn_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_ipn_ipinuse_set', on_delete=models.SET_NULL)
     vpn_ipv6_ip_address = models.CharField(blank=True, null=True, max_length=128, default='::')
     vpn_ipv6_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_vpn_ipv6_ipinuse_set', on_delete=models.SET_NULL)
     #ipn_ipv6_ip_address = models.TextField(blank=True, null=True)
     vlan = models.IntegerField(blank=True, null=True)
-    allow_mac_update = models.BooleanField(blank=True, default=False)
+    allow_mac_update = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешить самостоятельно обновлять MAC адрес через веб-кабинет")  
     ipv4_ipn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_ipn_ippool_set', on_delete=models.SET_NULL)
     ipv4_vpn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_vpn_ippool_set', on_delete=models.SET_NULL)
   
@@ -1587,7 +1588,9 @@ class ContractTemplate(models.Model):
         permissions = (
            ("contracttemplate_view", u"Просмотр"),
            )
-        
+    def __unicode__(self):
+        return unicode(self.template)
+    
 class Manufacturer(models.Model):
     name = models.TextField()
 

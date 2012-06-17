@@ -140,7 +140,7 @@ class StatististicForm(forms.Form):
     
 class SearchAccountForm(forms.Form):
     def __init__(self, *args, **kwargs):
-        self.action = reverse('accounts_report')
+        self.action = reverse('account_list')
         super(SearchAccountForm, self).__init__(*args, **kwargs)
         
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
@@ -269,32 +269,19 @@ class SuspendedPeriodModelForm(ModelForm):
         exclude = ('activated_by_account',)
 
 class TransactionModelForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        self.helper = FormHelper()
-        self.helper.form_class = 'form-horizontal'
-        self.helper.layout = Layout(
-            FormActions(
-                Submit('filter', 'Фильтровать', css_class="btn-primary"),
-                Reset('reset', 'Очистить'),
-            ),
-            Field('account', css_class='input-xlarge'),
-            Field('type', css_class='input-xlarge'),
-            Field('description', css_class='input-xlarge'),
-            Field('summ', css_class='input-xlarge'),
-            Field('bill', css_class='input-xlarge'),
-            Field('tarif', css_class='input-xlarge'),
-            'created',
-            'systemuser',
-
-
-        )
-        super(TransactionModelForm, self).__init__(*args, **kwargs)
-    created = forms.DateTimeField(required=True, widget =  widgets.AdminSplitDateTime)
+    description = forms.CharField(required=False)
+    created = forms.DateTimeField(required=True)
+    account = forms.ModelChoiceField(queryset=Account.objects.all(), widget = forms.HiddenInput)
+    promise_never_expire = forms.CharField(widget = forms.widgets.CheckboxInput)
+    type = forms.ModelChoiceField(queryset=TransactionType.objects.all(), widget = forms.widgets.Select(attrs={'class': 'input-xlarge'}) )
+    
     class Meta:
         model = Transaction
-        exclude = ('systemuser',)
+        exclude = ('systemuser', 'accounttarif', 'approved', 'tarif', 'promise_expired')
         
 class AccountTariffForm(ModelForm):
+    account = forms.ModelChoiceField(queryset=Account.objects.all(), widget = forms.TextInput(attrs={'readonly':'readonly'}))
+    
     class Meta:
         model = AccountTarif
     
@@ -311,27 +298,31 @@ class BankDataForm(ModelForm):
         model = BankData
               
 class AccountForm(ModelForm):
-    def __init__(self, *args, **kwargs):
-        self.helper = FormHelper()
-        self.helper.form_class = 'form-horizontal container-fluid'
-        self.helper.layout = Layout(
-            FormActions(
-                Submit('filter', 'Сохранить', css_class="btn-primary"),
-                Submit('filter', 'Удалить', css_class="btn btn-danger"),
-            ),
-            Field('username', css_class='input-xlarge'),
-            Field('pasword', css_class='input-xlarge'),
-            Field('fullname', css_class='input-xlarge'),
-            Field('ballance', css_class='input-xlarge'),
-            Field('credit', css_class='input-xlarge'),
-            Field('tarif', css_class='input-xlarge'),
-            'created',
-            'systemuser',
-
-
-        )
-        super(AccountForm, self).__init__(*args, **kwargs)
-        
+    username = forms.CharField(label =u"Имя пользователя", required=True, widget = forms.TextInput(attrs={'class': 'input-large'}))
+    password = forms.CharField(label =u"Пароль", required=True, widget = forms.TextInput(attrs={'class': 'input-large'}))
+    city = forms.ModelChoiceField(label=u"Город",queryset=City.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
+    
+    street = forms.ModelChoiceField(label=u"Улица",queryset=Street.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
+    house = forms.ModelChoiceField(label=u"Дом",queryset=House.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-small', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
+    contract = forms.CharField(label=u'Номер договора', required = False)
+    contract_num = forms.ModelChoiceField(label=u"Номер договора", queryset=ContractTemplate.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
+    #--Organization fields
+    
+    organization_name = forms.CharField(label=u'Название организации', required = False)
+    #rs = models.CharField(max_length=255)
+    uraddress = forms.CharField(label=u'Название организации', required = False)
+    okpo = forms.CharField(label=u'ОКПО', required = False)
+    kpp = forms.CharField(label=u'КПП', required = False)
+    kor_s = forms.CharField(label=u'Корр. счёт', required = False)
+    unp = forms.CharField(label=u'УНП', required = False)
+    phone = forms.CharField(label=u'Телефон', required = False)
+    fax = forms.CharField(label=u'Факс', required = False)
+    bank = forms.CharField(label=u'Банк', required = False)
+    bank_code = forms.CharField(label=u'Код банка', required = False)
+    rs = forms.CharField(label=u'Расчётный счёт', required = False)
+    currency = forms.CharField(label=u'Валюта', required = False)
+    
+    
     class Meta:
         model = Account
         exclude = ('ballance',)
@@ -508,6 +499,9 @@ class OperatorForm(ModelForm):
         
 #TO-DO: добавить exclude в periodicalservice
 class SubAccountForm(ModelForm):
+    ipn_speed = forms.CharField(label=u'IPN скорость', help_text=u"Не менять указанные настройки скорости", required = False, widget = forms.TextInput(attrs={'class': 'input-xlarge'}))
+    vpn_speed = forms.CharField(label=u'VPN скорость', help_text=u"Не менять указанные настройки скорости", required = False, widget = forms.TextInput(attrs={'class': 'input-xlarge'}))
+        
     class Meta:
         model = SubAccount
         #exclude = ('ipn_ipinuse','vpn_ipinuse',)

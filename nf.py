@@ -1411,7 +1411,8 @@ if __name__=='__main__':
         psyco.profile(0.05, memory=100)
         psyco.profile(0.2)
     except:
-        pass
+        print "Can`t optimize"
+        
     try:
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME, flow_name=FLOW_NAME)
         #print repr(vars)

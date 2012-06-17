@@ -18,7 +18,7 @@ from Crypto.Cipher import XOR
 from radius.eap.eap_packet import EAP, EAP_Packet, EAP_MD5, EAP_HANDLERS, EAP_TLS, EAP_IDENTITY_CHECK_TYPES
 from collections import defaultdict
 from utilites import hex_bytestring
-
+from mppe import PPTP_MPPE
 
 #EAP_IDENTITY_CHECK = lambda kwargs: (EAP.PW_EAP_MD5, EAP_MD5.get_challenge_reply)
 EAP_IDENTITY_CHECK = lambda kwargs: (EAP.PW_EAP_TLS, EAP_TLS.get_tls_start)
@@ -297,52 +297,65 @@ class Auth:
         salt = "\x80\x01"
 
         #P = '\x0f'+recvMasterKey+'\x00'*15
-        P = struct.pack("!B16s15x", 16,recvMasterKey)
+        P = bytearray(struct.pack("!B16s15x", 16, recvMasterKey))
 
-        b1=md5.new(self.secret+self.packet.authenticator+salt).digest()
+        b1=bytearray(md5.new(self.secret+self.packet.authenticator+salt).digest())
         
         res=''
         for i in xrange(0,16):
-            xor=XOR.new(P[i])
-            res+=xor.encrypt(b1[i])
+            P[i] ^= b1[i]
             
-        m=md5.new(self.secret+self.packet.authenticator).digest()
-        
+
+        m=bytearray(md5.new(self.secret+self.packet.authenticator).digest())
         for i in xrange(0,16):
-            xor=XOR.new(P[i+16])
-            res+=xor.encrypt(m[i])
-
-        recvkey = salt+res
+            P[16+i]^=m[i]
 
         
-        P = struct.pack("!B16s15x", 16,sendMasterKey)
+        recvkey = str(salt+P)
 
-        b1=md5.new(self.secret+self.packet.authenticator+salt).digest()
+        salt = "\x80\x02"
+        P = bytearray(struct.pack("!B16s15x", 16,sendMasterKey))
+
+        b1=bytearray(md5.new(self.secret+self.packet.authenticator+salt).digest())
         
         res=''
         for i in xrange(0,16):
-            xor=XOR.new(P[i])
-            res+=xor.encrypt(b1[i])
+            P[i] ^= b1[i];
             
-        m=md5.new(self.secret+self.packet.authenticator).digest()
-        
+        m=bytearray(md5.new(self.secret+self.packet.authenticator).digest())
         for i in xrange(0,16):
-            xor=XOR.new(P[i+16])
-            res+=xor.encrypt(m[i])
-            
+            P[16+i]^=m[i]
 
-        sendkey = salt+res
+
+        sendkey = str(salt+P)
 
         #encryption policy
-        self.Reply.AddAttribute((311,7),struct.pack("!I", 1))
-        
+        self.Reply.AddAttribute((311,7),struct.pack("!I", 2))
+
         #encryption type
         self.Reply.AddAttribute((311,8),struct.pack("!I", 6))
-        
+
         self.Reply.AddAttribute((311,16),sendkey)
         self.Reply.AddAttribute((311,17),recvkey)
         
+
+
     def add_mppe_keys_v2(self):
+        def rc4crypt(data, key):
+            x = 0
+            box = range(256)
+            for i in range(256):
+                x = (x + box[i] + ord(key[i % len(key)])) % 256
+                box[i], box[x] = box[x], box[i]
+            x,y = 0, 0
+            out = []
+            for char in data:
+                x = (x + 1) % 256
+                y = (y + box[x]) % 256
+                box[x], box[y] = box[y], box[x]
+                out.append(chr(ord(char) ^ box[(box[x] + box[y]) % 256]))
+            return ''.join(out)
+        
         magic1 = \
           "\x54\x68\x69\x73\x20\x69\x73\x20\x74" + \
           "\x68\x65\x20\x4d\x50\x50\x45\x20\x4d" + \
@@ -376,63 +389,41 @@ class Auth:
           
         #masterSessionKey=SHA.new(self._NtPasswordHash(self.plainpassword)+self.NTResponse+magic1).digest()[:16]
         #
-        passwordhash = self._NtPasswordHash(self.plainpassword)
+        passwordhash = self._NtPasswordHash(self.password)
+        
         md4_context = md4.new()       #Эксперимент с нативной md4 библиотекой
         md4_context.update(passwordhash)    #
         passwordhashhash = md4_context.digest()   #
         
-        masterSessionKey=SHA.new(passwordhashhash+self.NTResponse+magic1).digest()[:16]
+        masterSessionKey=SHA.new(passwordhashhash[:16]+self.NTResponse[:24]+magic1).digest()[:16]
         
+
         sendMasterKey = SHA.new(masterSessionKey+SHSpad1+Magic3+SHSpad2).digest()[:16]
         recvMasterKey = SHA.new(masterSessionKey+SHSpad1+Magic2+SHSpad2).digest()[:16]
         
-        salt = "\x80\x01"
-
-        #P = '\x0f'+recvMasterKey+'\x00'*15
-        P = struct.pack("!B16s15x", 16,recvMasterKey)
-
-        b1=md5.new(self.secret+self.packet.authenticator+salt).digest()
         
-        res=''
-        for i in xrange(0,16):
-            xor=XOR.new(P[i])
-            res+=xor.encrypt(b1[i])
-            
-        m=md5.new(self.secret+self.packet.authenticator).digest()
-        
-        for i in xrange(0,16):
-            xor=XOR.new(P[i+16])
-            res+=xor.encrypt(m[i])
-
-        recvkey = salt+res
-
-        
-        P = struct.pack("!B16s15x", 16,sendMasterKey)
-
-        b1=md5.new(self.secret+self.packet.authenticator+salt).digest()
-        
-        res=''
-        for i in xrange(0,16):
-            xor=XOR.new(P[i])
-            res+=xor.encrypt(b1[i])
-            
-        m=md5.new(self.secret+self.packet.authenticator).digest()
-        
-        for i in xrange(0,16):
-            xor=XOR.new(P[i+16])
-            res+=xor.encrypt(m[i])
-            
-
-        sendkey = salt+res
 
         #encryption policy
         self.Reply.AddAttribute((311,7),struct.pack("!I", 1))
         
         #encryption type
-        self.Reply.AddAttribute((311,8),struct.pack("!I", 6))
+        self.Reply.AddAttribute((311,8),struct.pack("!I", 4))
         
         self.Reply.AddAttribute((311,16),sendkey)
         self.Reply.AddAttribute((311,17),recvkey)
+        
+    def add_mppe_keys_v3(self):
+        instance = PPTP_MPPE(self.plainpassword, self.NTResponse)
+        self.Reply.AddAttribute((311,7),struct.pack("!i", 1))
+        
+        #encryption type
+        self.Reply.AddAttribute((311,8),struct.pack("!i", 4))
+        
+        print instance.ssk, instance.srk
+        
+        self.Reply.AddAttribute((311,16), instance.ssk)
+        self.Reply.AddAttribute((311,17), instance.srk)
+        
         
     def _MSCHAP2Decrypt(self):
         (self.ident, var, self.PeerChallenge, reserved, self.NTResponse)=struct.unpack("!BB16s8s24s",self.packet['MS-CHAP2-Response'][0])

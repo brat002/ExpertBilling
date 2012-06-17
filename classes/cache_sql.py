@@ -162,7 +162,7 @@ rad_sql = \
                         ba.password, ba.nas_id, ba.vpn_ip_address, bt.id, accps.access_type, 
                         ba.status, ba.balance_blocked, (ba.ballance+ba.credit) as ballance, 
                         ba.disabled_by_limit, ba.vpn_speed, bt.active, 
-                        ba.allow_vpn_null, ba.allow_vpn_block, ba.ipn_ip_address, ba.ipn_speed, ba.assign_dhcp_null, ba.assign_dhcp_block, ba.associate_pptp_ipn_ip, ba.associate_pppoe_mac, bt.radius_traffic_transmit_service_id, bt.vpn_ippool_id, bt.vpn_guest_ippool_id
+                        ba.allow_vpn_null, ba.allow_vpn_block, ba.ipn_ip_address, ba.ipn_speed, ba.assign_dhcp_null, ba.assign_dhcp_block, ba.associate_pptp_ipn_ip, ba.associate_pppoe_mac, bt.radius_traffic_transmit_service_id, bt.vpn_ippool_id, bt.vpn_guest_ippool_id, accps.sessionscount
                         FROM billservice_account as ba
                         JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s ORDER BY datetime DESC LIMIT 1)
                         JOIN billservice_tariff AS bt ON bt.id=act.tarif_id

@@ -1024,35 +1024,25 @@ class HandleSAuth(HandleSBase):
             logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
             sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_VPN_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
             return self.auth_NA(authobject)
-           
-
-        #if self.access_type == 'PPTP' and subacc.associate_pptp_ipn_ip and not (ipn_ip_address == station_id):
-        #    logger.warning("Unallowed dialed ipn_ip_address for user %s vpn: station_id - %s , ipn_ip - %s; vpn_ip - %s access_type: %s", (username, station_id, subacc.ipn_ip_address, subacc.vpn_ip_address, self.access_type))
-        #    return self.auth_NA(authobject) 
-        
-        #if self.access_type == 'PPPOE' and subacc.associate_pppoe_ipn_mac and not (ipn_mac_address == station_id):
-        #    logger.warning("Unallowed dialed mac for user %s: station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (username, station_id, subacc.ipn_ip_address, subacc.ipn_mac_address, self.access_type))
-        #    return self.auth_NA(authobject) 
-        
-
-        #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
 
         allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
         if allow_dial and acc.tariff_active:
             
-            if vars.ONLY_ONE==True:
+            if acc.sessionscount!=0:
                 vars.cursor_lock.acquire()
                 self.create_cursor()
                 try:
-                    self.cursor.execute("""SELECT id from radius_activesession WHERE subaccount_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (subacc.id, nas.acct_interim_interval))
+                    self.cursor.execute("""SELECT count(*) from radius_activesession WHERE account_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (acc.account_id, nas.acct_interim_interval))
                     #self.cursor.connection.commit()
-                    if self.cursor.fetchone():
-                        vars.cursor_lock.release()
-                        logger.warning("Subaccount %s already have session on this NAS. If this error persist - check your nas settings and perform maintance radius_activesession table", (username,))
-                        sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_RADIUS_ONLY_ONE", service=self.access_type, cause=u'Попытка повторной авторизации на сервере доступа', datetime=self.datetime)
-                        return self.auth_NA(authobject)                      
+                    cnt = self.cursor.fetchone()
+                    if cnt:
+                        if cnt[0]>=acc.sessionscount:
+                            vars.cursor_lock.release()
+                            logger.warning("Max sessions count %s reached for username %s. If this error persist - check your nas settings and perform maintance radius_activesession table", (acc.sessionscount, username,))
+                            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_SESSIONS_COUNT_REACHED", service=self.access_type, cause=u'Превышено количество одновременных сессий для аккаунта', datetime=self.datetime)
+                            return self.auth_NA(authobject)                      
                     vars.cursor_lock.release()    
                 except Exception, ex:
                     vars.cursor_lock.release()
@@ -1079,7 +1069,7 @@ class HandleSAuth(HandleSBase):
 
                        #self.cursor.connection.commit()
                        if not vpn_ip_address:
-                            logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id))
+                            logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, pool_id))
                             sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
                             #vars.cursor_lock.release()
                             return self.auth_NA(authobject)
@@ -1241,7 +1231,7 @@ class HandlelISGAuth(HandleSAuth):
                     (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))
         #acstatus = True
         if not acstatus:
-            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
+            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (subacc.username, subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
             sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_VPN_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
             return self.auth_NA(authobject)     
 
@@ -2089,7 +2079,8 @@ if __name__ == "__main__":
         psyco.profile(0.05, memory=100)
         psyco.profile(0.2)
     except:
-        pass
+        print "Can`t run optimizer"
+        
     try:
         flags = RadFlags()
         vars  = RadVars()

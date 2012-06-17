@@ -96,7 +96,7 @@ if __name__=='__main__':
         active = config.get(payment_system, 'active')
         file_mask = config.get(payment_system, 'file_mask')
         exclude_mask = config.get(payment_system, 'exclude_mask')
-        reversal_payments=config.getboolean(payment_system, 'exclude_mask') or False
+        reversal_payments=config.getboolean(payment_system, 'reversal_payments') or False
         
         skip_firstline = config.getboolean(payment_system, 'skip_firstline') if config.has_option(payment_system, 'skip_firstline') else False
         
