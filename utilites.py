@@ -239,8 +239,8 @@ class ApiRos:
             ret += s
         return ret
     
-def rosExecute(command):
-    global apiros
+def rosExecute(apiros, command):
+
     x=['']
     commands = command.split(" ")
 
@@ -264,7 +264,7 @@ def rosClient(nas_ip, nas_login, nas_password):
     @param password: Password os system user
     @param commant: command for execution    
     """
-    global s, apiros
+    global s
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((nas_ip, 8728))

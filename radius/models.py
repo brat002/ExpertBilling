@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 from django.db import models
-from ebscab.billservice.models import Account, SubAccount
+from ebscab.billservice.models import Account, SubAccount, IPInUse
 from ebscab.nas.models import Nas
 SERVICE_TYPES=(
         (u"PPTP/L2TP",u"PPTP"),
@@ -66,6 +66,7 @@ class ActiveSession(models.Model):
     speed_string = models.CharField(max_length=255, blank=True, null=True)
     acct_terminate_cause = models.CharField(max_length=128, blank=True, default = '')
     #speed_changed = models.BooleanField(blank=True, default=False)
+    ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, on_delete=models.SET_NULL)
 
 
 
@@ -84,11 +85,11 @@ class ActiveSession(models.Model):
         return u"%s" % self.sessionid
 
 class AuthLog(models.Model):
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, blank=True, null=True, on_delete=models.SET_NULL)
     type = models.CharField(max_length=100)
     service = models.CharField(max_length=40)
-    subaccount = models.ForeignKey(SubAccount)
-    nas = models.ForeignKey(Nas)
+    subaccount = models.ForeignKey(SubAccount,  blank=True, null=True, on_delete=models.SET_NULL)
+    nas = models.ForeignKey(Nas, blank=True, null=True, on_delete=models.SET_NULL)
     cause = models.TextField()
     datetime = models.DateTimeField()
     

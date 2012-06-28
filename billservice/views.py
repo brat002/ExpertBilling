@@ -263,15 +263,15 @@ def get_promise(request):
         return HttpResponseRedirect('/')
     user = request.user.account
     allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance)
-    LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = settings.LEFT_PROMISE_DAYS)
+    LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = user.promise_days)
     if settings.ALLOW_PROMISE==True and Transaction.objects.filter(account=user, promise=True, promise_expired=False).count() >= 1:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         error_message = u"У вас есть незакрытые обещанные платежи"
-        return {'error_message': error_message, 'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
-    if settings.ALLOW_PROMISE==True and user.ballance<settings.MIN_BALLANCE_FOR_PROMISE:
+        return {'error_message': error_message, 'MAX_PROMISE_SUM': user.promise_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
+    if settings.ALLOW_PROMISE==True and user.ballance<user.promise_min_ballance:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
-        error_message = u"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный баланс: %s %s" % (settings.MIN_BALLANCE_FOR_PROMISE, settings.CURRENCY)
-        return {'error_message': error_message, 'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
+        error_message = u"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный баланс: %s %s" % (settings.promise_min_ballance, settings.CURRENCY)
+        return {'error_message': error_message, 'MAX_PROMISE_SUM': user.promise_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     
     
     if request.method == 'POST':
@@ -844,7 +844,7 @@ def card_acvation(request):
         if form.is_valid():
 
             res = activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
-            print res
+            #print res
             if res == 'CARD_NOT_FOUND':
                 error_message = u'Ошибка активации. Карта не найдена.'
             elif res == 'CARD_NOT_SOLD':
