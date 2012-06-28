@@ -110,7 +110,8 @@ INSTALLED_APPS = (
     'object_log',
     'django_tables2',
     'crispy_forms',
-    'ajax_select'
+    'ajax_select',
+    'ebsadmin'
 
     
 )
@@ -125,6 +126,9 @@ AJAX_LOOKUP_CHANNELS = {
     'city_name': ('billservice.lookups', 'CityLookup'),
     'street_name': ('billservice.lookups', 'StreetLookup'),
     'house_name': ('billservice.lookups', 'HouseLookup'),
+    'hardware_fts': ('billservice.lookups', 'HardwareLookup'),
+    'organization_name': ("billservice.lookups", "OrganizationLookup"),
+    'subaccount_fts': ('billservice.lookups', 'SubAccountFTSLookup')
     
     
 }

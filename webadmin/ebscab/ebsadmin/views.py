@@ -14,11 +14,11 @@ from django.contrib.auth.decorators import login_required
 from django.db import connection
 from billservice.forms import AccountForm, TimeSpeedForm, GroupForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
 from billservice.forms import TemplateForm, DocumentModelForm, SuspendedPeriodModelForm, TransactionModelForm, AddonServiceForm, CityForm, StreetForm, HouseForm
-from utilites import cred
+from utilites import cred, rosClient, rosExecute
 import IPy
 from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
 from IPy import IP
-from utilites import rosClient
+
 import datetime
 from mako.template import Template as mako_template
 from ebsadmin.lib import ExtDirectStore, instance_dict
@@ -187,12 +187,13 @@ def get_mac_for_ip(request):
     except Exception, e:
         return {'status':False, 'message':str(e)}
     try:
+        from utilites import rosExecute
         apiros = rosClient(nas.ipaddress, nas.login, nas.password)
         command='/ping =address=%s =count=1' % ipn_ip_address
-        rosExecute(command)
+        rosExecute(apiros, command)
         command='/ip/arp/print ?address=%s' % ipn_ip_address
-        rosExecute(command)
-        mac = rosExecute(command).get('mac-address', '')
+        rosExecute(apiros, command)
+        mac = rosExecute(apiros, command).get('mac-address', '')
         apiros.close()
         del apiros
         del rosExecute
@@ -2651,13 +2652,22 @@ def groups_detail(request):
     from django.db import connection
     
     cur = connection.cursor()
-    cur.execute("SELECT gr.*, ARRAY((SELECT name FROM nas_trafficclass WHERE id IN (SELECT trafficclass_id FROM billservice_group_trafficclass WHERE group_id=gr.id))) as classnames FROM billservice_group as gr")
+    cur.execute("SELECT gr.*  FROM billservice_group as gr")
 
     items = cur.fetchall()
     
     res=[]
     for item in items:
         id, name, direction, grtype, classnames = item
+        cur.execute("SELECT name FROM nas_trafficclass WHERE id IN (SELECT trafficclass_id FROM billservice_group_trafficclass WHERE group_id=%s)", (id,))
+
+        d = cur.fetchall()
+        classnames=''
+        if d:
+            classnames = ''.join([unicode(x[0]) for x in d])
+            
+        res.append({'id':id, 'name': name, 'direction':direction, 'type': grtype, 'classnames': classnames})
+
         res.append({'id':id, 'name': name, 'direction':direction, 'type': grtype, 'classnames': classnames})
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
@@ -4045,7 +4055,7 @@ def nas_delete(request):
 def subaccount_delete(request):
     if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_subaccount')):
         return {'status':True, 'message': u'У вас нет прав на удаление субаккаунта'}
-    id = request.POST.get('id')
+    id = request.POST.get('id') or request.GET.get('id')
     if id:
         #TODO: СДелать удаление субаккаунта с сервера доступа, если он там был
         item = SubAccount.objects.get(id=id)
@@ -4579,6 +4589,59 @@ def getipfrompool(request):
     pool_id=request.POST.get("pool_id")
     limit=int(request.POST.get("limit", 500))
     start=int(request.POST.get("start", 0))
+    term=request.POST.get("term", '')
+    if not pool_id:
+        return {'records':[], 'status':False}
+    pool = IPPool.objects.get(id=pool_id)
+    #pool = IPPool.objects.all()[0]
+    ipinuse = IPInUse.objects.filter(pool=pool, disabled__isnull=True)
+    
+    accounts_ip = SubAccount.objects.values_list('ipn_ip_address', 'vpn_ip_address')
+    if term:
+        ipinuse = ipinuse.filter(ip__contains=term)
+    #accounts_ip = connection.sql("SELECT ipn_ip_address, vpn_ip_address FROM billservice_subaccount")
+    #connection.commit()
+    ipversion = 4 if pool.type<2 else  6
+    accounts_used_ip = []
+    for accip in accounts_ip:
+        if accip[0]:
+            accounts_used_ip.append(IPy.IP(accip[0]).int())
+        if accip[1]:
+            accounts_used_ip.append(IPy.IP(accip[1]).int())
+
+
+    start_pool_ip = IPy.IP(pool.start_ip).int()
+    end_pool_ip = IPy.IP(pool.end_ip).int()
+    
+    ipinuse_list = [IPy.IP(x.ip).int() for x in ipinuse]
+    
+    ipinuse_list+= accounts_used_ip
+    
+                 
+    find = False
+    res = []
+    x = start_pool_ip
+    i=0
+    #limit=20
+    while x<=end_pool_ip:
+        if x not in ipinuse_list and x!=default_ip:
+            if not term or term and str(IPy.IP(x, ipversion = ipversion)).rfind(term)!=-1:
+                res.append(str(IPy.IP(x, ipversion = ipversion)))
+            i+=1
+        x+=1
+    return {'totalCount':str(len(res)),'records':res[start:start+limit], 'status':True}
+
+@ajax_request
+@login_required
+def getipfrompool2(request):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.ippool_view')):
+        return {'status':True, 'records':[], 'totalCount':0}
+    default_ip='0.0.0.0'
+    if default_ip:
+        default_ip = IPy.IP(default_ip).int()
+    pool_id=request.POST.get("pool_id") or request.GET.get("pool_id")
+    limit=int(request.POST.get("limit", 500))
+    start=int(request.POST.get("start", 0))
     if not pool_id:
         return {'records':[], 'status':False}
     pool = IPPool.objects.get(id=pool_id)
@@ -4612,7 +4675,7 @@ def getipfrompool(request):
             res.append(str(IPy.IP(x, ipversion = ipversion)))
             i+=1
         x+=1
-    return {'totalCount':str(len(res)),'records':res[start:start+limit], 'status':True}
+    return [res[start:start+limit]]
 
 @ajax_request
 @login_required

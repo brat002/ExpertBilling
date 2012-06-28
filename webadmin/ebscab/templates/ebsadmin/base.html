@@ -6,20 +6,9 @@
 <link href="/media/bootstrap/css/style.css" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="/admin_media/css/forms.css">
 
-
-
-<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/admin_media/css/ie.css" /><![endif]-->
-
-<script type="text/javascript">window.__admin_media_prefix__ = "/admin_media/";</script>
-
-
-<script type="text/javascript" src="/admin/jsi18n/"></script>
-<script type="text/javascript" src="/admin_media/js/core.js"></script>
-<script type="text/javascript" src="/admin_media/js/admin/RelatedObjectLookups.js"></script>
-<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+<script src="/media/jquery/js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="/media/jquery/js/jquery-ui-1.8.21.custom.min.js"></script>
 
 <script type="text/javascript" src="/media/jdialogs/lib/jquery.dialog2.js"></script>
 
@@ -28,7 +17,7 @@
 <script type="text/javascript" src="/media/jquery/js/jquery.form.js"></script>
 
 <link type="text/css" rel="stylesheet" href="/media/jdialogs/css/jquery-dialog2/jquery.dialog2.css">
-<link type="text/css" rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/smoothness/jquery-ui.css">
+<link rel="stylesheet" href="/media/jquery/css/jquery-ui-1.8.21.custom.css" type="text/css" title="ui-theme" />
 <script  type="text/javascript" >
 $(document).ready(function() {
     $('#tab-control a').click(function (e) {
@@ -43,10 +32,11 @@ $(document).ready(function() {
 <script src="/media/bootstrap/js/bootstrap-tab.js"></script>
 <script src="/media/bootstrap/js/bootstrap-modal.js"></script>
 <script src="/media/bootstrap/js/jquery-ui-timepicker-addon.js"></script>
-<script type="text/javascript" src="/admin_media/js/calendar.js"></script>
+<script src="/media/bootstrap/js/bootstrap-popover.js"></script>
+<script src="/media/bootstrap/js/bootstrap-alert.js"></script>
 
 
-<script type="text/javascript" src="/admin_media/js/admin/DateTimeShortcuts.js"></script>
+
 <meta name="robots" content="NONE,NOARCHIVE">
 <script type="text/javascript"> 
     $(function(){
@@ -62,7 +52,7 @@ $(document).ready(function() {
 <div class="navbar  navbar-fixed-top">
   <div class="navbar-inner">
 <a class="brand" href="#">
-  ExpertBiling Admin interface
+  ExpertBiling Admin
 </a>  
     <div class="container">
   
@@ -79,13 +69,13 @@ $(document).ready(function() {
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
-         <li><a href="{% url account_new %}">Новый аккаунт</a></li>
+         <li><a href="{% url account_edit %}">Новый аккаунт</a></li>
          <li><a href="{% url account_list %}">Поиск</a></li>
        </ul>
      </li>
    </ul>
-  <li><a href="#">Сервера доступа</a></li>
-  <li><a href="#">Расчётные периоды</a></li>
+  <li><a href="{% url nas %}">Сервера доступа</a></li>
+  <li><a href="{% url activesessionreport %}">Монитор сессий</a></li>
    <ul class="nav">
      <li class="dropdown">
        <a href="#"
@@ -95,12 +85,27 @@ $(document).ready(function() {
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
-         <li><a href="#">Операции с л/c</a></li>
+         <li><a href="{% url transactionreport2 %}">Операции с л/c</a></li>
        </ul>
      </li>
    </ul>
 
-  <li><a href="#">Справочники</a></li>
+   <ul class="nav">
+     <li class="dropdown">
+       <a href="#"
+             class="dropdown-toggle"
+             data-toggle="dropdown">
+             Справочники
+             <b class="caret"></b>
+       </a>
+       <ul class="dropdown-menu">
+         <li><a href="{% url ipinuse_list %}">Занятые IP адреса</a></li>
+         <li><a href="{% url authlog_list %}">История авторизаций</a></li>
+         <li><a href="{% url ballancehistoryreport %}">История изменения баланса</a></li>
+         
+       </ul>
+     </li>
+   </ul>
   <li><a href="#">Карточная система</a></li>
 </ul>
 

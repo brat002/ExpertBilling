@@ -11,13 +11,13 @@ def dictfetchall(cursor):
     
 
         
-LEADING_PAGE_RANGE_DISPLAYED = TRAILING_PAGE_RANGE_DISPLAYED = 8
+LEADING_PAGE_RANGE_DISPLAYED = TRAILING_PAGE_RANGE_DISPLAYED = 10
 LEADING_PAGE_RANGE = TRAILING_PAGE_RANGE = 8
-NUM_PAGES_OUTSIDE_RANGE = 10
-ADJACENT_PAGES = 8
+NUM_PAGES_OUTSIDE_RANGE = 5
+ADJACENT_PAGES = 4
 
 
-def digg_paginator( current, cnt):
+def digg_paginator(cnt, current):
         in_leading_range = in_trailing_range = False
         pages_outside_leading_range = pages_outside_trailing_range = range(0)
  
