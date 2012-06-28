@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="/media/jquery/css/jquery-ui-1.7.3.custom.css" type="text/css" title="ui-theme" />
         <script type="text/javascript"> 
         $(document).ready(function() {
+        $('#generate_username').popover({title:'Действие над аккаунтом', content: 'Сгенерировать имя пользователя'});
         $("#generate_username").click(function() {
         	$.getJSON('{% url generate_credentials %}',{action:'login'},function(data,status){
         	    if( status=='success' ){
@@ -20,6 +21,22 @@
         	    }
         	})
         	});
+        
+        $('#generate_password').popover({title:'Действие над аккаунтом', content: 'Сгенерировать пароль'});
+        $('#id_organization').click(function() {
+        	if ($('#id_organization').is(':checked')){
+        		$('#organization-fieldset').show();
+        	}else{
+        		$('#organization-fieldset').hide();
+        	}
+        	
+        });
+        if ($('#id_organization').is(':checked')){
+            $('#organization-fieldset').show();
+        }else{
+            $('#organization-fieldset').hide();
+        }
+        
         $("#generate_password").click(function() {
             $.getJSON('{% url generate_credentials %}',{action:'password'},function(data,status){
                 if( status=='success' ){
@@ -70,12 +87,37 @@
         	    yearSuffix: ''
         	};
         	$.datepicker.setDefaults($.datepicker.regional['ru']);
-
+            
+        	$('#modal-accounttariff-dialog').popover({title:'Действие над аккаунтом', content: 'Cменить тарифный план'});
             $(function() {
                 $("#modal-accounttariff-dialog").click(function(event) {
                     $('<div/>').dialog2({
                         title: "Изменение тарифного плана", 
                         content: "/ebsadmin/accounttariff/edit/?account_id={{account.id}}", 
+                        id: "server-notice"
+                    });
+
+                    event.preventDefault();
+                });
+            });
+            $(function() {
+                $("#modal-accounttariff-dialog-table").click(function(event) {
+                    $('<div/>').dialog2({
+                        title: "Изменение тарифного плана", 
+                        content: "/ebsadmin/accounttariff/edit/?account_id={{account.id}}", 
+                        id: "server-notice"
+                    });
+
+                    event.preventDefault();
+                });
+            });
+
+            $('#modal-suspendedperiod-dialog-table').popover({title:'Добавить период без списаний', content: 'Добавить период, во время которого с аккаунта не будут производиться списания по периодическим и подключаемым услугам.'});
+            $(function() {
+                $("#modal-suspendedperiod-dialog-table").click(function(event) {
+                    $('<div/>').dialog2({
+                        title: "Добавить период без списаний услуг", 
+                        content: "{% url suspendedperiod %}?account_id={{account.id}}", 
                         id: "server-notice"
                     });
 
@@ -93,42 +135,79 @@
                     event.preventDefault();
                 });
             });
+            $(function() {
+                $("#modal-accountaddonservice-dialog").click(function(event) {
+                    $('<div />').dialog2({
+                        title: "Прикрепить подключаемую услугу", 
+                        content: "{% url accountaddonservice %}?account_id={{account.id}}", 
+                        id: "accountaddonservicer-modal"
+                    });
+
+                    event.preventDefault();
+                });
+            });
+            $(function() {
+                $(".open-custom-dialog").click(function(event) {
+                    $('<div />').dialog2({
+                        title: "Прикрепить подключаемую услугу", 
+                        content: this.href, 
+                        id: "accountaddonservicer-modal"
+                    });
+
+                    event.preventDefault();
+                });
+            });
+            $(".show-confirm").click(function() {
+            	a=$(this);
+                $.fn.dialog2.helpers.confirm("Вы действительно хотите удалить?", {
+                    confirm: function() {
+                    	$.getJSON(a.attr('href'),{},function(data,status){
+                    	    if( status=='success' ){
+                    	    	if(data.status==true)
+                    	    		{
+                    	    		location.reload();
+                    	    		}else{
+                    	    			alert(data.message)
+                    	    		}
+                    	    	
+                    	    }else{
+                    	        alert('Произошла непредвиденная ошибка')
+                    	    }
+
+                    	})                    	
+                    	}, 
+                    decline: function() {  }
+                });
+
+                event.preventDefault();
+            });
         });
         </script>
 
 {% endblock %}
  {% load render_table from django_tables2 %}
 {% block body %}
-<div class="span12">
 <div class="row-fluid">
 
-            <form class="well form-horizontal" method="GET" action="{% if account %}{% url account_edit account.id %}{% else %}{% url account_new %}{% endif %}">
+<div class="span9">
+
+
+
+            <form class="well form-horizontal" method="POST" action="{% url account_edit %}{% if account %}?id={{account.id}}{% endif %}">
                 <ul class="nav nav-tabs" id="tab-control">
                     <li class="active"><a href="#tab-first">Карточка</a></li>
                     <li class=""><a href="#tab-address">Персональные данные</a></li>
                     <li class=""><a href="#tab-second">Юр. лицо</a></li>
                     <li class=""><a href="#tab-third">Прочее</a></li>
                     <li class=""><a href="#tab-comment">Комментарий</a></li>
-                    <li class="dropdown">
-                        <a href="#" data-toggle="dropdown" class="dropdown-toggle">Меню <b class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#">Остаток предоплаченного NetFlow трафика</a></li>
-                            <li><a href="#">Остаток предоплаченного RADIUS трафика</a></li>
-                            <li><a href="#">Остаток предоплаченного RADIUS времени</a></li>
-                            <li class="divider"></li>
-                            <li><a href="#">История RADIUS авторизаций</a></li>
-                            <li><a href="#">История RADIUS сессий</a></li>
-                            <li class="divider"></li>
-                            <li><a href="#">Активированные карты</a></li>
-                        </ul>
-                    </li>
+
                 </ul>
 
                 <div class="tab-content">
                     <div class="tab-pane active" id="tab-first">
                         <fieldset>
                             <legend>Карточка клиента</legend>
-                            
+                            {% if account %}
                             <div class="control-group">
                             <div class="control-row">
                                 <label class="control-label">ID аккаунта</label>
@@ -140,18 +219,19 @@
                                 <label class="control-label">Тариф</label>
                                 <div class="controls">
                                     <label class="checkbox inline inline-text">{{account.get_account_tariff.name}}</label>
-                                    <a id="modal-accounttariff-dialog" class="btn">Изменить</a>
+                                    <a id="modal-accounttariff-dialog" class="btn">#</a>
                                 </div>
                             </div>
                             </div>
+                            {% endif %}
 
-
+    
 
                             <div class="control-group">
                             <div class="control-row">
                                 <label class="control-label">{{form.contract.label}}</label>
                                 <div class="controls">
-                                    {{ form.contract }}<i class="icon-print"></i>
+                                    <span>{{ form.contract }}<i class="icon-print"></i></span>
                                     {% if form.contract.errors %}
                                         <span class="help-inline">{% for error in form.contract.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}
@@ -196,10 +276,11 @@
                                 </div>
                             </div>
                             {% endif %}
-                            <div class="control-group success">
+                            {% if account %}
+                            <div class="control-group">
                                 <label class="control-label">Баланс:</label>
                                 <div class="controls">
-                                    <label class="checkbox inline inline-text">{{account.ballance|floatformat:2}} {{CURRENCY}}</label>
+                                    <label class="checkbox inline inline-text">{{account.ballance|floatformat:2}}{{CURRENCY}}</label>
 
                                     <div class="btn-group">
                                         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
@@ -212,6 +293,7 @@
                                     </div>
                                 </div>
                             </div>
+                            {% endif %}
                             <div class="control-group">
                                 <label class="control-label" for="input-credit">{{form.credit.label}}</label>
                                 <div class="controls">
@@ -238,11 +320,12 @@
                                         {{ form.username.help_text|safe }}
                                     </p>
                                     {% endif %}
-                                    <input type="button" id="generate_username" class="btn" value='Сгенерировать'>
+                                    <input type="button" id="generate_username" class="btn" value='#'>
                                 </div>
                             </div>
 
                             <div class="control-group">
+                            <div class="control-row">
                                 <label class="control-label" for="input-password">{{form.password.label}}</label>
                                 <div class="controls">
                                     {{ form.password }}
@@ -254,8 +337,24 @@
                                         {{ form.password.help_text|safe }}
                                     </p>
                                     {% endif %}
-                                    <input type='button' id='generate_password' class="btn" value="Сгенерировать">
+                                    <input type='button' id='generate_password' class="btn" value="#">
                                 </div>
+                            </div>
+                            <div class="control-row">
+                                <label class="control-label" for="input-password">{{form.account_group.label}}</label>
+                                <div class="controls">
+                                    {{ form.account_group }}
+                                    {% if form.account_group.errors %}
+                                    <span class="help-inline">{% for error in form.account_group.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if form.account_group.help_text%}
+                                    <p class="help-block">
+                                        {{ form.account_group.help_text|safe }}
+                                    </p>
+                                    {% endif %}
+                                    
+                                </div>
+                            </div>
                             </div>
 
                             <div class="control-group">
@@ -289,9 +388,27 @@
                                 </div>
                             </div>
                             </div>
-                            
+                            <div class="control-group">
+                            <div class="control-row">
+                            &nbsp;
+                            </div>
+                            <div class="control-row">
+                                <label class="control-label" for="input-comment">{{form.comment.label}}</label>
+                                <div class="controls">
+                                    {{ form.comment }}
+                                    {% if form.comment.errors %}
+                                    <span class="help-inline">{% for error in form.comment.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if form.comment.help_text%}
+                                    <p class="help-block">
+                                        {{ form.comment.help_text|safe }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                </div>
+                            </div>
                         </fieldset>
-
+                        {% if account %}
                         <fieldset>
                             <legend>Персональные данные</legend>
 
@@ -341,22 +458,25 @@
                                 </div>
                             </div>
                         </fieldset>
-
+                        
 
                         <fieldset>
-                            <legend>Субаккаунты<button href="#" class="btn align-right">Добавить</button></legend>
+                            <legend>Субаккаунты</legend>
 
                             {% if subaccounts_table %}{% render_table subaccounts_table %}{% endif %}
+                            <a href="{% url subaccount %}?account_id={{account.id}}" class="btn align-right">Добавить</a>
                         </fieldset>
                         <fieldset>
-                            <legend>Подключаемые услуги<button href="#" class="btn align-right">Добавить</button></legend>
+                            <legend>Подключаемые услуги</legend>
 
                             {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
+                            <a href="{% url accountaddonservice %}?account_id={{account.id}}" class="btn align-right" id="modal-accountaddonservice-dialog" >Добавить</a>
                         </fieldset>
+                        {% endif %}
                     </div>
 
                     <div class="tab-pane" id="tab-address">
-<fieldset>
+                        <fieldset>
                             <legend>Персональные данные</legend>
 
                             <div class="control-group">
@@ -682,19 +802,21 @@
                     </div>
 
                     <div class="tab-pane" id="tab-second">
-                        <fieldset>
-                            <legend>Юридическое лицо</legend>
-        
+                        {{form.organization}} {{form.organization.label}}
+                        <fieldset id='organization-fieldset'>
+                            <legend> Юридическое лицо</legend>
+                            {{org_form.account}}
+                            {{org_form.id}}
                             <div class="control-group">
-                                <label class="control-label" for="input-company">{{form.organization_name.label}}:</label>
+                                <label class="control-label" for="input-company">{{org_form.name.label}}:</label>
                                 <div class="controls">
-                                   {{ form.organization_name }}
-                                   {% if form.organization_name.errors %}
-                                       <span class="help-inline">{% for error in form.organization_name.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {{ org_form.name }}
+                                   {% if org_form.name.errors %}
+                                       <span class="help-inline">{% for error in org_form.name.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
-                                   {% if form.organization_name.help_text%}
+                                   {% if org_form.name.help_text%}
                                        <p class="help-block">
-                                           {{ form.organization_name.help_text|safe }}
+                                           {{ org_form.name.help_text|safe }}
                                        </p>
                                    {% endif %}
                                 </div>
@@ -702,30 +824,30 @@
 
                             <div class="control-group">
                                 <div class="control-row">
-                                    <label class="control-label" for="input-company-phone">{{form.phone.label}}: </label>
+                                    <label class="control-label" for="input-company-phone">{{org_form.phone.label}}: </label>
                                     <div class="controls">
-                                   {{ form.phone }}
-                                   {% if form.phone.errors %}
-                                       <span class="help-inline">{% for error in form.phone.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {{ org_form.phone }}
+                                   {% if org_form.phone.errors %}
+                                       <span class="help-inline">{% for error in org_form.phone.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
-                                   {% if form.phone.help_text%}
+                                   {% if org_form.phone.help_text%}
                                        <p class="help-block">
-                                           {{ form.phone.help_text|safe }}
+                                           {{ org_form.phone.help_text|safe }}
                                        </p>
                                    {% endif %}
                                     </div>
                                 </div>
 
                                 <div class="control-row">
-                                    <label class="control-label" for="input-company">{{form.fax.label}}: </label>
+                                    <label class="control-label" for="input-company">{{org_form.fax.label}}: </label>
                                     <div class="controls">
-                                   {{ form.fax }}
-                                   {% if form.fax.errors %}
-                                       <span class="help-inline">{% for error in form.fax.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {{ org_form.fax }}
+                                   {% if org_form.fax.errors %}
+                                       <span class="help-inline">{% for error in org_form.fax.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
-                                   {% if form.fax.help_text%}
+                                   {% if org_form.fax.help_text%}
                                        <p class="help-block">
-                                           {{ form.fax.help_text|safe }}
+                                           {{ form.org_form.help_text|safe }}
                                        </p>
                                    {% endif %}
                                     </div>
@@ -733,30 +855,30 @@
                             </div>
 
                             <div class="control-group">
-                                <label class="control-label" for="input-company-address">{{form.uraddress.label}}:</label>
+                                <label class="control-label" for="input-company-address">{{org_form.uraddress.label}}:</label>
                                 <div class="controls">
-                                   {{ form.uraddress }}
+                                   {{ org_form.uraddress }}
                                    {% if form.uraddress.errors %}
-                                       <span class="help-inline">{% for error in form.uraddress.errors %}{{ error }}<br/> {% endfor %}</span>
+                                       <span class="help-inline">{% for error in org_form.uraddress.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
-                                   {% if form.uraddress.help_text%}
+                                   {% if org_form.uraddress.help_text%}
                                        <p class="help-block">
-                                           {{ form.uraddress.help_text|safe }}
+                                           {{ org_form.uraddress.help_text|safe }}
                                        </p>
                                    {% endif %}
                                 </div>
                             </div>
 
                             <div class="control-group">
-                                <label class="control-label" for="input-company-unp">{{form.unp.label}}:</label>
+                                <label class="control-label" for="input-company-unp">{{org_form.unp.label}}:</label>
                                 <div class="controls">
-                                   {{ form.unp }}
-                                   {% if form.unp.errors %}
-                                       <span class="help-inline">{% for error in form.unp.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {{ org_form.unp }}
+                                   {% if org_form.unp.errors %}
+                                       <span class="help-inline">{% for error in org_form.unp.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
-                                   {% if form.unp.help_text%}
+                                   {% if org_form.unp.help_text%}
                                        <p class="help-block">                            
-                                           {{ form.unp.help_text|safe }}
+                                           {{ org_form.unp.help_text|safe }}
                                        </p>
                                    {% endif %}
                                 </div>
@@ -764,62 +886,30 @@
 
                             <div class="control-group">
                                 <div class="control-row">
-                                    <label class="control-label" for="input-company-cpp">{{form.kpp.label}}</label>
+                                    <label class="control-label" for="input-company-cpp">{{org_form.kpp.label}}</label>
                                     <div class="controls">
-                                   {{ form.kpp }}
-                                   {% if form.kpp.errors %}
-                                       <span class="help-inline">{% for error in form.kpp.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {{ org_form.kpp }}
+                                   {% if org_form.kpp.errors %}
+                                       <span class="help-inline">{% for error in org_form.kpp.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
-                                   {% if form.kpp.help_text%}
+                                   {% if org_form.kpp.help_text%}
                                        <p class="help-block">
-                                           {{ form.kpp.help_text|safe }}
+                                           {{ org_form.kpp.help_text|safe }}
                                        </p>
                                    {% endif %}
                                     </div>
                                 </div>
 
                                 <div class="control-row">
-                                    <label class="control-label" for="input-company-okpo">{{form.okpo.label}}</label>
+                                    <label class="control-label" for="input-company-okpo">{{org_form.okpo.label}}</label>
                                     <div class="controls">
-                                   {{ form.okpo }}
-                                   {% if form.okpo.errors %}
-                                       <span class="help-inline">{% for error in form.okpo.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {{ org_form.okpo }}
+                                   {% if org_form.okpo.errors %}
+                                       <span class="help-inline">{% for error in org_form.okpo.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
-                                   {% if form.okpo.help_text%}
+                                   {% if org_form.okpo.help_text%}
                                        <p class="help-block">
-                                           {{ form.okpo.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-company-bank">{{form.bank.label}}</label>
-                                    <div class="controls">
-                                   {{ form.bank }}
-                                   {% if form.okpo.errors %}
-                                       <span class="help-inline">{% for error in form.bank.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.bank.help_text%}
-                                       <p class="help-block">
-                                           {{ form.bank.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="control-row">
-                                    <label class="control-label" for="input-company-swift">{{form.bank_code.label}}</label>
-                                    <div class="controls">
-                                   {{ form.bank_code }}
-                                   {% if form.bank_code.errors %}
-                                       <span class="help-inline">{% for error in form.bank_code.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.bank_code.help_text%}
-                                       <p class="help-block">
-                                           {{ form.bank_code.help_text|safe }}
+                                           {{ org_form.okpo.help_text|safe }}
                                        </p>
                                    {% endif %}
                                     </div>
@@ -828,30 +918,62 @@
 
                             <div class="control-group">
                                 <div class="control-row">
-                                    <label class="control-label" for="input-company-account">{{form.kor_s.label}}</label>
+                                    <label class="control-label" for="input-company-bank">{{bank_form.bank.label}}</label>
                                     <div class="controls">
-                                   {{ form.kor_s }}
-                                   {% if form.kor_s.errors %}
-                                       <span class="help-inline">{% for error in form.kor_s.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {{ bank_form.bank }}
+                                   {% if bank_form.bank.errors %}
+                                       <span class="help-inline">{% for error in bank_form.bank.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
-                                   {% if form.kor_s.help_text%}
+                                   {% if bank_form.bank.help_text%}
                                        <p class="help-block">
-                                           {{ form.kor_s.help_text|safe }}
+                                           {{ bank_form.bank.help_text|safe }}
+                                       </p>
+                                   {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="control-row">
+                                    <label class="control-label" for="input-company-swift">{{bank_form.bankcode.label}}</label>
+                                    <div class="controls">
+                                   {{ bank_form.bankcode }}
+                                   {% if bank_form.bankcode.errors %}
+                                       <span class="help-inline">{% for error in bank_form.bankcode.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {% endif %}
+                                   {% if bank_form.bankcode.help_text%}
+                                       <p class="help-block">
+                                           {{ bank_form.bankcode.help_text|safe }}
+                                       </p>
+                                   {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-company-account">{{org_form.kor_s.label}}</label>
+                                    <div class="controls">
+                                   {{ org_form.kor_s }}
+                                   {% if org_form.kor_s.errors %}
+                                       <span class="help-inline">{% for error in org_form.kor_s.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {% endif %}
+                                   {% if org_form.kor_s.help_text%}
+                                       <p class="help-block">
+                                           {{ org_form.kor_s.help_text|safe }}
                                        </p>
                                    {% endif %}
                                     </div>
                                 </div>
         
                                 <div class="control-row">
-                                    <label class="control-label" for="input-settlement-account">{{form.rs.label}}</label>
+                                    <label class="control-label" for="input-settlement-account">{{org_form.rs.label}}</label>
                                     <div class="controls">
-                                   {{ form.rs }}
-                                   {% if form.rs.errors %}
-                                       <span class="help-inline">{% for error in form.rs.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {{ org_form.rs }}
+                                   {% if org_form.rs.errors %}
+                                       <span class="help-inline">{% for error in org_form.rs.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
-                                   {% if form.rs.help_text%}
+                                   {% if org_form.rs.help_text%}
                                        <p class="help-block">
-                                           {{ form.rs.help_text|safe }}
+                                           {{ org_form.rs.help_text|safe }}
                                        </p>
                                    {% endif %}
                                     </div>
@@ -860,15 +982,15 @@
                             
                             <div class="control-group">
                                 <div class="control-row">
-                                    <label class="control-label" for="input-company-account">{{form.currency.label}}</label>
+                                    <label class="control-label" for="input-company-account">{{bank_form.currency.label}}</label>
                                     <div class="controls">
-                                   {{ form.currency }}
-                                   {% if form.currency.errors %}
-                                       <span class="help-inline">{% for error in form.currency.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {{ bank_form.currency }}
+                                   {% if bank_form.currency.errors %}
+                                       <span class="help-inline">{% for error in bank_form.currency.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
-                                   {% if form.currency.help_text%}
+                                   {% if bank_form.currency.help_text%}
                                        <p class="help-block">
-                                           {{ form.currency.help_text|safe }}
+                                           {{ bank_form.currency.help_text|safe }}
                                        </p>
                                    {% endif %}
                                     </div>
@@ -883,24 +1005,24 @@
 
 
                         <fieldset>
-                            <legend>Предыдущие тарифные планы <a href="{% url ebsadmin.wi.accounttarif_edit%}?account_id={{account.id}}" class="btn align-right">Добавить</a></legend>
+                            <legend>Предыдущие тарифные планы <a href="{% url accounttariff_edit %}?account_id={{account.id}}" id="modal-accounttariff-dialog-table" class="btn align-right">Добавить</a></legend>
 
                             {% if accounttarif_table %}{% render_table accounttarif_table %}{% endif %}
                         </fieldset>
-
+                        {% comment %}
                         <fieldset>
                             <legend>Документы<button href="#" class="btn align-right">Добавить</button></legend>
 
                         </fieldset>
-
+                        {% endcomment %}
                         <fieldset>
-                            <legend>Взятое в аренду оборудование<button href="#" class="btn align-right">Добавить</button></legend>
+                            <legend>Взятое в аренду оборудование<a href="{% url accounthardware %}?account_id={{account.id}}" id="modal-accounthardware-dialog-table" class="btn align-right">Добавить</a></legend>
 
                             {% if accounthardware_table %}{% render_table accounthardware_table %}{% endif %}
                         </fieldset>
 
                         <fieldset>
-                            <legend>Периоды без списаний<button href="#" class="btn align-right">Добавить</button></legend>
+                            <legend>Периоды без списаний<input type="button" id="modal-suspendedperiod-dialog-table" class="btn align-right" value="Добавить"></legend>
 
                             {% if suspendedperiod_table %}{% render_table suspendedperiod_table  %}{% endif %}
                         </fieldset>
@@ -910,20 +1032,81 @@
 
                                 
                                 <div class="control-row">
-                                    <label class="control-label" for="input-balance-limit">Блок. после баланса:</label>
+                                    <label class="control-label" for="input-balance-limit">{{form.allow_block_after_summ.label}}:</label>
                                     <div class="controls">
-                                        <input type="text" class="input-small" id="input-balance-limit" value="-100">
+                                   {{ form.allow_block_after_summ }}
+                                   {% if form.allow_block_after_summ.errors %}
+                                       <span class="help-inline">{% for error in form.allow_block_after_summ.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {% endif %}
+                                   {% if form.allow_block_after_summ.help_text%}
+                                       <p class="help-block">
+                                           {{ form.allow_block_after_summ.help_text|safe }}
+                                       </p>
+                                   {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="control-group">
+
+                                
+                                <div class="control-row">
+                                    <label class="control-label" for="input-balance-limit">{{form.block_after_summ.label}}:</label>
+                                    <div class="controls">
+                                   {{ form.block_after_summ }}
+                                   {% if form.block_after_summ.errors %}
+                                       <span class="help-inline">{% for error in form.block_after_summ.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {% endif %}
+                                   {% if form.block_after_summ.help_text%}
+                                       <p class="help-block">
+                                           {{ form.block_after_summ.help_text|safe }}
+                                       </p>
+                                   {% endif %}
                                     </div>
                                 </div>
                             </div>
 
                             <div class="control-group">
-                                <label class="control-label" for="input-max">Обещанный платеж</label>
+                                <label class="control-label" for="input-max">{{form.promise_summ.label}}</label>
                                 <div class="controls">
-                                    <input type="text" class="input-small" id="input-credit" value="500">
+                                   {{ form.promise_summ }}
+                                   {% if form.promise_summ.errors %}
+                                       <span class="help-inline">{% for error in form.promise_summ.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {% endif %}
+                                   {% if form.promise_summ.help_text%}
+                                       <p class="help-block">
+                                           {{ form.promise_summ.help_text|safe }}
+                                       </p>
+                                   {% endif %}
                                 </div>
                             </div>
-
+                            <div class="control-group">
+                                <label class="control-label" for="input-max">{{form.promise_min_ballance.label}}</label>
+                                <div class="controls">
+                                   {{ form.promise_min_ballance }}
+                                   {% if form.promise_min_ballance.errors %}
+                                       <span class="help-inline">{% for error in form.promise_min_ballance.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {% endif %}
+                                   {% if form.promise_min_ballance.help_text%}
+                                       <p class="help-block">
+                                           {{ form.promise_min_ballance.help_text|safe }}
+                                       </p>
+                                   {% endif %}
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="control-label" for="input-max">{{form.promise_days.label}}</label>
+                                <div class="controls">
+                                   {{ form.promise_days }}
+                                   {% if form.promise_days.errors %}
+                                       <span class="help-inline">{% for error in form.promise_days.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {% endif %}
+                                   {% if form.promise_days.help_text%}
+                                       <p class="help-block">
+                                           {{ form.promise_days.help_text|safe }}
+                                       </p>
+                                   {% endif %}
+                                </div>
+                            </div>
                             <div class="control-group">
                                 <label class="control-label" for="input-max">Опции</label>
                                 <div class="controls docs-input-sizes">
@@ -960,61 +1143,9 @@
 
                     <div class="tab-pane" id="tab-comment">
                         <fieldset>
-                            <legend>Лог <button href="#" class="btn align-right">Добавить</button></legend>
-
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Действие</th>
-                                        <th>Дата</th>
-                                        <th>Инициатор</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>56</td>
-                                        <td>Неожиданное явление духа поэта в офисе компании</td>
-                                        <td>21.06.12 17:54</td>
-                                        <td>Абу Абдаллах Рудаки</td>
-                                        <th>
-                                            <a href="#"><i class="icon-edit"></i></a>
-                                            <a href="#"><i class="icon-remove"></i></a>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td>55</td>
-                                        <td>Зачисление средств в размере 650 р.</td>
-                                        <td>20.06.12 12:50</td>
-                                        <td>Дарт Вейдер</td>
-                                        <th>
-                                            <a href="#"><i class="icon-edit"></i></a>
-                                            <a href="#"><i class="icon-remove"></i></a>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td>54</td>
-                                        <td>Исполнение песен собственного сочинения</td>
-                                        <td>14.06.12 15:20</td>
-                                        <td>Никита Джигурда</td>
-                                        <th>
-                                            <a href="#"><i class="icon-edit"></i></a>
-                                            <a href="#"><i class="icon-remove"></i></a>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td>53</td>
-                                        <td>Действия непонятного характера ранним утром</td>
-                                        <td>11.04.10 08:00</td>
-                                        <td>Агент разведки</td>
-                                        <th>
-                                            <a href="#"><i class="icon-edit"></i></a>
-                                            <a href="#"><i class="icon-remove"></i></a>
-                                        </th>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <legend>Лог</legend>
+                               {% if action_log_table %} {% render_table action_log_table %} {% endif %}
+                           
 
                         </fieldset>
                     </div>
@@ -1027,6 +1158,26 @@
                 </fieldset>
             </form>
         </div>
+        {% if account %}
+        <div class="span3">
+          <div class="well sidebar-nav">
+            <ul class="nav nav-list">
+              <li class="nav-header">Отчёты</li>
+              <li><a href="{% url authlog_list %}?account={{account.id}}"><i class="icon-info-sign"></i>История RADIUS авторизаций</a></li>
+              <li><a href="{% url activesessionreport %}?account={{account.id}}"><i class="icon-info-sign"></i>История RADIUS сессий</a></li>
+              <li><a href="{% url ipinuse_list %}?account={{account.id}}"><i class="icon-info-sign"></i>Использованные IP-адреса</a></li>
+              <li class="nav-header">Финансы</li>
+              <li><a href="{% url transactionreport2 %}?account={{account.id}}&transactiontype=MANUAL_TRANSACTION">Пополнения баланса</a></li>
+              <li><a href="{% url authlog_list %}?account={{account.id}}">Списания</a></li>
+              <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">История изменения баланса</a></li>
+              <li class="nav-header">Остатки</li>
+              <li><a href="{% url authlog_list %}?account={{account.id}}">Остаток предоплаченного NetFlow трафика</a></li>
+              <li><a href="{% url authlog_list %}?account={{account.id}}">Остаток предоплаченного RADIUS трафика</a></li>
+              <li><a href="{% url authlog_list %}?account={{account.id}}">Остаток предоплаченного времени</a></li>
+            </ul>
+          </div><!--/.well -->
+        </div>
+        {% endif %}
     </div>
 
  {% endblock %}

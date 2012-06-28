@@ -1,0 +1,153 @@
+{% if not status %}
+{{message}}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $('#id_activated').datetimepicker({
+         showSecond: true,
+         timeFormat: 'hh:mm:ss',
+         stepHour: 1,
+         stepMinute: 1,
+         stepSecond: 1,
+         numberOfMonths: 1,
+         dateFormat: 'yy-mm-dd'
+     });
+ });
+ $(document).ready(function() {
+     $('#id_deactivated').datetimepicker({
+         showSecond: true,
+         timeFormat: 'hh:mm:ss',
+         stepHour: 1,
+         stepMinute: 1,
+         stepSecond: 1,
+         numberOfMonths: 1,
+         dateFormat: 'yy-mm-dd'
+     });
+ });
+ $(document).ready(function() {
+     $('#id_temporary_blocked').datetimepicker({
+         showSecond: true,
+         timeFormat: 'hh:mm:ss',
+         stepHour: 1,
+         stepMinute: 1,
+         stepSecond: 1,
+         numberOfMonths: 1,
+         dateFormat: 'yy-mm-dd'
+     });
+ });
+ </script>
+
+
+            <form method="POST" action="{% url accountaddonservice %}?id={{accountaddonservice.id}}" class="well form-horizontal ajax">
+                <fieldset>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">Аккаунт: </label>
+                      <div class="controls">
+                      {{ form.account }}
+                      {% if form.account.errors %}
+                          <span class="help-inline">{% for error in form.account.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.account.help_text%}
+                          <p class="help-block">
+                              {{ form.account.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">Субаккаунт: </label>
+                      <div class="controls">
+                      {{ form.subaccount }}
+                      {% if form.account.errors %}
+                          <span class="help-inline">{% for error in form.subaccount.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.account.help_text%}
+                          <p class="help-block">
+                              {{ form.subaccount.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>                  
+                  <div class="control-group">
+                      <label class="control-label">Подключаемая услуга</label>
+                      <div class="controls">
+                      {{ form.service }}
+                      {% if form.service.errors %}
+                          <span class="help-inline">{% for error in form.service.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.service.help_text%}
+                          <p class="help-block">
+                              {{ form.service.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.activated.label}}:</label>
+                      <div class="controls">
+                      {{ form.activated }}
+                      {% if form.datetime.errors %}
+                          <span class="help-inline">{% for error in form.activated.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.activated.help_text%}
+                          <p class="help-block">
+                              {{ form.activated.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.deactivated.label}}:</label>
+                      <div class="controls">
+                      {{ form.deactivated }}
+                      {% if form.deactivated.errors %}
+                          <span class="help-inline">{% for error in form.deactivated.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.deactivated.help_text%}
+                          <p class="help-block">
+                              {{ form.deactivated.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+
+                  </div>
+                  <div class="control-group">
+                  
+                      <div class="control-row">
+                      <label class="control-label">{{form.temporary_blocked.label}}:</label>
+                      <div class="controls">
+                      {{ form.temporary_blocked }}
+                      {% if form.temporary_blocked.errors %}
+                          <span class="help-inline">{% for error in form.temporary_blocked.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.temporary_blocked.help_text%}
+                          <p class="help-block">
+                              {{ form.temporary_blocked.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                </fieldset>
+                
+                <div class="form-actions">
+                    <input type='submit' class="btn btn-primary" value="Save Changes">
+                    <a class="btn close-dialog" href="#">Close</a>
+                </div>
+            </form>
+
+{% else %}
+Операция произведена успешно.
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}

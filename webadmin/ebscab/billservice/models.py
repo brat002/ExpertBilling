@@ -6,6 +6,7 @@ from django.db.models import F
 import datetime, time
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from django.core.urlresolvers import reverse
 # Create your models here.
 # choiCe
 from lib.fields import IPNetworkField
@@ -220,7 +221,7 @@ class PeriodicalService(models.Model):
             )
         
 class PeriodicalServiceHistory(models.Model):
-    service = models.ForeignKey(to=PeriodicalService)
+    service = models.ForeignKey(to=PeriodicalService,  blank=True, null=True, on_delete=models.SET_NULL)
     #transaction = models.ForeignKey(to='Transaction')
     accounttarif = models.ForeignKey(to='AccountTarif', on_delete=models.CASCADE)
     created  = models.DateTimeField(auto_now_add=True)
@@ -620,10 +621,19 @@ ACCOUNT_STATUS = (
                   (NOT_ACTIVE_WRITING_OFF, u'Неактивен, списывать периодические услуги'),
                   )
 
-#class PeriodicalServiceTariff(models.Model):
-#    tariff = models.ForeignKey(Tariff, on_delete = models.CASCADE) 
-#    periodicalservice = models.ForeignKey(PeriodicalService, on_delete = models.CASCADE)
-    
+class AccountGroup(models.Model):
+    name = models.CharField(max_length=512)
+    def __unicode__(self):
+        return u"%s" % self.name
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = u"Группа абонентов"
+        verbose_name_plural = u"Группы абонентов"
+        permissions = (
+           ("accountgroup_view", u"Просмотр"),
+            )
+        
 class Account(models.Model):
     """
     Если стоят галочки assign_vpn_ip_from_dhcp или assign_ipn_ip_from_dhcp,
@@ -634,70 +644,61 @@ class Account(models.Model):
     username = models.CharField(verbose_name=u'Имя пользователя',max_length=200,unique=True)
     password = models.CharField(verbose_name=u'Пароль',max_length=200, blank=True, default='')
     fullname = models.CharField(verbose_name=u'Имя', blank=True, default='', max_length=200)
-    email = models.CharField(verbose_name=u'Фамилия', blank=True, default='',max_length=200)
+    email = models.CharField(verbose_name=u'E-mail', blank=True, default='',max_length=200)
 
     
     address = models.TextField(verbose_name=u'Домашний адрес', blank=True, default='')
-    city = models.ForeignKey('City', blank=True, null=True, on_delete = models.SET_NULL)
-    postcode = models.CharField(max_length=255, blank=True, null=True)
-    region = models.CharField( blank=True, max_length=255, default='')
-    street = models.ForeignKey('Street', blank=True, null=True, on_delete = models.SET_NULL)
-    house = models.ForeignKey('House', blank=True, null=True, on_delete = models.SET_NULL)
-    house_bulk = models.CharField(blank=True, max_length=255)
-    entrance = models.CharField(blank=True, max_length=255)
-    room = models.CharField(blank=True, max_length=255)
+    city = models.ForeignKey('City', verbose_name=u'Город', blank=True, null=True, on_delete = models.SET_NULL)
+    postcode = models.CharField(verbose_name=u'Индекс', max_length=255, blank=True, null=True)
+    region = models.CharField( blank=True, verbose_name=u'Район', max_length=255, default='')
+    street = models.ForeignKey('Street', verbose_name=u'Улица', blank=True, null=True, on_delete = models.SET_NULL)
+    house = models.ForeignKey('House', verbose_name=u'Дом', blank=True, null=True, on_delete = models.SET_NULL)
+    house_bulk = models.CharField(verbose_name=u'Корпус', blank=True, max_length=255)
+    entrance = models.CharField(verbose_name=u'Подъезд', blank=True, max_length=255)
+    room = models.CharField(verbose_name=u'Квартира', blank=True, max_length=255)
     
 
     nas = models.ForeignKey(to=Nas, blank=True,null=True, verbose_name=u'Сервер доступа', on_delete = models.SET_NULL)
 
     ipn_added = models.BooleanField(verbose_name=u"Добавлен на сервере доступа", default=False, blank=True)
     ipn_status = models.BooleanField(verbose_name=u"Статус на сервере доступа", default=False, blank=True)
-    status=models.IntegerField(verbose_name=u'Статус пользователя', default=1, choices=((1, u"Активен"), (2, u"Не активен, списывать периодические услуги"), (3, u"Не активен, не списывать периодические услуги"), (4, u"Пользовательская блокировка"),))
+    status=models.IntegerField(verbose_name=u'Статус', default=1, choices=((1, u"Активен"), (2, u"Не активен, списывать периодические услуги"), (3, u"Не активен, не списывать периодические услуги"), (4, u"Пользовательская блокировка"),))
     created=models.DateTimeField(verbose_name=u'Создан', default='')
     #NOTE: baLance
     ballance=models.DecimalField(u'Баланс', blank=True, default=0,decimal_places=10,max_digits=20)
-    credit = models.DecimalField(verbose_name=u'Размер кредита',decimal_places=10,max_digits=20, help_text=u'Сумма, на которую данному пользователю можно работать в кредит', blank=True, default=0)
+    credit = models.DecimalField(verbose_name=u'Размер кредита', decimal_places=2,max_digits=20, blank=True, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
     balance_blocked = models.BooleanField(blank=True, default=False)
 
-    allow_webcab = models.BooleanField(verbose_name=u"Разрешить пользоваться веб-кабдинетом", blank=True, default=True)
+    allow_webcab = models.BooleanField(verbose_name=u"Разрешить пользоваться веб-кабинетом", blank=True, default=True)
     allow_expresscards = models.BooleanField(verbose_name=u"Разрешить активацию карт экспресс-оплаты", blank=True, default=True)
 
-    passport = models.CharField(blank=True, max_length=64)
-    passport_date = models.CharField(blank=True, max_length=64)
-    phone_h = models.CharField(blank=True, max_length=64)
-    phone_m = models.CharField(blank=True, max_length=64)
-    contactperson_phone = models.CharField(blank=True, max_length=64)
+    passport = models.CharField(verbose_name=u'№ паспорта', blank=True, max_length=64)
+    passport_date = models.CharField(verbose_name=u'Выдан', blank=True, max_length=64)
+    phone_h = models.CharField(verbose_name=u'Дом. телефон' ,blank=True, max_length=64)
+    phone_m = models.CharField(verbose_name=u'Моб. телефон', blank=True, max_length=64)
+    contactperson_phone = models.CharField(verbose_name=u'Тел. контактного лица', blank=True, max_length=64)
     comment = models.TextField(blank=True)
-    row = models.CharField(blank=True, max_length=6)
-    elevator_direction = models.CharField(blank=True, max_length=128)
-    contactperson = models.CharField(blank=True, max_length=256)
-    passport_given = models.CharField(blank=True, null=True, max_length=128)
-    contract = models.TextField(blank=True)
+    row = models.CharField(verbose_name=u'Этаж', blank=True, max_length=6)
+    elevator_direction = models.CharField(verbose_name=u'Направление от лифта', blank=True, max_length=128)
+    contactperson = models.CharField(verbose_name=u'Контактное лицо', blank=True, max_length=256)
+    passport_given = models.CharField(verbose_name=u'Кем выдан', blank=True, null=True, max_length=128)
+    contract = models.TextField(verbose_name=u'№ договора', blank=True)
     systemuser = models.ForeignKey('SystemUser',verbose_name=u'Менеджер', blank=True,null=True, on_delete = models.SET_NULL)
-    last_balance_null = models.DateTimeField(blank=True)
-    entrance_code = models.CharField(blank=True, max_length=256)
-    private_passport_number = models.CharField(blank=True, max_length=128)
+    entrance_code = models.CharField(verbose_name=u'Код домофона', blank=True, max_length=256)
+    private_passport_number = models.CharField(verbose_name=u'Идент. номер', blank=True, max_length=128)
     allow_ipn_with_null = models.BooleanField()
     allow_ipn_with_minus = models.BooleanField()
     allow_ipn_with_block = models.BooleanField()
     deleted = models.DateTimeField(blank=True, null=True)
+    promise_summ = models.IntegerField(u'Максимальный обещанный платёж', blank=True, default=0)
+    promise_min_ballance = models.IntegerField(u'Минимальный баланс для обещанного платежа', blank=True, default=0)
+    promise_days = models.IntegerField(u'Длительность обещанного платежа, дней', blank=True, default=1)
+    allow_block_after_summ = models.BooleanField(u'Разрешить блокировку списаний', blank=True, default=False, help_text= u"Разрешить приостановку списаний по периодическим и подключаемым услугам при достижении указанного баланса")
+    block_after_summ = models.IntegerField(u'Блокировка списаний после суммы', blank=True, default=0)
+    account_group = models.ForeignKey(AccountGroup, verbose_name=u'Группа', blank=True, null=True, on_delete=models.SET_NULL)
     objects = SoftDeletedDateManager()
-
-
-
-
-    """
-    assign_ip_from_dhcp - если стоит галочка-добавить в таблицу nas_ipleases свободную
-    запись без времени старта из пула pool и выдавать ему адрес по DHCP. Время конца аренды прописано в пуле.
-
-    Если выбран пул и указан IP - считать запись статической.
-    Если выбран пул и не указан IP - назначать IP адрес из пула динамически
-
-    После первой выдачи IP адреса клиенту - поставить дату старта.
-    Для virtual_pool предлагать только пулы с service=vpn
-    Для ipn_pool предлагать только пулы с service=ipn
-    """
+    
 
     def get_actual_ballance(self):
         return self.ballance+self.credit
@@ -788,19 +789,23 @@ class Account(models.Model):
         return dict(ACCOUNT_STATUS)[int(self.status)]
 
 
+
 class Organization(models.Model):
     account = models.ForeignKey(Account, blank=True, null=True)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Название организации")
     #rs = models.CharField(max_length=255)
-    uraddress = models.CharField(max_length=255)
-    okpo = models.CharField(max_length=255)
-    kpp = models.CharField(max_length=255)
-    kor_s = models.CharField(max_length=255)
-    unp = models.CharField(max_length=255)
-    phone = models.CharField(max_length=255)
-    fax = models.CharField(max_length=255)
-    bank = models.ForeignKey("BankData", blank=True, null=True, on_delete = models.SET_NULL)
+    uraddress = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Юр. адрес")
+    okpo = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"ОКПО")
+    kpp = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"КПП")
+    kor_s = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Корреспонденский счёт")
+    unp = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"УНП")
+    phone = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Телефон")
+    fax = models.CharField(max_length=255, blank=True, null=True, verbose_name=u"Факс")
+    bank = models.ForeignKey("BankData", blank=True, null=True, on_delete = models.SET_NULL, verbose_name=u"Банк")
 
+    def __unicode__(self):
+        return u"%s" % (self.name, )
+    
     class Meta:
         permissions = (
            ("organization_view", u"Просмотр организации"),
@@ -874,6 +879,9 @@ class AccountTarif(models.Model):
         ordering = ['-datetime']
         list_display = ('account','tarif','datetime')
 
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('accounttariff_delete'), self.id)
+    
     def __unicode__(self):
         return u"%s, %s" % (self.account, self.tarif)
 
@@ -1164,9 +1172,12 @@ class Document(models.Model):
     
 class SuspendedPeriod(models.Model):
     account = models.ForeignKey(Account)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    activated_by_account = models.BooleanField()
+    start_date = models.DateTimeField(verbose_name=u"Дата начала")
+    end_date = models.DateTimeField(verbose_name=u"Дата конца", blank=True, null=True)
+    activated_by_account = models.BooleanField(verbose_name=u"Активировано аккаунтом", blank=True, default=False)
+    
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('suspendedperiod_delete'), self.id)
     
     class Meta:
         ordering = ['-start_date']
@@ -1255,11 +1266,11 @@ class IPPool(models.Model):
         return u"%s-%s" % (self.start_ip, self.end_ip)
     
 class IPInUse(models.Model):
-    pool = models.ForeignKey(IPPool)
-    ip = models.CharField(max_length=255)
-    datetime = models.DateTimeField()
-    disabled = models.DateTimeField(blank=True, null=True)
-    dynamic = models.BooleanField(default=False)
+    pool = models.ForeignKey(IPPool, verbose_name=u'IP пул')
+    ip = models.CharField(max_length=255, verbose_name=u'IP адрес')
+    datetime = models.DateTimeField(verbose_name=u'Дата выдачи')
+    disabled = models.DateTimeField(blank=True, null=True, verbose_name=u'Дата освобождения')
+    dynamic = models.BooleanField(default=False, verbose_name=u'Выдан динамически')
 
     class Meta:
         ordering = ['ip']
@@ -1320,7 +1331,7 @@ class RadiusAttrs(models.Model):
         
 class AddonService(models.Model):    
     name = models.CharField(max_length=255 , verbose_name=u'Название')    
-    comment = models.CharField(max_length=255, blank=True, default='', verbose_name=u'Комментарий')
+    comment = models.TextField(blank=True, default='', verbose_name=u'Комментарий')
     allow_activation = models.BooleanField(blank=True, default = False)    
     service_type = models.CharField(max_length=32, choices=(("onetime", u"Разовая услуга"),("periodical", u"Периодическая услуга"),))    
     sp_type = models.CharField(max_length=32, choices=(("AT_START",u"В начале расчётного периода"),("AT_END", u"В конце расчётного периода" ),("GRADUAL", u"На протяжении расчётного периода"),))    
@@ -1332,8 +1343,8 @@ class AddonService(models.Model):
     wyte_cost = models.DecimalField(decimal_places=10, max_digits=60, blank=True, default=0)    
     action = models.BooleanField(blank=True, default=False)    
     nas = models.ForeignKey(Nas, blank=True, null=True, on_delete=models.SET_NULL)    
-    service_activation_action = models.CharField(max_length = 8000, blank=True, default='')    
-    service_deactivation_action = models.CharField(max_length = 8000, blank=True, default='')    
+    service_activation_action = models.TextField(blank=True, default='')    
+    service_deactivation_action = models.TextField(blank=True, default='')    
     deactivate_service_for_blocked_account = models.BooleanField(blank=True, default=False)    
     change_speed = models.BooleanField(blank=True, default=False)    
     change_speed_type = models.CharField(max_length=32, choices=(("add", "Add"), ("abs","Abs",),), blank=True, null=True)    
@@ -1402,8 +1413,8 @@ class AddonServiceTransaction(models.Model):
     account = models.ForeignKey(Account)
     accountaddonservice = models.ForeignKey(AccountAddonService)
     accounttarif = models.ForeignKey(AccountTarif)
-    type = models.ForeignKey(TransactionType, null=True, on_delete = models.SET_NULL)
-    summ = models.IntegerField()
+    type = models.ForeignKey(to=TransactionType, null=True, to_field='internal_name', verbose_name=u"Тип операции", on_delete = models.SET_NULL)
+    summ = models.DecimalField(decimal_places=5, max_digits=60)
     created = models.DateTimeField()
     
     class Meta:
@@ -1483,6 +1494,9 @@ class SubAccount(models.Model):
     def __unicode__(self):
         return u"%s" % self.username
 
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('subaccount_delete'), self.id)
+    
     class Meta:
         ordering = ['-username']
         verbose_name = u"Субаккаунт"
@@ -1663,6 +1677,9 @@ class AccountHardware(models.Model):
     returned = models.DateTimeField()
     comment = models.TextField()
 
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('accounthardware_delete'), self.id)
+    
     class Meta:
         ordering = ['datetime']
         verbose_name =u"Устройство у абонента"

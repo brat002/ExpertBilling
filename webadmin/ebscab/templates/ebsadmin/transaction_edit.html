@@ -1,0 +1,131 @@
+{% if not status %}
+{{message}}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $('#id_created').datetimepicker({
+         showSecond: true,
+         timeFormat: 'hh:mm:ss',
+         stepHour: 1,
+         stepMinute: 1,
+         stepSecond: 1,
+         numberOfMonths: 1
+     });
+ });
+ </script>
+           
+            
+                <form action='{% url transaction_edit %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax">
+                <fieldset>
+                {{ form.account }}
+                  <div class="control-group">
+                      <label class="control-label">{{form.type.label}}</label>
+                      <div class="controls">
+                      {{ form.type }}
+                      {% if form.type.errors %}
+                          <span class="help-inline">{% for error in form.type.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.type.help_text%}
+                          <p class="help-block">
+                              {{ form.type.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <label class="control-label">{{form.bill.label}}</label>
+                      <div class="controls">
+                      {{ form.bill }}
+                      {% if form.bill.errors %}
+                          <span class="help-inline">{% for error in form.bill.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.bill.help_text%}
+                          <p class="help-block">
+                              {{ form.bill.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <label class="control-label">{{form.description.label}}</label>
+                      <div class="controls">
+                      {{ form.description }}
+                      {% if form.description.errors %}
+                          <span class="help-inline">{% for error in form.description.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.description.help_text%}
+                          <p class="help-block">
+                              {{ form.description.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <label class="control-label">{{form.summ.label}}</label>
+                      <div class="controls">
+                      {{ form.summ }}
+                      {% if form.summ.errors %}
+                          <span class="help-inline">{% for error in form.summ.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.summ.help_text%}
+                          <p class="help-block">
+                              {{ form.summ.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <label class="control-label">{{form.created.label}}</label>
+                      <div class="controls">
+                      {{ form.created }}
+                      {% if form.created.errors %}
+                          <span class="help-inline">{% for error in form.created.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.created.help_text%}
+                          <p class="help-block">
+                              {{ form.created.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <label class="control-label">{{form.promise.label}}</label>
+                      <div class="controls">
+                      <span class="add-on">{{ form.promise }}</span> 
+                      {% if form.promise.errors %}
+                          <span class="help-inline">{% for error in form.promise.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.promise.help_text%}
+                          <p class="help-block">
+                              {{ form.promise.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <label class="control-label">{{form.end_promise.label}}</label>
+                      <div class="controls">
+                      <span class="add-on">{{ form.end_promise }}</span> {{form.promise_never_expire}} <span class="help-inline">Никогда</span>
+                      {% if form.end_promise.errors %}
+                          <span class="help-inline">{% for error in form.end_promise.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.end_promise.help_text%}
+                          <p class="help-block">
+                              {{ form.end_promise.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                </fieldset>
+                <div class="form-actions">
+				    <input type='submit' class="btn btn-primary" value="Save Changes">
+				    <a class="btn close-dialog" href="#">Close</a>
+				</div>
+                </form>
+{% else %}
+Операция произведена успешно.
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}

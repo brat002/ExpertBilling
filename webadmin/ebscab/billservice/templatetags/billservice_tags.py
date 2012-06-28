@@ -181,3 +181,4 @@ def show_last_news_private(user):
     return {
             'news':news,
             }
+

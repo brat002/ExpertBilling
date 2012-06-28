@@ -1,0 +1,167 @@
+{% extends "ebsadmin/base.html" %}
+{% load crispy_forms_tags %}
+{% block extra_head %}
+        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
+
+        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
+
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+            $("#id_created").focus(function() {
+            $(function(){
+
+                 $('#id_created').daterangepicker({
+                	  presetRanges: [
+                	                 {text: 'Сейчас', dateStart: 'Now', dateEnd: 'Now' }
+                	               ],
+                	  presets: {specificDate: 'Указанная дата',
+                		  'allDatesBefore': 'До даты', 
+                		  'allDatesAfter': 'После даты', 
+                		  'dateRange': 'Диапазон дат'},
+                      rangeStartTitle: 'С',
+                      rangeEndTitle: 'По',
+                      doneButtonText: 'Выбрать',
+                      prevLinkText:'Назад',
+                      nextLinkText: 'Вперёд',
+                	  dateFormat: 'yy-mm-dd',
+
+                 }); 
+    
+             });
+              });
+            $('#id_date_start').datetimepicker({
+                showSecond: true,
+                timeFormat: 'hh:mm:ss',
+                stepHour: 1,
+                stepMinute: 1,
+                stepSecond: 1,
+                numberOfMonths: 1
+            });
+            $('#id_date_end').datetimepicker({
+                showSecond: true,
+                timeFormat: 'hh:mm:ss',
+                stepHour: 1,
+                stepMinute: 1,
+                stepSecond: 1,
+                numberOfMonths: 1
+            });
+        });
+        </script>
+
+{% endblock %}
+{% block body %}
+
+<ul class="nav nav-tabs" id="tab-control">
+  <li ><a href="#filter">Фильтр</a></li>
+  <li><a class="active" href="#result">Отчёт</a></li>  
+</ul>
+
+ {% load render_table from django_tables2 %}
+<div class="tab-content">
+  <div class="tab-pane" id="filter">
+  
+  <div class="row-fluid">
+        <div class="span12">
+            <form action="{{form.action}}" method="GET" class="well form-horizontal">
+            {{ form.non_field_errors }}
+                <fieldset>
+                    <legend>Фильтр по сессиям</legend>
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">{{form.date_start.label}}</label>
+                            <div class="controls">
+                             {{ form.date_start }}
+                            {% if form.date_start.errors %}
+                                <span class="help-inline">{% for error in form.date_start.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.date_start.help_text%}
+                                <p class="help-block">
+                                    {{ form.date_start.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
+                        </div>
+                        <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-balance-sum">{{form.date_end.label}}</label>
+                            <div class="controls">
+                             {{ form.date_end }}
+                            {% if form.date_end.errors %}
+                                <span class="help-inline">{% for error in form.date_end.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.date_end.help_text%}
+                                <p class="help-block">
+                                    {{ form.date_end.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">{{form.account.label}}</label>
+                            <div class="controls">
+					        {{ form.account }}
+					        {% if form.account.errors %}
+					            <span class="help-inline">{% for error in form.account.errors %}{{ error }}<br/> {% endfor %}</span>
+					        {% endif %}
+					        {% if form.account.help_text%}
+					            <p class="help-block">
+					                {{ form.account.help_text|safe }}
+					            </p>
+					        {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">{{form.nas.label}}</label>
+                            <div class="controls">
+                            {{ form.nas }}
+                            {% if form.nas.errors %}
+                                <span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.nas.help_text%}
+                                <p class="help-block">
+                                    {{ form.nas.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">{{form.only_active.label}}</label>
+                            <div class="controls">
+                             {{ form.only_active }}
+                            {% if form.only_active.errors %}
+                                <span class="help-inline">{% for error in form.only_active.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.only_active.help_text%}
+                                <p class="help-block">
+                                    {{ form.only_active.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+
+                
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">Подобрать результаты</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+  
+  </div>
+  <div class="tab-pane active" id="result">{% if table %}{% render_table table %}{% endif %}</div>
+
+</div>
+ {% endblock %}
+

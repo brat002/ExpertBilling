@@ -168,15 +168,15 @@ class LogItem(models.Model):
     object_id1 = models.PositiveIntegerField(null=True)
     object1 = GenericForeignKey("object_type1", "object_id1")
     
-    object_type2 = models.ForeignKey(ContentType, \
-    related_name='log_items2', null=True)
-    object_id2 = models.PositiveIntegerField(null=True)
-    object2 = GenericForeignKey("object_type2", "object_id2")
+    #object_type2 = models.ForeignKey(ContentType, \
+    #related_name='log_items2', null=True)
+    #object_id2 = models.PositiveIntegerField(null=True)
+    #object2 = GenericForeignKey("object_type2", "object_id2")
     
-    object_type3 = models.ForeignKey(ContentType, \
-    related_name='log_items3', null=True)
-    object_id3 = models.PositiveIntegerField(null=True)
-    object3 = GenericForeignKey("object_type3", "object_id3")
+    #object_type3 = models.ForeignKey(ContentType, \
+    #related_name='log_items3', null=True)
+    #object_id3 = models.PositiveIntegerField(null=True)
+    #object3 = GenericForeignKey("object_type3", "object_id3")
 
     serialized_data = models.TextField(null=True)
 
