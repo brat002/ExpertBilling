@@ -50,8 +50,14 @@
 {% block body %}
 <div class="span12">
 <div class="row-fluid">
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url addonservice %}">Подключаемые услуги</a> <span class="divider">/</span>
+  </li>
 
-<form method="POST" action="{% url addonservice %}?id={{addonservice.id}}"class="well form-horizontal">
+  <li class="active">{{form.name.value}}</li>
+</ul>
+<form method="POST" action="{% url addonservice_edit %}?id={{item.id}}"class="well form-horizontal">
             <legend>Параметры подключаемой услуги</legend>
              <fieldset>
                   <div class="control-group">
@@ -117,6 +123,20 @@
                 </fieldset>
                 <legend>Правила тарификации</legend>
                 <fieldset>
+                  <div class="control-group">
+                      <label class="control-label">{{form.service_type.label}}</label>
+                      <div class="controls">
+                      {{ form.service_type }}
+                      {% if form.service_type.errors %}
+                          <span class="help-inline">{% for error in form.service_type.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.service_type.help_text%}
+                          <p class="help-block">
+                              {{ form.service_type.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
                   <div class="control-group">
                       <label class="control-label">{{form.sp_type.label}}</label>
                       <div class="controls">

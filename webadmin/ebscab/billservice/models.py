@@ -117,29 +117,11 @@ class SoftDeletedDateManager(models.Manager):
         return super(SoftDeletedDateManager, self).get_query_set().filter(deleted__isnull=False)
 
 
-class TimePeriodNode(models.Model):
-    """
-    Диапазон времени ( с 15 00 до 18 00 каждую вторник-пятницу,утро, ночь, сутки, месяц, год и т.д.)
-    """
-    name = models.CharField(max_length=255, verbose_name=u'Название периода', default='', blank=True)
-    time_start = models.DateTimeField(verbose_name=u'Дата и время начала периода', default='', blank=True)
-    length = models.IntegerField(verbose_name=u'Период в секундах', default=0, blank=True)
-    repeat_after = models.CharField(max_length=255, choices=PERIOD_CHOISES, verbose_name=u'Повторять через', default='MONTH', blank=True)
 
-    def __unicode__(self):
-        return u"%s" % self.name
-
-    class Meta:
-        ordering = ['name',]
-        verbose_name = u"Нода временного периода"
-        verbose_name_plural = u"Ноды временных периодов"
-        permissions = (
-            ("timeperiodnode_view", u"Просмотр нод временных периодов"),
-            )
 
 class TimePeriod(models.Model):
     name = models.CharField(max_length=255, verbose_name=u'Название группы временных периодов', unique=True)
-    time_period_nodes = models.ManyToManyField(to=TimePeriodNode, blank=True, null=True, verbose_name=u'Группа временных периодов')
+    #time_period_nodes = models.ManyToManyField(to=TimePeriodNode, blank=True, null=True, verbose_name=u'Группа временных периодов')
 
     def in_period(self):
         for time_period_node in self.time_period_nodes:
@@ -162,15 +144,35 @@ class TimePeriod(models.Model):
             ("timeperiod_view", u"Просмотр временных периодов"),
             )
 
+class TimePeriodNode(models.Model):
+    """
+    Диапазон времени ( с 15 00 до 18 00 каждую вторник-пятницу,утро, ночь, сутки, месяц, год и т.д.)
+    """
+    time_period = models.ForeignKey(TimePeriod, verbose_name=u"Период времени")
+    name = models.CharField(max_length=255, verbose_name=u'Название подпериода', default='', blank=True)
+    time_start = models.DateTimeField(verbose_name=u'Дата и время начала', default='', blank=True)
+    length = models.IntegerField(verbose_name=u'Длительность в секундах', default=0, blank=True)
+    repeat_after = models.CharField(max_length=255, choices=PERIOD_CHOISES, verbose_name=u'Повторять через', default='DAY', blank=True)
 
+    def __unicode__(self):
+        return u"%s" % self.name
+
+    class Meta:
+        ordering = ['name',]
+        verbose_name = u"Нода временного периода"
+        verbose_name_plural = u"Ноды временных периодов"
+        permissions = (
+            ("timeperiodnode_view", u"Просмотр нод временных периодов"),
+            )
+        
 class SettlementPeriod(models.Model):
     """
     Расчётный период
     """
-    name = models.CharField(max_length=255, verbose_name=u'Название расчётного периода', unique=True)
-    time_start = models.DateTimeField(verbose_name=u'Дата и время начала периода')
-    length = models.IntegerField(blank=True, default=0,verbose_name=u'Период действия в секундах')
-    length_in = models.CharField(max_length=255, choices=PERIOD_CHOISES, blank=True, default='', verbose_name=u'Длина промежутка')
+    name = models.CharField(max_length=255, verbose_name=u'Название', unique=True)
+    time_start = models.DateTimeField(verbose_name=u'Начало периода')
+    length = models.IntegerField(blank=True, null=True, default=0,verbose_name=u'Период действия в секундах')
+    length_in = models.CharField(max_length=255, choices=PERIOD_CHOISES, null=True, blank=True, default='', verbose_name=u'Длина промежутка')
     autostart = models.BooleanField(verbose_name=u'Начинать при активации', default=False)
 
     def __unicode__(self):
@@ -180,7 +182,9 @@ class SettlementPeriod(models.Model):
         
         list_display = ('name','time_start','length','length_in','autostart')
 
-
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('settlementperiod_delete'), self.id)
+    
     class Meta:
         ordering = ['name']
         verbose_name = u"Расчетный период"
@@ -651,8 +655,8 @@ class Account(models.Model):
     city = models.ForeignKey('City', verbose_name=u'Город', blank=True, null=True, on_delete = models.SET_NULL)
     postcode = models.CharField(verbose_name=u'Индекс', max_length=255, blank=True, null=True)
     region = models.CharField( blank=True, verbose_name=u'Район', max_length=255, default='')
-    street = models.ForeignKey('Street', verbose_name=u'Улица', blank=True, null=True, on_delete = models.SET_NULL)
-    house = models.ForeignKey('House', verbose_name=u'Дом', blank=True, null=True, on_delete = models.SET_NULL)
+    street = models.CharField(max_length=255, verbose_name=u'Улица', blank=True, null=True)
+    house = models.CharField(max_length=255, verbose_name=u'Дом', blank=True, null=True)
     house_bulk = models.CharField(verbose_name=u'Корпус', blank=True, max_length=255)
     entrance = models.CharField(verbose_name=u'Подъезд', blank=True, max_length=255)
     room = models.CharField(verbose_name=u'Квартира', blank=True, max_length=255)
@@ -769,8 +773,8 @@ class Account(models.Model):
           return tariff[0]
     
     def get_accounttariff(self):
-        accounttarif = AccountTarif.objects.filter(account=self, datetime__lte=datetime.datetime.now()).order_by("-datetime")[0]
-        return accounttarif[0]
+        accounttarif = AccountTarif.objects.filter(account=self, datetime__lte=datetime.datetime.now()).order_by("-datetime")
+        return accounttarif[0] if accounttarif else None
     
     def get_account_tariff_info(self):
         tariff_info = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[:1]
@@ -820,6 +824,9 @@ class TransactionType(models.Model):
     def __unicode__(self):
         return u"%s %s" % (self.name, self.internal_name)
 
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('transactiontype_delete'), self.id)
+    
     class Admin:
         pass
 
@@ -937,17 +944,17 @@ class SheduleLog(models.Model):
     
 class SystemUser(models.Model):
     username = models.CharField(max_length=255, unique=True)
-    password = models.CharField(max_length=255, default='')
+    #password = models.CharField(max_length=255, default='')
     email = models.CharField(verbose_name=u'Фамилия', blank=True, default='',max_length=200)
-    fullname = models.TextField(blank=True, default='')
+    fullname = models.CharField(max_length=512, blank=True, default='')
     home_phone  = models.CharField(max_length=512, blank=True, default ='')
     mobile_phone  = models.CharField(max_length=512, blank=True, default ='')
-    address = models.TextField(blank=True, default='')
-    job = models.TextField(blank=True, default='')
+    address = models.CharField(max_length=512, blank=True, default='')
+    job = models.CharField(max_length=256, blank=True, default='')
     last_ip  = models.CharField(max_length=64, blank=True, null=True)
     last_login = models.DateTimeField(blank=True, null=True)
     description = models.TextField(blank=True, default='')
-    created = models.DateTimeField(blank=True, null=True, default='')
+    created = models.DateTimeField(blank=True, null=True, auto_now_add=True)
     status = models.BooleanField(default=False)
     host = models.CharField(max_length=255, blank=True, null=True, default="0.0.0.0/0")
     #group = models.ManyToManyField(SystemGroup)
@@ -971,7 +978,10 @@ class SystemUser(models.Model):
         return True
     is_staff = True
     is_superuser = True    
-    
+
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('systemuser_delete'), self.id)
+        
     class Meta:
         ordering = ['username']
         verbose_name = u"Пользователь системы"
@@ -1001,7 +1011,10 @@ class DocumentType(models.Model):
         
 class TemplateType(models.Model):
     name = models.TextField()
-        
+    
+    def __unicode__(self):
+        return u"%s" % (self.name)
+    
     class Meta:
         ordering = ['id']
         verbose_name = u"Тип шаблона"
@@ -1016,6 +1029,9 @@ class Template(models.Model):
 
     def __unicode__(self):
         return u"%s" % (self.name)
+    
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('template_delete'), self.id)
     
     class Meta:
         ordering = ['type']
@@ -1250,7 +1266,7 @@ class AccountSpeedLimit(models.Model):
 class IPPool(models.Model):
     name = models.CharField(max_length=255)
     #0 - VPN, 1-IPN
-    type = models.IntegerField()
+    type = models.IntegerField(choices=((0, u"IPv4 VPN"),(1, u"IPv4 IPN"),(2, u"IPv6 VPN"),(3, u"IPv6 IPN"),))
     start_ip = models.IPAddressField()
     end_ip = models.IPAddressField()
     next_ippool = models.ForeignKey("IPPool", blank=True, null=True)
@@ -1264,7 +1280,13 @@ class IPPool(models.Model):
            )
     def __unicode__(self):
         return u"%s-%s" % (self.start_ip, self.end_ip)
-    
+
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('ippool_delete'), self.id)
+
+
+
+
 class IPInUse(models.Model):
     pool = models.ForeignKey(IPPool, verbose_name=u'IP пул')
     ip = models.CharField(max_length=255, verbose_name=u'IP адрес')
@@ -1332,23 +1354,23 @@ class RadiusAttrs(models.Model):
 class AddonService(models.Model):    
     name = models.CharField(max_length=255 , verbose_name=u'Название')    
     comment = models.TextField(blank=True, default='', verbose_name=u'Комментарий')
-    allow_activation = models.BooleanField(blank=True, default = False)    
-    service_type = models.CharField(max_length=32, choices=(("onetime", u"Разовая услуга"),("periodical", u"Периодическая услуга"),))    
-    sp_type = models.CharField(max_length=32, choices=(("AT_START",u"В начале расчётного периода"),("AT_END", u"В конце расчётного периода" ),("GRADUAL", u"На протяжении расчётного периода"),))    
-    sp_period = models.ForeignKey(SettlementPeriod, related_name="addonservice_spperiod", blank=True, null=True, on_delete=models.SET_NULL)    
-    timeperiod = models.ForeignKey(TimePeriod, null=True, on_delete=models.SET_NULL)    
-    cost = models.DecimalField(decimal_places=10, max_digits=30, blank=True, default=0)    
-    cancel_subscription = models.BooleanField(default = True)    
-    wyte_period = models.ForeignKey(SettlementPeriod, related_name="addonservice_wyteperiod", blank=True, null=True, on_delete=models.SET_NULL)    
-    wyte_cost = models.DecimalField(decimal_places=10, max_digits=60, blank=True, default=0)    
-    action = models.BooleanField(blank=True, default=False)    
-    nas = models.ForeignKey(Nas, blank=True, null=True, on_delete=models.SET_NULL)    
-    service_activation_action = models.TextField(blank=True, default='')    
-    service_deactivation_action = models.TextField(blank=True, default='')    
-    deactivate_service_for_blocked_account = models.BooleanField(blank=True, default=False)    
-    change_speed = models.BooleanField(blank=True, default=False)    
-    change_speed_type = models.CharField(max_length=32, choices=(("add", "Add"), ("abs","Abs",),), blank=True, null=True)    
-    speed_units = models.CharField(max_length = 32,choices=(("Kbps","Kbps",), ("Mbps","Mbps",),("%", "%",)), blank=True, null=True)    
+    allow_activation = models.BooleanField(blank=True, default = False, verbose_name=u"Разешить активацию", help_text=u'Разрешить активацию при нулевом балансе и блокировках')    
+    service_type = models.CharField(verbose_name=u"Тип услуги",max_length=32, choices=(("onetime", u"Разовая услуга"),("periodical", u"Периодическая услуга"),))    
+    sp_type = models.CharField(verbose_name=u"Способ списания",max_length=32, choices=(("AT_START",u"В начале расчётного периода"),("AT_END", u"В конце расчётного периода" ),("GRADUAL", u"На протяжении расчётного периода"),))    
+    sp_period = models.ForeignKey(SettlementPeriod, verbose_name=u"Расчётный период", help_text=u"Период, в течении которого будет списываться стоимость услуги", related_name="addonservice_spperiod", blank=True, null=True, on_delete=models.SET_NULL)    
+    timeperiod = models.ForeignKey(TimePeriod, verbose_name=u"Время активации", help_text=u"Время, когда возможна активация услуги",null=True, on_delete=models.SET_NULL)    
+    cost = models.DecimalField(verbose_name=u"Стоимость услуги", decimal_places=10, max_digits=30, blank=True, default=0)    
+    cancel_subscription = models.BooleanField(verbose_name=u"Разрешить отключение", help_text=u"Разрешить самостоятельное отключение услуги", default = True)    
+    wyte_period = models.ForeignKey(SettlementPeriod, verbose_name=u"Штрафуемый период", help_text=u"Списывать сумму штрафа при досрочном отключении услуги пользователем",  related_name="addonservice_wyteperiod", blank=True, null=True, on_delete=models.SET_NULL)    
+    wyte_cost = models.DecimalField(verbose_name=u"Сумма штрафа", decimal_places=10, max_digits=60, blank=True, default=0)    
+    action = models.BooleanField(verbose_name=u"Выполнить действие", blank=True, default=False)    
+    nas = models.ForeignKey(Nas, verbose_name=u"Сервер доступа", help_text=u"Сервер доступа, на котором будут производиться действия",  blank=True, null=True, on_delete=models.SET_NULL)    
+    service_activation_action = models.TextField(verbose_name=u"Действие для активации услуги", blank=True, default='')    
+    service_deactivation_action = models.TextField(verbose_name=u"Действие для отключения услуги", blank=True, default='')    
+    deactivate_service_for_blocked_account = models.BooleanField(verbose_name=u"Отключать услугу при бловировке аккаунта", help_text=u"Отключать услугу при достижении нулевого баланса или блокировках", blank=True, default=False)    
+    change_speed = models.BooleanField(verbose_name=u"Изменить скорость", help_text=u"Изменить параметры скорости при активации аккаунта", blank=True, default=False)    
+    change_speed_type = models.CharField(verbose_name=u"Способ изменения скорости", max_length=32, choices=(("add", "Добавить к текущей"), ("abs","Абсолютное значение",),), blank=True, null=True)    
+    speed_units = models.CharField(verbose_name=u"Единицы скорости", max_length = 32,choices=(("Kbps","Kbps",), ("Mbps","Mbps",),("%", "%",)), blank=True, null=True)    
     max_tx = models.IntegerField(blank=True, default=0)    
     max_rx = models.IntegerField(blank=True, default=0)    
     burst_tx = models.IntegerField(blank=True, default=0)    
@@ -1365,6 +1387,9 @@ class AddonService(models.Model):
     def __unicode__(self):
         return u"%s" % self.name
 
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('addonservice_delete'), self.id)
+    
     class Meta:
         ordering = ['name']
         verbose_name = u"Подключаемая услуга"

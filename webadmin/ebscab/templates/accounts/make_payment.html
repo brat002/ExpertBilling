@@ -41,6 +41,7 @@
             url: '/qiwi_payment/balance/',
             data: { 'phone': phone.value, 'password': password.value},
             timeout: 15000,
+            dataType: "json",
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
             beforeSend: function(XMLHttpRequest){get_balance_button.style.visibility = 'hidden';qiwi_message.innerHTML=' Выполняется запрос на сервер.'},
             success: function(data, status){
@@ -78,6 +79,7 @@
             url: '/qiwi_payment/',
             data: { 'phone': phone.value, 'password': password.value, 'summ':summ.value, 'autoaccept': autoaccept.checked},
             timeout: 15000,
+            dataType: "json",
             contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
             beforeSend: function(XMLHttpRequest){send_button.style.visibility = 'hidden';qiwi_payment_message.innerHTML='Подождите. Идёт обработка.'},
             success: function(data, status){

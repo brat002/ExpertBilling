@@ -1,5 +1,5 @@
 {% extends "ebsadmin/base.html" %}
-{% load crispy_forms_tags %}
+{% load bootstrap_toolkit %}
 {% block extra_head %}
         <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
@@ -54,7 +54,7 @@
 <form method="POST" action="{% url nas_edit %}?id={{addonservice.id}}"class="well form-horizontal">
             <legend>Параметры сервера доступа</legend>
              <fieldset>
-                  {{form}}
+                  {{form|as_bootstrap}}
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">

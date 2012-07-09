@@ -136,7 +136,7 @@ def payment(request):
         
         try:    
             model=Transaction()
-            model.summ=amount*(-1)
+            model.summ=amount
             model.account=account
             model.approved=True
             #model.bill=u'kPay'
