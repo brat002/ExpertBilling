@@ -2658,16 +2658,13 @@ def groups_detail(request):
     
     res=[]
     for item in items:
-        id, name, direction, grtype, classnames = item
+        id, name, direction, grtype = item
         cur.execute("SELECT name FROM nas_trafficclass WHERE id IN (SELECT trafficclass_id FROM billservice_group_trafficclass WHERE group_id=%s)", (id,))
 
         d = cur.fetchall()
         classnames=''
         if d:
             classnames = ''.join([unicode(x[0]) for x in d])
-            
-        res.append({'id':id, 'name': name, 'direction':direction, 'type': grtype, 'classnames': classnames})
-
         res.append({'id':id, 'name': name, 'direction':direction, 'type': grtype, 'classnames': classnames})
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
@@ -4127,14 +4124,21 @@ def streets(request):
     if  not (request.user.is_staff==True and request.user.has_perm('billservice.street_view')):
         return {'status':True, 'records':[], 'totalCount':0}
     city_id = request.POST.get('city_id')
+    term = request.POST.get('term')
     id = request.POST.get('id')
     items = []
     if city_id:
-        items = Street.objects.filter(city__id=city_id)
+        if city_id and term:
+            items = Street.objects.filter(city__id=city_id, name__icontains=term)
+        else:
+            items = Street.objects.filter(city__id=city_id)
     elif id:
         items = [Street.objects.get(id=id)]
     else:
-        items = Street.objects.all()
+        if term:
+            items = Street.objects.filter(name__icontains=term)
+        else:
+            items = Street.objects.all()
 
     res=[]
     for item in items:
@@ -4682,15 +4686,23 @@ def getipfrompool2(request):
 def houses(request):
     if  not (request.user.is_staff==True and request.user.has_perm('billservice.house_view')):
         return {'status':True, 'records':[], 'totalCount':0}
-    street_id = request.POST.get('street_id')
+    street_name = request.POST.get('street_name')
+    city_id = request.POST.get('city_id')
+    term = request.POST.get('term')
     id = request.POST.get('id')
     fields = request.POST.get('fields')
-    if street_id:
-        items = House.objects.filter(street__id=street_id)
+    if street_name:
+        if term:
+            items = House.objects.filter(street__name__icontains=street_name, name__icontains = term)
+        else:
+            items = House.objects.filter(street__name__icontains=street_name)
     elif id:
         items = [House.objects.get(id=id)]
     else:
-        items = House.objects.all()
+        if term:
+            items = House.objects.filter(street__name__icontains=street_name)
+        else:
+            items = House.objects.all()
 
     res=[]
     for item in items:
@@ -5072,6 +5084,47 @@ def documentrender(request):
             operator = connection.get("SELECT * FROM billservice_operator LIMIT 1")
             try:
                 data=templ.render_unicode(account=account, operator=operator,  connection=self.connection)
+            except Exception, e:
+                data=u"Error %s" % str(e)
+    
+
+                       
+
+        res = {'success': True, 'body':data.encode("utf-8", 'replace')}
+    else:
+        res={"success": False, "errors": form._errors}
+    #print instance_dict(item).keys()
+    return res
+
+@ajax_request
+@login_required 
+def templaterender(request):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.documentrender')):
+        return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
+    form = TemplateForm(request.POST)
+    if form.is_valid():
+        templatetype = form.cleaned_data.get('type')
+        print form.cleaned_data.get('body')
+        templ = mako_template(unicode(form.cleaned_data.get('body')), input_encoding='utf-8')
+        data=''
+        from django.db import connection
+        if templatetype.id==1:
+    
+            #account = Account.objects.get(id=form.cleaned_data.get('account'))
+            account = Account.objects.all()[0]
+
+            #tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
+            try:
+                data=templ.render_unicode(account=account,  connection=connection)
+            except Exception, e:
+                data=u"Error %s" % str(e)
+        if templatetype.id==2:
+            account = connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0].id
+            #organization = self.connection.sql("SELECT * FROM billservice_organization LIMIT 1" )[0]
+            #bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
+            operator = connection.get("SELECT * FROM billservice_operator LIMIT 1")
+            try:
+                data=templ.render_unicode(account=account, operator=operator,  connection=connection)
             except Exception, e:
                 data=u"Error %s" % str(e)
     

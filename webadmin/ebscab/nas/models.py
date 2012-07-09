@@ -4,6 +4,7 @@ from django.db import models
 #from ebscab.billservice.models import Account, Tariff
 from lib.fields import IPNetworkField
 # Create your models here.
+from django.core.urlresolvers import reverse
 
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
@@ -18,9 +19,8 @@ NAS_LIST=(
                 )
 
 DIRECTIONS_LIST=(
-                (u'INPUT', u'Входящий на абонента'),
-                (u'OUTPUT',u'Исходящий от абонента'),
-                (u'TRANSIT',u'Межабонентский'),
+                (u'INPUT', u'Вх. на абонента'),
+                (u'OUTPUT',u'Исх. от абонента'),
                 )
 
 SERVICE_LIST=(
@@ -91,8 +91,8 @@ class TrafficClass(models.Model):
     """
     name = models.CharField(verbose_name=u'Навзание класса', max_length=255, unique=True)
     weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', blank=True, null=True)
-    color = models.CharField(verbose_name=u'Цвет на графиках', max_length=16, blank=True, default='#FFFFFF')
-    store    = models.BooleanField(verbose_name=u"Хранить всю статистику по классу", help_text=u"Хранить статистику, если она поступила от сервера доступа но под неё не попал ни один пользователь в базе", blank=True, default=True)
+    #color = models.CharField(verbose_name=u'Цвет на графиках', max_length=16, blank=True, default='#FFFFFF')
+    #store    = models.BooleanField(verbose_name=u"Хранить всю статистику по классу", help_text=u"Хранить статистику, если она поступила от сервера доступа но под неё не попал ни один пользователь в базе", blank=True, default=True)
     passthrough = models.BooleanField(blank=True, default=True)
     
     def __unicode__(self):
@@ -104,30 +104,34 @@ class TrafficClass(models.Model):
     class Meta:
         verbose_name = u"Класс трафика"
         verbose_name_plural = u"Классы трафика"
+        ordering = ['weight']
         permissions = (
            ("trafficclass_view", u"Просмотр"),
            )
-        
+
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('trafficclass_delete'), self.id)
+    
 class TrafficNode(models.Model):
     """
     Направления трафика. Внутри одного класса не должно быть пересекающихся направлений
     """
     traffic_class = models.ForeignKey(TrafficClass)
-    name = models.CharField(verbose_name=u'Название направления', max_length=255)
-    direction = models.CharField(verbose_name=u"Направление трафика", choices=DIRECTIONS_LIST, max_length=32)
+    name = models.CharField(verbose_name=u'Название', max_length=255)
+    direction = models.CharField(verbose_name=u"Направление", choices=DIRECTIONS_LIST, max_length=32)
     protocol = models.IntegerField(blank=True, default=0, null=True)
 
-    src_ip  = IPNetworkField(verbose_name=u'Cеть источника', blank=True, default='0.0.0.0/0')
+    src_ip  = IPNetworkField(verbose_name=u'Src net', blank=True, default='0.0.0.0/0')
 #    src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')
-    src_port  = models.IntegerField(verbose_name=u'Порт источника', blank=True, default=0)
+    src_port  = models.IntegerField(verbose_name=u'Src port', blank=True, default=0)
 
-    dst_ip = IPNetworkField(verbose_name=u'Сеть получателя', blank=True, default='0.0.0.0/0')
+    dst_ip = IPNetworkField(verbose_name=u'Dst net', blank=True, default='0.0.0.0/0')
 #    dst_mask = models.IPAddressField(verbose_name=u'Маска сети получателя', default='0.0.0.0')
-    dst_port  = models.IntegerField(verbose_name=u'Порт получетеля', blank=True, default=0)
+    dst_port  = models.IntegerField(verbose_name=u'Dst port', blank=True, default=0)
 
-    next_hop = models.IPAddressField(verbose_name=u'Направление пакета (IP address)', blank=True, default='0.0.0.0')
-    in_index  = models.IntegerField(verbose_name=u'SNMP IN порт', blank=True, default=0)
-    out_index  = models.IntegerField(verbose_name=u'SNMP OUT порт', blank=True, default=0)
+    next_hop = models.IPAddressField(verbose_name=u'next Hop', blank=True, default='0.0.0.0')
+    in_index  = models.IntegerField(verbose_name=u'SNMP IN', blank=True, default=0)
+    out_index  = models.IntegerField(verbose_name=u'SNMP OUT', blank=True, default=0)
     
     src_as  = models.IntegerField(verbose_name=u'src_as', blank=True, default=0)
     dst_as  = models.IntegerField(verbose_name=u'dst_as', blank=True, default=0)

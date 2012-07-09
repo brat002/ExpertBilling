@@ -293,7 +293,7 @@ def get_promise(request):
                 return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
             cursor = connection.cursor()
             cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise, end_promise, promise_expired)
-                              VALUES(%s, 'Обещанный платёж', 'MANUAL_TRANSACTION', True, get_tarif(%s), %s, now(), True, '%s', False)""" % (user.id, user.id, sum*(-1), LEFT_PROMISE_DATE))
+                              VALUES(%s, 'Обещанный платёж', 'MANUAL_TRANSACTION', True, get_tarif(%s), %s, now(), True, '%s', False)""" % (user.id, user.id, sum, LEFT_PROMISE_DATE))
             cursor.connection.commit()
     
     
@@ -389,7 +389,7 @@ def qiwi_payment(request):
         #print 'status', type(status)
         payed=False
         if status!=0:
-            invoice.delete()
+            #invoice.delete()
             return {'status_message':u'Произошла ошибка выставления счёта. %s' % message}
         payment_url=''
         if not invoice.autoaccept:
@@ -443,8 +443,8 @@ def transaction(request):
             summ += trnsaction.summ
         for transactio in transactions:
             summ_on_page += trnsaction.summ
-    summ = summ*-1
-    summ_on_page = summ_on_page*-1
+    summ = summ
+    summ_on_page = summ_on_page
     rec_count = len(transactions)+1
     return {
             'transactions':transactions,
