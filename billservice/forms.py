@@ -15,6 +15,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, Reset,  HTML, Button, Row, Field
 from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
+from django.contrib.auth.models import Group as AuthGroup
+
 from django.core.urlresolvers import reverse
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectMultipleWidget, AutoCompleteSelectField
 from itertools import chain
@@ -150,8 +152,8 @@ class SearchAccountForm(forms.Form):
     username = AutoCompleteSelectMultipleField( 'account_username', required = False, label=u"Имя аккаунта")
     fullname = AutoCompleteSelectMultipleField( 'account_fullname', required = False, label=u"ФИО")
     contactperson = AutoCompleteSelectMultipleField( 'account_contactperson', required = False, label =u"Контактное лицо")
-    city = AutoCompleteSelectMultipleField( 'city_name', required = False, label= u"Город")
-    street = forms.CharField(label =u"Адрес", required=False, widget = forms.TextInput(attrs={'class': 'input-large', 'placeholder': u'Улица'}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
+    city = forms.ModelChoiceField(queryset=City.objects.all(), required=False,  label= u"Город")
+    street = forms.CharField(label =u"Улица", required=False, widget = forms.TextInput(attrs={'class': 'input-large', 'placeholder': u'Улица'}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
     house = forms.CharField(label =u"Дом", required=False, widget = forms.TextInput(attrs={'class': 'input-xsmall', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
     house_bulk = forms.CharField(label =u"Подъезд", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
     room = forms.CharField(label =u"Квартира", required=False, widget = forms.TextInput(attrs={'class': 'input-xsmall', 'placeholder': u'Кв'}))
@@ -264,6 +266,7 @@ class AccountTariffForm(ModelForm):
         model = AccountTarif
     
 class SettlementPeriodForm(ModelForm):
+    time_start = forms.DateTimeField(label=u'Начало периода', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
     class Meta:
         model = SettlementPeriod
   
@@ -286,12 +289,13 @@ class AccountForm(ModelForm):
     password = forms.CharField(label =u"Пароль", required=True, widget = forms.TextInput(attrs={'class': 'input-large'}))
     city = forms.ModelChoiceField(label=u"Город",queryset=City.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
     
-    street = forms.ModelChoiceField(label=u"Улица",queryset=Street.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
-    house = forms.ModelChoiceField(label=u"Дом",queryset=House.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-small', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
+    street = forms.CharField(label=u"Улица",  required=False, widget = forms.widgets.TextInput(attrs={'class': 'input-large',}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
+    house = forms.CharField(label=u"Дом", required=False, widget = forms.widgets.TextInput(attrs={'class': 'input-small', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
     contract = forms.CharField(label=u'Номер договора', required = False)
     contract_num = forms.ModelChoiceField(label=u"Номер договора", queryset=ContractTemplate.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
     organization = forms.BooleanField(label=u"Юр.лицо", required=False, widget = forms.widgets.CheckboxInput)
     #--Organization fields
+    
     
 
     
@@ -396,8 +400,17 @@ class RadiusAttrsForm(ModelForm):
         model = RadiusAttrs  
 
 class TemplateForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(TemplateForm, self).__init__(*args, **kwargs)
+        for myField in self.fields:
+            self.fields[myField].widget.attrs['class'] = 'input-xlarge'
+        
+        #self.fields['service_activation_action'].widget.attrs['class'] = 'span8'
+        #self.fields['body'].widget.attrs['class'] = 'field span6'
+        #self.fields['body'].widget.attrs['cols'] = 60
     class Meta:
-        model = Template  
+        model = Template
+
 
 class AccountPrepaysRadiusTraficForm(ModelForm):
     class Meta:
@@ -424,17 +437,48 @@ class HouseForm(ModelForm):
         model = House     
    
 class SystemUserForm(ModelForm):
+    last_ip = forms.CharField(label="Последний логин с IP", widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
+    last_login = forms.CharField(label="Последний логин", widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
+    created = forms.CharField(label="Создан", widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
+    authgroup = forms.ModelMultipleChoiceField(queryset = AuthGroup.objects.all(), required=False)
+    superuser = forms.BooleanField(label=u"Суперадминистратор",widget=forms.CheckboxInput, required=False)
+    
     class Meta:
         model = SystemUser
-    is_superuser = forms.CheckboxInput()     
+        
+        
     
 class TimePeriodForm(ModelForm):
     class Meta:
         model = TimePeriod   
      
 class TimePeriodNodeForm(ModelForm):
+    def __init__(self, *args, **kw):
+        super(TimePeriodNodeForm, self).__init__(*args, **kw)
+        self.fields.keyOrder = [
+                                'id',
+                                'time_period',
+                                'name',
+                                'time_start',
+                                'time_end',
+                                'length',
+                                'repeat_after'
+                                ]
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    time_period = forms.ModelChoiceField(queryset=TimePeriod.objects.all(), required=True, widget = forms.HiddenInput)
+    time_start = forms.DateTimeField(label=u'Начало периода', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    time_end = forms.DateTimeField(label=u'Конец периода', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    length = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    
+    def clean(self):
+        cleaned_data = super(TimePeriodNodeForm, self).clean()
+        if cleaned_data.get("time_end") and cleaned_data.get("time_start"):
+             cleaned_data["length"]=(cleaned_data.get("time_end")-cleaned_data.get("time_start")).days*86400+(cleaned_data.get("time_end")-cleaned_data.get("time_start")).seconds
+        return cleaned_data
+    
     class Meta:
         model = TimePeriodNode
+                       
                        
 class IPPoolForm(ModelForm):
     class Meta:
@@ -507,3 +551,9 @@ class SubAccountForm(ModelForm):
         model = SubAccount
         #exclude = ('ipn_ipinuse','vpn_ipinuse',)
         
+class TemplateSelectForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(TemplateSelectForm, self).__init__(*args, **kwargs)
+        self.fields['template'].widget.attrs['class'] = 'span5'
+    template = forms.ModelChoiceField(queryset = Template.objects.all())
+    

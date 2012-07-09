@@ -213,6 +213,7 @@ def process_invoices():
     o=xml2obj(xml)
     if status_code(o)[0]!=0: return 
     for x in a:
+        if not o.bills_list:continue
         for item in o.bills_list.bill:
             p_code, p_status = payment_code(item)
             if p_code==60 and int(item.id)==x.id:

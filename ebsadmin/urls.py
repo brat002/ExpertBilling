@@ -18,7 +18,6 @@ urlpatterns += patterns('ebsadmin.wi',
     url(r'^subaccount/', wi.subaccountedit, name='subaccount'),
     url(r'^accounthardware/delete/$', wi.accounthardware_delete, name="accounthardware_delete"),
     url(r'^accounthardware/', wi.accounthardware, name='accounthardware'),
-    url(r'^addonservice/', wi.addonservice_edit, name='addonservice'),
     url(r'^transactionreport2/$', 'transactionreport2', name='transactionreport2'),
     url(r'^accountsreport/$', 'accountsreport', name='account_list'),
     url(r'^ipinusereport/$', 'ipinusereport', name='ipinuse_list'),
@@ -29,8 +28,72 @@ urlpatterns += patterns('ebsadmin.wi',
     url(r'^ballancehistoryreport/$', 'ballancehistoryreport', name='ballancehistoryreport'),
     url(r'^nas/edit/$', 'nas_edit', name='nas_edit'),
     url(r'^nas/$', 'nas', name='nas'),
+    url(r'^template/edit/$', 'template_edit', name='template_edit'),
+    url(r'^template/delete/$', 'template_delete', name='template_delete'),
+    url(r'^template/$', 'template', name='template'),
+    url(r'^template/select/$', 'templateselect', name='templateselect'),
     
 )
+
+urlpatterns += patterns('ebsadmin.settlementperiod',
+    url(r'^settlementperiod/edit/$', 'settlementperiod_edit', name='settlementperiod_edit'),
+    url(r'^settlementperiod/delete/$', 'settlementperiod_delete', name='settlementperiod_delete'),
+    url(r'^settlementperiod/$', 'settlementperiod', name='settlementperiod'),
+)
+
+urlpatterns += patterns('ebsadmin.transactiontype',
+    url(r'^transactiontype/edit/$', 'transactiontype_edit', name='transactiontype_edit'),
+    url(r'^transactiontype/delete/$', 'transactiontype_delete', name='transactiontype_delete'),
+    url(r'^transactiontype/$', 'transactiontype', name='transactiontype'),
+)
+
+urlpatterns += patterns('ebsadmin.systemuser',
+    url(r'^systemuser/edit/$', 'systemuser_edit', name='systemuser_edit'),
+    url(r'^systemuser/delete/$', 'systemuser_delete', name='systemuser_delete'),
+    url(r'^systemuser/$', 'systemuser', name='systemuser'),
+
+    
+)
+
+urlpatterns += patterns('ebsadmin.address',
+    #url(r'^systemuser/edit/$', 'systemuser_edit', name='systemuser_edit'),
+    #url(r'^systemuser/delete/$', 'systemuser_delete', name='systemuser_delete'),
+    url(r'^city/edit/$', 'city_edit', name="city_edit"),
+    url(r'^street/edit/$', 'street_edit', name="street_edit"),
+    url(r'^house/edit/$', 'house_edit', name="house_edit"),
+    url(r'^address/delete/$', 'address_delete', name="address_delete"),
+    url(r'^address/$', 'address', name='address'),
+    
+
+    
+)
+
+urlpatterns += patterns('ebsadmin.addonservice',
+    url(r'^addonservice/edit/$', 'addonservice_edit', name='addonservice_edit'),
+    url(r'^addonservice/delete/$', 'addonservice_delete', name='addonservice_delete'),
+    url(r'^addonservice/$', 'addonservice', name='addonservice'),
+)
+
+urlpatterns += patterns('ebsadmin.ippool',
+    url(r'^ippool/edit/$', 'ippool_edit', name='ippool_edit'),
+    url(r'^ippool/$', 'ippool', name='ippool'),
+    url(r'^ippool/delete/$', "ippool_delete", name="ippool_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.timeperiod',
+    url(r'^timeperiod/edit/$', 'timeperiod_edit', name='timeperiod_edit'),
+    url(r'^timeperiodnode/edit/$', 'timeperiodnode_edit', name='timeperiodnode_edit'),
+    url(r'^timeperiod/$', 'timeperiod', name='timeperiod'),
+    url(r'^timeperiod/delete/$', "timeperiod_delete", name="timeperiod_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.trafficclass',
+    url(r'^trafficclass/edit/$', 'trafficclass_edit', name='trafficclass_edit'),
+    url(r'^trafficclass/$', 'trafficclass', name='trafficclass'),
+    url(r'^trafficnode_list/$', 'trafficnode_list', name='trafficnode_list'),
+    #url(r'^ippool/delete/$', "ippool_delete", name="ippool_delete"),
+)
+
 
 urlpatterns += patterns('ebsadmin.views',
      #url(r'^accounts/$', 'jsonaccounts'),
@@ -198,7 +261,8 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^templates/save/$', 'templates_save'),
      url(r'^templates/$', 'templates'),
      url(r'^templatetypes/$', 'templatetypes'),
-     url(r'^documentrender/$', 'documentrender'),
+     url(r'^documentrender/$', 'documentrender', name="documentrender"),
+     url(r'^templaterender/$', 'templaterender', name="templaterender"),
      
      
      url(r'^accountprepaysradiustrafic/set/$', 'accountprepaysradiustrafic_set'),
@@ -250,10 +314,10 @@ urlpatterns += patterns('ebsadmin.views',
      url(r'^cities/$', 'cities'),
      
      url(r'^cities/delete/$', 'cities_delete'),
-     url(r'^streets/$', 'streets'),
+     url(r'^streets/$', 'streets', name="street"),
      url(r'^streets/set/$', 'streets_set'),
      url(r'^streets/delete/$', 'streets_delete'),
-     url(r'^houses/$', 'houses'),
+     url(r'^houses/$', 'houses', name="house"),
      url(r'^houses/set/$', 'houses_set'),
      url(r'^houses/delete/$', 'houses_delete'),
 

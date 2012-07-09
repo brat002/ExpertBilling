@@ -30,10 +30,10 @@ $(document).ready(function() {
 <script src="/media/bootstrap/js/bootstrap.js"></script>
 <script src="/media/bootstrap/js/bootstrap-dropdown.js"></script>
 <script src="/media/bootstrap/js/bootstrap-tab.js"></script>
-<script src="/media/bootstrap/js/bootstrap-modal.js"></script>
 <script src="/media/bootstrap/js/jquery-ui-timepicker-addon.js"></script>
 <script src="/media/bootstrap/js/bootstrap-popover.js"></script>
 <script src="/media/bootstrap/js/bootstrap-alert.js"></script>
+
 
 
 
@@ -86,6 +86,9 @@ $(document).ready(function() {
        </a>
        <ul class="dropdown-menu">
          <li><a href="{% url transactionreport2 %}">Операции с л/c</a></li>
+         <li><a href="{% url ipinuse_list %}">Занятые IP адреса</a></li>
+         <li><a href="{% url authlog_list %}">История авторизаций</a></li>
+         <li><a href="{% url ballancehistoryreport %}">История изменения баланса</a></li>
        </ul>
      </li>
    </ul>
@@ -99,14 +102,45 @@ $(document).ready(function() {
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
-         <li><a href="{% url ipinuse_list %}">Занятые IP адреса</a></li>
-         <li><a href="{% url authlog_list %}">История авторизаций</a></li>
-         <li><a href="{% url ballancehistoryreport %}">История изменения баланса</a></li>
+         
+         <li><a href="{% url settlementperiod %}">Расчётные периоды</a></li>
+         <li><a href="{% url timeperiod %}">Периоды тарификации</a></li>
+         <li><a href="{% url addonservice %}">Подключаемые услуги</a></li>
+         <li><a href="{% url systemuser %}">Системные пользователи</a></li>
+         <li><a href="{% url transactiontype %}">Типы платежей</a></li>
+         <li><a href="{% url template %}">Правила смены тарифных планов</a></li>
+         <li><a href="{% url template %}">Шаблоны документов</a></li>
+         <li><a href="{% url ippool %}">IP пулы</a></li>
+         <li><a href="{% url template %}">Коммутаторы</a></li>
+         <li><a href="{% url address %}">Адреса</a></li>
+         <li><a href="{% url template %}">Дилеры</a></li>
+         <li><a href="{% url template %}">Модуль новостей</a></li>
+         <li><a href="{% url trafficclass %}">Классы трафика</a></li>
          
        </ul>
      </li>
    </ul>
-  <li><a href="#">Карточная система</a></li>
+   <ul class="nav">
+     <li class="dropdown">
+       <a href="#"
+             class="dropdown-toggle"
+             data-toggle="dropdown">
+             Сервис
+             <b class="caret"></b>
+       </a>
+       <ul class="dropdown-menu">
+         
+         <li><a href="{% url template %}">Просмотр логов</a></li>
+         <li><a href="{% url template %}">История действий пользователей</a></li>
+         <li><a href="{% url template %}">Информация о провайдере</a></li>
+         <li><a href="{% url template %}">Системные пользователи</a></li>
+         <li><a href="{% url template %}">Последние списания период. услуг</a></li>
+         <li><a href="{% url template %}">Последние сервисные процедуры</a></li>
+         
+         
+       </ul>
+     </li>
+   </ul>
 </ul>
 
 <form class="navbar-search pull-left" action="">

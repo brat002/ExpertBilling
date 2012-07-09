@@ -1,5 +1,5 @@
 {% extends "ebsadmin/base.html" %}
-{% load crispy_forms_tags %}
+{% load billservice_tags %}
 {% load custom_filters %}
 {% block extra_head %}
         <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
@@ -55,7 +55,8 @@
             stepHour: 1,
             stepMinute: 1,
             stepSecond: 1,
-            numberOfMonths: 2
+            numberOfMonths: 1,
+            dateFormat: 'yy-mm-dd'
         });
         $.datepicker.regional['ru'] = {
                 timeOnlyTitle: 'Выберите время',
@@ -135,12 +136,24 @@
                     event.preventDefault();
                 });
             });
+            
             $(function() {
                 $("#modal-accountaddonservice-dialog").click(function(event) {
                     $('<div />').dialog2({
                         title: "Прикрепить подключаемую услугу", 
                         content: "{% url accountaddonservice %}?account_id={{account.id}}", 
                         id: "accountaddonservicer-modal"
+                    });
+
+                    event.preventDefault();
+                });
+            });
+            $(function() {
+                $("#modal-templateselect-dialog").click(function(event) {
+                    $('<div />').dialog2({
+                        title: "Выберите шаблон документа", 
+                        content: "{% url templateselect %}?account_id={{account.id}}", 
+                        id: "templateselect-modal"
                     });
 
                     event.preventDefault();
@@ -180,6 +193,63 @@
                 });
 
                 event.preventDefault();
+            });
+            $('#id_house').autocomplete({
+                source: function( request, response )
+                {                      
+                    $.ajax(
+                    { 
+                        url: "{% url house %}",
+                        data: {
+                                term: request.term, 
+                                street_name: $('#id_street').val(),    //Pass the selected country to php
+                                city_id: $('#id_city').val()
+                              },        
+                        type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                        dataType: "json",   //return data in json format                                                                                                                                       
+                        success: function( data ) 
+                        {
+                            response( $.map( data.records, function( item ) 
+                            {
+                                return item.name
+                            }));
+                        }
+                    });                
+                },
+                minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
+                maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
+                width: 300, // Ширина списка
+                zIndex: 9999, // z-index списка
+                deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
+                onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
+            });
+            $('#id_street').autocomplete({
+                source: function( request, response )
+                {                      
+                    $.ajax(
+                    { 
+                        url: "{% url street %}",
+                        data: {
+                                term: request.term, 
+                                city_id: $('#id_city').val()
+                              },        
+                        type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                        dataType: "json",   //return data in json format                                                                                                                                       
+                        success: function( data ) 
+                        {
+                            response( $.map( data.records, function( item ) 
+                            {
+                                return item.name
+                            }));
+                        }
+                    });                
+                },
+                minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
+                maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
+                width: 300, // Ширина списка
+                zIndex: 9999, // z-index списка
+                deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
+                onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
             });
         });
         </script>
@@ -231,7 +301,7 @@
                             <div class="control-row">
                                 <label class="control-label">{{form.contract.label}}</label>
                                 <div class="controls">
-                                    <span>{{ form.contract }}<i class="icon-print"></i></span>
+                                    <span>{{ form.contract }}<a id="modal-templateselect-dialog"><i class="icon-print"></i></a></span>
                                     {% if form.contract.errors %}
                                         <span class="help-inline">{% for error in form.contract.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}
@@ -685,18 +755,8 @@
                                                     {{ form.street.help_text|safe }}
                                                 </p>
                                             {% endif %}
-		                                    {{ form.house }}
-                                            {% if form.house.errors %}
-                                                <span class="help-inline">{% for error in form.house.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.house.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.house.help_text|safe }}
-                                                </p>
-                                            {% endif %}
                                     </div>
                                 </div>
-                                
                                 <div class="control-row">
                                     <label class="control-label" for="input-postal-code">{{form.postcode.label}}:</label>
                                     <div class="controls">
@@ -710,8 +770,27 @@
                                                 </p>
                                             {% endif %}
                                     </div>
-                                </div>
+          
                             </div>
+                              </div>  
+                            <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-street">{{form.house.label}}</label>
+                                    <div class="controls">
+
+                                            {{ form.house }}
+                                            {% if form.house.errors %}
+                                                <span class="help-inline">{% for error in form.house.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.house.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.house.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                                </div>
+
 
                             <div class="control-group">
                                 <div class="control-row">
@@ -1167,13 +1246,26 @@
               <li><a href="{% url activesessionreport %}?account={{account.id}}"><i class="icon-info-sign"></i>История RADIUS сессий</a></li>
               <li><a href="{% url ipinuse_list %}?account={{account.id}}"><i class="icon-info-sign"></i>Использованные IP-адреса</a></li>
               <li class="nav-header">Финансы</li>
-              <li><a href="{% url transactionreport2 %}?account={{account.id}}&transactiontype=MANUAL_TRANSACTION">Пополнения баланса</a></li>
-              <li><a href="{% url authlog_list %}?account={{account.id}}">Списания</a></li>
+              <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_payments=True">Пополнения баланса</a></li>
+              <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_credits=True">Списания</a></li>
               <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">История изменения баланса</a></li>
               <li class="nav-header">Остатки</li>
               <li><a href="{% url authlog_list %}?account={{account.id}}">Остаток предоплаченного NetFlow трафика</a></li>
               <li><a href="{% url authlog_list %}?account={{account.id}}">Остаток предоплаченного RADIUS трафика</a></li>
               <li><a href="{% url authlog_list %}?account={{account.id}}">Остаток предоплаченного времени</a></li>
+            </ul>
+          </div><!--/.well -->
+          <div class="well sidebar-nav">
+            <ul class="nav nav-list">
+              <li class="nav-header">Предоплаченные единицы</li>
+              <li>Предоплаченный RADIUS трафик: {{prepaidradiustraffic}}</li>
+              <li>Предоплаченное RADIUS время: {{prepaidradiustime}}</li>
+              {% if prepaidtraffic %}
+              <li class="nav-header">NetFlow трафик</li>
+              {% for group, size in prepaidtraffic %}
+              <li>{{group}}: {%traffic_format size %}</li>
+              {% endfor %}
+              {% endif %}
             </ul>
           </div><!--/.well -->
         </div>
