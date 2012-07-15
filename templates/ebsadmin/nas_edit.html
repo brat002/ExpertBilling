@@ -31,31 +31,408 @@
                 }
             })
             });
-        $('[data-toggle="modal"]').click(function(e) {
-            e.preventDefault();
-            var href = $(this).attr('href');
-            if (href.indexOf('#') == 0) {
-                $(href).modal('open');
-            } else {
-                $.get(href, function(data) {
-                    $('<div class="modal" >' + data + '</div>').modal();
-                }).success(function() { $('input:text:visible:first').focus(); });
-            }
-        });
+
+        
+        $('#id_btn_fill').popover({title:'Заполнить значениями?', content: 'Заполнить значениями по-умолчанию для выбранного типа сервера доступа? Текущие настройки будут возвращены в первоначальное состояние'});
+        //activate latest tab, if it exists:
+        var lastTab = $.cookie('last_tab');
+        if (lastTab) {
+            $('ul.nav-tabs').children().removeClass('active');
+            $('a[href='+ lastTab +']').parents('li:first').addClass('active');
+            $('div.tab-content').children().removeClass('active');
+            $(lastTab).addClass('active');
+        }else
+        	$('#tab-panel a[href="#general"]').tab('show');
+        
+        $(function() {
+            $('a[data-toggle="tab"]').on('shown', function(e){
+              //save the latest tab using a cookie:
+              $.cookie('last_tab', $(e.target).attr('href'));
+            });
+
+
+          });
+        
         });
         </script>
 
 {% endblock %}
  {% load render_table from django_tables2 %}
 {% block body %}
+
 <div class="span12">
 <div class="row-fluid">
-
-<form method="POST" action="{% url nas_edit %}?id={{addonservice.id}}"class="well form-horizontal">
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url nas %}">Серверы доступа</a> <span class="divider">/</span>{{item.name}}
+  </li>
+</ul>
+<ul class="nav nav-tabs" id="tab-panel">
+  <li><a href="#general" data-toggle="tab">Общее</a></li>
+  <li><a href="#commands" data-toggle="tab">Команды</a></li>
+  <li><a href="#radiusattrs" data-toggle="tab">Дополнительные RADIUS атрибуты</a></li>
+</ul>
+<form method="POST" action="{% url nas_edit %}?id={{item.id}}"class="well form-horizontal">
+{{ form.id }}
+<div class="tab-content">
+  <div class="tab-pane active" id="general">
             <legend>Параметры сервера доступа</legend>
              <fieldset>
-                  {{form|as_bootstrap}}
+                   <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label"><strong>{{form.name.label}}: </strong></label>
+                      <div class="controls">
+                      {{ form.name }}
+                      {% if form.name.errors %}
+                          <span class="help-inline">{% for error in form.name.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.name.help_text%}
+                          <p class="help-block">
+                              {{ form.name.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                    </div>
+                  </div>  
+                   <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label"><strong>{{form.type.label}}: </strong></label>
+                      <div class="controls inline">
+                      {{ form.type }}<button class="btn btn-success" type="button" id="id_btn_fill">Заполнить</button>
+                      {% if form.type.errors %}
+                          <span class="help-inline">{% for error in form.type.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.type.help_text%}
+                          <p class="help-block">
+                              {{ form.type.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                    </div>
+                  </div>  
+                   <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label"><strong>{{form.ipaddress.label}}: </strong></label>
+                      <div class="controls">
+                      {{ form.ipaddress }}
+                      {% if form.ipaddress.errors %}
+                          <span class="help-inline">{% for error in form.ipaddress.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.ipaddress.help_text%}
+                          <p class="help-block">
+                              {{ form.ipaddress.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                    </div>
+                  </div>  
+                   <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label">{{form.snmp_version.label}}: </label>
+                      <div class="controls">
+                      {{ form.snmp_version }}
+                      {% if form.snmp_version.errors %}
+                          <span class="help-inline">{% for error in form.snmp_version.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.snmp_version.help_text%}
+                          <p class="help-block">
+                              {{ form.snmp_version.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                    </div>
+                  </div> 
                 </fieldset>
+            <legend>RADIUS параметры</legend>
+             <fieldset>
+                   <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label"><strong>{{form.identify.label}}: </strong></label>
+                      <div class="controls">
+                      {{ form.identify }}
+                      {% if form.identify.errors %}
+                          <span class="help-inline">{% for error in form.identify.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.identify.help_text%}
+                          <p class="help-block">
+                              {{ form.identify.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                    </div>
+                  </div>  
+                   <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label"><strong>{{form.secret.label}}: </strong></label>
+                      <div class="controls">
+                      {{ form.secret }}
+                      {% if form.secret.errors %}
+                          <span class="help-inline">{% for error in form.secret.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.secret.help_text%}
+                          <p class="help-block">
+                              {{ form.secret.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                    </div>
+                  </div>  
+                   <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label">{{form.acct_interim_interval.label}}:</label>
+                      <div class="controls">
+                      {{ form.acct_interim_interval }}
+                      {% if form.acct_interim_interval.errors %}
+                          <span class="help-inline">{% for error in form.acct_interim_interval.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.acct_interim_interval.help_text%}
+                          <p class="help-block">
+                              {{ form.acct_interim_interval.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                    </div>
+                  </div> 
+                  
+             </fieldset>
+            <legend>Атрибуты установки скорости через RADIUS</legend>
+             <fieldset>
+                   <div class="control-group">
+                   <label class="control-label">Vendor/Attribute/Value</label>
+                      <div class="controls inline">
+                      {{ form.speed_vendor_1 }}{{ form.speed_attr_id1 }}{{form.speed_value1}}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                   <label class="control-label">Vendor/Attribute/Value</label>
+                      <div class="controls inline">
+                      {{ form.speed_vendor_2}}{{ form.speed_attr_id2 }}{{form.speed_value2}}
+                      </div>
+                  </div>   
+
+             </fieldset>
+            <legend>Параметры SSH</legend>
+             <fieldset>
+                   <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label"><strong>{{form.login.label}}: </strong></label>
+                      <div class="controls">
+                      {{ form.login }}
+                      {% if form.login.errors %}
+                          <span class="help-inline">{% for error in form.login.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.login.help_text%}
+                          <p class="help-block">
+                              {{ form.login.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                    </div>
+                  </div>  
+                   <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label"><strong>{{form.password.label}}: </strong></label>
+                      <div class="controls">
+                      {{ form.password }}
+                      {% if form.password.errors %}
+                          <span class="help-inline">{% for error in form.password.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.password.help_text%}
+                          <p class="help-block">
+                              {{ form.password.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                    </div>
+                  </div>  
+                   <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label">Проверить подключение</label>
+                      <div class="controls">
+                      <button class="btn btn-success" type="button">Проверить</button>
+                      </div>
+                    </div>
+                  </div>  
+                  
+
+                  
+             </fieldset>
+</div>
+  <div class="tab-pane" id="commands">
+                   <div class="control-group">
+                      <label class="control-label">{{form.user_add_action.label}}:</label>
+                      <div class="controls">
+                      {{ form.user_add_action }}
+                      {% if form.user_add_action.errors %}
+                          <span class="help-inline">{% for error in form.user_add_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.user_add_action.help_text%}
+                          <p class="help-block">
+                              {{ form.user_add_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                      <label class="control-label">{{form.subacc_add_action.label}}: </label>
+                      <div class="controls">
+                      {{ form.subacc_add_action }}
+                      {% if form.subacc_add_action.errors %}
+                          <span class="help-inline">{% for error in form.subacc_add_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.subacc_add_action.help_text%}
+                          <p class="help-block">
+                              {{ form.subacc_add_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                      <label class="control-label">{{form.user_delete_action.label}}:</label>
+                      <div class="controls">
+                      {{ form.user_delete_action }}
+                      {% if form.user_delete_action.errors %}
+                          <span class="help-inline">{% for error in form.user_delete_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.user_v_action.help_text%}
+                          <p class="help-block">
+                              {{ form.user_delete_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                      <label class="control-label">{{form.subacc_delete_action.label}}:</label>
+                      <div class="controls">
+                      {{ form.subacc_delete_action }}
+                      {% if form.subacc_delete_action.errors %}
+                          <span class="help-inline">{% for error in form.usubacc_delete_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.subacc_v_action.help_text%}
+                          <p class="help-block">
+                              {{ form.subacc_delete_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                      <label class="control-label">{{form.user_enable_action.label}}: </label>
+                      <div class="controls">
+                      {{ form.user_enable_action }}
+                      {% if form.user_enable_action.errors %}
+                          <span class="help-inline">{% for error in form.user_enable_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.user_enable_action.help_text%}
+                          <p class="help-block">
+                              {{ form.user_enable_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                      <label class="control-label">{{form.subacc_enable_action.label}}: </label>
+                      <div class="controls">
+                      {{ form.subacc_enable_action }}
+                      {% if form.subacc_enable_action.errors %}
+                          <span class="help-inline">{% for error in form.subacc_enable_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.subacc_enable_action.help_text%}
+                          <p class="help-block">
+                              {{ form.subacc_enable_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+
+
+                   <div class="control-group">
+                      <label class="control-label">{{form.user_disable_action.label}}: </label>
+                      <div class="controls">
+                      {{ form.user_disable_action }}
+                      {% if form.user_disable_action.errors %}
+                          <span class="help-inline">{% for error in form.user_disable_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.user_disable_action.help_text%}
+                          <p class="help-block">
+                              {{ form.user_disable_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                      <label class="control-label">{{form.subacc_disable_action.label}}: </label>
+                      <div class="controls">
+                      {{ form.subacc_disable_action }}
+                      {% if form.subacc_disable_action.errors %}
+                          <span class="help-inline">{% for error in form.subacc_disable_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.subacc_disable_action.help_text%}
+                          <p class="help-block">
+                              {{ form.subacc_disable_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                      <label class="control-label">{{form.vpn_speed_action.label}}: </label>
+                      <div class="controls">
+                      {{ form.vpn_speed_action }}
+                      {% if form.vpn_speed_action.errors %}
+                          <span class="help-inline">{% for error in form.vpn_speed_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.vpn_speed_action.help_text%}
+                          <p class="help-block">
+                              {{ form.vpn_speed_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                      <label class="control-label">{{form.ipn_speed_action.label}}: </label>
+                      <div class="controls">
+                      {{ form.ipn_speed_action }}
+                      {% if form.ipn_speed_action.errors %}
+                          <span class="help-inline">{% for error in form.ipn_speed_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.ipn_speed_action.help_text%}
+                          <p class="help-block">
+                              {{ form.ipn_speed_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                      <label class="control-label">{{form.subacc_ipn_speed_action.label}}: </label>
+                      <div class="controls">
+                      {{ form.subacc_ipn_speed_action }}
+                      {% if form.subacc_ipn_speed_action.errors %}
+                          <span class="help-inline">{% for error in form.subacc_ipn_speed_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.subacc_ipn_speed_action.help_text%}
+                          <p class="help-block">
+                              {{ form.subacc_ipn_speed_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+                   <div class="control-group">
+                      <label class="control-label">{{form.reset_action.label}}: </label>
+                      <div class="controls">
+                      {{ form.reset_action }}
+                      {% if form.reset_action.errors %}
+                          <span class="help-inline">{% for error in form.reset_action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.reset_action.help_text%}
+                          <p class="help-block">
+                              {{ form.reset_action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
+  </div>
+  <div class="tab-pane" id="radiusattrs"></div>
+</div>
+
                 <fieldset>
                     <div class="form-actions form-actions-center">
                         <button class="btn btn-primary" type="submit">Сохранить</button>
@@ -63,7 +440,6 @@
                 </fieldset>
             </form>
 
-            </form>
         </div>
 
     </div>

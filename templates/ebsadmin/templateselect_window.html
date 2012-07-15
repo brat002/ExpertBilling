@@ -1,0 +1,25 @@
+{% if not status %}
+{{message}}
+ <script type="text/javascript"> 
+ </script>
+
+
+            <form method="POST" action="{% url templaterender %}" class="well form-horizontal ajax">
+                <fieldset>
+                   {{form}}
+                </fieldset>
+                
+                <div class="form-actions">
+                    <input type='submit' class="btn btn-primary" value="Выбрать">
+                    <a class="btn close-dialog" href="#">Закрыть</a>
+                </div>
+            </form>
+
+{% else %}
+Операция произведена успешно.
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}

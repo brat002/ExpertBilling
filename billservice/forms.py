@@ -557,3 +557,4 @@ class TemplateSelectForm(forms.Form):
         self.fields['template'].widget.attrs['class'] = 'span5'
     template = forms.ModelChoiceField(queryset = Template.objects.all())
     
+    

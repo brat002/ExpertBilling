@@ -1,0 +1,115 @@
+{% extends "ebsadmin/base.html" %}
+{% load crispy_forms_tags %}
+{% block extra_head %}
+        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
+
+        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
+        <link rel="stylesheet" href="/media/css/jquery-ui-1.7.2.custom.css" type="text/css" title="ui-theme" />
+		<script src="/media/codemirror/lib/codemirror.js"></script>
+		<link rel="stylesheet" href="/media/codemirror/lib/codemirror.css">
+    <script src="/media/codemirror/mode/xml/xml.js"></script>
+    <script src="/media/codemirror/mode/javascript/javascript.js"></script>
+    <script src="/media/codemirror/mode/css/css.js"></script>
+    <script src="/media/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+    
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+	 $("#id_preview").click(function() {
+		 
+	     $.ajax({
+	    		 url: '{% url templaterender %}',
+	    		 type:'POST', 
+	    		 data: {name:$("#id_name").val(),type:$("#id_type").val(), body:editor.getValue()}, 
+	    		 dataType: "json", 
+	    		 success: function(data){
+		             if(data.success==true){
+		            	 $("#preview").html(editor.getValue());
+		             }
+		             else{
+		            	 
+		             }
+			         
+	     }})
+	     });
+ });
+ </script>
+        
+<style type="text/css">
+      .CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}
+      dt {font-family: monospace; color: #666;}
+      iframe {
+        width: 600%;
+        float: center;
+        border: 1px solid black;
+        border-left: 1px;
+      }
+    
+    </style>
+{% endblock %}
+ {% load render_table from django_tables2 %}
+{% block body %}
+<div class="span12">
+<div class="row-fluid">
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url template %}">Шаблоны</a> <span class="divider">/</span>
+  </li>
+
+  <li class="active">{{form.name.value}}</li>
+</ul>
+<ul class="nav nav-tabs" id="tab-control">
+  <li ><a class="active" href="#filter">Редактирование</a></li>
+  <li><a  href="#result">Просмотр</a></li>  
+</ul>
+<div class="tab-content">
+  <div class="tab-pane  active" id="filter">
+<form method="POST" id="id-form" action="{% url template_edit %}?id={{template.id}}"class="well form-horizontal">
+            <legend>Параметры сервера доступа</legend>
+             <fieldset>
+                  {{form}}
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-info" id="id_preview" type="button">Предпросмотр</button>
+                    </div>
+                </fieldset>
+            </form>
+
+            </form>
+        </div>
+
+
+  <div class="tab-pane" id="result"><div id="preview"></div></div>
+   
+</div>
+    </div>
+  </div>
+        <script type="text/javascript"> 
+
+        var delay;
+        // Initialize CodeMirror editor with a nice html5 canvas demo.
+        var editor = CodeMirror.fromTextArea(document.getElementById('id_body'), {
+          mode: 'text/html',
+          tabMode: 'indent',
+          lineNumbers: true, lineWrapping: true,
+          onChange: function() {
+            clearTimeout(delay);
+            delay = setTimeout(updatePreview, 300);
+          }
+        });
+        
+        function updatePreview() {
+          //var previewFrame = document.getElementById('preview');
+          //var preview =  previewFrame.contentDocument ||  previewFrame.contentWindow.document;
+          //preview.open();
+          //preview.write(editor.getValue());
+          //preview.close();
+          //$("#preview").html(editor.getValue());
+        }
+        setTimeout(updatePreview, 300);
+      
+        
+      </script>
+ {% endblock %}
+
