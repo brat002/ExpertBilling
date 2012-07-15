@@ -1,0 +1,130 @@
+{% extends "ebsadmin/base.html" %}
+ {% load render_table from django_tables2 %}
+{% block extra_head %}
+<script type="text/javascript" src="/media/jquery/js/jquery.inplacerowedit.js"></script>
+
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+            $("#id_btn_add").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Добавить направление", 
+                    content: "{% url trafficnode %}?traffic_class={{item.id}}", 
+                    id: "accountaddonservicer-modal"
+                });
+
+                event.preventDefault();
+            });
+
+            /*$('#id_main_table').inplacerowedit({
+                url: '{% url trafficnode %}',
+                editbuttonselector: 'a.edit',
+                inputs: {
+
+                    '2': { type: 'text', name: 'name' },
+                    '3': { type: 'text', name: 'direction' },
+                    '4': { type: 'select', name: 'protocolo' , option:[{name:'tcp', value:'1'},{name:'udp', value:'17'}]},
+                    '5': { type: 'text', name: 'src_ip' },
+                    '6': { type: 'text', name: 'src_port' },
+                    '7': { type: 'text', name: 'in_index' },
+                    '8': { type: 'text', name: 'dst_ip' },
+                    '9': { type: 'text', name: 'dst_port' },
+                    '10': { type: 'text', name: 'out_index' },
+                    '11': { type: 'text', name: 'src_as' },
+                    '12': { type: 'text', name: 'dst_as' },
+                    '13': { type: 'text', name: 'next_hop' },
+                }
+            });*/
+            $(".open-custom-dialog").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Изменить направление", 
+                    content: this.href, 
+                    id: "accountaddonservicer-modal"
+                });
+
+                event.preventDefault();
+            });
+            $("#id_main_table th input[type=checkbox]").click(function(event) {
+            	$("#id_main_table td input[type=checkbox]").attr("checked", this.checked);
+
+
+            });
+            $("#id_btn_delete").click(function() {
+                a=$(this);
+                $.fn.dialog2.helpers.confirm("Вы действительно хотите удалить?", {
+                    confirm: function() {
+                    	values = jQuery("#id_main_table input[type=checkbox]").serializeArray();
+
+                        $.getJSON('{% url trafficnode_delete %}',values,function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('Произошла непредвиденная ошибка')
+                            }
+
+                        })                      
+                        }, 
+                    decline: function() {  }
+                });
+
+                event.preventDefault();
+            });
+        });
+        </script>
+
+
+<style type="text/css">
+
+.modal {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  z-index: 1050;
+  width: 800px;
+  margin: 0 0 0 -400px; /* -1 * (width / 2) */ 
+  overflow: auto;
+  background-color: #ffffff;
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  *border: 1px solid #999;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+     -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding-box;
+          background-clip: padding-box;
+}
+</style>
+{% endblock %}
+{% block body %}
+
+
+
+
+  <div class="row-fluid">
+  
+<div>
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url trafficclass %}">Классы трафика</a> <span class="divider">/</span>
+    <a href="{% url trafficnode_list %}?id={{item.id}}">{{item.name}}</a>
+  </li>
+</ul>
+</div>
+<form class="align-right"><a href="{% url trafficclass_upload %}" class="btn btn-info">Загрузить из файла</a>&nbsp;<a href="#" class="btn btn-success" id='id_btn_add'>Добавить</a>&nbsp;<a href="#" id="id_btn_delete" class="btn btn-danger">Удалить</a> </form>
+<div>
+  {% render_table table %}
+</div>
+    </div>
+  
+
+ {% endblock %}
+

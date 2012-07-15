@@ -19,8 +19,13 @@ NAS_LIST=(
                 )
 
 DIRECTIONS_LIST=(
-                (u'INPUT', u'Вх. на абонента'),
-                (u'OUTPUT',u'Исх. от абонента'),
+                (u'INPUT', u'INPUT'),
+                (u'OUTPUT',u'OUTPUT'),
+                )
+
+SNMP_VERSIONS=(
+                (u'1', u'1'),
+                (u'2c',u'2c'),
                 )
 
 SERVICE_LIST=(
@@ -29,44 +34,61 @@ SERVICE_LIST=(
               )
 
 
-
+PROTOCOLS=(
+           (0,u'Любой',),
+           (37,'ddp',),
+           (98, 'encap',),
+           (3, 'ggp',),
+           (47, 'gre',),
+           (20, 'hmp',),
+           (1, 'icmp',),
+           (38, 'idpr-cmtp',),
+           (2, 'igmp',),
+           (4, 'ipencap',),
+           (94, 'ipip', ),
+           (89, 'ospf',),
+           (27, 'rdp',),
+           (6, 'tcp',),
+           (17, 'udp',),
+           )
 class Nas(models.Model):
     """
     /ip firewall address-list add address=$ipaddress list=allow_ip comment=$user_id
     /ip firewall address-list remove $user_id
     """
     type = models.CharField(choices=NAS_LIST, max_length=32, default='mikrotik3')
-    identify = models.CharField(verbose_name=u'RADIUS идентификатор сервера доступа', max_length=255)
-    name = models.CharField(verbose_name=u'Идентификатор сервера доступа', help_text=u"Используется дли идентификации сервера доступа. Смотрите настройки /system identity print", max_length=255, unique=True)
-    ipaddress = models.CharField(verbose_name=u'IP адрес сервера доступа', max_length=255)
+    identify = models.CharField(verbose_name=u'RADIUS имя', max_length=255)
+    name = models.CharField(verbose_name=u'Имя',  max_length=255, unique=True)
+    ipaddress = models.IPAddressField(verbose_name=u'IP адрес', max_length=255)
     secret = models.CharField(verbose_name=u'Секретная фраза', help_text=u"Смотрите вывод команды /radius print", max_length=255)
     login = models.CharField(verbose_name=u'Имя для доступа к серверу по SSH', max_length=255, blank=True, default='admin')
     password = models.CharField(verbose_name=u'Пароль для доступа к серверу по SSH', max_length=255, blank=True, default='')
+    snmp_version = models.CharField(verbose_name=u'Версия SNMP', choices=SNMP_VERSIONS, max_length=10, blank=True, null=True)
     #description = models.TextField(verbose_name=u'Описание', blank=True, default='')
     #allow_pptp = models.BooleanField(verbose_name=u'Разрешить серверу работать с PPTP', default=True)
     #allow_pppoe = models.BooleanField(verbose_name=u'Разрешить серверу работать с PPPOE', default=True)
     #allow_ipn = models.BooleanField(verbose_name=u'Сервер поддерживает IPN', help_text=u"IPN - технология, которая позволяет предоставлять доступ в интернет без установления VPN соединения с сервером доступа", default=True)
-    user_add_action = models.TextField(verbose_name=u'Действие при создании пользователя',blank=True, null=True)
-    user_enable_action = models.TextField(verbose_name=u'Действие при разрешении работы пользователя',blank=True, null=True)
-    user_disable_action = models.TextField(verbose_name=u'Действие при запрещении работы пользователя',blank=True, null=True)
-    user_delete_action = models.TextField(verbose_name=u'Действие при удалении пользователя',blank=True, null=True)
-    vpn_speed_action = models.TextField(max_length=255, blank=True, default="")
-    ipn_speed_action = models.TextField(max_length=255, blank=True, default="")
-    reset_action = models.TextField(max_length=255, blank=True, default="")
+    user_add_action = models.TextField(verbose_name=u'Действие при создании пользователя',blank=True, null=True, default="")
+    user_enable_action = models.TextField(verbose_name=u'Действие при разрешении работы пользователя',blank=True, null=True, default="")
+    user_disable_action = models.TextField(verbose_name=u'Действие при запрещении работы пользователя',blank=True, null=True, default="")
+    user_delete_action = models.TextField(verbose_name=u'Действие при удалении пользователя',blank=True, null=True, default="")
+    vpn_speed_action = models.TextField(max_length=255, blank=True, null=True, default="")
+    ipn_speed_action = models.TextField(max_length=255, blank=True, null=True, default="")
+    reset_action = models.TextField(max_length=255, blank=True, null=True, default="")
     #confstring = models.TextField(verbose_name="Конфигурация по запросу", blank=True, default='')
-    subacc_disable_action = models.TextField(blank=True, default="")
-    subacc_enable_action = models.TextField(blank=True, default="")
-    subacc_add_action = models.TextField(blank=True, default="")
-    subacc_delete_action = models.TextField(blank=True, default="")
-    subacc_ipn_speed_action = models.TextField(blank=True, default="")
-    snmp_version = models.CharField(verbose_name=u'Версия SNMP', max_length=10, blank=True, null=True)
-    speed_vendor_1 = models.TextField(blank=True, default="")
-    speed_vendor_2 = models.TextField(blank=True, default="")
-    speed_attr_id1 = models.TextField(blank=True, default="")
-    speed_attr_id2 = models.TextField(blank=True, default="")
+    subacc_disable_action = models.TextField(blank=True, null=True, default="")
+    subacc_enable_action = models.TextField(blank=True, null=True, default="")
+    subacc_add_action = models.TextField(blank=True, null=True, default="")
+    subacc_delete_action = models.TextField(blank=True, null=True, default="")
+    subacc_ipn_speed_action = models.TextField(blank=True, null=True, default="")
+    
+    speed_vendor_1 = models.IntegerField(blank=True, null=True, default=0)
+    speed_vendor_2 = models.IntegerField(blank=True, null=True, default=0)
+    speed_attr_id1 = models.IntegerField(blank=True, null=True, default=0)
+    speed_attr_id2 = models.IntegerField(blank=True, null=True, default=0)
     speed_value1 = models.TextField(blank=True, default="")
     speed_value2 = models.TextField(blank=True, default="")
-    acct_interim_interval = models.IntegerField(default=60, blank=True, null=True)
+    acct_interim_interval = models.IntegerField(default=60, blank=True, null=False)
     
 
     class Admin:
@@ -93,7 +115,7 @@ class TrafficClass(models.Model):
     weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', blank=True, null=True)
     #color = models.CharField(verbose_name=u'Цвет на графиках', max_length=16, blank=True, default='#FFFFFF')
     #store    = models.BooleanField(verbose_name=u"Хранить всю статистику по классу", help_text=u"Хранить статистику, если она поступила от сервера доступа но под неё не попал ни один пользователь в базе", blank=True, default=True)
-    passthrough = models.BooleanField(blank=True, default=True)
+    passthrough = models.BooleanField(verbose_name=u"Пометить и продолжить", blank=True, default=False)
     
     def __unicode__(self):
         return u"%s" % self.name
@@ -119,7 +141,7 @@ class TrafficNode(models.Model):
     traffic_class = models.ForeignKey(TrafficClass)
     name = models.CharField(verbose_name=u'Название', max_length=255)
     direction = models.CharField(verbose_name=u"Направление", choices=DIRECTIONS_LIST, max_length=32)
-    protocol = models.IntegerField(blank=True, default=0, null=True)
+    protocol = models.IntegerField(choices=PROTOCOLS, default=0)
 
     src_ip  = IPNetworkField(verbose_name=u'Src net', blank=True, default='0.0.0.0/0')
 #    src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')

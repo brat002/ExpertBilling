@@ -26,8 +26,6 @@ urlpatterns += patterns('ebsadmin.wi',
     url(r'^suspendedperiod/$', 'suspendedperiod', name='suspendedperiod'),
     url(r'^activesessionreport/$', 'activesessionreport', name='activesessionreport'),
     url(r'^ballancehistoryreport/$', 'ballancehistoryreport', name='ballancehistoryreport'),
-    url(r'^nas/edit/$', 'nas_edit', name='nas_edit'),
-    url(r'^nas/$', 'nas', name='nas'),
     url(r'^template/edit/$', 'template_edit', name='template_edit'),
     url(r'^template/delete/$', 'template_delete', name='template_delete'),
     url(r'^template/$', 'template', name='template'),
@@ -51,8 +49,12 @@ urlpatterns += patterns('ebsadmin.systemuser',
     url(r'^systemuser/edit/$', 'systemuser_edit', name='systemuser_edit'),
     url(r'^systemuser/delete/$', 'systemuser_delete', name='systemuser_delete'),
     url(r'^systemuser/$', 'systemuser', name='systemuser'),
+)
 
-    
+urlpatterns += patterns('ebsadmin.modules.nas',
+    url(r'^nas/edit/$', 'nas_edit', name='nas_edit'),
+    url(r'^nas/delete/$', 'nas_delete', name='nas_delete'),
+    url(r'^nas/$', 'nas', name='nas'),
 )
 
 urlpatterns += patterns('ebsadmin.address',
@@ -88,9 +90,16 @@ urlpatterns += patterns('ebsadmin.timeperiod',
 )
 
 urlpatterns += patterns('ebsadmin.trafficclass',
-    url(r'^trafficclass/edit/$', 'trafficclass_edit', name='trafficclass_edit'),
     url(r'^trafficclass/$', 'trafficclass', name='trafficclass'),
+    url(r'^trafficclass/edit/$', 'trafficclass_edit', name='trafficclass_edit'),
+    url(r'^trafficclass/weight/$', 'trafficclass_weight', name='trafficclass_weight'),
+    url(r'^trafficclass/upload/$', 'trafficclass_upload', name='trafficclass_upload'),
+    url(r'^trafficclass/delete/$', 'trafficclass_delete', name='trafficclass_delete'),
+    
     url(r'^trafficnode_list/$', 'trafficnode_list', name='trafficnode_list'),
+    url(r'^trafficnode/$', 'trafficnode', name='trafficnode'),
+    url(r'^trafficnode/delete/$', 'trafficnode_delete', name='trafficnode_delete'),
+    
     #url(r'^ippool/delete/$', "ippool_delete", name="ippool_delete"),
 )
 

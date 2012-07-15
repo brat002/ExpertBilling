@@ -478,6 +478,7 @@
                                 </div>
                             </div>
                         </fieldset>
+                        {% comment %}
                         {% if account %}
                         <fieldset>
                             <legend>Персональные данные</legend>
@@ -528,19 +529,20 @@
                                 </div>
                             </div>
                         </fieldset>
-                        
-
+                        {% endif %}
+                        {% endcomment %}
+                        {% if account %}
                         <fieldset>
                             <legend>Субаккаунты</legend>
 
                             {% if subaccounts_table %}{% render_table subaccounts_table %}{% endif %}
-                            <a href="{% url subaccount %}?account_id={{account.id}}" class="btn align-right">Добавить</a>
+                            <a href="{% url subaccount %}?account_id={{account.id}}" class="btn btn-success align-right">Добавить</a>
                         </fieldset>
                         <fieldset>
                             <legend>Подключаемые услуги</legend>
 
                             {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
-                            <a href="{% url accountaddonservice %}?account_id={{account.id}}" class="btn align-right" id="modal-accountaddonservice-dialog" >Добавить</a>
+                            <a href="{% url accountaddonservice %}?account_id={{account.id}}" class="btn btn-success align-right" id="modal-accountaddonservice-dialog" >Добавить</a>
                         </fieldset>
                         {% endif %}
                     </div>
@@ -1084,7 +1086,7 @@
 
 
                         <fieldset>
-                            <legend>Предыдущие тарифные планы <a href="{% url accounttariff_edit %}?account_id={{account.id}}" id="modal-accounttariff-dialog-table" class="btn align-right">Добавить</a></legend>
+                            <legend>Предыдущие тарифные планы <a href="{% url accounttariff_edit %}?account_id={{account.id}}" id="modal-accounttariff-dialog-table" class="btn btn-success  align-right">Добавить</a></legend>
 
                             {% if accounttarif_table %}{% render_table accounttarif_table %}{% endif %}
                         </fieldset>
@@ -1095,13 +1097,13 @@
                         </fieldset>
                         {% endcomment %}
                         <fieldset>
-                            <legend>Взятое в аренду оборудование<a href="{% url accounthardware %}?account_id={{account.id}}" id="modal-accounthardware-dialog-table" class="btn align-right">Добавить</a></legend>
+                            <legend>Взятое в аренду оборудование<a href="{% url accounthardware %}?account_id={{account.id}}" id="modal-accounthardware-dialog-table" class="btn btn-success  align-right">Добавить</a></legend>
 
                             {% if accounthardware_table %}{% render_table accounthardware_table %}{% endif %}
                         </fieldset>
 
                         <fieldset>
-                            <legend>Периоды без списаний<input type="button" id="modal-suspendedperiod-dialog-table" class="btn align-right" value="Добавить"></legend>
+                            <legend>Периоды без списаний<input type="button" id="modal-suspendedperiod-dialog-table" class="btn btn-success  align-right" value="Добавить"></legend>
 
                             {% if suspendedperiod_table %}{% render_table suspendedperiod_table  %}{% endif %}
                         </fieldset>

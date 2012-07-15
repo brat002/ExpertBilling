@@ -1,5 +1,5 @@
 {% extends "ebsadmin/base.html" %}
-{% load crispy_forms_tags %}
+ {% load render_table from django_tables2 %}
 {% block extra_head %}
         <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
@@ -31,36 +31,22 @@
 {% endblock %}
 {% block body %}
 
-<ul class="nav nav-tabs" id="tab-control">
-  <li ><a href="#filter">Фильтр</a></li>
-  <li><a class="active" href="#result">Отчёт</a></li>  
-</ul>
-
- {% load render_table from django_tables2 %}
-<div class="tab-content">
-  <div class="tab-pane" id="filter">
-  
   <div class="row-fluid">
-        <div class="span12">
-            <form action="{{form.action}}" method="GET" class="well form-horizontal">
-            {{ form.non_field_errors }}
-                <fieldset>
-                    <legend>Поиск по логу авторизаций</legend>
-                    {{form}}
-                
-                </fieldset>
-                <fieldset>
-                    <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Подобрать результаты</button>
-                    </div>
-                </fieldset>
-            </form>
-        </div>
-    </div>
-  
-  </div>
-  <div class="tab-pane active" id="result">{% if table %}{% render_table table %}{% endif %}</div>
-
+<div class="alert alert-info">
+        Настройки серверов доступа являются важными составляющими логики работы системы. Не допускайте несанкционированного доступа к настройкам. 
+      </div>
+<div>
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url nas %}">Серверы доступа</a> <span class="divider">/</span>
+  </li>
+</ul>
 </div>
+
+<form class="align-right"><a href="{% url nas_edit %}" id="id_btn_add" class="btn btn-success">Добавить</a>&nbsp;</form>
+<div>
+  {% render_table table %}
+</div>
+    </div>
  {% endblock %}
 

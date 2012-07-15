@@ -1,0 +1,33 @@
+{% extends "ebsadmin/base.html" %}
+ {% load render_table from django_tables2 %}
+{% block extra_head %}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+
+        });
+        </script>
+
+{% endblock %}
+{% block body %}
+
+
+
+
+  <div class="row-fluid">
+  
+<div>
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url ippool %}">Загрузка сетей</a> <span class="divider">/</span>
+  </li>
+</ul>
+</div>
+<div><a href="{% url ippool_edit %}" class="btn btn-success align-right">Добавить</a> </div>
+<div>
+
+</div>
+    </div>
+  
+
+ {% endblock %}
+
