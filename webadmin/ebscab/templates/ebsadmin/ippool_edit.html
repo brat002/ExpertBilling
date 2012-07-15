@@ -1,0 +1,78 @@
+{% extends "ebsadmin/base.html" %}
+{% load bootstrap_toolkit %}
+{% block extra_head %}
+        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
+
+        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
+        <link rel="stylesheet" href="/media/css/jquery-ui-1.7.2.custom.css" type="text/css" title="ui-theme" />
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+        $("#generate_username").click(function() {
+            $.getJSON('{% url generate_credentials %}',{action:'login'},function(data,status){
+                if( status=='success' ){
+                    if(data.success==true)
+                        $("#id_username").val(data.generated);
+                    else
+                        alert(data.generated)
+                }else{
+                    alert('В процессе отправки произошла ошибка :(')
+                }
+            })
+            });
+        $("#generate_password").click(function() {
+            $.getJSON('{% url generate_credentials %}',{action:'password'},function(data,status){
+                if( status=='success' ){
+                    if(data.success==true)
+                        $("#id_password").val(data.generated);
+                    else
+                        alert(data.generated)
+                }else{
+                    alert('В процессе отправки произошла ошибка :(')
+                }
+            })
+            });
+        $('[data-toggle="modal"]').click(function(e) {
+            e.preventDefault();
+            var href = $(this).attr('href');
+            if (href.indexOf('#') == 0) {
+                $(href).modal('open');
+            } else {
+                $.get(href, function(data) {
+                    $('<div class="modal" >' + data + '</div>').modal();
+                }).success(function() { $('input:text:visible:first').focus(); });
+            }
+        });
+        });
+        </script>
+
+{% endblock %}
+ {% load render_table from django_tables2 %}
+{% block body %}
+<div class="span12">
+<div class="row-fluid">
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url ippool %}">IP пулы</a> <span class="divider">/</span>
+  </li>
+
+  <li class="active">{{form.name.value}}</li>
+</ul>
+<form method="POST" action="{% url ippool_edit %}?id={{item.id}}"class="well form-horizontal">
+            <legend>Параметры IP пула</legend>
+             <fieldset>
+                  {{form|as_bootstrap}}
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                    </div>
+                </fieldset>
+            </form>
+
+
+        </div>
+
+    </div>
+
+ {% endblock %}
+

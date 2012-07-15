@@ -1,0 +1,44 @@
+{% extends "ebsadmin/base.html" %}
+{% load bootstrap_toolkit %}
+{% block extra_head %}
+        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
+
+        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
+        <link rel="stylesheet" href="/media/css/jquery-ui-1.7.2.custom.css" type="text/css" title="ui-theme" />
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+
+        });
+        </script>
+
+{% endblock %}
+ {% load render_table from django_tables2 %}
+{% block body %}
+<div class="span12">
+<div class="row-fluid">
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url ippool %}">Типы проводок</a> <span class="divider">/</span>
+  </li>
+
+  <li class="active">{{form.name.value}}</li>
+</ul>
+<form method="POST" action="{% url transactiontype_edit %}?id={{item.id}}"class="well form-horizontal">
+            <legend>Параметры</legend>
+             <fieldset>
+                  {{form|as_bootstrap}}
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                    </div>
+                </fieldset>
+            </form>
+
+            </form>
+        </div>
+
+    </div>
+
+ {% endblock %}
+

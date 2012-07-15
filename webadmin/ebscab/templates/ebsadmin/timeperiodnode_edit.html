@@ -1,0 +1,35 @@
+{% load bootstrap_toolkit %}
+
+
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+            $('#id_time_start_0').datepicker({
+                dateFormat: 'yy-mm-dd',
+                buttonImage: "/media/icons/16/calendar.png",
+                buttonImageOnly: true,
+                showOn: "button",
+                changeMonth: true,
+                changeYear: true
+            });
+            $('#id_time_end_0').datepicker({
+                dateFormat: 'yy-mm-dd',
+                buttonImage: "/media/icons/16/calendar.png",
+                buttonImageOnly: true,
+                showOn: "button",
+                changeMonth: true,
+                changeYear: true
+            });
+            $("#id_time_start_0").mask("9999-99-99");
+            $("#id_time_start_1").mask("99:99:99");
+            $("#id_time_end_0").mask("9999-99-99");
+            $("#id_time_end_1").mask("99:99:99");
+            
+        });
+        </script>
+
+{{form|as_bootstrap}}
+
+
+
+
+
