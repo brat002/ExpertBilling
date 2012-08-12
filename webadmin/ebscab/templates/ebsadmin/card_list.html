@@ -1,0 +1,547 @@
+{% extends "ebsadmin/base.html" %}
+{% load crispy_forms_tags %}
+{% block extra_head %}
+        <script type="text/javascript" src="/media/js/spinner/jquery.spinbox.js"></script>
+<script src="/media/jquery/js/jquery.maskedinput-1.3.min.js" type="text/javascript"></script>
+        <link rel="stylesheet" href="/media/js/spinner/jquery.spinbox.css" type="text/css" />
+        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
+        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+            $("#id_main_table th input[type=checkbox]").click(function(event) {
+                $("#id_main_table td input[type=checkbox]").attr("checked", this.checked);
+
+
+            });
+            
+            $("#id_created").focus(function() {
+                $(function(){
+
+                     $('#id_created').daterangepicker({
+                          presetRanges: [
+                                         {text: 'Сейчас', dateStart: 'Now', dateEnd: 'Now' }
+                                       ],
+                          presets: {specificDate: 'Указанная дата',
+                              'allDatesBefore': 'До даты', 
+                              'allDatesAfter': 'После даты', 
+                              'dateRange': 'Диапазон дат'},
+                          rangeStartTitle: 'С',
+                          rangeEndTitle: 'По',
+                          doneButtonText: 'Выбрать',
+                          prevLinkText:'Назад',
+                          nextLinkText: 'Вперёд',
+                          dateFormat: 'yy-mm-dd',
+
+                     }); 
+        
+                 });
+                  });
+            $("#id_sold").focus(function() {
+                $(function(){
+
+                     $('#id_sold').daterangepicker({
+                          presetRanges: [
+                                         {text: 'Сейчас', dateStart: 'Now', dateEnd: 'Now' }
+                                       ],
+                          presets: {specificDate: 'Указанная дата',
+                              'allDatesBefore': 'До даты', 
+                              'allDatesAfter': 'После даты', 
+                              'dateRange': 'Диапазон дат'},
+                          rangeStartTitle: 'С',
+                          rangeEndTitle: 'По',
+                          doneButtonText: 'Выбрать',
+                          prevLinkText:'Назад',
+                          nextLinkText: 'Вперёд',
+                          dateFormat: 'yy-mm-dd',
+
+                     }); 
+        
+                 });
+                  });
+            $("#id_activated").focus(function() {
+                $(function(){
+
+                     $('#id_activated').daterangepicker({
+                          presetRanges: [
+                                         {text: 'Сейчас', dateStart: 'Now', dateEnd: 'Now' }
+                                       ],
+                          presets: {specificDate: 'Указанная дата',
+                              'allDatesBefore': 'До даты', 
+                              'allDatesAfter': 'После даты', 
+                              'dateRange': 'Диапазон дат'},
+                          rangeStartTitle: 'С',
+                          rangeEndTitle: 'По',
+                          doneButtonText: 'Выбрать',
+                          prevLinkText:'Назад',
+                          nextLinkText: 'Вперёд',
+                          dateFormat: 'yy-mm-dd',
+
+                     }); 
+        
+                 });
+                  });
+            
+            $('#id_start_date').datetimepicker({
+                showSecond: true,
+                timeFormat: 'hh:mm:ss',
+                stepHour: 1,
+                stepMinute: 1,
+                stepSecond: 1,
+                numberOfMonths: 1,
+                dateFormat: 'yy-mm-dd'
+            });
+            $('#id_end_date').datetimepicker({
+                showSecond: true,
+                timeFormat: 'hh:mm:ss',
+                stepHour: 1,
+                stepMinute: 1,
+                stepSecond: 1,
+                numberOfMonths: 1,
+                dateFormat: 'yy-mm-dd'
+            });
+            $(".btn_add").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Сгенерировать пул карт", 
+                    content: this.href, 
+                    id: "card-generate-modal"
+                });
+
+                event.preventDefault();
+            });
+            $("#id_btn_delete").click(function() {
+                a=$(this);
+                $.fn.dialog2.helpers.confirm("Вы действительно хотите удалить?", {
+                    confirm: function() {
+                        values = jQuery("#id_main_table input[type=checkbox]").serializeArray();
+
+                        $.getJSON('{% url card_delete %}',values,function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('Произошла непредвиденная ошибка')
+                            }
+
+                        })                      
+                        }, 
+                    decline: function() {  }
+                });
+
+                event.preventDefault();
+            });
+            $("#id_btn_enable").click(function() {
+                a=$(this);
+
+                        values = jQuery("#id_main_table input[type=checkbox]").serializeArray();
+
+                        $.getJSON('{% url card_manage %}?action=enable',values,function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('Произошла непредвиденная ошибка')
+                            }
+
+                        })                      
+                        
+
+
+                event.preventDefault();
+            });
+            $("#id_btn_disable").click(function() {
+                a=$(this);
+
+                        values = jQuery("#id_main_table input[type=checkbox]").serializeArray();
+
+                        $.getJSON('{% url card_manage %}?action=disable',values,function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('Произошла непредвиденная ошибка')
+                            }
+
+                        })                      
+                        
+
+
+                event.preventDefault();
+            });
+            $("#id_btn_sell").click(function() {
+                a=$(this);
+
+                        values = jQuery("#id_main_table input[type=checkbox]").serializeArray();
+
+                        $.getJSON('{% url card_delete %}',values,function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('Произошла непредвиденная ошибка')
+                            }
+
+                        })                      
+                        
+
+
+                event.preventDefault();
+            });
+        });
+        </script>
+<style type="text/css">
+.table tbody tr:hover td, .table tbody tr:hover th {
+    background-color: transparent;
+}
+.disabled-row {
+    background-color: lightgrey;
+}
+
+.modal {
+  position: fixed;
+  top: 5%;
+  left: 50%;
+  z-index: 1050;
+  width: 800px;
+  margin: 0 0 0 -400px; /* -1 * (width / 2) */ 
+  overflow: auto;
+  background-color: #ffffff;
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  *border: 1px solid #999;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+     -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding-box;
+          background-clip: padding-box;
+}
+</style>
+{% endblock %}
+{% block body %}
+  <div class="row-fluid">
+
+<div>
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url card %}">Карточная система</a> <span class="divider">/</span>
+  </li>
+</ul>
+</div>
+
+
+
+
+<ul class="nav nav-tabs" id="tab-control">
+  <li ><a href="#filter">Фильтр</a></li>
+  <li><a class="active" href="#result">Отчёт</a></li>  
+</ul>
+
+ {% load render_table from django_tables2 %}
+<div class="tab-content">
+  <div class="tab-pane" id="filter">
+  
+
+            <form action="{% url card %}" method="GET" class="well form-horizontal">
+            {{ form.non_field_errors }}
+                <fieldset>
+                    <legend>Поиск картам</legend>
+                            <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.created.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.created }}
+                                            {% if form.created.errors %}
+                                                <span class="help-inline">{% for error in form.created.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.created.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.created.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                                </div>
+                                <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.sold.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.sold }}
+                                            {% if form.sold.errors %}
+                                                <span class="help-inline">{% for error in form.sold.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.sold.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.sold.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.activated.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.activated }}
+                                            {% if form.activated.errors %}
+                                                <span class="help-inline">{% for error in form.activated.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.activated.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.activated.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.activated_by.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.activated_by }}
+                                            {% if form.activated_by.errors %}
+                                                <span class="help-inline">{% for error in form.activated_by.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.activated_by.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.activated_by.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.id.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.id }}
+                                            {% if form.id.errors %}
+                                                <span class="help-inline">{% for error in form.id.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.id.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.id.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.series.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.series }}
+                                            {% if form.series.errors %}
+                                                <span class="help-inline">{% for error in form.series.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.series.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.series.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.card_type.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.card_type }}
+                                            {% if form.card_type.errors %}
+                                                <span class="help-inline">{% for error in form.card_type.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.card_type.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.card_type.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.ext_id.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.ext_id }}
+                                            {% if form.ext_id.errors %}
+                                                <span class="help-inline">{% for error in form.ext_id.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.ext_id.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.ext_id.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.login.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.login }}
+                                            {% if form.login.errors %}
+                                                <span class="help-inline">{% for error in form.login.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.login.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.login.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.pin.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.pin }}
+                                            {% if form.pin.errors %}
+                                                <span class="help-inline">{% for error in form.pin.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.pin.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.pin.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.nominal.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.nominal }}<span class="help-inline"> используйте < или ></span>
+                                            {% if form.nominal.errors %}
+                                                <span class="help-inline">{% for error in form.nominal.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.nominal.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.nominal.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.tariff.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.tariff }}
+                                            {% if form.tariff.errors %}
+                                                <span class="help-inline">{% for error in form.tariff.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.tariff.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.tariff.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.template.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.template }}
+                                            {% if form.template.errors %}
+                                                <span class="help-inline">{% for error in form.template.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.template.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.template.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                                </div>
+                                <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.nas.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.nas }}
+                                            {% if form.nas.errors %}
+                                                <span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.nas.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.nas.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                                <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-fio">{{form.ippool.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.ippool }}
+                                            {% if form.ippool.errors %}
+                                                <span class="help-inline">{% for error in form.ippool.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.ippool.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.ippool.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">Подобрать результаты</button>
+                    </div>
+                </fieldset>
+            </form>
+
+  
+  </div>
+  <div class="tab-pane active" id="result">
+  <div class="btn-toolbar">
+ 
+<div class="btn-group">
+  <a class="btn dropdown-toggle btn-success" data-toggle="dropdown" href="#">
+    Сгенерировать
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li><a href="{% url card_generate %}?card_type=0">Экспресс-оплата</a></li>
+    <li><a href="{% url card_generate %}?card_type=1">HotSpot</a></li>
+    <li><a href="{% url card_generate %}?card_type=2">Карты VPN доступа</a></li>
+    <li><a href="{% url card_generate %}?card_type=3">Карты телефонии</a></li>
+  </ul>
+  </div>
+  <div class="btn-group">
+  <a class="btn dropdown-toggle btn-success" data-toggle="dropdown" href="#">
+    Действия
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li><a href="#" id="id_btn_sell">Передать дилеру</a></li>
+    <li><a href="#" id="id_btn_enable">Enable</a></li>
+    <li><a href="#" id="id_btn_disable">Disable</a></li>
+    <li><a href="#" id="id_btn_delete">Удалить</a></li>
+  </ul>
+</div></div>
+  {% if table %}{% render_table table "django_tables2/cards_table.html" %}{% else %}{% endif %}<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /></div>
+
+</div>
+    </div>
+    
+
+ {% endblock %}
+
+

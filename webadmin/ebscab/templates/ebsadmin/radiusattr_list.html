@@ -1,0 +1,76 @@
+{% extends "ebsadmin/base.html" %}
+ {% load render_table from django_tables2 %}
+{% block extra_head %}
+
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+        	
+            $("#id_btn_add").click(function(event) {
+                $('<div/>').dialog2({
+                    title: "Добавление RADIUS атрибутов", 
+                    content: "{% url radiusattr_edit %}?nas_id={{nas.id}}&tariff_id={{tariff.id}}", 
+                    id: "server-notice"
+                });
+
+                event.preventDefault();
+            });
+            $(".open-custom-dialog").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Изменить атрибут", 
+                    content: this.href, 
+                    id: "radiusattr-modal"
+                });
+
+                event.preventDefault();
+            });
+            $(".show-confirm").click(function() {
+                a=$(this);
+                $.fn.dialog2.helpers.confirm("Удалить?", {
+                    confirm: function() {
+                        $.getJSON(a.attr('href'),{},function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('Произошла непредвиденная ошибка')
+                            }
+
+                        })                      
+                        }, 
+                    decline: function() {  }
+                });
+
+                event.preventDefault();
+            });
+        });
+        </script>
+
+{% endblock %}
+{% block body %}
+
+
+
+
+  <div class="row-fluid">
+  
+<div>
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url ippool %}">Дополнительные RADIUS атрибуты</a> <span class="divider">/</span>{{model_name}}: <a href="{% url nas %}">{{nas.name}}{{tariff.name}}</a>
+  </li>
+</ul>
+</div>
+<div><a href="#" id="id_btn_add" class="btn btn-success align-right">Добавить</a> </div>
+<div>
+  {% render_table table %}
+</div>
+    </div>
+  
+
+ {% endblock %}
+

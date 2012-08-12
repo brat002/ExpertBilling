@@ -1,0 +1,74 @@
+{% extends "ebsadmin/base.html" %}
+ {% load render_table from django_tables2 %}
+{% block extra_head %}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+            $("#id_btn_add").click(function(event) {
+                $('<div/>').dialog2({
+                    title: "Добавление типа оборудования", 
+                    content: "{% url hardwaretype_edit %}", 
+                    id: "server-notice"
+                });
+
+                event.preventDefault();
+            });
+            $(".open-custom-dialog").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Изменить тип", 
+                    content: this.href, 
+                    id: "hardwaretype-modal"
+                });
+
+                event.preventDefault();
+            });
+            $(".show-confirm").click(function() {
+                a=$(this);
+                $.fn.dialog2.helpers.confirm("Удалить? Удаление типа оборудования вызовёт удаление всех связанных объектов в системе.", {
+                    confirm: function() {
+                        $.getJSON(a.attr('href'),{},function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('Произошла непредвиденная ошибка')
+                            }
+
+                        })                      
+                        }, 
+                    decline: function() {  }
+                });
+
+                event.preventDefault();
+            });
+        });
+        </script>
+
+{% endblock %}
+{% block body %}
+
+
+
+
+  <div class="row-fluid">
+  
+<div>
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url hardwaretype %}">Типы оборудования</a> <span class="divider">/</span>
+  </li>
+</ul>
+</div>
+<form class="align-right"><a href="{% url hardwaretype_edit %}" id="id_btn_add" class="btn btn-success">Добавить</a>&nbsp;</form>
+<div>
+  {% render_table table %}
+</div>
+    </div>
+  
+
+ {% endblock %}
+
