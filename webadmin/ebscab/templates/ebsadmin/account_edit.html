@@ -2,10 +2,7 @@
 {% load billservice_tags %}
 {% load custom_filters %}
 {% block extra_head %}
-        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
-        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
-        <link rel="stylesheet" href="/media/jquery/css/jquery-ui-1.7.3.custom.css" type="text/css" title="ui-theme" />
         <script type="text/javascript"> 
         $(document).ready(function() {
         $('#generate_username').popover({title:'Действие над аккаунтом', content: 'Сгенерировать имя пользователя'});
@@ -49,7 +46,7 @@
                 }
             })
             });
-        $('#id_created').datetimepicker({
+        $('#id_created_0').datetimepicker({
             showSecond: true,
             timeFormat: 'hh:mm:ss',
             stepHour: 1,
@@ -58,36 +55,6 @@
             numberOfMonths: 1,
             dateFormat: 'yy-mm-dd'
         });
-        $.datepicker.regional['ru'] = {
-                timeOnlyTitle: 'Выберите время',
-                timeText: 'Время',
-                hourText: 'Часы',
-                minuteText: 'Минуты',
-                secondText: 'Секунды',
-                millisecText: 'миллисекунды',
-                currentText: 'Теперь',
-                closeText: 'Закрыть',
-                ampm: false,
-        	    closeText: 'Закрыть',
-        	    prevText: '<Пред',
-        	    nextText: 'След>',
-        	    currentText: 'Сегодня',
-        	    monthNames: ['Январь','Февраль','Март','Апрель','Май','Июнь',
-        	    'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
-        	    monthNamesShort: ['Янв','Фев','Мар','Апр','Май','Июн',
-        	    'Июл','Авг','Сен','Окт','Ноя','Дек'],
-        	    dayNames: ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'],
-        	    dayNamesShort: ['вск','пнд','втр','срд','чтв','птн','сбт'],
-        	    dayNamesMin: ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],
-        	    weekHeader: 'Не',
-        	    dateFormat: 'yy-mm-dd',
-        	    timeFormat: 'HH.HH.SS',
-        	    firstDay: 1,
-        	    isRTL: false,
-        	    showMonthAfterYear: false,
-        	    yearSuffix: ''
-        	};
-        	$.datepicker.setDefaults($.datepicker.regional['ru']);
             
         	$('#modal-accounttariff-dialog').popover({title:'Действие над аккаунтом', content: 'Cменить тарифный план'});
             $(function() {
@@ -251,6 +218,24 @@
                 deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
                 onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
             });
+            //activate latest tab, if it exists:
+            var lastTab = $.cookie('account_last_tab');
+            if (lastTab) {
+                $('ul.nav-tabs').children().removeClass('active');
+                $('a[href='+ lastTab +']').parents('li:first').addClass('active');
+                $('div.tab-content').children().removeClass('active');
+                $(lastTab).addClass('active');
+            }else
+                $('#tab-control a[href="#tab-first"]').tab('show');
+            
+            $(function() {
+                $('a[data-toggle="tab"]').on('shown', function(e){
+                  //save the latest tab using a cookie:
+                  $.cookie('account_last_tab', $(e.target).attr('href'));
+                });
+
+
+              });
         });
         </script>
 
@@ -265,11 +250,11 @@
 
             <form class="well form-horizontal" method="POST" action="{% url account_edit %}{% if account %}?id={{account.id}}{% endif %}">
                 <ul class="nav nav-tabs" id="tab-control">
-                    <li class="active"><a href="#tab-first">Карточка</a></li>
-                    <li class=""><a href="#tab-address">Персональные данные</a></li>
-                    <li class=""><a href="#tab-second">Юр. лицо</a></li>
-                    <li class=""><a href="#tab-third">Прочее</a></li>
-                    <li class=""><a href="#tab-comment">Комментарий</a></li>
+                    <li class="active"><a href="#tab-first" data-toggle="tab">Карточка</a></li>
+                    <li class=""><a href="#tab-address" data-toggle="tab">Персональные данные</a></li>
+                    <li class=""><a href="#tab-second" data-toggle="tab">Юр. лицо</a></li>
+                    <li class=""><a href="#tab-third" data-toggle="tab">Прочее</a></li>
+                    <li class=""><a href="#tab-comment" data-toggle="tab">Комментарий</a></li>
 
                 </ul>
 
@@ -1086,9 +1071,9 @@
 
 
                         <fieldset>
-                            <legend>Предыдущие тарифные планы <a href="{% url accounttariff_edit %}?account_id={{account.id}}" id="modal-accounttariff-dialog-table" class="btn btn-success  align-right">Добавить</a></legend>
-
+                            <legend>Предыдущие тарифные планы </legend>
                             {% if accounttarif_table %}{% render_table accounttarif_table %}{% endif %}
+                            <a href="{% url accounttariff_edit %}?account_id={{account.id}}" id="modal-accounttariff-dialog-table" class="btn btn-success  align-right">Добавить</a>
                         </fieldset>
                         {% comment %}
                         <fieldset>
@@ -1097,15 +1082,15 @@
                         </fieldset>
                         {% endcomment %}
                         <fieldset>
-                            <legend>Взятое в аренду оборудование<a href="{% url accounthardware %}?account_id={{account.id}}" id="modal-accounthardware-dialog-table" class="btn btn-success  align-right">Добавить</a></legend>
-
+                            <legend>Взятое в аренду оборудование</legend>
                             {% if accounthardware_table %}{% render_table accounthardware_table %}{% endif %}
+                            <a href="{% url accounthardware %}?account_id={{account.id}}" id="modal-accounthardware-dialog-table" class="btn btn-success  align-right">Добавить</a>
                         </fieldset>
 
                         <fieldset>
-                            <legend>Периоды без списаний<input type="button" id="modal-suspendedperiod-dialog-table" class="btn btn-success  align-right" value="Добавить"></legend>
-
+                            <legend>Периоды без списаний</legend>
                             {% if suspendedperiod_table %}{% render_table suspendedperiod_table  %}{% endif %}
+                            <input type="button" id="modal-suspendedperiod-dialog-table" class="btn btn-success  align-right" value="Добавить">
                         </fieldset>
                         <fieldset>
                             <legend>Прочее</legend>

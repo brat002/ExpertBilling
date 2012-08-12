@@ -2,12 +2,12 @@
 
 from billservice.forms import AccountForm
 from billservice.models import Account, SuspendedPeriod, AccountHardware, AccountAddonService, BalanceHistory, IPInUse, Template, SettlementPeriod, SystemUser
-from billservice.models import AddonService, IPPool, TransactionType
+from billservice.models import AddonService, IPPool, Dealer, TransactionType, RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, Card
 import django_tables2 as django_tables
 from django_tables2.utils import A
 from radius.models import ActiveSession, AuthLog
 from object_log.models import LogItem
-from nas.models import Nas, TrafficClass, TrafficNode
+from nas.models import Nas, TrafficClass, TrafficNode, Switch
 
 class FormatBlankColumn(django_tables.Column):
     def render(self, value):
@@ -58,7 +58,7 @@ class AccountAddonServiceTable(django_tables.Table):
     row_number = django_tables.Column(verbose_name="#")
     id = django_tables.LinkColumn('accountaddonservice', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     account =  FormatBlankColumn()
-    service =  django_tables.LinkColumn('addonservice', get_params={'id':A('service.id')})
+    service =  django_tables.LinkColumn('addonservice_edit', get_params={'id':A('service.id')})
     subaccount =  django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount.id')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     #service = django_tables.LinkColumn('subaccount_detail', args=[A('pk')])
     activated = FormatDateTimeColumn()
@@ -201,6 +201,7 @@ class LogTable(django_tables.Table):
 class NasTable(django_tables.Table):
     row_number = django_tables.Column(verbose_name="#")
     name = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')})
+    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?nas_id={{record.id}}' >Дополнительные RADIUS атрибуты</a>", verbose_name=u'Дополнительные RADIUS атрибуты', orderable=False)
     id = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     def render_row_number(self):
         value = getattr(self, '_counter', 1)
@@ -210,7 +211,7 @@ class NasTable(django_tables.Table):
     class Meta:
         model = Nas
         exclude = ("secret", 'login', 'password', 'snmp_version', 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
-        sequence=('row_number', 'id', 'name', 'identify', 'type', 'ipaddress')
+        sequence=('row_number', 'id', 'name', 'radiusattrs', 'identify', 'type', 'ipaddress')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class TemplateTable(django_tables.Table):
@@ -307,3 +308,99 @@ class TrafficNodeTable(django_tables.Table):
         self._counter = value + 1
         return '%d' % value
     
+class RadiusAttrTable(django_tables.Table):
+    id = django_tables.LinkColumn('radiusattr_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    class Meta:
+        model = RadiusAttrs
+        exclude = ("tarif", 'nas')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
+class ManufacturerTable(django_tables.Table):
+    id = django_tables.LinkColumn('manufacturer_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    name = django_tables.LinkColumn('manufacturer_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    class Meta:
+        model = Manufacturer
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
+class ModelTable(django_tables.Table):
+    id = django_tables.LinkColumn('model_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    name = django_tables.LinkColumn('model_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    class Meta:
+        model = Model
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
+class HardwareTypeTable(django_tables.Table):
+    id = django_tables.LinkColumn('radiusattr_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    name = django_tables.LinkColumn('hardwaretype_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    class Meta:
+        model = HardwareType
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
+class HardwareTable(django_tables.Table):
+    id = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
+    model = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
+    name = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    class Meta:
+        model = Hardware
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
+class SwitchTable(django_tables.Table):
+    id = django_tables.LinkColumn('switch_edit', get_params={'id':A('pk')})
+    name = django_tables.LinkColumn('switch_edit', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    class Meta:
+        model = Switch
+        sequence = ("id", 'name', 'manufacturer', 'model', 'sn', 'city', 'street', 'place')
+        exclude = ('comment', 'snmp_version', 'ports_count', 'house', 'option82_template',  'identify',  'disable_port', 'remote_id', 'secret', 'option82_auth_type',  'monitored_ports', 'protected_ports', 'enable_port', 'snmp_community', 'broken_ports', 'uplink_ports', 'disabled_ports', 'password', 'ipaddress', 'macaddress', 'd', 'option82', 'username', 'snmp_support', 'management_method')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
+        
+class CardTable(django_tables.Table):
+    row_number = django_tables.Column(verbose_name="#")
+    row_class = django_tables.Column(visible=False)
+    id = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
+    start_date = FormatDateTimeColumn()
+    end_date = FormatDateTimeColumn()
+    created = FormatDateTimeColumn()
+    sold = FormatDateTimeColumn()
+    activated = FormatDateTimeColumn()
+    activated_by = FormatBlankColumn()
+    tarif = FormatBlankColumn()
+    nas = FormatBlankColumn()
+    ippool = FormatBlankColumn()
+    ext_id = FormatBlankColumn()
+    d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
+    
+    def render_row_number(self):
+        value = getattr(self, '_counter', 0)
+        self._counter = value + 1
+        return '%d' % value
+    
+    def render_row_class(self, value, record):
+        return 'disabled-row' if record.disabled else ''
+    
+    class Meta:
+        model = Card
+        sequence = ('row_number', 'row_class',  'id', 'series', 'nominal', 'login', 'pin', 'type', 'tarif', 'nas', 'sold', 'activated', 'activated_by', 'ippool', 'created', 'start_date', 'end_date', 'template',  'ext_id',  'd')
+        attrs = {'class': 'table table-bordered table-condensed'}
+        exclude = ('ipinuse', 'disabled', 'ip')
+        
+class DealerTable(django_tables.Table):
+    id = django_tables.LinkColumn('dealer_edit', get_params={'id':A('pk')})
+    organization = django_tables.LinkColumn('dealer_edit', get_params={'id':A('pk')})
+    
+    class Meta:
+        model = Dealer
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        

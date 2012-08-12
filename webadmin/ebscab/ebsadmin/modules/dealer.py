@@ -7,55 +7,41 @@ from django.http import HttpResponseRedirect
 from django_tables2.config import RequestConfig
 from object_log.models import LogItem
 
-from ebsadmin.tables import NasTable
+from ebsadmin.tables import DealerTable
 
-from ebscab.nas.forms import NasForm
-from ebscab.nas.models import Nas
-from ebscab.nas.models import actions
-from ebscab.lib.ssh_paramiko import ssh_client
+from ebscab.billservice.forms import DealerForm, BankDataForm
+from ebscab.billservice.models import Dealer
 
 log = LogItem.objects.log_action
 
-
-
 @login_required
-@render_to('ebsadmin/nas_list.html')
-def nas(request):
-    res = Nas.objects.all()
-    table = NasTable(res)
+@render_to('ebsadmin/dealer_list.html')
+def dealer(request):
+    res = Dealer.objects.all()
+    table = DealerTable(res)
     RequestConfig(request, paginate = False).configure(table)
     return {"table": table} 
     
 @login_required
-@render_to('ebsadmin/nas_edit.html')
-def nas_edit(request):
+@render_to('ebsadmin/dealer_edit.html')
+def dealer_edit(request):
 
     id = request.POST.get("id")
 
     item = None
     if request.method == 'POST': 
-        fill = request.POST.get("fill", False)
-        print actions.get(request.POST.get("type", ''), {})
-        if fill:
-            if id:
-                item = Nas.objects.get(id=id)
-                form = NasForm(initial=actions.get(request.POST.get("type", ''), {}), instance=item)
-            else:
-                 form = NasForm(initial=actions.get(request.POST.get("type", ''), {}),)
-            return {'form':form,  'status': False, 'item':item} 
-            
         if id:
-            item = Nas.objects.get(id=id)
-            form = NasForm(request.POST, instance=item)
+            item = Dealer.objects.get(id=id)
+            form = DealerForm(request.POST, instance=item)
         else:
-             form = NasForm(request.POST)
+            form = DealerForm(request.POST)
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('nas.change_nas')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование серверов доступа'}
+            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_dealer')):
+                return {'status':False, 'message': u'У вас нет прав на редактирование дилеров'}
             
-        if  not (request.user.is_staff==True and request.user.has_perm('nas.add_nas')):
-            return {'status':False, 'message': u'У вас нет прав на добавление Серверов доступа'}
+        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_dealer')):
+            return {'status':False, 'message': u'У вас нет прав на добавление дилеров'}
 
         
         if form.is_valid():
@@ -63,24 +49,24 @@ def nas_edit(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            return HttpResponseRedirect(reverse("nas"))
+            return HttpResponseRedirect(reverse("dealer"))
         else:
             print form._errors
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-        fill = request.GET.get("fill", False)
-        nas_type = request.GET.get("nas_type", '')
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('nas.nas_view')):
+            if  not (request.user.is_staff==True and request.user.has_perm('billservice.dealer_view')):
                 return {'status':True}
 
-            item = Nas.objects.get(id=id)
-            form = NasForm(initial=actions.get(nas_type, {}), instance=item)
+            item = Dealer.objects.get(id=id)
+            form = DealerForm(instance=item)
+            bank_form = BankDataForm(item.bank)
         else:
-            form = NasForm(initial=actions.get(nas_type, {}))
+            form = DealerForm()
+            bank_form = BankDataForm()
    
-    return { 'form':form, 'item': item} 
+    return { 'form':form, 'bank_form': bank_form,  'item': item} 
 
 @ajax_request
 @login_required
