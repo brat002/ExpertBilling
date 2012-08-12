@@ -35,6 +35,17 @@ class DateRangeField(forms.DateField):
                 return date_start, date_end
         return super(DateRangeField, self).clean(value)
 
+class FloatConditionField(forms.FloatField):
+    def clean(self, value):
+        if isinstance(value, unicode):
+            if value and value[0] not in ['>', '<']:
+
+                return super(forms.FloatField, self).clean(value)
+            elif value and value[0] in ['>', '<']:
+
+                return value[0], super(forms.FloatField, self).clean(value[1:])
+        return super(forms.FloatField, self).clean(value)
+    
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
@@ -159,10 +170,10 @@ class SearchAccountForm(forms.Form):
     room = forms.CharField(label =u"Квартира", required=False, widget = forms.TextInput(attrs={'class': 'input-xsmall', 'placeholder': u'Кв'}))
     status = forms.ChoiceField(required=False, choices = (('0', u"--Любой--", ), ('1', u'Активен'), ('2', u'Не активен, списывать периодические услуги'),('3', u'Не активен, не списывать периодические услуги'),('4', u'Пользовательская блокировка'),))
     id = forms.IntegerField(required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
-    ballance_exp = forms.ChoiceField(required=False, choices = (('>', u"Больше", ), ('<', u'Меньше'), ('', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
-    ballance = forms.DecimalField(label =u"Баланс", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
-    credit_exp = forms.ChoiceField(required=False, choices = (('>', u"Больше", ), ('<', u'Меньше'), ('', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
-    credit = forms.DecimalField(label =u"Кредит", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    #ballance_exp = forms.ChoiceField(required=False, choices = (('>', u"Больше", ), ('<', u'Меньше'), ('', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
+    ballance = FloatConditionField(label =u"Баланс", required=False, help_text=u"Используйте знаки >меньше и <больше", widget = forms.TextInput(attrs={'class': 'input-small'}))
+    #credit_exp = forms.ChoiceField(required=False, choices = (('>', u"Больше", ), ('<', u'Меньше'), ('', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
+    credit = FloatConditionField(label =u"Кредит", required=False, help_text=u"Используйте знаки >меньше и <больше", widget = forms.TextInput(attrs={'class': 'input-small'}))
     
     vpn_ip_address = forms.CharField(label=u"VPN IP адрес", required = False)
     ipn_ip_address = forms.CharField(label=u"IPN IP адрес", required = False)
@@ -294,6 +305,8 @@ class AccountForm(ModelForm):
     contract = forms.CharField(label=u'Номер договора', required = False)
     contract_num = forms.ModelChoiceField(label=u"Номер договора", queryset=ContractTemplate.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
     organization = forms.BooleanField(label=u"Юр.лицо", required=False, widget = forms.widgets.CheckboxInput)
+    created = forms.DateTimeField(label=u'Создан', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    credit = forms.CharField(label =u"Кредит", required=True, widget = forms.TextInput(attrs={'class': 'input-small'}))
     #--Organization fields
     
     
@@ -396,6 +409,9 @@ class ContractTemplateForm(ModelForm):
         model = ContractTemplate  
 
 class RadiusAttrsForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    nas = forms.ModelChoiceField(queryset=Nas.objects.all(), required=False, widget = forms.HiddenInput)
+    tarif = forms.ModelChoiceField(queryset=Tariff.objects.all(), required=False, widget = forms.HiddenInput)
     class Meta:
         model = RadiusAttrs  
 
@@ -485,23 +501,33 @@ class IPPoolForm(ModelForm):
         model = IPPool
         
 class ManufacturerForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    name = forms.CharField(required=True, label=u"Название")
     class Meta:
         model = Manufacturer
 
 class AccountHardwareForm(ModelForm):
-    hardware = AutoCompleteSelectField( 'hardware_fts', label = u"Устройство", required = True, widget = forms.TextInput(attrs={'class': 'input-xlarge'}))
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.widgets.HiddenInput)
+    hardware = AutoCompleteSelectField( 'hardware_fts', label = u"Устройство", required = True, widget = forms.TextInput(attrs={'class': 'input-xlarge'}), help_text=u"Поиск устройства по всем полям")
     class Meta:
         model = AccountHardware
      
 class ModelHardwareForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    name = forms.CharField(required=True, label=u"Название")
     class Meta:
         model = Model
            
 class HardwareTypeForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    name = forms.CharField(required=True, label=u"Название")
     class Meta:
         model = HardwareType
         
 class HardwareForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    
     class Meta:
         model = Hardware 
 
@@ -516,6 +542,45 @@ class NewsForm(ModelForm):
 class CardForm(ModelForm):
     class Meta:
         model = Card
+    
+class CardGenerationForm(forms.Form):
+
+    card_type = forms.ChoiceField(required=True, choices = ((0, u"Экспресс-оплаты", ), (1, u'Хотспот'), (2, u'VPN доступ'), (3, u'Телефония'),), widget = forms.HiddenInput)
+    series = forms.CharField(label=u"Серия", widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    count = forms.IntegerField(label=u"Количество", widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    login_length_from = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    login_length_to = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    login_numbers = forms.BooleanField(required=False, label="0-9", widget = forms.CheckboxInput)
+    login_letters = forms.BooleanField(required=False, label="a-Z", widget = forms.CheckboxInput)
+    pin_length_from = forms.IntegerField(widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    pin_length_to = forms.IntegerField(widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    pin_numbers = forms.BooleanField(label="0-9", widget = forms.CheckboxInput)
+    pin_letters = forms.BooleanField(label="a-Z", widget = forms.CheckboxInput)
+    nominal = forms.FloatField(label=u"Номинал",widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=u"Тариф", required=False)
+    template = forms.ModelChoiceField(queryset=Template.objects.filter(type__id=7), label=u"Шаблон печати")
+    nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
+    ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
+    date_start = forms.DateTimeField(label=u'Активировать с', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    date_end = forms.DateTimeField(label=u'Активировать по', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    
+class CardSearchForm(forms.Form):
+    id = forms.IntegerField(required=False)
+    card_type = forms.ChoiceField(required=False, choices = (('', u"", ), (0, u"Экспресс-оплаты", ), (1, u'Хотспот'), (2, u'VPN доступ'), (3, u'Телефония'),))
+    series = forms.CharField(required=False, label=u"Серия")
+    login = forms.CharField(required=False)
+    pin = forms.CharField(required=False)
+    ext_id = forms.CharField(required=False)
+    nominal = FloatConditionField(required=False, label=u"Номинал")
+    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=u"Тариф", required=False)
+    template = forms.ModelChoiceField(required=False, queryset=Template.objects.all(), label=u"Шаблон печати")
+    nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
+    ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
+    sold = DateRangeField(required=False, label=u"Проданы")
+    activated = DateRangeField(required=False, label=u"Активированы")
+    activated_by = AutoCompleteSelectMultipleField( 'account_username', required = False)
+    created = DateRangeField(required=False, label=u"Созданы")
+    
     
 class DealerForm(ModelForm):
     class Meta:

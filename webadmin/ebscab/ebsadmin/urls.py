@@ -54,6 +54,8 @@ urlpatterns += patterns('ebsadmin.systemuser',
 urlpatterns += patterns('ebsadmin.modules.nas',
     url(r'^nas/edit/$', 'nas_edit', name='nas_edit'),
     url(r'^nas/delete/$', 'nas_delete', name='nas_delete'),
+    url(r'^nas/testcreds/$', 'testCredentials', name='nas_test_credentials'),
+    
     url(r'^nas/$', 'nas', name='nas'),
 )
 
@@ -103,6 +105,53 @@ urlpatterns += patterns('ebsadmin.trafficclass',
     #url(r'^ippool/delete/$', "ippool_delete", name="ippool_delete"),
 )
 
+urlpatterns += patterns('ebsadmin.modules.radiusattr',
+    url(r'^radiusattr/edit/$', 'radiusattr_edit', name='radiusattr_edit'),
+    url(r'^radiusattr/$', 'radiusattr', name='radiusattr'),
+    url(r'^radiusattr/delete/$', "radiusattr_delete", name="radiusattr_delete"),
+)
+urlpatterns += patterns('ebsadmin.modules.manufacturer',
+    url(r'^manufacturer/edit/$', 'manufacturer_edit', name='manufacturer_edit'),
+    url(r'^manufacturer/$', 'manufacturer', name='manufacturer'),
+    url(r'^manufacturer/delete/$', "manufacturer_delete", name="manufacturer_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.modules.hardwaretype',
+    url(r'^hardwaretype/edit/$', 'hardwaretype_edit', name='hardwaretype_edit'),
+    url(r'^hardwaretype/$', 'hardwaretype', name='hardwaretype'),
+    url(r'^hardwaretype/delete/$', "hardwaretype_delete", name="hardwaretype_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.modules.model',
+    url(r'^model/edit/$', 'model_edit', name='model_edit'),
+    url(r'^model/$', 'model', name='model'),
+    url(r'^model/delete/$', "model_delete", name="model_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.modules.hardware',
+    url(r'^hardware/edit/$', 'hardware_edit', name='hardware_edit'),
+    url(r'^hardware/$', 'hardware', name='hardware'),
+    url(r'^hardware/delete/$', "hardware_delete", name="hardware_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.modules.switch',
+    url(r'^switch/edit/$', 'switch_edit', name='switch_edit'),
+    url(r'^switch/$', 'switch', name='switch'),
+    url(r'^switch/delete/$', "switch_delete", name="switch_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.modules.card',
+    url(r'^card/edit/$', 'card_edit', name='card_edit'),
+    url(r'^card/generate/$', 'card_generate', name='card_generate'),
+    url(r'^card/manage/$', 'card_manage', name='card_manage'),
+    url(r'^card/$', 'card', name='card'),
+    url(r'^card/delete/$', "card_delete", name="card_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.modules.dealer',
+    url(r'^dealer/edit/$', 'dealer_edit', name='dealer_edit'),
+    url(r'^dealer/$', 'dealer', name='dealer'),
+)
 
 urlpatterns += patterns('ebsadmin.views',
      #url(r'^accounts/$', 'jsonaccounts'),

@@ -6,6 +6,7 @@
 <link href="/media/bootstrap/css/style.css" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+<link href="/media/bootstrap/css/cus-icons.css" rel="stylesheet">
 
 <script src="/media/jquery/js/jquery-1.7.2.min.js"></script>
 <script src="/media/jquery/js/jquery.history.js"></script>
@@ -27,7 +28,6 @@ $(document).ready(function() {
           $(this).tab('show');
         })
 
-
     });
 
 </script>
@@ -40,7 +40,11 @@ $(document).ready(function() {
 <script src="/media/bootstrap/js/bootstrap-tab-history.js"></script>
 
 
-
+  <style type="text/css">
+html {
+    overflow-y: scroll;
+}
+  </style>
 <meta name="robots" content="NONE,NOARCHIVE">
 <script type="text/javascript"> 
     $(function(){
@@ -73,12 +77,31 @@ $(document).ready(function() {
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
-         <li><a href="{% url account_edit %}">Новый аккаунт</a></li>
-         <li><a href="{% url account_list %}">Поиск</a></li>
+         <li><a href="{% url account_edit %}"><i class="cus-user-add"></i>&nbsp;Новый аккаунт</a></li>
+         <li><a href="{% url account_list %}"><i class="cus-find"></i>&nbsp;Поиск</a></li>
        </ul>
      </li>
    </ul>
   <li><a href="{% url nas %}">Сервера доступа</a></li>
+   <ul class="nav">
+     <li class="dropdown">
+       <a href="#"
+             class="dropdown-toggle"
+             data-toggle="dropdown">
+             Карты
+             <b class="caret"></b>
+       </a>
+       <ul class="dropdown-menu">
+                         
+                
+         <li><a href="{% url card %}"><i class="cus-layers"></i>&nbsp;Пул карт</a></li>
+         <li><a href="{% url dealer %}"><i class="cus-user-suit"></i>&nbsp;Дилеры</a></li>
+
+         
+         
+       </ul>
+     </li>
+   </ul>
   <li><a href="{% url activesessionreport %}">Монитор сессий</a></li>
    <ul class="nav">
      <li class="dropdown">
@@ -106,20 +129,28 @@ $(document).ready(function() {
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
+                         
+                
+         <li><a href="{% url settlementperiod %}"><i class="icon-calendar"></i>&nbsp;Расчётные периоды</a></li>
+         <li><a href="{% url timeperiod %}"><i class="cus-date-next"></i>&nbsp;Периоды тарификации</a></li>
+         <li class="divider"></li>
+         <li><a href="{% url addonservice %}"><i class=" cus-cart-add"></i>&nbsp;Подключаемые услуги</a></li>
+         <li><a href="{% url systemuser %}"><i class="icon-user"></i>&nbsp;Системные пользователи</a></li>
          
-         <li><a href="{% url settlementperiod %}">Расчётные периоды</a></li>
-         <li><a href="{% url timeperiod %}">Периоды тарификации</a></li>
-         <li><a href="{% url addonservice %}">Подключаемые услуги</a></li>
-         <li><a href="{% url systemuser %}">Системные пользователи</a></li>
-         <li><a href="{% url transactiontype %}">Типы платежей</a></li>
-         <li><a href="{% url template %}">Правила смены тарифных планов</a></li>
-         <li><a href="{% url template %}">Шаблоны документов</a></li>
-         <li><a href="{% url ippool %}">IP пулы</a></li>
-         <li><a href="{% url template %}">Коммутаторы</a></li>
-         <li><a href="{% url address %}">Адреса</a></li>
-         <li><a href="{% url template %}">Дилеры</a></li>
-         <li><a href="{% url template %}">Модуль новостей</a></li>
-         <li><a href="{% url trafficclass %}">Классы трафика</a></li>
+         <li><a href="{% url template %}"><i class="cus-arrow-refresh"></i>&nbsp;Правила смены тарифных планов</a></li> 
+         <li><a href="{% url template %}"><i class="cus-report-edit"></i>&nbsp;Шаблоны документов</a></li> 
+         <li class="divider"></li>
+         <li><a href="{% url ippool %}"><i class="cus-page-white-dvd"></i>&nbsp;IP пулы</a></li>
+         <li><a href="{% url switch %}"><i class="cus-cog-edit"></i>&nbsp;Коммутаторы</a></li>
+         <li class="divider"></li>
+         <li><a href="{% url address %}"><i class="cus-house-go"></i>&nbsp;Адреса</a></li> 
+         <li><a href="{% url template %}"><i class="cus-group"></i>&nbsp;Дилеры</a></li> 
+         <li><a href="{% url template %}"><i class="cus-newspaper"></i>&nbsp;Модуль новостей</a></li>
+         <li class="nav-header">Оборудование</li>
+         <li><a href="{% url hardware %}"><i class="cus-table-add"></i>&nbsp;Устройства</a></li>
+         <li class="divider"></li>
+         <li><a href="{% url trafficclass %}"><i class="cus-table-refresh"></i>&nbsp;Классы трафика</a></li>
+         
          
        </ul>
      </li>
@@ -134,12 +165,18 @@ $(document).ready(function() {
        </a>
        <ul class="dropdown-menu">
          
-         <li><a href="{% url template %}">Просмотр логов</a></li>
-         <li><a href="{% url template %}">История действий пользователей</a></li>
+         <li><a href="{% url template %}"><i class="icon-tasks"></i>&nbsp;Просмотр логов</a></li>
+         <li><a href="{% url template %}"><i class="icon-list-alt"></i>&nbsp;История действий пользователей</a></li>
          <li><a href="{% url template %}">Информация о провайдере</a></li>
          <li><a href="{% url template %}">Системные пользователи</a></li>
          <li><a href="{% url template %}">Последние списания период. услуг</a></li>
          <li><a href="{% url template %}">Последние сервисные процедуры</a></li>
+         <li class="nav-header">Сервисные справочники</li>
+         <li><a href="{% url manufacturer %}">Производители оборудования</a></li>
+         <li><a href="{% url hardwaretype %}">Типы оборудования</a></li>
+         <li><a href="{% url model %}">Модели оборудования</a></li>
+         <li class="divider"></li>
+         <li><a href="{% url transactiontype %}">Типы платежей</a></li>
          
          
        </ul>

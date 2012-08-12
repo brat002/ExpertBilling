@@ -7,29 +7,35 @@
         <link rel="stylesheet" href="/media/css/jquery-ui-1.7.2.custom.css" type="text/css" title="ui-theme" />
         <script type="text/javascript"> 
         $(document).ready(function() {
-        $("#generate_username").click(function() {
-            $.getJSON('{% url generate_credentials %}',{action:'login'},function(data,status){
-                if( status=='success' ){
-                    if(data.success==true)
-                        $("#id_username").val(data.generated);
-                    else
-                        alert(data.generated)
-                }else{
-                    alert('В процессе отправки произошла ошибка :(')
-                }
-            })
+        $("#id_btn_fill").click(function() {
+        	
+        	var input = $("<input>").attr("type", "hidden").attr("name", "fill").val("true");
+        	$('#id_form').append($(input));
+        	$('#id_form').submit();
             });
-        $("#generate_password").click(function() {
-            $.getJSON('{% url generate_credentials %}',{action:'password'},function(data,status){
-                if( status=='success' ){
-                    if(data.success==true)
-                        $("#id_password").val(data.generated);
-                    else
-                        alert(data.generated)
-                }else{
-                    alert('В процессе отправки произошла ошибка :(')
-                }
-            })
+        $("#id_btn_test").click(function() {
+        	$("#id_btn_test").text('Подождите');
+        	setTimeout(function() {
+        	$.ajax({
+        		   type: "POST",
+        		   url: "{% url nas_test_credentials %}",
+        		   data: {login: $("#id_login").val(),password: $("#id_password").val(), host: $("#id_ipaddress").val()},
+        		   dataType: 'ajax',
+        		   async: false,
+        		   success: function(msg){
+        			   if (msg.status){
+        				   alert( "Тест прошёл успешно");
+        			   }
+        			   else{
+        				   alert( "Ошибка: " + msg.message );
+        			   }
+        			   $("#id_btn_test").text('Проверить');
+        		   },
+        		   error: function(msg){
+        		          alert("Ошибка соединения");
+        		          $("#id_btn_test").text('Проверить');
+        		       }
+        		 });}, 500);
             });
 
         
@@ -70,9 +76,8 @@
 <ul class="nav nav-tabs" id="tab-panel">
   <li><a href="#general" data-toggle="tab">Общее</a></li>
   <li><a href="#commands" data-toggle="tab">Команды</a></li>
-  <li><a href="#radiusattrs" data-toggle="tab">Дополнительные RADIUS атрибуты</a></li>
 </ul>
-<form method="POST" action="{% url nas_edit %}?id={{item.id}}"class="well form-horizontal">
+<form id="id_form" method="POST" action="{% url nas_edit %}?id={{item.id}}" class="well form-horizontal">
 {{ form.id }}
 <div class="tab-content">
   <div class="tab-pane active" id="general">
@@ -249,7 +254,7 @@
                     <div class="control-row">
                       <label class="control-label">Проверить подключение</label>
                       <div class="controls">
-                      <button class="btn btn-success" type="button">Проверить</button>
+                      <button class="btn btn-success" type="button" id="id_btn_test">Проверить</button>
                       </div>
                     </div>
                   </div>  
@@ -430,7 +435,6 @@
                       </div>
                   </div>  
   </div>
-  <div class="tab-pane" id="radiusattrs"></div>
 </div>
 
                 <fieldset>
