@@ -22,30 +22,13 @@
      });
  });
  </script>
- <script src="/media/jquery/js/jquery-1.7.2.min.js"></script>
- <script type="text/javascript" src="/media/jquery/js/jquery-ui-1.8.21.custom.min.js"></script>
 {% endblock %}
 {% block body %}
 {% if not status %}
 {{message}}
-                <form action='{% url accounttariff_edit %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax">
+                <form action='{% url accounthardware %}?_id={{item.id}}' method="POST" class="well form-horizontal ajax">
+                {{ form.account }}
                 <fieldset>
-                  <div class="control-group">
-                  <div class="control-row">
-                      <label class="control-label">Аккаунт: </label>
-                      <div class="controls">
-                      {{ form.account }}
-                      {% if form.account.errors %}
-                          <span class="help-inline">{% for error in form.account.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.account.help_text%}
-                          <p class="help-block">
-                              {{ form.account.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  </div>
                   <div class="control-group">
                       <label class="control-label">{{form.hardware.label}}: </label>
                       <div class="controls">

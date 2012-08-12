@@ -148,21 +148,6 @@
                         <div class="control-row">
                             <label class="control-label" for="input-agreement-no">{{form.ballance.label}}</label>
                             <div class="controls">
-                             {{ form.ballance_exp }}
-                            {% if form.ballance_exp.errors %}
-                                <span class="help-inline">{% for error in form.ballance_exp.errors %}{{ error }}<br/> {% endfor %}</span>
-                            {% endif %}
-                            {% if form.ballance_exp.help_text%}
-                                <p class="help-block">
-                                    {{ form.ballance_exp.help_text|safe }}
-                                </p>
-                            {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="control-row">
-                            <label class="control-label" for="input-balance-sum">Сумма на балансе</label>
-                            <div class="controls">
                              {{ form.ballance }}
                             {% if form.ballance.errors %}
                                 <span class="help-inline">{% for error in form.ballance.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -179,21 +164,6 @@
                     <div class="control-group">
                         <div class="control-row">
                             <label class="control-label" for="input-agreement-no">{{form.credit.label}}</label>
-                            <div class="controls">
-                             {{ form.credit_exp }}
-                            {% if form.credit_exp.errors %}
-                                <span class="help-inline">{% for error in form.credit_exp.errors %}{{ error }}<br/> {% endfor %}</span>
-                            {% endif %}
-                            {% if form.credit_exp.help_text%}
-                                <p class="help-block">
-                                    {{ form.credit_exp.help_text|safe }}
-                                </p>
-                            {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="control-row">
-                            <label class="control-label" for="input-credit-sum">Сумма кредита</label>
                             <div class="controls">
                              {{ form.credit }}
                             {% if form.credit.errors %}
@@ -633,7 +603,8 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Подобрать результаты</button>
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
                     </div>
                 </fieldset>
             </form>

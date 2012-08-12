@@ -1041,24 +1041,24 @@ class Template(models.Model):
            ("template_view", u"Просмотр"),
            )
 class Card(models.Model):
-    series = models.IntegerField()
-    pin = models.CharField(max_length=255)
-    login = models.CharField(max_length=255, blank=True, default='')
-    sold = models.DateTimeField(blank=True, default=False)
-    nominal = models.FloatField(default=0)
-    activated = models.DateTimeField(blank=True, default=False)
-    activated_by = models.ForeignKey(Account, blank=True, null=True)
-    start_date = models.DateTimeField(blank=True, default='')
-    end_date = models.DateTimeField(blank=True, default='')
+    series = models.CharField(max_length=32, verbose_name=u"Серия")
+    pin = models.CharField(max_length=255, verbose_name=u"Пин")
+    login = models.CharField(max_length=255, blank=True, default='', verbose_name=u"Логин")
+    sold = models.DateTimeField(blank=True, null=True, verbose_name=u"Продана")
+    nominal = models.FloatField(default=0, verbose_name=u"Номинал")
+    activated = models.DateTimeField(blank=True, null=True, verbose_name=u"Актив-на")
+    activated_by = models.ForeignKey(Account, blank=True, null=True, verbose_name=u"Аккаунт")
+    start_date = models.DateTimeField(blank=True, default='', verbose_name=u"Актив-ть с")
+    end_date = models.DateTimeField(blank=True, default='', verbose_name=u"по")
     disabled= models.BooleanField(default=False, blank=True)
-    created = models.DateTimeField()
-    template = models.ForeignKey(Template)
-    type = models.IntegerField()
-    tarif = models.ForeignKey(Tariff, blank=True, null=True)
+    created = models.DateTimeField(verbose_name=u"Создана")
+    template = models.ForeignKey(Template, verbose_name=u"Шаблон")
+    type = models.IntegerField(verbose_name=u"Тип", choices = ( (0, u"Экспресс-оплаты", ), (1, u'Хотспот'), (2, u'VPN доступ'), (3, u'Телефония'),))
+    tarif = models.ForeignKey(Tariff, blank=True, null=True, verbose_name=u"Тариф")
     nas = models.ForeignKey(Nas, blank=True, null=True)
     ip = models.CharField(max_length=20,blank=True, default='')
     ipinuse = models.ForeignKey("IPInUse", blank=True, null=True)
-    ippool = models.ForeignKey("IPPool", blank=True, null=True)
+    ippool = models.ForeignKey("IPPool", verbose_name=u"Пул", blank=True, null=True)
     ext_id = models.CharField(max_length=512,  blank=True, null=True)
     
     class Meta:
@@ -1069,10 +1069,10 @@ class Card(models.Model):
            ("card_view", u"Просмотр карт"),
            )
 class BankData(models.Model):
-    bank = models.CharField(max_length=255)
-    bankcode = models.CharField(blank=True, default='', max_length=40)
-    rs = models.CharField(blank=True, default='', max_length=60)
-    currency = models.CharField(blank=True, default='', max_length=40)
+    bank = models.CharField(max_length=255, verbose_name= u"Название банка")
+    bankcode = models.CharField(blank=True, default='', max_length=40, verbose_name= u"Код банка")
+    rs = models.CharField(blank=True, default='', max_length=60, verbose_name= u"Расчётный счёт")
+    currency = models.CharField(blank=True, default='', max_length=40, verbose_name= u"Валюта расчётов")
 
     def __unicode__(self):
         return u"%s" % self.id
@@ -1107,19 +1107,19 @@ class Operator(models.Model):
            )
 
 class Dealer(models.Model):
-    organization = models.CharField(max_length = 400)
-    unp  = models.CharField(max_length = 255, blank=True, default='')
-    okpo  = models.CharField(max_length = 255, blank=True, default='')
-    contactperson  = models.CharField(max_length = 255, blank=True, default='')
-    director  = models.CharField(max_length = 255, blank=True, default='')
-    phone  = models.CharField(max_length = 255, blank=True, default='')
-    fax  = models.CharField(max_length = 255, blank=True, default='')
-    postaddress  = models.CharField(max_length = 400, blank=True, default='')
-    uraddress  = models.CharField(max_length = 400, blank=True, default='')
+    organization = models.CharField(max_length = 400, verbose_name=u"Организация")
+    unp  = models.CharField(max_length = 255, blank=True, default='', verbose_name=u"УНП")
+    okpo  = models.CharField(max_length = 255, blank=True, default='', verbose_name=u"ОКПО")
+    contactperson  = models.CharField(max_length = 255, blank=True, default='', verbose_name=u"Контактное лицо")
+    director  = models.CharField(max_length = 255, blank=True, default='', verbose_name=u"Директор")
+    phone  = models.CharField(max_length = 255, blank=True, default='', verbose_name=u"Телефон")
+    fax  = models.CharField(max_length = 255, blank=True, default='', verbose_name=u"Факс")
+    postaddress  = models.CharField(max_length = 400, blank=True, default='', verbose_name=u"Почтовый адрес")
+    uraddress  = models.CharField(max_length = 400, blank=True, default='', verbose_name=u"Юр. адрес")
     email = models.EmailField(max_length=255, blank=True, null=True)
-    prepayment = models.FloatField(blank=True, default=0)
-    paydeffer = models.IntegerField(blank=True, default=0)
-    discount = models.FloatField(blank=True, default=0)
+    prepayment = models.FloatField(blank=True, default=0, verbose_name=u"% предоплаты")
+    paydeffer = models.IntegerField(blank=True, default=0, verbose_name=u"Отсрочка платежа")
+    discount = models.FloatField(blank=True, default=0, verbose_name=u"Скидка")
     always_sell_cards = models.BooleanField(default=False)
     
     bank = models.ForeignKey(BankData, blank=True, null=True, on_delete=models.SET_NULL)
@@ -1342,7 +1342,10 @@ class RadiusAttrs(models.Model):
     vendor = models.IntegerField(blank=True, default=0)
     attrid = models.IntegerField()
     value = models.CharField(max_length = 255)
-     
+
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('radiusattr_delete'), self.id)
+    
     class Meta:
         ordering = ['vendor', 'attrid']
         verbose_name = u"Custom RADIUS атрибут"
@@ -1415,8 +1418,8 @@ class AddonServiceTarif(models.Model):
 
 class AccountAddonService(models.Model):    
     service = models.ForeignKey(AddonService, null=True, on_delete = models.CASCADE)    
-    account = models.ForeignKey(Account, blank=True, null=True)   
-    subaccount = models.ForeignKey('SubAccount', blank=True, null=True) 
+    account = models.ForeignKey(Account, blank=True, null=True, on_delete = models.CASCADE)   
+    subaccount = models.ForeignKey('SubAccount', blank=True, null=True, on_delete = models.CASCADE) 
     activated = models.DateTimeField()    
     deactivated = models.DateTimeField(blank=True, null=True)    
     action_status = models.BooleanField()    
@@ -1636,6 +1639,9 @@ class Manufacturer(models.Model):
     def __unicode__(self):
         return u'%s' % self.name
     
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('manufacturer_delete'), self.id)
+    
     class Meta:
         ordering = ['name']
         verbose_name =u"Производитель"
@@ -1649,6 +1655,10 @@ class HardwareType(models.Model):
     
     def __unicode__(self):
         return u'%s' % self.name
+    
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('hardwaretype_delete'), self.id)
+    
     class Meta:
         ordering = ['name']
         verbose_name =u"Тип оборудования"
@@ -1658,12 +1668,17 @@ class HardwareType(models.Model):
            )
         
 class Model(models.Model):
-    name = models.TextField()
-    manufacturer = models.ForeignKey(Manufacturer)
-    hardwaretype = models.ForeignKey(HardwareType)
+    name = models.TextField(verbose_name=u"Модель")
+    manufacturer = models.ForeignKey(Manufacturer, verbose_name=u"Производитель")
+    hardwaretype = models.ForeignKey(HardwareType, verbose_name=u"Тип оборудования")
 
     def __unicode__(self):
         return u'%s/%s/%s' % (self.hardwaretype, self.manufacturer, self.name)
+    
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('model_delete'), self.id)
+
+
     class Meta:
         ordering = ['name']
         verbose_name =u"Модель оборудования"
@@ -1674,12 +1689,12 @@ class Model(models.Model):
         
 class Hardware(models.Model):
     #manufacturer = models.ForeignKey(Manufacturer)
-    model = models.ForeignKey(Model)
-    name = models.CharField(max_length=500, blank=True, default='',)
-    sn = models.CharField(max_length=500, blank=True, default='',)
-    comment = models.TextField(blank=True, default='')#
-    ipaddress = models.IPAddressField(blank=True)
-    macaddress = models.CharField(blank=True, default='', max_length=32)
+    model = models.ForeignKey(Model, verbose_name=u"Модель")
+    name = models.CharField(max_length=500, blank=True, default='', verbose_name=u"Название")
+    sn = models.CharField(max_length=500, blank=True, default='', verbose_name=u"Серийный номер")
+    ipaddress = models.IPAddressField(blank=True, verbose_name=u"IP адрес")
+    macaddress = models.CharField(blank=True, default='', max_length=32, verbose_name=u"MAC адрес")
+    comment = models.TextField(blank=True, default='', verbose_name=u"Комментарий")#
 
     @property
     def manufacturer(self):
@@ -1687,6 +1702,9 @@ class Hardware(models.Model):
     
     def __unicode__(self):
         return u'%s' % self.name
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('hardware_delete'), self.id)
+    
     class Meta:
         ordering = ['name']
         verbose_name =u"Устройство"
@@ -1697,10 +1715,10 @@ class Hardware(models.Model):
         
 class AccountHardware(models.Model):
     account=models.ForeignKey(Account)
-    hardware = models.ForeignKey(Hardware)
-    datetime = models.DateTimeField()
-    returned = models.DateTimeField()
-    comment = models.TextField()
+    hardware = models.ForeignKey(Hardware, verbose_name=u"Устройство")
+    datetime = models.DateTimeField(blank=True, verbose_name=u"Дата выдачи")
+    returned = models.DateTimeField(blank=True, verbose_name=u"Дата возврата")
+    comment = models.TextField(blank=True, default="", verbose_name=u"Комментарий")
 
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('accounthardware_delete'), self.id)

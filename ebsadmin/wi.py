@@ -302,7 +302,7 @@ def accountsreport(request):
             house = form.cleaned_data.get('house')
             house_bulk = form.cleaned_data.get('house_bulk')
             ballance = form.cleaned_data.get('ballance')
-            ballance_exp = form.cleaned_data.get('ballance_exp')
+            #ballance_exp = form.cleaned_data.get('ballance_exp')
             vpn_ip_address = form.cleaned_data.get('vpn_ip_address')
             ipn_ip_address = form.cleaned_data.get('ipn_ip_address')
             ipn_mac_address = form.cleaned_data.get('ipn_mac_address')
@@ -312,7 +312,7 @@ def accountsreport(request):
             organization = form.cleaned_data.get('organization')
 
             credit = form.cleaned_data.get('credit')
-            credit_exp = form.cleaned_data.get('credit_exp')
+            #credit_exp = form.cleaned_data.get('credit_exp')
                         
             status = int(form.cleaned_data.get('status', 0)or 0)
             
@@ -375,21 +375,23 @@ def accountsreport(request):
             if 'undefined' not in ipn_status:
                 res = res.filter(subaccounts__ipn_added='added' in ipn_status, subaccounts__ipn_enabled='enabled')
                 
-            if ballance_exp:
-                if ballance_exp=='>':
-                    res = res.filter(ballance__gte=ballance)
-                elif ballance_exp=='<':
-                    res = res.filter(ballance__lte=ballance)
-                else:
-                    res = res.filter(ballance=ballance)
+            if type(ballance)==tuple:
+                cond, value = ballance
+                if cond==">":
+                    res = res.filter(ballance__gte=value)
+                elif cond=="<":
+                    res = res.filter(ballance__lte=value)
+            elif ballance:
+                res = res.filter(ballance=ballance)
                     
-            if credit_exp:
-                if credit_exp=='>':
-                    res = res.filter(credit__gte=credit)
-                elif credit_exp=='<':
-                    res = res.filter(credit__lte=credit)
-                else:
-                    res = res.filter(credit=credit)
+            if type(credit)==tuple:
+                cond, value = credit
+                if cond==">":
+                    res = res.filter(credit__gte=value)
+                elif cond=="<":
+                    res = res.filter(credit__lte=value)
+            elif credit:
+                res = res.filter(credit=credit)
                     
             table = AccountsReportTable(res)
             if request.GET.get('paginate'):
@@ -1003,7 +1005,7 @@ def accounttarif_edit(request):
 def accounthardware(request):
     
     account = None
-    account_id = request.GET.get("account_id")
+    account_id = request.POST.get("account_id")
     id = request.POST.get("id")
     
     if request.method == 'POST': 
@@ -1021,12 +1023,13 @@ def accounthardware(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            return {'form':form,  'status': True} 
+            return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"), model.account.id))
         else:
 
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
+        account_id = request.GET.get("account_id")
 
         if id:
             if  not (request.user.is_staff==True and request.user.has_perm('billservice.accounthardware_view')):
@@ -1037,7 +1040,7 @@ def accounthardware(request):
         elif account_id:
             
             account= Account.objects.get(id=account_id)
-            form = AccountHardwareForm(initial={'account': account.id, 'datetime': datetime.datetime.now()}) # An unbound form
+            form = AccountHardwareForm(initial={'account': account, 'datetime': datetime.datetime.now()}) # An unbound form
 
     return { 'form':form, 'status': False, 'account':account} 
 

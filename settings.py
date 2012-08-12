@@ -35,7 +35,7 @@ CACHES = {
 # system time zone.
 TIME_ZONE = None # This will use system timezone. Don`t touch this.
 
-LANGUAGE_CODE = 'ru-Ru'
+LANGUAGE_CODE = 'en-US'
 SITE_ID = 1
 
 USE_I18N = True
