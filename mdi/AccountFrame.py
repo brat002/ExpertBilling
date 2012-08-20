@@ -1911,7 +1911,7 @@ class TarifWindow(QtGui.QMainWindow):
         systemgroups = [] #self.connection.get_models("billservice_systemgroup")
         
 
-        self.lineEdit_sessioncount.setText(unicode(access_parameters.sessionscount))
+        #self.lineEdit_sessioncount.setText(unicode(access_parameters.sessionscount))
         
         
         i=0
@@ -2453,7 +2453,7 @@ class TarifWindow(QtGui.QMainWindow):
             radius_traffic_service = None
             if self.radius_traffic_access_service_checkbox.checkState()==2:
                 radius_traffic_service=AttrDict()
-                if model.radius_traffic_transmit_service:
+                if 'radius_traffic_transmit_service' in model.__dict__:
                     radius_traffic_service.id = self.model.radius_traffic_transmit_service_id
                
                 #print 1
