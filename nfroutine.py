@@ -1060,7 +1060,11 @@ def main():
     cacheThr.setName('AST: AccountServiceThread')
     suicideCondition[cacheThr.__class__.__name__] = False
     cacheThr.start()
-    
+    time.sleep(2)
+    dThr = nfDequeThread()
+    dThr.setName('INPUT The: QueueProcessThread')
+    suicideCondition[dThr.__class__.__name__] = False
+    dThr.start()
     time.sleep(2)
     while cacheMaster.read is False:        
         if not cacheThr.isAlive:
