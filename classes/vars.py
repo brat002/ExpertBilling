@@ -12,7 +12,7 @@ def install_logger(lgr):
     logger = lgr
     
 class Vars(object):
-    __slots__ = ('RECOVER', 'CACHE_TIME', 'name', 'piddir', 'db_errors', 'db_dsn', 'db_session', 'log_type', 'log_ident', 'log_level', 'log_file', 'log_format', 'log_filemode', 'log_maxsize', 'log_rotate', 'types')
+    __slots__ = ('RECOVER', 'CACHE_TIME', 'name', 'piddir', 'db_errors', 'db_dsn', 'db_session', 'log_type', 'log_ident', 'log_level', 'log_file', 'log_format', 'log_filemode', 'log_maxsize', 'log_rotate', 'types', 'queues_host', 'queues_username', 'queues_password', 'queues_port', 'queues_name', 'queues_dsn')
     _parse_funs = {'s': lambda x: x, 'i' : int, 'b': lambda x: False if x.lower() in ('false', '0') else True}
     def __init__(self):
         pass
@@ -22,6 +22,7 @@ class Vars(object):
         self.piddir = 'pid'
         self.db_errors = (psycopg2.DatabaseError, psycopg2.OperationalError, psycopg2.InterfaceError, psycopg2.InternalError)
         self.db_dsn = ''
+        self.queues_dsn = ''
         self.db_session = []
         self.log_type = 'logging'; self.log_ident = 'ebs'
         self.log_level = 0
@@ -32,6 +33,11 @@ class Vars(object):
         self.log_rotate = 3
         self.types = {'cache': ('CACHE_TIME', ), 'name': ('name',), 'db_errors': ('db_errors',), 'db': ('db_dsn', 'db_session'),\
                       'pid': ('piddir',), 'log_level': ('log_level',), 'log': ('log_type','log_ident','log_file','log_format','log_filemode','log_maxsize','log_rotate')}
+        self.queues_host='localhost'
+        self.queues_username='ebs'
+        self.queues_password='ebspassword'
+        self.queues_port=5432
+        self.queues_name='ebs_queues'
         
     def get_dynamic(self, **kwargs):
         config = kwargs['config']
@@ -53,6 +59,13 @@ class Vars(object):
         if config.has_option(name, 'log_filemode'): self.log_filemode = config.get(name, 'log_filemode')
         if config.has_option(name, 'log_maxsize'): self.log_maxsize = config.getint(name, 'log_maxsize')
         if config.has_option(name, 'log_rotate'): self.log_rotate = config.getint(name, 'log_rotate')
+        if config.has_option('queues_db', 'host'): self.queues_host = config.get('queues_db', 'host')
+        if config.has_option('queues_db', 'username'): self.queues_username = config.get('queues_db', 'username')
+        if config.has_option('queues_db', 'password'): self.queues_password = config.get('queues_db', 'password')
+        if config.has_option('queues_db', 'port'): self.queues_port = config.getint('queues_db', 'port')
+        if config.has_option('queues_db', 'name'): self.queues_name = config.get('queues_db', 'name')
+        self.queues_dsn = "dbname='%s' user='%s' host='%s' port='%s' password='%s'" % (self.queues_name, self.queues_username,
+                                                                         self.queues_host, self.queues_port, self.queues_password)
         
     def get_static(self, **kwargs):
         pass

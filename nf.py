@@ -18,6 +18,7 @@ import ConfigParser
 import socket, select, struct, datetime, time
 import string, glob, types
 
+
 try:
     import codecs
 except ImportError:
@@ -39,7 +40,7 @@ import twisted.internet
 
 from twisted.protocols.basic import implements, interfaces, defer
 from twisted.internet.protocol import DatagramProtocol
-from twisted.internet.protocol import Protocol, ReconnectingClientFactory
+
 
 try:
     from twisted.internet import pollreactor
@@ -57,6 +58,7 @@ from classes.vars import NfVars, NfQueues, install_logger
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
                      STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
 
+from dirq.QueueSimple import QueueSimple
 
 MIN_NETFLOW_PACKET_LEN = 16
 HEADER_FORMAT = "!HHIIIIBBH"
@@ -78,183 +80,18 @@ class Reception_UDP(DatagramProtocol):
     Twisted Asynchronous server that recieves datagrams with NetFlow packets
     and appends them to 'nfQueue' queue.
     '''
+
+        
     def datagramReceived(self, data, addrport):
         if len(data) <= vars.MAX_DATAGRAM_LEN:
-            queues.nfQueue.append((data, addrport))
+            message = '%s|<>|%s' % (data, addrport[0])
+            in_dirq.add(message)
         else:
             logger.error("NF server exception: packet %s <= %s", (len(data), vars.MAX_DATAGRAM_LEN))
 
-class SendPacketProducer(object):
 
-    implements(interfaces.IPullProducer)
-
-    def __init__(self, packet_queue, packet_lock, consumer, delimeter):
         
-        self.packet_queue = packet_queue
-        self.packet_lock = packet_lock
-        self.consumer = consumer
-        self.consumer.registerProducer(self, False)
-        self.delimeter = delimeter
-        self.delim_len = len(self.delimeter)
-        
-    def pauseProducing(self):
-        pass
-
-    def stopProducing(self):
-        logger.warning("Sender consumer asked producer to stop!", ())
-        
-    def resumeProducing(self):
-        send_packet = False
-        packet_status = 0
-
-        if len(self.packet_queue) > 0:
-            with self.packet_lock:
-                if len(self.packet_queue) > 0:
-                    send_packet = self.packet_queue.popleft()
-        if not send_packet:
-            self.pauseProducing()
-            #return
-            #self.consumer.write('')
-        else:        
-            packet_len = len(send_packet) + 5 + self.delim_len
-            str_len = str(packet_len)[:5]
-            formatted_packet = '0' * (len(str_len) - 5) + str_len + send_packet + self.delimeter
-            if self.consumer.write(formatted_packet) == NOT_TRASMITTED:
-                with self.packet_lock:
-                    self.packet_queue.appendleft(send_packet)         
-        ''''''
-
-class SendPacketStream(Thread):
-
-    implements(interfaces.IProducer)
-    structFormat = "!I"
-    prefixLength = struct.calcsize(structFormat)
-    
-    def __init__(self, packet_queue, packet_lock, delimeter):
-        self.tname = self.__class__.__name__
-        Thread.__init__(self)
-        
-        self.packet_queue = packet_queue
-        self.packet_lock = packet_lock
-
-        self.delimeter = delimeter
-        self.delim_len = len(self.delimeter)
-        self.PAUSED = True
-        self.consumer = None
-        
-    def registerConsumer_(self, consumer):
-        self.consumer = consumer
-        self.consumer.registerProducer(self, True)
-        self.resumeProducing()
-        
-    def pauseProducing(self):
-        self.PAUSED = True
-
-    def stopProducing(self):
-        self.PAUSED = True
-        logger.warning("Sender consumer asked producer to stop!", ())
-        
-    def resumeProducing(self):
-        self.PAUSED = False
-        
-    def run(self):
-        while True:
-            if suicideCondition[self.tname]: break
-            if self.PAUSED or not self.consumer:
-                time.sleep(0.3); continue
-            send_packet = False
-            packet_status = 0
-            if len(self.packet_queue) > 0:
-                with self.packet_lock:
-                    if len(self.packet_queue) > 0:
-                        send_packet = self.packet_queue.popleft()
-            if not send_packet: 
-                time.sleep(1)
-                continue
-            #print len(send_packet)
-            #packet_len = len(send_packet)
-            #str_len = str(packet_len)[:5]
-            #formatted_packet = '0' * (5 - len(str_len)) + str_len + send_packet + self.delimeter
-            if self.consumer.write(struct.pack(self.structFormat, len(send_packet)) + send_packet) == NOT_TRASMITTED:
-                with self.packet_lock:
-                    self.packet_queue.appendleft(send_packet)
-
-class TCPSender(Protocol):
-    implements(interfaces.IConsumer)
-    
-    isConnected = False
-    
-    def __init__(self, producer):
-        #super(TCPSender, self).__init__()
-        self.producer = producer
-
-    def connectionMade(self):
-        self.isConnected = True
-        self.transport.bufferSize = 512000
-        #self.producer_ = self.producer(queues.databaseQueue, queues.dbLock, self, vars.NFR_DELIMITER)
-        self.producer.registerConsumer_(self)
-        
-    def connectionLost(self, reason):
-        self.isConnected = False
-    def dataReceived(self, data):
-        #print 'datarecieved'
-        if data == '!SLP':
-            time.sleep(30)
-            
-    def registerProducer(self, producer, streaming):
-        return self.transport.registerProducer(producer, streaming)
-
-    def unregisterProducer(self):
-        self.transport.unregisterProducer()
-        self.transport.loseConnection()
-
-    def write(self, formatted_packet):
-        if self.isConnected:
-            #print 'SENT LINE: ', formatted_packet[:6], '|', formatted_packet[-6:]
-            self.transport.write(formatted_packet)
-
-        else:
-            return NOT_TRASMITTED
-
-
-    def resumeProducing(self):
-        self.transport.resumeProducing()
-
-    def pauseProducing(self):
-        self.transport.pauseProducing()
-
-    def stopProducing(self):
-        self.transport.stopProducing()
-
-    
-            
-class TCPSender_ClientFactory(ReconnectingClientFactory):
-    protocol = TCPSender
-    factor = 1.6180339887498948
-    maxDelay = 600
-    def __init__(self, producer):
-        #super(TCPSender_ClientFactory, self).__init__()
-        self.Producer = producer
-        
-    def startedConnecting(self, connector):
-        logger.info('SENDER: Started connecting.', ())
-
-    def buildProtocol(self, addr):
-        logger.info('SENDER: Connected.', ())
-        self.resetDelay()
-        return TCPSender(self.Producer)
-        #tcs.producer = self.producer
-        #return tcs
-
-    def clientConnectionLost(self, connector, reason):
-        logger.info('SENDER: Lost connection.  Reason: %s', reason)
-        ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
-
-    def clientConnectionFailed(self, connector, reason):
-        logger.info('SENDER: Connection failed. Reason: %s', reason)
-        ReconnectingClientFactory.clientConnectionFailed(self, connector,
-                                                         reason)
-
+                    
 class nfDequeThread(Thread):
     '''Thread that gets packets received by the server from nfQueue queue and puts them onto the conveyour
     that gets flows and caches them.'''
@@ -264,13 +101,21 @@ class nfDequeThread(Thread):
         Thread.__init__(self)
         
     def run(self):
+        
         while True:
-            if suicideCondition[self.tname]: break
+
             #TODO: add locks if deadlocking issues arise
             try:
-                data, addrport = queues.nfQueue.popleft()        
-                nfPacketHandle(data, addrport, queues.nfFlowCache)
-            except IndexError, ierr:
+                for name in in_dirq:
+                    if not in_dirq.lock(name):
+                        continue
+                    data = in_dirq.get(name)
+                    data, addr = data.split("|<>|")
+                    nfPacketHandle(data, addr, queues.nfFlowCache)
+                    in_dirq.remove(name)
+
+                time.sleep(0.5)
+            except IndexError, err:
                 time.sleep(3); continue  
             except Exception, ex:
                 logger.error("NFP exception: %s \n %s", (repr(ex), traceback.format_exc()))
@@ -360,21 +205,21 @@ def find_account_by_ip(nasses,flow,src=False, dst=False):
     return acc_data_src,acc_data_dst, nas_id
 
 
-def nfPacketHandle(data, addrport, flowCache):
+def nfPacketHandle(data, addr, flowCache):
     '''
-    Function receiving a binary Netflow packet, sender addrport and FlowCache reference.
+    Function receiving a binary Netflow packet, sender addr and FlowCache reference.
     Gets, unpacks and checks flows from packets.
     Approved packets are added to FlowCache.
     '''    
     if len(data) < MIN_NETFLOW_PACKET_LEN:
         #raise ValueError, "Short packet"
-        logger.warning("Small packet, discarded: %s", repr(addrport))
+        logger.warning("Small packet, discarded: %s", repr(addr))
         return
     caches = cacheMaster.cache
     if 0: assert isinstance(caches, NfCaches)
-    nasses = caches.nas_cache.by_ip.get(addrport[0], [])
+    nasses = caches.nas_cache.by_ip.get(addr, [])
     if not caches: return
-    if not nasses: logger.warning("NAS %s not found in our beautiful system. Mybe it hackers?", repr(addrport)); return      
+    if not nasses: logger.warning("NAS %s not found in our beautiful system. My be it hackers?", repr(addr)); return      
     flows=[]
     _nf = struct.unpack("!H", data[:2])
     pVersion = _nf[0]
@@ -458,13 +303,6 @@ def nfPacketHandle(data, addrport, flowCache):
             flow.nas_id = nas_id
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
             flow.padding = local
-#            if vars.WRITE_FLOW:
-#                flow.datetime = time.time()
-#                ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
-#                for acc_flow in acc_acct_tf:
-#                    flow.account_id = acc_flow[0]
-#                    queues.flowSynchroBox.appendData(ips + flow.getBaseSlice())
-#                queues.flowSynchroBox.checkData()
             flow.account_id = acc_acct_tf
             flow.node_direction = None
             if vars.CHECK_CLASSES:
@@ -721,7 +559,7 @@ class FlowDequeThread(Thread):
                     logger.error("fdqThread exception: %s \n %s", (repr(ex), traceback.format_exc()))
             
             
-class NfUDPSenderThread(Thread):
+class NfroutinePushThread(Thread):
     '''Thread that gets packet lists from databaseQueue, marshals them and sends to Core module
     If there are errors, flow data are written to a file. When connection is established again, NfFileReadThread to clean up that files and resend data is started.
     '''
@@ -732,15 +570,17 @@ class NfUDPSenderThread(Thread):
         Thread.__init__(self)
         self.last_packet = None
         self.err_count   = 0
-        
+
     def run(self):
         addrport = vars.NFR_ADDR
         nfsock = get_socket()
         errflag, flnumpack = 0, 0
         dfile, fname = None, None
+
         while True:     
             try:
                 if suicideCondition[self.tname]:
+                    self.connection.close()
                     break
                 #get a bunch of packets
                 flst = None
@@ -750,152 +590,17 @@ class NfUDPSenderThread(Thread):
                         flst = queues.databaseQueue.popleft()
                 if not flst: time.sleep(5); continue
                 
-                nfsock.sendto(struct.pack(NFR_PACKET_HEADER_FMT, *get_index_state()) + flst, vars.NFR_ADDR)
-                #recover reply
-                dtrc, addr = nfsock.recvfrom(128)
-                #if wrong length (probably zero reply) - raise exception
-                if dtrc is None or len(dtrc) < 4: raise Exception("Empty!")
-                
-                if dtrc[4] != '!' and (len(flst) != int(dtrc)): raise Exception("Sizes not equal!")
-                
-                with queues.packetIndexLock:
-                    queues.packetIndex += 1
-                  
-                if   dtrc[:4] == 'BAD!':
-                    raise Exception("Bad packet flag detected!")
-                
-                self.last_packet = flst
-                self.err_count   = 0
-                
-                if dtrc[:4] == 'SLP!':
-                    logger.lprint("sleepFlag detected!")
-                    time.sleep(30); continue
-                elif dtrc[:4] == 'DUP!':
-                    logger.lprint("Duplicate packet flag detected!")
-                    continue
-                elif dtrc[:4] == 'ERR!':
-                    logger.lprint("Error packet flag detected!")
-                    continue     
+                out_dirq.add(flst)
                     
             except Exception, ex:
                 logger.debug('%s exp: %s \n %s', (self.getName(), repr(ex), traceback.format_exc()))
-                #if no errors were detected earlier
-                if self.last_packet == flst and not isinstance(ex, socket.timeout):
-                    self.err_count += 1
-                else:
-                    self.last_packet = flst
-                    self.err_count = 0
-                if flst and self.err_count < 5:
-                    #self.err_count == 0
+                try:
+
                     with queues.dbLock:
                         queues.databaseQueue.appendleft(flst)
-                elif flst:
+                except:
                     logger.warning("%s: Packet dropped!", self.getName())
 
- 
-def get_index_state():
-    state = STATE_OK
-    index = 0
-    with queues.packetIndexLock:
-        if queues.packetIndex > MAX_PACKET_INDEX:
-            queues.packetIndex = 0
-            state = STATE_NULLIFIED
-        index = queues.packetIndex
-    return (index, state, time.time())
-
-class NfFileReadThread(Thread):
-    '''Thread that reads previously written data dumps and resends data.'''
-    def __init__(self):
-        Thread.__init__(self)
-        self.tname = self.__class__.__name__
-        self.hpath  = ''.join((vars.READ_DIR,'/',vars.PREFIX))
-        self.prev_ps  = 1.0
-        #self.pprev_ps = 1.0
-        self.cur_ps   = 1.0
-        self.file_ps  = vars.FILE_PACK / float(vars.MAX_SENDBUF_LEN)
-        self.allow_recover = 0
-        self.allow_dump    = 0
-    
-    def run(self):
-        fname, dfile = None, None
-        while True:
-            try:
-                if suicideCondition[self.tname]: break
-                #get a file name from a queue
-                fname = None
-                self.allow_recover = 0
-                self.allow_dump    = 0
-                dbqueue_len = 0
-                #with queues.dbLock:
-                dbqueue_len = len(queues.databaseQueue)
-                self.cur_ps = dbqueue_len / vars.MAX_SENDBUF_LEN
-                #logger.info('PPrevious dbqueue len/max percentage: %s', self.pprev_ps)
-                logger.info('Previous dbqueue len/max percentage: %s', self.prev_ps)
-                logger.info('Current dbqueue len/max percentage: %s', self.cur_ps) 
-                if self.cur_ps > 1:
-                    if self.cur_ps < 1 + self.file_ps:
-                        pass
-                    elif self.prev_ps < 1 and self.cur_ps - 1 / self.file_ps < 3:
-                        self.allow_dump = 1
-                    else:
-                        self.allow_dump = int(self.cur_ps - 1 / self.file_ps)
-                elif self.cur_ps < 1 and len(queues.fnameQueue) > 0:
-                    if self.cur_ps > 1 - self.file_ps:
-                        pass
-                    elif self.prev_ps > 1 and  1 - self.cur_ps / self.file_ps < 3:
-                        self.allow_recover = 1
-                    else:
-                        self.allow_recover = int(1 - self.cur_ps / self.file_ps)
-                        
-                self.prev_ps = self.cur_ps
-                if self.allow_dump:
-                    dump_queue = None
-                    dump_index = -1 * self.allow_dump * vars.FILE_PACK
-                    with queues.dbLock:
-                        dump_queue = queues.databaseQueue[dump_index:]
-                        queues.databaseQueue = queues.databaseQueue[:dump_index]
-                    if dump_queue:
-                        for i in xrange(self.allow_dump):
-                            dump_out = dump_queue[:vars.FILE_PACK]
-                            dump_queue = dump_queue[vars.FILE_PACK:]
-                            if dump_out:
-                                try:
-                                    fname = ''.join((self.hpath, str(time.time()), '_', str(random.random()), '.dmp'))
-                                    dump_file = open(fname, 'wb')
-                                    marshal.dump(dump_out, dump_file)
-                                    dump_file.close()
-                                except Exception, ex:
-                                    logger.error("NfFileReadThread filewrite exception: %s \n %s", (repr(ex), traceback.format_exc()))
-                                else:
-                                    with queues.fnameLock:
-                                        queues.fnameQueue.append(fname)
-                                    logger.info("NfFileReadThread dumped %s packets to file %s", (len(dump_out), fname))
-                elif self.allow_recover:
-                    recover_list = []
-                    for i in xrange(self.allow_recover):
-                        fname = None
-                        with queues.fnameLock:
-                            if len(queues.fnameQueue) > 1:
-                                fname = queues.fnameQueue.popleft()
-                        if not fname: break
-                        try:
-                            rec_file = open(fname, 'rb')
-                            recover_list = marshal.load(rec_file)
-                        except Exception, ex:
-                            logger.error("NfFileReadThread fileread exception: %s \n %s", (repr(ex), traceback.format_exc()))
-                        finally:
-                            rec_file.close()
-                        if recover_list:
-                            with queues.dbLock:
-                                queues.databaseQueue.extend(recover_list)
-                            logger.info("NfFileReadThread read %s packets from file %s", (len(recover_list), fname))             
-                
-            except Exception, ex:
-                logger.error("NfFileReadThread fileread exception: %s \n %s", (repr(ex), traceback.format_exc()))
-                 
-            time.sleep(240)
-                           
-    
             
 class ServiceThread(Thread):
     '''Thread that forms and renews caches.'''
@@ -1307,7 +1012,7 @@ def file_test(ddir, prefix=''):
                         "' is not accesible/writable: errors were encountered upon"+\
                         "executing test operations with filenames like '" +tfname+ "'!")
 def main ():        
-    global flags, queues, cacheMaster, threads, cacheThr, caches
+    global flags, queues, cacheMaster, threads, cacheThr, caches, script
     if vars.RECOVER:
         graceful_recover()
     #recover leftover dumps?
@@ -1320,16 +1025,16 @@ def main ():
         time.sleep(0.5)'''
         
     threads = []
-    '''thrnames = [(NfFileReadThread, 'NfFileReadThread'), (NfUDPSenderThread, 'NfUDPSenderThread'), \
+    '''thrnames = [ (NfroutinePushThread, 'NfroutinePushThread'), \
                 (FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread')]'''
     
-    thrnames = [(FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread'), (nfDequeThread, 'nfDequeThread')]
+    thrnames = [(FlowDequeThread, 'NfFlowDequeThread'), (nfDequeThread, 'nfDequeThread'), ]
     for thClass, thName in thrnames:
         threads.append(thClass())
         threads[-1].setName(thName)
 
-    senderThread = SendPacketStream(queues.databaseQueue, queues.dbLock, vars.NFR_DELIMITER)
-    senderThread.setName('SenderStream')
+    senderThread = NfroutinePushThread()
+    senderThread.setName('NfroutinePushThread')
     threads.append(senderThread)
     
     if vars.WRITE_FLOW:
@@ -1352,7 +1057,7 @@ def main ():
         if not cacheMaster.read: 
             print 'caches still not read, maybe you should check the log'
       
-    print 'caches ready'
+    #print 'caches ready'
     
     if 0: assert isinstance(cacheMaster.cache, NfCaches)  
     for th in threads:
@@ -1378,17 +1083,13 @@ def main ():
     
     reactor.listenUDP(vars.PORT, Reception_UDP())
     
-    sender_factory = TCPSender_ClientFactory(senderThread)
-    if vars.SOCK_TYPE == 0:
-        reactor.connectTCP(vars.NFR_HOST, vars.NFR_PORT, sender_factory)
-    elif vars.SOCK_TYPE == 1:
-        reactor.connectUNIX(vars.NFR_HOST, sender_factory)
-    else: 
-        raise Exception("Unknown socket type!")
     #
     savepid(vars.piddir, vars.name)
     print "ebs: nf: started"    
+    
     reactor.run(installSignalHandlers=False)
+    
+    
 
 
 if __name__=='__main__':
@@ -1416,7 +1117,8 @@ if __name__=='__main__':
     try:
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME, flow_name=FLOW_NAME)
         #print repr(vars)
-        
+        in_dirq = QueueSimple('/opt/ebs/var/spool/nf_in')
+        out_dirq = QueueSimple('/opt/ebs/var/spool/nf_out')
         
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
         saver.log_adapt = logger.log_adapt
@@ -1429,7 +1131,9 @@ if __name__=='__main__':
         logger.info("Config variables: %s", repr(vars))
         logger.lprint('Nf start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
-
+        
+        
+        
         #write profiling info predicate
         flags.writeProf = logger.writeInfoP()
         file_test(vars.DUMP_DIR, vars.PREFIX)
@@ -1451,7 +1155,7 @@ if __name__=='__main__':
         main()
     except Exception, ex:
         print 'Exception in nf, exiting: ', repr(ex)
-        logger.error('Exception in nf, exiting: %s \n %s', (repr(ex), traceback.format_exc()))
+        print "Exception in nf, exiting: %s \n %s'" % (repr(ex), traceback.format_exc())
     
     
     

@@ -21,13 +21,11 @@ nfroutine_sql = \
                'settlepd':"""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""",
                'period'  :"""SELECT date_trunc('seconds', tpn.time_start), tpn.length, tpn.repeat_after, ttns.traffic_transmit_service_id
                                 FROM billservice_timeperiodnode AS tpn
-                                JOIN billservice_timeperiod_time_period_nodes AS timeperiod_timenodes ON timeperiod_timenodes.timeperiodnode_id=tpn.id
-                                JOIN billservice_traffictransmitnodes AS ttns ON ttns.timeperiod_id=timeperiod_timenodes.timeperiod_id;""",
+                                JOIN billservice_traffictransmitnodes AS ttns ON ttns.timeperiod_id=tpn.time_period_id;""",
                'nodes'   :"""SELECT ttsn.id, ttsn.cost, ttsn.edge_start, ttsn.edge_end, tpn.time_start, tpn.length, tpn.repeat_after,
                                         ttsn.group_id, ttsn.traffic_transmit_service_id, ttsn.edge_value 
                                         FROM billservice_traffictransmitnodes as ttsn
-                                        JOIN billservice_timeperiod_time_period_nodes as tptpn ON tptpn.timeperiod_id = ttsn.timeperiod_id
-                                        JOIN billservice_timeperiodnode AS tpn on tpn.id= tptpn.timeperiodnode_id
+                                        JOIN billservice_timeperiodnode AS tpn on tpn.time_period_id= ttsn.timeperiod_id
                                         WHERE ttsn.group_id is not Null;""",
                'prepays' :"""SELECT prepais.id, prepais.size, prepais.account_tarif_id, prepaidtraffic.group_id, prepaidtraffic.traffic_transmit_service_id 
                                         FROM billservice_accountprepaystrafic as prepais
@@ -83,8 +81,7 @@ core_sql = \
                         tariff.id 
                         FROM billservice_timespeed as timespeed
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
-                        JOIN billservice_timeperiod_time_period_nodes as tp ON tp.timeperiod_id=timespeed.time_id
-                        JOIN billservice_timeperiodnode as timenode ON tp.timeperiodnode_id=timenode.id
+                        JOIN billservice_timeperiodnode as timenode ON tp.time_period_id=timespeed.time_id
                         WHERE tariff.deleted is not True;""",
           'periodtf':"""SELECT id, settlement_period_id FROM billservice_tariff  as tarif
                         WHERE id in (SELECT tarif_id FROM billservice_periodicalservice WHERE deleted=False or deleted is Null) AND tarif.active=True and tarif.deleted is not True""",
@@ -96,9 +93,9 @@ core_sql = \
           'timeaccnode':"""SELECT tan.time_period_id, tan.cost, tan.time_access_service_id
                         FROM billservice_timeaccessnode as tan
                         JOIN billservice_timeperiod as tp ON tan.time_period_id=tp.id;""",
-          'timepnode':"""SELECT tpn.id, tpn.name, date_trunc('second', tpn.time_start), tpn.length, tpn.repeat_after, tptpn.timeperiod_id 
+          'timepnode':"""SELECT tpn.id, tpn.name, date_trunc('second', tpn.time_start), tpn.length, tpn.repeat_after, tptpn.time_period_id 
                         FROM billservice_timeperiodnode as tpn
-                        JOIN billservice_timeperiod_time_period_nodes as tptpn ON tpn.id=tptpn.timeperiodnode_id;""",
+                        """,
           'tlimits'  :"""SELECT trafficlimit.id, trafficlimit.tarif_id, trafficlimit."name", 
                         trafficlimit.settlement_period_id, trafficlimit.size, trafficlimit.group_id, 
                         trafficlimit."mode", trafficlimit.action,
@@ -119,8 +116,7 @@ core_sql = \
           'suspended':"""SELECT id, account_id, start_date, end_date FROM billservice_suspendedperiod WHERE (%s BETWEEN start_date AND end_date) or (start_date<=%s and end_date is Null);""",
           'tpnaccess':"""SELECT date_trunc('second', tpn.time_start) as time_start, tpn.length as length, tpn.repeat_after as repeat_after, bst.id
                         FROM billservice_timeperiodnode as tpn
-                        JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
-                        JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
+                        JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpn.time_period_id
                         JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id
                         WHERE bst.deleted is not True""",
           'speed_lmt':"""SELECT accountspeedlimit.id, accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
@@ -150,7 +146,7 @@ core_sql = \
 
                            FROM billservice_accountaddonservice as accs 
                            JOIN billservice_addonservice as addons ON addons.id=accs.service_id
-                           WHERE (accs.deactivated is Null or (accs.last_checkout<accs.deactivated AND (SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.id)='periodical') or 
+                           WHERE (accs.account_id is not NULL and (SELECT True from billservice_account WHERE id=accs.account_id and deleted is NULL)=True) and  (accs.deactivated is Null or (accs.last_checkout<accs.deactivated AND (SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.id)='periodical') or 
                            ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.service_id)='onetime' and (accs.action_status=True or accs.last_checkout is Null))) or (accs.action_status=True and accs.deactivated is not Null and addons.action=True);""",
         'addon_periodical': """SELECT accas.id, ads.name, ads.cost, ads.sp_type, sp.name, date_trunc('second',sp.time_start),
                         sp.length, sp.length_in, sp.autostart,
@@ -171,8 +167,7 @@ rad_sql = \
          'nas'      :"""SELECT id, secret, type, multilink, ipaddress, identify, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2, acct_interim_interval FROM nas_nas ORDER BY id, ipaddress, identify;""",
          'period'   :"""SELECT date_trunc('second', tpn.time_start::timestamp without time zone)as time_start, tpn.length as length, tpn.repeat_after as repeat_after, bst.id
                         FROM billservice_timeperiodnode as tpn
-                        JOIN billservice_timeperiod_time_period_nodes as tpnds ON tpnds.timeperiodnode_id=tpn.id
-                        JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpnds.timeperiod_id
+                        JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpn.time_period_id
                         JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id
                         WHERE bst.deleted is not True
                         """,
@@ -190,8 +185,7 @@ rad_sql = \
                         tariff.id 
                         FROM billservice_timespeed as timespeed
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
-                        JOIN billservice_timeperiod_time_period_nodes as tp ON tp.timeperiod_id=timespeed.time_id
-                        JOIN billservice_timeperiodnode as timenode ON tp.timeperiodnode_id=timenode.id
+                        JOIN billservice_timeperiodnode as timenode ON timespeed.time_id=timenode.time_period_id
                         WHERE tariff.deleted is not True;""",
          'limit'    :"""SELECT accountspeedlimit.id, accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
                         speedlimit.burst_tx, speedlimit.burst_rx, 

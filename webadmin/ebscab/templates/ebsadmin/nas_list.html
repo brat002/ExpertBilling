@@ -25,6 +25,31 @@
                 numberOfMonths: 1,
                 dateFormat: 'yy-mm-dd'
             });
+            $(".show-confirm").click(function() {
+                a=$(this);
+                $.fn.dialog2.helpers.confirm("Удалить? Удаление модели оборудования вызовет удаление всех связаных объектов в системе.", {
+                    confirm: function() {
+                        $.getJSON(a.attr('href'),{},function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('Произошла непредвиденная ошибка')
+                            }
+
+                        })                      
+                        }, 
+                    decline: function() {  }
+                });
+
+                event.preventDefault();
+            });
+
         });
         </script>
 

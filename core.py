@@ -244,7 +244,7 @@ class check_vpn_access(Thread):
                         
                         from_start = (dateAT-rs.date_start).seconds+(dateAT-rs.date_start).days*86400
                             
-                        if (rs.time_from_last_update and rs.time_from_last_update+15>=nas.acct_interim_interval) or (not rs.time_from_last_update and from_start>=nas.acct_interim_interval+60):
+                        if (rs.time_from_last_update and rs.time_from_last_update+15>=nas.acct_interim_interval*3+3) or (not rs.time_from_last_update and from_start>=nas.acct_interim_interval*3+3):
                             cur.execute("""UPDATE radius_activesession SET session_status='NACK' WHERE sessionid=%s;
                                         """, (rs.sessionid,))
                             cur.connection.commit()               
@@ -610,6 +610,7 @@ class periodical_service_bill(Thread):
                         acc = caches.account_cache.by_account.get(addon_ps.account_id)
                     if not acc:
                         logger.warning('%s: Addon Periodical Service: %s Account not found: %s', (self.getName(), addon_ps.ps_id, addon_ps.account_id))
+                        continue
                     mult=1
                     if acc.account_status in [2,4]:
                         mult=0                   
@@ -895,7 +896,7 @@ class RadiusAccessBill(Thread):
                                         cur.execute("""INSERT INTO billservice_traffictransaction(
                                                         account_id, accounttarif_id, summ, 
                                                         created, radiustraffictransmitservice_id)
-                                                        VALUES ( %s, %s, %s, %s, 
+                                                        VALUES ( %s, %s, (-1)*%s, %s, 
                                                         %s);
                                                 """, (rs.account_id, rs.acctf_id, summ, now, rs.traccs_id))
                                         cur.connection.commit()
@@ -1109,7 +1110,7 @@ class addon_service(Thread):
                                         service_id, service_type, account_id, accountaddonservice_id, 
                                         accounttarif_id, type_id, summ, created)
                                 VALUES (%s, 'onetime', %s, %s, 
-                                        %s, '%s', %s, '%s')
+                                        %s, '%s', (-1)*%s, '%s')
 
                             """ % (service.id, acc.account_id, accountaddonservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,)
                             cur.execute(sql)
@@ -1242,8 +1243,7 @@ class settlement_period_service_dog(Thread):
     
                         #нужно производить в конце расчётного периода
                         ballance_checkout = shedl.ballance_checkout if shedl.ballance_checkout else acc.datetime
-                        if acc.username=='23521':
-                            pass
+
                         if (ballance_checkout is None or ballance_checkout < period_start) and acc.reset_tarif_cost and period_end and acc.cost > 0:
                             #Снять сумму до стоимости тарифного плана                   
                             #Считаем сколько было списано по услугам                   
@@ -1362,7 +1362,7 @@ class settlement_period_service_dog(Thread):
                                 if 0: assert isinstance(ots, OneTimeServiceData)
                                 if not caches.onetimehistory_cache.by_acctf_ots_id.has_key((acc.acctf_id, ots.id)) \
                                    and not ots.created > acc.datetime:
-                                    cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id, onetimeservice_id, account_id, summ, created) VALUES(%s, %s, %s, %s, %s);", (acc.acctf_id, ots.id, acc.account_id, ots.cost, now,))
+                                    cur.execute("INSERT INTO billservice_onetimeservicehistory(accounttarif_id, onetimeservice_id, account_id, summ, created) VALUES(%s, %s, %s, (-1)*%s, %s);", (acc.acctf_id, ots.id, acc.account_id, ots.cost, now,))
                                     cur.connection.commit()
                                     caches.onetimehistory_cache.by_acctf_ots_id[(acc.acctf_id, ots.id)] = (1,)
                                     #Списывам с баланса просроченные обещанные платежи

@@ -10,7 +10,7 @@ import re
 #########################
 host = '127.0.0.1'
 port = '5432'
-database = 'ebs_1'
+database = 'ebs_alt_new'
 user = 'ebs'
 password = 'ebspassword'
 
@@ -37,28 +37,28 @@ if what=='periodicalservicehistory':
     cur.execute("""
     SELECT count(*) as cnt
       FROM billservice_periodicalservicehistory 
-      WHERE datetime between %s and %s
+      WHERE created between %s and %s
       ;
     """,(start_date,end_date,))
     
     print "current rows=", cur.fetchone()['cnt']
     cur.execute("""
     SELECT service_id, accounttarif_id, sum(summ) as summ, 
-           account_id, type_id, max(datetime) as datetime
+           account_id, type_id, max(created) as created
       FROM billservice_periodicalservicehistory 
-      WHERE datetime between %s and %s
+      WHERE created between %s and %s
       GROUP BY service_id, accounttarif_id, account_id, type_id;
     """,(start_date,end_date,))
     items = cur.fetchall()
     print "deleting selected rows"
-    cur.execute("delete from billservice_periodicalservicehistory WHERE datetime between %s and %s", (start_date,end_date,))
+    cur.execute("delete from billservice_periodicalservicehistory WHERE created between %s and %s", (start_date,end_date,))
     i=0
     print "inserting aggregated rows"
     for item in items:
         cur.execute(""" 
-        INSERT INTO billservice_periodicalservicehistory(service_id, datetime, accounttarif_id, summ, account_id, type_id)
+        INSERT INTO billservice_periodicalservicehistory(service_id, created, accounttarif_id, summ, account_id, type_id)
         VALUES (%s, %s, %s, %s, %s, %s);    
-        """, (item['service_id'],item['datetime'],item['accounttarif_id'],item['summ'],item['account_id'],
+        """, (item['service_id'],item['created'],item['accounttarif_id'],item['summ'],item['account_id'],
               item['type_id'],))
         i+=1
     
@@ -78,14 +78,14 @@ if what=='traffictransaction':
     print "current rows=", cur.fetchone()['cnt']
     cur.execute("""
     SELECT traffictransmitservice_id, account_id, accounttarif_id, sum(summ) as summ, 
-           max(datetime) as datetime, radiustraffictransmitservice_id
+           max(created) as created, radiustraffictransmitservice_id
       FROM billservice_traffictransaction
-      WHERE datetime between  %s and  %s
+      WHERE created between  %s and  %s
       GROUP BY traffictransmitservice_id, account_id, accounttarif_id, radiustraffictransmitservice_id;
     """,(start_date,end_date,))
     items = cur.fetchall()
     print "deleting selected rows"
-    cur.execute("delete from billservice_traffictransaction WHERE datetime between %s and %s", (start_date,end_date,))
+    cur.execute("delete from billservice_traffictransaction WHERE created between %s and %s", (start_date,end_date,))
     i=0
     print "inserting aggregated rows"
     for item in items:
@@ -93,7 +93,7 @@ if what=='traffictransaction':
         INSERT INTO billservice_traffictransaction(traffictransmitservice_id, account_id, accounttarif_id, summ, 
            datetime, radiustraffictransmitservice_id)
         VALUES (%s, %s, %s, %s, %s, %s);    
-        """, (item['traffictransmitservice_id'],item['account_id'],item['accounttarif_id'],item['summ'],item['datetime'],
+        """, (item['traffictransmitservice_id'],item['account_id'],item['accounttarif_id'],item['summ'],item['created'],
               item['radiustraffictransmitservice_id'],))
         i+=1
     

@@ -143,14 +143,48 @@ urlpatterns += patterns('ebsadmin.modules.switch',
 urlpatterns += patterns('ebsadmin.modules.card',
     url(r'^card/edit/$', 'card_edit', name='card_edit'),
     url(r'^card/generate/$', 'card_generate', name='card_generate'),
+    url(r'^card/update/$', 'card_update', name='card_update'),
     url(r'^card/manage/$', 'card_manage', name='card_manage'),
     url(r'^card/$', 'card', name='card'),
     url(r'^card/delete/$', "card_delete", name="card_delete"),
+    url(r'^salecard/edit/$', "salecard_edit", name="salecard_edit"),
+    url(r'^salecard/$', "salecard", name="salecard"),
+)
+
+urlpatterns += patterns('ebsadmin.modules.tariff',
+    url(r'^tariff/edit/$', 'tariff_edit', name='tariff_edit'),
+    url(r'^tariff/periodicalservice/edit/$', 'tariff_periodicalservice_edit', name='tariff_periodicalservice_edit'),
+    url(r'^tariff/prepaidtraffic/edit/$', 'tariff_prepaidtraffic_edit', name='tariff_prepaidtraffic_edit'),
+    
+    url(r'^tariff/accessparameters/$', 'tariff_accessparameters', name='tariff_accessparameters'),
+    url(r'^tariff/timespeed/edit/$', 'tariff_timespeed_edit', name='tariff_timespeed_edit'),
+    url(r'^tariff/timespeed/delete/$', 'tariff_timespeed_delete', name='tariff_timespeed_delete'),
+    url(r'^tariff/periodicalservice/$', 'tariff_periodicalservice', name='tariff_periodicalservice'),
+    url(r'^tariff/periodicalservice/delete/$', 'periodicalservice_delete', name='periodicalservice_delete'),
+    url(r'^tariff/traffictransmitnode/edit/$', 'tariff_traffictransmitnode_edit', name='tariff_traffictransmitnode_edit'),
+    url(r'^tariff/traffictransmitnode/delete/$', 'traffictransmitnode_delete', name='traffictransmitnode_delete'),
+    
+    url(r'^tariff/onetimeservice/$', 'tariff_onetimeservice', name='tariff_onetimeservice'),
+    url(r'^tariff/onetimeservice/edit/$', 'onetimeservice_edit', name='onetimeservice_edit'),
+    url(r'^tariff/onetimeservice/delete/$', 'tariff_onetimeservice_delete', name='onetimeservice_delete'),
+    
+    url(r'^tariff/traffictransmitservice/$', 'tariff_traffictransmitservice', name='tariff_traffictransmitservice'),
+    url(r'^tariff/radiustrafficservice/$', 'tariff_radiustraffic', name='tariff_radiustraffic'),
+    url(r'^tariff/radiustrafficnode/edit/$', 'tariff_radiustrafficnode_edit', name='tariff_radiustrafficnode_edit'),
+    url(r'^tariff/radiustrafficnode/delete/$', 'radiustrafficnode_delete', name='radiustrafficnode_delete'),
+    url(r'^tariff/$', 'tariff', name='tariff'),
 )
 
 urlpatterns += patterns('ebsadmin.modules.dealer',
     url(r'^dealer/edit/$', 'dealer_edit', name='dealer_edit'),
+    url(r'^dealer/select/$', 'dealer_select', name='dealer_select'),
     url(r'^dealer/$', 'dealer', name='dealer'),
+)
+
+urlpatterns += patterns('ebsadmin.modules.group',
+    url(r'^group/edit/$', 'group_edit', name='group_edit'),
+    url(r'^group/$', 'group', name='group'),
+    url(r'^group/delete/$', "group_delete", name="group_delete"),
 )
 
 urlpatterns += patterns('ebsadmin.views',

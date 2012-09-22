@@ -340,22 +340,47 @@ class TariffForm(ModelForm):
         model = Tariff
 
 class TimeSpeedForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(TimeSpeedForm, self).__init__(*args, **kwargs)
+        self.fields['access_parameters'].widget = forms.widgets.HiddenInput()
+        
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+
     class Meta:
         model = TimeSpeed
 
 class PeriodicalServiceForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(PeriodicalServiceForm, self).__init__(*args, **kwargs)
+        self.fields['tarif'].widget = forms.widgets.HiddenInput()
+        
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    #activation_type = forms.BooleanField(required=False, label=u'Начать списание с начала расчётного периода', widget=forms.widgets.CheckboxInput)
+    
     class Meta:
         model = PeriodicalService
 
 class OneTimeServiceForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(OneTimeServiceForm, self).__init__(*args, **kwargs)
+        self.fields['tarif'].widget = forms.widgets.HiddenInput()
+        
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = OneTimeService
 
 class TrafficTransmitServiceForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = TrafficTransmitService
 
 class TrafficTransmitNodeForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(TrafficTransmitNodeForm, self).__init__(*args, **kwargs)
+        self.fields['traffic_transmit_service'].widget = forms.widgets.HiddenInput()
+        
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+
     class Meta:
         model = TrafficTransmitNodes
       
@@ -376,6 +401,11 @@ class TimeAccessNodeForm(ModelForm):
         model = TimeAccessNode
 
 class RadiusTrafficNodeForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(RadiusTrafficNodeForm, self).__init__(*args, **kwargs)
+        self.fields['radiustraffic'].widget = forms.widgets.HiddenInput()
+        
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = RadiusTrafficNode  
         exclude = ('created','deleted')
@@ -567,6 +597,7 @@ class CardGenerationForm(forms.Form):
 class CardSearchForm(forms.Form):
     id = forms.IntegerField(required=False)
     card_type = forms.ChoiceField(required=False, choices = (('', u"", ), (0, u"Экспресс-оплаты", ), (1, u'Хотспот'), (2, u'VPN доступ'), (3, u'Телефония'),))
+    dealer = forms.ModelChoiceField(queryset = Dealer.objects.all(), required=False, label=u"Дилер")
     series = forms.CharField(required=False, label=u"Серия")
     login = forms.CharField(required=False)
     pin = forms.CharField(required=False)
@@ -577,16 +608,52 @@ class CardSearchForm(forms.Form):
     nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
     ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
     sold = DateRangeField(required=False, label=u"Проданы")
+    not_sold = forms.BooleanField(required=False, label=u"Не проданные")
     activated = DateRangeField(required=False, label=u"Активированы")
     activated_by = AutoCompleteSelectMultipleField( 'account_username', required = False)
     created = DateRangeField(required=False, label=u"Созданы")
     
+class CardBatchChangeForm(forms.Form):
+    cards = forms.CharField(required=True, widget = forms.widgets.HiddenInput)
+    card_type = forms.ChoiceField(required=False, choices = ((-1, u"Не менять"), (0, u"Экспресс-оплаты", ), (1, u'Хотспот'), (2, u'VPN доступ'), (3, u'Телефония'),))
+    #change_series = forms.BooleanField(label=u"Изменить серию", widget=forms.widgets.CheckboxInput)
+    series = forms.CharField(required=False, label=u"Серия", widget=forms.widgets.TextInput(attrs={'class':'span5'}))
+    change_login = forms.BooleanField(required=False, label=u"Изменить логин")
+    login_length_from = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    login_length_to = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    login_numbers = forms.BooleanField(required=False, label="0-9", widget = forms.CheckboxInput)
+    login_letters = forms.BooleanField(required=False, label="a-Z", widget = forms.CheckboxInput)
+    change_pin = forms.BooleanField(required=False, label=u"Изменить пин")
+    pin_length_from = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    pin_length_to = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    pin_numbers = forms.BooleanField(required=False, label="0-9", widget = forms.CheckboxInput)
+    pin_letters = forms.BooleanField(required=False, label="a-Z", widget = forms.CheckboxInput)
+    change_nominal = forms.BooleanField(required=False, label=u"Изменить номинал")
+    nominal = forms.FloatField(required=False, label=u"Номинал",widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=u"Тариф", required=False)
+    template = forms.ModelChoiceField(required=False, queryset=Template.objects.filter(type__id=7), label=u"Шаблон печати")
+    nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
+    ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
     
+    date_start = forms.DateTimeField(label=u'Активировать с', required = False, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    date_end = forms.DateTimeField(label=u'Активировать по', required = False, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    
+
 class DealerForm(ModelForm):
+    
     class Meta:
         model = Dealer    
 
 class SaleCardForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(SaleCardForm, self).__init__(*args, **kwargs)
+        self.fields['cards'].widget = forms.widgets.MultipleHiddenInput()
+    
+    cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all(), required=True, label=u"Карты", widget=forms.widgets.MultipleHiddenInput)
+    dealer = forms.ModelChoiceField(queryset=Dealer.objects.all(), required=True, label=u"Дилер", widget=forms.widgets.HiddenInput)
+
+    prepayment_sum = forms.FloatField(label=u"Внесено предоплаты", required=False)
+    
     class Meta:
         model = SaleCard    
 
@@ -622,4 +689,13 @@ class TemplateSelectForm(forms.Form):
         self.fields['template'].widget.attrs['class'] = 'span5'
     template = forms.ModelChoiceField(queryset = Template.objects.all())
     
+class DealerSelectForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(DealerSelectForm, self).__init__(*args, **kwargs)
+        self.fields['dealer_item'].widget.attrs['class'] = 'span5'
+    dealer_item = forms.ModelChoiceField(queryset = Dealer.objects.all())
     
+    
+##############
+from django.forms.models import modelformset_factory
+PeriodicalServiceFormSet = modelformset_factory(PeriodicalService)

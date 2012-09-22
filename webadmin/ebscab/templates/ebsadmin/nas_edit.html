@@ -1,12 +1,12 @@
 {% extends "ebsadmin/base.html" %}
 {% load bootstrap_toolkit %}
 {% block extra_head %}
-        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
+        <script src="/media/js/smartspinner/smartspinner.js" type="text/javascript"></script>
+        <link rel="stylesheet" href="/media/js/smartspinner/smartspinner.css" type="text/css" />
 
-        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
-        <link rel="stylesheet" href="/media/css/jquery-ui-1.7.2.custom.css" type="text/css" title="ui-theme" />
         <script type="text/javascript"> 
         $(document).ready(function() {
+        	$("#id_acct_interim_interval").spinbox();
         $("#id_btn_fill").click(function() {
         	
         	var input = $("<input>").attr("type", "hidden").attr("name", "fill").val("true");
