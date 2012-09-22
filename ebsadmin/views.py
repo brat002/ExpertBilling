@@ -4,7 +4,7 @@ from ebscab.lib.decorators import render_to, ajax_request
 from ebscab.lib.ssh_paramiko import ssh_client
 from billservice.models import Account, AccessParameters, SubAccount, TransactionType, City, Street, House, SystemUser,AccountTarif, AddonService, IPPool, IPInUse, ContractTemplate, Document
 from billservice.models import Organization, TimeSpeed, BankData, TimePeriod, SettlementPeriod, Template, TemplateType,  AccountHardware, SuspendedPeriod, Operator, Transaction, PeriodicalService, AddonService, Tariff
-from billservice.models import OneTimeService, TimeSpeed, GroupTrafficClass, TrafficTransmitNodes, PrepaidTraffic, Group, PeriodicalService, OneTimeService, TrafficLimit, AddonServiceTarif
+from billservice.models import OneTimeService, TimeSpeed,  TrafficTransmitNodes, PrepaidTraffic, Group, PeriodicalService, OneTimeService, TrafficLimit, AddonServiceTarif
 from billservice.models import Template, News, AccountAddonService, SaleCard, DealerPay, Card, Dealer, AccountViewedNews, TPChangeRule, Manufacturer, Model, Hardware, HardwareType, TransactionType, TimePeriodNode, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, TrafficTransmitService, RadiusAttrs, SpeedLimit,  RadiusTraffic, RadiusTrafficNode,TimeAccessNode,TimeAccessService, AddonServiceTarif
 
 import os
@@ -3575,7 +3575,7 @@ def tariffs_set(request):
             if form.is_valid():
                 radtraffictransmitnode_item = form.save(commit=False)
                 radtraffictransmitnode_item.save()
-                log('EDIT', request.user, radtraffictransmitnode_item) if 'id' in radtraffictransmitnode.get('id') else log('CREATE', request.user, radtraffictransmitnode_item)
+                #log('EDIT', request.user, radtraffictransmitnode_item) if 'id' in radtraffictransmitnode.get('id') else log('CREATE', request.user, radtraffictransmitnode_item)
             else:
 
                 transaction.rollback()

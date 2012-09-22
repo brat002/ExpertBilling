@@ -17,14 +17,11 @@
         $("#id_autostart").click(function () {
             if ($("#id_autostart").prop('checked')){
                 $("#time_start_id").hide();
-                $("#id_name").val("+"+$("#id_name").val());
+
             }
             else{
                 $("#time_start_id").show();
-                if ($("#id_name").val().charAt(0)=="+")
-                	{
-                	$("#id_name").val($("#id_name").val().substr(1,$("#id_name").val().length))
-                	}
+
                 //$("#id_time_start_1").show();
                 
             }

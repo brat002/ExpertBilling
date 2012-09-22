@@ -9,7 +9,7 @@ from object_log.models import LogItem
 
 from ebsadmin.tables import DealerTable
 
-from ebscab.billservice.forms import DealerForm, BankDataForm
+from ebscab.billservice.forms import DealerForm, BankDataForm, DealerSelectForm
 from ebscab.billservice.models import Dealer
 
 log = LogItem.objects.log_action
@@ -68,9 +68,17 @@ def dealer_edit(request):
    
     return { 'form':form, 'bank_form': bank_form,  'item': item} 
 
+@login_required
+@render_to('ebsadmin/dealerselect_window.html')
+def dealer_select(request):
+    
+    form = DealerSelectForm()
+
+    return { 'form':form} 
+
 @ajax_request
 @login_required
-def nas_delete(request):
+def dealer_delete(request):
     if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_nas')):
         return {'status':False, 'message': u'У вас нет прав на удаление серверов доступа'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
@@ -85,15 +93,3 @@ def nas_delete(request):
     else:
         return {"status": False, "message": "Nas not found"} 
     
-@login_required 
-@ajax_request
-def testCredentials(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.testcredentials')):
-        return {'status':False, 'message': u'У вас нет на тестирование подключения'}
-    host, login, password = request.POST.get('host'),request.POST.get('login'),request.POST.get('password')
-    try:
-        #print host, login, password
-        a=ssh_client(host, login, password, '')
-    except Exception, e:
-        return {'status': False, 'message':str(e)}
-    return {'status': True}
