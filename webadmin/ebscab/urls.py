@@ -100,4 +100,11 @@ urlpatterns += patterns('paymentgateways.osmp_customproviders.views',
     (r'^osmp_custom/payment/$', 'payment'),
 )
 
+urlpatterns += patterns('paymentgateways.rapida.views',
+    (r'^pg/rapida/payment/$', 'payment'),
+)
+
+urlpatterns += patterns('paymentgateways.sberbank.views',
+    (r'^pg/sberbank/payment/$', 'payment'),
+)
 

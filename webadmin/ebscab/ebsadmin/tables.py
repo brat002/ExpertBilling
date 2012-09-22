@@ -1,8 +1,8 @@
 #-*-coding=utf-8-*-
 
 from billservice.forms import AccountForm
-from billservice.models import Account, SuspendedPeriod, AccountHardware, AccountAddonService, BalanceHistory, IPInUse, Template, SettlementPeriod, SystemUser
-from billservice.models import AddonService, IPPool, Dealer, TransactionType, RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, Card
+from billservice.models import Account, SuspendedPeriod, AccountHardware, AccountAddonService, BalanceHistory, IPInUse, Template, SettlementPeriod, SystemUser, PrepaidTraffic, TimeSpeed
+from billservice.models import AddonService, TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType, RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode
 import django_tables2 as django_tables
 from django_tables2.utils import A
 from radius.models import ActiveSession, AuthLog
@@ -369,11 +369,10 @@ class SwitchTable(django_tables.Table):
 class CardTable(django_tables.Table):
     row_number = django_tables.Column(verbose_name="#")
     row_class = django_tables.Column(visible=False)
-    id = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
     start_date = FormatDateTimeColumn()
     end_date = FormatDateTimeColumn()
     created = FormatDateTimeColumn()
-    sold = FormatDateTimeColumn()
+    salecard = FormatDateTimeColumn(verbose_name=u'Продана', accessor=A('salecard.created'))
     activated = FormatDateTimeColumn()
     activated_by = FormatBlankColumn()
     tarif = FormatBlankColumn()
@@ -392,9 +391,43 @@ class CardTable(django_tables.Table):
     
     class Meta:
         model = Card
-        sequence = ('row_number', 'row_class',  'id', 'series', 'nominal', 'login', 'pin', 'type', 'tarif', 'nas', 'sold', 'activated', 'activated_by', 'ippool', 'created', 'start_date', 'end_date', 'template',  'ext_id',  'd')
+        sequence = ('row_number', 'row_class',  'id', 'series', 'nominal', 'login', 'pin', 'type', 'tarif', 'nas', 'salecard', 'activated', 'activated_by', 'ippool', 'created', 'start_date', 'end_date', 'template',  'ext_id',  'd')
         attrs = {'class': 'table table-bordered table-condensed'}
         exclude = ('ipinuse', 'disabled', 'ip')
+
+class SaleCardsTable(django_tables.Table):
+    row_number = django_tables.Column(verbose_name="#")
+    row_class = django_tables.Column(visible=False)
+    start_date = FormatDateTimeColumn()
+    end_date = FormatDateTimeColumn()
+    created = FormatDateTimeColumn()
+    activated = FormatDateTimeColumn()
+    tarif = FormatBlankColumn()
+    nas = FormatBlankColumn()
+    ippool = FormatBlankColumn()
+    
+    def render_row_number(self):
+        value = getattr(self, '_counter', 0)
+        self._counter = value + 1
+        return '%d' % value
+    
+    def render_row_class(self, value, record):
+        return 'disabled-row' if record.disabled else ''
+    
+    class Meta:
+        model = Card
+        sequence = ('row_number', 'row_class',  'id', 'series', 'login', 'pin', 'nominal', 'type', 'tarif', 'nas',  'activated', 'ippool', 'created', 'start_date', 'end_date', 'template')
+        attrs = {'class': 'table table-bordered table-condensed'}
+        exclude = ('ipinuse', 'disabled', 'ip', 'activated_by', 'ext_id', 'salecard')
+        
+class SaleCardTable(django_tables.Table):
+    id = django_tables.LinkColumn('salecard_edit', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    class Meta:
+        model = SaleCard
+        exclude = ("tarif", 'nas')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class DealerTable(django_tables.Table):
     id = django_tables.LinkColumn('dealer_edit', get_params={'id':A('pk')})
@@ -404,3 +437,85 @@ class DealerTable(django_tables.Table):
         model = Dealer
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
+class TariffTable(django_tables.Table):
+    id = django_tables.LinkColumn('tariff_edit', get_params={'id':A('pk')})
+    access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = Tariff
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        fields = ("id", 'name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', )
+        
+class PeriodicalServiceTable(django_tables.Table):
+    id = django_tables.LinkColumn('tariff_periodicalservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    name = django_tables.LinkColumn('tariff_periodicalservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    created = FormatDateTimeColumn()
+    deactivated = FormatDateTimeColumn()
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = PeriodicalService
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        fields = ("id", 'name', 'settlement_period', 'cost', 'cash_method', 'condition', 'created', 'deactivated' )
+        
+class GroupTable(django_tables.Table):
+    id = django_tables.LinkColumn('group_edit', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    class Meta:
+        model = Group
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
+class TrafficTransmitNodesTable(django_tables.Table):
+    id = django_tables.LinkColumn('tariff_traffictransmitnode_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = TrafficTransmitNodes
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        fields = ("id", 'timeperiod', 'group', 'cost','d' )
+
+class PrepaidTrafficTable(django_tables.Table):
+    id = django_tables.LinkColumn('tariff_prepaidtraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = PrepaidTraffic
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        fields = ("id", 'group', 'size')
+
+class TimeSpeedTable(django_tables.Table):
+    id = django_tables.LinkColumn('tariff_prepaidtraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = TimeSpeed
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        fields = ("id", 'time', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx', 'burst_treshold_tx', 'burst_treshold_rx', 'burst_time_tx', 'burst_time_rx', 'min_tx', 'min_rx', 'priority')
+
+class OneTimeServiceTable(django_tables.Table):
+    id = django_tables.LinkColumn('onetimeservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = OneTimeService
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        #fields = ("id", 'group', 'size')
+
+class RadiusTrafficNodeTable(django_tables.Table):
+    id = django_tables.LinkColumn('tariff_radiustrafficnode_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = RadiusTrafficNode
+        fields = ("id", 'value', 'timeperiod', 'cost', 'd')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}

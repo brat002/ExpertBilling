@@ -3,11 +3,16 @@
  <script type="text/javascript"> 
 
  $(document).ready(function() {
-	 $("#id_count").spinbox();
-	 $("#id_login_length_from").spinbox();
-	 $("#id_login_length_to").spinbox();
-     $("#id_pin_length_from").spinbox();
-     $("#id_pin_length_to").spinbox();
+	 //$("#id_count").spinbox();
+	 //$("#id_login_length_from").spinbox();
+	 $('#id_count').spinit({min: 0, initValue: 10, height:20, max:10000, initValue:{{form.count.value}}});
+	 $('#id_login_length_from').spinit({min: 0, initValue: 8, height:20, max: 255, initValue:{{form.login_length_from.value}}});
+	 $('#id_login_length_to').spinit({min: 0, initValue: 8, height:20, max: 255, initValue:{{form.login_length_to.value}}});
+	 //$("#id_login_length_to").spinbox();
+     //$("#id_pin_length_from").spinbox();
+     //$("#id_pin_length_to").spinbox();
+     $('#id_pin_length_from').spinit({min: 0, initValue: 8, height:20, max: 255, initValue:{{form.pin_length_from.value}}});
+     $('#id_pin_length_to').spinit({min: 0, initValue: 8, height:20, max: 255, initValue:{{form.pin_length_to.value}} });
      $('#id_date_start_0').datepicker({
          dateFormat: 'yy-mm-dd',
          buttonImage: "/media/icons/16/calendar.png",
@@ -219,8 +224,8 @@
                 </fieldset>
                 
                 <div class="form-actions">
-                    <input type='submit' class="btn btn-primary" value="Save Changes">
-                    <a class="btn close-dialog" href="#">Close</a>
+                    <input type='submit' class="btn btn-primary" value="Сгенерировать">
+                    <a class="btn close-dialog" href="#">Закрыть</a>
                 </div>
             </form>
 

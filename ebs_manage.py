@@ -358,6 +358,8 @@ def setup_webcab():
     output=commands.getoutput('cp -r %s %s' % (os.path.join(BILLING_PATH,'ebscab/*'), '/opt/ebs/web/'))
     #print output
     shutil.copy(os.path.join(DIST_PATH,'ebscab/default'), '/etc/apache2/sites-available/')
+    shutil.copy(os.path.join(DIST_PATH,'ebscab/blankpage_config'), '/etc/apache2/sites-available/')
+    output=commands.getoutput('a2ensite blankpage_config')
     output=commands.getoutput('echo > %s' % ('/opt/ebs/web/ebscab/log/django.log'))
     output=commands.getoutput('chmod 0777 %s' % ('/opt/ebs/web/ebscab/log/django.log'))
  

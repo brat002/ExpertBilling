@@ -1,0 +1,27 @@
+NameVirtualHost *:85
+Listen 85
+
+<VirtualHost *:85>
+        ServerAdmin webmaster@localhost
+
+        DocumentRoot /opt/ebs/web/blankpage
+        <Directory />
+            RewriteEngine On
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteRule .* index.html
+.
+
+                Options FollowSymLinks
+                AllowOverride None
+        </Directory>
+
+
+        ErrorLog /opt/ebs/web/blankpage_error.log
+
+        # Possible values include: debug, info, notice, warn, error, crit,
+        # alert, emerg.
+        LogLevel warn
+
+        CustomLog /opt/ebs/web/blankpage_access.log combined
+
+</VirtualHost>

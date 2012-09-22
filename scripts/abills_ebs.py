@@ -167,14 +167,14 @@ def transfer_accounts():
                             bill, account_id, type_id, approved, summ, description, 
                             created,  accounttarif_id)
                     VALUES (%s, %s, %s, True, %s, %s, %s, %s);
-            """, (p_ext_id, account_id, payment_types.get(p_method), (-1)*p_sum, p_inner_describe, p_date, accounttarif_id))
+            """, (p_ext_id, account_id, payment_types.get(p_method), p_sum, p_inner_describe, p_date, accounttarif_id))
             t_sum+=p_sum
         p_cursor.execute(u"""
         INSERT INTO billservice_transaction(
                     account_id, type_id, approved, summ, description, 
                     created)
             VALUES (%s, %s, True, %s, %s, %s);
-    """, (account_id, "CORRECTION", t_sum-a_deposit, u"Корректирующее списание", datetime.datetime.now(),))
+    """, (account_id, "CORRECTION", (-1)*(t_sum-a_deposit), u"Корректирующее списание", datetime.datetime.now(),))
     print "==="*10
         
     conn.commit()

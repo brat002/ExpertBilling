@@ -26,15 +26,7 @@ from period_utilities import in_period_info
 from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
 from db import traffictransaction, TraftransTableException, GpstTableException
 from bisect import bisect_left
-import twisted.internet
-from twisted.internet.protocol import DatagramProtocol, Factory
-from twisted.protocols.basic import LineReceiver, Int32StringReceiver
-try:
-    from twisted.internet import pollreactor
-    pollreactor.install()
-except:
-    print 'No poll(). Using select() instead.'
-from twisted.internet import reactor
+
 
 from decimal import Decimal
 from classes.nfroutine_cache import *
@@ -45,6 +37,7 @@ from classes.vars import NfrVars, NfrQueues, install_logger
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
                      STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
 from utilites import settlement_period_info
+from dirq.QueueSimple import QueueSimple
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
@@ -68,79 +61,6 @@ class Picker(object):
     def get_data(self):
         return self.data.items()
 
-#try to save data - ticket 31
-class DepickerThread(Thread):
-    '''Thread that takes a Picker object and executes transactions'''
-    def __init__ (self):
-        Thread.__init__(self)
-        self.tname = self.__class__.__name__
-        
-    def run(self):        
-        global queues, flags, suicideCondition, vars
-        self.connection = get_connection(vars.db_dsn)
-        self.cur        = self.connection.cursor()
-        while True:
-            if suicideCondition[self.tname]:
-                try: self.connection.close()
-                except: pass
-                break
-            try:
-                picker = None
-                
-                with queues.depickerLock:
-                    if len(queues.depickerQueue) > 0:
-                        picker = queues.depickerQueue.popleft()
-                if not picker: time.sleep(10); continue              
-                
-                a = time.clock()
-                now = datetime.datetime.now()
-                icount = 0
-                ilist = picker; ilen = len(picker)
-                for (tts,acctf,acc), summ in ilist:
-                    #debit accounts
-                    logger.info("tts=%s acctf=%s acc=%s summ=%s", (tts, acctf, acc, summ))
-                    traffictransaction(self.cur, tts, acctf, acc, summ=summ, created=now)
-                    self.connection.commit()
-                    icount += 1
-                if flags.writeProf:
-                    logger.info("DPKALIVE: %s icount: %s run time: %s", (self.getName(), icount, time.clock() - a))
-            except IndexError, ierr:
-                if not picker:
-                    try: queues.depickerLock.release()
-                    except: pass
-                logger.debug("%s : indexerror : %s", (self.getName(), repr(ierr))) 
-                time.sleep(10)
-                continue             
-            except Exception, ex:
-                logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))    
-                if ex.__class__ in vars.db_errors:
-                    if picker:
-                        with queues.depickerLock:
-                            queues.depickerQueue.appendleft(ilist[icount:])
-                    #try: cur = connection.cursor()
-                    #except: pass
-                    try: 
-                        time.sleep(3)
-                        if self.connection.closed():
-                            try:
-                                self.connection = get_connection(vars.db_dsn)
-                                self.cur = self.connection.cursor()
-                            except:
-                                time.sleep(20)
-                        else:
-                            self.cur.connection.commit()
-                            self.cur = self.connection.cursor()
-                    except: 
-                        time.sleep(10)
-                        try:
-                            self.connection.close()
-                        except: pass
-                        try:
-                            self.connection = get_connection(vars.db_dsn)
-                            self.cur = self.connection.cursor()
-                        except:
-                            time.sleep(20)
-                time.sleep(20)
   
 class groupDequeThread(Thread):
     '''Тред выбирает и отсылает в БД статистику по группам-пользователям'''
@@ -356,7 +276,7 @@ class groupDequeThread(Thread):
                             self.cur.execute("UPDATE billservice_groupstat SET transaction_id=%s WHERE id=%s ", (transaction_id, _id))
                         elif _transaction_id:
                             self.cur.execute("UPDATE billservice_groupstat SET transaction_id=NULL WHERE id=%s ", (_id, ))
-                    print "rollback"
+                    print "commit"
                     self.cur.connection.commit()
                     print "ended"
                     
@@ -756,7 +676,7 @@ class NetFlowRoutine(Thread):
                 if len(queues.nfIncomingQueue) > 0:        
                     with queues.nfQueueLock:
                         if len(queues.nfIncomingQueue) > 0:
-                            fpacket, addr = queues.nfIncomingQueue.popleft()
+                            fpacket= queues.nfIncomingQueue.popleft()
                             
                 #flows = loads(fpacket)
                 if not fpacket: time.sleep(random.randint(1,10) / 10.0); continue
@@ -771,7 +691,7 @@ class NetFlowRoutine(Thread):
                     flows = loads(fpacket)
                     #
                 except Exception, ex:
-                    logger.info("Packet consumer: peer: %s Bad packet (marshalling problems):%s ; ",(addr, repr(ex)))
+                    logger.info("Packet consumer: peer: %s Bad packet (marshalling problems):%s ; ",(repr(ex)))
                     continue
                 #flows = fpacket
                 #iterate through them
@@ -986,84 +906,46 @@ class AccountServiceThread(Thread):
             gc.collect()
             time.sleep(20)
             
-            
-class NfTwistedServer(DatagramProtocol):
-    '''
-    Twisted Asynchronous server that recieves datagrams with NetFlow packets
-    and appends them to 'nfQueue' queue.
-    '''
-    def __init__(self):
-        super(NfTwistedServer, self).__init__()
-        self.last_addr  = None
-        self.last_index = None
-        self.last_timestamp = 0
 
-    def datagramReceived(self, data, addrport):
-        try:
-            if not vars.ALLOWED_NF_IP_LIST or addrport[0] not in vars.ALLOWED_NF_IP_LIST:
-                logger.info("IP not in list, packet discarded %s", str(addrport))
-                self.transport.write('ERR!', addrport)
-                return
-            if len(data) < NFR_PACKET_HEADER_LEN:
-                logger.info("Bad packet (too small) from %s", str(addrport))
-                self.transport.write('BAD!', addrport)
-                return
-            try:
-                cur_index, cur_state, cur_timestamp = struct.unpack(NFR_PACKET_HEADER_FMT, data[:NFR_PACKET_HEADER_LEN])
-            except Exception, ex:
-                logger.info("Bad packet (strange header) from %s ; " + repr(ex), str(addrport))
-                self.transport.write('BAD!', addrport)
-                return
-            if self.last_addr != addrport[0]:
-                queues.lastPacketInfo[self.last_addr] = (self.last_index, self.last_timestamp)
-                self.last_addr = addrport[0]
-                self.last_index, self.last_timestamp = queues.lastPacketInfo[self.last_addr]
-            if self.last_index == cur_index or self.last_timestamp < cur_timestamp:
-                logger.info("Duplicate packet from %s", str(addrport))
-                self.transport.write('DUP!', addrport)
-                return            
-            try:
-                flows = loads(data[NFR_PACKET_HEADER_LEN:])
-            except Exception, ex:
-                logger.info("Bad packet (marshalling problems) from %s ; " + repr(ex), str(addrport))
-                self.transport.write('BAD!', addrport)
-                return
-                 
-            
-            self.last_index     = cur_index
-            self.last_timestamp = cur_timestamp
-            with queues.nfQueueLock:
-                queues.nfIncomingQueue.append(flows)
-            self.transport.write(vars.sendFlag + str(len(data) - NFR_PACKET_HEADER_LEN), addrport)
-            #self.socket.sendto(vars.sendFlag + str(len(data)), addrport)
-            
-        except:            
-            logger.error("Twisted Server Error : #30210701 : %s \n %s", (repr(ex), traceback.format_exc()))
-
-class TCP_LineReciever(LineReceiver):
-    delimiter = '--NFRP--'
+class nfDequeThread(Thread):
+    '''Thread that gets packets received by the server from nfQueue queue and puts them onto the conveyour
+    that gets flows and caches them.'''
     
-    '''
-    def connectionMade(self):
-        print 'conn', self, self.transport.getHost(), self.transport.getPeer(), self.transport.hostname
-    '''    
-    def lineReceived(self, line):
-        queues.nfIncomingQueue.append((line, self.transport.getPeer()))
-        '''
-        with queues.nfQueueLock:
-            queues.nfIncomingQueue.append((flows, self.transport.getPeer()))'''
-        '''    
-        if vars.sendFlag:
-            self.transport.write(vars.sendFlag)'''
+    def __init__(self):
+        self.tname = self.__class__.__name__
+        Thread.__init__(self)
         
-class TCP_IntStringReciever(Int32StringReceiver):    
-    peer__ = ''
-    def connectionMade(self):
-        logger.info("SERVER: connectionMade: host: %s | peer: %s", (self.transport.getHost(), self.transport.getPeer()))
-        self.peer__ = self.transport.getPeer()
+    def callback(self, ch, method, properties, body):
         
-    def stringReceived(self, msg):
-        queues.nfIncomingQueue.append((msg, self.peer__))
+        
+        queues.nfIncomingQueue.append(body)
+        ch.basic_ack(delivery_tag = method.delivery_tag)
+        if suicideCondition[self.tname]: 
+            self.consumer_connection.close()
+            
+        
+    def run(self):
+        while True:
+
+            #TODO: make connection with SimpleReconnectionStrategy
+            try:
+                in_dirq = QueueSimple('/opt/ebs/var/spool/nf_out')                
+                for name in in_dirq:
+                    if not in_dirq.lock(name):
+                        continue
+                    data = in_dirq.get(name)
+                    queues.nfIncomingQueue.append(data)
+                    in_dirq.remove(name)
+
+
+                time.sleep(0.5)
+            except IndexError, ierr:
+                time.sleep(3); continue  
+            except Exception, ex:
+                logger.error("NFP exception: %s \n %s", (repr(ex), traceback.format_exc()))
+
+
+        
         
 def ddict_IO():
     return {'INPUT':0, 'OUTPUT':0}
@@ -1107,8 +989,8 @@ def graceful_save():
     queues.depickerLock.acquire()
     queues.groupLock.acquire()
     queues.statLock.acquire()
-    graceful_saver([['depickerQueue'], ['nfIncomingQueue'], ['groupDeque', 'groupAggrDicts'], ['statDeque', 'statAggrDicts']],
-                   queues, 'nfroutine_', vars.SAVE_DIR)
+    #graceful_saver([['depickerQueue'], ['nfIncomingQueue'], ['groupDeque', 'groupAggrDicts'], ['statDeque', 'statAggrDicts']],
+    #               queues, 'nfroutine_', vars.SAVE_DIR)
     time.sleep(3)
     queues.statLock.release()
     queues.groupLock.release()
@@ -1120,8 +1002,8 @@ def graceful_save():
 
 def graceful_recover():
     global queues, vars
-    graceful_loader(['depickerQueue','nfIncomingQueue', ['groupDeque', 'groupAggrDicts'], ['statDeque', 'statAggrDicts']],
-                    queues, 'nfroutine_', vars.SAVE_DIR)
+    #graceful_loader(['depickerQueue','nfIncomingQueue', ['groupDeque', 'groupAggrDicts'], ['statDeque', 'statAggrDicts']],
+    #                queues, 'nfroutine_', vars.SAVE_DIR)
     
 
 def ungraceful_save():
@@ -1211,29 +1093,9 @@ def main():
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
     
-    if   vars.SOCK_TYPE == 0:
-        #reactor.listenUDP(vars.PORT, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
-        fact = Factory()
-        #fact.protocol = TCP_LineReciever
-        fact.protocol = TCP_IntStringReciever
-        p = reactor.listenTCP(vars.PORT, fact)
-        logger.info("Listening on: %s", p.getHost())
-    elif vars.SOCK_TYPE == 1:
-        #reactor.listenUNIXDatagram(vars.ADDR, NfTwistedServer(), maxPacketSize=vars.MAX_DATAGRAM_LEN)
-        fact = Factory()
-        #fact.protocol = TCP_LineReciever
-        fact.protocol = TCP_IntStringReciever
-        try:
-            os.unlink(vars.HOST)
-        except Exception, ex:
-            logger.warning('NFR: previous unix socket removal status: %s', repr(ex))
-        reactor.listenUNIX(vars.HOST, fact)
-    else: 
-        raise Exception("Unknown socket type!")
-    
     print "ebs: nfroutine: started"
     savepid(vars.piddir, vars.name)
-    reactor.run(installSignalHandlers=False)
+    #reactor.run(installSignalHandlers=False)
 
 #===============================================================================
 
