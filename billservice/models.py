@@ -321,8 +321,9 @@ class TimeAccessService(models.Model):
     #name              = models.CharField(max_length=255, verbose_name=u'Название услуги', unuque=True)
     prepaid_time      = models.IntegerField(verbose_name=u'Предоплаченное время', default=0, blank=True)
     reset_time        = models.BooleanField(verbose_name=u'Сбрасывать  предоплаченное время', blank=True, default=False)
-    rounding = models.IntegerField()
-    tarification_step = models.IntegerField()
+    tarification_step = models.IntegerField(verbose_name=u"Тарифицировать по, c.", blank=True, default=60)
+    rounding = models.IntegerField(verbose_name=u"Округлять", default=0, blank=True, choices=((0, u"Не округлять"),(1, u"В большую сторону"),))
+
     
     def __unicode__(self):
         return u"%s" % self.id
@@ -338,7 +339,10 @@ class TimeAccessService(models.Model):
         permissions = (
             ("timeaccessservice_view", u"Просмотр услуг доступа по времени"),
             )
-        
+
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('tariff_timeaccessservice_delete'), self.id)
+    
 class TimeAccessNode(models.Model):
     """
     Нода тарификации по времени
@@ -354,7 +358,9 @@ class TimeAccessNode(models.Model):
         ordering = ['name']
         list_display = ('time_period', 'cost')
 
-
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('timeaccessnode_delete'), self.id)
+    
     class Meta:
         verbose_name = u"Период доступа"
         verbose_name_plural = u"Периоды доступа"
@@ -364,7 +370,7 @@ class TimeAccessNode(models.Model):
         
 class AccessParameters(models.Model):
     #name              = models.CharField(max_length=255, verbose_name=u'Название вида доступа')
-    access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, default='PPTP', blank=True, verbose_name=u'Вид доступа')
+    access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, default='PPTP', blank=True, verbose_name=u'Способ доступа')
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа', null=True, on_delete = models.SET_NULL)
     #ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
     ipn_for_vpn     = models.BooleanField(blank=True, default=False)
@@ -481,11 +487,8 @@ class TrafficTransmitService(models.Model):
     #period_check      = models.CharField(verbose_name=u"Проверять на наибольший ", max_length=32,choices=CHECK_PERIODS, blank=True, default=u'SP_START', editable=False)
 
 
-    class Admin:
-        #ordering = ['name']
-        #list_display = ('name',)
-        pass
-
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('traffictransmitservice_delete'), self.id)
 
     class Meta:
         verbose_name = u"Доступ с учётом трафика"
@@ -602,9 +605,10 @@ class TrafficLimit(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, on_delete = models.SET_NULL, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
-    group             = models.ForeignKey("Group")
+    group             = models.ForeignKey("Group", verbose_name=u"Группа")
     mode              = models.BooleanField(default=False, blank=True, verbose_name=u'За длинну расчётного периода', help_text=u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде')
-    action            = models.IntegerField()
+    action            = models.IntegerField(verbose_name=u"Действие", blank=True, default=0, choices=((0, u"Заблокировать пользователя"), (1, u"Изменить скорость")))
+    speedlimit = models.ForeignKey("SpeedLimit", verbose_name=u"Изменить скорость", blank=True, null=True, on_delete=models.SET_NULL)
     
     def __unicode__(self):
         return u"%s" % self.name
@@ -612,7 +616,9 @@ class TrafficLimit(models.Model):
     class Admin:
         list_display = ('name', 'settlement_period')
 
-
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('trafficlimit_delete'), self.id)
+    
     class Meta:
         ordering = ['name']
         verbose_name = u"Лимит трафика"
@@ -624,8 +630,8 @@ class TrafficLimit(models.Model):
 class Tariff(models.Model):
     name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана', unique = True)
     description       = models.TextField(verbose_name=u'Описание тарифного плана', blank=True, default='')
-    access_parameters = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа', null=True, on_delete = models.SET_NULL)
-    contracttemplate  = models.ForeignKey("ContractTemplate", blank=True, null=True, on_delete = models.SET_NULL)
+    access_parameters = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа', null=True, blank=True, on_delete = models.SET_NULL)
+    contracttemplate  = models.ForeignKey("ContractTemplate", verbose_name=u"Шаблон номера договора",  blank=True, null=True, on_delete = models.SET_NULL)
     #traffic_limit     = models.ManyToManyField(to=TrafficLimit, verbose_name=u'Лимиты трафика', blank=True, null=True, help_text=u"Примеры: 200 мегабайт в расчётный период, 50 мегабайт за последнюю неделю")
     #periodical_services = models.ManyToManyField(to=PeriodicalService, verbose_name=u'периодические услуги', blank=True, null=True)
     #onetime_services  = models.ManyToManyField(to=OneTimeService, verbose_name=u'Разовые услуги', blank=True, null=True)
@@ -636,17 +642,17 @@ class Tariff(models.Model):
     reset_tarif_cost  = models.BooleanField(verbose_name=u'Производить доснятие', blank=True, default=False, help_text=u'Производить доснятие суммы до стоимости тарифного плана в конце расчётного периода')
     settlement_period = models.ForeignKey(to=SettlementPeriod, blank=True, null=True, verbose_name=u'Расчётный период')
     ps_null_ballance_checkout = models.BooleanField(verbose_name=u'Производить снятие денег  при нулевом баллансе', help_text =u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?", blank=True, default=False )
-    active            = models.BooleanField(default=False, blank=True)
+    active            = models.BooleanField(verbose_name=u"Активен", default=False, blank=True)
     deleted           = models.BooleanField(default=False, blank=True)
     allow_express_pay = models.BooleanField(verbose_name=u'Оплата экспресс картами', blank=True, default=False)
-    require_tarif_cost = models.BooleanField(default=False, blank=True)
-    allow_userblock   =models.BooleanField(blank=True, default=False)
-    userblock_cost = models.DecimalField(decimal_places=10, max_digits=30, blank=True, default=0)  
-    userblock_max_days = models.IntegerField(blank=True, default=0)
-    userblock_require_balance = models.DecimalField(decimal_places=10, max_digits=60, blank=True, default=0)  
-    allow_ballance_transfer = models.BooleanField(blank=True, default=False)
-    vpn_ippool = models.ForeignKey("IPPool", blank=True, null=True, related_name='tariff_vpn_ippool_set', on_delete = models.SET_NULL)
-    vpn_guest_ippool = models.ForeignKey("IPPool", blank=True, null=True, related_name='tariff_guest_vpn_ippool_set', on_delete = models.SET_NULL)
+    require_tarif_cost = models.BooleanField(verbose_name=u"Требовать наличия стоимости пакета", default=False, blank=True)
+    allow_userblock   =models.BooleanField(verbose_name=u"Разрешить пользовательскую блокировку", blank=True, default=False)
+    userblock_cost = models.DecimalField(verbose_name=u"Стоимость блокировки", decimal_places=2, max_digits=30, blank=True, default=0)  
+    userblock_max_days = models.IntegerField(verbose_name=u"MAX длительность блокировки", blank=True, default=0)
+    userblock_require_balance = models.DecimalField(verbose_name=u"Минимальный баланс для блокировки", decimal_places=2, max_digits=10, blank=True, default=0)  
+    allow_ballance_transfer = models.BooleanField(verbose_name=u"Разрешить услугу перевода баланса", blank=True, default=False)
+    vpn_ippool = models.ForeignKey("IPPool", verbose_name=u"VPN IP пул", blank=True, null=True, related_name='tariff_vpn_ippool_set', on_delete = models.SET_NULL)
+    vpn_guest_ippool = models.ForeignKey("IPPool", verbose_name=u"Гостевой VPN IP пул", blank=True, null=True, related_name='tariff_guest_vpn_ippool_set', on_delete = models.SET_NULL)
     objects = SoftDeleteManager()
     
     def __unicode__(self):
@@ -980,7 +986,7 @@ class AccountIPNSpeed(models.Model):
 
 class SheduleLog(models.Model):
     account = models.ForeignKey(to=Account, unique=True)
-    accounttarif = models.ForeignKey(to=AccountTarif, unique=True)
+    accounttarif = models.ForeignKey(to=AccountTarif, blank=True, null=True)
     ballance_checkout = models.DateTimeField(blank=True, null=True)
     prepaid_traffic_reset = models.DateTimeField(blank=True, null=True)
     prepaid_traffic_accrued = models.DateTimeField(blank=True, null=True)
@@ -1143,20 +1149,21 @@ class BankData(models.Model):
            )
         
 class Operator(models.Model):
-    organization = models.CharField(max_length=255)
-    unp = models.CharField(max_length=40, blank=True, default='')
-    okpo = models.CharField(max_length=40, blank=True, default='')
-    contactperson = models.CharField(max_length=255, blank=True, default='')
-    director = models.CharField(max_length=255, blank=True, default='')
-    phone = models.CharField(max_length=40, blank=True, default='')
-    fax = models.CharField(max_length=40, blank=True, default='')
-    postaddress = models.CharField(max_length=255, blank=True, default='')
-    uraddress = models.CharField(max_length=255, blank=True, default='')
-    email = models.EmailField(max_length=255, blank=True, default='')
-    bank = models.ForeignKey(BankData, blank=True, null=True)
+    organization = models.CharField(verbose_name=u'Название', max_length=255)
+    unp = models.CharField(verbose_name=u'УНП', max_length=40, blank=True, default='')
+    okpo = models.CharField(verbose_name=u'ОКПО', max_length=40, blank=True, default='')
+    contactperson = models.CharField(verbose_name=u'Контактное лицо', max_length=255, blank=True, default='')
+    director = models.CharField(verbose_name=u'Директор', max_length=255, blank=True, default='')
+    phone = models.CharField(verbose_name=u'Телефон', max_length=40, blank=True, default='')
+    fax = models.CharField(verbose_name=u'Факс', max_length=40, blank=True, default='')
+    postaddress = models.CharField(verbose_name=u'Почтовый адрес', max_length=255, blank=True, default='')
+    uraddress = models.CharField(verbose_name=u'Юр. адрес', max_length=255, blank=True, default='')
+    email = models.EmailField(verbose_name=u'e-mail', max_length=255, blank=True, default='')
+    #bank = models.ForeignKey(BankData, blank=True, null=True)
 
+    def __unicode__(self):
+        return u"%s" % self.organization
     class Meta:
-        ordering = ['bank']
         verbose_name = u"Информация о провайдере"
         verbose_name_plural = u"Информация о провайдере"
         permissions = (
@@ -1306,22 +1313,26 @@ class GroupStat(models.Model):
 #    account = models.ForeignKey(Account)
     
 class SpeedLimit(models.Model):
-    limit = models.ForeignKey(TrafficLimit)
-    speed_units = models.CharField(max_length=10, blank=True)
-    change_speed_type = models.CharField(max_length=10, blank=True)
-    max_tx = models.IntegerField(blank=True)
-    max_rx = models.IntegerField(blank=True)
-    burst_tx = models.IntegerField(blank=True)
-    burst_rx = models.IntegerField(blank=True)
-    burst_treshold_tx = models.IntegerField(blank=True)
-    burst_treshold_rx = models.IntegerField(blank=True)
-    burst_time_tx = models.IntegerField(blank=True)
-    burst_time_rx = models.IntegerField(blank=True)
-    min_tx = models.IntegerField(blank=True)
-    min_rx = models.IntegerField(blank=True)
-    priority = models.IntegerField(blank=True)
+    change_speed_type = models.CharField(verbose_name=u"Способ изменения скорости", max_length=32, choices=(("add", "Добавить к текущей"), ("abs","Абсолютное значение",),), blank=True, null=True)    
+    speed_units = models.CharField(verbose_name=u"Единицы", max_length = 32,choices=(("Kbps","Kbps",), ("Mbps","Mbps",),("%", "%",)), blank=True, null=True)
+    max_tx = models.IntegerField(verbose_name=u"MAX tx (kbps)", default=0, blank=True)
+    max_rx = models.IntegerField(verbose_name=u"rx", default=0, blank=True)
+    burst_tx = models.IntegerField(verbose_name=u"Burst tx (kbps)", default=0, blank=True)
+    burst_rx = models.IntegerField(verbose_name=u"rx", blank=True, default=0)
+    burst_treshold_tx = models.IntegerField(verbose_name=u"Burst treshold tx (kbps)", default=0, blank=True)
+    burst_treshold_rx = models.IntegerField(verbose_name=u"rx", default=0, blank=True)
+    burst_time_tx = models.IntegerField(verbose_name=u"Burst time tx (kbps)", default=0, blank=True)
+    burst_time_rx = models.IntegerField(verbose_name=u"rx", default=0, blank=True)
+    min_tx = models.IntegerField(verbose_name=u"Min tx (kbps)", default=0, blank=True)
+    min_rx = models.IntegerField(verbose_name=u"tx", default=0, blank=True)
+    priority = models.IntegerField(default=0, blank=True)
     
-
+    def __unicode__(self):
+        return "%s/%s %s/%s %s/%s %s/%s %s/%s %s" % (self.max_tx, self.max_rx, self.burst_tx, self.burst_rx, self.burst_treshold_tx, self.burst_treshold_rx, self.burst_time_tx, self.burst_time_rx, self.min_tx, self.min_rx, self.priority)
+    
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('speedlimit_delete'), self.id)
+    
 class AccountSpeedLimit(models.Model):
     account = models.ForeignKey(Account)
     speedlimit = models.ForeignKey(SpeedLimit)
@@ -1466,11 +1477,17 @@ class AddonService(models.Model):
         
 class AddonServiceTarif(models.Model):    
     tarif = models.ForeignKey(Tariff)    
-    service = models.ForeignKey(AddonService)    
-    activation_count = models.IntegerField(blank=True, default=0)    
-    activation_count_period = models.ForeignKey(SettlementPeriod, blank=True, null=True)    
-    type=models.IntegerField(default=0)# 0-Account, 1-Subaccount
+    service = models.ForeignKey(AddonService, verbose_name=u"Услуга")    
+    activation_count = models.IntegerField(verbose_name=u"Активаций за расчётный период", blank=True, default=0)    
+    activation_count_period = models.ForeignKey(SettlementPeriod, verbose_name=u"Расчётный период", blank=True, null=True)    
+    type=models.IntegerField(verbose_name=u"Тип активации", choices=((0, u"На аккаунт"), (1, u"На субаккаунт"), ),  default=0)# 0-Account, 1-Subaccount
 
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('addonservicetariff_delete'), self.id)
+    
+    def __unicode__(self):
+        return u"%s %s" % (self.service, self.tarif.name)
+    
     class Meta:
         ordering = ['id']
         verbose_name = u"Разрешённая подключаемая услуга"
@@ -1654,11 +1671,11 @@ class House(models.Model):
            )
         
 class RadiusTraffic(models.Model):
-    direction = models.IntegerField(verbose_name=u"Направление", default=2, choices=((0, u"Входящий"),(1, u"Исходящий"),(2, u"Сумма"), (3, u"Максимум")))
-    tarification_step = models.IntegerField(verbose_name=u"Единица тарификации, кб.", default=1024)
-    rounding = models.IntegerField(verbose_name=u"Округление", default=0, choices=((0, u"Не округлять"),(1, u"В большую сторону"),))
-    prepaid_direction = models.IntegerField(blank=True, null=True, verbose_name=u"Предоплаченное направление", choices=((0, u"Входящий"),(1, u"Исходящий"),(2, u"Сумма"), (3, u"Максимум")))
-    prepaid_value = models.IntegerField(verbose_name=u"Объём, мб.",default=0)
+    direction = models.IntegerField(verbose_name=u"Направление", blank=True, default=2, choices=((0, u"Входящий"),(1, u"Исходящий"),(2, u"Сумма"), (3, u"Максимум")))
+    tarification_step = models.IntegerField(verbose_name=u"Единица тарификации, кб.", blank=True, default=1024)
+    rounding = models.IntegerField(verbose_name=u"Округление", default=0, blank=True, choices=((0, u"Не округлять"),(1, u"В большую сторону"),))
+    prepaid_direction = models.IntegerField(blank=True, default=2, verbose_name=u"Предоплаченное направление", choices=((0, u"Входящий"),(1, u"Исходящий"),(2, u"Сумма"), (3, u"Максимум")))
+    prepaid_value = models.IntegerField(verbose_name=u"Объём, мб.", blank=True, default=0)
     reset_prepaid_traffic = models.BooleanField(verbose_name=u"Сбрасывать предоплаченный трафик", blank=True, default=False)
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     deleted = models.DateTimeField(blank=True, null=True)
@@ -1669,12 +1686,15 @@ class RadiusTraffic(models.Model):
         permissions = (
            ("radiustraffic_view", u"Просмотр"),
            )
-        
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('radiustrafficservice_delete'), self.id)
+    
 class RadiusTrafficNode(models.Model):
     radiustraffic = models.ForeignKey(RadiusTraffic)
-    value = models.DecimalField(verbose_name=u"Объём", help_text=u"Объём, с которого действует указаная цена", default=0, max_digits=30, decimal_places=20)
+    value = models.BigIntegerField(verbose_name=u"Объём", help_text=u"Объём, с которого действует указаная цена", default=0)
     timeperiod = models.ForeignKey(TimePeriod, verbose_name=u"Период тарификации")
-    cost = models.DecimalField(verbose_name=u"Цена", help_text=u"Цена за единицу тарификации", default=0, max_digits=30, decimal_places=20)
+    cost = models.DecimalField(verbose_name=u"Цена", help_text=u"Цена за единицу тарификации", default=0, max_digits=30, decimal_places=3)
+    
     class Meta:
         ordering = ['value']
         verbose_name = u"Настройка тарификации RADIUS трафика"
@@ -1682,7 +1702,9 @@ class RadiusTrafficNode(models.Model):
         permissions = (
            ("radiustrafficnode_view", u"Просмотр"),
            )
-        
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('radiustrafficnode_delete'), self.id)
+    
 class ContractTemplate(models.Model):
     template = models.TextField()
     counter = models.IntegerField()
@@ -1814,9 +1836,12 @@ class TotalTransactionReport(models.Model):
         ordering = ['-created']
         
 class PeriodicalServiceLog(models.Model):
-    service = models.ForeignKey(PeriodicalService)
-    accounttarif = models.ForeignKey(AccountTarif)
-    datetime = models.DateTimeField()
+    service = models.ForeignKey(PeriodicalService, verbose_name=u'Услуга')
+    accounttarif = models.ForeignKey(AccountTarif, verbose_name=u'Тариф аккаунта')
+    datetime = models.DateTimeField(verbose_name=u'Последнее списание')
       
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('periodicalservicelog_delete'), self.id)
+    
     class Meta:
         ordering = ['-datetime']

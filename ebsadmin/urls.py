@@ -5,7 +5,7 @@ urlpatterns = patterns('ebsadmin.transactionreport',
                        url(r'^transactionreport/$', 'transactionreport'),
                        )
 urlpatterns += patterns('ebsadmin.charts',
-                       url(r'^charts/$', 'charts'),
+                       url(r'^charts/$', 'charts', name='charts'),
                        
                        )
 urlpatterns += patterns('ebsadmin.wi',
@@ -110,6 +110,24 @@ urlpatterns += patterns('ebsadmin.modules.radiusattr',
     url(r'^radiusattr/$', 'radiusattr', name='radiusattr'),
     url(r'^radiusattr/delete/$', "radiusattr_delete", name="radiusattr_delete"),
 )
+
+urlpatterns += patterns('ebsadmin.modules.operator',
+    url(r'^operator/edit/$', 'operator_edit', name='operator_edit'),
+)
+
+urlpatterns += patterns('ebsadmin.modules.periodicalservicelog',
+    url(r'^periodicalservicelog/delete/$', 'periodicalservicelog_delete', name='periodicalservicelog_delete'),
+    url(r'^periodicalservicelog/$', 'periodicalservicelog', name='periodicalservicelog'),
+    
+)
+
+urlpatterns += patterns('ebsadmin.modules.shedulelog',
+    url(r'^shedulelog/delete/$', 'shedulelog_delete', name='shedulelog_delete'),
+    url(r'^shedulelog/$', 'shedulelog', name='shedulelog'),
+    
+)
+
+
 urlpatterns += patterns('ebsadmin.modules.manufacturer',
     url(r'^manufacturer/edit/$', 'manufacturer_edit', name='manufacturer_edit'),
     url(r'^manufacturer/$', 'manufacturer', name='manufacturer'),
@@ -168,10 +186,28 @@ urlpatterns += patterns('ebsadmin.modules.tariff',
     url(r'^tariff/onetimeservice/edit/$', 'onetimeservice_edit', name='onetimeservice_edit'),
     url(r'^tariff/onetimeservice/delete/$', 'tariff_onetimeservice_delete', name='onetimeservice_delete'),
     
+    url(r'^tariff/traffictransmitservice/delete/$', 'tariff_traffictransmitservice_delete', name='traffictransmitservice_delete'),
     url(r'^tariff/traffictransmitservice/$', 'tariff_traffictransmitservice', name='tariff_traffictransmitservice'),
+    
     url(r'^tariff/radiustrafficservice/$', 'tariff_radiustraffic', name='tariff_radiustraffic'),
+    url(r'^tariff/radiustrafficservice/delete/$', 'tariff_radiustrafficservice_delete', name='radiustrafficservice_delete'),
     url(r'^tariff/radiustrafficnode/edit/$', 'tariff_radiustrafficnode_edit', name='tariff_radiustrafficnode_edit'),
     url(r'^tariff/radiustrafficnode/delete/$', 'radiustrafficnode_delete', name='radiustrafficnode_delete'),
+    
+    url(r'^tariff/trafficlimit/edit/$', 'tariff_trafficlimit_edit', name='tariff_trafficlimit_edit'),
+    url(r'^tariff/trafficlimit/delete/$', 'trafficlimit_delete', name='trafficlimit_delete'),
+    url(r'^tariff/trafficlimit/$', 'tariff_trafficlimit', name='tariff_trafficlimit'),
+    url(r'^tariff/speedlimit/edit/$', 'tariff_speedlimit_edit', name='tariff_speedlimit_edit'),
+    url(r'^tariff/speedlimit/delete/$', 'speedlimit_delete', name='speedlimit_delete'),
+    
+    url(r'^tariff/timeaccessservice/delete/$', 'tariff_timeaccessservice_delete', name='tariff_timeaccessservice_delete'),
+    url(r'^tariff/timeaccessservice/$', 'tariff_timeaccessservice', name='tariff_timeaccessservice'),
+    url(r'^tariff/timeaccesssnode/edit/$', 'tariff_timeaccessnode_edit', name='tariff_timeaccessnode_edit'),
+    url(r'^tariff/timeaccesssnode/delete/$', 'timeaccessnode_delete', name='timeaccessnode_delete'),
+    
+    url(r'^tariff/addonservicetariff/$', 'tariff_addonservicetariff', name='tariff_addonservicetariff'),
+    url(r'^tariff/addonservicetariff/edit/$', 'tariff_addonservicetariff_edit', name='tariff_addonservicetariff_edit'),
+    url(r'^tariff/addonservicetariff/delete/$', 'addonservicetariff_delete', name='addonservicetariff_delete'),
     url(r'^tariff/$', 'tariff', name='tariff'),
 )
 

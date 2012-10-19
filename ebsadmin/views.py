@@ -4537,14 +4537,14 @@ def subaccount_save(request):
                 
                     
                 
-            elif str(subacc.vpn_ip_address) in ['','0.0.0.0', '0.0.0.0/32','',None]:
+            elif str(subacc.ipn_ip_address) in ['','0.0.0.0', '0.0.0.0/32','',None]:
 
                 obj = subacc.ipn_ipinuse
                 obj.disabled=datetime.datetime.now()
                 obj.save()
                 log('EDIT', request.user, obj)
                 subacc.ipn_ipinuse=None
-        elif str(subacc.vpn_ip_address) not in ['','0.0.0.0', '0.0.0.0/32','',None] and ipn_pool:
+        elif str(subacc.ipn_ip_address) not in ['','0.0.0.0', '0.0.0.0/32','',None] and ipn_pool:
 
             if not ipaddr.IPv4Network(ipn_pool.start_ip)<=ipaddr.IPv4Network(subacc.ipn_ip_address)<=ipaddr.IPv4Network(ipn_pool.end_ip):
                 transaction.rollback()
