@@ -1,0 +1,130 @@
+{% extends "ebsadmin/tariff_edit.html" %}
+ {% load render_table from django_tables2 %}
+ 
+ 
+
+                
+{% block extra_head %}
+{{block.super}}
+
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $(".open-custom-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "Лимит трафика", 
+             content: this.href, 
+             id: "periodicalservice-modal"
+         });
+
+         event.preventDefault();
+     });
+
+     $(".open-speedlimit-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "Правило изменения скорости", 
+             content: this.href, 
+             id: "speedlimit-modal"
+         });
+
+         event.preventDefault();
+     });
+     
+     $(".show-speedlimit-confirm").click(function() {
+         a=$(this);
+         $.fn.dialog2.helpers.confirm("Удалить? Если в лимите трафика указано действие 'Изменить скорость' - вы обязаны указать параметры изменения скорости.", {
+             confirm: function() {
+                 $.getJSON(a.attr('href'),{},function(data,status){
+                     if( status=='success' ){
+                         if(data.status==true)
+                             {
+                             location.reload();
+                             }else{
+                                 alert(data.message)
+                             }
+                         
+                     }else{
+                         alert('Произошла непредвиденная ошибка')
+                     }
+
+                 })                      
+                 }, 
+             decline: function() {  }
+         });
+
+         event.preventDefault();
+     });
+     
+     $(".show-confirm").click(function() {
+         a=$(this);
+         $.fn.dialog2.helpers.confirm("Удалить лимит трафика?.", {
+             confirm: function() {
+                 $.getJSON(a.attr('href'),{},function(data,status){
+                     if( status=='success' ){
+                         if(data.status==true)
+                             {
+                             location.reload();
+                             }else{
+                                 alert(data.message)
+                             }
+                         
+                     }else{
+                         alert('Произошла непредвиденная ошибка')
+                     }
+
+                 })                      
+                 }, 
+             decline: function() {  }
+         });
+
+         event.preventDefault();
+     });
+     
+     $("#modal-trafficlimit-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "Добавить лимит трафика", 
+             content: "{% url tariff_trafficlimit_edit %}?tariff_id={{tariff.id}}", 
+             id: "ps-modal"
+         });
+
+         event.preventDefault();
+     });
+ });
+ </script>
+ <style type="text/css">
+
+.modal {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  z-index: 1050;
+  width: 600px;
+  margin: 0 0 0 -400px; /* -1 * (width / 2) */ 
+  overflow: auto;
+  background-color: #ffffff;
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  *border: 1px solid #999;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+     -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding-box;
+          background-clip: padding-box;
+}
+</style>
+{% endblock %}
+
+{% block tariff_content %}
+
+            <legend>Лимиты трафика</legend>
+<div class="alert alert-info">
+Лимиты трафика позволяют ограничить объём потребляемого трафика за указанный период времени.
+</div>
+             <fieldset>
+  {% if table %}{% render_table table %}{% endif %}
+  <div class="btn-toolbar"><a href="#" id="modal-trafficlimit-dialog" class="btn btn-success">Добавить</a></div>
+                </fieldset>
+{% endblock %}

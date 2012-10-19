@@ -1,0 +1,193 @@
+{% extends "ebsadmin/tariff_edit.html" %}
+ {% load render_table from django_tables2 %}
+ 
+ 
+
+                
+{% block extra_head %}
+{{block.super}}
+
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $(".open-custom-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "Правило тарификации трафика", 
+             content: this.href, 
+             id: "periodicalservice-modal"
+         });
+
+         event.preventDefault();
+     });
+     $(".show-confirm").click(function() {
+         a=$(this);
+         $.fn.dialog2.helpers.confirm("Удалить? Вы уверены, что хотите удалить?", {
+             confirm: function() {
+                 $.getJSON(a.attr('href'),{},function(data,status){
+                     if( status=='success' ){     $(".open-custom-dialog").click(function(event) {
+                         $('<div />').dialog2({
+                             title: "Лимит трафика", 
+                             content: this.href, 
+                             id: "trafficlimit-modal"
+                         });
+
+                         event.preventDefault();
+                     });
+                         if(data.status==true)
+                             {
+                             location.reload();
+                             }else{
+                                 alert(data.message)
+                             }
+                         
+                     }else{
+                         alert('Произошла непредвиденная ошибка')
+                     }
+
+                 })                      
+                 }, 
+             decline: function() {  }
+         });
+         event.preventDefault();
+     });
+     
+     $("#modal-radiustrafficnode-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "Добавить параметры тарификации", 
+             content: "{% url tariff_radiustrafficnode_edit %}?radius_traffic_id={{item.id}}&tariff_id={{tariff.id}}", 
+             id: "traffictransmitnode-modal"
+         });
+
+         event.preventDefault();
+     });
+ });
+ </script>
+{% endblock %}
+{% block tariff_content %}
+<form method="POST" action="{% url tariff_radiustraffic %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal">
+{{form.id}}
+<div class="btn-toolbar"><a href="{{item.get_remove_url}}" class="btn btn-danger align-right show-confirm">Удалить услугу</a></div>
+            <legend>Тарификация трафика по RADIUS</legend>
+             <fieldset>
+{% if item %}
+  {% render_table table %}
+  <div class="btn-toolbar"><a href="#" id="modal-radiustrafficnode-dialog" class="btn btn-success">Добавить</a></div>
+{% else %}
+<div class="alert">
+Добавьте услугу тарификации RADIUS трафика, чтобы указать детальные параметры тарификации.
+</div>
+{% endif %}
+  
+                </fieldset>
+            <legend>Параметры тарификации</legend>
+             <fieldset>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.direction.label}}: </label>
+                      <div class="controls">
+                      {{ form.direction }}
+                      {% if form.direction.errors %}
+                          <span class="help-inline">{% for error in form.direction.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.direction.help_text%}
+                          <p class="help-block">
+                              {{ form.direction.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.tarification_step.label}}: </label>
+                      <div class="controls">
+                      {{ form.tarification_step }}
+                      {% if form.tarification_step.errors %}
+                          <span class="help-inline">{% for error in form.tarification_step.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.tarification_step.help_text%}
+                          <p class="help-block">
+                              {{ form.tarification_step.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-row">
+                      <label class="control-label">{{form.rounding.label}}: </label>
+                      <div class="controls">
+                      {{ form.rounding }}
+                      {% if form.rounding.errors %}
+                          <span class="help-inline">{% for error in form.rounding.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.rounding.help_text %}
+                          <p class="help-block">
+                              {{ form.rounding.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+
+                </fieldset>
+                <legend>Предоплаченный трафик</legend>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.prepaid_direction.label}}: </label>
+                      <div class="controls">
+                      {{ form.prepaid_direction }}
+                      {% if form.prepaid_direction.errors %}
+                          <span class="help-inline">{% for error in form.prepaid_direction.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.prepaid_direction.help_text%}
+                          <p class="help-block">
+                              {{ form.prepaid_direction.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-row">
+                      <label class="control-label">{{form.prepaid_value.label}}: </label>
+                      <div class="controls">
+                      {{ form.prepaid_value }}
+                      {% if form.prepaid_value.errors %}
+                          <span class="help-inline">{% for error in form.prepaid_value.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.prepaid_value.help_text%}
+                          <p class="help-block">
+                              {{ form.prepaid_value.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.reset_prepaid_traffic.label}}: </label>
+                      <div class="controls">
+                      {{ form.reset_prepaid_traffic}}
+                      {% if form.prepaid_value.errors %}
+                          <span class="help-inline">{% for error in form.reset_prepaid_traffic.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.reset_prepaid_traffic.label %}
+                          <p class="help-block">
+                              {{ form.reset_prepaid_traffic.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                {% if item %}
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                    </div>
+                </fieldset>
+                {% else %}
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">Добавить RADIUS тарификацию трафика</button>
+                    </div>
+                </fieldset>
+                {% endif %}
+            </form>
+{% endblock %}

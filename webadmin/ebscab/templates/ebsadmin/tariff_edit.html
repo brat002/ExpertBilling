@@ -1,0 +1,87 @@
+{% extends "ebsadmin/base.html" %}
+{% load bootstrap_toolkit %}
+{% block extra_head %}
+        <script src="/media/js/smartspinner/smartspinner.js" type="text/javascript"></script>
+        <link rel="stylesheet" href="/media/js/smartspinner/smartspinner.css" type="text/css" />
+
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+
+
+        
+        });
+        </script>
+
+{% endblock %}
+ {% load render_table from django_tables2 %}
+{% block body %}
+
+<div class="span12">
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url tariff %}">Тарифные планы</a> <span class="divider">/</span>{{tariff.name}}
+  </li>
+</ul>
+<div class="row-fluid">
+
+<div class="span3">
+<ul class="nav nav-list">
+  <li class="nav-header">
+    Параметры тарифного плана
+  </li>
+  <li {% if active == 'general' %}class="active"{% endif %}>
+    <a href="{% url tariff_edit %}?id={{tariff.id}}">Общее</a>
+  </li>
+  <li {% if active == 'accessparameters' %}class="active"{% endif %}>
+    <a href="{% url tariff_accessparameters %}?tariff_id={{tariff.id}}">Параметры доступа</a>
+  </li>
+  <li class="nav-header">
+    Списания
+  </li>
+  <li {% if active == 'ps' %}class="active"{% endif %}>
+    <a href="{% url tariff_periodicalservice %}?tariff_id={{tariff.id}}">Периодические услуги</a>
+  </li>
+  <li {% if active == 'ots' %}class="active"{% endif %}>
+    <a href="{% url tariff_onetimeservice %}?tariff_id={{tariff.id}}">Разовые услуги</a>
+  </li>
+  <li class="nav-header">
+    Тарификация трафика
+  </li>
+  <li {% if active == 'tts' %}class="active"{% endif %}>
+    <a href="{% url tariff_traffictransmitservice %}?tariff_id={{tariff.id}}">NetFlow</a>
+  </li>
+  <li {% if active == 'rts' %}class="active"{% endif %}>
+    <a href="{% url tariff_radiustraffic %}?tariff_id={{tariff.id}}">Radius</a>
+  </li>
+  <li {% if active == 'trafficlimit' %}class="active"{% endif %}>
+    <a href="{% url tariff_trafficlimit %}?tariff_id={{tariff.id}}">Лимиты</a>
+  </li>
+  <li class="nav-header">
+    Тарификация времени
+  </li>
+  <li {% if active == 'timeaccess' %}class="active"{% endif %}>
+    <a href="{% url tariff_timeaccessservice %}?tariff_id={{tariff.id}}">Radius постоплата времени</a>
+  </li>
+  <li class="nav-header">
+    Прочее
+  </li>
+  <li {% if active == 'addst' %}class="active"{% endif %}>
+    <a href="{% url tariff_addonservicetariff %}?tariff_id={{tariff.id}}">Доступные подключаемые услуги</a>
+  </li>
+</ul></div>
+<div class="span9">
+
+{% block tariff_content %}
+{% endblock %}
+
+</div>
+
+
+
+
+        </div>
+
+    </div>
+
+ {% endblock %}
+

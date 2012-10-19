@@ -1,8 +1,8 @@
 #-*-coding=utf-8-*-
 
 from billservice.forms import AccountForm
-from billservice.models import Account, SuspendedPeriod, AccountHardware, AccountAddonService, BalanceHistory, IPInUse, Template, SettlementPeriod, SystemUser, PrepaidTraffic, TimeSpeed
-from billservice.models import AddonService, TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType, RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode
+from billservice.models import Account, SuspendedPeriod, AccountHardware, AccountAddonService, BalanceHistory, IPInUse, Template, SettlementPeriod, SystemUser, PrepaidTraffic, TimeSpeed, AddonServiceTarif, PeriodicalServiceLog
+from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAccessNode, TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType, RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode
 import django_tables2 as django_tables
 from django_tables2.utils import A
 from radius.models import ActiveSession, AuthLog
@@ -20,6 +20,10 @@ class FormatFloatColumn(django_tables.Column):
 class FormatDateTimeColumn(django_tables.Column):
     def render(self, value):
         return value.strftime("%d.%m.%Y %H:%M:%S") if value else ''
+
+class FormatBlankSpeedColumn(django_tables.LinkColumn):
+    def render(self, value):
+        return value if value else ''
     
 class SubAccountsTable(django_tables.Table):
     row_number = django_tables.Column(verbose_name="#")
@@ -502,13 +506,14 @@ class TimeSpeedTable(django_tables.Table):
 
 class OneTimeServiceTable(django_tables.Table):
     id = django_tables.LinkColumn('onetimeservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    name = django_tables.LinkColumn('onetimeservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
     class Meta:
         model = OneTimeService
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        #fields = ("id", 'group', 'size')
+        fields = ("id", 'name', 'cost', 'd')
 
 class RadiusTrafficNodeTable(django_tables.Table):
     id = django_tables.LinkColumn('tariff_radiustrafficnode_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
@@ -519,3 +524,63 @@ class RadiusTrafficNodeTable(django_tables.Table):
         model = RadiusTrafficNode
         fields = ("id", 'value', 'timeperiod', 'cost', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
+
+class TrafficLimitTable(django_tables.Table):
+    id = django_tables.LinkColumn('tariff_trafficlimit_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    speedlimit = django_tables.TemplateColumn("<a href='{% url tariff_speedlimit_edit %}?trafficlimit_id={{record.id}}' class='open-speedlimit-dialog'>{% if record.speedlimit %}{{record.speedlimit}}<a href='{{record.speedlimit.get_remove_url}}' class='show-speedlimit-confirm'><i class='icon-remove'></i></a>{% else %}Указать{% endif %}</a>", verbose_name='Изменить скорость', orderable=False)
+    #speed = TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = TrafficLimit
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        fields = ("id", 'name', 'settlement_period', 'mode', 'group', 'size', 'action', 'speedlimit', 'd' )
+        
+class TimeAccessNodeTable(django_tables.Table):
+    id = django_tables.LinkColumn('tariff_timeaccessnode_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = TimeAccessNode
+        fields = ("id", 'time_period', 'cost', 'd')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+       
+class AddonServiceTarifTable(django_tables.Table):
+    id = django_tables.LinkColumn('tariff_addonservicetariff_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = AddonServiceTarif
+        fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
+
+class PeriodicalServiceLogTable(django_tables.Table):
+
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = PeriodicalServiceLog
+        fields = ("id", 'accounttarif', 'service', 'datetime', 'd')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
+        
+class SheduleLogTable(django_tables.Table):
+
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    accounttarif = FormatBlankColumn(verbose_name=u'Тариф аккаунта')
+    ballance_checkout = FormatDateTimeColumn(verbose_name=u'Доснятие до стоимости')
+    prepaid_traffic_reset = FormatDateTimeColumn(verbose_name=u'Обнуление предоплаченного трафика')
+    prepaid_traffic_accrued = FormatDateTimeColumn(verbose_name=u'Начисление предоплаченного трафика')
+    prepaid_time_reset = FormatDateTimeColumn(verbose_name=u'Обнуление предоплаченного времени')
+    prepaid_time_accrued = FormatDateTimeColumn(verbose_name=u'Начисление предоплаченного врумени')
+    balance_blocked = FormatDateTimeColumn(verbose_name=u'Блокировка баланса')
+    
+    class Meta:
+        model = SheduleLog
+        #fields = ("id", 'accounttarif', 'service', 'datetime', 'd')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
+

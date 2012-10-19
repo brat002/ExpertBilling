@@ -1,0 +1,68 @@
+{% extends "ebsadmin/tariff_edit.html" %}
+ {% load render_table from django_tables2 %}
+ 
+ 
+
+                
+{% block extra_head %}
+{{block.super}}
+
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $(".open-custom-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "Периодическая услуга", 
+             content: this.href, 
+             id: "periodicalservice-modal"
+         });
+
+         event.preventDefault();
+     });
+     $(".show-confirm").click(function() {
+         a=$(this);
+         $.fn.dialog2.helpers.confirm("Вы действительно хотите удалить правило активации подключаемых услуг?", {
+             confirm: function() {
+                 $.getJSON(a.attr('href'),{},function(data,status){
+                     if( status=='success' ){
+                         if(data.status==true)
+                             {
+                             location.reload();
+                             }else{
+                                 alert(data.message)
+                             }
+                         
+                     }else{
+                         alert('Произошла непредвиденная ошибка')
+                     }
+
+                 })                      
+                 }, 
+             decline: function() {  }
+         });
+
+         event.preventDefault();
+     });
+     $("#modal-addonservicetariff-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "Добавить правило активации подключаемой услуги", 
+             content: "{% url tariff_addonservicetariff_edit %}?tariff_id={{tariff.id}}", 
+             id: "ps-modal"
+         });
+
+         event.preventDefault();
+     });
+ });
+ </script>
+{% endblock %}
+
+{% block tariff_content %}
+
+            <legend>Подключаемые услуги</legend>
+<div class="alert alert-info">
+Здесь перечислены подключаемые услуги, доступные для самостоятельной активации аккаунтами через личный кабинет.
+</div>
+             <fieldset>
+  {% if table %}{% render_table table %}{% endif %}
+  <div class="btn-toolbar"><a href="#" id="modal-addonservicetariff-dialog" class="btn btn-success">Добавить</a></div>
+                </fieldset>
+{% endblock %}
