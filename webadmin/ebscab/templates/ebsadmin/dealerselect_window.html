@@ -1,0 +1,22 @@
+
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+	 $('#id_btn_submit').click(function() {
+		 values = $.param(jQuery("#id_main_table input[type=checkbox]").serializeArray());
+         window.location.href = '{% url salecard_edit %}?dealer='+ $("#id_dealer_item").val() +'&'+values;   
+         return
+		}); 
+ });
+ </script>
+
+
+
+     <fieldset>
+        {{form}}
+     </fieldset>
+     
+     <div class="form-actions">
+         <input id="id_btn_submit" type='submit' class="btn btn-primary" value="Выбрать">
+         <a class="btn close-dialog" href="#">Закрыть</a>
+     </div>
+

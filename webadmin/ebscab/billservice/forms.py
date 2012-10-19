@@ -4,8 +4,8 @@ from django.contrib.admin import widgets
 from datetime import datetime, date
 from django.forms import ModelForm
 from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
-from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode
-from billservice.models import Organization, BalanceHistory, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService
+from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode, PeriodicalServiceLog
+from billservice.models import Organization, BalanceHistory, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService, SheduleLog
 from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
 from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware
 
@@ -336,6 +336,17 @@ class GroupForm(ModelForm):
         model = Group
 
 class TariffForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(TariffForm, self).__init__(*args, **kwargs)
+        self.fields['access_parameters'].widget = forms.widgets.HiddenInput()
+        self.fields['time_access_service'].widget = forms.widgets.HiddenInput()
+        self.fields['traffic_transmit_service'].widget = forms.widgets.HiddenInput()
+        self.fields['radius_traffic_transmit_service'].widget = forms.widgets.HiddenInput()
+        
+        self.fields['description'].widget.attrs['rows'] =5
+        self.fields['description'].widget.attrs['class'] = 'span10'
+        
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = Tariff
 
@@ -389,14 +400,22 @@ class PrepaidTrafficForm(ModelForm):
         model = PrepaidTraffic  
 
 class RadiusTrafficForm(ModelForm):
+        
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = RadiusTraffic  
 
 class TimeAccessServiceForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = TimeAccessService
 
 class TimeAccessNodeForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(TimeAccessNodeForm, self).__init__(*args, **kwargs)
+        self.fields['time_access_service'].widget = forms.widgets.HiddenInput()
+        
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = TimeAccessNode
 
@@ -411,6 +430,11 @@ class RadiusTrafficNodeForm(ModelForm):
         exclude = ('created','deleted')
         
 class TrafficLimitForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(TrafficLimitForm, self).__init__(*args, **kwargs)
+        self.fields['tarif'].widget = forms.widgets.HiddenInput()
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    
     class Meta:
         model = TrafficLimit  
  
@@ -431,6 +455,10 @@ class AddonServiceForm(ModelForm):
         model = AddonService  
 
 class AddonServiceTarifForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AddonServiceTarifForm, self).__init__(*args, **kwargs)
+        self.fields['tarif'].widget = forms.widgets.HiddenInput()
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = AddonServiceTarif  
         
@@ -662,6 +690,13 @@ class DealerPayForm(ModelForm):
         model = DealerPay    
 
 class OperatorForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(OperatorForm, self).__init__(*args, **kwargs)
+        for myField in self.fields:
+            self.fields[myField].widget.attrs['class'] = 'input-xlarge span8'
+        
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    
     class Meta:
         model = Operator    
 
@@ -670,6 +705,15 @@ class BallanceHistoryForm(forms.Form):
     start_date = forms.DateTimeField(required=False)
     end_date = forms.DateTimeField(required=False)
 
+class PeriodicalServiceLogSearchForm(forms.Form):
+    account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
+    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), required=False)
+    periodicalservice = forms.ModelChoiceField(queryset=PeriodicalService.objects.all(), required=False)
+    
+class SheduleLogSearchForm(forms.Form):
+    account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
+
+    
 #TO-DO: добавить exclude в periodicalservice
 class SubAccountForm(ModelForm):
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.HiddenInput)

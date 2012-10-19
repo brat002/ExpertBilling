@@ -407,8 +407,8 @@
                       <div class="control-row">
                           <label class="control-label">{{form.burst_treshold_tx.label}}</label>
                           <div class="controls">
-                          {{ form.burst_tx }}
-                          {% if form.burst_tx.errors %}
+                          {{ form.burst_treshold_tx }}
+                          {% if form.burst_treshold_tx.errors %}
                               <span class="help-inline">{% for error in form.burst_treshold_tx.errors %}{{ error }}<br/> {% endfor %}</span>
                           {% endif %}
                           {% if form.burst_treshold_tx.help_text%}
@@ -419,15 +419,15 @@
                           </div>
                       </div>
                       <div class="control-row">
-                          <label class="control-label">{{form.burst_treshold_tx.label}}</label>
+                          <label class="control-label">{{form.burst_treshold_rx.label}}</label>
                           <div class="controls">
-                          {{ form.burst_treshold_tx }}
+                          {{ form.burst_treshold_rx }}
                           {% if form.burst_treshold_tx.errors %}
-                              <span class="help-inline">{% for error in form.burst_treshold_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                              <span class="help-inline">{% for error in form.burst_treshold_rx.errors %}{{ error }}<br/> {% endfor %}</span>
                           {% endif %}
-                          {% if form.burst_treshold_tx.help_text%}
+                          {% if form.burst_treshold_rx.help_text%}
                               <p class="help-block">
-                                  {{ form.burst_treshold_tx.help_text|safe }}
+                                  {{ form.burst_treshold_rx.help_text|safe }}
                               </p>
                           {% endif %}
                           </div>

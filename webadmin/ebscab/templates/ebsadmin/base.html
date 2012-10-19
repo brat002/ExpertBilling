@@ -56,8 +56,9 @@ html {
 </head>
 <body style="padding-top: 60px;" >
 {% load render_table from django_tables2 %}
+{% load charts_menu from ebsadmin_tags %}
 
-<div class="navbar  navbar-fixed-top">
+<div class="navbar  navbar-fixed-top navbar-inverse">
   <div class="navbar-inner">
 <a class="brand" href="#">
   ExpertBiling Admin
@@ -103,7 +104,7 @@ html {
        </ul>
      </li>
    </ul>
-  <li><a href="{% url activesessionreport %}">Монитор сессий</a></li>
+  
    <ul class="nav">
      <li class="dropdown">
        <a href="#"
@@ -113,6 +114,13 @@ html {
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
+           <li class="dropdown-submenu">
+		    <a tabindex="-1" href="#">Графические отчёты</a>
+		    <ul class="dropdown-menu">
+		      {% charts_menu %}
+		    </ul>
+		  </li>
+         
          <li><a href="{% url transactionreport2 %}">Операции с л/c</a></li>
          <li><a href="{% url ipinuse_list %}">Занятые IP адреса</a></li>
          <li><a href="{% url authlog_list %}">История авторизаций</a></li>
@@ -120,7 +128,7 @@ html {
        </ul>
      </li>
    </ul>
-
+<li><a href="{% url activesessionreport %}">Монитор сессий</a></li>
    <ul class="nav">
      <li class="dropdown">
        <a href="#"
@@ -169,10 +177,9 @@ html {
          
          <li><a href="{% url template %}"><i class="icon-tasks"></i>&nbsp;Просмотр логов</a></li>
          <li><a href="{% url template %}"><i class="icon-list-alt"></i>&nbsp;История действий пользователей</a></li>
-         <li><a href="{% url template %}">Информация о провайдере</a></li>
-         <li><a href="{% url template %}">Системные пользователи</a></li>
-         <li><a href="{% url template %}">Последние списания период. услуг</a></li>
-         <li><a href="{% url template %}">Последние сервисные процедуры</a></li>
+         <li><a href="{% url operator_edit %}">Информация о провайдере</a></li>
+         <li><a href="{% url periodicalservicelog %}">Последние списания период. услуг</a></li>
+         <li><a href="{% url shedulelog %}">Последние сервисные процедуры</a></li>
          <li class="nav-header">Сервисные справочники</li>
          <li><a href="{% url manufacturer %}">Производители оборудования</a></li>
          <li><a href="{% url hardwaretype %}">Типы оборудования</a></li>
@@ -185,10 +192,6 @@ html {
      </li>
    </ul>
 </ul>
-
-<form class="navbar-search pull-left" action="">
-            <input type="text" class="search-query span2" placeholder="Search">
-          </form>
     </div>
   </div>
 </div>

@@ -1,0 +1,33 @@
+{% extends "ebsadmin/base.html" %}
+{% load bootstrap_toolkit %}
+{% block extra_head %}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+
+        });
+        </script>
+
+{% endblock %}
+{% block body %}
+<div class="span12">
+<div class="row-fluid">
+<form method="POST" action="{% url operator_edit %}?id={{item.id}}"class="well form-horizontal">
+            <legend>Информация о провайдере</legend>
+             <fieldset>
+             
+                  {{form|as_bootstrap}}
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                    </div>
+                </fieldset>
+            </form>
+
+
+        </div>
+
+    </div>
+
+ {% endblock %}
+

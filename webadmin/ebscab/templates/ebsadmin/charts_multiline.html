@@ -1,0 +1,54 @@
+{% extends "ebsadmin/charts.html" %}
+{% block chart_block %}
+<script  type="text/javascript" >
+var chart;
+$(document).ready(function() {
+    chart = new Highcharts.Chart({
+        chart: {
+            renderTo: 'container',
+            type: '{{reporttype}}'
+        },
+        title: {
+            text: '{{report_name}}'
+        },
+
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { // don't display the dummy year
+                month: '%e. %b',
+                year: '%b'
+            }
+        },
+        yAxis: {
+            title: {
+                text: '{{yname}}'
+            },
+            formatter: function() {
+                return Highcharts.numberFormat(this.value, 0);
+            }
+            
+        },
+        tooltip: {
+            formatter: function() {
+                    return '<b>'+ this.series.name +'</b><br/>'+
+                    Highcharts.dateFormat('%e. %b', this.x) +': '+ this.y;
+            }
+        },
+        
+        series: [
+                 {% for username, data in res %}
+                 {
+                        name: '{{username}}',
+                   data: [
+                   {% for datetime, balance in data %}
+                   [Date.UTC({{datetime.year}},  {{datetime.month}}-1,{{datetime.day}},{{datetime.hour}},{{datetime.minute}}),  {{balance}}   ],
+                {% endfor %}
+                   ]
+                 },
+                 {% endfor %}
+
+                 ]
+    });
+});
+</script>     
+{% endblock %}
