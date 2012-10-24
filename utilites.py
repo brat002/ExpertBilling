@@ -129,51 +129,40 @@ def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='
         log_debug_('POD ROS')
         
         command_dict={'access_type': access_type, 'session': session_id}
-        
-        d = nas._asdict()
-        for x in d.keys():
+
+        for x in nas.keys():
             
             command_dict.update({
-                          'nas_%s' % x: unicode(d[x]),
+                          'nas_%s' % x: unicode(nas[x]),
                            })
-        d = account._asdict()
-        for x in d.keys():
-            
+
+        for x in account.keys():
             command_dict.update({
-                          'acc_%s' % x: unicode(d[x]),
+                          'acc_%s' % x: unicode(account[x]),
                            })
         if subacc:
-            d = subacc._asdict()
-            for x in d.keys():
+            for x in subacc.keys():
                 
                 command_dict.update({
-                              'subacc_%s' % x: unicode(d[x]),
+                              'subacc_%s' % x: unicode(subacc[x]),
                                })
                 
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
-        #print command_string
-        if nas.type=='mikrotik3' and False:
-            log_debug_('POD ROS3')
-            rosClient(host=nas_ip, login=nas_login, password=nas_password, command=command_string)
+
+        try:
+            if nas.type!='localhost':
+                sshclient=ssh_client(host=nas.get('ipaddress'), username=nas.get('login'), password=nas.get('password'), command = command_string)
+                log_debug_('ssh connected')
+                del sshclient
+            elif nas.type=='localhost':
+                status, output = commands.getstatusoutput(command_string)
+                log_debug_('Local command %s was executed with status %s and output %s' % (command_string, status, output))
+                if status!=0:return False
+            log_debug_('POD SSH')
             return True
-        else:
-            try:
-                if ssh_exec:
-                    sshclient = ssh_execute(nas.login, nas.ipaddress, nas.password, command_string)
-                    log_debug_('PoD ssh %s' % sshclient)
-                elif nas.type!='localhost':
-                    sshclient=ssh_client(host=nas.ipaddress, username=nas.login, password=nas.password, command = command_string)
-                    log_debug_('ssh connected')
-                    del sshclient
-                elif nas.type=='localhost':
-                    status, output = commands.getstatusoutput(command_string)
-                    log_debug_('Local command %s was executed with status %s and output %s' % (command_string, status, output))
-                    if status!=0:return False
-                log_debug_('POD SSH')
-                return True
-            except Exception, e:
-                log_error_('PoD SSH exception: %s' % repr(e))
-                return False
+        except Exception, e:
+            log_error_('PoD SSH exception: %s' % repr(e))
+            return False
 
 def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', access_type='', format_string='', speed=''):
     
@@ -190,32 +179,29 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
     access_type=access_type,
     format_string=nas.ipn_speed_action,
     """
-    
-    if (nas.speed_value1 or nas.speed_value2) and ((format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg']) or access_type=='hotspot' or nas.type=='cisco'):
+    speed = get_decimals_speeds(speed)
+    speed = speed_list_to_dict(speed)
+    if (nas.get('speed_value1') or nas.get('speed_value2')) and ((format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg']) or access_type=='hotspot' or nas.get('type')=='cisco'):
 
-        if not nas.speed_value1 and not nas.speed_value1:
-            log_debug_('CoA noop change')
-            return True
-        
         log_debug_('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(20)
         sock.bind(('0.0.0.0',24000))
-        doc = packet.AcctPacket(code=43, secret=str(nas.secret), dict=dict)
-        doc.AddAttribute('NAS-IP-Address', str(nas.ipaddress))
-        if nas.type!='cisco' and nas.identify:
-            doc.AddAttribute('NAS-Identifier', str(nas.identify))
+        doc = packet.AcctPacket(code=43, secret=str(nas.get('secret')), dict=dict)
+        doc.AddAttribute('NAS-IP-Address', str(nas.get('ipaddress')))
+        if nas.get('type')!='cisco' and nas.get('identify'):
+            doc.AddAttribute('NAS-Identifier', str(nas.get('identify')))
         if access_type=='lisg':
-            doc.AddAttribute('User-Name', str(subacc.ipn_ip_address))
+            doc.AddAttribute('User-Name', str(subacc.get('ipn_ip_address')))
         else:
-            doc.AddAttribute('User-Name', str(subacc.username))
-        if nas.type=='cisco':
+            doc.AddAttribute('User-Name', str(subacc.get('username')))
+        if nas.get('type')=='cisco':
             log_debug_("Normalization cisco session id")
             doc.AddAttribute('Acct-Session-Id', re.sub('^0+', '', str(session_id) ))
         else:
             doc.AddAttribute('Acct-Session-Id', str(session_id))
         if access_type=='hotspot' and vpn_ip_address:
-            doc.AddAttribute('Framed-IP-Address', str(subacc.ipn_ip_address))
+            doc.AddAttribute('Framed-IP-Address', str(subacc.get('ipn_ip_address')))
         elif access_type not in ('hotspot', 'lisg') and vpn_ip_address:
             doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
         #doc.AddAttribute((14988,8), speed_string)
@@ -224,62 +210,53 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
                              'session': str(session_id),
                              }
 
-        d = nas._asdict()
-        for x in d.keys():
+
+        for x in nas.keys():
             
             command_dict.update({
-                          'nas_%s' % x: unicode(d[x]),
+                          'nas_%s' % x: unicode(nas[x]),
                            })
             
-        d = account._asdict()
-        for x in d.keys():
+
+        for x in account.keys():
             
             command_dict.update({
-                          'acc_%s' % x: unicode(d[x]),
+                          'acc_%s' % x: unicode(account[x]),
                            }) 
         if subacc:
-            d = subacc._asdict()
-            for x in d.keys():
+
+            for x in subacc.keys():
                 
                 command_dict.update({
-                              'subacc_%s' % x: unicode(d[x]),
+                              'subacc_%s' % x: unicode(subacc[x]),
                                })    
         
-        speed = get_decimals_speeds(speed)
-        #print speed
-        speed = speed_list_to_dict(speed)
+
         command_dict.update(speed)
         
-        if nas.speed_value1:
-            result_params = str(command_string_parser(command_string=nas.speed_value1, command_dict=speed))
-            if result_params and nas.speed_vendor_1:
-                doc.AddAttribute((nas.speed_vendor_1, nas.speed_attr_id1),result_params)
-            elif result_params and not nas.speed_vendor_1:
-                doc.AddAttribute(nas.speed_attr_id1,str(result_params))
+        if nas.get('speed_value1'):
+            result_params = str(command_string_parser(command_string=nas.get('speed_value1'), command_dict=speed))
+            if result_params and nas.get('speed_vendor_1'):
+                doc.AddAttribute((nas.get('speed_vendor_1'), nas.get('speed_attr_id1')),result_params)
+            elif result_params and not nas.get('speed_vendor_1'):
+                doc.AddAttribute(nas.get('speed_attr_id1'),str(result_params))
 
-        if nas.speed_value2:
-            result_params = command_string_parser(command_string=nas.speed_value2, command_dict=speed)
-            if result_params and nas.speed_vendor_2:
-                doc.AddAttribute((nas.speed_vendor_2,nas.speed_attr_id2),result_params)
-            elif result_params and not nas.speed_vendor_2:
-                doc.AddAttribute(nas.speed_attr_id2,result_params)
+        if nas.get('speed_value2'):
+            result_params = str(command_string_parser(command_string=nas.get('speed_value2'), command_dict=speed))
+            if result_params and nas.get('speed_vendor_2'):
+                doc.AddAttribute((nas.get('speed_vendor_2'), nas.get('speed_attr_id2')),result_params)
+            elif result_params and not nas.get('speed_vendor_2'):
+                doc.AddAttribute(nas.get('speed_attr_id2'),str(result_params))
                     
         doc_data=doc.RequestPacket()
         log_debug_('CoA socket send: %s' % str(nas.ipaddress))
-        sock.sendto(doc_data,(nas.ipaddress, 1700))
+        sock.sendto(doc_data,(nas.get('ipaddress'), 1700))
         (data, addrport) = sock.recvfrom(8192)
         log_debug_('CoA socket get: %s' % str(addrport))
-        doc=packet.AcctPacket(secret=nas.secret, dict=dict, packet=data)
-
-        #for key,value in doc.items():
-        #    print doc._DecodeKey(key),doc[doc._DecodeKey(key)][0]
+        doc=packet.AcctPacket(secret=nas.get('secret'), dict=dict, packet=data)
 
         sock.close()
-        
-        #try:
-        #    print doc['Error-Cause'][0]
-        #except:
-        #    pass
+
         return doc.has_key("Error-Cause")==False
     
     elif format_string!='' and access_type in ['pptp', 'l2tp', 'pppoe', 'ipn']:
@@ -289,41 +266,35 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
                              'access_type':str(access_type),
                              'session': str(session_id),
                     }
-        d = nas._asdict()
-        for x in d.keys():
+
+        for x in nas.keys():
             
             command_dict.update({
-                          'nas_%s' % x: unicode(d[x]),
-                           })          
-        d = account._asdict()
-        for x in d.keys():
-            
-            command_dict.update({
-                          'acc_%s' % x: unicode(d[x]),
+                          'nas_%s' % x: unicode(nas[x]),
                            })
-        if subacc :
-            d = subacc._asdict()
-            for x in d.keys():
-                
+            
+
+        for x in account.keys():
+            
+            command_dict.update({
+                          'acc_%s' % x: unicode(account[x]),
+                           }) 
+        if subacc:
+            for x in subacc.keys():
                 command_dict.update({
-                              'subacc_%s' % x: unicode(d[x]),
-                               })
-        speed = get_decimals_speeds(speed)
-        #print speed
-        speed = speed_list_to_dict(speed)
+                              'subacc_%s' % x: unicode(subacc[x]),
+                               })   
+                
+
         command_dict.update(speed)
-        #print 'command_dict=', command_dict
-        #print "command_dict=", command_dict
+
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         if not command_string: return True
         #print command_string
         log_debug_("Change Speed command_string= %s" % command_string)
         try:
-            if ssh_exec:
-                    sshclient = ssh_execute(nas.login, nas.ipaddress, nas.password, command_string)
-                    log_debug_('Change speed SSH reply: %s' % sshclient)
-            elif nas.type!='localhost':
-                sshclient=ssh_client(host=nas.ipaddress, username=nas.login, password=nas.password, command = command_string)
+            if nas.type!='localhost':
+                sshclient=ssh_client(host=nas.get('ipaddress'), username=nas.get('login'), password=nas.get('password'), command = command_string)
                 log_debug_('ssh connected')
                 del sshclient
             elif nas.type=='localhost':
@@ -336,45 +307,43 @@ def change_speed(dict, account, subacc ,nas, session_id='', vpn_ip_address='', a
             return False
     return False
 
-def cred(account, subacc, access_type, nas, format_string):
+def cred(account, subacc, access_type, nas, addonservice={},format_string=''):
         """
         
         """
         command_dict={
                              'access_type':unicode(access_type),
                     }
-        d = account._asdict()
-        for x in d.keys():
+        for x in nas.keys():
             
             command_dict.update({
-                          'acc_%s' % x: unicode(d[x]),
+                          'nas_%s' % x: unicode(nas[x]),
                            })
-        d = nas._asdict()
-        for x in d.keys():
             
-            command_dict.update({
-                          'nas_%s' % x: unicode(d[x]),
-                           })
-        if subacc :
-            d = subacc._asdict()
-            for x in d.keys():
-                
-                command_dict.update({
-                              'subacc_%s' % x: unicode(d[x]),
-                               })
 
+        for x in account.keys():
+            
+            command_dict.update({
+                          'acc_%s' % x: unicode(account[x]),
+                           }) 
+        if subacc:
+            for x in subacc.keys():
+                command_dict.update({
+                              'subacc_%s' % x: unicode(subacc[x]),
+                               })   
+        if addonservice:
+            for x in addonservice.keys():
+                command_dict.update({
+                              'addons_%s' % x: unicode(addonservice[x]),
+                               })   
+                
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)        
         if not command_string: return True
-        #print command_string
-        #print command_dict
-        #log_debug_('CRED ssh dictionary: %s' % command_dict) 
+
         try:
             
-            if ssh_exec:
-                sshclient = ssh_execute(nas.login, nas.ipaddress, nas.password, command_string)
-                log_debug_('CRED ssh reply: %s' % sshclient)
-            elif nas.type!='localhost':
-                sshclient=ssh_client(host=nas.ipaddress, username=nas.login, password=nas.password, command = command_string)
+            if nas.get('type')!='localhost':
+                sshclient=ssh_client(host=nas.get('ipaddress'), username=nas.get('login'), password=nas.get('password'), command = command_string)
                 log_debug_('CRED ssh connected')
                 del sshclient
             elif nas.type=='localhost':
@@ -385,6 +354,45 @@ def cred(account, subacc, access_type, nas, format_string):
             log_error_('CRED ssh error: %s' % repr(e))
             return False
 
+def create_speed(default, speeds,  correction, addonservicespeed, speed, date_, fMem):          
+    if speed=='':            
+        defaults = default            
+        defaults = defaults[:10] if defaults else [0,0,0,0,0,0,0,0,0,0,8]            
+        result=[]            
+        min_delta, minimal_period = -1, []            
+        now=date_            
+        for speed in speeds:                
+            #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
+            tnc,tkc,delta,res = fMem.in_period_(speed[11],speed[12],speed[13], now)                
+            #print "res=",res                
+            if res==True and (delta<min_delta or min_delta==-1):                    
+                minimal_period=speed                    
+            min_delta=delta            
+        
+        minimal_period = minimal_period[:10] if minimal_period else [0,0,0,0,0,0,0,0,0,0,8]          
+        for k in xrange(0, 11):                
+            s=minimal_period[k]                
+            if s=='0' or s=='' or s==0:                    
+                res=defaults[k]                
+            else:                    
+                res=s                
+            result.append(res)   #Проводим корректировку скорости в соответствии с лимитом            
+        #print self.caches.speedlimit_cache      
+
+        result = get_corrected_speed(result, correction)            
+        if addonservicespeed:                
+            result = get_corrected_speed(result, addonservicespeed)                        
+        if result==[]:                 
+            result = defaults if defaults else [0,0,0,0,0,0,0,0,0,0,8]                            
+        
+        return result
+    else:
+        try:
+            return parse_custom_speed_lst(speed)
+        except Exception, ex:
+            logger.error("%s : exception: %s \n %s Can not parse account speed %s", (self.getName(), repr(ex), traceback.format_exc()), speed)
+            return ["0/0","0/0","0/0","0/0","8","0/0"] 
+            
 def switch_action(port, switch, format_string):
         """
         
@@ -773,9 +781,9 @@ def convert(alist):
     return [dict(y[1:].split('=') for y in x if not y[0] in ('.','!')) for x in alist]
 
 def convert_values(value):
-    if str(value).endswith('k'):
+    if str(value).endswith('k', 'K'):
         return str(int(str(value)[0:-1])*1000)
-    elif str(value).endswith('M'):
+    elif str(value).endswith('M', 'm'):
         return str(int(str(value)[0:-1])*1000*1000)
     else:
         return str(value)
@@ -785,20 +793,18 @@ def get_decimals_speeds(params):
     i = 0
     res = []
     for param in params:
-        #values = map(convert_values, str(params[param]).split('/'))
-        for p in str(param).split('/'):
-            res.append(convert_values(p))
+        res.append(convert_values(param))
         i += 1
     #print 'after', params
     return res
 
 def formatator(x,y):
     if x!=-1 and y==-1:
-        return "%s/%s" % (x,x)
+        return (x,x)
     elif x==-1 and y==-1:
-        return "0/0"
+        return 0,0
     elif x!=-1 and y!=-1:
-        return "%s/%s" % (x,y)
+        return (x,y)
 
 
 rawstr = r"""^(?:(?P<rxrate>\w+)(?:/(?P<txrate>\w*))?(?:\s+(?P<rxbrate>\w*)(?:/(?P<txbrate>\w*))?(?:\s+(?P<rbthr>\w*)(?:/(?P<tbthr>\w*))?)?(?:\s+(?P<rbtm>\w*)(?:/(?P<tbtm>\w*))?)?(?:\s+(?P<prt>\d))?(?:\s+(?P<rrm>\w*)(?:/(?P<trm>\w*))?)?)?)"""
@@ -828,12 +834,13 @@ def parse_custom_speed(speed_string):
     trm = match_obj.group('trm') or -1
 
     return {'max_limit': formatator(rxrate, txrate), "burst_limit": formatator( rxbrate, txbrate), 'burst_treshold': formatator(rbthr, tbthr), 'burst_time': formatator(rbtm, tbtm), 'priority': prt, 'min_limit': formatator(rrm, trm)}
+    
 
 def speed_list_to_dict(spList):
-    dkeys = ['max_limit_rx', 'max_limit_tx', "burst_limit_rx", "burst_limit_tx", 'burst_treshold_rx', 'burst_treshold_tx', 'burst_time_rx', 'burst_time_tx', 'priority', 'min_limit_rx', 'min_limit_tx']
+    dkeys = ['max_limit_rx', 'max_limit_tx', "burst_limit_rx", "burst_limit_tx", 'burst_treshold_rx', 'burst_treshold_tx', 'burst_time_rx', 'burst_time_tx', 'min_limit_rx', 'min_limit_tx', 'priority']
     return dict(zip(dkeys, spList))
 
-def parse_custom_speed_lst(speed_string):
+def parse_custom_speed_lst(speed_string): # current
     match_obj = compile_obj.search(speed_string)    
     # Retrieve group(s) by name
     rxrate = match_obj.group('rxrate') or -1
@@ -847,7 +854,7 @@ def parse_custom_speed_lst(speed_string):
     prt = match_obj.group('prt') or 8
     rrm = match_obj.group('rrm') or -1
     trm = match_obj.group('trm') or -1
-    return [formatator(rxrate, txrate), formatator(rxbrate, txbrate), formatator(rbthr, tbthr), formatator(rbtm, tbtm), prt, formatator(rrm, trm)]
+    return flatten([formatator(txrate, rxrate), formatator(txbrate, rxbrate), formatator(tbthr, rbthr ), formatator(tbtm, rbtm), formatator(trm, rrm), prt])
 
 def parse_custom_speed_lst_rad(speed_string):
     match_obj = compile_obj.search(speed_string)    
@@ -911,18 +918,27 @@ def correct_speed(speed, correction):
     
     """
     res = []
-    #max
-    res.append("%s/%s" % (speedlimit_logic(speed[0], correction[0], correction[11], correction[12]), speedlimit_logic(speed[1], correction[1], correction[11], correction[12])))
-    #burst in
-    res.append("%s/%s" % (speedlimit_logic(speed[2], correction[2], correction[11], correction[12]), speedlimit_logic(speed[3], correction[3], correction[11], correction[12])))
+    #max tx
+    res.append(speedlimit_logic(speed[0], correction[0], correction[11], correction[12]))
+    #max rx            
+    res.append(speedlimit_logic(speed[1], correction[1], correction[11], correction[12]))
+    #burst tx
+    res.append(speedlimit_logic(speed[2], correction[2], correction[11], correction[12]))
+    #burst rx 
+    res.append(speedlimit_logic(speed[3], correction[3], correction[11], correction[12]))
     #burst treshold
-    res.append("%s/%s" % (speedlimit_logic(speed[4], correction[4], correction[11], correction[12]), speedlimit_logic(speed[5], correction[5], correction[11], correction[12])))
+    res.append(speedlimit_logic(speed[4], correction[4], correction[11], correction[12])) 
+    res.append(speedlimit_logic(speed[5], correction[5], correction[11], correction[12]))
     #burst time
-    res.append("%s/%s" % (correction[6], correction[7]))
+    res.append(correction[6]) 
+    res.append(correction[7])
+    res.append(speedlimit_logic(speed[9], correction[9], correction[11], correction[12]))
+    
+    res.append(speedlimit_logic(speed[10], correction[10], correction[11], correction[12]))
     #priority
-    res.append("%s" % correction[8])
+    res.append(correction[8])
     #min
-    res.append("%s/%s" % (speedlimit_logic(speed[9], correction[9], correction[11], correction[12]), speedlimit_logic(speed[10], correction[10], correction[11], correction[12])))
+
     return res
 
 
@@ -932,7 +948,7 @@ def get_corrected_speed(speed, correction):
     #12 - speed_units
     #13 - speed_change_type
     if correction:
-        return correct_speed(flatten(map(split_speed,get_decimals_speeds(speed))), correction)
+        return correct_speed(get_decimals_speeds(speed), correction)
     else:
         return speed
     

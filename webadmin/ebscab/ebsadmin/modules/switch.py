@@ -9,8 +9,8 @@ from object_log.models import LogItem
 
 from ebsadmin.tables import SwitchTable
 
-from ebscab.nas.forms import SwitchForm
-from ebscab.nas.models import Switch
+from billservice.forms import SwitchForm
+from billservice.models import Switch
 
 log = LogItem.objects.log_action
 
@@ -49,7 +49,7 @@ def switch_edit(request):
             model.save()
 
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            return HttpResponseRedirect(reverse("hardware")) 
+            return HttpResponseRedirect(reverse("switch")) 
         else:
 
             return {'form':form,  'status': False} 

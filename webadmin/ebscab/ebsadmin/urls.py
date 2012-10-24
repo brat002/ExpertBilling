@@ -111,10 +111,24 @@ urlpatterns += patterns('ebsadmin.modules.radiusattr',
     url(r'^radiusattr/delete/$', "radiusattr_delete", name="radiusattr_delete"),
 )
 
+urlpatterns += patterns('ebsadmin.modules.news',
+    url(r'^news/edit/$', 'news_edit', name='news_edit'),
+    url(r'^news/$', 'news', name='news'),
+    url(r'^news/delete/$', "news_delete", name="news_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.modules.tpchangerule',
+    url(r'^tpchangerule/edit/$', 'tpchangerule_edit', name='tpchangerule_edit'),
+    url(r'^tpchangerule/$', 'tpchangerule', name='tpchangerule'),
+    url(r'^tpchangerule/delete/$', "tpchangerule_delete", name="tpchangerule_delete"),
+    )
+
 urlpatterns += patterns('ebsadmin.modules.operator',
     url(r'^operator/edit/$', 'operator_edit', name='operator_edit'),
 )
-
+urlpatterns += patterns('ebsadmin.modules.logview',
+    url(r'^logview/$', 'logview', name='logview'),
+)
 urlpatterns += patterns('ebsadmin.modules.periodicalservicelog',
     url(r'^periodicalservicelog/delete/$', 'periodicalservicelog_delete', name='periodicalservicelog_delete'),
     url(r'^periodicalservicelog/$', 'periodicalservicelog', name='periodicalservicelog'),

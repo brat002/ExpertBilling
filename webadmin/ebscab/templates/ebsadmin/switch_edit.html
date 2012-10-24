@@ -3,7 +3,63 @@
 {% block extra_head %}
         <script type="text/javascript"> 
         $(document).ready(function() {
-
+            $('#id_house').autocomplete({
+                source: function( request, response )
+                {                      
+                    $.ajax(
+                    { 
+                        url: "{% url house %}",
+                        data: {
+                                term: request.term, 
+                                street_name: $('#id_street').val(),    //Pass the selected country to php
+                                city_id: $('#id_city').val()
+                              },        
+                        type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                        dataType: "json",   //return data in json format                                                                                                                                       
+                        success: function( data ) 
+                        {
+                            response( $.map( data.records, function( item ) 
+                            {
+                                return item.name
+                            }));
+                        }
+                    });                
+                },
+                minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
+                maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
+                width: 300, // Ширина списка
+                zIndex: 9999, // z-index списка
+                deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
+                onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
+            });
+            $('#id_street').autocomplete({
+                source: function( request, response )
+                {                      
+                    $.ajax(
+                    { 
+                        url: "{% url street %}",
+                        data: {
+                                term: request.term, 
+                                city_id: $('#id_city').val()
+                              },        
+                        type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                        dataType: "json",   //return data in json format                                                                                                                                       
+                        success: function( data ) 
+                        {
+                            response( $.map( data.records, function( item ) 
+                            {
+                                return item.name
+                            }));
+                        }
+                    });                
+                },
+                minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
+                maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
+                width: 300, // Ширина списка
+                zIndex: 9999, // z-index списка
+                deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
+                onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
+            });
         });
         </script>
 
@@ -18,7 +74,7 @@
 
   <li class="active">{{form.name.value}}</li>
 </ul>
-<form method="POST" action="{% url ippool_edit %}?id={{item.id}}"class="well form-horizontal">
+<form method="POST" action="{% url switch_edit %}?id={{item.id}}"class="well form-horizontal">
             <legend>Параметры коммутатора</legend>
              <fieldset>
                   {{form|as_bootstrap}}

@@ -35,13 +35,6 @@ class dbRoutine(object):
         else:
             raise Exception("dbRoutine method #" + args[0] + "# does not exist!" )
 
-    @staticmethod
-    def db_delete_netflowstream_stat(*args, **kwargs):
-        return cur.execute("DELETE FROM billservice_netflowstream WHERE date_start BETWEEN %s AND %s; " , ((((kwargs.has_key('start_date')) and kwargs['start_date'].isoformat(' ')) or ((not kwargs.has_key('start_date'))and '-infinity')), (((kwargs.has_key('end_date')) and kwargs['end_date'].isoformat(' ')) or ((not kwargs.has_key('end_date'))and 'infinity'))))
-
-    @staticmethod
-    def db_delete_rawnetflowstream_stat(*args, **kwargs):
-        return cur.execute("DELETE FROM billservice_rawnetflowstream WHERE date_start BETWEEN %s AND %s; " , ((((kwargs.has_key('start_date')) and kwargs['start_date'].isoformat(' ')) or ((not kwargs.has_key('start_date'))and '-infinity')), (((kwargs.has_key('end_date')) and kwargs['end_date'].isoformat(' ')) or ((not kwargs.has_key('end_date'))and 'infinity'))))
 
 #Primitives
     

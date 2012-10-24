@@ -5,7 +5,7 @@ RADIUS packet
 __docformat__	= "epytext en"
 
 #from hashlib import md5
-from Crypto.Hash import MD5 as md5
+from hashlib import  md5
 import  struct, types, random, UserDict, hmac
 import tools
 
@@ -249,7 +249,7 @@ class Packet(UserDict.UserDict):
 			attr=attr+attrs
 			header=struct.pack("!BBH", self.code, self.id, (20+len(attr)))
 		
-		authenticator=md5.new(header[0:4] + self.authenticator
+		authenticator=md5(header[0:4] + self.authenticator
 			+ attr + self.secret).digest()
 
 		return header + authenticator + attr
@@ -262,7 +262,7 @@ class Packet(UserDict.UserDict):
 		if rawreply is None:
 			rawreply=reply.ReplyPacket()
 
-		hash=md5.new(rawreply[0:4] + self.authenticator +
+		hash=md5(rawreply[0:4] + self.authenticator +
 			rawreply[20:] + self.secret).digest()
 
                 if hash!=rawreply[4:20]:
@@ -448,7 +448,7 @@ class AcctPacket(Packet):
                 @rtype: boolean
                 """
                 assert(self.raw_packet)
-                hash=md5.new(self.raw_packet[0:4] + 16*"\x00" + 
+                hash=md5(self.raw_packet[0:4] + 16*"\x00" + 
                                 self.raw_packet[20:] + self.secret).digest()
 
                 return hash==self.authenticator
@@ -471,7 +471,7 @@ class AcctPacket(Packet):
 
 		header=struct.pack("!BBH", self.code, self.id, (20+len(attr)))
 
-		self.authenticator=md5.new(header[0:4] + 16 * "\x00" + attr
+		self.authenticator=md5(header[0:4] + 16 * "\x00" + attr
 			+ self.secret).digest()
 
 		return header + self.authenticator + attr

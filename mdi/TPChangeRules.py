@@ -250,9 +250,8 @@ class TPRulesAdd(QtGui.QDialog):
                     item.setHidden(True)
                 if tariff.id == self.model.to_tariff:
                     item.setCheckState(QtCore.Qt.Checked)
-                    
-            if self.comboBox_from.itemData(self.comboBox_from.currentIndex()).toInt()[0]==tariff.id:
-                item.setHidden(True)
+
+                
 
 
     def save(self):

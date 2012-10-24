@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS acc_tftrans_trg ON billservice_traffictransaction;

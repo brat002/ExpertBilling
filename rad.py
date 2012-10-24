@@ -725,7 +725,7 @@ class HandleSNA(HandleSBase):
             self.packetobject.secret = str(nas.secret)
             return "", self.auth_NA()
 
-authenticated_speeds={}
+
 #auth_class
 class HandleSAuth(HandleSBase):
     __slots__ = () + ('access_type', 'secret', 'speed','session_speed','nas_id', 'nas_type', 'multilink', 'fMem', 'datetime','dbconn','cursor')
@@ -1054,41 +1054,34 @@ class HandleSAuth(HandleSBase):
             ipinuse_id=''
             if (subacc.vpn_ip_address in ('0.0.0.0','') and (subacc.ipv4_vpn_pool_id or acc.vpn_ippool_id)) or acstatus==False:
                
-               with vars.cursor_lock:
-                   try:
-                       self.create_cursor()
-                       pool_id=subacc.ipv4_vpn_pool_id if subacc.ipv4_vpn_pool_id else acc.vpn_ippool_id
-                       if acstatus==False:
-                           pool_id=acc.vpn_guest_ippool_id
-                           logger.error("Searching free ip for subaccount %s in vpn guest pool with id %s ", (str(user_name), acc.vpn_guest_ippool_id))
-                       self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
+                with vars.cursor_lock:
+                    try:
+                        self.create_cursor()
+                        pool_id=subacc.ipv4_vpn_pool_id if subacc.ipv4_vpn_pool_id else acc.vpn_ippool_id
+                        if acstatus==False:
+                            pool_id=acc.vpn_guest_ippool_id
+                            logger.error("Searching free ip for subaccount %s in vpn guest pool with id %s ", (str(user_name), acc.vpn_guest_ippool_id))
+                            self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
                        
-                       vpn_ip_address = self.cursor.fetchone()[0]
-                       if not vpn_ip_address:
-                           pool_id, vpn_ip_address = self.find_free_ip(pool_id)
+                            vpn_ip_address = self.cursor.fetchone()[0]
+                        if not vpn_ip_address:
+                            pool_id, vpn_ip_address = self.find_free_ip(pool_id)
 
-                       #self.cursor.connection.commit()
-                       if not vpn_ip_address:
+                        #self.cursor.connection.commit()
+                        if not vpn_ip_address:
                             logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, pool_id))
                             sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
                             #vars.cursor_lock.release()
                             return self.auth_NA(authobject)
                        
-                       self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
-                       ipinuse_id=self.cursor.fetchone()[0]
-                       #self.cursor.connection.commit()
-                       #vars.cursor.connection.commit()   
-                       #vars.cursor_lock.release()
-                                
-                   except Exception, ex:
-                       #vars.cursor_lock.release()
-                       logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id, repr(ex)))
-                       sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
-                       return self.auth_NA(authobject) 
-                   #else:
-                   #    vars.cursor_lock.release()
+                        self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
+                        ipinuse_id=self.cursor.fetchone()[0]
+                    except Exception, ex:
+                        logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id, repr(ex)))
+                        sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
+                        return self.auth_NA(authobject) 
             else:
-               framed_ip_address = subacc.vpn_ip_address
+                vpn_ip_address = subacc.vpn_ip_address
 
             if self.access_type=='PPPOE' and vars.GET_MAC_FROM_PPPOE==True:
                 logger.debug("Trying to update subaccount %s with id %s ipn mac address to: %s ", (str(user_name), subacc.id, station_id))
@@ -1369,30 +1362,6 @@ class HandleHotSpotAuth(HandleSAuth):
             else:
                 pin = acc.password
 
-
-
-        #print user_name, pin, nas.id, str(self.packetobject['Mikrotik-Host-IP'][0])
-    #===========================================================================
-    #    if not acc and pin:
-    #        self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet, %s::text) AS 
-    #                         A(account_id int, subaccount_id int, "password" character varying, nas_id int, tarif_id int, account_status int, 
-    #                         balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet,ipn_ip_address inet,ipn_mac_address text,access_type text)
-    #                        """, (user_name, pin, ip,mac))
-    # 
-    #        acct_card = self.cursor.fetchone()
-    #        self.cursor.connection.commit()
-    #        #self.cursor.close()
-    # 
-    #        acc = acct_card
-    #        
-    #        if acct_card is None:
-    #            logger.warning("Unknown User %s", user_name)
-    #            sqlloggerthread.add_message(nas=nas.id, type="AUTH_BAD_USER", service=self.access_type, cause=u'Пользователь HotSpot с логином %s не найден или не может быть активирован.' % (user_name,), datetime=self.datetime)
-    #            return self.auth_NA(authobject)
-    #        
-    #        acct_card = CardActivateData(*acct_card)
-    #        acc = acct_card
-    #===========================================================================
         
         if str(acc.access_type) in ['HotSpot','HotSpotIp+Password', 'HotSpotMac+Password']:
             authobject.plainusername = str(user_name)
@@ -1437,35 +1406,34 @@ class HandleHotSpotAuth(HandleSAuth):
         ipinuse_id=''
         pool_id=None
         if ((subacc and subacc.ipv4_vpn_pool_id) or acc.vpn_ippool_id) and acc.vpn_ip_address in ('0.0.0.0','0.0.0.0/32',''):
-           with vars.cursor_lock:
-               try:
-                   #self.create_cursor()
-                   pool_id=acc.ipv4_vpn_pool_id if acc.ipv4_vpn_pool_id else acc.vpn_ippool_id
-                   self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
-                   vpn_ip_address = self.cursor.fetchone()[0]
-                   if not vpn_ip_address:
-                       pool_id, vpn_ip_address = self.find_free_ip(pool_id)
+            with vars.cursor_lock:
+                try:
+                    #self.create_cursor()
+                    pool_id=acc.ipv4_vpn_pool_id if acc.ipv4_vpn_pool_id else acc.vpn_ippool_id
+                    self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
+                    vpn_ip_address = self.cursor.fetchone()[0]
+                    if not vpn_ip_address:
+                        pool_id, vpn_ip_address = self.find_free_ip(pool_id)
 
-                   #self.cursor.connection.commit()
-                   if not vpn_ip_address:
+                    #self.cursor.connection.commit()
+                    if not vpn_ip_address:
                         logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc_id, pool_id))
                         sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc_id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
                         #vars.cursor_lock.release()
                         return self.auth_NA(authobject)
                    
-                   self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
-                   ipinuse_id=self.cursor.fetchone()[0]
-                   #vars.cursor.connection.commit()   
-                   #vars.cursor_lock.release()
-                   #self.cursor.connection.commit()
+                    self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
+                    ipinuse_id=self.cursor.fetchone()[0]
+                    #vars.cursor.connection.commit()   
+                    #vars.cursor_lock.release()
+                    #self.cursor.connection.commit()
                             
-               except Exception, ex:
-                   #vars.cursor_lock.release()
-                   logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc_id, pool_id, repr(ex)))
-                   sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
-                   return self.auth_NA(authobject) 
-               #else:
-               #    vars.cursor_lock.release()
+                except Exception, ex:
+                    #vars.cursor_lock.release()
+                    logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc_id, pool_id, repr(ex)))
+                    sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
+                    return self.auth_NA(authobject) 
+
         else:
             if subacc:
                 vpn_ip_address = subacc.vpn_ip_address
@@ -1503,6 +1471,7 @@ class HandleSDHCP(HandleSAuth):
         self.packetobject = packetobject
         self.secret = ""
         self.access_type=get_accesstype(packetobject)
+        self.replypacket = packetobject
         #logger.debugfun('%s', show_packet, (packetobject,))
 
 
@@ -1511,15 +1480,15 @@ class HandleSDHCP(HandleSAuth):
         Deny access
         """
         if vars.DHCP_FRAMED_GUEST_POOL:
-            self.packetobject.AddAttribute('Framed-Pool', vars.DHCP_FRAMED_GUEST_POOL)
-            self.packetobject.AddAttribute('Session-Timeout',   vars.DHCP_GUEST_SESSION_TIMEOUT)
+            self.replypacket.AddAttribute('Framed-Pool', vars.DHCP_FRAMED_GUEST_POOL)
+            self.replypacket.AddAttribute('Session-Timeout',   vars.DHCP_GUEST_SESSION_TIMEOUT)
             authobject.code = packet.AccessAccept
         else:
-            self.packetobject.username=None
-            self.packetobject.password=None
+            self.replypacket.username=None
+            self.replypacket.password=None
             # Access denided
             authobject.code = packet.AccessReject
-        return authobject, self.packetobject
+        return authobject, self.replypacket
 
     def handle(self):
         global sqlloggerthread
@@ -1536,6 +1505,7 @@ class HandleSDHCP(HandleSAuth):
         subacc = self.caches.subaccount_cache.by_mac.get(mac)
         subaccount_switch=None
         nas=nasses[0]
+        self.replypacket=packet.Packet(secret=nas.secret,dict=vars.DICT)
         nas_id=nas.id
         acc=None
         if subacc:

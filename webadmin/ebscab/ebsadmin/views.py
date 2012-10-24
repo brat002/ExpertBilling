@@ -8,7 +8,7 @@ from billservice.models import OneTimeService, TimeSpeed,  TrafficTransmitNodes,
 from billservice.models import Template, News, AccountAddonService, SaleCard, DealerPay, Card, Dealer, AccountViewedNews, TPChangeRule, Manufacturer, Model, Hardware, HardwareType, TransactionType, TimePeriodNode, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, TrafficTransmitService, RadiusAttrs, SpeedLimit,  RadiusTraffic, RadiusTrafficNode,TimeAccessNode,TimeAccessService, AddonServiceTarif
 
 import os
-from nas.models import Nas, Switch, TrafficClass, TrafficNode
+from nas.models import Nas,  TrafficClass, TrafficNode
 from radius.models import ActiveSession
 from django.contrib.auth.decorators import login_required
 from django.db import connection
@@ -27,7 +27,7 @@ from billservice.forms import RadiusAttrsForm, IPPoolForm, TimePeriodForm, TimeP
 from billservice.forms import ActionLogFilterForm, ManufacturerForm, OperatorForm, DealerPayForm, SaleCardForm, CardForm, DealerForm, NewsForm, TPChangeRuleForm, AccountHardwareForm, ModelHardwareForm, HardwareTypeForm, HardwareForm
 from billservice.utility import settlement_period_info
 from billservice import authenticate, log_in, log_out
-from nas.forms import NasForm, TrafficNodeForm, TrafficClassForm, SwitchForm
+from nas.forms import NasForm, TrafficNodeForm, TrafficClassForm
 from radius.forms import SessionFilterForm
 import ipaddr
 from django.db.models import Q

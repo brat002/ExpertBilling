@@ -1,0 +1,1 @@
+DROP TRIGGER billservice_traffictransmitservice_trg ON billservice_traffictransmitservice;

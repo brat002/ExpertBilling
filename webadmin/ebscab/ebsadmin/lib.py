@@ -39,7 +39,7 @@ def digg_paginator(cnt, current):
         return {
             "page_numbers": page_numbers,
             "pages_outside_trailing_range": pages_outside_trailing_range,
-            "pages_outside_leading_range": pages_outside_leading_range
+            "pages_outside_leading_range": sorted(pages_outside_leading_range)
             
 
         }

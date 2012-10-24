@@ -1,17 +1,31 @@
 #-*-coding=utf-8-*-
 
 from billservice.forms import AccountForm
-from billservice.models import Account, SuspendedPeriod, AccountHardware, AccountAddonService, BalanceHistory, IPInUse, Template, SettlementPeriod, SystemUser, PrepaidTraffic, TimeSpeed, AddonServiceTarif, PeriodicalServiceLog
-from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAccessNode, TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType, RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode
+from billservice.models import Account, SuspendedPeriod, AccountHardware
+from billservice.models import AccountAddonService, BalanceHistory, IPInUse, Template 
+from billservice.models import SettlementPeriod, SystemUser, PrepaidTraffic
+from billservice.models import TimeSpeed, AddonServiceTarif, PeriodicalServiceLog, News
+from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAccessNode 
+from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType
+from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model
+from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode
+from billservice.models import News, TPChangeRule, Switch
 import django_tables2 as django_tables
 from django_tables2.utils import A
 from radius.models import ActiveSession, AuthLog
 from object_log.models import LogItem
-from nas.models import Nas, TrafficClass, TrafficNode, Switch
+from nas.models import Nas, TrafficClass, TrafficNode
+from django_tables2_reports.tables import TableReport
 
 class FormatBlankColumn(django_tables.Column):
     def render(self, value):
         return "" if value is None else value
+
+class FormatBooleanHTMLColumn(django_tables.TemplateColumn):
+    def render(self, value):
+        return "" if value else value
+    
+
 
 class FormatFloatColumn(django_tables.Column):
     def render(self, value):
@@ -567,7 +581,7 @@ class PeriodicalServiceLogTable(django_tables.Table):
         fields = ("id", 'accounttarif', 'service', 'datetime', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
         
-class SheduleLogTable(django_tables.Table):
+class SheduleLogTable(TableReport):
 
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
@@ -582,5 +596,35 @@ class SheduleLogTable(django_tables.Table):
     class Meta:
         model = SheduleLog
         #fields = ("id", 'accounttarif', 'service', 'datetime', 'd')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
+
+class NewsTable(TableReport):
+
+    id = django_tables.LinkColumn('news_edit', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    created = FormatDateTimeColumn(verbose_name=u'Активна с')
+    age = FormatDateTimeColumn(verbose_name=u'Активна по')
+
+    
+    class Meta:
+        model = News
+        fields = ("id", 'body', 'created', 'age', 'public', 'private', 'agent', 'd')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
+        
+
+class TPChangeRuleTable(TableReport):
+
+    id = django_tables.LinkColumn('tpchangerule_edit', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    settlement_period = FormatBlankColumn(verbose_name=u'Расчётный период')
+    on_next_sp = django_tables.TemplateColumn("<img src='/media/img/icons/{% if record.on_next_sp %}accept.png{% else %}icon_error.gif{% endif %}'>")
+    row_class = django_tables.Column(visible=False)
+
+    def render_row_class(self, value, record):
+        return 'error' if record.disabled else ''
+    
+    class Meta:
+        model = TPChangeRule
+        fields = ("id", 'row_class',  'from_tariff', 'to_tariff', 'cost', 'ballance_min', 'on_next_sp', 'settlement_period', 'disabled', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
 
