@@ -66,22 +66,22 @@ core_sql = \
           'radiustrafnodes':"""select radiustraffic_id, "value",timeperiod_id, "cost"  from billservice_radiustrafficnode;""",
           'settlper':"""SELECT id, date_trunc('second', time_start), length, length_in, autostart FROM billservice_settlementperiod;""",
           'nas'     :"""SELECT id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2, identify, subacc_add_action, subacc_enable_action, subacc_disable_action,subacc_delete_action, subacc_ipn_speed_action, acct_interim_interval FROM nas_nas;""",
-          'defsp'   :"""SELECT accessparameters.max_limit,accessparameters.burst_limit,
-                        accessparameters.burst_treshold, accessparameters.burst_time,
-                        accessparameters.priority, accessparameters.min_limit,
+          'defsp'   :"""SELECT accessparameters.max_tx, accessparameters.max_rx, accessparameters.burst_tx,accessparameters. burst_rx, 
+                        accessparameters.burst_treshold_tx, accessparameters.burst_treshold_rx,  accessparameters.burst_time_tx, 
+                        accessparameters.burst_time_rx, accessparameters.min_tx, accessparameters.min_rx, accessparameters.priority,
                         tariff.id
                         FROM billservice_accessparameters as accessparameters
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=accessparameters.id
                         WHERE tariff.deleted is not True
                         ;""",
-          'newsp'   :"""SELECT timespeed.max_limit,timespeed.burst_limit,
-                        timespeed.burst_treshold,timespeed.burst_time,
-                        timespeed.priority, timespeed.min_limit,
+          'newsp'   :"""SELECT timespeed.max_tx, timespeed.max_rx, timespeed.burst_tx,timespeed. burst_rx, 
+                        timespeed.burst_treshold_tx, timespeed.burst_treshold_rx,  timespeed.burst_time_tx, 
+                        timespeed.burst_time_rx, timespeed.min_tx, timespeed.min_rx, timespeed.priority,
                         timenode.time_start, timenode.length, timenode.repeat_after,
                         tariff.id 
                         FROM billservice_timespeed as timespeed
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
-                        JOIN billservice_timeperiodnode as timenode ON tp.time_period_id=timespeed.time_id
+                        JOIN billservice_timeperiodnode as timenode ON timenode.time_period_id=timespeed.time_id
                         WHERE tariff.deleted is not True;""",
           'periodtf':"""SELECT id, settlement_period_id FROM billservice_tariff  as tarif
                         WHERE id in (SELECT tarif_id FROM billservice_periodicalservice WHERE deleted=False or deleted is Null) AND tarif.active=True and tarif.deleted is not True""",
@@ -93,15 +93,14 @@ core_sql = \
           'timeaccnode':"""SELECT tan.time_period_id, tan.cost, tan.time_access_service_id
                         FROM billservice_timeaccessnode as tan
                         JOIN billservice_timeperiod as tp ON tan.time_period_id=tp.id;""",
-          'timepnode':"""SELECT tpn.id, tpn.name, date_trunc('second', tpn.time_start), tpn.length, tpn.repeat_after, tptpn.time_period_id 
+          'timepnode':"""SELECT tpn.id, tpn.name, date_trunc('second', tpn.time_start), tpn.length, tpn.repeat_after, tpn.time_period_id 
                         FROM billservice_timeperiodnode as tpn
                         """,
           'tlimits'  :"""SELECT trafficlimit.id, trafficlimit.tarif_id, trafficlimit."name", 
                         trafficlimit.settlement_period_id, trafficlimit.size, trafficlimit.group_id, 
                         trafficlimit."mode", trafficlimit.action,
-                        speedlimit.id, speedlimit.speed_units, speedlimit.change_speed_type 
+                        trafficlimit.speedlimit_id
                         FROM billservice_trafficlimit as trafficlimit
-                        LEFT JOIN billservice_speedlimit as speedlimit ON speedlimit.limit_id=trafficlimit.id
                         JOIN billservice_tariff as tariff ON tariff.id=trafficlimit.tarif_id
                         ORDER BY trafficlimit.size DESC;""",
           'shllog'  :"""SELECT id,account_id, ballance_checkout,date_trunc('second', prepaid_traffic_reset) , date_trunc('second', prepaid_traffic_accrued), 
@@ -109,8 +108,7 @@ core_sql = \
                         FROM billservice_shedulelog;""",
           'timeaccs' :"""SELECT id, prepaid_time, reset_time, rounding, tarification_step FROM billservice_timeaccessservice;""",
           'onetimes' :"""SELECT id, tarif_id, cost, date_trunc('second', created) FROM billservice_onetimeservice;""",
-          'accpars'  :"""SELECT id, access_type, access_time_id, max_limit, min_limit, 
-                        burst_limit,burst_treshold,burst_time, priority, ipn_for_vpn FROM billservice_accessparameters;""",
+          'accpars'  :"""SELECT id, access_type, access_time_id, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx,  burst_time_tx, burst_time_rx, min_tx, min_rx,  priority, ipn_for_vpn FROM billservice_accessparameters;""",
           'ipnspeed' :"""SELECT id, account_id, speed, state, static, date_trunc('second', datetime) FROM billservice_accountipnspeed;""",
           'otshist'  :"""SELECT id, accounttarif_id, onetimeservice_id FROM billservice_onetimeservicehistory WHERE ARRAY[accounttarif_id] && get_cur_acct(%s);""", 
           'suspended':"""SELECT id, account_id, start_date, end_date FROM billservice_suspendedperiod WHERE (%s BETWEEN start_date AND end_date) or (start_date<=%s and end_date is Null);""",
@@ -171,16 +169,17 @@ rad_sql = \
                         JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id
                         WHERE bst.deleted is not True
                         """,
-         'defspeed' :"""SELECT accessparameters.max_limit,accessparameters.burst_limit,
-                        accessparameters.burst_treshold, accessparameters.burst_time,
-                        accessparameters.priority, accessparameters.min_limit,
+         'defspeed' :"""SELECT accessparameters.max_tx, accessparameters.max_rx, accessparameters.burst_tx, 
+                             accessparameters.burst_rx, accessparameters.burst_treshold_tx, accessparameters.burst_treshold_rx,  
+                             accessparameters.burst_time_tx, accessparameters.burst_time_rx, accessparameters.min_tx, 
+                             accessparameters.min_rx,  accessparameters.priority,
                         tariff.id
                         FROM billservice_accessparameters as accessparameters
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=accessparameters.id
                         WHERE tariff.deleted is not True;""",
-         'speed'    :"""SELECT timespeed.max_limit,timespeed.burst_limit,
-                        timespeed.burst_treshold,timespeed.burst_time,
-                        timespeed.priority, timespeed.min_limit,
+         'speed'    :"""SELECT timespeed.max_tx, timespeed.max_rx, timespeed.burst_tx, timespeed.burst_rx, 
+                         timespeed.burst_treshold_tx, timespeed.burst_treshold_rx,  timespeed.burst_time_tx, 
+                         timespeed.burst_time_rx, timespeed.min_tx, timespeed.min_rx,  timespeed.priority,
                         timenode.time_start, timenode.length, timenode.repeat_after,
                         tariff.id 
                         FROM billservice_timespeed as timespeed
@@ -197,7 +196,7 @@ rad_sql = \
                         WHERE accountspeedlimit.speedlimit_id=speedlimit.id;""",
          'attrs'    :"""SELECT vendor, attrid, value, tarif_id, nas_id FROM billservice_radiusattrs;""",
          'ippool'    :"""SELECT id, next_ippool_id FROM billservice_ippool;""",
-         'switch'    :"""SELECT id, identify, option82, option82_auth_type, option82_template, remote_id FROM nas_switch;""",
+         'switch'    :"""SELECT id, identify, option82, option82_auth_type, option82_template, remote_id FROM billservice_switch;""",
          'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice, allow_ipn_with_null, allow_ipn_with_minus, allow_ipn_with_block, vlan, vpn_ipv6_ip_address,ipv4_ipn_pool_id,ipv4_vpn_pool_id FROM billservice_subaccount;""",
 
 }

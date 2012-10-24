@@ -113,6 +113,7 @@ INSTALLED_APPS = (
     'ajax_select',
     'ebsadmin',
     'bootstrap_toolkit',
+    'django_tables2_reports',
 
     
 )

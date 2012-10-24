@@ -1,6 +1,6 @@
 from django.forms import ModelForm
 import django.forms as forms
-from nas.models import Nas, TrafficClass, TrafficNode, Switch
+from nas.models import Nas, TrafficClass, TrafficNode
 
 
 class NasForm(ModelForm):
@@ -40,6 +40,4 @@ class TrafficNodeForm(ModelForm):
     class Meta:
         model = TrafficNode
         
-class SwitchForm(ModelForm):
-    class Meta:
-        model = Switch
+

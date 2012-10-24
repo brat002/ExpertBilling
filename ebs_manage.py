@@ -112,6 +112,9 @@ def create_folders():
     if not os.path.exists(DIST_PATH): os.mkdir(DIST_PATH)
     if not os.path.exists('/opt/ebs/stats'): os.mkdir('/opt/ebs/stats')
     if not os.path.exists('/opt/ebs/web'): os.mkdir('/opt/ebs/web')
+    if not os.path.exists('/opt/ebs/var/spool/nf_in'): os.mkdir('/opt/ebs/var/spool/nf_in')
+    if not os.path.exists('/opt/ebs/var/spool/nf_out'): os.mkdir('/opt/ebs/var/spool/nf_out')
+    
     
     
 def unpack_archive(archive_name):

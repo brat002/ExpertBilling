@@ -25,7 +25,6 @@ import db
 
 from decimal import Decimal
 from copy import copy, deepcopy
-from db import Object as Object
 from daemonize import daemonize
 from threading import Thread, Lock
 from collections import defaultdict
@@ -34,7 +33,7 @@ from collections import defaultdict
 from constants import rules
 from saver import allowedUsersChecker, setAllowedUsers
 from utilites import parse_custom_speed, parse_custom_speed_lst, cred, get_decimals_speeds
-from utilites import rosClient, settlement_period_info, in_period, in_period_info
+from utilites import rosClient, settlement_period_info, in_period, in_period_info, create_speed
 
 from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
 from db import  dbRoutine
@@ -48,7 +47,7 @@ from classes.flags import CoreFlags
 from classes.vars import CoreVars
 from utilites import renewCaches, savepid, get_connection, check_running, getpid, rempid
 
-#from utilities.misc_utilities import redirect_stderr, redirect_stdout
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ_COMMITTED, ISOLATION_LEVEL_SERIALIZABLE
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
@@ -75,46 +74,6 @@ def comparator(d, s):
 class check_vpn_access(Thread):
     def __init__ (self):          
         Thread.__init__(self)
-
-    def create_speed(self, default, speeds,  correction, addonservicespeed, speed, date_):          
-        if speed=='':            
-            defaults = default            
-            defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]            
-            result=[]            
-            min_delta, minimal_period = -1, []            
-            now=date_            
-            for speed in speeds:                
-                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
-                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)                
-                #print "res=",res                
-                if res==True and (delta<min_delta or min_delta==-1):                    
-                    minimal_period=speed                    
-                min_delta=delta            
-            
-            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","","0/0"]            
-            for k in xrange(0, 6):                
-                s=minimal_period[k]                
-                if s=='0/0' or s=='/' or s=='':                    
-                    res=defaults[k]                
-                else:                    
-                    res=s                
-                result.append(res)   #Проводим корректировку скорости в соответствии с лимитом            
-            #print self.caches.speedlimit_cache      
-   
-            result = get_corrected_speed(result, correction)            
-            if addonservicespeed:                
-                result = get_corrected_speed(result, addonservicespeed)                        
-            if result==[]:                 
-                result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                            
-            
-            return result
-        else:
-            try:
-                return parse_custom_speed_lst(speed)
-            except Exception, ex:
-                logger.error("%s : exception: %s \n %s Can not parse account speed %s", (self.getName(), repr(ex), traceback.format_exc()), acc.ipn_speed)
-                return ["0/0","0/0","0/0","0/0","8","0/0"] 
-            
 
 
     def check_access(self):
@@ -207,14 +166,14 @@ class check_vpn_access(Thread):
                                         addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
                                         break    
 
-                            speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.vpn_speed, dateAT)                            
+                            speed = create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.vpn_speed, dateAT, fMem)                            
 
                             speed = get_decimals_speeds(speed)
                             newspeed = ''.join([unicode(spi) for spi in speed])
 
                             if rs.speed_string != newspeed:                         
                                 logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
-                                coa_result = change_speed(vars.DICT, acc, subacc, nas, 
+                                coa_result = change_speed(vars.DICT, acc._asdict(), subacc, nas._asdict(), 
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address,
                                                     speed=speed)
@@ -222,38 +181,31 @@ class check_vpn_access(Thread):
                                 if coa_result==True:
                                     cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
                                                 """ , (newspeed, rs.id,))
+                                    
                                     cur.connection.commit()
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         else:
                             logger.debug("%s: about to send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                            result = PoD(vars.DICT, acc, subacc, nas, access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action))
+                            result = PoD(vars.DICT, acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action))
                             logger.debug("%s: POD over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
 
-                        if result is True:
-                            disconnect_result='ACK'
-                        elif result is False:
-                            disconnect_result='NACK'
-                            
-                        if result is not None:
-                            cur.execute("""UPDATE radius_activesession SET session_status=%s, acct_terminate_cause='BILLING_POD_REQUEST' WHERE sessionid=%s;
-                                        """, (disconnect_result, rs.sessionid,))
-                            if rs.ipinuse_id and disconnect_result=='ACK':
-                                cur.execute("""UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s;
-                                        """, ( rs.ipinuse_id,))                                
-                            cur.connection.commit()  
+
                         
                         from_start = (dateAT-rs.date_start).seconds+(dateAT-rs.date_start).days*86400
                             
                         if (rs.time_from_last_update and rs.time_from_last_update+15>=nas.acct_interim_interval*3+3) or (not rs.time_from_last_update and from_start>=nas.acct_interim_interval*3+3):
                             cur.execute("""UPDATE radius_activesession SET session_status='NACK' WHERE sessionid=%s;
                                         """, (rs.sessionid,))
+                            cur.execute("""
+                            UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s
+                            """, (rs.ipinuse_id, ))
                             cur.connection.commit()               
                     
                     except Exception, ex:
                         logger.error("%s: row exec exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                         if isinstance(ex, vars.db_errors): raise ex
-                cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE dynamic=True and disabled is Null and ip::inet not in (SELECT DISTINCT framed_ip_address::inet FROM radius_activesession WHERE ipinuse_id is not NUll and (session_status='ACTIVE'));")    
-                cur.connection.commit()   
+                #cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE dynamic=Tru3e and disabled is Null and ip::inet not in (SELECT DISTINCT framed_ip_address::inet FROM radius_activesession WHERE ipinuse_id is not NUll and (session_status='ACTIVE'));")    
+                #cur.connection.commit()   
                 cur.close()
                 logger.info("VPNALIVE: VPN thread run time: %s", time.clock() - a)
             except Exception, ex:
@@ -316,7 +268,7 @@ class periodical_service_bill(Thread):
         s_delta = datetime.timedelta(seconds=delta)
         
         if ps.cash_method == "GRADUAL":
-            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc.end_date)  
+            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id)  
             logger.debug('%s: Periodical Service: GRADUAL last checkout %s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))                                  
             if last_checkout is None:
                 if pss_type == PERIOD:
@@ -348,6 +300,7 @@ class periodical_service_bill(Thread):
                         cash_summ = mult*((self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY))
                         if pss_type == PERIOD:
                             #cur.execute("UPDATE billservice_account SET ballance=ballance-")
+                            cash_summ = cash_summ * susp_per_mlt
                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                             new_summ=cur.fetchone()[0]
                             #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
@@ -386,7 +339,7 @@ class periodical_service_bill(Thread):
             """
             Списывать в начале периода только, если последнее списание+период<следующего тарифного плана
             """
-            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc.end_date)
+            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id)
             # Здесь нужно проверить сколько раз прошёл расчётный период
             # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
             # Для последней проводки ставим статус Approved=True
@@ -420,21 +373,22 @@ class periodical_service_bill(Thread):
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     time_start_ps = period_start_ast + s_delta_ast
-                    chk_date = period_start_ast + s_delta_ast
+                    chk_date       = period_start_ast + s_delta_ast
                     
-                while True:
+                while chk_date <= period_start:
                     #Если тариф закрыт, а доснятие за прошлый расчётный период произошло-прерываем цикл
                     if acc.end_date and acc.end_date == period_end_ast:
                         break
-                    cash_summ = mult*ps.cost
+                    cash_summ = mult*ps.cost # Установить сумму равной нулю, если пользователь в блокировке
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
-                    s_delta_ast = datetime.timedelta(seconds=delta_ast)
+
                     chk_date = period_start_ast
                     delta_coef=1
                     if vars.USE_COEFF_FOR_PS==True and first_time and ((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)<delta_ast:
                         logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
                         delta_coef=float((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)/float(delta_ast)        
                         cash_summ=cash_summ*Decimal(str(delta_coef))
+
                                 
                     if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                         cash_summ = 0
@@ -443,14 +397,15 @@ class periodical_service_bill(Thread):
                         new_summ=cur.fetchone()[0]
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                         logger.debug('%s: Periodical Service: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
+                        pass
                     elif pss_type == ADDON:
                         cash_summ = cash_summ * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
                         logger.debug('%s: Addon Service Checkout thread: GRADUAL checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))                        
                     cur.connection.commit()
-                    chk_date += s_delta_ast
+                    chk_date = period_end_ast
                     first_time=False
-                    if chk_date > period_start: break
+                    
             cur.connection.commit()
         if ps.cash_method=="AT_END":
             """
@@ -458,7 +413,7 @@ class periodical_service_bill(Thread):
             Если завершился - считаем сколько уже их завершилось.    
             для остальных со статусом False
             """
-            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id, acc.end_date)
+            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id)
             cur.connection.commit()
             #first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
             if pss_type == PERIOD:
@@ -546,6 +501,8 @@ class periodical_service_bill(Thread):
     def run(self):
         global cacheMaster, fMem, suicideCondition, transaction_number, vars
         self.connection = get_connection(vars.db_dsn)
+        
+        self.connection.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         while True:
@@ -687,6 +644,7 @@ class RadiusAccessBill(Thread):
         #connection._con._con.set_client_encoding('UTF8')
         global fMem, suicideCondition, cacheMaster, vars
         self.connection = get_connection(vars.db_dsn)
+        self.connection.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         accounts_bytes_cache={} # account_id: date_start_date_end, bytes_in, bytes_out
@@ -780,7 +738,7 @@ class RadiusAccessBill(Thread):
                                         logger.debug("RADCOTHREAD: Time for session %s was checkouted", (rs.sessionid, ))
                                     break
                         cur.execute("""UPDATE radius_activesession SET lt_time=%s
-                                       WHERE date_start=%s AND account_id=%s AND sessionid=%s and nas_port_id=%s and and nas_int_id=%s
+                                       WHERE date_start=%s AND account_id=%s AND sessionid=%s and nas_port_id=%s and nas_int_id=%s
                                     """, (rs.session_time, rs.date_start, rs.account_id, unicode(rs.sessionid),rs.nas_port_id, rs.nas_int_id))
                         checkouted=True
                         logger.debug("RADCOTHREAD: Session %s was checkouted (Time)", (rs.sessionid, ))
@@ -939,6 +897,7 @@ class limit_checker(Thread):
         #connection._con._con.set_client_encoding('UTF8')
         global suicideCondition, cacheMaster, fMem, vars
         self.connection = get_connection(vars.db_dsn)
+        
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         while True:            
@@ -1056,6 +1015,7 @@ class addon_service(Thread):
         #connection._con._con.set_client_encoding('UTF8')
         global suicideCondition, cacheMaster, fMem, vars
         self.connection = get_connection(vars.db_dsn)
+        self.connection.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         while True:            
@@ -1143,13 +1103,13 @@ class addon_service(Thread):
                          ((service.deactivate_service_for_blocked_account==False) or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)>0 and acc.disabled_by_limit==False and acc.balance_blocked==False and acc.account_status==1 ))):
                             #выполняем service_activation_action
                             cur.connection.commit()
-                            sended = cred(acc, subacc, 'ipn', nas, format_string=service.service_activation_action)
+                            sended = cred(acc._asdict(), subacc._asdict(), 'ipn', nas._asdict(), addonservice=service._asdict(), format_string=service.service_activation_action)
                             if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, accountaddonservice.id))
                         
                         if (accountaddonservice.deactivated or accountaddonservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accountaddonservice.action_status==True:
                             #выполняем service_deactivation_action
                             cur.connection.commit()
-                            sended = cred(acc, subacc, 'ipn', nas, format_string=service.service_deactivation_action)
+                            sended = cred(acc, subacc, 'ipn', nas, addonservice=service._asdict(), format_string=service.service_deactivation_action)
                             if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accountaddonservice.id))
 
                     cur.connection.commit()
@@ -1216,7 +1176,7 @@ class settlement_period_service_dog(Thread):
                         cacheMaster.lock.release()
 
                 if 0: assert isinstance(caches, CoreCaches)
-                
+                self.connection.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
                 cur = self.connection.cursor()
                 for acc in caches.account_cache.data:
                     try:
@@ -1427,52 +1387,6 @@ class ipn_service(Thread):
         Thread.__init__(self)
         self.connection = get_connection(vars.db_dsn)
         
-    def create_speed(self, default, speeds,  correction, addonservicespeed, speed, date_):        
-        """
-        Функция форматирования строки для изменения скорости
-        """
-        result_params=speeds        
-        if speed=='':   
-            """
-            Если в профиле пользователя не указаны конкретные настройки скорости, получаем их
-            """         
-            defaults = default            
-            speeds   =  result_params            
-            defaults = defaults[:6] if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]            
-            result=[]            
-            min_delta, minimal_period = -1, []            
-            now=date_            
-            for speed in speeds:                
-                #Определяем составляющую с самым котортким периодом из всех, которые папали в текущий временной промежуток
-                tnc,tkc,delta,res = fMem.in_period_(speed[6],speed[7],speed[8], now)                
-                if res==True and (delta<min_delta or min_delta==-1):                    
-                    minimal_period=speed                    
-                min_delta=delta            
-            
-            minimal_period = minimal_period[:6] if minimal_period else ["0/0","0/0","0/0","0/0","","0/0"]            
-            for k in xrange(0, 6):                
-                s=minimal_period[k]                
-                if s=='0/0' or s=='/' or s=='':                    
-                    res=defaults[k]                
-                else:                    
-                    res=s                
-                result.append(res)   #Проводим корректировку скорости в соответствии с лимитом            
-            result = get_corrected_speed(result, correction)            
-            if addonservicespeed:                
-                result = get_corrected_speed(result, addonservicespeed)                        
-            if result==[]:                 
-                result = defaults if defaults else ["0/0","0/0","0/0","0/0","8","0/0"]                            
-            
-            return result
-        else:
-            try:
-                return parse_custom_speed_lst(acc.ipn_speed)
-            except Exception, ex:
-                logger.error("%s : exception: %s \n %s Can not parse account speed %s", (self.getName(), repr(ex), traceback.format_exc()), acc.ipn_speed)
-                return ["0/0","0/0","0/0","0/0","8","0/0"]           
-           
-    
-      
     def run(self):
         global suicideCondition, cacheMaster, vars
         
@@ -1602,7 +1516,7 @@ class ipn_service(Thread):
                                         addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
                                         break    
                             #Получаем параметры скорости                         
-                            speed = self.create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.ipn_speed, dateAT)                            
+                            speed = create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.ipn_speed, dateAT, fMem)                            
                     
         
         
@@ -1825,7 +1739,7 @@ def main():
     sys.stderr = stderr_log
     #main thread should not exit!
     while True:
-        time.sleep(30)
+        time.sleep(20)
         if not cacheThr.isAlive():
             print 'Core: exiting\n'
             sys.exit()

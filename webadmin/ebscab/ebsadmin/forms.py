@@ -71,8 +71,8 @@ class ReportForm(forms.Form):
         
 class LogViewer(forms.Form):
     log = forms.ChoiceField(choices=(), label=u'Лог')
-    lines = forms.IntegerField(label=u'Количество последних строк')
-    full = forms.BooleanField()
-    content = forms.TextInput()
+    lines = forms.IntegerField(label=u'Количество последних строк', initial=100)
+    full = forms.BooleanField(required=False)
+
     
     

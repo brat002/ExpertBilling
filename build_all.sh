@@ -36,8 +36,8 @@ mkdir builds/$1
 echo "Additional keys: " $5
 
 
-crypto_build="core"
-simple_build="rad nf nfroutine"
+crypto_build="core rad_auth rad_acct nf nfroutine"
+simple_build=""
 total_build="$crypto_build $simple_build"
 
 cp license.lic license.lic.old
@@ -51,7 +51,7 @@ for bld in $simple_build; do
     python freezer/freezer_rec.py  -i $5 '' '' $bld.py > builds/$1.$bld.buildlog;
 done
 
-#python freezer/freezer_rec.py --nloc=chartprovider.pychartdir26,chartprovider.pychartdir25,chartprovider.pychartdir27 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i $5 $karg $reskey rpc.py > builds/$1.rpc.buildlog;
+#python freezer/freezer_rec.py -i $5 $karg $reskey rpc.py > builds/$1.rpc.buildlog;
 
 cp license.lic builds/$1/license.lic
 cp license.lic.old license.lic
