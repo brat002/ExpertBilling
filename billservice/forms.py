@@ -4,7 +4,7 @@ from django.contrib.admin import widgets
 from datetime import datetime, date
 from django.forms import ModelForm
 from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
-from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode, PeriodicalServiceLog
+from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode, PeriodicalServiceLog, Switch
 from billservice.models import Organization, BalanceHistory, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService, SheduleLog
 from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
 from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware
@@ -590,10 +590,44 @@ class HardwareForm(ModelForm):
         model = Hardware 
 
 class TPChangeRuleForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(TPChangeRuleForm, self).__init__(*args, **kwargs)
+
+        
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    
+
     class Meta:
         model = TPChangeRule
         
+class TPChangeMultipleRuleForm(forms.Form):
+    from_tariff = forms.ModelChoiceField(queryset=Tariff.objects.all())
+    to_tariffs = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), label=u'Тарифные планы', required=False, widget=forms.widgets.SelectMultiple)
+    disabled = forms.BooleanField(label=u'Временно запретить', initial=False, required=False)
+    cost = forms.FloatField(label=u'Стоимость перехода', initial=0)
+    ballance_min = forms.FloatField(label=u'Минимальный баланс', initial=0)
+    on_next_sp = forms.BooleanField(label=u'Со следующего расчётного периода', required=False)
+    settlement_period = forms.ModelChoiceField(queryset=SettlementPeriod.objects.all(), label=u'Расчётный период', required=False)
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    mirror = forms.BooleanField(label='Создать зеркальное правило',required=False)
+    
+    def __init__(self, *args, **kwargs):
+        super(TPChangeMultipleRuleForm, self).__init__(*args, **kwargs)
+        self.fields['to_tariffs'].widget.attrs['size'] =20
+        
+ 
+    
+
+        
 class NewsForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(NewsForm, self).__init__(*args, **kwargs)
+        self.fields['body'].widget.attrs['class'] = 'input-xlarge span8'
+        self.fields['created'].widget =widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'})
+        self.fields['age'].widget = forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'})
+
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    accounts = AutoCompleteSelectMultipleField( 'account_fts', label=u'Аккаунты', required = False)
     class Meta:
         model = News
 
@@ -740,6 +774,8 @@ class DealerSelectForm(forms.Form):
     dealer_item = forms.ModelChoiceField(queryset = Dealer.objects.all())
     
     
-##############
-from django.forms.models import modelformset_factory
-PeriodicalServiceFormSet = modelformset_factory(PeriodicalService)
+class SwitchForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    class Meta:
+        model = Switch
+        

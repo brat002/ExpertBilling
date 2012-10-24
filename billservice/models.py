@@ -1,6 +1,6 @@
 #-*-coding=utf-8-*-
 from django.db import models
-from ebscab.nas.models import Nas, TrafficClass, TrafficClass, Switch
+from ebscab.nas.models import Nas, TrafficClass, TrafficClass
 from django.contrib.auth.models import User
 from django.db.models import F
 import datetime, time
@@ -1367,6 +1367,7 @@ class IPInUse(models.Model):
     datetime = models.DateTimeField(verbose_name=u'Дата выдачи')
     disabled = models.DateTimeField(blank=True, null=True, verbose_name=u'Дата освобождения')
     dynamic = models.BooleanField(default=False, verbose_name=u'Выдан динамически')
+    ack  = models.BooleanField(default=False, blank=True, verbose_name=u'Выдача подтверждена получением Accounting пакета')
 
     class Meta:
         ordering = ['ip']
@@ -1394,16 +1395,21 @@ class TrafficTransaction(models.Model):
            )
 
 class TPChangeRule(models.Model):
-    from_tariff = models.ForeignKey(Tariff, related_name="from_tariff")
-    to_tariff = models.ForeignKey(Tariff, related_name="to_tariff")
-    disabled = models.BooleanField()
-    cost = models.FloatField()
-    ballance_min = models.FloatField()
-    settlement_period = models.ForeignKey(SettlementPeriod, blank=True, null=True, on_delete=models.SET_NULL)
-    on_next_sp = models.BooleanField( blank=True, default=False)
+    from_tariff = models.ForeignKey(Tariff, verbose_name=u'С тарифного плана', related_name="from_tariff")
+    to_tariff = models.ForeignKey(Tariff, verbose_name=u'На тарифный план', related_name="to_tariff")
+    disabled = models.BooleanField(verbose_name=u'Временно запретить', blank=True, default=False)
+    cost = models.FloatField(verbose_name=u'Стоимость перехода')
+    ballance_min = models.FloatField(verbose_name=u'Минимальный баланс')
+    on_next_sp = models.BooleanField(verbose_name=u'Со следующего расчётного периода', blank=True, default=False)
+    settlement_period = models.ForeignKey(SettlementPeriod, verbose_name=u'Расчётный период', blank=True, null=True, on_delete=models.SET_NULL)
+    
+    
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('tpchangerule_delete'), self.id)
     
     class Meta:
         ordering = ['from_tariff', 'to_tariff']
+        unique_together = (("from_tariff", "to_tariff"),)
         verbose_name = u"Правило смены тарифов"
         verbose_name_plural = u"Правила смены тарифов"
         permissions = (
@@ -1535,13 +1541,16 @@ class AddonServiceTransaction(models.Model):
 
     
 class News(models.Model):
-    body = models.TextField(u'Заголовок новости')
-    age = models.DateTimeField(blank=True, null=True)
-    public = models.BooleanField(default=False)
-    private = models.BooleanField(default=False)
-    agent = models.BooleanField(default=False)
-    created = models.DateTimeField(blank=True, auto_now_add=True)
+    body = models.TextField(verbose_name=u'Заголовок новости')
+    age = models.DateTimeField(verbose_name=u'Актуальна до', blank=True, null=True)
+    public = models.BooleanField(verbose_name=u'Публичная', help_text=u'Отображать в публичной части веб-кабинета', default=False)
+    private = models.BooleanField(verbose_name=u'Приватная', help_text=u'Отображать в приватной части веб-кабинета', default=False)
+    agent = models.BooleanField(verbose_name=u'Показать через агент', default=False)
+    created = models.DateTimeField(verbose_name=u'Актуальна с', blank=True)
     
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('news_delete'), self.id)
+
     class Meta:
         ordering = ['-created']
         verbose_name = u"Новость"
@@ -1572,7 +1581,7 @@ class SubAccount(models.Model):
     ipn_sleep = models.BooleanField()
     need_resync = models.BooleanField()
     speed = models.TextField(blank=True)
-    switch = models.ForeignKey(Switch, blank=True, null=True, on_delete = models.SET_NULL)
+    switch = models.ForeignKey("Switch", blank=True, null=True, on_delete = models.SET_NULL)
     switch_port = models.IntegerField(blank=True, null=True)
     allow_dhcp = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать получать IP адреса по DHCP")
     allow_dhcp_with_null = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать получать IP адреса по DHCP при нулевом балансе")    
@@ -1845,3 +1854,47 @@ class PeriodicalServiceLog(models.Model):
     
     class Meta:
         ordering = ['-datetime']
+
+class Switch(models.Model):
+    manufacturer = models.ForeignKey(to=Manufacturer, verbose_name=u"Производитель", max_length=250, blank=True, null=True, default='', on_delete=models.SET_NULL)
+    model = models.ForeignKey(to=Model, verbose_name=u"Модель", max_length=250, blank=True, null=True, default='', on_delete=models.SET_NULL)
+    name = models.CharField(max_length=500, verbose_name=u"Название", blank=True, default='')
+    sn = models.CharField(max_length=500, verbose_name=u"Серийный номер", blank=True, default='')
+    city = models.ForeignKey(to=City, verbose_name=u"Город",  blank=True, null=True, default='', on_delete=models.SET_NULL)
+    street = models.CharField(verbose_name=u"Улица", max_length=250, blank=True,  default='')
+    house = models.CharField(verbose_name=u"Дом", max_length=250, blank=True, default='')
+    place = models.TextField(blank=True, verbose_name=u"Место размещения", default='')#место установки
+    comment = models.TextField(blank=True, verbose_name=u"Комментарий", default='')#
+    ports_count = models.IntegerField(blank=True, verbose_name=u"Количество портов", default=0)
+    broken_ports = models.TextField(blank=True, verbose_name=u"Битые порты", default='')#через запятую
+    uplink_ports = models.TextField(blank=True, verbose_name=u"Аплинк-порты", default='')#через запятую
+    protected_ports = models.TextField(blank=True, verbose_name=u"Порты с грозозащитой", default='')#через запятую
+    monitored_ports = models.TextField(blank=True, verbose_name=u"Порты с мониторингом", default='')
+    disabled_ports = models.TextField(blank=True, verbose_name=u"Отключенные порты", default='')
+    snmp_support = models.BooleanField(default=False, verbose_name=u"Поддержка SNMP")
+    snmp_version = models.CharField(max_length=10, choices=((1, u"v1",),(1, u"v2c",)), verbose_name=u"Версия SNMP", blank=True, default='v1')#version
+    snmp_community = models.CharField(max_length=128, verbose_name=u"SNMP компьюнити", blank=True, default='')#
+    ipaddress = models.IPAddressField(blank=True, verbose_name=u"IP адрес", default=None)
+    macaddress = models.CharField(max_length=32, verbose_name=u"MAC адрес", blank=True, default='')
+    management_method = models.IntegerField(verbose_name=u"Метод SNMP управления", choices=((0, u"Не управлять"),(1, u"SSH"),(2, u"SNMP"),(3, u"Telnet"),(4, u"localhost")),  blank=True, default=1)
+    option82 = models.BooleanField(verbose_name=u"Опция 82", default=False)
+    option82_auth_type = models.IntegerField(verbose_name=u"Тип авторизации по Option82", choices=((0, u"Порт",), (1, u"Порт+MAC",), (2, u"MAC",)), blank=True, null=True)#1-port, 2 - mac+port, 3-mac
+    secret = models.CharField(verbose_name=u"RADIUS secret", max_length=128, blank=True, default='')
+    identify = models.CharField(verbose_name=u"RADIUS identify", max_length=128, blank=True, default='')
+    username = models.CharField(verbose_name=u"Имя пользователя", max_length=256, blank=True, default='')
+    password = models.CharField(verbose_name=u"Пароль пользователя", max_length=256, blank=True, default='')
+    enable_port = models.TextField(verbose_name=u"Команда включения порта", blank=True, default='')
+    disable_port = models.TextField(verbose_name=u"Команда отключения порта", blank=True, default='')
+    option82_template = models.CharField(verbose_name=u"Шаблон option82", choices=((u"dlink-32xx",'dlink-32xx'),), blank=True, max_length=256,  default='')
+    remote_id = models.CharField(verbose_name=u"remote_id", blank=True, max_length=256, default='')
+    
+    def __unicode__(self):
+        return u"%s" % self.name
+    
+    class Meta:
+        verbose_name = u"Коммутатор"
+        verbose_name_plural = u"Коммутаторы"
+        permissions = (
+           ("switch_view", u"Просмотр"),
+           )
+        

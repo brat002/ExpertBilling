@@ -393,46 +393,5 @@ class TrafficNode(models.Model):
            ("trafficnode_view", u"Просмотр"),
            )
         
-class Switch(models.Model):
-    manufacturer = models.CharField(max_length=250, blank=True, default='')
-    model = models.CharField(max_length=500, blank=True, default='')
-    name = models.CharField(max_length=500, blank=True, default='')
-    sn = models.CharField(max_length=500, blank=True, default='')
-    city = models.IntegerField(db_column='city_id')
-    street = models.IntegerField(db_column='street_id')
-    house = models.IntegerField(db_column='house_id')
-    place = models.TextField(blank=True, default='')#место установки
-    comment = models.TextField(blank=True, default='')#
-    ports_count = models.IntegerField(blank=True, default=0)
-    broken_ports = models.TextField(blank=True, default='')#через запятую
-    uplink_ports = models.TextField(blank=True, default='')#через запятую
-    protected_ports = models.TextField(blank=True, default='')#через запятую
-    monitored_ports = models.TextField(blank=True, default='')
-    disabled_ports = models.TextField(blank=True, default='')
-    snmp_support = models.BooleanField(default=False)
-    snmp_version = models.CharField(max_length=10, blank=True, default='v1')#version
-    snmp_community = models.CharField(max_length=128, blank=True, default='')#
-    ipaddress = models.IPAddressField(blank=True, default=None)
-    macaddress = models.CharField(max_length=32, blank=True, default='')
-    management_method = models.IntegerField(blank=True, default=1)
-    option82 = models.BooleanField(default=False)
-    option82_auth_type = models.IntegerField( blank=True, null=True)#1-port, 2 - mac+port, 3-mac
-    secret = models.CharField(max_length=128, blank=True, default='')
-    identify = models.CharField(max_length=128, blank=True, default='')
-    username = models.CharField(max_length=256, blank=True, default='')
-    password = models.CharField(max_length=256, blank=True, default='')
-    enable_port = models.TextField(blank=True, default='')
-    disable_port = models.TextField(blank=True, default='')
-    option82_template = models.TextField(blank=True, default='')
-    remote_id = models.TextField(blank=True, default='')
-    
-    def __unicode__(self):
-        return u"%s" % self.name
-    
-    class Meta:
-        verbose_name = u"Коммутатор"
-        verbose_name_plural = u"Коммутаторы"
-        permissions = (
-           ("switch_view", u"Просмотр"),
-           )
+
     
