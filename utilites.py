@@ -20,6 +20,7 @@ import datetime, calendar, time
 import os, os.path, sys, time, binascii, socket, select
 from hashlib import md5
 
+
 try:
     from os import kill
 except Exception, ex:
@@ -54,18 +55,6 @@ def log_error_(lstr, level=logging.ERROR):
 def log_adapt(lstr, level):
     #print lstr
     pass
-    
-class IPNAccount(object):
-    def __init__(self):
-        nas_ip=''
-        login=''
-        password=''
-        format_string=''
-        access_type=''
-        username=''
-        user_id=''
-        ipaddress=''
-        mac_address=''
 
 def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='', caller_id='', format_string=''):
     """
@@ -85,20 +74,20 @@ def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='
     #log_debug_('PoD args: %s' % str([account_id, account_name, account_vpn_ip, account_ipn_ip, account_mac_address, access_type, nas_ip, nas_type, nas_name, nas_secret, nas_login, nas_password, session_id, format_string]))
     
     access_type = access_type.lower()
-    if (nas.speed_value1 or nas.speed_value2) and ((format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg'] ) or access_type=='hotspot' or nas.type=='cisco'):
+    if (nas.get('speed_value1') or nas.get('speed_value2')) and ((format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg'] ) or access_type=='hotspot' or nas.get('type')=='cisco'):
         log_debug_("Send PoD")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(20)
         sock.bind(('0.0.0.0',24000))
-        doc = packet.AcctPacket(code=40, secret=str(nas.secret), dict=dict)
-        doc.AddAttribute('NAS-IP-Address', str(nas.ipaddress))
-        if nas.type!='cisco' and nas.identify:
-            doc.AddAttribute('NAS-Identifier', str(nas.identify))
+        doc = packet.AcctPacket(code=40, secret=str(nas.get('secret')), dict=dict)
+        doc.AddAttribute('NAS-IP-Address', str(nas.get('ipaddress')))
+        if nas.type!='cisco' and nas.get('identify'):
+            doc.AddAttribute('NAS-Identifier', str(nas.get('identify')))
             
         if access_type=='lisg':
-            doc.AddAttribute('User-Name', str(subacc.ipn_ip_address))
-        elif subacc.username:
-            doc.AddAttribute('User-Name', str(subacc.username))
+            doc.AddAttribute('User-Name', str(subacc.get('ipn_ip_address')))
+        elif subacc.get('username'):
+            doc.AddAttribute('User-Name', str(subacc.get('username')))
             
         if nas.type=='cisco':
             log_debug_("Normalization cisco session id")
@@ -111,16 +100,14 @@ def PoD(dict, account, subacc, nas, access_type, session_id='', vpn_ip_address='
         elif access_type not in ('hotspot', 'lisg') and vpn_ip_address:
             doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
             
-        if caller_id and nas.type!='cisco' :
+        if caller_id and nas.get('type')!='cisco' :
             doc.AddAttribute('Calling-Station-Id', str(caller_id))
             
         doc_data=doc.RequestPacket()
-        sock.sendto(doc_data,(str(nas.ipaddress), 1700))
+        sock.sendto(doc_data,(str(nas.get('ipaddress')), 1700))
         (data, addrport) = sock.recvfrom(8192)
-        doc=packet.AcctPacket(secret=nas.secret, dict=dict, packet=data)
+        doc=packet.AcctPacket(secret=nas.get('secret'), dict=dict, packet=data)
         sock.close()
-        #for attr in doc.keys():
-        #    print attr, doc[attr][0]
             
         return doc.has_key("Error-Cause")==False
     elif format_string!='' and access_type in ['pptp', 'l2tp', 'pppoe']:

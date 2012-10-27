@@ -35,7 +35,7 @@ from classes.rad_class.CardActivateData import CardActivateData
 from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
-from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, command_string_parser, parse_custom_speed_lst_rad, split_speed, get_decimals_speeds, create_speed
+from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, command_string_parser, speed_list_to_dict, create_speed
 from pkgutil import simplegeneric
 from Queue import Queue
 from option_parser import parse
@@ -45,9 +45,6 @@ import auth
 from auth import Auth, get_eap_handlers
 
 w32Import = False
-try:    import win32api,win32process,win32con
-except: pass
-else:   w32Import = True
 
 import twisted.internet
 from twisted.internet.protocol import DatagramProtocol
@@ -397,17 +394,7 @@ class HandleSAuth(HandleSBase):
         
         self.session_speed = newspeed = ''.join([unicode(spi) for spi in speed]) 
         #print speed_sess
-        command_dict={'max_limit_rx': speed[0],
-        'max_limit_tx': speed[1],
-        'burst_limit_rx': speed[2],
-        'burst_limit_tx': speed[3],
-        'burst_treshold_rx': speed[4],
-        'burst_treshold_tx': speed[5],
-        'burst_time_rx': speed[6],
-        'burst_time_tx': speed[7],
-        'min_limit_rx': speed[8],
-        'min_limit_tx': speed[9],
-        'priority': speed[10],}
+        command_dict=speed_list_to_dict(speed)
         
         if nas.speed_value1:
             result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
@@ -577,7 +564,8 @@ class HandleSAuth(HandleSBase):
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
         if allow_dial and acc.tariff_active:
             
-            if acc.sessionscount!=0:
+            if not acc.sessionscount==subacc.sessionscount==0:
+                sc = subacc.sessionscount if subacc.sessionscount else acc.sessionscount #Переопределение на дефолтное значение
                 vars.cursor_lock.acquire()
                 self.create_cursor()
                 try:
@@ -585,9 +573,9 @@ class HandleSAuth(HandleSBase):
                     #self.cursor.connection.commit()
                     cnt = self.cursor.fetchone()
                     if cnt:
-                        if cnt[0]>=acc.sessionscount:
+                        if cnt[0]>=sc:
                             vars.cursor_lock.release()
-                            logger.warning("Max sessions count %s reached for username %s. If this error persist - check your nas settings and perform maintance radius_activesession table", (acc.sessionscount, username,))
+                            logger.warning("Max sessions count %s reached for username %s. If this error persist - check your nas settings and perform maintance radius_activesession table", (sc, username,))
                             sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_SESSIONS_COUNT_REACHED", service=self.access_type, cause=u'Превышено количество одновременных сессий для аккаунта', datetime=self.datetime)
                             return self.auth_NA(authobject)                      
                     vars.cursor_lock.release()    
