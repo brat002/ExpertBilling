@@ -1607,7 +1607,8 @@ class SubAccount(models.Model):
     allow_mac_update = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешить самостоятельно обновлять MAC адрес через веб-кабинет")  
     ipv4_ipn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_ipn_ippool_set', on_delete=models.SET_NULL)
     ipv4_vpn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_vpn_ippool_set', on_delete=models.SET_NULL)
-  
+    sessionscount = models.IntegerField(verbose_name=u"Одноверменных RADIUS сессий на субаккаунт", blank=True, default=0)
+    
     def __unicode__(self):
         return u"%s" % self.username
 

@@ -90,7 +90,22 @@
                           </div>
                       </div>
                  </div>
-
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.sessionscount.label}}</label>
+                          <div class="controls">
+                          {{ form.sessionscount }}
+                          {% if form.sessionscount.errors %}
+                              <span class="help-inline">{% for error in form.sessionscount.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.sessionscount.help_text%}
+                              <p class="help-block">
+                                  {{ form.sessionscount.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                 </div>
                 <legend>Настройки скорости по-умолчанию</legend>
                 <fieldset>
                   <div class="control-group">
