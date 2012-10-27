@@ -25,7 +25,7 @@ from common.AddonServiceData import AddonServiceData
 from common.AddonServiceTarifData import AddonServiceTarifData
 from common.AccountAddonServiceData import AccountAddonServiceData
 from core_class.AddonPeriodicalData import AddonPeriodicalData
-from rad_class.SubAccountsData import SubAccountsData
+from core_class.SubAccountData import SubAccountData
 
 class CoreCaches(CacheCollection):
     __slots__ = () + ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache', 'underbilled_accounts_cache', 'addonservice_cache', 'addontarifservice_cache', 'accountaddonservice_cache', 'addonperiodical_cache', 'subaccount_cache', 'radius_traffic_transmit_service_cache', 'radius_traffic_node_cache')
@@ -377,8 +377,8 @@ class AddonPeriodicalCache(CacheItem):
 class SubAccountsCache(CacheItem):
     __slots__ = ('by_account_id', 'by_username', 'by_mac', 'by_ipn_ip', 'by_vpn_ip', 'by_id')
     
-    datatype = SubAccountsData
-    sql = rad_sql['subaccounts']
+    datatype = SubAccountData
+    sql = core_sql['subaccounts']
     
     def __init__(self):
         super(SubAccountsCache, self).__init__()

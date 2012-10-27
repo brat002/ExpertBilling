@@ -49,14 +49,14 @@ nfroutine_sql = \
                                 ORDER BY bt.id;"""}
 
 core_sql = \
-         {'accounts':"""SELECT ba.id, ba.ballance, ba.credit, date_trunc('second', act.datetime), bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, date_trunc('second', ba.created), ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username, ba.password, bt.require_tarif_cost, act.periodical_billed, TRUE, False, ba.allow_ipn_with_null, ba.allow_ipn_with_minus, ba.allow_ipn_with_block, bt.radius_traffic_transmit_service_id,bt.userblock_max_days  
+         {'accounts':"""SELECT ba.id, ba.ballance, ba.credit, date_trunc('second', act.datetime), bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, date_trunc('second', ba.created), ba.disabled_by_limit, ba.balance_blocked,  bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status,  ba.username, ba.password, bt.require_tarif_cost, act.periodical_billed, TRUE, False, bt.radius_traffic_transmit_service_id,bt.userblock_max_days  
                         FROM billservice_account as ba
                         LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s ORDER BY datetime DESC LIMIT 1)
                         LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
                         WHERE ba.deleted is Null
                         ;""",
           'underbilled_per_accs': 
-                     """SELECT ba.id, ba.ballance, ba.credit, date_trunc('second', act.datetime), bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, date_trunc('second', ba.created), ba.disabled_by_limit, ba.balance_blocked, ba.nas_id, ba.vpn_ip_address, ba.ipn_ip_address,ba.ipn_mac_address, ba.assign_ipn_ip_from_dhcp, ba.ipn_status, ba.ipn_speed, ba.vpn_speed, ba.ipn_added, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.allow_vpn_null, ba.allow_vpn_block, ba.username, ba.password, bt.require_tarif_cost, act.periodical_billed, FALSE    
+                     """SELECT ba.id, ba.ballance, ba.credit, date_trunc('second', act.datetime), bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, date_trunc('second', ba.created), ba.disabled_by_limit, ba.balance_blocked, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.username, ba.password, bt.require_tarif_cost, act.periodical_billed, FALSE    
                             FROM billservice_account as ba
                             LEFT JOIN billservice_accounttarif AS act ON ba.id=act.account_id  
                             LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id 
@@ -150,13 +150,15 @@ core_sql = \
                         sp.length, sp.length_in, sp.autostart,
                         accas.account_id, accas.activated, accas.deactivated, accas.temporary_blocked, accas.last_checkout,ads.id, accas.subaccount_id
                         FROM billservice_addonservice AS ads JOIN billservice_settlementperiod AS sp ON ads.sp_period_id = sp.id JOIN billservice_accountaddonservice AS accas ON accas.service_id = ads.id 
-                        WHERE ads.service_type = 'periodical' AND (accas.deactivated ISNULL OR accas.last_checkout ISNULL OR NOT accas.last_checkout >= accas.deactivated);"""}
+                        WHERE ads.service_type = 'periodical' AND (accas.deactivated ISNULL OR accas.last_checkout ISNULL OR NOT accas.last_checkout >= accas.deactivated);""",
+        'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice, allow_ipn_with_null, allow_ipn_with_minus, allow_ipn_with_block, vlan, vpn_ipv6_ip_address,ipv4_ipn_pool_id,ipv4_vpn_pool_id FROM billservice_subaccount;""",
+                        }
 rad_sql = \
-        {'accounts'  :"""SELECT ba.id, ba.username, ba.ipn_mac_address, bt.time_access_service_id, 
-                        ba.password, ba.nas_id, ba.vpn_ip_address, bt.id, accps.access_type, 
+        {'accounts'  :"""SELECT ba.id, ba.username,  bt.time_access_service_id, 
+                        ba.nas_id, ba.vpn_ip_address, bt.id, accps.access_type, 
                         ba.status, ba.balance_blocked, (ba.ballance+ba.credit) as ballance, 
-                        ba.disabled_by_limit, ba.vpn_speed, bt.active, 
-                        ba.allow_vpn_null, ba.allow_vpn_block, ba.ipn_ip_address, ba.ipn_speed, ba.assign_dhcp_null, ba.assign_dhcp_block, ba.associate_pptp_ipn_ip, ba.associate_pppoe_mac, bt.radius_traffic_transmit_service_id, bt.vpn_ippool_id, bt.vpn_guest_ippool_id, accps.sessionscount
+                        ba.disabled_by_limit, bt.active, 
+                        bt.radius_traffic_transmit_service_id, bt.vpn_ippool_id, bt.vpn_guest_ippool_id, accps.sessionscount
                         FROM billservice_account as ba
                         JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s ORDER BY datetime DESC LIMIT 1)
                         JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
@@ -197,6 +199,6 @@ rad_sql = \
          'attrs'    :"""SELECT vendor, attrid, value, tarif_id, nas_id FROM billservice_radiusattrs;""",
          'ippool'    :"""SELECT id, next_ippool_id FROM billservice_ippool;""",
          'switch'    :"""SELECT id, identify, option82, option82_auth_type, option82_template, remote_id FROM billservice_switch;""",
-         'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice, allow_ipn_with_null, allow_ipn_with_minus, allow_ipn_with_block, vlan, vpn_ipv6_ip_address,ipv4_ipn_pool_id,ipv4_vpn_pool_id FROM billservice_subaccount;""",
+         'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, vpn_speed, vlan, vpn_ipv6_ip_address, ipv4_vpn_pool_id, sessionscount FROM billservice_subaccount;""",
 
 }

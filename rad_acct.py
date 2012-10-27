@@ -40,9 +40,7 @@ from Queue import Queue
 
 
 w32Import = False
-try:    import win32api,win32process,win32con
-except: pass
-else:   w32Import = True
+
 
 import twisted.internet
 from twisted.internet.protocol import DatagramProtocol

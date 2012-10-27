@@ -455,9 +455,17 @@
                         </div>
                     </div>
                     <div class="control-group">
-                        <label class="control-label" for="input-sessions-amount">Сессий</label>
+                        <label class="control-label" for="input-vpn-speed">{{form.sessionscount.label}}</label>
                         <div class="controls">
-                            <input type="text" class="input-xsmall" id="input-sessions-amount">
+                                {{ form.sessionscount }}
+                           {% if form.sessionscount.errors %}
+                               <span class="help-inline">{% for error in form.sessionscount.errors %}{{ error }}<br/> {% endfor %}</span>
+                           {% endif %}
+                           {% if form.sessionscount.help_text%}
+                               <p class="help-block">
+                                   {{ form.sessionscount.help_text|safe }}
+                               </p>
+                           {% endif %}
                         </div>
                     </div>
 

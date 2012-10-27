@@ -77,6 +77,27 @@ def timetransaction(cursor, timeaccessservice_id, accounttarif_id, account_id, s
     cursor.execute("""INSERT INTO billservice_timetransaction(timeaccessservice_id, accounttarif_id, account_id, session_id, summ, created) VALUES (%s, %s, %s, %s, (-1)*%s, %s);
                    """, (timeaccessservice_id, accounttarif_id, account_id, session_id, summ, created,))
     
+def get_acctf_history(cursor, account_id):
+    """
+    Выбрать текущий аккаунттариф и следующий, если на текущем тарифе ест период. услуги, но нет списаний ИЛИ списания есть, но нет финального списания
+    """
+    cursor.execute("""SELECT id, datetime, (SELECT id FROM billservice_accounttarif WHERE account_id=at.account_id and
+                        datetime>at.datetime order by datetime asc LIMIT 1) as next_accounttarif_id, tarif_id
+                        FROM billservice_accounttarif as at WHERE account_id=%s
+                        and datetime<now()
+                        and 
+                        True = (SELECT True from billservice_periodicalservice as ps WHERE ps.tarif_id=at.tarif_id LIMIT 1 )
+                        and
+                        True =((SELECT True from billservice_periodicalservicelog WHERE accounttarif_id=at.id and last_billed=False LIMIT 1) or (SELECT count(*)=0 from billservice_periodicalservicelog WHERE accounttarif_id=at.id))
+                        ORDER BY datetime""", (account_id, ))
+    return cursor.fetchall()
+
+def check_in_suspended(cursor, account_id, dttime):
+    cursor.execute("""
+    SELECT True from billservice_suspendedperiod where account_id=%s and %s between start_date and end_date;
+    """, (account_id, dttime))
+    return len(cursor.fetchone())==0
+
 def timetransaction_fn(cursor, timeaccessservice_id, accounttarif_id, account_id, summ=0, created=None, sessionid='', interrim_update=None):
     if not created:
         created=datetime.datetime.now()
@@ -91,13 +112,13 @@ def ps_history(cursor, ps_id, accounttarif, account_id, type_id, summ=0, created
                    INSERT INTO billservice_periodicalservicehistory(service_id, accounttarif_id, account_id, type_id, summ, created) VALUES (%s, %s, %s, %s, (-1)*%s, %s);
                    """, (ps_id, accounttarif, account_id, type_id, summ, created,))
     
-def addon_history(cursor, addon_id, service_type, ps_id, accounttarif, account_id, type_id, summ=0, created=None):
+def addon_history(cursor, addon_id, service_type, ps_id, account_id, type_id, summ=0, created=None):
     if not created:
         created=datetime.datetime.now()
     cursor.execute("""
                    INSERT INTO billservice_addonservicetransaction(service_id, service_type, account_id, accountaddonservice_id, 
-            accounttarif_id, summ, created, type_id) VALUES (%s, %s, %s, %s, %s, (-1)*%s, %s, %s);
-                   """, (addon_id, service_type, account_id, ps_id, accounttarif, summ, created, type_id))
+                   summ, created, type_id) VALUES (%s, %s, %s, %s, (-1)*%s, %s, %s);
+                   """, (addon_id, service_type, account_id, ps_id, summ, created, type_id))
     
 def get_last_checkout(cursor, ps_id, accounttarif, co_datetime=None):
     if co_datetime:
@@ -115,12 +136,12 @@ def get_last_checkout(cursor, ps_id, accounttarif, co_datetime=None):
     except:
         return None
     
-def get_last_addon_checkout(cursor, ps_id, accounttarif, co_datetime=None):
+def get_last_addon_checkout(cursor, accountaddonservice_id, accounttarif, co_datetime=None):
 
     cursor.execute("""
                     SELECT date_trunc('second', created) FROM billservice_addonservicetransaction
                     WHERE accountaddonservice_id=%s ORDER BY created DESC LIMIT 1
-                    """ , (ps_id,))
+                    """ , (accountaddonservice_id,))
 
     try:
         return cursor.fetchone()[0]

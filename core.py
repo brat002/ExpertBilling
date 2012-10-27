@@ -25,20 +25,19 @@ import db
 
 from decimal import Decimal
 from copy import copy, deepcopy
-from daemonize import daemonize
 from threading import Thread, Lock
 from collections import defaultdict
 
-
-from constants import rules
 from saver import allowedUsersChecker, setAllowedUsers
-from utilites import parse_custom_speed, parse_custom_speed_lst, cred, get_decimals_speeds
-from utilites import rosClient, settlement_period_info, in_period, in_period_info, create_speed
+from utilites import get_decimals_speeds
+from utilites import settlement_period_info, in_period, in_period_info, create_speed
 
-from utilites import create_speed_string, change_speed, PoD, get_active_sessions, get_corrected_speed
-from db import  dbRoutine
-from db import transaction, ps_history, get_last_checkout
-from db import timetransaction, get_last_addon_checkout, addon_history
+
+from tasks import PoD, change_speed, cred
+import tasks
+
+from db import transaction, ps_history, get_last_checkout, get_acctf_history
+from db import timetransaction, get_last_addon_checkout, addon_history, check_in_suspended
 
 
 from classes.cacheutils import CacheMaster
@@ -51,8 +50,6 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
-
-import ssh_paramiko
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
@@ -186,9 +183,9 @@ class check_vpn_access(Thread):
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         else:
                             logger.debug("%s: about to send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                            result = PoD(vars.DICT, acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action))
+                            PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action))
                             logger.debug("%s: POD over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-
+                            
 
                         
                         from_start = (dateAT-rs.date_start).seconds+(dateAT-rs.date_start).days*86400
@@ -242,92 +239,80 @@ class periodical_service_bill(Thread):
         self.NOW = datetime.datetime(2000, 1, 1)
 
     #ps_type - 1 for periodocal service, 2 - for periodical addonservice 
-    def iterate_ps(self, cur, caches, acc, ps, mult, dateAT, pss_type):
+            
+    def iterate_ps(self, cur, caches, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, pss_type):
         account_ballance = (acc.ballance or 0) + (acc.credit or 0)
         susp_per_mlt = 1
         if pss_type == PERIOD:
-            susp_per_mlt = 0 if not acc.current_acctf or caches.suspended_cache.by_account_id.has_key(acc.account_id) else 1
+
+            time_start_ps = acctf_datetime if ps.autostart else ps.time_start
             
-            time_start_ps = acc.datetime if ps.autostart else ps.time_start
-            
-            self.NOW = dateAT if acc.current_acctf else acc.end_date
             #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
-            period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, self.NOW)                                
-            # Проверка на расчётный период без повторения
-            if period_end < self.NOW: return
+
             get_last_checkout_ = get_last_checkout
         elif pss_type == ADDON:
             if ps.temporary_blocked:
                 susp_per_mlt = 0
             time_start_ps = ps.created
-            self.NOW = dateAT if not ps.deactivated else ps.deactivated
-            period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, self.NOW) 
             get_last_checkout_ = get_last_addon_checkout
         else:
             return
-        s_delta = datetime.timedelta(seconds=delta)
         
-        if ps.cash_method == "GRADUAL":
-            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id)  
-            logger.debug('%s: Periodical Service: GRADUAL last checkout %s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))                                  
-            if last_checkout is None:
-                if pss_type == PERIOD:
-                    #Если списаний по этой услуге не было - за дату начала списания берём дату подключения пользователя на тариф.
-                    last_checkout = acc.datetime if ps.created is None or ps.created < period_start else ps.created
-                    
-                elif pss_type == ADDON:
-                    last_checkout = ps.created
-                logger.debug('%s: Periodical Service: GRADUAL last checkout is None set last checkout=%s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))
+        lc = get_last_checkout_(cur, ps.ps_id, acctf_id)  
+        
+        if lc is None and pss_type == PERIOD:
+            last_checkout = lc if lc else ps.created if ps.created  and ps.created<acctf_datetime else  acctf_datetime
+            logger.debug('%s: Periodical Service: GRADUAL last checkout is None set last checkout=%s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))
+        elif lc is None and pss_type == ADDON:
+            last_checkout = ps.created
+            logger.debug('%s: Addon Service: GRADUAL last checkout is None set last checkout=%s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))
+        else:
+            return
+        
+        #Расчитываем параметры расчётного периода на момент последнего списания
+        period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)                                
+        # Проверка на расчётный период без повторения
+        if period_end < dateAT: return
+
             
-            if (self.NOW - last_checkout).seconds + (self.NOW - last_checkout).days*SECONDS_PER_DAY >= self.PER_DAY:
+        if ps.cash_method == "GRADUAL":
+
+            logger.debug('%s: Periodical Service: GRADUAL last checkout %s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))                                  
+
+            
+            if (dateAT - last_checkout).seconds + (dateAT - last_checkout).days*SECONDS_PER_DAY >= self.PER_DAY:
                 #Проверяем наступил ли новый период
-                if self.NOW - self.PER_DAY_DELTA <= period_start:
-                    # Если начался новый период
-                    # Находим когда начался прошльый период
-                    # Смотрим сколько денег должны были снять за прошлый период и производим корректировку
-                    #period_start, period_end, delta = settlement_period_info(time_start=time_start_ps, repeat_after=length_in_sp, now=now-datetime.timedelta(seconds=n))
-                    pass
                 
                 # Смотрим сколько раз уже должны были снять деньги
-                lc = self.NOW - last_checkout
-                last_checkout_seconds = lc.seconds + lc.days*SECONDS_PER_DAY
+                delta_from_last_checkout = dateAT - last_checkout
+                last_checkout_seconds = delta_from_last_checkout.seconds + delta_from_last_checkout.days*SECONDS_PER_DAY
                 nums,ost = divmod(last_checkout_seconds,self.PER_DAY)                                        
                 chk_date = last_checkout + self.PER_DAY_DELTA
-                if nums>1 or not acc.current_acctf:
-                    #Смотрим на какую сумму должны были снять денег и снимаем её
-                    while chk_date <= self.NOW:    
-                        period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)                                            
-                        cash_summ = mult*((self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY))
-                        if pss_type == PERIOD:
-                            #cur.execute("UPDATE billservice_account SET ballance=ballance-")
-                            cash_summ = cash_summ * susp_per_mlt
-                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
-                            new_summ=cur.fetchone()[0]
-                            #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
-                            
-                            logger.debug('%s: Periodical Service: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
-                        elif pss_type == ADDON:
-                            cash_summ = cash_summ * susp_per_mlt
-                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
-                            logger.debug('%s: Addon Service Checkout thread: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
-                        cur.connection.commit()
-                        chk_date += self.PER_DAY_DELTA
-                else:
-                    #make an approved transaction
-                    cash_summ = mult*(susp_per_mlt * (self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY))
+                if pss_type == PERIOD and chk_date>=next_date:
+                    cur.execute("UPDATE billservice_periodicalservicelog SET last_billed WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
+                    return
+
+                #Добавить проверку на окончание периода
+                #Смотрим на какую сумму должны были снять денег и снимаем её
+                while chk_date <= dateAT:    
+                    period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)     
+                    mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0                                       
+                    cash_summ = mult*((self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY))
                     if pss_type == PERIOD:
-                        #if (ps.condition==1 and account_ballance<=0) or (ps.condition==2 and account_ballance>0) or (ps.condition==3 and account_ballance<=0):
-                            #ps_condition_type 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
-                        #    cash_summ = 0
-                        #ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date)
-                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                        #cur.execute("UPDATE billservice_account SET ballance=ballance-")
+
+                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                         new_summ=cur.fetchone()[0]
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
-                        logger.debug('%s: Periodical Service: Gradual checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
+                        
+                        logger.debug('%s: Periodical Service: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
                     elif pss_type == ADDON:
                         cash_summ = cash_summ * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
-                        logger.debug('%s: Addon Service Checkout thread: AT START checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
+                        logger.debug('%s: Addon Service Checkout thread: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
+                    cur.connection.commit()
+                    chk_date += self.PER_DAY_DELTA
+
             cur.connection.commit()
             
         if ps.cash_method == "AT_START":
@@ -339,7 +324,7 @@ class periodical_service_bill(Thread):
             """
             Списывать в начале периода только, если последнее списание+период<следующего тарифного плана
             """
-            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id)
+            #last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id)
             # Здесь нужно проверить сколько раз прошёл расчётный период
             # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
             # Для последней проводки ставим статус Approved=True
@@ -348,12 +333,8 @@ class periodical_service_bill(Thread):
             
             summ = 0
             if pss_type == PERIOD:
-                #если не (указано начало периода или начало услуги меньше начала текущего периода) или (указано начало услуги и дата подключения на тариф больше или равна началу действия услуги 
-                if (last_checkout is None and ps.created is not None and period_start<ps.created):
-                    return
                 first_time = False
-                if last_checkout is None:
-                    last_checkout = acc.datetime if ps.created is None or ps.created < period_start else ps.created
+                if lc is None:
                     first_time = True
             elif pss_type == ADDON:
                 #print "addon AT_START"
@@ -368,32 +349,31 @@ class periodical_service_bill(Thread):
 
                 chk_date = last_checkout
                 period_end_ast= None
-                #Смотрим на какую сумму должны были снять денег и снимаем её 
-                if not first_time:
-                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
-                    s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                    time_start_ps = period_start_ast + s_delta_ast
-                    chk_date       = period_start_ast + s_delta_ast
-                    
-                while chk_date <= period_start:
-                    #Если тариф закрыт, а доснятие за прошлый расчётный период произошло-прерываем цикл
-                    if acc.end_date and acc.end_date == period_end_ast:
-                        break
-                    cash_summ = mult*ps.cost # Установить сумму равной нулю, если пользователь в блокировке
-                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
 
+                while first_time==True or chk_date <= period_start:
+                    #Если следующее списание произойдёт уже на новом тарифе - отмечаем, что тарификация произведена
+                    if pss_type == PERIOD and chk_date>=next_date:
+                        cur.execute("UPDATE billservice_periodicalservicelog SET last_billed WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
+                        return
+                    
+                    mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
+                    cash_summ = mult*ps.cost # Установить сумму равной нулю, если пользователь в блокировке
+                    
+                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
+                        # если указана дата начала перид. услуги и она в будующем - прпускаем её списание
+                        return
                     chk_date = period_start_ast
                     delta_coef=1
-                    if vars.USE_COEFF_FOR_PS==True and first_time and ((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)<delta_ast:
+                    if vars.USE_COEFF_FOR_PS==True and first_time and ((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)<delta_ast:
                         logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
-                        delta_coef=float((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)/float(delta_ast)        
+                        delta_coef=float((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)/float(delta_ast)        
                         cash_summ=cash_summ*Decimal(str(delta_coef))
 
                                 
-                    if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
-                        cash_summ = 0
+
                     if pss_type == PERIOD:
-                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))
+                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))
                         new_summ=cur.fetchone()[0]
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                         logger.debug('%s: Periodical Service: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
@@ -413,15 +393,10 @@ class periodical_service_bill(Thread):
             Если завершился - считаем сколько уже их завершилось.    
             для остальных со статусом False
             """
-            last_checkout = get_last_checkout_(cur, ps.ps_id, acc.acctf_id)
-            cur.connection.commit()
-            #first_time, last_checkout = (True, now) if last_checkout is None else (False, last_checkout)
+
             if pss_type == PERIOD:
-                if (last_checkout is None and ps.created is not None and period_end<ps.created):
-                    return
                 first_time = False
-                if last_checkout is None:
-                    last_checkout = period_start if ps.created is None or ps.created < period_start else ps.created
+                if lc is None:
                     first_time = True
             elif pss_type == ADDON:
                 first_time = False
@@ -439,19 +414,16 @@ class periodical_service_bill(Thread):
             if first_time or period_start > last_checkout:
                 cash_summ = ps.cost
                 chk_date = last_checkout
-                if not first_time:
-                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)
-                    s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                    chk_date = period_end_ast
-                    time_start_ps = period_start_ast
+
                 while True:
+                    mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
                     cash_summ = mult*ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     if period_start_ast>period_start: break
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                    if vars.USE_COEFF_FOR_PS==True and ((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)<delta_ast:
+                    if vars.USE_COEFF_FOR_PS==True and ((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)<delta_ast:
                         logger.debug('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
-                        delta_coef=float((period_end_ast-acc.datetime).days*86400+(period_end_ast-acc.datetime).seconds)/float(delta_ast)        
+                        delta_coef=float((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)/float(delta_ast)        
                         cash_summ=cash_summ*Decimal(str(delta_coef))
                         
                     if first_time:
@@ -459,21 +431,26 @@ class periodical_service_bill(Thread):
                         chk_date = last_checkout
                         tr_date = period_start_ast
                         if pss_type == PERIOD:
-                            ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, tr_date)
+                            cash_summ = 0
+                            #ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, tr_date)
+                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
                             logger.debug('%s: Periodical Service: AT END First time checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
 #                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                         elif pss_type == ADDON:
-                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, tr_date)
+                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, tr_date)
                             logger.debug('%s: Addon Service Checkout: AT END First time checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
                     else:
                         if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
-                            cash_summ = ZERO_SUM
+                            # если указана дата начала перид. услуги и она в будующем - прпускаем её списание
+                            return
+                        
+                            
                         if pss_type == PERIOD:
                             tr_date = chk_date
-                            if acc.end_date and acc.end_date < chk_date:
-                                cash_summ = 0
-                                tr_date = acc.end_date
-                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
+                            if chk_date>=next_date:
+                                cur.execute("UPDATE billservice_periodicalservicelog SET last_billed WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
+                                return
+                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
                             new_summ=cur.fetchone()[0]
                             #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                             logger.debug('%s: Periodical Service: AT END iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
@@ -481,10 +458,10 @@ class periodical_service_bill(Thread):
                             cash_summ = cash_summ * susp_per_mlt
                             tr_date = chk_date
                             if ps.deactivated and ps.deactivated < chk_date:
-                                #сделать расчёт остатка
+                                #сделать расчёт остатка - сейчас эта штука компенсируется штрафами за досрочное отключение
                                 cash_summ = 0
                                 tr_date = ps.deactivated
-                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, tr_date)
+                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, tr_date)
                             logger.debug('%s: Addon Service Checkout thread: AT END checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
                     cur.connection.commit()
                     chk_date = period_end_ast
@@ -493,11 +470,14 @@ class periodical_service_bill(Thread):
             
         if pss_type == ADDON and ps.deactivated and dateAT >= ps.deactivated:
             cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = deactivated WHERE id=%s", (ps.ps_id,))
+            cur.connection.commit()
         #if pss_type == ZERO_SUM and ps.deactivated and dateAT >= ps.deactivated:
         #    cur.execute("UPDATE billservice_periodicalservice SET deleted = True WHERE id=%s;", (ps.ps_id,))
 
             #cur.connection.commit()
     
+
+            
     def run(self):
         global cacheMaster, fMem, suicideCondition, transaction_number, vars
         self.connection = get_connection(vars.db_dsn)
@@ -539,21 +519,29 @@ class periodical_service_bill(Thread):
                     #debit every account for tarif on every periodical service
                     for ps in caches.periodicalsettlement_cache.by_id.get(tariff_id,[]):
                         if 0: assert isinstance(ps, PeriodicalServiceSettlementData)
-                        for acc in itertools.chain(caches.account_cache.by_tarif.get(tariff_id,[]), \
-                                                   caches.underbilled_accounts_cache.by_tarif.get(tariff_id, [])):
-                            if 0: assert isinstance(acc, AccountData)
+                for acc in caches.account_cache.by_account:
+                    if 0: assert isinstance(acc, AccountData)
+                    
+                    acctf_raw_history = get_acctf_history(cur, acc.account_id)
+                    by_id = {}
+                    #Получаем историю смены субаккаунтов по которым не производились списания период. услуг
+                    for acctf_id, acctf_datetime, next_acctf_id, acc_tarif_id in acctf_raw_history:
+                        by_id[acctf_id] = (acctf_datetime, next_acctf_id, acc_tarif_id)
+                        next_date = by_id.get(next_acctf_id)
+
+                        for ps in caches.periodicalsettlement_cache.by_id.get(acc_tarif_id,[]):
+                            
                             try:
-                                if acc.acctf_id is None: continue
-                                mult=1
-                                if acc.account_status in [2,4]:
-                                    mult=0
-                                self.iterate_ps(cur, caches, acc, ps, mult, dateAT, PERIOD)
-                                
+                                current = True if next_acctf_id is None else False
+                                dateAT = self.NOW if next_acctf_id is None else next_date
+                                self.iterate_ps(cur, caches, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, PERIOD)
+                            
                             except Exception, ex:
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                                 if ex.__class__ in vars.db_errors: raise ex
-                            cur.connection.commit()
+                    cur.connection.commit()
                 cur.connection.commit()
+
                 for addon_ps in caches.addonperiodical_cache.data:
                     if 0: assert isinstance(addon_ps, AddonPeriodicalData)
                     if not (addon_ps.account_id or addon_ps.subaccount_id): 
@@ -566,23 +554,18 @@ class periodical_service_bill(Thread):
                     else:
                         acc = caches.account_cache.by_account.get(addon_ps.account_id)
                     if not acc:
-                        logger.warning('%s: Addon Periodical Service: %s Account not found: %s', (self.getName(), addon_ps.ps_id, addon_ps.account_id))
+                        logger.warning('%s: Addon Periodical Service: %s. Incostistent database ERROR. Account not found: %s', (self.getName(), addon_ps.ps_id, addon_ps.account_id))
                         continue
-                    mult=1
-                    if acc.account_status in [2,4]:
-                        mult=0                   
+                    dt = dateAT if not addon_ps.deactivated else addon_ps.deactivated
                     try:
-                        self.iterate_ps(cur, caches, acc, addon_ps, mult, dateAT, ADDON)
+                        #self.iterate_ps(cur, caches, acc, addon_ps, mult, dateAT, ADDON)
+                        self.iterate_ps(cur, caches, acc, addon_ps, dt, None, None, None, False, ADDON)
                     except Exception, ex:
                         logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                         if ex.__class__ in vars.db_errors: raise ex
                     cur.connection.commit()
-                        
-                
-                if caches.underbilled_accounts_cache.underbilled_acctfs:
-                    cur.execute("""UPDATE billservice_accounttarif SET periodical_billed=TRUE WHERE id IN (%s);""" % \
-                                ' ,'.join((str(i) for i in caches.underbilled_accounts_cache.underbilled_acctfs)))
-                    cur.connection.commit()
+
+
                 cur.close()
                 logger.info("PSALIVE: Period. service thread run time: %s", time.clock() - a)
             except Exception, ex:
@@ -597,6 +580,7 @@ class periodical_service_bill(Thread):
             gc.collect()
             time.sleep(abs(vars.PERIODICAL_SLEEP-(time.clock()-a_)) + random.randint(0,5))
             
+
 class RadiusAccessBill(Thread):
     """
     Услуга применима только для VPN доступа, когда точно известна дата авторизации
@@ -1103,14 +1087,16 @@ class addon_service(Thread):
                          ((service.deactivate_service_for_blocked_account==False) or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)>0 and acc.disabled_by_limit==False and acc.balance_blocked==False and acc.account_status==1 ))):
                             #выполняем service_activation_action
                             cur.connection.commit()
-                            sended = cred(acc._asdict(), subacc._asdict(), 'ipn', nas._asdict(), addonservice=service._asdict(), format_string=service.service_activation_action)
-                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, accountaddonservice.id))
+                            sc = "UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, accountaddonservice.id)
+                            sended = cred.delay(acc._asdict(), subacc._asdict(), 'ipn', nas._asdict(), addonservice=service._asdict(), format_string=service.service_activation_action, succ_command=sc)
+                            #if sended is True: cur.execute()
                         
                         if (accountaddonservice.deactivated or accountaddonservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accountaddonservice.action_status==True:
                             #выполняем service_deactivation_action
                             cur.connection.commit()
-                            sended = cred(acc, subacc, 'ipn', nas, addonservice=service._asdict(), format_string=service.service_deactivation_action)
-                            if sended is True: cur.execute("UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accountaddonservice.id))
+                            sc = "UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accountaddonservice.id)
+                            sended = cred.delay(acc, subacc, 'ipn', nas, addonservice=service._asdict(), format_string=service.service_deactivation_action, succ_command=sc)
+
 
                     cur.connection.commit()
                 cur.connection.commit()
@@ -1346,8 +1332,8 @@ class settlement_period_service_dog(Thread):
                               WHERE tr.id in (%s);
                     """ % ', '.join([str(x[0]) for x in promises]))
                     
-                cur.execute("""UPDATE billservice_transaction as tr SET promise_expired = True 
-                                WHERE id in (%s);""" % ', '.join([str(x[0]) for x in promises]))
+                    cur.execute("""UPDATE billservice_transaction as tr SET promise_expired = True 
+                                    WHERE id in (%s);""" % ', '.join([str(x[0]) for x in promises]))
                 cur.connection.commit()
                 for account in caches.account_cache.data:
                     if account.account_status==4:
@@ -1420,6 +1406,7 @@ class ipn_service(Thread):
                 if 0: assert isinstance(caches, CoreCaches)
                 
                 cur = self.connection.cursor()
+                
                 for acc in caches.account_cache.data:
                     try:
                         if 0: assert isinstance(acc, AccountData)
@@ -1427,69 +1414,44 @@ class ipn_service(Thread):
                         """Если у аккаунта не указан IPN IP, мы не можем производить над ним действия. Пропускаем."""       
                         subaccounts = caches.subaccount_cache.by_account_id.get(acc.account_id, [])
                         access_list = []
-                        #if acc.ipn_ip_address != '0.0.0.0':
-                        if acc.nas_id:
-                            access_list.append(('', '', '', '', acc.nas_id, True, None))
                             
                         for subacc in subaccounts:
                             if not subacc.nas_id or (subacc.ipn_ip_address=='0.0.0.0' and subacc.ipn_mac_address==''): continue
-                            access_list.append((subacc.id, subacc.ipn_ip_address,  subacc.ipn_mac_address, subacc.vpn_ip_address, subacc.nas_id, False,  subacc))
+                            access_list.append((subacc.id, subacc.ipn_ip_address,  subacc.ipn_mac_address, subacc.vpn_ip_address, subacc.nas_id, subacc))
                         #if not acc.tarif_active or acc.ipn_ip_address == '0.0.0.0' and '0.0.0.0' in [[x.ipn_ip_address, x.nas_id] if x is not '0.0.0.0' else 1 for x in subaccounts]: continue
                         accps = caches.accessparameters_cache.by_id.get(acc.access_parameters_id)
                         if (not accps) or (not accps.ipn_for_vpn): continue
                         if 0: assert isinstance(accps, AccessParametersData)
                         account_ballance = (acc.ballance or 0) + (acc.credit or 0)
                         period = caches.timeperiodaccess_cache.in_period[acc.tarif_id]# True/False
-                        for id, ipn_ip_address, ipn_mac_address, vpn_ip_address, nas_id, legacy, subacc in access_list:
+                        for id, ipn_ip_address, ipn_mac_address, vpn_ip_address, nas_id, subacc in access_list:
                             sended, recreate_speed = (None, False)
                             
                             nas = caches.nas_cache.by_id.get(nas_id)
                             
                             if not nas:
-                                logger.info("IPNALIVE: %s: nas not set for account/subaccount/service %s/%s", (self.getName(), repr(acc), repr(subacc),))
+                                logger.info("IPNALIVE: %s: nas not set for subaccount/service %s/%s", (self.getName(), repr(acc), repr(subacc),))
                                 continue
                             if 0: assert isinstance(nas, NasData)
                             access_type = 'IPN'
                             #now = datetime.datetime.now()
                             now = dateAT
                             # Если на сервере доступа ещё нет этого пользователя-значит добавляем.
-                            if not acc.ipn_added and acc.tarif_active and legacy:
-                                #sended = cred(acc, subacc, access_type, nas, format_string=nas.user_add_action)
-                                sended = cred(acc, {}, '', nas, format_string=nas.user_add_action)
-                                if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_added=%s WHERE id=%s" % (True, acc.account_id))
-                                acc = acc._replace(ipn_added=sended)
-                            if subacc and not subacc.ipn_added and acc.tarif_active and not legacy:
-                                sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_add_action)
-                                
-                                if sended is True: cur.execute("UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s" % (True, id))
-                                subacc = subacc._replace(ipn_added=sended)    
-                            if legacy and (not acc.ipn_status) and ( (account_ballance>0 or (account_ballance==0 and acc.allow_ipn_with_null==True) or (account_ballance<0 and acc.allow_ipn_with_minus==True) ) and period and acc.account_status == 1 and ((not acc.disabled_by_limit and not acc.balance_blocked) or acc.allow_ipn_with_block==True)) and acc.tarif_active:
-                                """
-                                acc.ipn_status - отображает активна или неактивна ACL запись на сервере доступа для абонента
-                                """
-                                #шлём команду, на включение пользователя, account_ipn_status=True
-                                #ipn_added = acc.ipn_added
-                                """Делаем пользователя enabled"""
-        
-                                #sended = cred(acc, subacc, access_type, nas, format_string=nas.user_enable_action)
-                                sended = cred(acc, {}, '', nas, format_string=nas.user_enable_action)
-                                recreate_speed = True                        
-                                if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s" % (True, acc.account_id))
-                                acc = acc._replace(ipn_status=True)
-                            elif subacc and subacc.ipn_enabled==False and ( (account_ballance>0 or (account_ballance==0 and subacc.allow_ipn_with_null==True) or (account_ballance<0 and subacc.allow_ipn_with_minus==True) ) and period and acc.account_status == 1 and ((not acc.disabled_by_limit and not acc.balance_blocked) or acc.allow_ipn_with_block==True)) and acc.tarif_active and not legacy:
-                                sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_enable_action)
-                                if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id))
+                            #Добавить обработку на предмет смены тарифного плана, сервера доступа, удаления аккаунта - подчищать за ним данные и сбрасывать флаги
+                            if subacc and not subacc.ipn_added and acc.tarif_active:
+                                sc = "UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s" % (True, id)
+                                cred.delay(acc, subacc, access_type, nas, format_string=nas.subacc_add_action, succ_command = sc)
+                                subacc = subacc._replace(ipn_added=True)    
+                            if subacc and subacc.ipn_enabled==False and ( (account_ballance>0 or (account_ballance==0 and subacc.allow_ipn_with_null==True) or (account_ballance<0 and subacc.allow_ipn_with_minus==True) ) and period and acc.account_status == 1 and ((not acc.disabled_by_limit and not acc.balance_blocked) or acc.allow_ipn_with_block==True)) and acc.tarif_active and not legacy:
+                                sc = "UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id)
+                                cred.delay(acc, subacc, access_type, nas, format_string=nas.subacc_enable_action, succ_command=sc)
+                                #if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id))
                                 subacc = subacc._replace(ipn_enabled=True)
-                            elif legacy and acc.ipn_status and (((acc.disabled_by_limit or acc.balance_blocked) and acc.allow_ipn_with_block==False) or ((account_ballance<0 and acc.allow_ipn_with_minus==False) or (account_ballance==0 and acc.allow_ipn_with_null==False)) or period is False or acc.account_status != 1 or not acc.tarif_active):
+                            elif subacc.ipn_enabled is not False and subacc and (((acc.disabled_by_limit or acc.balance_blocked) and subacc.allow_ipn_with_block==False) or ((account_ballance<0 and subacc.allow_ipn_with_minus==False) or (account_ballance==0 and subacc.allow_ipn_with_null==False)) or period is False or acc.account_status != 1 or not acc.tarif_active):
                                 #шлём команду на отключение пользователя,account_ipn_status=False
-                                #sended = cred(acc, subacc, access_type, nas, format_string=nas.user_disable_action)
-                                sended = cred(acc, {}, '', nas, format_string=nas.user_disable_action)    
-                                if sended is True and legacy: cur.execute("UPDATE billservice_account SET ipn_status=%s WHERE id=%s", (False, acc.account_id,))
-                                acc = acc._replace(ipn_status=False)
-                            elif not legacy and subacc.ipn_enabled is not False and subacc and (((acc.disabled_by_limit or acc.balance_blocked) and subacc.allow_ipn_with_block==False) or ((account_ballance<0 and subacc.allow_ipn_with_minus==False) or (account_ballance==0 and subacc.allow_ipn_with_null==False)) or period is False or acc.account_status != 1 or not acc.tarif_active):
-                                #шлём команду на отключение пользователя,account_ipn_status=False
-                                sended = cred(acc, subacc, access_type, nas, format_string=nas.subacc_disable_action)    
-                                if sended is True: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,))                            
+                                sc = "UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,)
+                                cred.delay(acc, subacc, access_type, nas, format_string=nas.subacc_disable_action, succ_command = sc)    
+                                                            
                                 subacc = subacc._replace(ipn_enabled=False)
                             cur.connection.commit()
         
@@ -1521,29 +1483,27 @@ class ipn_service(Thread):
         
         
                             
-                            newspeed = ''.join([unicode(spi) for spi in speed[:6]])
+                            newspeed = ''.join([unicode(spi) for spi in speed])
                             
                             ipnsp = caches.ipnspeed_cache.by_id.get(acc.account_id, IpnSpeedData(*(None,)*6))
                             if 0: assert isinstance(ipnsp, IpnSpeedData)
-                            if ((newspeed != ipnsp.speed and legacy) or (not legacy and (newspeed!=subacc.speed or recreate_speed))) or recreate_speed:
+                            if newspeed!=subacc.speed or recreate_speed or recreate_speed:
                                 #отправляем на сервер доступа новые настройки скорости, помечаем state=True
-                                if legacy: 
-                                    ipn_speed_action=nas.ipn_speed_action 
-                                else: 
-                                    ipn_speed_action = nas.subacc_ipn_speed_action
+
+                                ipn_speed_action = nas.subacc_ipn_speed_action
                                 
                                 if ipn_speed_action:
-                                    sended_speed = change_speed(vars.DICT, acc, subacc, nas,
+                                    if legacy: 
+                                        sc = cur.mogrify("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, True, now,))
+                                    else:
+                                        sc = cur.mogrify("UPDATE billservice_subaccount SET speed=%s WHERE id=%s;", (newspeed, id))   
+                                    change_speed.delay(acc._asdict(), subacc._asdict(), nas._asdict(),
                                                                 access_type=access_type,
                                                                 format_string=ipn_speed_action,
-                                                                speed=speed[:6])
-                                else:
-                                    sended_speed = True
+                                                                speed=speed, succ_command = sc)
+
                                 
-                                if legacy: 
-                                    cur.execute("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, sended_speed, now,))
-                                else:
-                                    cur.execute("UPDATE billservice_subaccount SET speed=%s WHERE id=%s;", (newspeed, id))      
+   
                                     subacc = subacc._replace(speed=newspeed)
                                                           
                                 cur.connection.commit()
@@ -1750,10 +1710,7 @@ def main():
 
 
 if __name__ == "__main__":
-    if "-D" in sys.argv:
-        daemonize("/dev/null", "log.txt", "log.txt")
        
-    
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
     
@@ -1778,8 +1735,7 @@ if __name__ == "__main__":
         saver.log_adapt    = logger.log_adapt
         
         logger.lprint('core start\n')
-        ssh_paramiko.SSH_BACKEND=vars.SSH_BACKEND
-        ssh_paramiko.install_logger(logger)
+
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
         
         cacheMaster = CacheMaster()
@@ -1795,7 +1751,7 @@ if __name__ == "__main__":
         logger.info("Allowed users: %s", (allowedUsers(),))
 
 
-        
+        tasks.DSN = vars.db_dsn
         fMem = pfMemoize()    
         #--------------------------------------------------
         
