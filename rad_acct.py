@@ -5,6 +5,8 @@ from __future__ import with_statement
 import gc
 import os
 import sys
+sys.path.insert(0, "modules")
+sys.path.append("cmodules")
 import time
 import select
 import signal

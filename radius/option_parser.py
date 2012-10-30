@@ -1,3 +1,4 @@
+import struct
 def parse(nas_type, remote_id, circuit_id):
     identify, vlan, module, port=None,None,None,None
     

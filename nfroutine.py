@@ -1,7 +1,9 @@
 #-*-coding=utf-8-*-
 
 from __future__ import with_statement
-
+import sys
+sys.path.insert(0, "modules")
+sys.path.append("cmodules")
 import cPickle
 import random
 import signal
@@ -18,7 +20,6 @@ import saver, utilites
 
 from IPy import intToIp
 from marshal import dumps, loads
-from daemonize import daemonize
 from threading import Thread, Lock
 from copy import copy, deepcopy
 from collections import deque, defaultdict
@@ -269,16 +270,15 @@ class groupDequeThread(Thread):
                                         (_account_id, _accounttarif_id, accsdata.traffic_transmit_service_id, True, delta_coef, prep_date))
                             add_prepaid.append(_accounttarif_id)
 
-                        print "make transaction", _account_id, _accounttarif_id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, _group_id, _bytes, _datetime
+                        
                         transaction_id = self.tarificate(_account_id, _accounttarif_id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, _group_id, _bytes, _datetime, force_db=True)
                         if transaction_id:
-                            print "transaction added"
                             self.cur.execute("UPDATE billservice_groupstat SET transaction_id=%s WHERE id=%s ", (transaction_id, _id))
                         elif _transaction_id:
                             self.cur.execute("UPDATE billservice_groupstat SET transaction_id=NULL WHERE id=%s ", (_id, ))
-                    print "commit"
+
                     self.cur.connection.commit()
-                    print "ended"
+
                     
                     sys.exit()
                 gkey, gkeyTime, groupData = None, None, None
@@ -1105,9 +1105,6 @@ def main():
 
     
 if __name__ == "__main__":
-    if "-D" in sys.argv:
-        daemonize("/dev/null", "log.txt", "log.txt")
-        
 
     cacheMaster = CacheMaster()
     

@@ -238,7 +238,37 @@
               });
         });
         </script>
+<style type="text/css">
+.table tbody tr:hover td, .table tbody tr:hover th {
+    background-color: transparent;
+}
+.disabled-row {
+    background-color: lightgrey;
+}
 
+.modal {
+  position: fixed;
+  top: 5%;
+  left: 50%;
+  z-index: 1050;
+  width: 800px;
+  margin: 0 0 0 -400px; /* -1 * (width / 2) */ 
+  overflow: auto;
+  background-color: #ffffff;
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  *border: 1px solid #999;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+     -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding-box;
+          background-clip: padding-box;
+}
+</style>
 {% endblock %}
  {% load render_table from django_tables2 %}
 {% block body %}
@@ -271,10 +301,10 @@
                                 </div>
                             </div>
                             <div class="control-row">
-                                <label class="control-label">Тариф</label>
+                                <label class="control-label" id="modal-accounttariff-dialog"><a href="#">Тариф</a></label>
                                 <div class="controls">
                                     <label class="checkbox inline inline-text">{{account.get_account_tariff.name}}</label>
-                                    <a id="modal-accounttariff-dialog" class="btn">#</a>
+                                    
                                 </div>
                             </div>
                             </div>
@@ -333,6 +363,7 @@
                             {% endif %}
                             {% if account %}
                             <div class="control-group">
+                            <div class="control-row">
                                 <label class="control-label">Баланс:</label>
                                 <div class="controls">
                                     <label class="checkbox inline inline-text">{{account.ballance|floatformat:2}}{{CURRENCY}}</label>
@@ -341,15 +372,29 @@
                                         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
                                         <ul class="dropdown-menu">
                                             <li><a href="" id="modal-transaction-dialog" >Пополнить</a></li>
-                                            <li><a href="{% url transactionreport2 %}?account={{account.id}}">Отчёт по пополнениям</a></li>
-                                            <li><a href="">Отчёт по списаниям</a></li>
-                                            <li><a href="">История изменения баланса</a></li>
                                         </ul>
                                     </div>
                                 </div>
+                                </div>
+                            <div class="control-row">
+                                <label class="control-label" for="input-password">{{form.account_group.label}}</label>
+                                <div class="controls">
+                                    {{ form.account_group }}
+                                    {% if form.account_group.errors %}
+                                    <span class="help-inline">{% for error in form.account_group.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if form.account_group.help_text%}
+                                    <p class="help-block">
+                                        {{ form.account_group.help_text|safe }}
+                                    </p>
+                                    {% endif %}
+                                    
+                                </div>
+                            </div>
                             </div>
                             {% endif %}
                             <div class="control-group">
+                            <div class="control-row">
                                 <label class="control-label" for="input-credit">{{form.credit.label}}</label>
                                 <div class="controls">
                                         {{ form.credit }}
@@ -362,6 +407,21 @@
                                             </p>
                                         {% endif %}
                                 </div>
+                                </div>
+                            <div class="control-row">
+                                <label class="control-label" for="input-account-status">{{form.systemuser.label}}</label>
+                                <div class="controls">
+                                            {{ form.systemuser }}
+                                            {% if form.systemuser.errors %}
+                                                <span class="help-inline">{% for error in form.systemuser.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.systemuser.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.systemuser.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                </div>
+                            </div>
                             </div>
                             <div class="control-group">
                                 <label class="control-label" for="input-username">{{form.username.label}}</label>
@@ -395,21 +455,7 @@
                                     <input type='button' id='generate_password' class="btn" value="#">
                                 </div>
                             </div>
-                            <div class="control-row">
-                                <label class="control-label" for="input-password">{{form.account_group.label}}</label>
-                                <div class="controls">
-                                    {{ form.account_group }}
-                                    {% if form.account_group.errors %}
-                                    <span class="help-inline">{% for error in form.account_group.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.account_group.help_text%}
-                                    <p class="help-block">
-                                        {{ form.account_group.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-                                    
-                                </div>
-                            </div>
+
                             </div>
 
                             <div class="control-group">
@@ -428,20 +474,7 @@
 
                                     </div>
                                 </div>
-                            <div class="control-row">
-                                <label class="control-label" for="input-account-status">{{form.systemuser.label}}</label>
-                                <div class="controls">
-                                            {{ form.systemuser }}
-                                            {% if form.systemuser.errors %}
-                                                <span class="help-inline">{% for error in form.systemuser.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.systemuser.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.systemuser.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                </div>
-                            </div>
+
                             </div>
                             <div class="control-group">
                             <div class="control-row">

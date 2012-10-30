@@ -36,24 +36,60 @@ mkdir builds/$1
 echo "Additional keys: " $5
 
 
-crypto_build="core rad_auth rad_acct nf nfroutine"
-simple_build=""
+#crypto_build="core rad_auth rad_acct nf nfroutine"
+simple_build="core rad_auth rad_acct nf nfroutine"
 total_build="$crypto_build $simple_build"
 
 cp license.lic license.lic.old
 cp license_$1.lic license.lic
 
-for bld in $crypto_build; do
-	python freezer/freezer_rec.py  -i $5 $karg $reskey $bld.py > builds/$1.$bld.buildlog;
+modules="db utilites dictionary packet auth bidict IPy isdlogger log_adapter logger option_parser period_utilities saver ssh_paramiko ssh_utilities syslog_dummy tools dictfile"
+mkdir -p cmodules
+
+for bld in $modules; do
+    cython $bld.py -o cmodules/$bld.c;
+    gcc $CFLAGS -I/usr/include/python2.7 --shared -o cmodules/$bld.so cmodules/$bld.c -lpython2.7 -lpthread -lm -lutil -ldl
 done
 
+current_dir=`pwd`
+blddirs="classes radius"
+for blddir in $blddirs;do
+    for line in `find $blddir  -name "*.py" -type f`;do
+        dir=`dirname $line`;
+        fl=`basename $line`;
+        bld=${fl%.*}
+        echo $dir;
+        echo $bld;
+        mkdir -p cmodules/$dir;
+        touch cmodules/$dir/__init__.pyc;
+        touch cmodules/$dir/__init__.py;
+        cython -v $dir/$bld.py -o cmodules/$dir/$bld.c;
+        gcc $CFLAGS -I/usr/include/python2.7 --shared -o cmodules/$dir/$bld.so cmodules/$dir/$bld.c -lpython2.7 -lpthread -lm -lutil -ldl;
+        rm -rf cmodules/$dir/*.c;
+    done
+done
+
+#cython $bld
+#gcc $CFLAGS -I/usr/include/python2.7 --shared -o cmodules/$bld.so $bld.c -lpython2.7 -lpthread -lm -lutil -ldl
+
+for bld in $crypto_build; do
+	python freezer/freezer_rec.py -l -i $5 $karg $reskey $bld.py > builds/$1.$bld.buildlog;
+done
+
+#gcc $CFLAGS -I/usr/include/python2.7 -o hw core.c -lpython2.7 -lpthread -lm -lutil -ldl
+
 for bld in $simple_build; do
-    python freezer/freezer_rec.py  -i $5 '' '' $bld.py > builds/$1.$bld.buildlog;
+    #python freezer/freezer_rec.py  -i $5 '' '' $bld.py > builds/$1.$bld.buildlog;
+    cython -v --embed $bld.py ;
+    gcc $CFLAGS -I/usr/include/python2.7  -o $bld $bld.c -lpython2.7 -lpthread -lm -lutil -ldl
+    rm -rf cmodules/*.c;
 done
 
 #python freezer/freezer_rec.py -i $5 $karg $reskey rpc.py > builds/$1.rpc.buildlog;
 
 cp license.lic builds/$1/license.lic
+cp -r cmodules builds/$1/
+cp -r celery builds/$1/workers
 cp license.lic.old license.lic
 cp ebs_config.ini builds/$1/ebs_config.ini
 #cp upgrade.py builds/$1/upgrade.py

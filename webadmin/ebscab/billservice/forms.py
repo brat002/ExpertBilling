@@ -265,7 +265,15 @@ class TransactionModelForm(ModelForm):
     account = forms.ModelChoiceField(queryset=Account.objects.all(), widget = forms.HiddenInput)
     promise_never_expire = forms.CharField(widget = forms.widgets.CheckboxInput)
     type = forms.ModelChoiceField(queryset=TransactionType.objects.all(), widget = forms.widgets.Select(attrs={'class': 'input-xlarge'}) )
-    
+
+    def __init__(self, *args, **kwargs):
+        super(TransactionModelForm, self).__init__(*args, **kwargs)
+        self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
+        self.fields['description'].widget.attrs['class'] = 'input-xlarge span5'
+        self.fields['account'].widget.attrs['class'] = 'input-xlarge span5'
+        self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
+        self.fields['bill'].widget.attrs['class'] = 'input-xlarge span5'
+
     class Meta:
         model = Transaction
         exclude = ('systemuser', 'accounttarif', 'approved', 'tarif', 'promise_expired')
@@ -296,8 +304,8 @@ class BankDataForm(ModelForm):
         model = BankData
               
 class AccountForm(ModelForm):
-    username = forms.CharField(label =u"Имя пользователя", required=True, widget = forms.TextInput(attrs={'class': 'input-large'}))
-    password = forms.CharField(label =u"Пароль", required=True, widget = forms.TextInput(attrs={'class': 'input-large'}))
+    username = forms.CharField(label =u"Имя пользователя", required=True, widget = forms.TextInput(attrs={'class': 'input-medium'}))
+    password = forms.CharField(label =u"Пароль", required=True, widget = forms.TextInput(attrs={'class': 'input-medium'}))
     city = forms.ModelChoiceField(label=u"Город",queryset=City.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
     
     street = forms.CharField(label=u"Улица",  required=False, widget = forms.widgets.TextInput(attrs={'class': 'input-large',}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
@@ -316,9 +324,10 @@ class AccountForm(ModelForm):
         super(AccountForm, self).__init__(*args, **kwargs)
         self.fields['status'].widget.attrs['class'] = 'input-xlarge'
         self.fields['systemuser'].widget.attrs['class'] = 'input-xlarge'
+        self.fields['account_group'].widget.attrs['class'] = 'input-xlarge'
         self.fields['contract'].widget.attrs['class'] = 'input-medium'
-        self.fields['username'].widget.attrs['class'] = 'input-medium'
-        self.fields['password'].widget.attrs['class'] = 'input-medium'
+        self.fields['username'].widget.attrs['class'] = 'input-small'
+        self.fields['password'].widget.attrs['class'] = 'input-small'
         self.fields['comment'].widget.attrs['cols'] =10
     
     class Meta:

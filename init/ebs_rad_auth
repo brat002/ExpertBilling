@@ -10,11 +10,11 @@
 trap '' 1 2 3 15
 
 
-NAME=rad
+NAME=rad_auth
 DPATH=/opt/ebs/data/
 DAEMON=$DPATH$NAME
 
-DESC="ebs billing rad daemon"
+DESC="ebs billing rad AUTH daemon"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/ebs_$NAME
 ERR_LOG=/opt/ebs/data/log/log.txt
@@ -25,7 +25,7 @@ test -x $DAEMON || exit 0
 case "$1" in
 start)
         
-        echo "Starting ebs rad"
+        echo "Starting ebs rad auth"
 		olddir=`pwd`
         cd $DPATH
         $DAEMON &
@@ -33,7 +33,7 @@ start)
 
 		;;
 stop)
-        echo "Stopping ebs rad"
+        echo "Stopping ebs rad auth"
 	if [ `uname` = 'SunOS' ]
 	then
 	    pkill -SIGTERM -x $NAME
@@ -47,7 +47,7 @@ stop)
 	rm -f $PIDFILE
         ;;
 stop-force)
-        echo "Stopping ebs rad"
+        echo "Stopping ebs rad auth"
     if [ `uname` = 'SunOS' ]
     then
         pkill -9 -x $NAME
@@ -57,12 +57,12 @@ stop-force)
     rm -f $PIDFILE
         ;;
 restart)
-        echo "Restarting ebs rad"
+        echo "Restarting ebs rad auth"
     $0 stop
     $0 start
         ;;
 reload)
-        echo "Reloading ebs rad configuration"
+        echo "Reloading ebs rad auth configuration"
     if [ `uname` = 'SunOS' ]
     then
         pkill -SIGHUP -x $NAME

@@ -18,7 +18,7 @@ from Crypto.Cipher import XOR
 from radius.eap.eap_packet import EAP, EAP_Packet, EAP_MD5, EAP_HANDLERS, EAP_TLS, EAP_IDENTITY_CHECK_TYPES
 from collections import defaultdict
 from utilites import hex_bytestring
-from mppe import PPTP_MPPE
+#from mppe import PPTP_MPPE
 
 #EAP_IDENTITY_CHECK = lambda kwargs: (EAP.PW_EAP_MD5, EAP_MD5.get_challenge_reply)
 EAP_IDENTITY_CHECK = lambda kwargs: (EAP.PW_EAP_TLS, EAP_TLS.get_tls_start)
@@ -221,7 +221,7 @@ class Auth:
 
     def EAP_Reply(self):
         if self.code == packet.AccessAccept:
-            return get_success_packet(self.extensions['eap-packet'].identifier)
+            return EAP_MD5.get_success_packet(self.extensions['eap-packet'].identifier)
 
 
     def set_code(self, code):
@@ -340,89 +340,91 @@ class Auth:
         
 
 
-    def add_mppe_keys_v2(self):
-        def rc4crypt(data, key):
-            x = 0
-            box = range(256)
-            for i in range(256):
-                x = (x + box[i] + ord(key[i % len(key)])) % 256
-                box[i], box[x] = box[x], box[i]
-            x,y = 0, 0
-            out = []
-            for char in data:
-                x = (x + 1) % 256
-                y = (y + box[x]) % 256
-                box[x], box[y] = box[y], box[x]
-                out.append(chr(ord(char) ^ box[(box[x] + box[y]) % 256]))
-            return ''.join(out)
-        
-        magic1 = \
-          "\x54\x68\x69\x73\x20\x69\x73\x20\x74" + \
-          "\x68\x65\x20\x4d\x50\x50\x45\x20\x4d" + \
-          "\x61\x73\x74\x65\x72\x20\x4b\x65\x79"
-
-        SHSpad1 = "\x00"*40
-        SHSpad2 = "\xf2"*40
-
-        Magic2 = \
-          "\x4f\x6e\x20\x74\x68\x65\x20\x63\x6c\x69" + \
-          "\x65\x6e\x74\x20\x73\x69\x64\x65\x2c\x20" + \
-          "\x74\x68\x69\x73\x20\x69\x73\x20\x74\x68" + \
-          "\x65\x20\x73\x65\x6e\x64\x20\x6b\x65\x79" + \
-          "\x3b\x20\x6f\x6e\x20\x74\x68\x65\x20\x73" + \
-          "\x65\x72\x76\x65\x72\x20\x73\x69\x64\x65" + \
-          "\x2c\x20\x69\x74\x20\x69\x73\x20\x74\x68" + \
-          "\x65\x20\x72\x65\x63\x65\x69\x76\x65\x20" + \
-          "\x6b\x65\x79\x2e"
-          
-        Magic3 = \
-          "\x4f\x6e\x20\x74\x68\x65\x20\x63\x6c\x69" + \
-          "\x65\x6e\x74\x20\x73\x69\x64\x65\x2c\x20" + \
-          "\x74\x68\x69\x73\x20\x69\x73\x20\x74\x68" + \
-          "\x65\x20\x72\x65\x63\x65\x69\x76\x65\x20" + \
-          "\x6b\x65\x79\x3b\x20\x6f\x6e\x20\x74\x68" + \
-          "\x65\x20\x73\x65\x72\x76\x65\x72\x20\x73" + \
-          "\x69\x64\x65\x2c\x20\x69\x74\x20\x69\x73" + \
-          "\x20\x74\x68\x65\x20\x73\x65\x6e\x64\x20" + \
-          "\x6b\x65\x79\x2e"
-          
-          
-        #masterSessionKey=SHA.new(self._NtPasswordHash(self.plainpassword)+self.NTResponse+magic1).digest()[:16]
-        #
-        passwordhash = self._NtPasswordHash(self.password)
-        
-        md4_context = md4.new()       #Эксперимент с нативной md4 библиотекой
-        md4_context.update(passwordhash)    #
-        passwordhashhash = md4_context.digest()   #
-        
-        masterSessionKey=SHA.new(passwordhashhash[:16]+self.NTResponse[:24]+magic1).digest()[:16]
-        
-
-        sendMasterKey = SHA.new(masterSessionKey+SHSpad1+Magic3+SHSpad2).digest()[:16]
-        recvMasterKey = SHA.new(masterSessionKey+SHSpad1+Magic2+SHSpad2).digest()[:16]
-        
-        
-
-        #encryption policy
-        self.Reply.AddAttribute((311,7),struct.pack("!I", 1))
-        
-        #encryption type
-        self.Reply.AddAttribute((311,8),struct.pack("!I", 4))
-        
-        self.Reply.AddAttribute((311,16),sendkey)
-        self.Reply.AddAttribute((311,17),recvkey)
-        
-    def add_mppe_keys_v3(self):
-        instance = PPTP_MPPE(self.plainpassword, self.NTResponse)
-        self.Reply.AddAttribute((311,7),struct.pack("!i", 1))
-        
-        #encryption type
-        self.Reply.AddAttribute((311,8),struct.pack("!i", 4))
-        
-        print instance.ssk, instance.srk
-        
-        self.Reply.AddAttribute((311,16), instance.ssk)
-        self.Reply.AddAttribute((311,17), instance.srk)
+#===============================================================================
+#    def add_mppe_keys_v2(self):
+#        def rc4crypt(data, key):
+#            x = 0
+#            box = range(256)
+#            for i in range(256):
+#                x = (x + box[i] + ord(key[i % len(key)])) % 256
+#                box[i], box[x] = box[x], box[i]
+#            x,y = 0, 0
+#            out = []
+#            for char in data:
+#                x = (x + 1) % 256
+#                y = (y + box[x]) % 256
+#                box[x], box[y] = box[y], box[x]
+#                out.append(chr(ord(char) ^ box[(box[x] + box[y]) % 256]))
+#            return ''.join(out)
+#        
+#        magic1 = \
+#          "\x54\x68\x69\x73\x20\x69\x73\x20\x74" + \
+#          "\x68\x65\x20\x4d\x50\x50\x45\x20\x4d" + \
+#          "\x61\x73\x74\x65\x72\x20\x4b\x65\x79"
+# 
+#        SHSpad1 = "\x00"*40
+#        SHSpad2 = "\xf2"*40
+# 
+#        Magic2 = \
+#          "\x4f\x6e\x20\x74\x68\x65\x20\x63\x6c\x69" + \
+#          "\x65\x6e\x74\x20\x73\x69\x64\x65\x2c\x20" + \
+#          "\x74\x68\x69\x73\x20\x69\x73\x20\x74\x68" + \
+#          "\x65\x20\x73\x65\x6e\x64\x20\x6b\x65\x79" + \
+#          "\x3b\x20\x6f\x6e\x20\x74\x68\x65\x20\x73" + \
+#          "\x65\x72\x76\x65\x72\x20\x73\x69\x64\x65" + \
+#          "\x2c\x20\x69\x74\x20\x69\x73\x20\x74\x68" + \
+#          "\x65\x20\x72\x65\x63\x65\x69\x76\x65\x20" + \
+#          "\x6b\x65\x79\x2e"
+#          
+#        Magic3 = \
+#          "\x4f\x6e\x20\x74\x68\x65\x20\x63\x6c\x69" + \
+#          "\x65\x6e\x74\x20\x73\x69\x64\x65\x2c\x20" + \
+#          "\x74\x68\x69\x73\x20\x69\x73\x20\x74\x68" + \
+#          "\x65\x20\x72\x65\x63\x65\x69\x76\x65\x20" + \
+#          "\x6b\x65\x79\x3b\x20\x6f\x6e\x20\x74\x68" + \
+#          "\x65\x20\x73\x65\x72\x76\x65\x72\x20\x73" + \
+#          "\x69\x64\x65\x2c\x20\x69\x74\x20\x69\x73" + \
+#          "\x20\x74\x68\x65\x20\x73\x65\x6e\x64\x20" + \
+#          "\x6b\x65\x79\x2e"
+#          
+#          
+#        #masterSessionKey=SHA.new(self._NtPasswordHash(self.plainpassword)+self.NTResponse+magic1).digest()[:16]
+#        #
+#        passwordhash = self._NtPasswordHash(self.password)
+#        
+#        md4_context = md4.new()       #Эксперимент с нативной md4 библиотекой
+#        md4_context.update(passwordhash)    #
+#        passwordhashhash = md4_context.digest()   #
+#        
+#        masterSessionKey=SHA.new(passwordhashhash[:16]+self.NTResponse[:24]+magic1).digest()[:16]
+#        
+# 
+#        sendMasterKey = SHA.new(masterSessionKey+SHSpad1+Magic3+SHSpad2).digest()[:16]
+#        recvMasterKey = SHA.new(masterSessionKey+SHSpad1+Magic2+SHSpad2).digest()[:16]
+#        
+#        
+# 
+#        #encryption policy
+#        self.Reply.AddAttribute((311,7),struct.pack("!I", 1))
+#        
+#        #encryption type
+#        self.Reply.AddAttribute((311,8),struct.pack("!I", 4))
+#        
+#        self.Reply.AddAttribute((311,16),sendkey)
+#        self.Reply.AddAttribute((311,17),recvkey)
+#        
+#    def add_mppe_keys_v3(self):
+#        instance = PPTP_MPPE(self.plainpassword, self.NTResponse)
+#        self.Reply.AddAttribute((311,7),struct.pack("!i", 1))
+#        
+#        #encryption type
+#        self.Reply.AddAttribute((311,8),struct.pack("!i", 4))
+#        
+#        print instance.ssk, instance.srk
+#        
+#        self.Reply.AddAttribute((311,16), instance.ssk)
+#        self.Reply.AddAttribute((311,17), instance.srk)
+#===============================================================================
         
         
     def _MSCHAP2Decrypt(self):

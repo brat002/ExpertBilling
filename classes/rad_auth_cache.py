@@ -56,8 +56,6 @@ class AccountCache(CacheItem):
 
         for acct in self.data:
             self.by_username[acct.username] = acct
-            self.by_ipn_mac[str(acct.ipn_mac_address)] = acct
-            self.by_ipn_ip_nas[(acct.ipn_ip_address, acct.nas_id)] = acct
             self.by_id[acct.account_id] = acct
             
 class DefaultSpeedCache(SimpleDictCache):
