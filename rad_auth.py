@@ -5,6 +5,8 @@ from __future__ import with_statement
 import gc
 import os
 import sys
+sys.path.insert(0, "modules")
+sys.path.append("cmodules")
 import time
 import select
 import signal
@@ -250,6 +252,7 @@ class SQLLoggerThread(Thread):
         self.cursor = self.dbconn.cursor()
         self.sqllog_deque = deque()
         self.sqllog_lock  = Lock()
+
         #print 'loggerthread initialized'
     
     def add_message(self, account=None, subaccount=None, nas=None, type='', service='', cause='', datetime=None):
@@ -322,6 +325,7 @@ class HandleSAuth(HandleSBase):
         self.cursor=None
         self.transport = transport
         self.addrport = addrport
+
 
 
     def auth_NA(self, authobject):
@@ -459,8 +463,6 @@ class HandleSAuth(HandleSBase):
         username = subacc.username 
         password = subacc.password
         vpn_ip_address = subacc.vpn_ip_address
-        ipn_ip_address = subacc.ipn_ip_address
-        ipn_mac_address =  subacc.ipn_mac_address
         # Сервер доступа может быть не указан 
         nas_id = subacc.nas_id
 
@@ -585,7 +587,7 @@ class HandleSAuth(HandleSBase):
                     return self.auth_NA(authobject) 
             
             
-            framed_ip_address = None
+
             ipinuse_id=''
             if (subacc.vpn_ip_address in ('0.0.0.0','') and (subacc.ipv4_vpn_pool_id or acc.vpn_ippool_id)) or acstatus==False:
                

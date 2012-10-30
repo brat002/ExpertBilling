@@ -42,7 +42,7 @@ class isdlogger(object):
             if not ident: self.ident = 'isdlogger'
             syslog.openlog(self.ident)
         elif ltype == 'logging':
-	    self.loggingL = logging.getLogger('isdlogger')
+            self.loggingL = logging.getLogger('isdlogger')
             self.log_ = self.loggingLog
             self.levels = loggingLevels
             #self.fflush = fflush
@@ -54,11 +54,11 @@ class isdlogger(object):
             #else: self.filename = filename
             #logging.config
             #logging.root.setLevel(self.levels[loglevel])
-	    self.loggingL.setLevel(self.levels[self.transformLevel(loglevel)])
+            self.loggingL.setLevel(self.levels[self.transformLevel(loglevel)])
             rtHdlr = handlers.RotatingFileHandler(filename, mode=filemode, maxBytes=maxBytes, backupCount=backupCount)
             rtHdlr.setFormatter(logging.Formatter(format))
             #logging.root.addHandler(rtHdlr)
-	    self.loggingL.addHandler(rtHdlr)
+            self.loggingL.addHandler(rtHdlr)
             #logging.basicConfig(level=self.levels[loglevel], format=self.loggingFormat, filename=self.filename, filemode=self.filemode)
         else:
             raise Exception('Unknown logger type!')
@@ -67,15 +67,15 @@ class isdlogger(object):
     '''def log(self, level, message, vars):
         if level >= self.loggingLevel:
             self.log_(self.levels[level], message % vars)'''
-	    
+
     def log(self, level, message, *vars):
         if level >= self.loggingLevel:
-	    if not vars or vars == ((),):
-		self.log_(self.levels[level], message)
-	    elif len(vars) == 1 and isinstance(vars[0], tuple):
-		self.log_(self.levels[level], message % vars[0])
-	    else:
-		self.log_(self.levels[level], message % vars)
+            if not vars or vars == ((),):
+                self.log_(self.levels[level], message)
+            elif len(vars) == 1 and isinstance(vars[0], tuple):
+                self.log_(self.levels[level], message % vars[0])
+            else:
+                self.log_(self.levels[level], message % vars)
             
     """quick method with 'repr'"""
     def reprl(self, level, obj, message='%s'):
@@ -99,14 +99,14 @@ class isdlogger(object):
     '''logging log method'''
     def loggingLog(self, level, message):
         #logging.log(level, message)
-	self.loggingL.log(level, message)
+        self.loggingL.log(level, message)
             
     '''set logging level'''
     def setLevel(self, level):
         self.loggingLevel = self.transformLevel(level)
         
     def transformLevel(self, level):
-	return level*10 + 10
+        return level*10 + 10
     
     def setNewLevel(self, level):
         if self.loggingLevel != self.transformLevel(level):
@@ -141,24 +141,24 @@ class pyrologger(isdlogger):
     def __init__(self, *args, **kwargs):
         super(pyrologger, self).__init__(*args, **kwargs)
         self.trace_on = kwargs.get('trace_on', False)
-	#self.lock = Lock()
+
         
     def _checkTraceLevel(self, level):
-	return self.trace_on
+        return self.trace_on
     
     def _logfile(self):
-	return 'pyro_log'
+        return 'pyro_log'
     
     def msg(self,source,*args):
-	self._trace(LG_INFO,source, args)
+        self._trace(LG_INFO,source, args)
     def warn(self,source,*args):
-	self._trace(LG_WARNING,source, args)
+        self._trace(LG_WARNING,source, args)
     def error(self,source,*args):
-	self._trace(LG_ERROR,source, args)
+        self._trace(LG_ERROR,source, args)
     def raw(self,str):
-	self.log_(self.levels[LG_WARNING], str)
+        self.log_(self.levels[LG_WARNING], str)
     def _trace(self, level, source, arglist):
-	pass
+        pass
         '''
 	if level >= self.loggingLevel:
 	    thread_name = 'NA'

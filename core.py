@@ -1,7 +1,9 @@
 #-*-coding=utf-8-*-
 
 from __future__ import with_statement
-
+import sys
+sys.path.insert(0, "modules")
+sys.path.append("cmodules")
 """DON'T REMOVE, NEEDED FOR PROPER FREEZING!!!"""
 try:    import mx.DateTime
 except: pass
@@ -32,12 +34,28 @@ from saver import allowedUsersChecker, setAllowedUsers
 from utilites import get_decimals_speeds
 from utilites import settlement_period_info, in_period, in_period_info, create_speed
 
+#===============================================================================
+# from importlib import import_module ##DONT REMOVE
+# import contextlib
+# import UserList
+# import celery.utils.text
+# 
+# import celery.task
+# 
+# import kombu.entity
+#===============================================================================
+import celery.task
+import kombu.entity
 
-from tasks import PoD, change_speed, cred
+sys.path.append("/opt/ebs/data/workers/")
+sys.path.append("workers/")
+sys.path.append("celery/")
+
+from tasks import PoD, change_speed, cred, update_vpn_speed_state, update_ipn_speed_state
 import tasks
 
-from db import transaction, ps_history, get_last_checkout, get_acctf_history
-from db import timetransaction, get_last_addon_checkout, addon_history, check_in_suspended
+from db import transaction, ps_history, get_last_checkout, get_acctf_history, radiustraffictransaction
+from db import timetransaction, get_last_addon_checkout, addon_history, check_in_suspended, TraftransTableException
 
 
 from classes.cacheutils import CacheMaster
@@ -50,6 +68,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
+
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
@@ -163,23 +182,18 @@ class check_vpn_access(Thread):
                                         addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
                                         break    
 
-                            speed = create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.vpn_speed, dateAT, fMem)                            
+                            speed = create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, subacc.vpn_speed, dateAT, fMem)                            
 
                             speed = get_decimals_speeds(speed)
                             newspeed = ''.join([unicode(spi) for spi in speed])
 
                             if rs.speed_string != newspeed:                         
                                 logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
-                                coa_result = change_speed(vars.DICT, acc._asdict(), subacc, nas._asdict(), 
+                                change_speed.delay(account=acc._asdict(), subacc=subacc, nas=nas._asdict(), 
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address,
-                                                    speed=speed)
+                                                    speed=speed, cb=tasks.update_vpn_speed_state.subtask(session_id=rs.id, newspeed=newspeed))
 
-                                if coa_result==True:
-                                    cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
-                                                """ , (newspeed, rs.id,))
-                                    
-                                    cur.connection.commit()
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         else:
                             logger.debug("%s: about to send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
@@ -191,7 +205,7 @@ class check_vpn_access(Thread):
                         from_start = (dateAT-rs.date_start).seconds+(dateAT-rs.date_start).days*86400
                             
                         if (rs.time_from_last_update and rs.time_from_last_update+15>=nas.acct_interim_interval*3+3) or (not rs.time_from_last_update and from_start>=nas.acct_interim_interval*3+3):
-                            cur.execute("""UPDATE radius_activesession SET session_status='NACK' WHERE sessionid=%s;
+                            cur.execute("""UPDATE radius_activesession SET session_status='ACK' WHERE sessionid=%s;
                                         """, (rs.sessionid,))
                             cur.execute("""
                             UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s
@@ -245,7 +259,7 @@ class periodical_service_bill(Thread):
         susp_per_mlt = 1
         if pss_type == PERIOD:
 
-            time_start_ps = acctf_datetime if ps.autostart else ps.time_start
+            time_start_ps = acctf_datetime if ps.autostart else ps.time_start #Возможно баг. проверить на дату создания услуи и начало тарифного плана
             
             #Если в расчётном периоде указана длина в секундах-использовать её, иначе использовать предопределённые константы
 
@@ -267,7 +281,7 @@ class periodical_service_bill(Thread):
             last_checkout = ps.created
             logger.debug('%s: Addon Service: GRADUAL last checkout is None set last checkout=%s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))
         else:
-            return
+            last_checkout = lc
         
         #Расчитываем параметры расчётного периода на момент последнего списания
         period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)                                
@@ -288,7 +302,7 @@ class periodical_service_bill(Thread):
                 last_checkout_seconds = delta_from_last_checkout.seconds + delta_from_last_checkout.days*SECONDS_PER_DAY
                 nums,ost = divmod(last_checkout_seconds,self.PER_DAY)                                        
                 chk_date = last_checkout + self.PER_DAY_DELTA
-                if pss_type == PERIOD and chk_date>=next_date:
+                if next_date and pss_type == PERIOD and chk_date>=next_date:
                     cur.execute("UPDATE billservice_periodicalservicelog SET last_billed WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                     return
 
@@ -352,7 +366,7 @@ class periodical_service_bill(Thread):
 
                 while first_time==True or chk_date <= period_start:
                     #Если следующее списание произойдёт уже на новом тарифе - отмечаем, что тарификация произведена
-                    if pss_type == PERIOD and chk_date>=next_date:
+                    if next_date and pss_type == PERIOD and chk_date>=next_date:
                         cur.execute("UPDATE billservice_periodicalservicelog SET last_billed WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                         return
                     
@@ -447,7 +461,7 @@ class periodical_service_bill(Thread):
                             
                         if pss_type == PERIOD:
                             tr_date = chk_date
-                            if chk_date>=next_date:
+                            if next_date and chk_date>=next_date:
                                 cur.execute("UPDATE billservice_periodicalservicelog SET last_billed WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                                 return
                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
@@ -514,14 +528,11 @@ class periodical_service_bill(Thread):
                 self.PER_DAY_DELTA = datetime.timedelta(seconds=self.PER_DAY)
                 self.NOW = dateAT
                 #get a list of tarifs with periodical services & loop                
-                for row in caches.periodicaltarif_cache.data:
-                    tariff_id, settlement_period_id = row
-                    #debit every account for tarif on every periodical service
-                    for ps in caches.periodicalsettlement_cache.by_id.get(tariff_id,[]):
-                        if 0: assert isinstance(ps, PeriodicalServiceSettlementData)
-                for acc in caches.account_cache.by_account:
+
+                for acc_id in caches.account_cache.by_account:
+
+                    acc =  caches.account_cache.by_account.get(acc_id)
                     if 0: assert isinstance(acc, AccountData)
-                    
                     acctf_raw_history = get_acctf_history(cur, acc.account_id)
                     by_id = {}
                     #Получаем историю смены субаккаунтов по которым не производились списания период. услуг
@@ -533,7 +544,8 @@ class periodical_service_bill(Thread):
                             
                             try:
                                 current = True if next_acctf_id is None else False
-                                dateAT = self.NOW if next_acctf_id is None else next_date
+                                dateAT = next_date if next_date else self.NOW
+                                logger.info("%s : preiter: %s %s %s %s %s", (self.getName(), self.NOW, dateAT, self.NOW, next_acctf_id, next_date))
                                 self.iterate_ps(cur, caches, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, PERIOD)
                             
                             except Exception, ex:
@@ -835,12 +847,7 @@ class RadiusAccessBill(Thread):
                                     if summ > 0:
                                         #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
                                         #db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
-                                        cur.execute("""INSERT INTO billservice_traffictransaction(
-                                                        account_id, accounttarif_id, summ, 
-                                                        created, radiustraffictransmitservice_id)
-                                                        VALUES ( %s, %s, (-1)*%s, %s, 
-                                                        %s);
-                                                """, (rs.account_id, rs.acctf_id, summ, now, rs.traccs_id))
+                                        radiustraffictransaction(cur, rs.traccs_id, rs.acctf_id, rs.account_id, summ, created=now)
                                         cur.connection.commit()
                                     break
                             cur.execute("""UPDATE radius_activesession SET lt_bytes_in=%s, lt_bytes_out=%s
@@ -855,6 +862,36 @@ class RadiusAccessBill(Thread):
                 cur.connection.commit()
                 cur.close()
                 logger.info("TIMEALIVE: Time access thread run time: %s", time.clock() - a)
+            except TraftransTableException, ex:
+                logger.info("%s : traftrans table not exists. Creating", (self.getName(),  )) 
+                self.connection.rollback()
+                try:
+                    cur.execute("SELECT traftrans_crt_pdb(%s::date)", (now,))
+                    cur.connection.commit()
+                except Exception, ex:
+                    logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc())) 
+                    try: 
+                        time.sleep(3)
+                        if self.connection.closed():
+                            try:
+                                self.connection = get_connection(vars.db_dsn)
+                                cur = self.connection.cursor()
+                            except:
+                                time.sleep(20)
+                        else:
+                            cur.connection.commit()
+                            cur = self.connection.cursor()
+                    except: 
+                        time.sleep(10)
+                        try:
+                            self.connection.close()
+                        except: pass
+                        try:
+                            self.connection = get_connection(vars.db_dsn)
+                            cur = self.connection.cursor()
+                        except:
+                            time.sleep(20)
+                            
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -1084,18 +1121,14 @@ class addon_service(Thread):
                         if (not accountaddonservice.deactivated and not deactivated) and \
                         (service.action and not accountaddonservice.action_status) and \
                         not accountaddonservice.temporary_blocked and \
-                         ((service.deactivate_service_for_blocked_account==False) or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)>0 and acc.disabled_by_limit==False and acc.balance_blocked==False and acc.account_status==1 ))):
+                         ((service.deactivate_service_for_blocked_account==False) or (service.deactivate_service_for_blocked_account==True and ((acc.ballance or 0+acc.credit or 0)>0 and acc.disabled_by_limit==False and acc.balance_blocked==False and acc.account_status==1 ))):
                             #выполняем service_activation_action
-                            cur.connection.commit()
-                            sc = "UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (True, accountaddonservice.id)
-                            sended = cred.delay(acc._asdict(), subacc._asdict(), 'ipn', nas._asdict(), addonservice=service._asdict(), format_string=service.service_activation_action, succ_command=sc)
+                            sended = cred.delay(acc._asdict(), subacc._asdict(), 'ipn', nas._asdict(), addonservice=service._asdict(), format_string=service.service_activation_action, cb=tasks.adds_enable_state.subtask(accountaddonservice.id))
                             #if sended is True: cur.execute()
                         
-                        if (accountaddonservice.deactivated or accountaddonservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance+acc.credit)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accountaddonservice.action_status==True:
+                        if (accountaddonservice.deactivated or accountaddonservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance or 0 +acc.credit or 0)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accountaddonservice.action_status==True:
                             #выполняем service_deactivation_action
-                            cur.connection.commit()
-                            sc = "UPDATE billservice_accountaddonservice SET action_status=%s WHERE id=%s" % (False, accountaddonservice.id)
-                            sended = cred.delay(acc, subacc, 'ipn', nas, addonservice=service._asdict(), format_string=service.service_deactivation_action, succ_command=sc)
+                            sended = cred.delay(acc, subacc, 'ipn', nas, addonservice=service._asdict(), format_string=service.service_deactivation_action, cb=tasks.adds_disable_state.subtask(accountaddonservice.id))
 
 
                     cur.connection.commit()
@@ -1438,21 +1471,21 @@ class ipn_service(Thread):
                             now = dateAT
                             # Если на сервере доступа ещё нет этого пользователя-значит добавляем.
                             #Добавить обработку на предмет смены тарифного плана, сервера доступа, удаления аккаунта - подчищать за ним данные и сбрасывать флаги
+                            ipn_add=False
+                            ipn_disable = False
+                            ipn_enable = False
                             if subacc and not subacc.ipn_added and acc.tarif_active:
-                                sc = "UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s" % (True, id)
-                                cred.delay(acc, subacc, access_type, nas, format_string=nas.subacc_add_action, succ_command = sc)
-                                subacc = subacc._replace(ipn_added=True)    
-                            if subacc and subacc.ipn_enabled==False and ( (account_ballance>0 or (account_ballance==0 and subacc.allow_ipn_with_null==True) or (account_ballance<0 and subacc.allow_ipn_with_minus==True) ) and period and acc.account_status == 1 and ((not acc.disabled_by_limit and not acc.balance_blocked) or acc.allow_ipn_with_block==True)) and acc.tarif_active and not legacy:
-                                sc = "UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id)
-                                cred.delay(acc, subacc, access_type, nas, format_string=nas.subacc_enable_action, succ_command=sc)
-                                #if sended is True and not legacy: cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s" % (True, id))
-                                subacc = subacc._replace(ipn_enabled=True)
+                                ipn_add = True
+
+                            if subacc and subacc.ipn_enabled==False and ( (account_ballance>0 or (account_ballance==0 and subacc.allow_ipn_with_null==True) or (account_ballance<0 and subacc.allow_ipn_with_minus==True) ) and period and acc.account_status == 1 and ((not acc.disabled_by_limit and not acc.balance_blocked) or acc.allow_ipn_with_block==True)) and acc.tarif_active:
+                                ipn_enable = True
+
                             elif subacc.ipn_enabled is not False and subacc and (((acc.disabled_by_limit or acc.balance_blocked) and subacc.allow_ipn_with_block==False) or ((account_ballance<0 and subacc.allow_ipn_with_minus==False) or (account_ballance==0 and subacc.allow_ipn_with_null==False)) or period is False or acc.account_status != 1 or not acc.tarif_active):
-                                #шлём команду на отключение пользователя,account_ipn_status=False
-                                sc = "UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s", (False, id,)
-                                cred.delay(acc, subacc, access_type, nas, format_string=nas.subacc_disable_action, succ_command = sc)    
-                                                            
-                                subacc = subacc._replace(ipn_enabled=False)
+                                ipn_disable = True    
+              
+
+
+                                    
                             cur.connection.commit()
         
                             #Приступаем к генерации настроек скорости
@@ -1478,7 +1511,7 @@ class ipn_service(Thread):
                                         addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
                                         break    
                             #Получаем параметры скорости                         
-                            speed = create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, acc.ipn_speed, dateAT, fMem)                            
+                            speed = create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, subacc.ipn_speed, dateAT, fMem)                            
                     
         
         
@@ -1487,26 +1520,37 @@ class ipn_service(Thread):
                             
                             ipnsp = caches.ipnspeed_cache.by_id.get(acc.account_id, IpnSpeedData(*(None,)*6))
                             if 0: assert isinstance(ipnsp, IpnSpeedData)
-                            if newspeed!=subacc.speed or recreate_speed or recreate_speed:
+                            cs = None
+                            if newspeed!=subacc.speed or recreate_speed:
                                 #отправляем на сервер доступа новые настройки скорости, помечаем state=True
 
                                 ipn_speed_action = nas.subacc_ipn_speed_action
                                 
                                 if ipn_speed_action:
-                                    if legacy: 
-                                        sc = cur.mogrify("SELECT accountipnspeed_ins_fn( %s, %s::character varying, %s, %s::timestamp without time zone);", (acc.account_id, newspeed, True, now,))
-                                    else:
-                                        sc = cur.mogrify("UPDATE billservice_subaccount SET speed=%s WHERE id=%s;", (newspeed, id))   
-                                    change_speed.delay(acc._asdict(), subacc._asdict(), nas._asdict(),
+                                    cs = change_speed.subtask(account=acc._asdict(), subacc=subacc._asdict(), nas=nas._asdict(),
                                                                 access_type=access_type,
                                                                 format_string=ipn_speed_action,
-                                                                speed=speed, succ_command = sc)
+                                                                speed=speed, cb = tasks.update_ipn_speed_state.subtask(subaccount_id=id, newspeed=newspeed))
 
                                 
    
                                     subacc = subacc._replace(speed=newspeed)
                                                           
                                 cur.connection.commit()
+                            if ipn_add:
+                                #если нужно добавить субаккаунт - добавляем и, если нужно, активируем/деактивируем и, если нужно, устанавливаем скорость
+                                cb = cred.subtask(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_enable_action, cb=tasks.ipn_enable_state(id, cb = cs) if ipn_enable else tasks.ipn_disable_state(id, cb=cs))
+                                cred.delay(acc, subacc, access_type, nas, format_string=nas.subacc_add_action, cb = tasks.ipn_add_state.subtask(id, cb = cb))
+                            else:
+                                if ipn_enable:
+                                    #Активируем и, если нужно, устанавливаем скорость
+                                    cred.delay(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_enable_action, cb=tasks.ipn_enable_state(id, cb=cs))
+                                elif ipn_disable:
+                                    #Деактивируем и, если нужно, устанавливаем скорость
+                                    cred.delay(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_disable_action, cb = tasks.ipn_disable_state(id, cb=cs))
+                                elif cs:
+                                    #Просто сменить скорость
+                                    cs.apply_async()
                     except Exception, ex:
                         if ex.__class__ in vars.db_errors: raise ex
                         else:
@@ -1647,7 +1691,7 @@ def ungraceful_save():
     logger.lprint("Core exiting.\n")
     sys.exit()
     
-def main():
+def mn():
     global caches, suicideCondition, threads, cacheThr, vars
     
     threads = []
@@ -1756,7 +1800,8 @@ if __name__ == "__main__":
         #--------------------------------------------------
         
         #print "ebs: core: configs read, about to start\n"
-        main()
+        #main()
+        mn()
         
     except Exception, ex:
         print 'Exception in core, exiting: ', repr(ex)

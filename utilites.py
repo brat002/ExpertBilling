@@ -377,57 +377,9 @@ def create_speed(default, speeds,  correction, addonservicespeed, speed, date_, 
         try:
             return parse_custom_speed_lst(speed)
         except Exception, ex:
-            logger.error("%s : exception: %s \n %s Can not parse account speed %s", (self.getName(), repr(ex), traceback.format_exc()), speed)
+            print "exception: %s \n %s Can not parse account speed %s", (repr(ex), traceback.format_exc(), speed)
             return ["0/0","0/0","0/0","0/0","8","0/0"] 
             
-def switch_action(port, switch, format_string):
-        """
-        
-        """
-        command_dict={
-                             'access_type':unicode(access_type),
-                    }
-        d = account._asdict()
-        for x in d.keys():
-            
-            command_dict.update({
-                          'acc_%s' % x: unicode(d[x]),
-                           })
-        d = nas._asdict()
-        for x in d.keys():
-            
-            command_dict.update({
-                          'nas_%s' % x: unicode(d[x]),
-                           })
-        if subacc :
-            d = subacc._asdict()
-            for x in d.keys():
-                
-                command_dict.update({
-                              'subacc_%s' % x: unicode(d[x]),
-                               })
-
-        command_string=command_string_parser(command_string=format_string, command_dict=command_dict)        
-        if not command_string: return True
-        #print command_string
-        #print command_dict
-        #log_debug_('CRED ssh dictionary: %s' % command_dict) 
-        try:
-            
-            if ssh_exec:
-                sshclient = ssh_execute(nas.login, nas.ipaddress, nas.password, command_string)
-                log_debug_('CRED ssh reply: %s' % sshclient)
-            elif nas.type!='localhost':
-                sshclient=ssh_client(host=nas.ipaddress, username=nas.login, password=nas.password, command = command_string)
-                log_debug_('CRED ssh connected')
-                del sshclient
-            elif nas.type=='localhost':
-                status, output = commands.getstatusoutput(command_string)
-                log_debug_('Local command %s was executed with status %s and output %s' % (command_string, status, output))
-            return True
-        except Exception, e:
-            log_error_('CRED ssh error: %s' % repr(e))
-            return False
         
 cs_pattern = re.compile('\$[_\w]+')
 def command_string_parser(command_string='', command_dict={}):
@@ -723,54 +675,15 @@ def rosClient(host, login, password, command):
     s.close()
     return result
 
-def get_sessions_for_nas(nas):
-    sessions = []
-    if nas['type'] in ['mikrotik2.8', 'mikrotik2.9']:
-        #Use SSH For fetching sessions
-        if ssh_exec:
-            try:
-                sshclient = ssh_execute(nas['login'], nas['ip'], nas['password'], "/ppp active print terse without-paging")
-            except Exception, e:
-                log_error_('Get sessions for nas SSH sshexec error: %s' % repr(e))
-                return []
-                
-            log_info_('Get sessions for nas SSH sshexec reply: %s' % sshclient)
-            if nas['type'] in ['mikrotik2.9', 'mikrotik2.8']:
-                sessions=ActiveSessionsParser(sshclient.split(':')[1].strip()).parse()
-        else:
-            try:            
-                response=ssh_client(host=nas['ipaddress'], username=nas['login'], password=nas['password'], command = "/ppp active print terse without-paging")[0]
-                
-                log_info_('Get sessions for nas SSH sshclient reply: %s' % response)
-            except Exception, e:
-                log_error_('Get sessions for nas SSH error: %s' % repr(e))
-                return []
-                
-            #print response
-            if nas['type'] in ['mikrotik2.9', 'mikrotik2.8']:
-                sessions=ActiveSessionsParser(response).parse()
 
-
-        
-    elif nas['type']==u'mikrotik3':
-        #Use ROS API for fetching sessions
-        try:
-            sessions = convert(rosClient(nas['ipaddress'], nas['login'], nas['password'], r"/ppp/active/getall"))
-        except Exception, e:
-            log_error_('Get sessions for nas SSH rosapi error: %s' % repr(e))
-
-    return sessions
-
-def get_active_sessions(nas):
-    return get_sessions_for_nas(nas)     
     
 def convert(alist):
     return [dict(y[1:].split('=') for y in x if not y[0] in ('.','!')) for x in alist]
 
 def convert_values(value):
-    if str(value).endswith('k', 'K'):
+    if str(value).endswith(('k', 'K')):
         return str(int(str(value)[0:-1])*1000)
-    elif str(value).endswith('M', 'm'):
+    elif str(value).endswith(('M', 'm')):
         return str(int(str(value)[0:-1])*1000*1000)
     else:
         return str(value)

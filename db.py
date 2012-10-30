@@ -23,6 +23,7 @@ class dbRoutine(object):
         #add an opportunity to pass method name as a kwargs value
         methodName = args[0]
         #print methodName
+        self = 1
         method = getattr(self, "db_" + methodName, None)
         if callable(method):
             try:
@@ -71,6 +72,20 @@ def traffictransaction(cursor, traffictransmitservice_id, accounttarif_id, accou
         
     return cursor.fetchone()[0]
     
+def radiustraffictransaction(cursor, radiustraffictransmitservice_id, accounttarif_id, account_id, summ=0, created=None):
+    if not created:
+        created=datetime.datetime.now()
+    try:
+        cursor.execute("""INSERT INTO traftrans%s""" % created.strftime("%Y%m01")+"""(radiustraffictransmitservice_id, accounttarif_id, account_id, summ, created) VALUES (%s, %s, %s, (-1)*%s, %s) RETURNING id;
+                       """, (radiustraffictransmitservice_id, accounttarif_id, account_id, summ, created,))
+    except psycopg2.ProgrammingError, e:
+        if e.pgcode=='42P01':
+            raise TraftransTableException()
+        else:
+            raise e
+        
+    return cursor.fetchone()[0]
+
 def timetransaction(cursor, timeaccessservice_id, accounttarif_id, account_id, session_id, summ=0, created=None):
     if not created:
         created=datetime.datetime.now()
@@ -96,7 +111,7 @@ def check_in_suspended(cursor, account_id, dttime):
     cursor.execute("""
     SELECT True from billservice_suspendedperiod where account_id=%s and %s between start_date and end_date;
     """, (account_id, dttime))
-    return len(cursor.fetchone())==0
+    return cursor.fetchone() is not None
 
 def timetransaction_fn(cursor, timeaccessservice_id, accounttarif_id, account_id, summ=0, created=None, sessionid='', interrim_update=None):
     if not created:

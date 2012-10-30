@@ -1,7 +1,9 @@
 #-*-coding=utf-8-*-
 
 from __future__ import with_statement
-
+import sys
+sys.path.insert(0, "modules")
+sys.path.append("cmodules")
 import gc
 import copy
 import glob
@@ -29,7 +31,6 @@ import saver
 import IPy
 
 from threading import Thread, Lock, Event
-from daemonize import daemonize
 from IPy import IP, IPint, parseAddress
 from collections import deque, defaultdict
 from saver import graceful_loader, graceful_saver, allowedUsersChecker, setAllowedUsers
@@ -1093,8 +1094,6 @@ def main ():
 
 
 if __name__=='__main__':
-    if "-D" in sys.argv:
-        daemonize("/dev/null", "log.txt", "log.txt")
         
     flags = NfFlags()
     vars  = NfVars()

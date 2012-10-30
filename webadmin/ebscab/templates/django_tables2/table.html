@@ -1,0 +1,85 @@
+{% spaceless %}
+{% load querystring from django_tables2 %}
+{% load format_paginator from ebsadmin_tags %}
+{% load trans blocktrans from i18n %}
+{% load ebsadmin_tags %}
+
+<div>
+
+{% block table %}
+
+<table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %} id="id_main_table">
+    {% block table.thead %}
+    <thead>
+        <tr>
+        {% for column in table.columns %}
+            {% if column.orderable %}
+            <th {{ column.attrs.th.as_html }}><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">{{ column.header }}</a></th>
+            {% else %}
+            <th {{ column.attrs.th.as_html }}>{{ column.header }}</th>
+            {% endif %}
+        {% endfor %}
+        </tr>
+    </thead>
+    {% endblock table.thead %}
+    {% block table.tbody %}
+    <tbody>
+        {% for row in table.page.object_list|default:table.rows %} {# support pagination #}
+        {% block table.tbody.row %}
+        <tr class="{% cycle "odd" "even" %}">
+            {% for column, cell in row.items %}
+                <td {{ column.attrs.td.as_html }}>{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endblock table.tbody.row %}
+        {% empty %}
+        {% if table.empty_text %}
+        {% block table.tbody.empty_text %}
+        <tr><td colspan="{{ table.columns|length }}">{{ table.empty_text }}</td></tr>
+        {% endblock table.tbody.empty_text %}
+        {% endif %}
+        {% endfor %}
+    </tbody>
+    {% endblock table.tbody %}
+    {% block table.tfoot %}
+    <tfoot>
+    </tfoot>
+    {% endblock table.tfoot %}
+</table>
+{% if total_summ %}
+<strong>Всего на сумму:</strong> {{total_summ|intspace}}
+{% endif %}
+</div>
+{% endblock table %}
+
+
+{% if table.page %}
+
+<div class="pagination  pagination-centered">
+    <ul>
+    {% if table.page.has_previous %}
+    <li><a href="{% querystring table.prefixed_page_field=table.page.previous_page_number %}">{% trans "Previous" %}</a></li>
+    {% endif %}
+    {% for i in table.page.paginator.page_range|format_paginator:table.page.number  %}
+	    {% ifequal i  '...' %}
+	       <li><a class="disabled" >{{i}}</a></li>
+	    {% else %}
+		    {% ifequal table.page.number i%}
+		      <li><a class="active" >{{i}}</a></li>
+		    {% else %}
+		      <li><a href="{% querystring table.prefixed_page_field=i %}" >{{i}}</a></li>
+		    {% endifequal %}
+	    {% endifequal %}
+    {% endfor %}
+    
+    {% if table.page.has_next %}
+    <li><a href="{% querystring table.prefixed_page_field=table.page.next_page_number %}">{% trans "Next" %}</a></li>
+    {% endif %}
+    <li><a href="{% querystring "paginate"="False" %}">Все</a></li>
+    </ul>
+</div>
+
+
+{% endif %}
+
+{% endspaceless %}
