@@ -39,6 +39,7 @@ from nas.models import Nas
 from nas.forms import NasForm
 
 from django.db.models import Sum
+
 log = LogItem.objects.log_action
 
 BAD_REQUEST = u"Ошибка передачи параметров"

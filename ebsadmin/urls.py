@@ -129,6 +129,10 @@ urlpatterns += patterns('ebsadmin.modules.operator',
 urlpatterns += patterns('ebsadmin.modules.logview',
     url(r'^logview/$', 'logview', name='logview'),
 )
+urlpatterns += patterns('ebsadmin.modules.admin_dashboard',
+    url(r'^$', 'admin_dashboard', name='admin_dashboard'),
+)
+
 urlpatterns += patterns('ebsadmin.modules.periodicalservicelog',
     url(r'^periodicalservicelog/delete/$', 'periodicalservicelog_delete', name='periodicalservicelog_delete'),
     url(r'^periodicalservicelog/$', 'periodicalservicelog', name='periodicalservicelog'),

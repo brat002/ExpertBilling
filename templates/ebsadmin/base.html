@@ -66,8 +66,8 @@ html {
     <div class="container">
   
 <ul class="nav">
-  <li class="active">
-    <a href="#">Dashboard</a>
+  <li>
+    <a href="{% url admin_dashboard %}">Dashboard</a>
   </li>
    <ul class="nav">
      <li class="dropdown">
@@ -143,6 +143,7 @@ html {
          <li><a href="{% url group %}">Группы трафика</a></li>
          <li><a href="{% url settlementperiod %}"><i class="icon-calendar"></i>&nbsp;Расчётные периоды</a></li>
          <li><a href="{% url timeperiod %}"><i class="cus-date-next"></i>&nbsp;Периоды тарификации</a></li>
+         <li><a href="{% url transactiontype %}">Типы платежей</a></li>
          <li class="divider"></li>
          <li><a href="{% url addonservice %}"><i class=" cus-cart-add"></i>&nbsp;Подключаемые услуги</a></li>
          <li><a href="{% url systemuser %}"><i class="icon-user"></i>&nbsp;Системные пользователи</a></li>
@@ -183,8 +184,8 @@ html {
          <li><a href="{% url manufacturer %}">Производители оборудования</a></li>
          <li><a href="{% url hardwaretype %}">Типы оборудования</a></li>
          <li><a href="{% url model %}">Модели оборудования</a></li>
-         <li class="divider"></li>
-         <li><a href="{% url transactiontype %}">Типы платежей</a></li>
+         <li class="nav-header"></li>
+         <li><a href="/accounts/logout/"><i class="icon-off"></i>&nbsp;Выйти</a></li>
          
          
        </ul>
