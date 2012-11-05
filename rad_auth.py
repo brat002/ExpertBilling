@@ -3,57 +3,50 @@
 from __future__ import with_statement
 
 import gc
-import os
 import sys
 sys.path.insert(0, "modules")
 sys.path.append("cmodules")
 import time
-import select
 import signal
-import socket
 import packet
 import asyncore
 import datetime
 import traceback
-import dictionary
 import ConfigParser
-import psycopg2, psycopg2.extras
 
 import isdlogger
 import saver, utilites
 
 from time import clock
-from copy import copy, deepcopy
-from threading import Thread, Lock, Timer
+from copy import deepcopy
+from threading import Thread, Lock
 
-from collections import defaultdict, deque
+from collections import deque
 
-from saver import allowedUsersChecker, setAllowedUsers
+import commands
+from hashlib import md5
+from base64 import b64decode
 
-psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
-from itertools import chain
 from classes.rad_auth_cache import *
 from classes.rad_class.CardActivateData import CardActivateData
 from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, command_string_parser, speed_list_to_dict, create_speed
-from pkgutil import simplegeneric
 from Queue import Queue
 from option_parser import parse
 
-from utilites import in_period,in_period_info, create_speed_string, get_corrected_speed
+from utilites import in_period_info
 import auth
 from auth import Auth, get_eap_handlers
 
 w32Import = False
 
-import twisted.internet
 from twisted.internet.protocol import DatagramProtocol
 
 try:
-    from twisted.internet import pollreactor
-    pollreactor.install()
+    from twisted.internet import epollreactor
+    epollreactor.install()
 except:
     print 'No poll(). Using select() instead.'
 
@@ -166,7 +159,7 @@ class AuthHandler(Thread):
                     time.sleep(0.15)
                     continue
 
-                auth_time = clock()
+                auth_time = time.time()
                 returndata = ''
                 nas_ip = str(packetobject['NAS-IP-Address'][0])
                 access_type = get_accesstype(packetobject)
@@ -226,7 +219,7 @@ class AuthHandler(Thread):
 
                 transport.write(returndata, addrport)
                  
-                logger.info("AUTH: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (clock()-auth_time, user_name, nas_ip, access_type))
+                logger.info("AUTH: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (time.time()-auth_time, user_name, nas_ip, access_type))
                 #dbCur.connection.commit()
 
                 del coreconnect 
@@ -1182,19 +1175,19 @@ class CacheRoutine(Thread):
             if suicideCondition[self.__class__.__name__]: break            
             try: 
                 if flags.cacheFlag or (now() - cacheMaster.date).seconds > vars.CACHE_TIME:
-                    run_time = time.clock()                    
+                    run_time = time.time()                    
                     cur = self.connection.cursor()
                     #renewCaches(cur)
                     renewCaches(cur, cacheMaster, RadAuthCaches, 41, (fMem,))
                     #cur.connection.commit()
                     cur.close()
                     if counter == 0:
-                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
+                        aUC(AU, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
                         if not flags.allowedUsersCheck: continue                    
                     counter += 1
                     if flags.cacheFlag:
                         with flags.cacheLock: flags.cacheFlag = False
-                    logger.info("ast time : %s", time.clock() - run_time)
+                    logger.info("ast time : %s", time.time() - run_time)
 
             except Exception, ex:
                 logger.error("%s : #30410004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -1352,6 +1345,14 @@ if __name__ == "__main__":
         sessions_speed={}#account:(speed,datetime)
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
 
+        if '-p' in sys.argv and len(sys.argv)==3:
+            port = sys.argv[2]
+        elif '-p' in sys.argv:
+            print "unknown port"
+            sys.exit()
+        else:
+            port = vars.AUTH_PORT
+            
         cacheMaster = CacheMaster()
 
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
@@ -1373,10 +1374,52 @@ if __name__ == "__main__":
 
         suicideCondition = {}
         fMem = pfMemoize()
-        if not globals().has_key('_1i'):
+        a=open(b64decode('bGljZW5zZS5saWM=')).read().split(b64decode('QVM='))
+        raw_uid, raw_crc = a
+        l_uid = raw_uid[:32]
+        srts=int(str(raw_uid[32:]).strip().lower(),16)
+        s,o=commands.getstatusoutput(b64decode('Y2F0IC9wcm9jL2NwdWluZm8gfCBncmVwICJtb2RlbCBuYW1lIiB8IHVuaXE='))
+        uid = md5(o).hexdigest()
+        uid+=hex(srts)
+        uid=uid.upper()
+        crc=0
+        i=0
+        for x in uid:
+            crc+=ord(x)**i-1
+            i+=1
+        
+        cc=md5(str(crc)).hexdigest().upper()
+        
+        if raw_crc!=cc:
+            print b64decode('SW5zdWNjZWZ1bGwgY3J5cHRvaGFzaA==')
+            sys.exit()
+
+        _1i = lambda: srts
+        
+        if not srts:
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(_1i())        
-        allowedUsers()
+            
+        def sAU(allowed, dbconnection = None):
+            AU = lambda: int(allowed)
+            if dbconnection:
+                cur = dbconnection.cursor()
+                cur.callproc('crt_allowed_checker', (AU(),))
+                dbconnection.commit()
+                cur.close()
+                dbconnection.close()
+            return AU
+        
+        def aUC(allowed, current, exit, flags):
+            if current() > allowed():
+                logger.error("SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" , (str(current()), str(allowed())))
+                print >> sys.stderr, "SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed()))
+                flags.allowedUsersCheck = False
+                exit()
+            else:
+                flags.allowedUsersCheck = True
+                
+        tmpconnection = get_connection(vars.db_dsn)
+        AU = sAU(_1i(), tmpconnection)        
 
         #-------------------
         print "ebs: rad: configs read, about to start"

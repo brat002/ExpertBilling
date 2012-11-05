@@ -55,12 +55,6 @@ core_sql = \
                         LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
                         WHERE ba.deleted is Null
                         ;""",
-          'underbilled_per_accs': 
-                     """SELECT ba.id, ba.ballance, ba.credit, date_trunc('second', act.datetime), bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, date_trunc('second', ba.created), ba.disabled_by_limit, ba.balance_blocked, bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status, ba.username, ba.password, bt.require_tarif_cost, act.periodical_billed, FALSE    
-                            FROM billservice_account as ba
-                            LEFT JOIN billservice_accounttarif AS act ON ba.id=act.account_id  
-                            LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id 
-                            WHERE ba.deleted is Null and  date_trunc('second', act.datetime) >= (SELECT date_trunc('second', datetime) FROM billservice_accounttarif AS att WHERE att.id=act.id AND att.periodical_billed IS FALSE ORDER BY datetime ASC LIMIT 1) AND date_trunc('second', act.datetime)<%s AND bt.active ORDER by ba.id, act.datetime DESC;""",
           'traftrss':"""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""",
           'radiustraftrss':"""SELECT id, direction, tarification_step, rounding, prepaid_direction, prepaid_value, reset_prepaid_traffic FROM billservice_radiustraffic;""",
           'radiustrafnodes':"""select radiustraffic_id, "value",timeperiod_id, "cost"  from billservice_radiustrafficnode;""",

@@ -36,8 +36,8 @@ mkdir builds/$1
 echo "Additional keys: " $5
 
 
-#crypto_build="core rad_auth rad_acct nf nfroutine"
-simple_build="core rad_auth rad_acct nf nfroutine"
+#crypto_build="core rad_auth rad_acct nf nfroutine nffilter"
+simple_build="core rad_auth rad_acct nf nffilter nfroutine"
 total_build="$crypto_build $simple_build"
 
 cp license.lic license.lic.old
@@ -148,6 +148,9 @@ for bldd in $total_build; do
 	     rm $bldd.c;
 	fi
 done
+cp init/ebs_celery builds/$1/init.d/ebs_celery
+chmod +x builds/$1/init.d/ebs_celery
+cp soft/celeryd builds/$1/sort/
 
 rm -rf modules
 

@@ -115,7 +115,7 @@ class NfVars(Vars):
                  'FLOW_MAIL_WARNING', 'FLOW_MAIL_SUBJECT', 'FLOW_MAIL_USE_TLS', \
                  'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', 'FLOW_MAIL_HOST_PASSWORD', \
                  'FLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM',\
-                 'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', 'FLOW_INTERVAL', 'FLOW_WHEN', 'SKIP_INDEX_CHECK')
+                 'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', 'FLOW_INTERVAL', 'FLOW_WHEN', 'SKIP_INDEX_CHECK', 'QUEUE_IN', 'QUEUE_OUT')
     def __init__(self):
         super(NfVars, self).__init__()
         self.name = 'nf'
@@ -160,6 +160,8 @@ class NfVars(Vars):
         self.FLOW_PREFIX = 'netflow'
         self.FLOW_WHEN = 'M'
         self.FLOW_INTERVAL = 5
+        self.QUEUE_IN = '/opt/ebs/var/spool/nf_in'
+        self.QUEUE_OUT = '/opt/ebs/var/spool/nf_out'
         self.SKIP_INDEX_CHECK = False
         self.types.update({'addr': ('HOST', 'PORT'), 'nfraddr': ('NFR_HOST', 'NFR_PORT', 'SOCK_TIMEOUT'),\
                            'cachedicts': ('CACHE_DICTS',), 'filepack': ('FILE_PACK',), 'checkclasses': ('CHECK_CLASSES',), 'prefix': ('PREFIX',), 'aggr':('AGGR_TIME', 'AGGR_NUM'),\
@@ -169,20 +171,11 @@ class NfVars(Vars):
         super(NfVars, self).get_dynamic(**kwargs)
         config = kwargs['config']
         name = kwargs['name']
-        net_name = kwargs['net_name']
+
         flow_name = kwargs['flow_name']
         if config.has_option(name, 'cachedicts'): self.CACHE_DICTS = config.getint(name, 'cachedicts')
         if config.has_option(name, 'port'): self.PORT = config.getint(name, 'port')
         if config.has_option(name, 'host'): self.HOST = config.get(name, 'host')
-        self.SOCK_TYPE = config.getint(net_name, "sock_type")
-        if self.SOCK_TYPE == 0:
-            if config.has_option(net_name + "_inet", "nfr_host"): self.NFR_HOST = config.get(net_name + "_inet", "nfr_host")
-            if config.has_option(net_name + "_inet", "nfr_port"): self.NFR_PORT = config.getint(net_name + "_inet", "nfr_port")
-            self.NFR_ADDR = (self.NFR_HOST, self.NFR_PORT)
-        elif self.SOCK_TYPE == 1:
-            if config.has_option(net_name + "_unix", "nfr_host"): self.NFR_HOST = config.get(net_name + "_unix", "nfr_host")
-            self.NFR_PORT = None
-            self.NFR_ADDR = self.NFR_HOST
         if config.has_option(name, 'recover_dump'):
             self.RECOVER_DUMP = False if config.get(name, 'recover_dump').lower() in ('false', '0') else True
         if config.has_option(name, 'sock_timeout'): self.SOCK_TIMEOUT = config.getint(name, 'sock_timeout')
@@ -198,6 +191,8 @@ class NfVars(Vars):
         if config.has_option(name, 'max_datagram_len'): self.MAX_DATAGRAM_LEN = config.getint(name, 'max_datagram_len')
         if config.has_option(name, 'nf_time_mod'): self.NF_TIME_MOD = config.getint(name, 'nf_time_mod')
         if config.has_option(name, 'skip_index_check'): self.SKIP_INDEX_CHECK = config.getboolean(name, 'skip_index_check')
+        if config.has_option(name, 'queue_in'):       self.QUEUE_IN = config.get(name, 'queue_in')
+        if config.has_option(name, 'queue_out'):       self.QUEUE_OUT = config.get(name, 'queue_out')
         
         flow_opts = ['%bWRITE_FLOW', 'FLOW_DIR', '%iFLOW_TIME', '%iFLOW_COUNT', 'FLOW_MAIL_WARNING', \
                      'FLOW_MAIL_SUBJECT', '%bFLOW_MAIL_USE_TLS', 'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', \

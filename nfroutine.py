@@ -24,7 +24,7 @@ from threading import Thread, Lock
 from copy import copy, deepcopy
 from collections import deque, defaultdict
 from period_utilities import in_period_info
-from saver import allowedUsersChecker, setAllowedUsers, graceful_loader, graceful_saver
+from saver import graceful_loader, graceful_saver
 from db import traffictransaction, TraftransTableException, GpstTableException
 from bisect import bisect_left
 

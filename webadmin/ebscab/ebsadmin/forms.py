@@ -5,6 +5,7 @@ from datetime import datetime, date
 from django.forms import ModelForm
 from billservice.models import Tariff, Account, Group, Tariff
 from nas.models import Nas, TrafficClass
+
 from ajax_select.fields import AutoCompleteSelectMultipleField
 from django.conf import settings
 chartdata = {
@@ -43,6 +44,7 @@ reporttypes = [
                ['pie', u'Пирог', ],
                ]
         
+
 class ReportForm(forms.Form):
     report = forms.ChoiceField(choices=sorted([(x, chartdata[x].get('name')) for x in chartdata],  key=lambda k: k[1]), required=True, widget = forms.HiddenInput())
     accounts = AutoCompleteSelectMultipleField( 'account_fts', required = False)
@@ -74,5 +76,7 @@ class LogViewer(forms.Form):
     lines = forms.IntegerField(label=u'Количество последних строк', initial=100)
     full = forms.BooleanField(required=False)
 
-    
-    
+class TrafficNodesUploadForm(forms.Form):
+    nodes_file = forms.FileField(label=u"Файл с сетями", help_text=u"Сети должны располагаться построчно")
+    networks = forms.CharField(label=u"Наши сети(построчно)", required=True, widget=forms.widgets.Textarea)
+

@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load bootstrap_toolkit %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript"> 
         $(document).ready(function() {
@@ -37,7 +38,7 @@
 </ul>
 <form method="POST" action="{% url tpchangerule_edit %}?id={{item.id}}"class="well form-horizontal">
             {{form.id}}
-            <legend>Правило перехода на тарифный план</legend>
+            <legend>Правило перехода на тарифный план{% objectlog item %}</legend>
              <fieldset>
                   <div class="control-group">
 

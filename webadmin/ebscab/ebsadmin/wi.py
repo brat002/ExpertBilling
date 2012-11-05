@@ -14,7 +14,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from tables import TemplateTable, AccountAddonServiceTable, IPInUseTable,  LogTable, BallanceHistoryTable, SubAccountsTable, AccountHardwareTable, SuspendedPeriodTable, AccountTarifTable, TotalTransactionReportTable, AccountsReportTable, AuthLogTable, ActiveSessionTable, NasTable
 from django.http import HttpResponseRedirect
-from django_tables2.config import RequestConfig
+from django_tables2_reports.config import RequestConfigReport as RequestConfig
+from django_tables2_reports.utils import create_report_http_response
 from billservice.forms import SearchAccountForm
 
 from ebsadmin.transactionreport import TRANSACTION_MODELS
@@ -261,7 +262,9 @@ def transactionreport2(request):
             summ = total_summ
             tf = TransactionReportForm(request.GET)   
             table = TotalTransactionReportTable(res)
-            RequestConfig(request, paginate = True).configure(table)
+            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
 
             res = gettransactiontypes(current=trtypes)
             return {"table": table,  'form':tf, 'ojax':res, 'total_summ': total_summ}
@@ -359,10 +362,10 @@ def accountsreport(request):
                 res = res.filter(passport__icontains=passport)
                 
             if vpn_ip_address:
-                res = res.filter(subaccounts__vpn_ip_address__icontains=vpn_ip_address)
+                res = res.filter(subaccounts__vpn_ip_address=vpn_ip_address)
 
             if ipn_ip_address:
-                res = res.filter(subaccounts__ipn_ip_address__icontains=ipn_ip_address)
+                res = res.filter(subaccounts__ipn_ip_address=ipn_ip_address)
 
             if ipn_mac_address:
                 res = res.filter(subaccounts__ipn_mac_address__icontains=ipn_mac_address)
@@ -394,11 +397,11 @@ def accountsreport(request):
             elif credit:
                 res = res.filter(credit=credit)
                     
+            res = res.distinct()
             table = AccountsReportTable(res)
-            if request.GET.get('paginate'):
-                RequestConfig(request, paginate = False).configure(table)
-            else:
-                RequestConfig(request, paginate = True).configure(table)
+            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
 
             #===================================================================
             #for kq in connection.queries:
@@ -444,7 +447,9 @@ def authlogreport(request):
                 res = res.filter(datetime__lte=end_date)
             
             table = AuthLogTable(res)
-            RequestConfig(request, paginate = True).configure(table)
+            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
             
             
             return {"table": table,  'form':form, 'resultTab':True}   
@@ -502,7 +507,9 @@ def ipinusereport(request):
                 res = res.filter(datetime__lte=end_date)
             
             table = IPInUseTable(res)
-            RequestConfig(request, paginate = True).configure(table)
+            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
             
             
             return {"table": table,  'form':form, 'resultTab':True}   
@@ -539,7 +546,9 @@ def ballancehistoryreport(request):
                 res = res.filter(datetime__lte=end_date)
             res = res.values('id', 'account', 'account__username', 'balance', 'datetime')
             table = BallanceHistoryTable(res)
-            RequestConfig(request, paginate = True).configure(table)
+            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
             
             
             return {"table": table,  'form':form, 'resultTab':True}   
@@ -758,7 +767,9 @@ def subaccountedit(request):
     
         res = AccountAddonService.objects.filter(subaccount=subaccount)
         table = AccountAddonServiceTable(res)
-        RequestConfig(request, paginate = False).configure(table)
+        table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+        if table_to_report:
+            return create_report_http_response(table_to_report, request)
         
         ctype = ContentType.objects.get_for_model(subaccount)
 
@@ -777,7 +788,9 @@ def subaccountedit(request):
         
         #res = [u"%s=>%s" % (x, res.get(x)) for x  in res]
         action_log_table = LogTable(res)
-        RequestConfig(request, paginate = False).configure(action_log_table)
+        table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(action_log_table)
+        if table_to_report:
+            return create_report_http_response(table_to_report, request)
         
     if account_id:
         account = Account.objects.get(id=account_id)
@@ -1225,7 +1238,9 @@ def activesessionreport(request):
                 res = res.filter(nas_int__in=form.cleaned_data.get("nas"))
                 
             table = ActiveSessionTable(res)
-            RequestConfig(request, paginate = True).configure(table)
+            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
     
             return {"table": table,  'form':form}   
     
@@ -1235,7 +1250,9 @@ def activesessionreport(request):
     else:
         res = ActiveSession.objects.filter(session_status__in=['ACTIVE', 'NACK']).order_by("interrim_update")
         table = ActiveSessionTable(res)
-        RequestConfig(request, paginate = True).configure(table)
+        table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+        if table_to_report:
+            return create_report_http_response(table_to_report, request)
         form = SessionFilterForm()
         return {"table": table, 'form':form} 
 
@@ -1245,7 +1262,9 @@ def activesessionreport(request):
 def template(request):
     res = Template.objects.all()
     table = TemplateTable(res)
-    RequestConfig(request, paginate = False).configure(table)
+    table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+    if table_to_report:
+        return create_report_http_response(table_to_report, request)
     return {"table": table} 
     
 @login_required

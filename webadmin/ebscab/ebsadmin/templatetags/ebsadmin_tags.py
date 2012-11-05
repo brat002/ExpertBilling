@@ -3,6 +3,8 @@ from ebsadmin.lib import digg_paginator
 from django.utils.encoding import force_unicode
 import re
 from ebsadmin.forms import chartdata
+from django.contrib.contenttypes.models import ContentType
+
 register = template.Library()
 
 @register.filter(name='format_paginator')          
@@ -31,7 +33,16 @@ def intspace(value):
     else:
         return intspace(new)
     
+    
 @register.inclusion_tag('ebsadmin/tags/charts.html')
 def charts_menu():
     
     return {'chartdata': sorted([(x, chartdata[x].get('name')) for x in chartdata],  key=lambda k: k[1])}
+
+@register.inclusion_tag('ebsadmin/tags/objectlog_link.html')
+def objectlog(o):
+    ct_id = None
+    if o:
+        ct_id = ContentType.objects.get_for_model(o).id
+    
+    return {'ct_id': ct_id, 'item':o}
