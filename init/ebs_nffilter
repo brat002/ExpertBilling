@@ -10,7 +10,7 @@
 trap '' 1 2 3 15
 
 
-NAME=nf
+NAME=nffilter
 DPATH=/opt/ebs/data/
 DAEMON=$DPATH$NAME
 
@@ -25,7 +25,7 @@ test -x $DAEMON || exit 0
 case "$1" in
 start)
         
-        echo "Starting ebs nf"
+        echo "Starting ebs nffilter"
 		olddir=`pwd`
         cd $DPATH
         $DAEMON &
@@ -37,11 +37,11 @@ stop)
 	if [ `uname` = 'SunOS' ]
 	then
 	    pkill -SIGTERM -x $NAME
-	    sleep 2
+	    sleep 10
 	    pkill -9 -x $DAEMON
 	else
         killall -SIGTERM $NAME
-        sleep 2
+        sleep 10
         killall -9 $NAME
 	fi
 	rm -f $PIDFILE
@@ -57,12 +57,12 @@ stop-force)
     rm -f $PIDFILE
         ;;
 restart)
-        echo "Restarting ebs nf"
+        echo "Restarting ebs nffilter"
     $0 stop
     $0 start
         ;;
 reload)
-        echo "Reloading ebs nf configuration"
+        echo "Reloading ebs nffilter configuration"
     if [ `uname` = 'SunOS' ]
     then
         pkill -SIGHUP -x $NAME

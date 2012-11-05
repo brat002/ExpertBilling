@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load bootstrap_toolkit %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
@@ -18,15 +19,16 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url ippool %}">Типы проводок</a> <span class="divider">/</span>
+    <a href="{% url transactiontype %}">Типы проводок</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
 <form method="POST" action="{% url transactiontype_edit %}?id={{item.id}}"class="well form-horizontal">
-            <legend>Параметры</legend>
+            <legend>Параметры{% objectlog item %}</legend>
              <fieldset>
                   {{form|as_bootstrap}}
+                  
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">

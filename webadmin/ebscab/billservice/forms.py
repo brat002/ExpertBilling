@@ -7,7 +7,7 @@ from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubA
 from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode, PeriodicalServiceLog, Switch
 from billservice.models import Organization, BalanceHistory, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService, SheduleLog
 from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
-from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware
+from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware,AccountGroup
 
 from nas.models import Nas
 
@@ -313,8 +313,8 @@ class AccountForm(ModelForm):
     contract = forms.CharField(label=u'Номер договора', required = False)
     contract_num = forms.ModelChoiceField(label=u"Номер договора", queryset=ContractTemplate.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
     organization = forms.BooleanField(label=u"Юр.лицо", required=False, widget = forms.widgets.CheckboxInput)
-    created = forms.DateTimeField(label=u'Создан', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
-    credit = forms.CharField(label =u"Кредит", required=True, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    #created = forms.DateTimeField(label=u'Создан', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    #credit = forms.CharField(label =u"Кредит", required=True, widget = forms.TextInput(attrs={'class': 'input-small'}))
     #--Organization fields
     
     
@@ -328,7 +328,9 @@ class AccountForm(ModelForm):
         self.fields['contract'].widget.attrs['class'] = 'input-medium'
         self.fields['username'].widget.attrs['class'] = 'input-small'
         self.fields['password'].widget.attrs['class'] = 'input-small'
+        self.fields['credit'].widget.attrs['class'] = 'input-small'
         self.fields['comment'].widget.attrs['cols'] =10
+        self.fields['created'].widget = forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'})
     
     class Meta:
         model = Account
@@ -598,6 +600,12 @@ class HardwareForm(ModelForm):
     class Meta:
         model = Hardware 
 
+class AccountGroupForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    name = forms.CharField(required=True, label=u"Название")
+    class Meta:
+        model = AccountGroup
+        
 class TPChangeRuleForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(TPChangeRuleForm, self).__init__(*args, **kwargs)

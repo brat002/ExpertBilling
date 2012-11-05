@@ -23,12 +23,11 @@ import isdlogger
 import saver, utilites
 
 from time import clock
-from copy import copy, deepcopy
-from threading import Thread, Lock, Timer
+from copy import deepcopy
+from threading import Thread, Lock
 
 from collections import defaultdict, deque
 
-from saver import allowedUsersChecker, setAllowedUsers
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
@@ -37,19 +36,17 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
-from pkgutil import simplegeneric
 from Queue import Queue
 
 
 w32Import = False
 
 
-import twisted.internet
 from twisted.internet.protocol import DatagramProtocol
 
 try:
-    from twisted.internet import pollreactor
-    pollreactor.install()
+    from twisted.internet import epollreactor
+    epollreactor.install()
 except:
     print 'No poll(). Using select() instead.'
 
@@ -162,7 +159,7 @@ class AcctHandler(Thread):
                 
                 if False: assert isinstance(packetobject, packet.AcctPacket)
 
-                acct_time = clock()
+                acct_time = time.time()
                 dbCur = self.dbconn.cursor()
                 coreconnect = HandleSAcct(packetobject=packetobject, dbCur=dbCur, transport = transport, addrport = addrport)
                 coreconnect.caches = self.caches          
@@ -170,7 +167,7 @@ class AcctHandler(Thread):
                 coreconnect.handle()
        
                  
-                logger.info("ACCT: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (clock()-acct_time, coreconnect.userName, coreconnect.nasip, coreconnect.access_type))
+                logger.info("ACCT: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (time.time()-acct_time, coreconnect.userName, coreconnect.nasip, coreconnect.access_type))
                 #dbCur.connection.commit()
                 dbCur.close()
                 del coreconnect 
@@ -444,19 +441,16 @@ class CacheRoutine(Thread):
             if suicideCondition[self.__class__.__name__]: break            
             try: 
                 if flags.cacheFlag or (now() - cacheMaster.date).seconds > vars.CACHE_TIME:
-                    run_time = time.clock()                    
+                    run_time = time.time()                    
                     cur = self.connection.cursor()
                     #renewCaches(cur)
                     renewCaches(cur, cacheMaster, RadAcctCaches, 41)
                     #cur.connection.commit()
-                    cur.close()
-                    if counter == 0:
-                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
-                        if not flags.allowedUsersCheck: continue                    
+                    cur.close()            
                     counter += 1
                     if flags.cacheFlag:
                         with flags.cacheLock: flags.cacheFlag = False
-                    logger.info("ast time : %s", time.clock() - run_time)
+                    logger.info("ast time : %s", time.time() - run_time)
 
             except Exception, ex:
                 logger.error("%s : #30410004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -541,7 +535,7 @@ def main():
     packetSenderThr.start()    
     
     time.sleep(2)
-    while cacheMaster.read is False or flags.allowedUsersCheck is False:        
+    while cacheMaster.read is False:        
         if not cacheThr.isAlive:
             print 'Exception in cache thread: exiting'
             sys.exit()
@@ -583,8 +577,13 @@ if __name__ == "__main__":
     config = ConfigParser.ConfigParser()
 
     config.read("ebs_config.ini")
+    if '--help' in sys.argv:
+        print "-p <port> for custom port assignement"
+        sys.exit(0)
+    
 
 
+        
 
     server_acct = None
     try:
@@ -605,6 +604,14 @@ if __name__ == "__main__":
         sessions_speed={}#account:(speed,datetime)
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
 
+        if '-p' in sys.argv and len(sys.argv)==3:
+            port = sys.argv[2]
+        elif '-p' in sys.argv:
+            print "unknown port"
+            sys.exit()
+        else:
+            port = vars.ACCT_PORT
+        
         cacheMaster = CacheMaster()
 
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
@@ -618,11 +625,9 @@ if __name__ == "__main__":
 
         suicideCondition = {}
         
-        if not globals().has_key('_1i'):
-            _1i = lambda: ''
-        allowedUsers = setAllowedUsers(_1i())        
-        allowedUsers()
+
         #-------------------
+        
         print "ebs: rad: configs read, about to start"
         main()
     except Exception, ex:

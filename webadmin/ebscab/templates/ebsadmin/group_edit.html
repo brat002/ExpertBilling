@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load bootstrap_toolkit %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript"> 
         $(document).ready(function() {
@@ -20,7 +21,7 @@
 </ul>
 
 <form method="POST" action="{% url group_edit %}?id={{item.id}}"class="well form-horizontal">
-            <legend>Параметры группы трафика</legend>
+            <legend>Параметры группы трафика{% objectlog item %}</legend>
 <div class="alert alert-danger">
 Внимание, изменение настроек группы трафика автоматически отразится на всех связанных тарифных планах
 </div>

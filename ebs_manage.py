@@ -66,6 +66,8 @@ def stop_processes():
     print 'Stopping billing processes'
     commands.getstatusoutput('/etc/init.d/ebs_core stop')
     commands.getstatusoutput('/etc/init.d/ebs_nf stop')
+    commands.getstatusoutput('/etc/init.d/ebs_nffilter stop')
+    commands.getstatusoutput('/etc/init.d/ebs_celery stop')
     commands.getstatusoutput('/etc/init.d/ebs_rad_auth stop')
     commands.getstatusoutput('/etc/init.d/ebs_rad_acct stop')
     #commands.getstatusoutput('/etc/init.d/ebs_rpc stop')
@@ -77,8 +79,10 @@ def start_processes():
     print '*'*80
     print 'Please, start manually billing processess and see logs in /opt/ebs/data/log/'
     print """
+    /etc/init.d/ebs_celery start
     /etc/init.d/ebs_core start
     /etc/init.d/ebs_nf start
+    /etc/init.d/ebs_nffilter start
     /etc/init.d/ebs_rad_auth start
     /etc/init.d/ebs_rad_acct start
     /etc/init.d/ebs_nfroutine start
@@ -318,14 +322,19 @@ def setup_init():
     print "*"*80  
     print "Copying init scripts to /etc/init.d/"
     shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_core'), '/etc/init.d/ebs_core')
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_celery'), '/etc/init.d/ebs_celery')
+    shutil.copy(os.path.join(DIST_PATH,'soft/celeryd'), '/etc/default/celeryd')
     shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_rad_auth'), '/etc/init.d/ebs_rad_auth')
     shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_rad_acct'), '/etc/init.d/ebs_rad_acct')
     shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_nf'), '/etc/init.d/ebs_nf')
+    shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_nffilter'), '/etc/init.d/ebs_nffilter')
     shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_nfroutine'), '/etc/init.d/ebs_nfroutine')
     #shutil.copy(os.path.join(DIST_PATH,'init.d/ebs_rpc'), '/etc/init.d/ebs_rpc')
     print "*"*80  
+    status, output = commands.getstatusoutput('update-rc.d ebs_celery defaults')
     status, output = commands.getstatusoutput('update-rc.d ebs_nfroutine defaults')
     status, output = commands.getstatusoutput('update-rc.d ebs_nf defaults')
+    status, output = commands.getstatusoutput('update-rc.d ebs_nffilter defaults')
     status, output = commands.getstatusoutput('update-rc.d ebs_rad_auth defaults')
     status, output = commands.getstatusoutput('update-rc.d ebs_rad_acct defaults')
     status, output = commands.getstatusoutput('update-rc.d ebs_core defaults')

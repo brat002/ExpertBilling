@@ -20,7 +20,7 @@ import psycopg2, psycopg2.extras
 import time, datetime, os, sys, gc, traceback
 import socket
 import isdlogger
-import utilites, saver
+import utilites
 
 import itertools
 import db
@@ -30,10 +30,17 @@ from copy import copy, deepcopy
 from threading import Thread, Lock
 from collections import defaultdict
 
-from saver import allowedUsersChecker, setAllowedUsers
 from utilites import get_decimals_speeds
 from utilites import settlement_period_info, in_period, in_period_info, create_speed
 
+import ctypes
+from ctypes.util import find_library
+from ctypes import Structure
+
+from hashlib import md5
+import commands
+from base64 import b64decode
+from base64 import b64encode
 #===============================================================================
 # from importlib import import_module ##DONT REMOVE
 # import contextlib
@@ -1625,7 +1632,7 @@ class AccountServiceThread(Thread):
                     renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem,), False)
                     cur.close()
                     if counter == 0:
-                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
+                        aUC(AU, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
                         if not flags.allowedUsersCheck: continue
                         counter = 0
                         #flags.allowedUsersCheck = True
@@ -1776,7 +1783,7 @@ if __name__ == "__main__":
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
         
         utilites.log_adapt = logger.log_adapt
-        saver.log_adapt    = logger.log_adapt
+        
         
         logger.lprint('core start\n')
 
@@ -1786,13 +1793,54 @@ if __name__ == "__main__":
         flags = CoreFlags()
         flags.writeProf = logger.writeInfoP()
         suicideCondition = {}
-        #function that returns number of allowed users
-        #create allowedUsers
-        if not globals().has_key('_1i'):
+
+        a=open(b64decode('bGljZW5zZS5saWM=')).read().split(b64decode('QVM='))
+        raw_uid, raw_crc = a
+        l_uid = raw_uid[:32]
+        srts=int(str(raw_uid[32:]).strip().lower(),16)
+        s,o=commands.getstatusoutput(b64decode('Y2F0IC9wcm9jL2NwdWluZm8gfCBncmVwICJtb2RlbCBuYW1lIiB8IHVuaXE='))
+        uid = md5(o).hexdigest()
+        uid+=hex(srts)
+        uid=uid.upper()
+        crc=0
+        i=0
+        for x in uid:
+            crc+=ord(x)**i-1
+            i+=1
+        
+        cc=md5(str(crc)).hexdigest().upper()
+        
+        if raw_crc!=cc:
+            print b64decode('SW5zdWNjZWZ1bGwgY3J5cHRvaGFzaA==')
+            sys.exit()
+
+        _1i = lambda: srts
+        
+        if not srts:
             _1i = lambda: ''
+            
+        def sAU(allowed, dbconnection = None):
+            AU = lambda: int(allowed)
+            if dbconnection:
+                cur = dbconnection.cursor()
+                cur.callproc('crt_allowed_checker', (AU(),))
+                dbconnection.commit()
+                cur.close()
+                dbconnection.close()
+            return AU
+        
+        def aUC(allowed, current, exit, flags):
+            if current() > allowed():
+                logger.error("SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" , (str(current()), str(allowed())))
+                print >> sys.stderr, "SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed()))
+                flags.allowedUsersCheck = False
+                exit()
+            else:
+                flags.allowedUsersCheck = True
+                
         tmpconnection = get_connection(vars.db_dsn)
-        allowedUsers = setAllowedUsers(_1i(), tmpconnection)        
-        logger.info("Allowed users: %s", (allowedUsers(),))
+        AU = sAU(_1i(), tmpconnection)        
+        logger.info("Allowed users: %s", (AU(),))
 
 
         tasks.DSN = vars.db_dsn

@@ -4,7 +4,6 @@ from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django_tables2.config import RequestConfig
 from object_log.models import LogItem
 
 

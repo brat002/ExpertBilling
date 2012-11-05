@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load crispy_forms_tags %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
@@ -64,7 +65,7 @@
 <div class="tab-content">
   <div class="tab-pane  active" id="filter">
 <form method="POST" id="id-form" action="{% url template_edit %}?id={{template.id}}"class="well form-horizontal">
-            <legend>Параметры сервера доступа</legend>
+            <legend>Параметры шаблона{% objectlog template %}</legend>
              <fieldset>
                   {{form}}
                 </fieldset>

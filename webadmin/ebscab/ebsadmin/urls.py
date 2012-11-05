@@ -158,6 +158,12 @@ urlpatterns += patterns('ebsadmin.modules.hardwaretype',
     url(r'^hardwaretype/delete/$', "hardwaretype_delete", name="hardwaretype_delete"),
 )
 
+urlpatterns += patterns('ebsadmin.modules.accountgroup',
+    url(r'^accountgroup/edit/$', 'accountgroup_edit', name='accountgroup_edit'),
+    url(r'^accountgroup/$', 'accountgroup', name='accountgroup'),
+    url(r'^accountgroup/delete/$', "accountgroup_delete", name="accountgroup_delete"),
+)
+
 urlpatterns += patterns('ebsadmin.modules.model',
     url(r'^model/edit/$', 'model_edit', name='model_edit'),
     url(r'^model/$', 'model', name='model'),
@@ -174,6 +180,10 @@ urlpatterns += patterns('ebsadmin.modules.switch',
     url(r'^switch/edit/$', 'switch_edit', name='switch_edit'),
     url(r'^switch/$', 'switch', name='switch'),
     url(r'^switch/delete/$', "switch_delete", name="switch_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.modules.actionlog',
+    url(r'^actionlog/$', 'actionlog', name='actionlog'),
 )
 
 urlpatterns += patterns('ebsadmin.modules.card',

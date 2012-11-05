@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load crispy_forms_tags %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
@@ -58,7 +59,7 @@
   <li class="active">{{form.name.value}}</li>
 </ul>
 <form method="POST" action="{% url addonservice_edit %}?id={{item.id}}"class="well form-horizontal">
-            <legend>Параметры подключаемой услуги</legend>
+            <legend>Параметры подключаемой услуги{% objectlog item %}</legend>
              <fieldset>
                   <div class="control-group">
                       <label class="control-label">{{form.name.label}}</label>

@@ -9,7 +9,7 @@ from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAcces
 from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType
 from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model
 from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode
-from billservice.models import News, TPChangeRule, Switch
+from billservice.models import News, TPChangeRule, Switch, AccountGroup
 import django_tables2 as django_tables
 from django_tables2.utils import A
 from radius.models import ActiveSession, AuthLog
@@ -39,7 +39,7 @@ class FormatBlankSpeedColumn(django_tables.LinkColumn):
     def render(self, value):
         return value if value else ''
     
-class SubAccountsTable(django_tables.Table):
+class SubAccountsTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     id = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
     username = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
@@ -65,14 +65,14 @@ class SubAccountsTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
 
-class AccountHardwareTable(django_tables.Table):
+class AccountHardwareTable(TableReport):
 
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     class Meta:
         model = AccountHardware
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
-class AccountAddonServiceTable(django_tables.Table):
+class AccountAddonServiceTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     id = django_tables.LinkColumn('accountaddonservice', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     account =  FormatBlankColumn()
@@ -97,14 +97,14 @@ class AccountAddonServiceTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
             
         
-class SuspendedPeriodTable(django_tables.Table):
+class SuspendedPeriodTable(TableReport):
 
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     class Meta:
         model = SuspendedPeriod
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
-class AccountTarifTable(django_tables.Table):
+class AccountTarifTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     id = FormatBlankColumn()
     tarif = FormatBlankColumn()
@@ -123,7 +123,7 @@ class AccountTarifTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
             
             #-*-coding=utf-8-*-
-class TotalTransactionReportTable(django_tables.Table):
+class TotalTransactionReportTable(TableReport):
     tariff__name = FormatBlankColumn()
     id = FormatBlankColumn()
     account__username = django_tables.LinkColumn('account_edit', get_params={'id':A('account')})
@@ -146,7 +146,7 @@ class TotalTransactionReportTable(django_tables.Table):
         exclude = ( 'table','tariff__name', "tariff", "systemuser")
         
         
-class AccountsReportTable(django_tables.Table):
+class AccountsReportTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     id = FormatBlankColumn()
     username = django_tables.LinkColumn('account_edit', get_params={'id':A('pk')})
@@ -166,7 +166,7 @@ class AccountsReportTable(django_tables.Table):
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class ActiveSessionTable(django_tables.Table):
+class ActiveSessionTable(TableReport):
     session_status = django_tables.TemplateColumn("<span class='label {% if record.session_status == 'ACK' %}info{% endif %}'>{{ record.session_status }}</span>")
     date_start = FormatDateTimeColumn()
     interrim_update = FormatDateTimeColumn()
@@ -181,7 +181,7 @@ class ActiveSessionTable(django_tables.Table):
         exclude = ("speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse')
         attrs = {'class': 'paleblue'}
 
-class AuthLogTable(django_tables.Table):
+class AuthLogTable(TableReport):
     account = django_tables.LinkColumn('account_edit', get_params={'id':A('account.id')})
     subaccount = django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount.id')})
     nas = FormatBlankColumn()
@@ -191,7 +191,7 @@ class AuthLogTable(django_tables.Table):
         model = AuthLog
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class BallanceHistoryTable(django_tables.Table):
+class BallanceHistoryTable(TableReport):
     account__username = django_tables.LinkColumn('account_edit', get_params={'id':A('account')})
     balance = FormatBlankColumn()
     datetime = FormatDateTimeColumn()
@@ -199,7 +199,7 @@ class BallanceHistoryTable(django_tables.Table):
     class Meta:
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
-class IPInUseTable(django_tables.Table):
+class IPInUseTable(TableReport):
     datetime = FormatDateTimeColumn()
     disabled = FormatDateTimeColumn()
     
@@ -208,7 +208,7 @@ class IPInUseTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
 
-class LogTable(django_tables.Table):
+class LogTable(TableReport):
     user = FormatBlankColumn()
     changed_fields = FormatBlankColumn()
     
@@ -216,7 +216,7 @@ class LogTable(django_tables.Table):
         
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
-class NasTable(django_tables.Table):
+class NasTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     name = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')})
     radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?nas_id={{record.id}}' >Дополнительные RADIUS атрибуты</a>", verbose_name=u'Дополнительные RADIUS атрибуты', orderable=False)
@@ -232,7 +232,7 @@ class NasTable(django_tables.Table):
         sequence=('row_number', 'id', 'name', 'radiusattrs', 'identify', 'type', 'ipaddress')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class TemplateTable(django_tables.Table):
+class TemplateTable(TableReport):
     id = django_tables.LinkColumn('template_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('template_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -242,7 +242,7 @@ class TemplateTable(django_tables.Table):
         exclude = ("", 'body', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class SettlementPeriodTable(django_tables.Table):
+class SettlementPeriodTable(TableReport):
     id = django_tables.LinkColumn('settlementperiod_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('settlementperiod_edit', get_params={'id':A('pk')})
     time_start = FormatDateTimeColumn()
@@ -255,7 +255,7 @@ class SettlementPeriodTable(django_tables.Table):
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class SystemUserTable(django_tables.Table):
+class SystemUserTable(TableReport):
     id = django_tables.LinkColumn('systemuser_edit', get_params={'id':A('pk')})
     username = django_tables.LinkColumn('systemuser_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -265,7 +265,7 @@ class SystemUserTable(django_tables.Table):
         exclude = ("password", 'text_password', 'address', 'passport', 'passport_details', 'passport_number', 'unp', 'im', 'home_phone','mobile_phone', 'created', 'host')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class AddonServiceTable(django_tables.Table):
+class AddonServiceTable(TableReport):
     id = django_tables.LinkColumn('addonservice_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('addonservice_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -275,7 +275,7 @@ class AddonServiceTable(django_tables.Table):
         exclude = ('allow_activation', "wyte_period", 'wyte_cost', 'cancel_subscription', 'action', 'nas', 'service_activation_action', 'service_deactivation_action', 'change_speed', 'deactivate_service_for_blocked_account', 'change_speed_type', 'speed_units', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx', 'burst_treshold_tx', 'burst_treshold_rx', 'burst_time_tx', 'burst_time_rx', 'min_tx', 'min_rx', 'priority')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class IPPoolTable(django_tables.Table):
+class IPPoolTable(TableReport):
     id = django_tables.LinkColumn('ippool_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('ippool_edit', get_params={'id':A('pk')})
     next_ippool = FormatBlankColumn()
@@ -286,7 +286,7 @@ class IPPoolTable(django_tables.Table):
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class TransactionTypeTable(django_tables.Table):
+class TransactionTypeTable(TableReport):
     id = django_tables.LinkColumn('transactiontype_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('transactiontype_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -296,7 +296,7 @@ class TransactionTypeTable(django_tables.Table):
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class TrafficClassTable(django_tables.Table):
+class TrafficClassTable(TableReport):
     id = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     directions = django_tables.TemplateColumn(u"<a href='{% url trafficnode_list %}?id={{record.id}}' >Список направлений</a>", verbose_name=u'Направления', orderable=False)
@@ -308,7 +308,7 @@ class TrafficClassTable(django_tables.Table):
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class TrafficNodeTable(django_tables.Table):
+class TrafficNodeTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     #control = django_tables.TemplateColumn("<a class='edit'><i class='icon-edit'></i></a>", verbose_name=' ', orderable=False)
     id = django_tables.LinkColumn('trafficnode', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
@@ -326,7 +326,7 @@ class TrafficNodeTable(django_tables.Table):
         self._counter = value + 1
         return '%d' % value
     
-class RadiusAttrTable(django_tables.Table):
+class RadiusAttrTable(TableReport):
     id = django_tables.LinkColumn('radiusattr_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
@@ -335,7 +335,7 @@ class RadiusAttrTable(django_tables.Table):
         exclude = ("tarif", 'nas')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class ManufacturerTable(django_tables.Table):
+class ManufacturerTable(TableReport):
     id = django_tables.LinkColumn('manufacturer_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('manufacturer_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -344,7 +344,7 @@ class ManufacturerTable(django_tables.Table):
         model = Manufacturer
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class ModelTable(django_tables.Table):
+class ModelTable(TableReport):
     id = django_tables.LinkColumn('model_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('model_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -353,8 +353,8 @@ class ModelTable(django_tables.Table):
         model = Model
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class HardwareTypeTable(django_tables.Table):
-    id = django_tables.LinkColumn('radiusattr_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+class HardwareTypeTable(TableReport):
+    id = django_tables.LinkColumn('hardwaretype_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('hardwaretype_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
@@ -362,7 +362,7 @@ class HardwareTypeTable(django_tables.Table):
         model = HardwareType
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class HardwareTable(django_tables.Table):
+class HardwareTable(TableReport):
     id = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
     model = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
@@ -372,7 +372,7 @@ class HardwareTable(django_tables.Table):
         model = Hardware
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class SwitchTable(django_tables.Table):
+class SwitchTable(TableReport):
     id = django_tables.LinkColumn('switch_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('switch_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -384,7 +384,7 @@ class SwitchTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
         
-class CardTable(django_tables.Table):
+class CardTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     row_class = django_tables.Column(visible=False)
     start_date = FormatDateTimeColumn()
@@ -413,7 +413,7 @@ class CardTable(django_tables.Table):
         attrs = {'class': 'table table-bordered table-condensed'}
         exclude = ('ipinuse', 'disabled', 'ip')
 
-class SaleCardsTable(django_tables.Table):
+class SaleCardsTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     row_class = django_tables.Column(visible=False)
     start_date = FormatDateTimeColumn()
@@ -438,7 +438,7 @@ class SaleCardsTable(django_tables.Table):
         attrs = {'class': 'table table-bordered table-condensed'}
         exclude = ('ipinuse', 'disabled', 'ip', 'activated_by', 'ext_id', 'salecard')
         
-class SaleCardTable(django_tables.Table):
+class SaleCardTable(TableReport):
     id = django_tables.LinkColumn('salecard_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
@@ -447,7 +447,7 @@ class SaleCardTable(django_tables.Table):
         exclude = ("tarif", 'nas')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class DealerTable(django_tables.Table):
+class DealerTable(TableReport):
     id = django_tables.LinkColumn('dealer_edit', get_params={'id':A('pk')})
     organization = django_tables.LinkColumn('dealer_edit', get_params={'id':A('pk')})
     
@@ -455,16 +455,17 @@ class DealerTable(django_tables.Table):
         model = Dealer
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class TariffTable(django_tables.Table):
+class TariffTable(TableReport):
     id = django_tables.LinkColumn('tariff_edit', get_params={'id':A('pk')})
+    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?tarif_id={{record.id}}' >Дополнительные RADIUS атрибуты</a>", verbose_name=u'Дополнительные RADIUS атрибуты', orderable=False)
     access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
     class Meta:
         model = Tariff
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        fields = ("id", 'name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', )
+        fields = ("id", 'name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', 'radiusattrs')
         
-class PeriodicalServiceTable(django_tables.Table):
+class PeriodicalServiceTable(TableReport):
     id = django_tables.LinkColumn('tariff_periodicalservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('tariff_periodicalservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -477,14 +478,14 @@ class PeriodicalServiceTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         fields = ("id", 'name', 'settlement_period', 'cost', 'cash_method', 'condition', 'created', 'deactivated' )
         
-class GroupTable(django_tables.Table):
+class GroupTable(TableReport):
     id = django_tables.LinkColumn('group_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     class Meta:
         model = Group
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-class TrafficTransmitNodesTable(django_tables.Table):
+class TrafficTransmitNodesTable(TableReport):
     id = django_tables.LinkColumn('tariff_traffictransmitnode_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -497,7 +498,7 @@ class TrafficTransmitNodesTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         fields = ("id", 'timeperiod', 'group', 'cost','d' )
 
-class PrepaidTrafficTable(django_tables.Table):
+class PrepaidTrafficTable(TableReport):
     id = django_tables.LinkColumn('tariff_prepaidtraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
@@ -507,7 +508,7 @@ class PrepaidTrafficTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         fields = ("id", 'group', 'size')
 
-class TimeSpeedTable(django_tables.Table):
+class TimeSpeedTable(TableReport):
     id = django_tables.LinkColumn('tariff_prepaidtraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
@@ -518,7 +519,7 @@ class TimeSpeedTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         fields = ("id", 'time', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx', 'burst_treshold_tx', 'burst_treshold_rx', 'burst_time_tx', 'burst_time_rx', 'min_tx', 'min_rx', 'priority')
 
-class OneTimeServiceTable(django_tables.Table):
+class OneTimeServiceTable(TableReport):
     id = django_tables.LinkColumn('onetimeservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('onetimeservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -529,7 +530,7 @@ class OneTimeServiceTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         fields = ("id", 'name', 'cost', 'd')
 
-class RadiusTrafficNodeTable(django_tables.Table):
+class RadiusTrafficNodeTable(TableReport):
     id = django_tables.LinkColumn('tariff_radiustrafficnode_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
@@ -539,7 +540,7 @@ class RadiusTrafficNodeTable(django_tables.Table):
         fields = ("id", 'value', 'timeperiod', 'cost', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
-class TrafficLimitTable(django_tables.Table):
+class TrafficLimitTable(TableReport):
     id = django_tables.LinkColumn('tariff_trafficlimit_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     speedlimit = django_tables.TemplateColumn("<a href='{% url tariff_speedlimit_edit %}?trafficlimit_id={{record.id}}' class='open-speedlimit-dialog'>{% if record.speedlimit %}{{record.speedlimit}}<a href='{{record.speedlimit.get_remove_url}}' class='show-speedlimit-confirm'><i class='icon-remove'></i></a>{% else %}Указать{% endif %}</a>", verbose_name='Изменить скорость', orderable=False)
@@ -551,7 +552,7 @@ class TrafficLimitTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         fields = ("id", 'name', 'settlement_period', 'mode', 'group', 'size', 'action', 'speedlimit', 'd' )
         
-class TimeAccessNodeTable(django_tables.Table):
+class TimeAccessNodeTable(TableReport):
     id = django_tables.LinkColumn('tariff_timeaccessnode_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
@@ -561,7 +562,7 @@ class TimeAccessNodeTable(django_tables.Table):
         fields = ("id", 'time_period', 'cost', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
        
-class AddonServiceTarifTable(django_tables.Table):
+class AddonServiceTarifTable(TableReport):
     id = django_tables.LinkColumn('tariff_addonservicetariff_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
@@ -571,7 +572,7 @@ class AddonServiceTarifTable(django_tables.Table):
         fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
 
-class PeriodicalServiceLogTable(django_tables.Table):
+class PeriodicalServiceLogTable(TableReport):
 
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
@@ -628,3 +629,19 @@ class TPChangeRuleTable(TableReport):
         fields = ("id", 'row_class',  'from_tariff', 'to_tariff', 'cost', 'ballance_min', 'on_next_sp', 'settlement_period', 'disabled', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
 
+class AccountGroupTable(TableReport):
+
+    id = django_tables.LinkColumn('accountgroup_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    name = django_tables.LinkColumn('accountgroup_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    cnt = django_tables.TemplateColumn('{{record.account_set.count}}', verbose_name = u'Количество')
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    class Meta:
+        model = AccountGroup
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
+class ActionLogTable(TableReport):
+    
+    class Meta:
+        model = LogItem
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}

@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load bootstrap_toolkit %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script src="/media/js/smartspinner/smartspinner.js" type="text/javascript"></script>
         <link rel="stylesheet" href="/media/js/smartspinner/smartspinner.css" type="text/css" />
@@ -81,7 +82,7 @@
 {{ form.id }}
 <div class="tab-content">
   <div class="tab-pane active" id="general">
-            <legend>Параметры сервера доступа</legend>
+            <legend>Параметры сервера доступа{% objectlog item %}</legend>
              <fieldset>
                    <div class="control-group">
                     <div class="control-row">

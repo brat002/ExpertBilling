@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load bootstrap_toolkit %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
 
         <script type="text/javascript"> 
@@ -44,7 +45,7 @@
   <li class="active">{{form.username.value}}</li>
 </ul>
 <form method="POST" action="{% url systemuser_edit %}?id={{item.id}}"class="well form-horizontal">
-            <legend>Параметры учётной записи</legend>
+            <legend>Параметры учётной записи{% objectlog item %}</legend>
              <fieldset>
                  <div class="control-group ">
                      <div class="control-row {% if form.username.errors %}error{% endif %}">

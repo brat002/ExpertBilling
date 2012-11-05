@@ -5,11 +5,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import F, Max
 from django.http import HttpResponseRedirect
-from django_tables2.config import RequestConfig
+from django_tables2_reports.config import RequestConfigReport as RequestConfig
+from django_tables2_reports.utils import create_report_http_response
 from object_log.models import LogItem
 from lib import instance_dict
 from tables import TrafficClassTable, TrafficNodeTable
 
+from ebsadmin.forms import TrafficNodesUploadForm
 from nas.forms import TrafficClassForm, TrafficNodeForm
 from nas.models import TrafficClass, TrafficNode
 
@@ -22,7 +24,9 @@ log = LogItem.objects.log_action
 def trafficclass(request):
     res = TrafficClass.objects.all()
     table = TrafficClassTable(res)
-    RequestConfig(request, paginate = False).configure(table)
+    table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+    if table_to_report:
+        return create_report_http_response(table_to_report, request)
     return {"table": table} 
     
     
@@ -30,8 +34,8 @@ def trafficclass(request):
 @login_required
 @render_to('ebsadmin/trafficclass_upload.html')
 def trafficclass_upload(request):
-
-    return {} 
+    form = TrafficNodesUploadForm()
+    return {"form":form} 
     
 @ajax_request
 @login_required
@@ -56,7 +60,9 @@ def trafficnode_list(request):
     id = request.GET.get("id")
     res = TrafficNode.objects.filter(traffic_class__id=id)
     table = TrafficNodeTable(res)
-    RequestConfig(request, paginate = False).configure(table)
+    table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+    if table_to_report:
+        return create_report_http_response(table_to_report, request)
     return {"table": table, 'item':TrafficClass.objects.get(id=id)} 
     
 

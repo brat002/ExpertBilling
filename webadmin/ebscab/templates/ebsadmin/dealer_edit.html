@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load bootstrap_toolkit %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript"> 
         $(document).ready(function() {
@@ -72,7 +73,7 @@
 
 <form id="id_form" method="POST" action="{% url dealer_edit %}?id={{item.id}}" class="well form-horizontal">
 
-            <legend>Профиль дилера</legend>
+            <legend>Профиль дилера{% objectlog item %}</legend>
              <fieldset>
                    <div class="control-group">
                     <div class="control-row">

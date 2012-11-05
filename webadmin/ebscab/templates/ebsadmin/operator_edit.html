@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load bootstrap_toolkit %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript"> 
         $(document).ready(function() {
@@ -12,7 +13,7 @@
 <div class="span12">
 <div class="row-fluid">
 <form method="POST" action="{% url operator_edit %}?id={{item.id}}"class="well form-horizontal">
-            <legend>Информация о провайдере</legend>
+            <legend>Информация о провайдере{% objectlog item %}</legend>
              <fieldset>
              
                   {{form|as_bootstrap}}
