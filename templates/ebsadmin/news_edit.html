@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load bootstrap_toolkit %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script src="/media/jscal/src/js/jscal2.js"></script>
         <script src="/media/jscal/src/js/lang/ru.js"></script>
@@ -47,7 +48,7 @@
   <li class="active">{{form.id.value}}</li>
 </ul>
 <form method="POST" action="{% url news_edit %}?id={{item.id}}"class="well form-horizontal">
-            <legend>Параметры IP пула</legend>
+            <legend>Параметры новости{% objectlog item %}</legend>
              <fieldset>
                   {{ form.id }}
                   <div class="control-group">

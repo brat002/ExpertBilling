@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load bootstrap_toolkit %}
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script src="/media/js/smartspinner/smartspinner.js" type="text/javascript"></script>
         <link rel="stylesheet" href="/media/js/smartspinner/smartspinner.css" type="text/css" />
@@ -27,7 +28,7 @@
 <div class="span3">
 <ul class="nav nav-list">
   <li class="nav-header">
-    Параметры тарифного плана
+    Параметры тарифного плана{% objectlog tariff %}
   </li>
   <li {% if active == 'general' %}class="active"{% endif %}>
     <a href="{% url tariff_edit %}?id={{tariff.id}}">Общее</a>

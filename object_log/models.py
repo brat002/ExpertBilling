@@ -27,6 +27,14 @@ def default(obj):
             return str(obj)
         return simplejson.JSONEncoder.default(self, obj)
         
+def compare(old, new):
+    r = []
+    for key in new:
+        if new[key]!=old.get(key):
+            r.append({'%s_old' % key: old.get(key), '%s_new' % key:new.get(key)})
+    return r
+
+
 class LogActionManager(models.Manager):
     _cache = {}
     _SYNCED = False
@@ -117,7 +125,7 @@ class LogAction(models.Model):
     objects = LogActionManager()
     
     def __unicode__(self):
-        return u'LogAction: %s Template: %s \n'%(self.name, self.template)
+        return u'%s' % self.name
     
 
 class LogItemManager(models.Manager):
@@ -179,6 +187,7 @@ class LogItem(models.Model):
     #object3 = GenericForeignKey("object_type3", "object_id3")
 
     serialized_data = models.TextField(null=True)
+    changed_data = models.TextField(null=True)
 
     objects = LogItemManager()
     _data = None
@@ -206,8 +215,20 @@ class LogItem(models.Model):
         return get_template(action.template)
 
     def save(self, *args, **kwargs):
+        content_type = ContentType.objects.get_for_model(self.object1)
+        
+        sd = {}
+        try:
+            log = LogItem.objects.filter(object_type1=content_type, object_id1=self.object1.pk).order_by('-id').select_related('user').distinct()[0]
+            if log:
+                sd = simplejson.loads(log.serialized_data)
+
+        except:
+            pass
+            
         if self._data is not None and self.serialized_data is None:
             self.serialized_data = simplejson.dumps(self._data, ensure_ascii=False, default=default)
+            self.changed_data = simplejson.dumps(compare(sd.get('object1_str',{}), self._data.get('object1_str',{})), ensure_ascii=False, default=default)
         super(LogItem, self).save(*args, **kwargs)
 
     def render(self, **context):

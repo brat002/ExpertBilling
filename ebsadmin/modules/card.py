@@ -4,7 +4,8 @@ from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django_tables2.config import RequestConfig
+from django_tables2_reports.config import RequestConfigReport as RequestConfig
+from django_tables2_reports.utils import create_report_http_response
 from object_log.models import LogItem
 from django.db.models import Sum
 
@@ -125,7 +126,10 @@ def card(request):
                 res = res.filter(nominal=nominal)
     
         table = CardTable(res)
-        RequestConfig(request, paginate = False).configure(table)
+        table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+        if table_to_report:
+            return create_report_http_response(table_to_report, request)
+            
     else:
         form = CardSearchForm()
         table = CardTable([])
@@ -243,7 +247,10 @@ def salecard_edit(request):
             
         table = SaleCardsTable(res)
         
-        RequestConfig(request, paginate = False).configure(table)
+        table_to_report = RequestConfig(request, paginate=False).configure(table)
+        if table_to_report:
+            return create_report_http_response(table_to_report, request)
+            
         
     return { 'form':form, 'table': table, 'status': False, 'dealer':dealer, 'cards_sum': cards_sum} 
 
@@ -526,5 +533,8 @@ def card_manage(request):
 def salecard(request):
     res = SaleCard.objects.all()
     table = SaleCardTable(res)
-    RequestConfig(request, paginate = True).configure(table)
+    table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+    if table_to_report:
+        return create_report_http_response(table_to_report, request)
+            
     return {"table": table}

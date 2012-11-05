@@ -4,7 +4,8 @@ from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django_tables2.config import RequestConfig
+from django_tables2_reports.config import RequestConfigReport as RequestConfig
+from django_tables2_reports.utils import create_report_http_response
 from object_log.models import LogItem
 
 from tables import TransactionTypeTable
@@ -21,7 +22,9 @@ log = LogItem.objects.log_action
 def transactiontype(request):
     res = TransactionType.objects.all()
     table = TransactionTypeTable(res)
-    RequestConfig(request, paginate = False).configure(table)
+    table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+    if table_to_report:
+        return create_report_http_response(table_to_report, request)
     return {"table": table} 
     
 @login_required

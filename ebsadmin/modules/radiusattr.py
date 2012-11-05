@@ -4,7 +4,8 @@ from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django_tables2.config import RequestConfig
+from django_tables2_reports.config import RequestConfigReport as RequestConfig
+from django_tables2_reports.utils import create_report_http_response
 from object_log.models import LogItem
 
 from ebsadmin.tables import RadiusAttrTable
@@ -20,21 +21,24 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/radiusattr_list.html')
 def radiusattr(request):
-    nas_id = request.GET.get("nas_id")
-    tariff_id = request.GET.get("tariff_id")
+    nas_id = request.GET.get("nas")
+    tarif_id = request.GET.get("tarif")
     item = None
     tariff = None
     nas = None
     if nas_id:
         nas = Nas.objects.get(id=nas_id)
         res = RadiusAttrs.objects.filter(nas__id=nas_id)
-    elif tariff_id:
-        tariff = Tariff.objects.get(id=tariff_id)
-        res = RadiusAttrs.objects.filter(tariff__id=nas_id)
+    elif tarif_id:
+        tariff = Tariff.objects.get(id=tarif_id)
+        res = RadiusAttrs.objects.filter(tarif__id=tarif_id)
     else:
         res = RadiusAttrs.objects.all()
     table = RadiusAttrTable(res)
-    RequestConfig(request, paginate = False).configure(table)
+    table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+    if table_to_report:
+        return create_report_http_response(table_to_report, request)
+            
     return {"table": table, 'nas':nas, 'tariff':tariff,  'model_name': nas.__class__.__name__ if nas else tariff.__class__.__name__ if tariff else '' } 
     
 @login_required
@@ -42,16 +46,16 @@ def radiusattr(request):
 def radiusattr_edit(request):
     
     account = None
-    nas_id = request.GET.get("nas_id")
-    tariff_id = request.GET.get("tariff_id")
+    nas_id = request.GET.get("nas")
+    tarif_id = request.GET.get("tarif")
     id = request.POST.get("id")
     tariff = None
     nas = None
     if nas_id:
         nas= Nas.objects.get(id=nas_id)
-    elif tariff_id:
-        tariff= Tariff.objects.get(id=tariff_id)
-        
+    elif tarif_id:
+        tariff= Tariff.objects.get(id=tarif_id)
+
     if request.method == 'POST': 
 
         if id:
@@ -86,8 +90,8 @@ def radiusattr_edit(request):
             form = RadiusAttrsForm(instance=item)
         elif nas_id:
             form = RadiusAttrsForm(initial={'nas': nas})
-        elif tariff_id:
-            form = RadiusAttrsForm(initial={'tariff': tariff, })
+        elif tarif_id:
+            form = RadiusAttrsForm(initial={'tarif': tariff, })
 
     return { 'form':form, 'status': False, 'nas':nas, 'tariff':tariff } 
 

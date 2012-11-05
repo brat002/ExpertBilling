@@ -31,7 +31,11 @@
 
                 event.preventDefault();
             });
-            
+            {% if table %}
+            $('#tab-control a[href="#result"]').tab('show');
+            {% else %}
+            $('#tab-control a[href="#filter"]').tab('show');
+            {% endif %}
         });
         </script>
 
@@ -40,7 +44,7 @@
 <legend>Лог системных операций</legend>
 <ul class="nav nav-tabs" id="tab-control">
   <li ><a href="#filter">Фильтр</a></li>
-  <li><a class="active" href="#result">Отчёт</a></li>  
+  <li><a href="#result">Отчёт</a></li>  
 </ul>
 
  {% load render_table from django_tables2 %}
@@ -66,7 +70,7 @@
     </div>
   
   </div>
-  <div class="tab-pane active" id="result">{% if table %}{% render_table table %}{% endif %}</div>
+  <div class="tab-pane" id="result">{% if table %}{% render_table table %}{% endif %}</div>
 
 </div>
  {% endblock %}

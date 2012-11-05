@@ -1,5 +1,5 @@
 {% extends "ebsadmin/base.html" %}
-
+{% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
@@ -231,7 +231,7 @@
                     <div class="tab-pane active" id="tab-first">
 <form method="POST" action="{% url subaccount %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal">
                 <fieldset>
-                    <legend>Профиль субаккаунта</legend>
+                    <legend>Профиль субаккаунта{% objectlog subaccount %}</legend>
 
                     <div class="control-group">
                         <label class="control-label">ID аккаунта</label>

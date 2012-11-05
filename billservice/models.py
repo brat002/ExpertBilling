@@ -691,7 +691,9 @@ class AccountGroup(models.Model):
     name = models.CharField(max_length=512)
     def __unicode__(self):
         return u"%s" % self.name
-
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('accountgroup_delete'), self.id)
+    
     class Meta:
         ordering = ['name']
         verbose_name = u"Группа абонентов"
