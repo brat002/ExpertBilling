@@ -31,13 +31,13 @@ transaction_pattern=u"""
 INSERT INTO billservice_transaction(
             account_id, type_id, approved, summ,
             created)
-    VALUES (%(ACC_ID)s, '%(PAYMENT_TYPE)s', True, (-1)*%(SUM)s,  '%(DATETIME)s');
+    VALUES (%(ACC_ID)s, '%(PAYMENT_TYPE)s', True, %(SUM)s,  '%(DATETIME)s');
 """
 reversal_transaction_pattern=u"""
 INSERT INTO billservice_transaction(
             account_id, type_id, approved, (-1)*summ,
             created)
-    VALUES (%(ACC_ID)s, '%(PAYMENT_TYPE)s', True, %(SUM)s,  '%(DATETIME)s');
+    VALUES (%(ACC_ID)s, '%(PAYMENT_TYPE)s', True, (-1)*%(SUM)s,  '%(DATETIME)s');
 """
 
 curdir='/opt/ebs/data/scripts/payments/'

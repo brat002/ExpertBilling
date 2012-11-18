@@ -174,7 +174,7 @@ def transfer_accounts():
                     account_id, type_id, approved, summ, description, 
                     created)
             VALUES (%s, %s, True, %s, %s, %s);
-    """, (account_id, "CORRECTION", (-1)*(t_sum-a_deposit), u"Корректирующее списание", datetime.datetime.now(),))
+    """, (account_id, "CORRECTION", t_sum-a_deposit, u"Корректирующее списание", datetime.datetime.now(),))
     print "==="*10
         
     conn.commit()

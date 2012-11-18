@@ -7,25 +7,9 @@ if [ $2 ]; then
     testdrive="false"
 fi
 
-python lic_generator.py $1 $2 $4
+python lic_gen.py $1 $2 $3
 if [ ! -d builds ]; then
 	mkdir builds
-fi
-reskey=""
-karg=""
-
-if [ $3 ]; then
-	karg="-k"
-	reskey=$3`cat license_$1.lic`
-elif [ $testdrive=="false" ]; then
-    karg="-k"
-    reskey=`cat license_$1.lic`
-fi
-
-if [ $reskey ]; then
-	echo $reskey;
-else
-    echo "No key entered - test drive";
 fi
 
 rm -rf modules
@@ -103,13 +87,6 @@ mkdir builds/$1/temp
 mkdir builds/$1/init.d
 mkdir builds/$1/ebscab/
 mkdir builds/$1/soft/
-#cp -rf dicts builds/$1/dicts
-#cp -rf fonts builds/$1/fonts
-#cp -rf scripts builds/$1/scripts
-#rm -rf builds/$1/modules/chartprovider
-#cp chartprovider/pychartdir.pyc chartprovider/pychartdir25.pyd chartprovider/pychartdir25.so chartprovider/libchartdir.so builds/$1/modules
-#cp chartprovider/pychartdir.pyc chartprovider/pychartdir26.pyd chartprovider/pychartdir26.so builds/$1/modules
-#cp chartprovider/pychartdir.pyc chartprovider/pychartdir27.pyd chartprovider/pychartdir27.so builds/$1/modules
 mkdir builds/$1/ebscab
 svn export webadmin/ebscab builds/$1/ebscab/ebscab/ --force
 svn export webadmin/blankpage builds/$1/ebscab/blankpage/ --force
@@ -150,7 +127,7 @@ for bldd in $total_build; do
 done
 cp init/ebs_celery builds/$1/init.d/ebs_celery
 chmod +x builds/$1/init.d/ebs_celery
-cp soft/celeryd builds/$1/sort/
+svn export --force soft/celeryd builds/$1/soft/
 
 rm -rf modules
 
@@ -164,6 +141,6 @@ cd builds/$1/
 tar -czvf ../ebs-`svnversion ../../`.tar.gz .
 cd ../ 
 chmod +x ../ebs_manage.py
-tar -czvf $1.tar.gz ebs-`svnversion ../`.tar.gz ../ebs_manage.py
+tar -czvf $1.tar.gz ebs-`svnversion ../`.tar.gz ../ebs_manage.py ../install.txt
 cd ../
 

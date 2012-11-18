@@ -1,12 +1,8 @@
-CREATE INDEX CONCURRENTLY billservice_balancehistory_account_id_idx
+CREATE INDEX  billservice_balancehistory_account_id_idx
    ON billservice_balancehistory (account_id ASC NULLS LAST);
-CREATE INDEX CONCURRENTLY billservice_balancehistory_datetime
+CREATE INDEX  billservice_balancehistory_datetime
    ON billservice_balancehistory (datetime ASC NULLS LAST);
-   
-CREATE INDEX CONCURRENTLY radius_authlog_account_id
+CREATE INDEX  radius_authlog_account_id
    ON radius_authlog (account_id ASC NULLS LAST);
-
-
-CREATE INDEX CONCURRENTLY radius_authlog_datetime_idx
+CREATE INDEX  radius_authlog_datetime_idx
    ON radius_authlog (datetime ASC NULLS LAST);
-   
