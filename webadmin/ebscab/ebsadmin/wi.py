@@ -114,7 +114,7 @@ def gettransactiontypes(current=[]):
                 d=[]
                 for pstype in pstypes:
                     key =  'ADDONSERVICE_ONETIME___%s' % pstype.id
-                    d.append({'title':pstype.nam, 'key': key, 'select': True if key in current else False})
+                    d.append({'title':pstype.name, 'key': key, 'select': True if key in current else False})
             #---
             res.append({'title': t.name, 'key': t.internal_name, 'children':d, 'isFolder':True if d else False, 'select': True if t.internal_name in current else False})
             
@@ -310,6 +310,7 @@ def accountsreport(request):
             vpn_ip_address = form.cleaned_data.get('vpn_ip_address')
             ipn_ip_address = form.cleaned_data.get('ipn_ip_address')
             ipn_mac_address = form.cleaned_data.get('ipn_mac_address')
+            elevator_direction = form.cleaned_data.get('elevator_direction')
             nas = form.cleaned_data.get('nas')
             deleted = form.cleaned_data.get('deleted')
             ipn_status = form.cleaned_data.get('ipn_status')
@@ -353,7 +354,10 @@ def accountsreport(request):
                 res = res.filter(house__icontains=house)
 
             if row:
-                res = Account.objects.filter(row=row)
+                res = res.filter(row=row)
+                
+            if elevator_direction:
+                res = res.filter(elevator_direction=elevator_direction)
                 
             if status:
                 res = res.filter(status=status)
@@ -807,8 +811,8 @@ def subaccountedit(request):
         else:
             form = SubAccountForm(request.POST)
         
-        vpn_ipinuse=subaccount.vpn_ipinuse
-        ipn_ipinuse=subaccount.ipn_ipinuse
+        vpn_ipinuse=subaccount.vpn_ipinuse if subaccount else None
+        ipn_ipinuse=subaccount.ipn_ipinuse if subaccount else None
         if form.is_valid():
             username = form.cleaned_data.get("username")
             ipn_mac_address = form.cleaned_data.get("ipn_mac_address")
@@ -820,7 +824,7 @@ def subaccountedit(request):
                 if id:
                     subaccs = SubAccount.objects.filter(username = username).exclude(account = account).count()
                 else:
-                    subaccs = SubAccount.objects.exclude(id = id).filter(account__id = account_id, username = username).count()
+                    subaccs = SubAccount.objects.filter(account__id = account_id, username = username).count()
                 print 'subaccs', subaccs
                 if subaccs>0:
                     return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form, 'message':u'Выбранное имя пользователя используется в другом аккаунте'}
@@ -859,7 +863,7 @@ def subaccountedit(request):
     
             print 111
 
-            print '1111111', subaccount, vpn_ipinuse, ipn_ipinuse, subaccount.ipv4_vpn_pool
+            #print '1111111', subaccount, vpn_ipinuse, ipn_ipinuse, subaccount.ipv4_vpn_pool
             if subaccount and vpn_ipinuse:
     
                 #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
@@ -1141,7 +1145,7 @@ def transaction(request):
             
             account= Account.objects.get(id=account_id)
         now = datetime.datetime.now()
-        form = TransactionModelForm(initial={'account': account.id, 'created': now, 'end_promise': now+datetime.timedelta(days=7), 'type': TransactionType.objects.get(internal_name='MANUAL_TRANSACTION')}) # An unbound form
+        form = TransactionModelForm(initial={'account': account.id, 'created': now, 'type': TransactionType.objects.get(internal_name='MANUAL_TRANSACTION')}) # An unbound form
 
     return { 'form':form, 'status': False, 'account':account} 
 

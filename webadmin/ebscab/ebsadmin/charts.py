@@ -68,6 +68,7 @@ def charts(request):
     if request.GET:
         form = ReportForm(request.GET)
         if form.is_valid():
+            print "valid"
             start_date = form.cleaned_data.get("start_date")
             end_date = form.cleaned_data.get("end_date")
             accounts = form.cleaned_data.get("accounts")
@@ -236,7 +237,7 @@ def charts(request):
             else:
                 print form._errors
                 pass
-
+    print form._errors
     rep = chartdata.get(report)
     form = ReportForm({'report': report})
     return render_to_response('ebsadmin/charts.html', {'rep': rep,  'res':res, 'form': form})

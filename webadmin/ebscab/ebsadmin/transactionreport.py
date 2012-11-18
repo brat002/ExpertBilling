@@ -50,11 +50,11 @@ class DBWrap:
         return self._cur
 
 dsn = 'host=%s port=%s dbname=%s user=%s password=%s' % (
-settings.DATABASE_HOST,
-settings.DATABASE_PORT,
-settings.DATABASE_NAME,
-settings.DATABASE_USER,
-settings.DATABASE_PASSWORD
+settings.DATABASES.get('default').get('HOST'),
+settings.DATABASES.get('default').get('PORT'),
+settings.DATABASES.get('default').get('NAME'),
+settings.DATABASES.get('default').get('USER'),
+settings.DATABASES.get('default').get('PASSWORD')
 )
 
 db = DBWrap(dsn)
