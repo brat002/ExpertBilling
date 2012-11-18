@@ -112,14 +112,14 @@ def get_last_sql():
     pass
 
 def create_folders():
-    if not os.path.exists('/opt/ebs'): os.mkdir('/opt/ebs/')
-    if not os.path.exists('/opt/ebs/backups'): os.mkdir('/opt/ebs/backups')
-    if not os.path.exists('/opt/ebs/data'): os.mkdir('/opt/ebs/data')
+    if not os.path.exists('/opt/ebs'): commands.getstatusoutput('mkdir -p /opt/ebs/')
+    if not os.path.exists('/opt/ebs/backups'): commands.getstatusoutput('mkdir -p /opt/ebs/backups')
+    if not os.path.exists('/opt/ebs/data'): commands.getstatusoutput('mkdir -p /opt/ebs/data')
     if not os.path.exists(DIST_PATH): os.mkdir(DIST_PATH)
-    if not os.path.exists('/opt/ebs/stats'): os.mkdir('/opt/ebs/stats')
-    if not os.path.exists('/opt/ebs/web'): os.mkdir('/opt/ebs/web')
-    if not os.path.exists('/opt/ebs/var/spool/nf_in'): os.mkdir('/opt/ebs/var/spool/nf_in')
-    if not os.path.exists('/opt/ebs/var/spool/nf_out'): os.mkdir('/opt/ebs/var/spool/nf_out')
+    if not os.path.exists('/opt/ebs/stats'): commands.getstatusoutput('mkdir -p /opt/ebs/stats')
+    if not os.path.exists('/opt/ebs/web'): commands.getstatusoutput('mkdir -p /opt/ebs/web')
+    if not os.path.exists('/opt/ebs/var/spool/nf_in'): commands.getstatusoutput('mkdir -p /opt/ebs/var/spool/nf_in')
+    if not os.path.exists('/opt/ebs/var/spool/nf_out'): commands.getstatusoutput('mkdir -p /opt/ebs/var/spool/nf_out')
     
     
     
@@ -142,6 +142,7 @@ def dbconnect():
     global dbhost,dbname,dbuser,dbpassword, conn, cur
     try:
         conn = psycopg2.connect("dbname='%s' user='%s' host='%s' password='%s' port='%s'" % (dbname, dbuser,dbhost,dbpassword, 5432));
+        conn.set_isolation_level(0)
         conn.set_client_encoding('UTF8')
         cur=conn.cursor()
     except Exception, e:
@@ -249,15 +250,14 @@ def upgrade_db():
             cur.execute(sql)
             not_write = False
         except Exception, e:
-            conn.rollback()
-            print "Error, while importing sql: %s" % sql
+
+            print "Error, while importing sql: %s %s" % (upgrade_sql, sql)
             allow_continue('Continue is not recommended. Do you want to continue upgrade of EBS database?')
             not_write=True
             
         if not not_write:
             install_config.set('sql','last_id',id)
             
-        conn.commit()
         
     if first_time==True:
         with open(FIRST_TIME_LAST_SQL, 'wb') as configfile:
@@ -449,6 +449,7 @@ def prompt_db_access():
     dbname = raw_input("Enter database name [ebs]: ") or 'ebs'
     dbuser = raw_input("Enter database user (strongly recommended default)[ebs]: ") or 'ebs'
     dbpassword = raw_input("Enter database password [ebspassword]: ") or 'ebspassword'
+
     
 
     
@@ -533,7 +534,7 @@ if __name__=='__main__':
                 print 'Please define archive path and name (example: upgrade.py install /opt/12345678901234567890.tar.gz)'
                 sys.exit()   
                 
-            if os.path.exists(BILLING_PATH):
+            if os.path.exists(os.path.join(BILLING_PATH, 'ebs_config.ini')):
                 print "You cant`t install billing on existing installation"
                 sys.exit() 
             create_folders()

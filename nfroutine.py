@@ -109,14 +109,14 @@ class groupDequeThread(Thread):
                     #prepaid, octets = octets-prepaid, abs(prepaid-octets)
                     prep_octets, octets = prepaid, octets-prepaid
                     
-                self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-%s WHERE id=%s""", (prep_octets, prepaid_id,))
+                self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-(%s) WHERE id=%s""", (prep_octets, prepaid_id,))
                 #self.connection.commit()
                 if force_db==False:
                     with queues.prepaidLock:
                         prepInf[1] -= prep_octets
         return octets, prepaid_left    
 
-    def tarificate(self, account_id, acctf_id, tariff_id, traffic_transmit_service_id, group_id, octets, gdate, force_db=False):
+    def tarificate(self, account_id, acctf_id, acctd_datetime,  tariff_id, traffic_transmit_service_id, group_id, octets, gdate, force_db=False):
         if not traffic_transmit_service_id: return
         octets_summ = 0
         #loop throungh classes in 'classes' tuple
@@ -148,12 +148,12 @@ class groupDequeThread(Thread):
                     sys.setcheckinterval(sys.maxint)    
                     account_bytes = queues.accountbytes_cache.by_acctf.get(acctf_id)
                     if not account_bytes:
-                        account_bytes = AccountGroupBytesData._make(account_id, tarif_id, acctf_id, acc.datetime, {}, Lock(), datetime.datetime.now())
+                        account_bytes = AccountGroupBytesData._make(account_id, tariff_id, acctf_id, acctd_datetime, {}, Lock(), datetime.datetime.now())
                         queues.accountbytes_cache.by_acctf[acctf_id] = account_bytes
                 finally:
                     sys.setcheckinterval(100)
                 if not account_bytes:
-                    logger.warning("Account_bytes not resolved for acc %s", acc)
+                    logger.warning("Account_bytes not resolved for acc %s", account_id)
                     return
                 tg_bytes = 0
                 tg_datetime, tg_current, tg_next = None, None, None
@@ -186,7 +186,7 @@ class groupDequeThread(Thread):
                         cur_edge_pos += 1
                 for edge_fval, pay_fbytes in edge_octets:
                     nodes = self.caches.nodes_cache.by_tts_group_edge.get((traffic_transmit_service_id, group_id, edge_fval))
-                    trafic_cost = self.get_actual_cost(pay_fbytes, stream_date, nodes) if nodes else 0
+                    trafic_cost = self.get_actual_cost(pay_fbytes, gdate, nodes) if nodes else 0
                     summ += (trafic_cost * pay_fbytes) / MEGABYTE    
                     
             else:        
@@ -341,7 +341,7 @@ class groupDequeThread(Thread):
                             classes.append(class_)
                             octlist.append(octs)
                                       
-                    transaction_id = self.tarificate(accsdata.account_id, accsdata.id, accsdata.tariff_id, accsdata.traffic_transmit_service_id, group_id, octets, gdate)
+                    transaction_id = self.tarificate(accsdata.account_id, accsdata.id, accsdata.datetime, accsdata.tariff_id, accsdata.traffic_transmit_service_id, group_id, octets, gdate, force_db=True)
                     try:
                         self.cur.execute("""INSERT INTO gpst%s""" % gdate.strftime("%Y%m01")+""" (group_id, account_id, bytes, datetime, classes, classbytes, max_class, accounttarif_id, transaction_id) 
                         VALUES (%s, %s, %s, %s, %s, %s , %s, %s, %s);""", (group_id, account_id, octets, gdate, classes, octlist, max_class, accsdata.id, transaction_id))
@@ -840,7 +840,7 @@ class AccountServiceThread(Thread):
         self.tname = self.__class__.__name__
     
     def run(self):
-        global suicideCondition, cacheMaster, flags, vars, queues, threads, cacheThr
+        global suicideCondition, cacheMaster, flags, vars, queues, threads, cacheThr, in_dirq
         self.connection = get_connection(vars.db_dsn)
         counter = 0; now = datetime.datetime.now
         while True:
@@ -857,8 +857,7 @@ class AccountServiceThread(Thread):
                     renewCaches(cur, cacheMaster, NfroutineCaches, 21, (fMem, cacheMaster.first_time))
                     cur.close()
                     if counter == 0 or time_run:
-                        allowedUsersChecker(allowedUsers, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
-                        if not flags.allowedUsersCheck: continue
+                        
                         counter = 0
                         #flags.allowedUsersCheck = True
                         flags.writeProf = logger.writeInfoP()
@@ -875,6 +874,7 @@ class AccountServiceThread(Thread):
                         
                     if counter == 5:
                         counter, fMem.periodCache = 0, {}
+                        in_dirq.purge()
                         '''
                         if (len(queues.nfIncomingQueue) > 1000) or (len(queues.statDeque) > len(cacheMaster.cache.account_cache.data) * 10):
                             if not vars.sendFlag or vars.sendFlag!='SLP!':
@@ -926,10 +926,10 @@ class nfDequeThread(Thread):
         
     def run(self):
         while True:
-
+            global in_dirq
             #TODO: make connection with SimpleReconnectionStrategy
             try:
-                in_dirq = QueueSimple('/opt/ebs/var/spool/nf_out')                
+                           
                 for name in in_dirq:
                     if not in_dirq.lock(name):
                         continue
@@ -1129,7 +1129,7 @@ if __name__ == "__main__":
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME)
         
         queues= NfrQueues(vars.GROUP_DICTS, vars.STAT_DICTS)
-        
+        in_dirq = QueueSimple('/opt/ebs/var/spool/nf_out')     
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
         saver.log_adapt = logger.log_adapt
         utilites.log_adapt = logger.log_adapt

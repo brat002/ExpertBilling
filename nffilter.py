@@ -591,7 +591,7 @@ class ServiceThread(Thread):
     def run(self):
         #connection = pool.connection()
         #connection._con._con.set_client_encoding('UTF8')
-        global suicideCondition, cacheMaster, flags, queues, vars
+        global suicideCondition, cacheMaster, flags, queues, vars, in_dirq, out_dirq
         self.connection = get_connection(vars.db_dsn)
         counter = 0; now = datetime.datetime.now
         while True:
@@ -610,6 +610,8 @@ class ServiceThread(Thread):
                     cur.close()
                     if counter % 5 == 0 or time_run:
                         counter = 0
+                        in_dirq.purge()
+                        out_dirq.purge()
                         #flags.allowedUsersCheck = True
                         flags.writeProf = logger.writeInfoP()
                         if flags.writeProf:
