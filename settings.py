@@ -14,7 +14,7 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'NAME': 'ebs',
+        'NAME': 'ebs_onenet',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'USER': 'ebs',
         'PASSWORD': 'ebspassword',
@@ -51,15 +51,24 @@ SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '%!a5^gik_4lgzt+k)vyo6)y68_3!u^*j(ujks7(=6f2j89d=x&'
 
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+)
+
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = '#g7(r6=^+7+h6x2_sb)mqydjk6c_!m*d%#na=qtkca$05tx#$8'
+
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
+    'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.load_template_source',
+#     'django.template.loaders.eggs.Loader',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.core.context_processors.auth',
+     'django.contrib.auth.context_processors.auth',
     'notification.context_processors.auth',
     'django.core.context_processors.request',
     'django.core.context_processors.media',
@@ -89,7 +98,7 @@ TEMPLATE_DIRS = (
 
     '/opt/ebs/web/ebscab/templates',
     #'/opt/ebs/web/ebscab/helpdesk/templates',
-    os.path.abspath('./templates'),
+    '%s/templates/' % os.path.abspath('.'),
 
 )
 

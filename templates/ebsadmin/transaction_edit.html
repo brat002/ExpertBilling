@@ -1,17 +1,6 @@
 {% if not status %}
 {{message}}
- <script type="text/javascript"> 
- $(document).ready(function() {
-     $('#id_created').datetimepicker({
-         showSecond: true,
-         timeFormat: 'hh:mm:ss',
-         stepHour: 1,
-         stepMinute: 1,
-         stepSecond: 1,
-         numberOfMonths: 1
-     });
- });
- </script>
+
            
             
                 <form action='{% url transaction_edit %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax">
@@ -117,10 +106,18 @@
                   </div>
                 </fieldset>
                 <div class="form-actions">
-				    <input type='submit' class="btn btn-primary" value="Save Changes">
-				    <a class="btn close-dialog" href="#">Close</a>
+				    <input type='submit' class="btn btn-primary" value="Отправить">
+				    <a class="btn close-dialog" href="#">Закрыть</a>
 				</div>
                 </form>
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+
+     $('.datepicker').datepicker({'format': 'yyyy-mm-dd'});
+     $(".timepicker").mask("99:99:99");
+     
+ });
+ </script>
 {% else %}
 Операция произведена успешно.
  <script type="text/javascript"> 

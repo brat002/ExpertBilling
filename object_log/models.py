@@ -1,3 +1,4 @@
+#-*-coding: utf-8 -*-
 from sys import modules
 
 from django.db import models
@@ -166,13 +167,13 @@ class LogItem(models.Model):
     """
     Single entry in log
     """
-    action = models.ForeignKey(LogAction, related_name="entries")
+    action = models.ForeignKey(LogAction, verbose_name=u'Действие', related_name="entries")
     #action = models.CharField(max_length=128)
-    timestamp = models.DateTimeField(auto_now_add=True, )
-    user = models.ForeignKey(User, related_name='log_items')
+    timestamp = models.DateTimeField(verbose_name=u'Дата', auto_now_add=True, )
+    user = models.ForeignKey(User, verbose_name=u'Пользователь', related_name='log_items')
     
     object_type1 = models.ForeignKey(ContentType, \
-    related_name='log_items1', null=True)
+    verbose_name=u'Тип объекта', related_name='log_items1', null=True)
     object_id1 = models.PositiveIntegerField(null=True)
     object1 = GenericForeignKey("object_type1", "object_id1")
     
@@ -186,8 +187,8 @@ class LogItem(models.Model):
     #object_id3 = models.PositiveIntegerField(null=True)
     #object3 = GenericForeignKey("object_type3", "object_id3")
 
-    serialized_data = models.TextField(null=True)
-    changed_data = models.TextField(null=True)
+    serialized_data = models.TextField(null=True, verbose_name=u'Дамп',)
+    changed_data = models.TextField(null=True, verbose_name=u'Изменённые поля',)
 
     objects = LogItemManager()
     _data = None

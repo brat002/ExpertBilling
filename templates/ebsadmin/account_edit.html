@@ -6,7 +6,7 @@
 
         <script type="text/javascript"> 
         $(document).ready(function() {
-        $('#generate_username').popover({title:'Действие над аккаунтом', content: 'Сгенерировать имя пользователя'});
+        //$('#generate_username').popover({title:'Действие над аккаунтом', content: 'Сгенерировать имя пользователя'});
         $("#generate_username").click(function() {
         	$.getJSON('{% url generate_credentials %}',{action:'login'},function(data,status){
         	    if( status=='success' ){
@@ -20,7 +20,7 @@
         	})
         	});
         
-        $('#generate_password').popover({title:'Действие над аккаунтом', content: 'Сгенерировать пароль'});
+        //$('#generate_password').popover({title:'Действие над аккаунтом', content: 'Сгенерировать пароль'});
         $('#id_organization').click(function() {
         	if ($('#id_organization').is(':checked')){
         		$('#organization-fieldset').show();
@@ -47,17 +47,10 @@
                 }
             })
             });
-        $('#id_created_0').datetimepicker({
-            showSecond: true,
-            timeFormat: 'hh:mm:ss',
-            stepHour: 1,
-            stepMinute: 1,
-            stepSecond: 1,
-            numberOfMonths: 1,
-            dateFormat: 'yy-mm-dd'
-        });
-            
-        	$('#modal-accounttariff-dialog').popover({title:'Действие над аккаунтом', content: 'Cменить тарифный план'});
+
+        $('#id_created_0').datepicker({'format': 'yyyy-mm-dd'});
+
+        	//$('#modal-accounttariff-dialog').popover({title:'Действие над аккаунтом', content: 'Cменить тарифный план'});
             $(function() {
                 $("#modal-accounttariff-dialog").click(function(event) {
                     $('<div/>').dialog2({
@@ -81,7 +74,7 @@
                 });
             });
 
-            $('#modal-suspendedperiod-dialog-table').popover({title:'Добавить период без списаний', content: 'Добавить период, во время которого с аккаунта не будут производиться списания по периодическим и подключаемым услугам.'});
+            //$('#modal-suspendedperiod-dialog-table').popover({title:'Добавить период без списаний', content: 'Добавить период, во время которого с аккаунта не будут производиться списания по периодическим и подключаемым услугам.'});
             $(function() {
                 $("#modal-suspendedperiod-dialog-table").click(function(event) {
                     $('<div/>').dialog2({
@@ -460,7 +453,7 @@
                             </div>
 
                             <div class="control-group">
-                                <div class="control-row">
+
                                     <label class="control-label" for="input-created">Дата создания</label>
                                     <div class="controls">
                                     {{ form.created }}
@@ -474,14 +467,12 @@
                                     {% endif %}
 
                                     </div>
-                                </div>
+
 
                             </div>
+                            
                             <div class="control-group">
-                            <div class="control-row">
-                            &nbsp;
-                            </div>
-                            <div class="control-row">
+
                                 <label class="control-label" for="input-comment">{{form.comment.label}}</label>
                                 <div class="controls">
                                     {{ form.comment }}
@@ -494,7 +485,7 @@
                                     </p>
                                     {% endif %}
                                 </div>
-                                </div>
+
                             </div>
                         </fieldset>
                         {% comment %}

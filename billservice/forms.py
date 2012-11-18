@@ -20,6 +20,7 @@ from django.contrib.auth.models import Group as AuthGroup
 from django.core.urlresolvers import reverse
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectMultipleWidget, AutoCompleteSelectField
 from itertools import chain
+from widgets import SplitDateTimeWidget
 
 class DateRangeField(forms.DateField):
     def clean(self, value):
@@ -193,6 +194,7 @@ class SearchAccountForm(forms.Form):
     nas = forms.ModelMultipleChoiceField(label=u"Сервер доступа субаккаунта", queryset=Nas.objects.all(), required=False)
     deleted = forms.BooleanField(label=u"В архиве", widget = forms.widgets.CheckboxInput, required=False)
     systemuser_filter = forms.MultipleChoiceField(required=False)
+    elevator_direction = forms.CharField(required=False, label=u'Направление от лифта')
     created = DateRangeField(required=False, label=u"Создан")
 
 class AccountAddonForm(forms.Form):
@@ -260,8 +262,7 @@ class SuspendedPeriodModelForm(ModelForm):
         exclude = ('activated_by_account',)
 
 class TransactionModelForm(ModelForm):
-    description = forms.CharField(required=False)
-    created = forms.DateTimeField(required=True)
+    #created = forms.DateTimeField(required=True)
     account = forms.ModelChoiceField(queryset=Account.objects.all(), widget = forms.HiddenInput)
     promise_never_expire = forms.CharField(widget = forms.widgets.CheckboxInput)
     type = forms.ModelChoiceField(queryset=TransactionType.objects.all(), widget = forms.widgets.Select(attrs={'class': 'input-xlarge'}) )
@@ -269,11 +270,18 @@ class TransactionModelForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(TransactionModelForm, self).__init__(*args, **kwargs)
         self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
-        self.fields['description'].widget.attrs['class'] = 'input-xlarge span5'
+        self.fields['description'].widget = forms.widgets.TextInput(attrs={'class': 'input-xlarge span5'})
         self.fields['account'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['bill'].widget.attrs['class'] = 'input-xlarge span5'
+        self.fields['created'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['end_promise'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
 
+    def clean_summ(self):
+        summ = self.cleaned_data.get('summ',0)
+        if summ==0:
+            raise forms.ValidationError(u'Укажите сумму')
+        return summ
     class Meta:
         model = Transaction
         exclude = ('systemuser', 'accounttarif', 'approved', 'tarif', 'promise_expired')
@@ -329,6 +337,7 @@ class AccountForm(ModelForm):
         self.fields['username'].widget.attrs['class'] = 'input-small'
         self.fields['password'].widget.attrs['class'] = 'input-small'
         self.fields['credit'].widget.attrs['class'] = 'input-small'
+        self.fields['comment'].widget.attrs['class'] = 'input-xlarge span10'
         self.fields['comment'].widget.attrs['cols'] =10
         self.fields['created'].widget = forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'})
     
@@ -507,6 +516,7 @@ class AccountPrepaysTraficForm(ModelForm):
 
 class TransactionTypeForm(ModelForm):
     class Meta:
+        exclude=('is_deletable',)
         model = TransactionType     
 
 class CityForm(ModelForm):
@@ -796,3 +806,9 @@ class SwitchForm(ModelForm):
     class Meta:
         model = Switch
         
+class GroupStatSearchForm(forms.Form):
+
+    accounts = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
+    groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=u'Группы трафика', required=False)
+    daterange = DateRangeField(label=u'Диапазон', required=False )
+    

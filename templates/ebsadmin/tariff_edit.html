@@ -23,12 +23,14 @@
     <a href="{% url tariff %}">Тарифные планы</a> <span class="divider">/</span>{{tariff.name}}
   </li>
 </ul>
+
 <div class="row-fluid">
 
 <div class="span3">
+
 <ul class="nav nav-list">
   <li class="nav-header">
-    Параметры тарифного плана{% objectlog tariff %}
+    Параметры тарифного плана
   </li>
   <li {% if active == 'general' %}class="active"{% endif %}>
     <a href="{% url tariff_edit %}?id={{tariff.id}}">Общее</a>

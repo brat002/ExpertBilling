@@ -39,7 +39,7 @@ def tpchangerule_edit(request):
     
 
     id = request.POST.get("id")
-
+    item = None
     if request.method == 'POST': 
 
         if id:
@@ -101,7 +101,7 @@ def tpchangerule_edit(request):
         else:
             form = TPChangeMultipleRuleForm()
 
-    return { 'form':form, 'status': False,} 
+    return { 'form':form, 'status': False, 'item': item} 
 
 
 @ajax_request

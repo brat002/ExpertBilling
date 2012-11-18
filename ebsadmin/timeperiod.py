@@ -85,11 +85,13 @@ def timeperiodnode_edit(request):
         return {"status":True,"form":render_to_string('ebsadmin/timeperiodnode_edit.html', {'form': TimePeriodNodeForm(initial={'time_period': id})})}
     
     if request.method == 'POST': 
+        id = request.POST.get('id','')
+
         if id:
             item = TimePeriodNode.objects.get(id=id)
             form = TimePeriodNodeForm(request.POST, instance=item)
         else:
-             form = TimePeriodNodeForm(request.POST)
+            form = TimePeriodNodeForm(request.POST)
         if id:
             if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_timeperiodnode')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование подпериодов'}
@@ -97,7 +99,7 @@ def timeperiodnode_edit(request):
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_timeperiodnode')):
             return {'status':False, 'message': u'У вас нет прав на добавление попериодов'}
 
-        
+        print form
         if form.is_valid():
  
             model = form.save(commit=False)

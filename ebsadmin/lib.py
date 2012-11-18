@@ -1,5 +1,6 @@
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 import django_tables2 as tables
+from django.contrib.contenttypes import generic
 
 def dictfetchall(cursor):
     "Returns all rows from a cursor as a dict"
@@ -10,7 +11,63 @@ def dictfetchall(cursor):
     ]
     
 
+def instance_dict(instance, key_format=None, normal_fields=False, fields=[]):
+    """
+    Returns a dictionary containing field names and values for the given
+    instance
+    """
+    from django.db.models.fields import DateField,DecimalField
+    from django.db.models.fields.related import ForeignKey
+    
+    if key_format:
+        assert '%s' in key_format, 'key_format must contain a %s'
+    key = lambda key: key_format and key_format % key or key
+
+    pk = instance._get_pk_val()
+    d = {}
+
+
+    
+    for field in chain(instance._meta.fields, instance._meta.virtual_fields):
+        print field
+        attr = field.name
+
+        if fields and attr not in fields: continue
+        #print attr
+        try:
+            value = getattr(instance, attr)
+        except:
+            value=None
         
+        if isinstance(field, ForeignKey):
+            if value is not None:
+                try:
+                    d["%s_id" % key(attr)] = value.id
+                    value = value._get_pk_val() if normal_fields==False else unicode(value)
+                except Exception, e:
+                    print e
+            else:
+                d["%s_id" % key(attr)] = None
+                value = None
+                    
+        elif isinstance(field, DateField):
+            value = value.strftime('%Y-%m-%d %H:%M:%S') if value else None
+            
+        elif  isinstance(field, generic.GenericForeignKey):
+            value = unicode(value)
+        elif isinstance(field, DecimalField):
+            value = float(value) if value else 0
+                               
+        d[key(attr)] = value
+    for field in instance._meta.many_to_many:
+        if pk:
+            d[key(field.name)] = [
+                obj._get_pk_val()
+                for obj in getattr(instance, field.attname).all()]
+        else:
+            d[key(field.name)] = []
+    return d
+
 LEADING_PAGE_RANGE_DISPLAYED = TRAILING_PAGE_RANGE_DISPLAYED = 10
 LEADING_PAGE_RANGE = TRAILING_PAGE_RANGE = 8
 NUM_PAGES_OUTSIDE_RANGE = 5
@@ -360,54 +417,4 @@ class QuerySetSequence(IableSequence):
         return False
 
     
-def instance_dict(instance, key_format=None, normal_fields=False, fields=[]):
-    """
-    Returns a dictionary containing field names and values for the given
-    instance
-    """
-    from django.db.models.fields import DateField,DecimalField
-    from django.db.models.fields.related import ForeignKey
-    if key_format:
-        assert '%s' in key_format, 'key_format must contain a %s'
-    key = lambda key: key_format and key_format % key or key
 
-    pk = instance._get_pk_val()
-    d = {}
-    for field in instance._meta.fields:
-        
-        attr = field.name
-
-        if fields and attr not in fields: continue
-        #print attr
-        try:
-            value = getattr(instance, attr)
-        except:
-            value=None
-        
-        if isinstance(field, ForeignKey):
-            if value is not None:
-                try:
-                    d["%s_id" % key(attr)] = value.id
-                    value = value._get_pk_val() if normal_fields==False else unicode(value)
-                except Exception, e:
-                    print e
-            else:
-                d["%s_id" % key(attr)] = None
-                value = None
-                    
-            #elif isinstance(field, DateField):
-            #    value = value.strftime('%Y-%m-%d %H:%M:%S')
-        elif isinstance(field, DecimalField):
-            value = float(value) if value else 0
-                               
-        d[key(attr)] = value
-    for field in instance._meta.many_to_many:
-        if pk:
-            d[key(field.name)] = [
-                obj._get_pk_val()
-                for obj in getattr(instance, field.attname).all()]
-        else:
-            d[key(field.name)] = []
-    return d
-
-        

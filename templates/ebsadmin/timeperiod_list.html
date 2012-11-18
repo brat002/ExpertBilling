@@ -7,26 +7,12 @@
 
         <script type="text/javascript"> 
         $(document).ready(function() {
-            $('#id_time_start_0').datepicker({
-                dateFormat: 'yy-mm-dd',
-                buttonImage: "/media/icons/16/calendar.png",
-                buttonImageOnly: true,
-                showOn: "button",
-                changeMonth: true,
-                changeYear: true
-            });
-            $("#id_time_start_0").mask("9999-99-99");
+
+            $('#id_time_start_0').datepicker({'format': 'yyyy-mm-dd'});
+            $('#id_time_end_0').datepicker({'format': 'yyyy-mm-dd'});
+            
             $("#id_time_start_1").mask("99:99:99");
 
-            $('#id_time_end_0').datepicker({
-                dateFormat: 'yy-mm-dd',
-                buttonImage: "/media/icons/16/calendar.png",
-                buttonImageOnly: true,
-                showOn: "button",
-                changeMonth: true,
-                changeYear: true
-            });
-            $("#id_time_end_0").mask("9999-99-99");
             $("#id_time_end_1").mask("99:99:99");
 
             
@@ -56,10 +42,17 @@
 
             $("#id_button_node").click(function(){
                 var node = $("#tree").dynatree("getActiveNode");
-                if (node.data.key.indexOf("TP___")!=0){
-                    $.fn.dialog2.helpers.alert("Выберите период", {
-                    });
-                    return
+                var active_node =$("#tree").dynatree("getActiveNode");
+                if (active_node.data.key.indexOf("TP___")!=0){
+                	var action='new';
+                	if(active_node.getParent().data.key.indexOf("TP___")!=0){
+	                    $.fn.dialog2.helpers.alert("Выберите период", {
+	                    });
+	                    return
+                	}else{
+                		active_node = active_node.getParent();
+                		action='edit';
+                	}
                 }
 
                 $.ajax({
@@ -70,11 +63,15 @@
                     data: $("#id_form").serialize(),
                     success: function(data){   
                     $("#id_form_content").html(data.form);
-                    if (data.status==true)
-                        $("#tree").dynatree("getActiveNode").addChild({
-                            title: data.name,
-                            key: "NODE___"+data.id
-                        });
+                    if (data.status==true){
+                    	if (action=='new'){
+	                        active_node.addChild({
+	                            title: data.name,
+	                            key: "NODE___"+data.id
+	                        })
+                        }else{
+                        	node.setTitle(data.name);
+                    }}
                     }
                   });
                 
@@ -199,21 +196,24 @@
 {% block body %}
 
 <div class="row-fluid">
+
 <p class="help-block">Двойной клик по элементу - редактировать</p>
+
 <div class="span5" id="tree"></div>
-<div class="span5">
+<div class="span6">
 <form method="POST" id="id_form" class="well form-horizontal">
 <div id="id_form_content">
 
 </div>
 
                     <div class="form-actions form-actions-center">
-                        <button id="id_button_tp" class="btn btn-primary" type="button">Добавить период</button>
+                        
                         <button id="id_button_node" class="btn btn-primary" type="button">Сохранить подпериод</button>
                         
                     </div>
                 <fieldset>
                     <div class="form-actions form-actions-center">
+                    <button id="id_button_tp" class="btn btn-primary" type="button">Добавить период</button>
                         <button id="id_button_delete" class="btn btn-danger" type="button">Удалить элемент</button>
                     </div>
                 </fieldset>
