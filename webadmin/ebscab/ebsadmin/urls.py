@@ -145,6 +145,11 @@ urlpatterns += patterns('ebsadmin.modules.shedulelog',
     
 )
 
+urlpatterns += patterns('ebsadmin.modules.groupstat',
+    url(r'^groupstat/$', 'groupstat', name='groupstat'),
+    
+)
+
 
 urlpatterns += patterns('ebsadmin.modules.manufacturer',
     url(r'^manufacturer/edit/$', 'manufacturer_edit', name='manufacturer_edit'),

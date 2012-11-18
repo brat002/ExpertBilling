@@ -57,5 +57,5 @@ def operator_edit(request):
         else:
             form = OperatorForm()
 
-    return { 'form':form, 'status': False} 
+    return { 'form':form, 'status': False, 'item': item} 
 

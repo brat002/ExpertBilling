@@ -70,7 +70,7 @@ def switch_edit(request):
         else:
             form = SwitchForm()
 
-    return { 'form':form, 'status': False} 
+    return { 'form':form, 'status': False, 'item':item} 
 
 @ajax_request
 @login_required

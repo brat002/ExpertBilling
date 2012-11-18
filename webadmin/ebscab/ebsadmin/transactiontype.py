@@ -81,6 +81,8 @@ def transactiontype_delete(request):
             item = TransactionType.objects.get(id=id)
         except Exception, e:
             return {"status": False, "message": u"Указанный тип не найден %s" % str(e)}
+        if item.is_deletable==False:
+            return {"status": False, "message": u"Выбранный тип списания не может быть удалён"}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

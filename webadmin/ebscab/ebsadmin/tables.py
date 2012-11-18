@@ -9,7 +9,7 @@ from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAcces
 from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType
 from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model
 from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode
-from billservice.models import News, TPChangeRule, Switch, AccountGroup
+from billservice.models import News, TPChangeRule, Switch, AccountGroup, GroupStat
 import django_tables2 as django_tables
 from django_tables2.utils import A
 from radius.models import ActiveSession, AuthLog
@@ -76,7 +76,7 @@ class AccountAddonServiceTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     id = django_tables.LinkColumn('accountaddonservice', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     account =  FormatBlankColumn()
-    service =  django_tables.LinkColumn('addonservice_edit', get_params={'id':A('service.id')})
+    service =  django_tables.Column()
     subaccount =  django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount.id')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     #service = django_tables.LinkColumn('subaccount_detail', args=[A('pk')])
     activated = FormatDateTimeColumn()
@@ -124,17 +124,17 @@ class AccountTarifTable(TableReport):
             
             #-*-coding=utf-8-*-
 class TotalTransactionReportTable(TableReport):
-    tariff__name = FormatBlankColumn()
+    tariff__name = FormatBlankColumn(verbose_name=u'Тариф')
     id = FormatBlankColumn()
-    account__username = django_tables.LinkColumn('account_edit', get_params={'id':A('account')})
-    bill = FormatBlankColumn()
-    description = FormatBlankColumn()
-    service__name = FormatBlankColumn()
-    type__name = FormatBlankColumn()
+    account__username = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account')})
+    bill = FormatBlankColumn(verbose_name=u'Платёжный документ')
+    description = FormatBlankColumn(verbose_name=u'Комментарий')
+    service__name = FormatBlankColumn(verbose_name=u'Услуга')
+    type__name = FormatBlankColumn(verbose_name=u'Тип')
 
-    summ = FormatFloatColumn()
-    created = FormatDateTimeColumn()
-    end_promise = FormatDateTimeColumn()
+    summ = FormatFloatColumn(verbose_name=u'Сумма')
+    created = FormatDateTimeColumn(verbose_name=u'Создана')
+    end_promise = FormatDateTimeColumn(verbose_name=u'Окончание о.п.')
     #promise_expired = FormatDateTimeColumn()
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     class Meta:
@@ -148,14 +148,16 @@ class TotalTransactionReportTable(TableReport):
         
 class AccountsReportTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
-    id = FormatBlankColumn()
-    username = django_tables.LinkColumn('account_edit', get_params={'id':A('pk')})
-    contract = FormatBlankColumn()
+    #id = FormatBlankColumn()
+    username = django_tables.LinkColumn('account_edit', verbose_name=u'Имя', get_params={'id':A('pk')})
+    contract = FormatBlankColumn(verbose_name=u'Договор')
     fullname = FormatBlankColumn()
-    
+    address = django_tables.TemplateColumn(u"{{record.street}} {{record.house}}-{{record.room}}")
+    entrance = django_tables.Column(verbose_name=u'Подъезд')
+    row = django_tables.Column(verbose_name=u'Этаж')
     ballance = FormatFloatColumn()
-    credit = FormatFloatColumn()
-    created = FormatDateTimeColumn()
+    #credit = FormatFloatColumn()
+    #created = FormatDateTimeColumn()
 
     def render_row_number(self):
         value = getattr(self, '_counter', 0)
@@ -456,14 +458,14 @@ class DealerTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class TariffTable(TableReport):
-    id = django_tables.LinkColumn('tariff_edit', get_params={'id':A('pk')})
+    name = django_tables.LinkColumn('tariff_edit', get_params={'id':A('pk')})
     radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?tarif_id={{record.id}}' >Дополнительные RADIUS атрибуты</a>", verbose_name=u'Дополнительные RADIUS атрибуты', orderable=False)
     access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
     class Meta:
         model = Tariff
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        fields = ("id", 'name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', 'radiusattrs')
+        fields = ( 'name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', 'radiusattrs')
         
 class PeriodicalServiceTable(TableReport):
     id = django_tables.LinkColumn('tariff_periodicalservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
@@ -576,6 +578,7 @@ class PeriodicalServiceLogTable(TableReport):
 
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    datetime = FormatDateTimeColumn(verbose_name=u'Дата')
     
     class Meta:
         model = PeriodicalServiceLog
@@ -641,7 +644,24 @@ class AccountGroupTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class ActionLogTable(TableReport):
+    object1 = django_tables.Column(verbose_name=u'Объект', accessor=A('object1'))
+    
     
     class Meta:
         model = LogItem
+        fields = ('id', 'timestamp', 'user', 'action', 'object_type1', 'object1', 'changed_data')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
+
+class GroupStatTable(TableReport):
+
+    account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
+    group = django_tables.Column(u'Группа', accessor=A('group__name'))
+    bytes = django_tables.Column(u'Сумма', accessor=A('summ_bytes'))
+    
+    def render_bytes(self, value, record):
+        return value
+    
+    class Meta:
+        fields = (u'account', 'group', u'bytes')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        

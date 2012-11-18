@@ -1,0 +1,52 @@
+{% extends "ebsadmin/base.html" %}
+{% load crispy_forms_tags %}
+{% block extra_head %}
+
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+
+            {% if table %}
+            $('#tab-control a[href="#result"]').tab('show');
+            {% else %}
+            $('#tab-control a[href="#filter"]').tab('show');
+            {% endif %}
+            $("#id_daterange").daterangepicker();
+        });
+        </script>
+
+{% endblock %}
+{% block body %}
+<legend>Тарифицированный трафик</legend>
+<ul class="nav nav-tabs" id="tab-control">
+  <li ><a href="#filter">Фильтр</a></li>
+  <li><a href="#result">Отчёт</a></li>  
+</ul>
+
+ {% load render_table from django_tables2 %}
+<div class="tab-content">
+  <div class="tab-pane" id="filter">
+  
+  <div class="row-fluid">
+        <div class="span12">
+            <form action="{{form.action}}" method="GET" class="well form-horizontal">
+            {{ form.non_field_errors }}
+                <fieldset>
+
+                    {{form|crispy}}
+                
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">Подобрать результаты</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+  
+  </div>
+  <div class="tab-pane" id="result">{% if table %}{% render_table table %}{% endif %}</div>
+
+</div>
+ {% endblock %}
+

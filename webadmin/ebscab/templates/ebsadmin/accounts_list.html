@@ -109,6 +109,7 @@
         <div class="span12">
             <form action="{{form.action}}" method="GET" class="well form-horizontal">
             {{ form.non_field_errors }}
+            
                 <fieldset>
                     <legend>Данные аккаунта</legend>
 
@@ -226,34 +227,53 @@
                         </div>
                     </div>
            </fieldset>
-                           <fieldset>
-                    <legend>Сетевая идентификация</legend>
+                <fieldset>
+                    <legend>Адрес</legend>
+
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-vpn-ip">{{form.vpn_ip_address.label}}</label>
+                            <label class="control-label" for="input-city">{{form.city.label}}</label>
                             <div class="controls">
-                             {{ form.vpn_ip_address }}
-                            {% if form.vpn_ip_address.errors %}
-                                <span class="help-inline">{% for error in form.vpn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                             {{ form.city }}
+                            {% if form.city.errors %}
+                                <span class="help-inline">{% for error in form.city.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.vpn_ip_address.help_text%}
+                            {% if form.city.help_text%}
                                 <p class="help-block">
-                                    {{ form.vpn_ip_address.help_text|safe }}
+                                    {{ form.city.help_text|safe }}
                                 </p>
                             {% endif %}
                             </div>
                         </div>
 
                         <div class="control-row">
-                            <label class="control-label" for="input-ipn-ip">{{form.ipn_ip_address.label}}</label>
+                            <label class="control-label" for="input-street">{{form.street.label}}</label>
                             <div class="controls">
-                             {{ form.ipn_ip_address }}
-                            {% if form.ipn_ip_address.errors %}
-                                <span class="help-inline">{% for error in form.ipn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                             {{ form.street }}
+                            {% if form.street.errors %}
+                                <span class="help-inline">{% for error in form.street.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.ipn_ip_address.help_text%}
+                            {% if form.street.help_text%}
                                 <p class="help-block">
-                                    {{ form.ipn_ip_address.help_text|safe }}
+                                    {{ form.street.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            {{ form.house }}
+                            {% if form.house.errors %}
+                                <span class="help-inline">{% for error in form.house.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.house.help_text%}
+                                <p class="help-block">
+                                    {{ form.house.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            {{ form.room }}
+                            {% if form.room.errors %}
+                                <span class="help-inline">{% for error in form.room.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.room.help_text%}
+                                <p class="help-block">
+                                    {{ form.room.help_text|safe }}
                                 </p>
                             {% endif %}
                             </div>
@@ -261,59 +281,50 @@
                     </div>
 
                     <div class="control-group">
-                        <div class="control-row">
-                        <label class="control-label" for="input-server-access">{{form.nas.label}}</label>
+                        <label class="control-label" for="input-entrance">{{form.house_bulk.label}}</label>
                         <div class="controls">
-                             {{ form.nas }}
-                            {% if form.nas.errors %}
-                                <span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {{ form.house_bulk }}
+                            {% if form.house_bulk.errors %}
+                                <span class="help-inline">{% for error in form.house_bulk.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.nas.help_text%}
+                            {% if form.house_bulk.help_text%}
                                 <p class="help-block">
-                                    {{ form.nas.help_text|safe }}
+                                    {{ form.house_bulk.help_text|safe }}
                                 </p>
                             {% endif %}
                         </div>
-                        </div>
+                    </div>
 
-                        <div class="control-row">
-                            <label class="control-label" for="input-mac-address">{{form.ipn_mac_address.label}}</label>
-                            <div class="controls">
-                             {{ form.ipn_mac_address }}
-                            {% if form.ipn_mac_address.errors %}
-                                <span class="help-inline">{% for error in form.ipn_mac_address.errors %}{{ error }}<br/> {% endfor %}</span>
-                            {% endif %}
-                            {% if form.ipn_mac_address.help_text%}
-                                <p class="help-block">
-                                    {{ form.ipn_mac_address.help_text|safe }}
-                                </p>
-                            {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    
                     <div class="control-group">
-                    <div class="control-row">
-                        
+                        <label class="control-label" for="input-floor">{{form.row.label}}</label>
                         <div class="controls">
-                             &nbsp;
-                        </div>
-                    </div>
-                    <div class="control-row">
-                        <label class="control-label">IPN статус</label>
-                        <div class="controls">
-                             {{ form.ipn_status }}
-                            {% if form.ipn_status.errors %}
-                                <span class="help-inline">{% for error in form.ipn_status.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {{ form.row }}
+                            {% if form.row.errors %}
+                                <span class="help-inline">{% for error in form.row.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.ipn_status.help_text%}
+                            {% if form.row.help_text%}
                                 <p class="help-block">
-                                    {{ form.ipn_status.help_text|safe }}
+                                    {{ form.row.help_text|safe }}
                                 </p>
                             {% endif %}
                         </div>
                     </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="input-floor">{{form.elevator_direction.label}}</label>
+                        <div class="controls">
+                            {{ form.elevator_direction }}
+                            {% if form.elevator_direction.errors %}
+                                <span class="help-inline">{% for error in form.elevator_direction.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.elevator_direction.help_text%}
+                                <p class="help-block">
+                                    {{ form.elevator_direction.help_text|safe }}
+                                </p>
+                            {% endif %}
+                        </div>
                     </div>
+                </fieldset>
 
 
 
@@ -407,53 +418,34 @@
             
                 </fieldset>
                 
-                <fieldset>
-                    <legend>Адрес</legend>
-
+           <fieldset>
+                    <legend>Сетевая идентификация</legend>
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-city">{{form.city.label}}</label>
+                            <label class="control-label" for="input-vpn-ip">{{form.vpn_ip_address.label}}</label>
                             <div class="controls">
-                             {{ form.city }}
-                            {% if form.city.errors %}
-                                <span class="help-inline">{% for error in form.city.errors %}{{ error }}<br/> {% endfor %}</span>
+                             {{ form.vpn_ip_address }}
+                            {% if form.vpn_ip_address.errors %}
+                                <span class="help-inline">{% for error in form.vpn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.city.help_text%}
+                            {% if form.vpn_ip_address.help_text%}
                                 <p class="help-block">
-                                    {{ form.city.help_text|safe }}
+                                    {{ form.vpn_ip_address.help_text|safe }}
                                 </p>
                             {% endif %}
                             </div>
                         </div>
 
                         <div class="control-row">
-                            <label class="control-label" for="input-street">{{form.street.label}}</label>
+                            <label class="control-label" for="input-ipn-ip">{{form.ipn_ip_address.label}}</label>
                             <div class="controls">
-                             {{ form.street }}
-                            {% if form.street.errors %}
-                                <span class="help-inline">{% for error in form.street.errors %}{{ error }}<br/> {% endfor %}</span>
+                             {{ form.ipn_ip_address }}
+                            {% if form.ipn_ip_address.errors %}
+                                <span class="help-inline">{% for error in form.ipn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.street.help_text%}
+                            {% if form.ipn_ip_address.help_text%}
                                 <p class="help-block">
-                                    {{ form.street.help_text|safe }}
-                                </p>
-                            {% endif %}
-                            {{ form.house }}
-                            {% if form.house.errors %}
-                                <span class="help-inline">{% for error in form.house.errors %}{{ error }}<br/> {% endfor %}</span>
-                            {% endif %}
-                            {% if form.house.help_text%}
-                                <p class="help-block">
-                                    {{ form.house.help_text|safe }}
-                                </p>
-                            {% endif %}
-                            {{ form.room }}
-                            {% if form.room.errors %}
-                                <span class="help-inline">{% for error in form.room.errors %}{{ error }}<br/> {% endfor %}</span>
-                            {% endif %}
-                            {% if form.room.help_text%}
-                                <p class="help-block">
-                                    {{ form.room.help_text|safe }}
+                                    {{ form.ipn_ip_address.help_text|safe }}
                                 </p>
                             {% endif %}
                             </div>
@@ -461,46 +453,60 @@
                     </div>
 
                     <div class="control-group">
-                        <label class="control-label" for="input-entrance">{{form.house_bulk.label}}</label>
+                        <div class="control-row">
+                        <label class="control-label" for="input-server-access">{{form.nas.label}}</label>
                         <div class="controls">
-                            {{ form.house_bulk }}
-                            {% if form.house_bulk.errors %}
-                                <span class="help-inline">{% for error in form.house_bulk.errors %}{{ error }}<br/> {% endfor %}</span>
+                             {{ form.nas }}
+                            {% if form.nas.errors %}
+                                <span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.house_bulk.help_text%}
+                            {% if form.nas.help_text%}
                                 <p class="help-block">
-                                    {{ form.house_bulk.help_text|safe }}
+                                    {{ form.nas.help_text|safe }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        </div>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-mac-address">{{form.ipn_mac_address.label}}</label>
+                            <div class="controls">
+                             {{ form.ipn_mac_address }}
+                            {% if form.ipn_mac_address.errors %}
+                                <span class="help-inline">{% for error in form.ipn_mac_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.ipn_mac_address.help_text%}
+                                <p class="help-block">
+                                    {{ form.ipn_mac_address.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                    <div class="control-row">
+                        
+                        <div class="controls">
+                             &nbsp;
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label class="control-label">IPN статус</label>
+                        <div class="controls">
+                             {{ form.ipn_status }}
+                            {% if form.ipn_status.errors %}
+                                <span class="help-inline">{% for error in form.ipn_status.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.ipn_status.help_text%}
+                                <p class="help-block">
+                                    {{ form.ipn_status.help_text|safe }}
                                 </p>
                             {% endif %}
                         </div>
                     </div>
-
-                    <div class="control-group">
-                        <label class="control-label" for="input-floor">{{form.row.label}}</label>
-                        <div class="controls">
-                            {{ form.row }}
-                            {% if form.row.errors %}
-                                <span class="help-inline">{% for error in form.row.errors %}{{ error }}<br/> {% endfor %}</span>
-                            {% endif %}
-                            {% if form.row.help_text%}
-                                <p class="help-block">
-                                    {{ form.row.help_text|safe }}
-                                </p>
-                            {% endif %}
-                        </div>
                     </div>
 
-                    <div class="control-group">
-                        <label class="control-label" for="input-floor">От лифта</label>
-                        <div class="controls">
-                            <select id="" class="span3">
-                                <option>Слева</option>
-                                <option>Справа</option>
-                                <option>Прямо</option>
-                            </select>
-                        </div>
-                    </div>
-                </fieldset>
 
                 <fieldset>
                     <legend>Блокировка</legend>

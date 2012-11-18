@@ -5340,4 +5340,54 @@ def sp_info(request):
     start, end, length = settlement_period_info(time_start, sp.length_in, sp.length, curdatetime)
     return {"status": True, 'records': [{'start':start, 'end': end, 'length':length}], 'totalCount':1}
     
-    
+def instance_dict(instance, key_format=None, normal_fields=False, fields=[]):
+    """
+    Returns a dictionary containing field names and values for the given
+    instance
+    """
+    from django.db.models.fields import DateField,DecimalField
+    from django.db.models.fields.related import ForeignKey
+    if key_format:
+        assert '%s' in key_format, 'key_format must contain a %s'
+    key = lambda key: key_format and key_format % key or key
+
+    pk = instance._get_pk_val()
+    d = {}
+    for field in instance._meta.fields:
+        
+        attr = field.name
+
+        if fields and attr not in fields: continue
+        #print attr
+        try:
+            value = getattr(instance, attr)
+        except:
+            value=None
+        
+        if isinstance(field, ForeignKey):
+            if value is not None:
+                try:
+                    d["%s_id" % key(attr)] = value.id
+                    value = value._get_pk_val() if normal_fields==False else unicode(value)
+                except Exception, e:
+                    print e
+            else:
+                d["%s_id" % key(attr)] = None
+                value = None
+                    
+            #elif isinstance(field, DateField):
+            #    value = value.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(field, DecimalField):
+            value = float(value) if value else 0
+                               
+        d[key(attr)] = value
+    for field in instance._meta.many_to_many:
+        if pk:
+            d[key(field.name)] = [
+                obj._get_pk_val()
+                for obj in getattr(instance, field.attname).all()]
+        else:
+            d[key(field.name)] = []
+    return d
+
+        
