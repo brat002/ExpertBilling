@@ -7,7 +7,7 @@ from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubA
 from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode, PeriodicalServiceLog, Switch
 from billservice.models import Organization, BalanceHistory, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService, SheduleLog
 from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
-from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware,AccountGroup
+from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware,AccountGroup,AccountPrepaysTime
 
 from nas.models import Nas
 
@@ -289,6 +289,11 @@ class TransactionModelForm(ModelForm):
 class AccountTariffForm(ModelForm):
     account = forms.ModelChoiceField(queryset=Account.objects.all(), widget = forms.TextInput(attrs={'readonly':'readonly'}))
     
+    def __init__(self, *args, **kwargs):
+        super(AccountTariffForm, self).__init__(*args, **kwargs)
+
+        self.fields['datetime'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        
     class Meta:
         model = AccountTarif
     
@@ -507,10 +512,47 @@ class TemplateForm(ModelForm):
 
 
 class AccountPrepaysRadiusTraficForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+
+    def __init__(self, *args, **kwargs):
+        super(AccountPrepaysTraficForm, self).__init__(*args, **kwargs)
+
+        self.fields['account_tarif'].widget = forms.HiddenInput()
+        self.fields['prepaid_traffic'].widget = forms.HiddenInput()
+        self.fields['current'].widget = forms.HiddenInput()
+        self.fields['reseted'].widget = forms.HiddenInput()
+        
     class Meta:
         model = AccountPrepaysRadiusTrafic     
 
+class AccountPrepaysTimeForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+
+    def __init__(self, *args, **kwargs):
+        super(AccountPrepaysTimeForm, self).__init__(*args, **kwargs)
+
+        self.fields['account_tarif'].widget = forms.HiddenInput()
+        self.fields['prepaid_time_service'].widget = forms.HiddenInput()
+        self.fields['current'].widget = forms.HiddenInput()
+        self.fields['reseted'].widget = forms.HiddenInput()
+        
+    class Meta:
+        model = AccountPrepaysTime    
+        
+
+
 class AccountPrepaysTraficForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+
+    def __init__(self, *args, **kwargs):
+        super(AccountPrepaysTraficForm, self).__init__(*args, **kwargs)
+
+        self.fields['account_tarif'].widget = forms.HiddenInput()
+        self.fields['prepaid_traffic'].widget = forms.HiddenInput()
+        self.fields['current'].widget = forms.HiddenInput()
+        self.fields['reseted'].widget = forms.HiddenInput()
+            
+    
     class Meta:
         model = AccountPrepaysTrafic     
 
@@ -763,8 +805,7 @@ class OperatorForm(ModelForm):
 
 class BallanceHistoryForm(forms.Form):
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
-    start_date = forms.DateTimeField(required=False)
-    end_date = forms.DateTimeField(required=False)
+    daterange = DateRangeField(label=u'Диапазон дат', required=False )
 
 class PeriodicalServiceLogSearchForm(forms.Form):
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
@@ -812,3 +853,25 @@ class GroupStatSearchForm(forms.Form):
     groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=u'Группы трафика', required=False)
     daterange = DateRangeField(label=u'Диапазон', required=False )
     
+class AccountPrepaysTraficSearchForm(forms.Form):
+    account = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
+    group = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=u'Группы трафика', required=False)
+    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=u'Тарифный план')
+    daterange = DateRangeField(label=u'Диапазон', required=False )
+    current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
+    
+class AccountPrepaysRadiusTraficSearchForm(forms.Form):
+    account = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
+    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=u'Тарифный план')
+    daterange = DateRangeField(label=u'Диапазон', required=False )
+    current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
+    
+class AccountPrepaysTimeSearchForm(forms.Form):
+    account = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
+    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=u'Тарифный план')
+    daterange = DateRangeField(label=u'Диапазон', required=False )
+    current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
+    
+        
+        
+        

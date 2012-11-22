@@ -535,8 +535,11 @@ def ballancehistoryreport(request):
         if form.is_valid():
             
             account = form.cleaned_data.get('account')
-            start_date = form.cleaned_data.get('start_date')
-            end_date = form.cleaned_data.get('end_date')
+            daterange = form.cleaned_data.get('daterange') or []
+            start_date, end_date = None, None
+            if daterange:
+                start_date = daterange[0]
+                end_date = daterange[1]
             
             res = BalanceHistory.objects.all()
             if account:

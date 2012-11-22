@@ -132,6 +132,15 @@ html {
          <li><a href="{% url authlog_list %}">История авторизаций</a></li>
          <li><a href="{% url ballancehistoryreport %}">История изменения баланса</a></li>
          <li><a href="{% url groupstat %}">Тарифицированный трафик</a></li>
+         <li><a href="{% url groupstat %}">Тарифицированный трафик</a></li>
+         <li class="dropdown-submenu">
+            <a tabindex="-1" href="#">Предоплаченные единицы</a>
+            <ul class="dropdown-menu">
+              <li><a href="{% url accountprepaystraffic %}">Предоплаченный трафик (NetFlow)</a></li>
+              <li><a href="{% url accountprepaysradiustraffic %}">Предоплаченный трафик (RADIUS)</a></li>
+              <li><a href="{% url accountprepaystime %}">Предоплаченное время (RADIUS)</a></li>
+            </ul>
+          </li>
        </ul>
      </li>
    </ul>

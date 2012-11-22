@@ -145,6 +145,24 @@ urlpatterns += patterns('ebsadmin.modules.shedulelog',
     
 )
 
+urlpatterns += patterns('ebsadmin.modules.accountprepaystraffic',
+    url(r'^accountprepaystraffic/edit/$', 'accountprepaystraffic_edit', name='accountprepaystraffic_edit'),
+    url(r'^accountprepaystraffic/delete/$', 'accountprepaystraffic_delete', name='accountprepaystraffic_delete'),
+    url(r'^accountprepaystraffic/$', 'accountprepaystraffic', name='accountprepaystraffic'),
+)
+
+urlpatterns += patterns('ebsadmin.modules.accountprepaysradiustraffic',
+    url(r'^accountprepaysradiustraffic/edit/$', 'accountprepaysradiustraffic_edit', name='accountprepaysradiustraffic_edit'),
+    url(r'^accountprepaysradiustraffic/delete/$', 'accountprepaysradiustraffic_delete', name='accountprepaysradiustraffic_delete'),
+    url(r'^accountprepaysradiustraffic/$', 'accountprepaysradiustraffic', name='accountprepaysradiustraffic'),
+)
+
+urlpatterns += patterns('ebsadmin.modules.accountprepaystime',
+    url(r'^accountprepaystime/edit/$', 'accountprepaystime_edit', name='accountprepaystime_edit'),
+    url(r'^accountprepaystime/delete/$', 'accountprepaystime_delete', name='accountprepaystime_delete'),
+    url(r'^accountprepaystime/$', 'accountprepaystime', name='accountprepaystime'),
+)
+
 urlpatterns += patterns('ebsadmin.modules.groupstat',
     url(r'^groupstat/$', 'groupstat', name='groupstat'),
     

@@ -1,5 +1,5 @@
 {% extends "ebsadmin/base.html" %}
-{% load bootstrap_toolkit %}
+{% load crispy_forms_tags %}
 {% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript"> 
@@ -16,7 +16,7 @@
             <legend>Информация о провайдере{% objectlog item %}</legend>
              <fieldset>
              
-                  {{form|as_bootstrap}}
+                  {{form|crispy}}
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
