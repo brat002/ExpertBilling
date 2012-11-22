@@ -470,7 +470,7 @@ def ipinusereport(request):
         
 
 
-    if request.method=='GET':
+    if request.method=='GET' and request.GET:
         data = request.GET
 
         #pageitems = 100
@@ -481,11 +481,15 @@ def ipinusereport(request):
             subaccount = form.cleaned_data.get('subaccount')
             types = form.cleaned_data.get('types')
             ip = form.cleaned_data.get('ip')
-            start_date, end_date = request.GET.get('start_date'),  request.GET.get('end_date')
+
+            daterange = form.cleaned_data.get('daterange') or []
+            start_date, end_date = None, None
+            if daterange:
+                start_date = daterange[0]
+                end_date = daterange[1]
             
             
-            
-            res = IPInUse.objects.all()
+            res = IPInUse.objects.select_related().all()
             if account:
                 print account
                 subaccs = SubAccount.objects.filter(account__id__in=account)
@@ -521,7 +525,7 @@ def ipinusereport(request):
         else:
             return {'status':False, 'form':form}
     else:
-        form = SearchAuthLogForm()
+        form = IpInUseLogForm()
         return { 'form':form}   
     
 @login_required
@@ -1228,7 +1232,7 @@ def activesessionreport(request):
     if request.GET:
         form = SessionFilterForm(request.GET)
         if form.is_valid():
-            res = ActiveSession.objects.all()
+            res = ActiveSession.objects.select_related().all()
             if form.cleaned_data.get("account"):
                 res = res.filter(account__in=form.cleaned_data.get("account"))
 
@@ -1255,11 +1259,7 @@ def activesessionreport(request):
     
             return {"table": table,  'form':form}
     else:
-        res = ActiveSession.objects.filter(session_status__in=['ACTIVE', 'NACK']).order_by("interrim_update")
-        table = ActiveSessionTable(res)
-        table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
-        if table_to_report:
-            return create_report_http_response(table_to_report, request)
+        table = None
         form = SessionFilterForm()
         return {"table": table, 'form':form} 
 

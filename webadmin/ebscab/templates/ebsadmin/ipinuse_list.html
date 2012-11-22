@@ -1,35 +1,17 @@
 {% extends "ebsadmin/base.html" %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
-        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
-        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
 
         <script type="text/javascript"> 
         $(document).ready(function() {
-            $('#id_start_date').datetimepicker({
-                showSecond: true,
-                timeFormat: 'hh:mm:ss',
-                stepHour: 1,
-                stepMinute: 1,
-                stepSecond: 1,
-                numberOfMonths: 1,
-                dateFormat: 'yy-mm-dd'
-            });
-            $('#id_end_date').datetimepicker({
-                showSecond: true,
-                timeFormat: 'hh:mm:ss',
-                stepHour: 1,
-                stepMinute: 1,
-                stepSecond: 1,
-                numberOfMonths: 1,
-                dateFormat: 'yy-mm-dd'
-            });
+
             {% if table %}
             $('#tab-control a[href="#result"]').tab('show');
             {% else %}
             $('#tab-control a[href="#filter"]').tab('show');
             {% endif %}
+            $("#id_daterange").daterangepicker({format:'yyyy-MM-dd'});
         });
         </script>
 
@@ -50,8 +32,8 @@
             <form action="{{form.action}}" method="GET" class="well form-horizontal">
             {{ form.non_field_errors }}
                 <fieldset>
-                    <legend>Поиск по логу авторизаций</legend>
-                    {{form}}
+                    <legend>Занятые IP адреса из пулов</legend>
+                    {{form|crispy}}
                 
                 </fieldset>
                 <fieldset>

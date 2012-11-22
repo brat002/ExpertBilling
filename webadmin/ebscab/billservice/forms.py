@@ -233,13 +233,14 @@ class SearchAuthLogForm(forms.Form):
     nas = forms.ModelMultipleChoiceField(label=u"Сервер доступа", queryset=Nas.objects.all(), required=False)
 
 class IpInUseLogForm(forms.Form):
-    start_date = forms.DateTimeField(required=False)
-    end_date = forms.DateTimeField(required=False)
+    daterange = DateRangeField(label=u'Диапазон', required=False )    
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
     subaccount = AutoCompleteSelectMultipleField( 'subaccount_fts', required = False)
     ip = forms.IPAddressField(required=False)
     types = forms.ChoiceField(required=False, choices = (('dynamic', u"Динамические", ), ('static', u'Статические'), ('', u'Любые'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
     
+
+
 class AccountTariffBathForm(forms.Form):
     accounts = forms.CharField(required=True)
     tariff = forms.IntegerField(required=True)
@@ -257,6 +258,11 @@ class DocumentModelForm(ModelForm):
    
 class SuspendedPeriodModelForm(ModelForm):
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.TextInput(attrs={'readonly':'readonly'}))
+    def __init__(self, *args, **kwargs):
+        super(SuspendedPeriodModelForm, self).__init__(*args, **kwargs)
+        self.fields['start_date'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['end_date'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+
     class Meta:
         model = SuspendedPeriod
         exclude = ('activated_by_account',)
