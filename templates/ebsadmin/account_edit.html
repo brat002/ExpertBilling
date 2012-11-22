@@ -1263,8 +1263,8 @@
               <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">История изменения баланса</a></li>
               <li class="nav-header">Остатки</li>
               <li><a href="{% url accountprepaystraffic %}?account={{account.id}}">Остаток предоплаченного NetFlow трафика</a></li>
-              <li><a href="{% url authlog_list %}?account={{account.id}}">Остаток предоплаченного RADIUS трафика</a></li>
-              <li><a href="{% url authlog_list %}?account={{account.id}}">Остаток предоплаченного времени</a></li>
+              <li><a href="{% url accountprepaysradiustraffic %}?account={{account.id}}">Остаток предоплаченного RADIUS трафика</a></li>
+              <li><a href="{% url accountprepaystime %}?account={{account.id}}">Остаток предоплаченного времени</a></li>
             </ul>
           </div><!--/.well -->
           <div class="well sidebar-nav">
