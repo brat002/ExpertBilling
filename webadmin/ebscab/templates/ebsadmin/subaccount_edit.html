@@ -1,10 +1,7 @@
 {% extends "ebsadmin/base.html" %}
 {% load ebsadmin_tags %}
 {% block extra_head %}
-        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
-        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
-        <link rel="stylesheet" href="/media/css/jquery-ui-1.7.2.custom.css" type="text/css" title="ui-theme" />
         <script type="text/javascript"> 
         $(document).ready(function() {
         $("#generate_username").click(function() {
@@ -219,16 +216,11 @@
 {% endblock %}
  {% load render_table from django_tables2 %}
 {% block body %}
-<div class="span12">
 <div class="row-fluid">
 {% if message %}<div class="alert alert-error">{{message}}<a class="close" data-dismiss="alert" href="#">&times;</a></div>{% endif %}
-                <ul class="nav nav-tabs" id="tab-control">
-                    <li class="active"><a href="#tab-first">Карточка</a></li>
-                    <li class=""><a href="#tab-second">История изменений</a></li>
 
-                </ul>
-                <div class="tab-content">
-                    <div class="tab-pane active" id="tab-first">
+
+
 <form method="POST" action="{% url subaccount %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal">
                 <fieldset>
                     <legend>Профиль субаккаунта{% objectlog subaccount %}</legend>
@@ -675,15 +667,8 @@
                 </fieldset>
             </form>
             </div>
-            <div class="tab-pane active" id="tab-second">
-                        
-            <legend>Лог</legend>
-               {% if action_log_table %} {% render_table action_log_table %} {% endif %}
-           
 
-                        
-            </div>
-        </div>
+
 
     </div>
 

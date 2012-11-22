@@ -531,10 +531,10 @@ class AccountPrepaysTrafic(models.Model):
     """
     account_tarif = models.ForeignKey(to="AccountTarif", on_delete = models.CASCADE)
     prepaid_traffic = models.ForeignKey(to=PrepaidTraffic, null=True, on_delete = models.SET_NULL)
-    size = models.FloatField(blank=True, default=0)
-    datetime = models.DateTimeField(auto_now_add=True, default='')
-    current=models.BooleanField(default=False)
-    reseted=models.BooleanField(default=False)
+    size = models.FloatField(blank=True, default=0, verbose_name=u'Остаток')
+    datetime = models.DateTimeField(auto_now_add=True, default='', verbose_name=u'Начислен')
+    current=models.BooleanField(default=False, verbose_name=u'Текущий')
+    reseted=models.BooleanField(default=False, verbose_name=u'Сброшен')
 
     def __unicode__(self):
         return u"%s" % (self.prepaid_traffic)

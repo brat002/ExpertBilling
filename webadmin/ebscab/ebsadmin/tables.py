@@ -9,7 +9,7 @@ from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAcces
 from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType
 from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model
 from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode
-from billservice.models import News, TPChangeRule, Switch, AccountGroup, GroupStat
+from billservice.models import News, TPChangeRule, Switch, AccountGroup, GroupStat, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, AccountPrepaysTime
 import django_tables2 as django_tables
 from django_tables2.utils import A
 from radius.models import ActiveSession, AuthLog
@@ -664,4 +664,55 @@ class GroupStatTable(TableReport):
     class Meta:
         fields = (u'account', 'group', u'bytes')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
+      
+class AccountPrepaysTraficTable(TableReport):
+
+    #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
+    #group = django_tables.Column(u'Группа', accessor=A('group__name'))
+    id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    account_tarif = django_tables.Column(u'Аккаунт/Тариф')
+    size = django_tables.TemplateColumn("{{record.size|filesizeformat}}", verbose_name=u'Остаток')
+    datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
+    
+    def render_bytes(self, value, record):
+        return value
+    
+    class Meta:
+        model = AccountPrepaysTrafic
+        #fields = (u'account', 'group', u'bytes')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}  
+
+class AccountPrepaysRadiusTraficTable(TableReport):
+
+    #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
+    #group = django_tables.Column(u'Группа', accessor=A('group__name'))
+    id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    account_tarif = django_tables.Column(u'Аккаунт/Тариф')
+    size = django_tables.TemplateColumn("{{record.size|filesizeformat}}", verbose_name=u'Остаток')
+    datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
+    
+    def render_bytes(self, value, record):
+        return value
+    
+    class Meta:
+        model = AccountPrepaysRadiusTrafic
+        #fields = (u'account', 'group', u'bytes')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}  
+        
+class AccountPrepaysTimeTable(TableReport):
+
+    #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
+    #group = django_tables.Column(u'Группа', accessor=A('group__name'))
+    id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    account_tarif = django_tables.Column(u'Аккаунт/Тариф')
+    
+    datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
+    
+    def render_bytes(self, value, record):
+        return value
+    
+    class Meta:
+        model = AccountPrepaysTime
+        #fields = (u'account', 'group', u'bytes')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}  
         

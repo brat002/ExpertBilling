@@ -121,7 +121,6 @@ INSTALLED_APPS = (
     'crispy_forms',
     'ajax_select',
     'ebsadmin',
-    'bootstrap_toolkit',
     'django_tables2_reports',
 
     
