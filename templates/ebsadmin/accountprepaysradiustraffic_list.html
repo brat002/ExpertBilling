@@ -4,9 +4,18 @@
 
         <script type="text/javascript"> 
         $(document).ready(function() {
+        	$("#id_daterange").daterangepicker({format:'yyyy-MM-dd'});
+            $(".open-custom-dialog").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Изменить значения", 
+                    content: this.href
+                });
+
+                event.preventDefault();
+            });
             $(".show-confirm").click(function() {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить? Удаление записи приведёт к повторной тарификации указанной услуги с начала подключения пользователя на тарифный план.", {
+                $.fn.dialog2.helpers.confirm("Удалить предоплаченный трафик? Вместо удаления рекомендуем воспользоваться редактированием. Удаление - процедура не безопасная и мы не советуем к ней прибегать, если вы точно не уверены в том, что делаете", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -38,7 +47,7 @@
 
 {% endblock %}
 {% block body %}
-<legend>Лог системных операций</legend>
+<legend>Остатки предостаченного трафика(RADIUS тарификация)</legend>
 <ul class="nav nav-tabs" id="tab-control">
   <li ><a href="#filter">Фильтр</a></li>
   <li><a href="#result">Отчёт</a></li>  
@@ -53,8 +62,8 @@
             <form action="{{form.action}}" method="GET" class="well form-horizontal">
             {{ form.non_field_errors }}
                 <fieldset>
-                    <legend>Поиск по логу авторизаций</legend>
-                    {{form}}
+                    <legend>Поиск по остаткам предоплаченного  RADIUS трафика</legend>
+                    {{form|crispy}}
                 
                 </fieldset>
                 <fieldset>

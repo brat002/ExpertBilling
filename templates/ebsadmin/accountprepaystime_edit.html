@@ -1,0 +1,31 @@
+{% block extra_head %}
+{% load crispy_forms_tags %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+ });
+ </script>
+
+{% endblock %}
+{% block body %}
+{% if not status %}
+{{message}}
+                <form action='{% url accountprepaystime_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax">
+                <legend>Предоплаченное время</legend>
+                <fieldset>
+                  {{ form.id }}
+                    {{form|crispy}}              
+                </fieldset>
+                <div class="form-actions">
+                    <input type='submit' class="btn btn-primary" value="Save Changes">
+                    <a class="btn close-dialog" href="#">Close</a>
+                </div>
+                </form>
+{% else %}
+Операция произведена успешно.
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}
+{% endblock %}
