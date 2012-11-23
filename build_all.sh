@@ -24,9 +24,6 @@ echo "Additional keys: " $5
 simple_build="core rad_auth rad_acct nf nffilter nfroutine"
 total_build="$crypto_build $simple_build"
 
-cp license.lic license.lic.old
-cp license_$1.lic license.lic
-
 modules="db utilites dictionary packet auth bidict IPy isdlogger log_adapter logger option_parser period_utilities saver ssh_paramiko ssh_utilities syslog_dummy tools dictfile"
 mkdir -p cmodules
 
@@ -71,7 +68,7 @@ done
 
 #python freezer/freezer_rec.py -i $5 $karg $reskey rpc.py > builds/$1.rpc.buildlog;
 
-cp license.lic builds/$1/license.lic
+cp license_$1.lic builds/$1/license.lic
 cp -r cmodules builds/$1/
 cp -r celery builds/$1/workers
 cp license.lic.old license.lic
@@ -94,12 +91,13 @@ echo >builds/$1/ebscab/ebscab/log/django.log
 chmod 0777 builds/$1/ebscab/ebscab/log/django.log
 echo >builds/$1/ebscab/ebscab/log/webcab_log
 chmod 0777 builds/$1/ebscab/ebscab/log/webcab_log
-svn export soft/django builds/$1/ebscab/django/ --force
+
 cp webadmin/django.wsgi builds/$1/ebscab/
 cp webadmin/default builds/$1/ebscab/
 cp webadmin/blankpage builds/$1/ebscab/
 cp soft/billing builds/$1/soft/
 svn export soft/hotspot/ builds/$1/soft/hotspot/
+svn export soft/requirements.txt builds/$1/soft/
 #cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/sql
 cp sql/ebs_dump.sql builds/$1/sql/
