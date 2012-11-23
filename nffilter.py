@@ -42,11 +42,21 @@ from classes.nf_cache import *
 from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
-from classes.vars import NfVars, NfQueues, install_logger
+from classes.vars import NfFilterVars, NfQueues, install_logger
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
                      STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
 
-from dirq.QueueSimple import QueueSimple
+#from dirq.QueueSimple import QueueSimple
+#from saver import RedisQueue
+
+from kombu.mixins import ConsumerMixin
+from kombu.log import get_logger
+from kombu.utils import kwdict, reprcall
+from kombu import Connection
+from kombu.common import maybe_declare
+from kombu.pools import producers
+
+from queues import nf_out, nf_in, task_exchange
 
 MIN_NETFLOW_PACKET_LEN = 16
 HEADER_FORMAT = "!HHIIIIBBH"
@@ -54,7 +64,7 @@ FLOW_FORMAT   = "!LLLHHIIIIHHBBBBHHBBH"
 FLOWCACHE_OVER_TIME  = 10
 FLOWCACHE_RESET_TIME = 60
 
-NAME = 'nf'
+NAME = 'nffilter'
 DB_NAME = 'db'
 FLOW_NAME = 'flow'
 MAX_PACKET_INDEX = 2147483647L
@@ -63,6 +73,38 @@ NOT_TRASMITTED = 0
 WRITE_OK = 1
 
 
+class Worker(ConsumerMixin):
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def get_consumers(self, Consumer, channel):
+        return [Consumer(queues=nf_in,
+                         callbacks=[self.process_task])]
+
+    def process_task(self, body, message):
+        body = body['data']
+        data_bulk = body.split("_|_|_")
+        for data in data_bulk:
+            data, addr = data.split("|<>|")
+            try:
+                nfPacketHandle(data, addr, queues.nfFlowCache)
+            except Exception, ex:
+                logger.error("NFF exception: %s \n %s", (repr(ex), traceback.format_exc()))
+
+        message.ack()
+
+
+def send_as_task(connection, data, routing_key):
+    payload = {'data': data}
+
+
+    with producers[connection].acquire(block=True) as producer:
+        maybe_declare(task_exchange, producer.channel)
+        producer.publish(payload, serializer='pickle',
+                                  compression='bzip2',
+                                  exchange=task_exchange, 
+                                  routing_key=routing_key)
         
                     
 class nfDequeThread(Thread):
@@ -76,24 +118,10 @@ class nfDequeThread(Thread):
     def run(self):
         
         while True:
-
-            #TODO: add locks if deadlocking issues arise
             try:
-                for name in in_dirq:
-                    if not in_dirq.lock(name):
-                        continue
-                    packet_data = in_dirq.get(name)
-                    try:
-                        data_list = packet_data.split("_|_|_") or []
-                    except Exception, ex:
-                        logger.error("NFP exception: Unknown fin flow format%s \n %s", (repr(ex), traceback.format_exc()))
-                        in_dirq.remove(name)
-                    for data in data_list:
-                        data, addr = data.split("|<>|")
-                        nfPacketHandle(data, addr, queues.nfFlowCache)
-                    in_dirq.remove(name)
+                with Connection(vars.kombu_dsn) as conn:
+                    Worker(conn).run()
 
-                time.sleep(0.5)
             except IndexError, err:
                 time.sleep(3); continue  
             except Exception, ex:
@@ -198,7 +226,7 @@ def nfPacketHandle(data, addr, flowCache):
     if 0: assert isinstance(caches, NfCaches)
     nasses = caches.nas_cache.by_ip.get(addr, [])
     if not caches: return
-    if not nasses: logger.warning("NAS %s not found in our beautiful system. My be it hackers?", repr(addr)); return      
+    if not nasses: logger.warning("NAS %s not found in our beautiful system. May be it hackers?", repr(addr)); return      
     flows=[]
     _nf = struct.unpack("!H", data[:2])
     pVersion = _nf[0]
@@ -569,7 +597,8 @@ class NfroutinePushThread(Thread):
                         flst = queues.databaseQueue.popleft()
                 if not flst: time.sleep(5); continue
                 
-                out_dirq.add(flst)
+
+                send_as_task(out_connection, flst, 'nf_out')
                     
             except Exception, ex:
                 logger.debug('%s exp: %s \n %s', (self.getName(), repr(ex), traceback.format_exc()))
@@ -610,8 +639,6 @@ class ServiceThread(Thread):
                     cur.close()
                     if counter % 5 == 0 or time_run:
                         counter = 0
-                        in_dirq.purge()
-                        out_dirq.purge()
                         #flags.allowedUsersCheck = True
                         flags.writeProf = logger.writeInfoP()
                         if flags.writeProf:
@@ -1062,7 +1089,7 @@ def main ():
 if __name__=='__main__':
         
     flags = NfFlags()
-    vars  = NfVars()
+    vars  = NfFilterVars()
     
     cacheMaster = CacheMaster()
     caches = None
@@ -1080,10 +1107,13 @@ if __name__=='__main__':
         print "Can`t optimize"
         
     try:
-        vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
+        vars.get_vars(config=config, name=NAME, db_name=DB_NAME, flow_name=FLOW_NAME)
         #print repr(vars)
-        in_dirq = QueueSimple(vars.QUEUE_IN)
-        out_dirq = QueueSimple(vars.QUEUE_OUT)
+        #in_dirq = QueueSimple(vars.QUEUE_IN)
+        #in_dirq = RedisQueue("in_queue", host=vars.REDIS_HOST, port=vars.REDIS_PORT, db=vars.REDIS_DB)
+        
+        #out_dirq = RedisQueue("out_queue", host=vars.REDIS_HOST, port=vars.REDIS_PORT, db=vars.REDIS_DB)
+        #out_dirq = QueueSimple(vars.QUEUE_OUT)
         
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
         saver.log_adapt = logger.log_adapt
@@ -1097,6 +1127,7 @@ if __name__=='__main__':
         logger.lprint('Nf Filter start')
         if check_running(getpid(vars.piddir, vars.name), vars.name): raise Exception ('%s already running, exiting' % vars.name)
         
+        out_connection = Connection(vars.kombu_dsn)
         
         
         #write profiling info predicate

@@ -12,7 +12,7 @@ def install_logger(lgr):
     logger = lgr
     
 class Vars(object):
-    __slots__ = ('RECOVER', 'CACHE_TIME', 'name', 'piddir', 'db_errors', 'db_dsn', 'db_session', 'log_type', 'log_ident', 'log_level', 'log_file', 'log_format', 'log_filemode', 'log_maxsize', 'log_rotate', 'types', 'queues_host', 'queues_username', 'queues_password', 'queues_port', 'queues_name', 'queues_dsn')
+    __slots__ = ('RECOVER', 'CACHE_TIME', 'name', 'piddir', 'db_errors', 'db_dsn', 'db_session', 'log_type', 'log_ident', 'log_level', 'log_file', 'log_format', 'log_filemode', 'log_maxsize', 'log_rotate', 'types', 'queues_host', 'queues_username', 'queues_password', 'queues_port', 'queues_name', 'queues_dsn', 'kombu_dsn')
     _parse_funs = {'s': lambda x: x, 'i' : int, 'b': lambda x: False if x.lower() in ('false', '0') else True}
     def __init__(self):
         pass
@@ -38,6 +38,8 @@ class Vars(object):
         self.queues_password='ebspassword'
         self.queues_port=5432
         self.queues_name='ebs_queues'
+        self.kombu_dsn='amqp://guest:guest@localhost:5672//'
+
         
     def get_dynamic(self, **kwargs):
         config = kwargs['config']
@@ -64,6 +66,8 @@ class Vars(object):
         if config.has_option('queues_db', 'password'): self.queues_password = config.get('queues_db', 'password')
         if config.has_option('queues_db', 'port'): self.queues_port = config.getint('queues_db', 'port')
         if config.has_option('queues_db', 'name'): self.queues_name = config.get('queues_db', 'name')
+        if config.has_option(db_name, 'kombu_dsn'):       self.kombu_dsn = config.get(db_name, 'kombu_dsn')
+
         self.queues_dsn = "dbname='%s' user='%s' host='%s' port='%s' password='%s'" % (self.queues_name, self.queues_username,
                                                                          self.queues_host, self.queues_port, self.queues_password)
         
@@ -208,6 +212,110 @@ class NfVars(Vars):
         
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(NfVars, self).__slots__ + self.__slots__))
+    
+    
+class NfFilterVars(Vars):
+    """('clientHost', 'clientPort', 'clientAddr', 'sockTimeout', 'saveDir', 'aggrTime', 'aggrNum',\
+                 'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'dumpDir')"""
+    __slots__ = ('HOST', 'PORT', 'NFR_HOST', 'NFR_PORT', 'NFR_ADDR', 'SOCK_TIMEOUT', 'SAVE_DIR', 'READ_DIR', 'PREFIX', 'AGGR_TIME', 'AGGR_NUM',\
+                 'FLOW_TYPES', 'flowLENGTH', 'headerLENGTH', 'DUMP_DIR', 'CACHE_DICTS', 'SOCK_TYPE', 'FILE_PACK', 'PACKET_PACK', 'CHECK_CLASSES', 'MAX_DATAGRAM_LEN', 'RECOVER_DUMP', 'NF_TIME_MOD',\
+                 'MAX_SENDBUF_LEN', 'NFR_DELIMITER', 'WRITE_FLOW', 'FLOW_DIR', 'FLOW_TIME', 'FLOW_COUNT', \
+                 'FLOW_MAIL_WARNING', 'FLOW_MAIL_SUBJECT', 'FLOW_MAIL_USE_TLS', \
+                 'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', 'FLOW_MAIL_HOST_PASSWORD', \
+                 'FLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM',\
+                 'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', 'FLOW_INTERVAL', 'FLOW_WHEN', 'SKIP_INDEX_CHECK', 'QUEUE_IN', 'QUEUE_OUT')
+    def __init__(self):
+        super(NfFilterVars, self).__init__()
+        self.name = 'nf'
+        self.NFR_HOST = '127.0.0.1'
+        self.NFR_PORT = 36577
+        self.NFR_ADDR = (self.NFR_HOST, self.NFR_PORT)
+        self.SOCK_TIMEOUT = 5
+        self.AGGR_TIME, self.AGGR_NUM = 120, 200
+        self.RECOVER_DUMP = True
+        self.FLOW_TYPES = {5 : (None, None)}
+        self.flowLENGTH   = struct.calcsize("!LLLHHIIIIHHBBBBHHBBH")
+        self.headerLENGTH = struct.calcsize("!HHIIIIBBH")
+        self.DUMP_DIR = '.'
+        self.SAVE_DIR = '.'
+        self.READ_DIR = '.'
+        self.PREFIX = self.name + '_'
+        self.CACHE_DICTS = 10
+        self.PORT = 9996
+        self.HOST = '0.0.0.0'
+        self.SOCK_TYPE = 0
+        self.FILE_PACK = 2000 #300!
+        self.PACKET_PACK = 32
+        self.CHECK_CLASSES = 0
+        self.MAX_DATAGRAM_LEN = 8192
+        self.NF_TIME_MOD = 20
+        self.MAX_SENDBUF_LEN = 20000 #10000!
+        self.NFR_DELIMITER = '--NFRP--'
+        self.WRITE_FLOW = False
+        self.FLOW_DIR = '/var/flow'
+        self.FLOW_TIME = 20
+        self.FLOW_COUNT = 50
+        self.FLOW_MAIL_WARNING = False
+        self.FLOW_MAIL_SUBJECT = 'EBS billing flow warning'
+        self.FLOW_MAIL_USE_TLS = False
+        self.FLOW_MAIL_HOST = 'smtp.gmail.com'
+        self.FLOW_MAIL_HOST_USER = ''
+        self.FLOW_MAIL_HOST_PASSWORD = ''
+        self.FLOW_MAIL_PORT = 25
+        self.FLOW_MAIL_EMAIL_TO   = 'admin@ebsadmin.com'
+        self.FLOW_MAIL_EMAIL_FROM = 'info@provider.com'
+        self.FLOW_MAIL_WARNING_TEMPLATE = ""
+        self.FLOW_PREFIX = 'netflow'
+        self.FLOW_WHEN = 'M'
+        self.FLOW_INTERVAL = 5
+        self.QUEUE_IN = '/opt/ebs/var/spool/nf_in'
+        self.QUEUE_OUT = '/opt/ebs/var/spool/nf_out'
+        self.SKIP_INDEX_CHECK = False
+        self.types.update({'addr': ('HOST', 'PORT'), 'nfraddr': ('NFR_HOST', 'NFR_PORT', 'SOCK_TIMEOUT'),\
+                           'cachedicts': ('CACHE_DICTS',), 'filepack': ('FILE_PACK',), 'checkclasses': ('CHECK_CLASSES',), 'prefix': ('PREFIX',), 'aggr':('AGGR_TIME', 'AGGR_NUM'),\
+                           'savedir': ('SAVE_DIR',), 'readdir': ('READ_DIR',), 'dumpdir': ('DUMP_DIR',)})
+    
+    def get_dynamic(self, **kwargs):
+        super(NfFilterVars, self).get_dynamic(**kwargs)
+        config = kwargs['config']
+        name = kwargs['name']
+
+        flow_name = kwargs['flow_name']
+        if config.has_option(name, 'cachedicts'): self.CACHE_DICTS = config.getint(name, 'cachedicts')
+        if config.has_option(name, 'port'): self.PORT = config.getint(name, 'port')
+        if config.has_option(name, 'host'): self.HOST = config.get(name, 'host')
+        if config.has_option(name, 'recover_dump'):
+            self.RECOVER_DUMP = False if config.get(name, 'recover_dump').lower() in ('false', '0') else True
+        if config.has_option(name, 'sock_timeout'): self.SOCK_TIMEOUT = config.getint(name, 'sock_timeout')
+        if config.has_option(name, 'aggrtime'):     self.AGGR_TIME = config.getint(name, 'aggrtime')
+        if config.has_option(name, 'aggrnum'):      self.AGGR_NUM = config.getint(name, 'aggrnum')
+        if config.has_option(name, 'check_classes'): self.CHECK_CLASSES = config.getint(name, 'check_classes')
+        if config.has_option(name, 'file_pack'):    self.FILE_PACK = config.getint(name, 'file_pack')
+        if config.has_option(name, 'packet_pack'):  self.PACKET_PACK = config.getint(name, 'packet_pack')
+        if config.has_option(name, 'prefix'):       self.PREFIX = config.get(name, 'prefix')
+        if config.has_option(name, 'dump_dir'):     self.DUMP_DIR = config.get(name, 'dump_dir')
+        self.READ_DIR = config.get(name, 'read_dir') if config.has_option(name, 'read_dir') else self.DUMP_DIR
+        if config.has_option(name, 'save_dir'):         self.SAVE_DIR = config.get(name, 'save_dir')
+        if config.has_option(name, 'max_datagram_len'): self.MAX_DATAGRAM_LEN = config.getint(name, 'max_datagram_len')
+        if config.has_option(name, 'nf_time_mod'): self.NF_TIME_MOD = config.getint(name, 'nf_time_mod')
+        if config.has_option(name, 'skip_index_check'): self.SKIP_INDEX_CHECK = config.getboolean(name, 'skip_index_check')
+        if config.has_option(name, 'queue_in'):       self.QUEUE_IN = config.get(name, 'queue_in')
+        if config.has_option(name, 'queue_out'):       self.QUEUE_OUT = config.get(name, 'queue_out')
+        
+        flow_opts = ['%bWRITE_FLOW', 'FLOW_DIR', '%iFLOW_TIME', '%iFLOW_COUNT', 'FLOW_MAIL_WARNING', \
+                     'FLOW_MAIL_SUBJECT', '%bFLOW_MAIL_USE_TLS', 'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', \
+                     'FLOW_MAIL_HOST_PASSWORD', '%iFLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM', \
+                     'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', '%iFLOW_INTERVAL', 'FLOW_WHEN'] 
+        self.get_opts(config, flow_name, flow_opts)
+        
+    def get_static(self, **kwargs):
+        super(NfFilterVars, self).get_static(**kwargs)
+        
+    def changed(self, aVars):
+        assert isinstance(aVars, NfFilterVars)
+        
+    def __repr__(self):
+        return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(NfFilterVars, self).__slots__ + self.__slots__))
 
         
         
@@ -474,43 +582,3 @@ class CoreVars(Vars):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(CoreVars, self).__slots__ + self.__slots__))
 
         
-class RpcVars(Vars):
-    __slots__ = ('pids', 'piddate', 'pidLock', 'DICT','DICT_LIST','db_connection', 'db_connection_lock', 'graph_connection', 'graph_connection_lock','log_connection', 'log_connection_lock', 'LISTEN_PORT', 'USER_ID', 'FLOW_DIR', 'text_report_lock', 'SSH_BACKEND','ENABLE_ACTION_LOG')
-    
-    def __init__(self):
-        super(RpcVars, self).__init__()
-        self.name = 'rpc'
-        self.pids = []
-        self.piddate = 0
-        self.pidLock = Lock()
-        self.DICT=None
-        self.DICT_LIST = ("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
-        self.db_connection_lock = Lock()
-        self.db_connection = None
-        self.graph_connection_lock = Lock()
-        self.graph_connection = None
-        self.log_connection_lock = Lock()
-        self.log_connection = None
-        self.LISTEN_PORT = 7771
-        self.USER_ID = [None, None]
-        self.FLOW_DIR = '/var/flows/'
-        self.text_report_lock = Lock()
-        self.SSH_BACKEND = None
-        self.ENABLE_ACTION_LOG = False
-       
-    def get_dynamic(self, **kwargs):
-        super(RpcVars, self).get_dynamic(**kwargs)
-        config = kwargs['config']
-        name = kwargs['name']
-        nf_name = kwargs['nf_name']
-        if config.has_option(name, 'listen_port'): self.LISTEN_PORT = config.getint(name, 'listen_port')
-        if config.has_option(nf_name, 'flow_dir'): self.FLOW_DIR = config.get(nf_name, 'flow_dir')
-        if config.has_option(name, 'flow_dir'): self.FLOW_DIR = config.get(name, 'flow_dir')
-        if config.has_option('core', 'ssh_backend'): self.SSH_BACKEND = config.get('core', 'ssh_backend')
-        if config.has_option('rpc', 'enable_action_log'): self.ENABLE_ACTION_LOG = config.getboolean('rpc', 'enable_action_log')
-        if config.has_option('rad', 'dict_list'):
-            self.DICT_LIST = config.get('rad', 'dict_list').split(',')
-        self.DICT = dictionary.Dictionary(*self.DICT_LIST)        
-        
-    def __repr__(self):
-        return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(RpcVars, self).__slots__ + self.__slots__))

@@ -38,7 +38,14 @@ from classes.vars import NfrVars, NfrQueues, install_logger
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
                      STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
 from utilites import settlement_period_info
-from dirq.QueueSimple import QueueSimple
+#from dirq.QueueSimple import QueueSimple
+#from saver import RedisQueue
+
+from kombu.mixins import ConsumerMixin
+from kombu.log import get_logger
+from kombu.utils import kwdict, reprcall
+from kombu import Connection
+from queues import nf_out
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
@@ -50,19 +57,25 @@ NET_NAME = 'nfroutine_nf'
 MEGABYTE =1048576 
 INT_ME_FN = lambda xt, y: (xt[0] + (ord(y) - 48) * xt[1], xt[1] * 10)
 
-
-class Picker(object):
-    __slots__= ('data',)
-    def __init__(self):
-        self.data = defaultdict(Decimal)      
-
-    def add_summ(self, tts_id, acctf_id, account_id, summ):
-        self.data[(tts_id, acctf_id, account_id)] += summ
-            
-    def get_data(self):
-        return self.data.items()
-
   
+class Worker(ConsumerMixin):
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def get_consumers(self, Consumer, channel):
+        return [Consumer(queues=nf_out,
+                         callbacks=[self.process_task])]
+
+    def process_task(self, body, message):
+        data = body['data']
+        try:
+            queues.nfIncomingQueue.append(data)
+        except Exception, ex:
+            logger.error("NFR exception: %s \n %s", (repr(ex), traceback.format_exc()))
+        finally:
+            message.ack()
+            
 class groupDequeThread(Thread):
     '''Тред выбирает и отсылает в БД статистику по группам-пользователям'''
     def __init__ (self, retarificate=False, date_start=None, date_end=None):
@@ -665,14 +678,7 @@ class NetFlowRoutine(Thread):
                     continue
                 
                 if 0: assert isinstance(caches, NfroutineCaches)  
-                
-                #time to pick
-                with queues.pickerLock:
-                    #add picker to a depicker queue
-                    if (time.time() > queues.pickerTime + vars.PICKER_AGGR_TIME):
-                        queues.depickerQueue.append(queues.picker.get_data())
-                        queues.picker = Picker()
-                        queues.pickerTime = time.time()                    
+                                 
                 if len(queues.nfIncomingQueue) > 0:        
                     with queues.nfQueueLock:
                         if len(queues.nfIncomingQueue) > 0:
@@ -874,7 +880,7 @@ class AccountServiceThread(Thread):
                         
                     if counter == 5:
                         counter, fMem.periodCache = 0, {}
-                        in_dirq.purge()
+                        
                         '''
                         if (len(queues.nfIncomingQueue) > 1000) or (len(queues.statDeque) > len(cacheMaster.cache.account_cache.data) * 10):
                             if not vars.sendFlag or vars.sendFlag!='SLP!':
@@ -914,30 +920,18 @@ class nfDequeThread(Thread):
     def __init__(self):
         self.tname = self.__class__.__name__
         Thread.__init__(self)
-        
-    def callback(self, ch, method, properties, body):
-        
-        
-        queues.nfIncomingQueue.append(body)
-        ch.basic_ack(delivery_tag = method.delivery_tag)
-        if suicideCondition[self.tname]: 
-            self.consumer_connection.close()
-            
-        
+    
+
     def run(self):
         while True:
             global in_dirq
             #TODO: make connection with SimpleReconnectionStrategy
             try:
-                           
-                for name in in_dirq:
-                    if not in_dirq.lock(name):
-                        continue
-                    data = in_dirq.get(name)
-                    queues.nfIncomingQueue.append(data)
-                    in_dirq.remove(name)
 
 
+                with Connection(vars.kombu_dsn) as conn:
+                    Worker(conn).run()
+                
                 time.sleep(0.5)
             except IndexError, ierr:
                 time.sleep(3); continue  
@@ -986,7 +980,7 @@ def graceful_save():
             suicideCondition[thr.tname] = True
     time.sleep(2)
     
-    queues.depickerLock.acquire()
+
     queues.groupLock.acquire()
     queues.statLock.acquire()
     #graceful_saver([['depickerQueue'], ['nfIncomingQueue'], ['groupDeque', 'groupAggrDicts'], ['statDeque', 'statAggrDicts']],
@@ -994,7 +988,7 @@ def graceful_save():
     time.sleep(3)
     queues.statLock.release()
     queues.groupLock.release()
-    queues.depickerLock.release()
+
     time.sleep(16)
     rempid(vars.piddir, vars.name)
     logger.lprint(vars.name + " stopping gracefully.")
@@ -1129,7 +1123,7 @@ if __name__ == "__main__":
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME, net_name=NET_NAME)
         
         queues= NfrQueues(vars.GROUP_DICTS, vars.STAT_DICTS)
-        in_dirq = QueueSimple('/opt/ebs/var/spool/nf_out')     
+
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file)
         saver.log_adapt = logger.log_adapt
         utilites.log_adapt = logger.log_adapt
@@ -1146,16 +1140,12 @@ if __name__ == "__main__":
         flags.writeProf = logger.writeInfoP()         
         #--------------------------------------------------------  
         
-        queues.picker = Picker()
-        queues.pickerTime = time.time() + 5
         
         #function that returns number of allowed users
         #create allowedUsers
         if not globals().has_key('_1i'):
             _1i = lambda: ''
-        allowedUsers = setAllowedUsers(_1i())       
-        allowedUsers()
-        
+
         fMem = pfMemoize()    
     
         #-------------------
