@@ -1,6 +1,9 @@
 #-*-coding=utf-8-*-
 
 from __future__ import with_statement
+import site
+site.addsitedir('/opt/ebs/venv/lib/python2.6/site-packages')
+site.addsitedir('/opt/ebs/venv/lib/python2.7/site-packages')
 import sys
 sys.path.insert(0, "modules")
 sys.path.append("cmodules")
@@ -938,7 +941,47 @@ class nfDequeThread(Thread):
             except Exception, ex:
                 logger.error("NFP exception: %s \n %s", (repr(ex), traceback.format_exc()))
 
+class Watcher:
+    """this class solves two problems with multithreaded
+    programs in Python, (1) a signal might be delivered
+    to any thread (which is just a malfeature) and (2) if
+    the thread that gets the signal is waiting, the signal
+    is ignored (which is a bug).
 
+    The watcher is a concurrent process (not thread) that
+    waits for a signal and the process that contains the
+    threads.  See Appendix A of The Little Book of Semaphores.
+    http://greenteapress.com/semaphores/
+
+    I have only tested this on Linux.  I would expect it to
+    work on the Macintosh and not work on Windows.
+    """
+    
+    def __init__(self):
+        """ Creates a child thread, which returns.  The parent
+            thread waits for a KeyboardInterrupt and then kills
+            the child thread.
+        """
+        self.child = os.fork()
+        if self.child == 0:
+            return
+        else:
+            self.watch()
+
+    def watch(self):
+        try:
+            os.wait()
+        except KeyboardInterrupt:
+            # I put the capital B in KeyBoardInterrupt so I can
+            # tell when the Watcher gets the SIGINT
+            print 'KeyBoardInterrupt'
+            self.kill()
+        sys.exit()
+
+    def kill(self):
+        try:
+            os.kill(self.child, signal.SIGKILL)
+        except OSError: pass
         
         
 def ddict_IO():
@@ -948,6 +991,10 @@ def SIGTERM_handler(signum, frame):
     logger.lprint("SIGTERM recieved")
     graceful_save()
 
+def SIGINT_handler(signum, frame):
+    logger.lprint("SIGINT recieved")
+    graceful_save()
+    
 def SIGHUP_handler(signum, frame):
     global config
     logger.lprint("SIGHUP recieved")
@@ -969,9 +1016,7 @@ def SIGUSR1_handler(signum, frame):
 def graceful_save():
     global cacheThr, threads, suicideCondition, vars
     #asyncore.close_all()
-    reactor.callFromThread(reactor.disconnectAll)
-    reactor.callFromThread(reactor.stop)
-    reactor._started = False
+
     suicideCondition[cacheThr.tname] = True
     logger.lprint("About to exit gracefully.")
     st_time = time.time()
@@ -985,11 +1030,10 @@ def graceful_save():
     queues.statLock.acquire()
     #graceful_saver([['depickerQueue'], ['nfIncomingQueue'], ['groupDeque', 'groupAggrDicts'], ['statDeque', 'statAggrDicts']],
     #               queues, 'nfroutine_', vars.SAVE_DIR)
-    time.sleep(3)
+
     queues.statLock.release()
     queues.groupLock.release()
 
-    time.sleep(16)
     rempid(vars.piddir, vars.name)
     logger.lprint(vars.name + " stopping gracefully.")
     print vars.name + " stopping gracefully."
@@ -1091,6 +1135,10 @@ def main():
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
     
+    try:
+        signal.signal(signal.SIGINT, SIGSIGINT_handler)
+    except: logger.lprint('NO SIGINT!')
+    
     print "ebs: nfroutine: started"
     savepid(vars.piddir, vars.name)
     #reactor.run(installSignalHandlers=False)
@@ -1106,7 +1154,7 @@ if __name__ == "__main__":
     config.read("ebs_config.ini")
     
     suicideCondition = {}
-
+    Watcher()
     try:
         import psyco
         psyco.full(memory=100)

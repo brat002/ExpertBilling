@@ -13,9 +13,10 @@ if [ ! -d builds ]; then
 fi
 
 rm -rf modules
+rm -rf cmodules
 rm -rf builds/$1
 
-mkdir builds/$1
+mkdir -p builds/$1/data
 
 echo "Additional keys: " $5
 
@@ -68,54 +69,62 @@ done
 
 #python freezer/freezer_rec.py -i $5 $karg $reskey rpc.py > builds/$1.rpc.buildlog;
 
-cp license_$1.lic builds/$1/license.lic
-cp -r cmodules builds/$1/
-cp -r celery builds/$1/workers
+cp license_$1.lic builds/$1/data/license.lic
+cp -r cmodules builds/$1/data/
+cp -r celery builds/$1/data/workers
 cp license.lic.old license.lic
-cp ebs_config.ini builds/$1/ebs_config.ini
-#cp upgrade.py builds/$1/upgrade.py
-cp ebs_config_runtime.ini builds/$1/ebs_config_runtime.ini
-cp -rf modules builds/$1
-mkdir builds/$1/nf_dump
-mkdir builds/$1/log
-mkdir builds/$1/etc
-mkdir builds/$1/pid
-mkdir builds/$1/temp
-mkdir builds/$1/init.d
-mkdir builds/$1/ebscab/
-mkdir builds/$1/soft/
-mkdir builds/$1/ebscab
-svn export webadmin/ebscab builds/$1/ebscab/ebscab/ --force
-svn export webadmin/blankpage builds/$1/ebscab/blankpage/ --force
-echo >builds/$1/ebscab/ebscab/log/django.log
-chmod 0777 builds/$1/ebscab/ebscab/log/django.log
-echo >builds/$1/ebscab/ebscab/log/webcab_log
-chmod 0777 builds/$1/ebscab/ebscab/log/webcab_log
+cp ebs_config.ini builds/$1/data/ebs_config.ini
+#cp upgrade.py builds/$1/data/upgrade.py
+#cp ebs_config_runtime.ini builds/$1/ebs_config_runtime.ini
+cp -rf modules builds/$1/data
+mkdir builds/$1/data/nf_dump
+mkdir builds/$1/data/log
+mkdir builds/$1/data/etc
+mkdir builds/$1/data/pid
+mkdir builds/$1/data/temp
+mkdir builds/$1/data/init.d
+#mkdir builds/$1/ebscab/
+mkdir builds/$1/data/soft/
+#mkdir builds/$1/ebscab
+rm -rf builds/$1/web
+mkdir -p builds/$1/web/ebscab
+#svn export webadmin/ebscab builds/$1/ebscab/ebscab/ --force
+svn export webadmin/ebscab builds/$1/web/ebscab/ --force
+svn export webadmin/blankpage builds/$1/web/blankpage/ --force
+#echo >builds/$1/ebscab/ebscab/log/django.log
+echo >builds/$1/web/ebscab/log/django.log
+chmod 0777 builds/$1/web/ebscab/log/django.log
+echo >builds/1$/web/ebscab/log/webcab_log
+chmod 0777 builds/$1/web/ebscab/log/webcab_log
 
-cp webadmin/django.wsgi builds/$1/ebscab/
-cp webadmin/default builds/$1/ebscab/
-cp webadmin/blankpage builds/$1/ebscab/
-cp soft/billing builds/$1/soft/
-svn export soft/hotspot/ builds/$1/soft/hotspot/
+cp webadmin/django.wsgi builds/$1/web/
+cp webadmin/default builds/$1/web/
+cp webadmin/blankpage_config builds/$1/web/
+cp webadmin/blankpage builds/$1/web/
+cp soft/billing builds/$1/data/soft/
+svn export soft/hotspot/ builds/$1/data/soft/hotspot/
 svn export soft/requirements.txt builds/$1/soft/
 #cp -r ebscab/ builds/$1/ebscab/
-mkdir builds/$1/sql
-cp sql/ebs_dump.sql builds/$1/sql/
-cp sql/changes.sql builds/$1/sql/
+mkdir builds/$1/data/sql
+cp sql/ebs_dump.sql builds/$1/data/sql/
+cp sql/changes.sql builds/$1/data/sql/
 #cp -r sql/upgrade builds/$1/sql/
-svn export sql/upgrade/ builds/$1/sql/upgrade/
-svn export dicts/ builds/$1/dicts/
-svn export fonts/ builds/$1/fonts/
-svn export scripts/ builds/$1/scripts/
-svn export mail/ builds/$1/modules/mail/
-cp sendmail.py builds/$1/scripts/
-cp sendsms.py builds/$1/scripts/
-cp install.txt builds/$1/
+svn export sql/upgrade/ builds/$1/data/sql/upgrade/
+svn export dicts/ builds/$1/data/dicts/
+#svn export fonts/ builds/$1/data/fonts/
+svn export scripts/ builds/$1/data/scripts/
+svn export mail/ builds/$1/data/modules/mail/
+cp sendmail.py builds/$1/data/scripts/
+cp sendsms.py builds/$1/data/scripts/
+cp install.txt builds/$1/data/
+
+echo `svnversion` >builds/$1/data/version
+echo `svnversion` >builds/$1/web/version
 
 for bldd in $total_build; do
-	cp $bldd builds/$1
-	cp init/ebs_$bldd builds/$1/init.d/ebs_$bldd
-	chmod +x builds/$1/init.d/ebs_$bldd
+	cp $bldd builds/$1/data
+	cp init/ebs_$bldd builds/$1/data/init.d/ebs_$bldd
+	chmod +x builds/$1/data/init.d/ebs_$bldd
 	if [ -f $bldd ]; then
 	     rm $bldd;
 	fi
@@ -123,22 +132,24 @@ for bldd in $total_build; do
 	     rm $bldd.c;
 	fi
 done
-cp init/ebs_celery builds/$1/init.d/ebs_celery
-chmod +x builds/$1/init.d/ebs_celery
-svn export --force soft/celeryd builds/$1/soft/
+cp init/ebs_celery builds/$1/data/init.d/ebs_celery
+chmod +x builds/$1/data/init.d/ebs_celery
+svn export --force soft/celeryd builds/$1/data/soft/
 
 rm -rf modules
 
-find $1 -name '.svn' -type d | xargs rm -rf
+find $1/data -name '.svn' -type d | xargs rm -rf
 
 if [ $SUDO_USER ]; then
-	chown -hR $SUDO_USER: builds/$1
+	chown -hR $SUDO_USER: builds/$1/data
 fi
 
 cd builds/$1/
-tar -czvf ../ebs-`svnversion ../../`.tar.gz .
+tar -czvf ../ebs.tar.gz data
 cd ../ 
+rm -f web.tar.gz
+tar -czvf web.tar.gz web/
 chmod +x ../ebs_manage.py
-tar -czvf $1.tar.gz ebs-`svnversion ../`.tar.gz ../ebs_manage.py ../install.txt
+tar -czvf $1.tar.gz ebs.tar.gz ../ebs_manage.py ../install.txt web.tar.gz
 cd ../
 

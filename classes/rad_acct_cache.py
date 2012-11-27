@@ -20,7 +20,7 @@ class RadAcctCaches(CacheCollection):
 
 
 class AccountCache(CacheItem):
-    __slots__ = ('by_username', 'by_ipn_mac', 'by_ipn_ip_nas', 'by_id')
+    __slots__ = ('by_username', 'by_id')
     
     datatype = AccountData
     sql = rad_sql['accounts']
@@ -31,14 +31,10 @@ class AccountCache(CacheItem):
         
     def reindex(self):
         self.by_username = {}
-        self.by_ipn_mac  = {}
-        self.by_ipn_ip_nas = {}
         self.by_id = {}
 
         for acct in self.data:
             self.by_username[acct.username] = acct
-            self.by_ipn_mac[str(acct.ipn_mac_address)] = acct
-            self.by_ipn_ip_nas[(acct.ipn_ip_address, acct.nas_id)] = acct
             self.by_id[acct.account_id] = acct
             
             
