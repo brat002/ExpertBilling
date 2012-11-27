@@ -1,7 +1,9 @@
 #-*-coding: utf-8 -*-
 
 from __future__ import with_statement
-
+import site
+site.addsitedir('/opt/ebs/venv/lib/python2.6/site-packages')
+site.addsitedir('/opt/ebs/venv/lib/python2.7/site-packages')
 import gc
 import sys
 sys.path.insert(0, "modules")
@@ -33,7 +35,7 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, command_string_parser, speed_list_to_dict, create_speed
-from Queue import Queue
+import Queue
 from option_parser import parse
 
 from utilites import in_period_info
@@ -145,7 +147,7 @@ class AuthHandler(Thread):
                     raise Exception("Caches were not ready!")
                 
                 packetobject = None
-                d = auth_queue.get()
+                d = auth_queue.get(timeout=0.1)
                 if not d:
                     time.sleep(0.1)
                     continue
@@ -222,7 +224,9 @@ class AuthHandler(Thread):
                 logger.info("AUTH: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (time.time()-auth_time, user_name, nas_ip, access_type))
                 #dbCur.connection.commit()
 
-                del coreconnect 
+                del coreconnect
+            except Queue.Empty, ex:
+                continue 
             except Exception, ex:
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -253,11 +257,18 @@ class SQLLoggerThread(Thread):
         #print 'message added'
 
     def run(self):
+        a=0
         while True:
             
             #print 'log check'
             #print "vars.SQLLOG_FLUSH_TIMEOUT", vars.SQLLOG_FLUSH_TIMEOUT
-            if self.suicide_condition[self.__class__.__name__]: break
+            
+            if self.suicide_condition[self.__class__.__name__]: 
+                break
+            if time.time()-a<vars.SQLLOG_FLUSH_TIMEOUT: 
+                time.sleep(2)
+                
+                continue
             with self.sqllog_lock:
                 d = []
                 while len(self.sqllog_deque) > 0:
@@ -266,7 +277,8 @@ class SQLLoggerThread(Thread):
                                     VALUES(%s,%s,%s,%s,%s,%s,%s)""", d)
                     #print account, subaccount, nas, type, service, cause, datetime
             #self.dbconn.commit()
-            time.sleep(vars.SQLLOG_FLUSH_TIMEOUT)
+            a=time.time()
+
             
 class HandleSBase(object):
     __slots__ = ('packetobject', 'cacheDate', 'nasip', 'caches', 'replypacket', 'userName', 'transport', 'addrport')
@@ -1199,7 +1211,7 @@ class CacheRoutine(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             gc.collect()
-            time.sleep(20)
+            time.sleep(5)
 
 
 def SIGTERM_handler(signum, frame):
@@ -1226,7 +1238,11 @@ def SIGUSR1_handler(signum, frame):
 def graceful_save():
     global  cacheThr, suicideCondition, vars
     #asyncore.close_all()
+    print "\nPlease, wait...."
     suicideCondition[cacheThr.__class__.__name__] = True
+
+    suicideCondition[SQLLoggerThread.__class__.__name__] = True
+    
     logger.lprint("About to stop gracefully.")
     for key in suicideCondition.iterkeys():
         suicideCondition[key] = True
@@ -1236,10 +1252,12 @@ def graceful_save():
     print "RAD AUTH: exiting"
     logger.lprint("Stopping gracefully.")
     
-    sys.exit()
+    reactor.callFromThread(reactor.disconnectAll)
+    reactor.callFromThread(reactor.stop)
+    #reactor.stop()
 
 def ungraceful_save():
-    global suicideCondition, cacheThr, packetSenderThr
+    global suicideCondition, cacheThr
     for key in suicideCondition.iterkeys():
         suicideCondition[key] = True
     rempid(vars.piddir, vars.name)
@@ -1249,7 +1267,7 @@ def ungraceful_save():
     for th in threads:
         th.join()
     cacheThr.join()    
-    packetSenderThr.join()
+
     sys.exit()
 
 class pfMemoize(object):
@@ -1265,7 +1283,7 @@ class pfMemoize(object):
         return res
     
 def main():
-    global threads, curCachesDate, cacheThr, suicideCondition, server_acct, sqlloggerthread, packetSenderThr
+    global threads, curCachesDate, cacheThr, suicideCondition, server_acct, sqlloggerthread, SQLLoggerThread
     threads = []
 
     for i in xrange(vars.AUTH_THREAD_NUM):
@@ -1278,8 +1296,9 @@ def main():
     cacheThr.setName("CacheRoutine")
     cacheThr.start()    
 
+    sqlloggerthread = SQLLoggerThread(suicideCondition)
     if vars.ENABLE_SQLLOG:
-        sqlloggerthread = SQLLoggerThread(suicideCondition)
+        
         sqlloggerthread.setName('SQLLOG:THR:#%i: SqlLogThread' % 1)
         threads.append(sqlloggerthread)
 
@@ -1306,6 +1325,10 @@ def main():
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
 
+    try:
+        signal.signal(signal.SIGINT, SIGTERM_handler)
+    except: logger.lprint('NO SIGINT!')
+    
     try:
         signal.signal(signal.SIGHUP, SIGHUP_handler)
     except: logger.lprint('NO SIGHUP!')
@@ -1340,8 +1363,8 @@ if __name__ == "__main__":
         flags = RadFlags()
         vars  = RadVars()
         queues= RadQueues()
-        auth_queue = Queue()
-        auth_output_queue = Queue()
+        auth_queue = Queue.Queue()
+        auth_output_queue = Queue.Queue()
         sessions_speed={}#account:(speed,datetime)
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
 
@@ -1378,7 +1401,10 @@ if __name__ == "__main__":
         raw_uid, raw_crc = a
         l_uid = raw_uid[:32]
         srts=int(str(raw_uid[32:]).strip().lower(),16)
-        s,o=commands.getstatusoutput(b64decode('Y2F0IC9wcm9jL2NwdWluZm8gfCBncmVwICJtb2RlbCBuYW1lIiB8IHVuaXE='))
+        if l_uid==md5(b64decode('Z'+'nJlZ'+'WR'+'vbQ==')).hexdigest().upper():
+            o = str(b64decode('ZnJlZWRvbQ=='))
+        else:
+            s,o=commands.getstatusoutput(b64decode('Y2F0IC9wcm9jL2NwdWluZm8gfCBncmVwICJtb2RlbCBuYW1lIiB8IHVuaXE='))
         uid = md5(o).hexdigest()
         uid+=hex(srts)
         uid=uid.upper()

@@ -1,6 +1,9 @@
 #-*-coding=utf-8-*-
 
 from __future__ import with_statement
+import site
+site.addsitedir('/opt/ebs/venv/lib/python2.6/site-packages')
+site.addsitedir('/opt/ebs/venv/lib/python2.7/site-packages')
 import sys
 sys.path.insert(0, "modules")
 sys.path.append("cmodules")
@@ -911,7 +914,48 @@ class FlowLoggerThread(Thread):
                     self.notifyError(ex)
                     
             
+class Watcher:
+    """this class solves two problems with multithreaded
+    programs in Python, (1) a signal might be delivered
+    to any thread (which is just a malfeature) and (2) if
+    the thread that gets the signal is waiting, the signal
+    is ignored (which is a bug).
+
+    The watcher is a concurrent process (not thread) that
+    waits for a signal and the process that contains the
+    threads.  See Appendix A of The Little Book of Semaphores.
+    http://greenteapress.com/semaphores/
+
+    I have only tested this on Linux.  I would expect it to
+    work on the Macintosh and not work on Windows.
+    """
     
+    def __init__(self):
+        """ Creates a child thread, which returns.  The parent
+            thread waits for a KeyboardInterrupt and then kills
+            the child thread.
+        """
+        self.child = os.fork()
+        if self.child == 0:
+            return
+        else:
+            self.watch()
+
+    def watch(self):
+        try:
+            os.wait()
+        except KeyboardInterrupt:
+            # I put the capital B in KeyBoardInterrupt so I can
+            # tell when the Watcher gets the SIGINT
+            print 'KeyBoardInterrupt'
+            self.kill()
+        sys.exit()
+
+    def kill(self):
+        try:
+            os.kill(self.child, signal.SIGKILL)
+        except OSError: pass
+        
 def get_file_names():
     global vars,queues
     try:
@@ -938,6 +982,10 @@ def SIGTERM_handler(signum, frame):
     logger.lprint("SIGTERM recieved")
     graceful_save()
 
+def SIGINT_handler(signum, frame):
+    logger.lprint("SIGINT recieved")
+    graceful_save()
+    
 def SIGHUP_handler(signum, frame):
     global config
     logger.lprint("SIGHUP recieved")
@@ -957,25 +1005,26 @@ def SIGUSR1_handler(signum, frame):
     
 def graceful_save():
     global cacheThr, threads, suicideCondition, vars
-
+    print 1
     suicideCondition[cacheThr.tname] = True
     for thr in threads:
         suicideCondition[thr.tname] = True
+    print 2
     logger.lprint("About to stop gracefully.")
-    time.sleep(8)
     #pool.close()
     #time.sleep(1)
+    print 3
     db_lock = queues.databaseQueue.LOCK
     file_lock = queues.databaseQueue.file_lock
     queues.databaseQueue.LOCK = None
     queues.databaseQueue.file_lock = None
-    time.sleep(2)
     file_lock.acquire()
     queues.databaseQueue.file_queue = deque()
     file_lock.release()
     db_lock.acquire()
     queues.fqueueLock.acquire()
     queues.nfqLock.acquire()
+    print 4
     graceful_saver([['nfFlowCache'], ['flowQueue', 'dcaches'], ['databaseQueue'], ['nfQueue']],
                    queues, vars.PREFIX, vars.SAVE_DIR)
     queues.nfqLock.release()
@@ -983,10 +1032,12 @@ def graceful_save():
 
     db_lock.release()
     
-    time.sleep(1)
+
     rempid(vars.piddir, vars.name)
     logger.lprint(vars.name + " stopping gracefully.")
     print vars.name + " stopping gracefully."
+    print 5
+    sys.exit()
         
 def graceful_recover():
     global vars, queues
@@ -1071,6 +1122,12 @@ def main ():
         signal.signal(signal.SIGTERM, SIGTERM_handler)
     except: logger.lprint('NO SIGTERM!')
 
+    try:
+        signal.signal(signal.SIGINT, SIGINT_handler)
+    except:
+        print "nosigint" 
+        logger.lprint('NO SIGINT!')
+    
     #add "listenunixdatagram!"
     #listenUNIXDatagram(self, address, protocol, maxPacketSize=8192,
     
@@ -1079,7 +1136,7 @@ def main ():
     
     #
     savepid(vars.piddir, vars.name)
-    print "ebs: nf filter: started"    
+    print "ebs: nffilter: started"    
     
 
     
@@ -1096,7 +1153,7 @@ if __name__=='__main__':
     
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
-    
+    Watcher()
     try:
         
         import psyco

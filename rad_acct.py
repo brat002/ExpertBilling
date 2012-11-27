@@ -1,7 +1,9 @@
 #-*-coding: utf-8 -*-
 
 from __future__ import with_statement
-
+import site
+site.addsitedir('/opt/ebs/venv/lib/python2.6/site-packages')
+site.addsitedir('/opt/ebs/venv/lib/python2.7/site-packages')
 import gc
 import os
 import sys
@@ -36,7 +38,8 @@ from classes.cacheutils import CacheMaster
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
-from Queue import Queue
+import Queue
+
 
 
 w32Import = False
@@ -143,7 +146,7 @@ class AcctHandler(Thread):
                     raise Exception("Caches were not ready!")
                 
                 packetobject = None
-                d = acct_queue.get()
+                d = acct_queue.get(timeout=0.1)
                 if not d:
                     time.sleep(0.1)
                     continue
@@ -170,8 +173,11 @@ class AcctHandler(Thread):
                 logger.info("ACCT: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (time.time()-acct_time, coreconnect.userName, coreconnect.nasip, coreconnect.access_type))
                 #dbCur.connection.commit()
                 dbCur.close()
-                del coreconnect 
+                del coreconnect
+            except Queue.Empty, ex: 
+                continue
             except Exception, ex:
+                
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
                     time.sleep(5)
@@ -186,14 +192,17 @@ class PacketSender(Thread):
     def run(self):
         global vars, suicideCondition
         while True:
-            if suicideCondition[self.__class__.__name__]: break
+            if suicideCondition[self.__class__.__name__]: 
+                break
             try:
-                d = acct_output_queue.get()
+                d = acct_output_queue.get(timeout=0.1)
                 if not d:
                     time.sleep(0.05)
                     continue
                 data,addrport, transport = d
                 transport.write(data, addrport)
+            except Queue.Empty, ex:
+                continue
             except Exception, ex:
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
 
@@ -438,7 +447,9 @@ class CacheRoutine(Thread):
         self.connection = get_connection(vars.db_dsn)
         counter = 0; now = datetime.datetime.now
         while True:
-            if suicideCondition[self.__class__.__name__]: break            
+            if suicideCondition[self.__class__.__name__]:
+                 
+                break            
             try: 
                 if flags.cacheFlag or (now() - cacheMaster.date).seconds > vars.CACHE_TIME:
                     run_time = time.time()                    
@@ -462,13 +473,17 @@ class CacheRoutine(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             gc.collect()
-            time.sleep(20)
+            time.sleep(5)
 
 
 def SIGTERM_handler(signum, frame):
     logger.lprint("SIGTERM recieved")
     graceful_save()
 
+def SIGINT_handler(signum, frame):
+    logger.lprint("SIGINT recieved")
+    graceful_save()
+    
 def SIGHUP_handler(signum, frame):
     global config
     logger.lprint("SIGHUP recieved")
@@ -487,19 +502,25 @@ def SIGUSR1_handler(signum, frame):
     with flags.cacheLock: flags.cacheFlag = True
 
 def graceful_save():
-    global  cacheThr, suicideCondition, vars
+    global  cacheThr, packetSenderThr, suicideCondition, vars
     #asyncore.close_all()
     suicideCondition[cacheThr.__class__.__name__] = True
+    suicideCondition[packetSenderThr.__class__.__name__] = True
+
     logger.lprint("About to stop gracefully.")
     for key in suicideCondition.iterkeys():
         suicideCondition[key] = True
-    time.sleep(5)
+    #print suicideCondition
+    #time.sleep(1)
     #pool.close()
     rempid(vars.piddir, vars.name)
     print "RAD ACCT: exiting"
     logger.lprint("Stopping gracefully.")
+    #
+    reactor.callFromThread(reactor.disconnectAll)
+    reactor.callFromThread(reactor.stop)
+    #reactor.stop()
     
-    sys.exit()
 
 def ungraceful_save():
     global suicideCondition, cacheThr, packetSenderThr
@@ -557,6 +578,10 @@ def main():
     except: logger.lprint('NO SIGTERM!')
 
     try:
+        signal.signal(signal.SIGINT, SIGINT_handler)
+    except: logger.lprint('NO SIGINT!')
+    
+    try:
         signal.signal(signal.SIGHUP, SIGHUP_handler)
     except: logger.lprint('NO SIGHUP!')
 
@@ -567,7 +592,7 @@ def main():
     print "ebs: rad_acct: started"
     savepid(vars.piddir, vars.name)
     reactor.listenUDP(1813, Reception_UDP())
-    reactor.run(installSignalHandlers=True)
+    reactor.run(installSignalHandlers=False)
 
 if __name__ == "__main__":
     if "-D" in sys.argv:
@@ -599,8 +624,8 @@ if __name__ == "__main__":
         flags = RadFlags()
         vars  = RadVars()
         queues= RadQueues()
-        acct_queue = Queue()
-        acct_output_queue = Queue()
+        acct_queue = Queue.Queue()
+        acct_output_queue = Queue.Queue()
         sessions_speed={}#account:(speed,datetime)
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
 
