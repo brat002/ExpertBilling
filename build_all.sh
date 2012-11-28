@@ -73,7 +73,7 @@ cp license_$1.lic builds/$1/data/license.lic
 cp -r cmodules builds/$1/data/
 cp -r celery builds/$1/data/workers
 cp license.lic.old license.lic
-cp ebs_config.ini builds/$1/data/ebs_config.ini
+cp ebs_config.ini.tmpl builds/$1/data/ebs_config.ini.tmpl
 #cp upgrade.py builds/$1/data/upgrade.py
 #cp ebs_config_runtime.ini builds/$1/ebs_config_runtime.ini
 cp -rf modules builds/$1/data
@@ -151,6 +151,6 @@ rm -f web.tar.gz
 tar -czvf ../web.tar.gz web
 chmod +x ../ebs_manage.py
 cd ../
-tar -czvf $1.tar.gz ebs.tar.gz ../ebs_manage.py ../install.txt web.tar.gz
+tar -czvf $1.tar.gz ebs.tar.gz ../fabfile.py ../install.txt web.tar.gz
 cd ../
 
