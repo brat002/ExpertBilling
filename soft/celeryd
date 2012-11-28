@@ -5,9 +5,14 @@ CELERYD_NODES="w1"
 #CELERYD_NODES="w1 w2 w3"
 
 # Where to chdir at start.
-CELERYD_CHDIR="/opt/ebs/data/workers/"
+CELERYD_CHDIR="/opt/ebs/data/workers"
 
-ENV_PYTHON="$CELERYD_CHDIR../..//venv/bin/python"
+ENV_PYTHON=$CELERYD_CHDIR/../../venv/bin/python
+VENV_DIR=/opt/ebs/venv
+
+CELERYD_MULTI="$ENV_PYTHON $VENV_DIR/bin/celeryd-multi"
+
+CELERYCTL="$ENV_PYTHON $VENV_DIR/bin/celeryctl"
 
 # Extra arguments to celeryd
 CELERYD_OPTS="--time-limit=300 --concurrency=4"

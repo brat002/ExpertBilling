@@ -1588,28 +1588,6 @@ $$
 ALTER FUNCTION public.block_balance(account_id integer) OWNER TO postgres;
 
 --
--- TOC entry 54 (class 1255 OID 283154)
--- Dependencies: 6 454
--- Name: boolop(integer[], query_int); Type: FUNCTION; Schema: public; Owner: ebs
---
-
-CREATE FUNCTION boolop(integer[], query_int) RETURNS boolean
-    AS '$libdir/_int', 'boolop'
-    LANGUAGE c IMMUTABLE STRICT;
-
-
-ALTER FUNCTION public.boolop(integer[], query_int) OWNER TO ebs;
-
---
--- TOC entry 3131 (class 0 OID 0)
--- Dependencies: 54
--- Name: FUNCTION boolop(integer[], query_int); Type: COMMENT; Schema: public; Owner: ebs
---
-
-COMMENT ON FUNCTION boolop(integer[], query_int) IS 'boolean operation with array';
-
-
---
 -- TOC entry 175 (class 1255 OID 4630626)
 -- Dependencies: 6 728
 -- Name: card_activate_fn(character varying, character varying, integer, inet); Type: FUNCTION; Schema: public; Owner: ebs

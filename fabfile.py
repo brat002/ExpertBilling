@@ -3,6 +3,7 @@ from __future__ import with_statement
 from fabric.api import local
 from fabric.api import local, settings, abort
 from fabric.contrib.console import confirm
+
 from fabric.api import lcd
 from fabric.context_managers import  prefix
 import os, sys
@@ -25,18 +26,20 @@ def get_tempdir():
 
 def prepare_deploy():
     
-    local('echo "deb http://www.rabbitmq.com/debian/ testing main" >/etc/apt/sources.list.d/')
+    local('echo "deb http://www.rabbitmq.com/debian/ testing main" >/etc/apt/sources.list.d/rabbitmq.list')
     
     local('wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc && apt-key add rabbitmq-signing-key-public.asc')
     local('apt-get update')
-    local('apt-get install postgresql postgresql-contrib postgresql-server-dev-9.1 python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv rabbitmq-server')
+    local('apt-get install postgresql postgresql-contrib postgresql-server-dev-9.1 htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv rabbitmq-server')
+
 
 def configure_rabbit():
-    local("rabbitmqctl add_user ebs ebspassword")
-    local("rabbitmqctl add_vhost /ebs")
-    local("rabbitmqctl change_password ebs ebspassword")
-    local("rabbitmqctl set_permissions -p /ebs ebs '.*' '.*' '.*'")
-    local("rabbitmqctl set_user_tags ebs management")
+    with settings(warn_only=True):
+        local("rabbitmqctl add_user ebs ebspassword")
+        local("rabbitmqctl add_vhost /ebs")
+        local("rabbitmqctl change_password ebs ebspassword")
+        local("rabbitmqctl set_permissions -p /ebs ebs '.*' '.*' '.*'")
+
     
 def requirements():
     local('pip install -E /opt/ebs/venv/ -U -r /opt/ebs/data/soft/requirements.txt')
@@ -60,15 +63,15 @@ def unpack(tarfile):
         local('tar -xvzf ebs.tar.gz -C %s' % BILLING_ROOT_PATH)
         local('tar -xvzf web.tar.gz -C %s' % BILLING_ROOT_PATH)
     
-def update_src():
-    #local('cp -rf /opt/ebs/deploy/billing/data/* /opt/ebs/data/')
-    pass
+def postconf():
+    local('mv /opt/ebs/data/ebs_config.ini.tmpl /opt/ebs/data/ebs_config.ini')
+    
     
 def setup_webcab():
     with lcd(WEBCAB_PATH):
         local('cp settings_local.py.tmpl settings_local.py')
-        local('ln -sf default /etc/init.d/apache2/sites-enabled/ebs')
-        local('ln -sf blankpage_config /etc/init.d/apache2/sites-enabled/ebs_blankpage')
+        local('ln -sf default /etc/apache2/sites-enabled/ebs ')
+        local('ln -sf  blankpage_config /etc/apache2/sites-enabled/ebs_blankpage')
         local('a2dissite default')
         local('/etc/init.d/apache reload')
         
@@ -88,13 +91,14 @@ def deploy(tarfile):
     
     unpack(tarfile)
     requirements()
-    update_src()#backup settings before deploy, restore settings after deploy
+    #backup settings before deploy, restore settings after deploy
     
     db_install()
     db_upgrade()
     
     setup_webcab()
     init_scripts()
+    postconf()
     restart()
     
 def restart():
@@ -112,12 +116,21 @@ def init_scripts():
     local('update-rc.d ebs_rad_auth defaults')
     local('update-rc.d ebs_rad_acct defaults')
     local('update-rc.d ebs_core defaults')
-    local('cp /opt/ebs/data/soft/billing /usr/sbin/')
+    local('cp -f /opt/ebs/data/soft/celeryd /etc/default/')
+    local('cp -f /opt/ebs/data/soft/billing /usr/sbin/')
     local('chmod +x /usr/sbin/billing')
 
 def db_backup():
     local("""su postgres -c 'pg_dump ebs | gzip >%s'""", (os.path.join(BACKUP_DIR, 'database_%s.gz' % curdate)))
 
+def data_backup():
+    with lcd(BILLING_PATH):
+        local('tar -cvzf %s .' % os.path.join(BACKUP_DIR, 'data_%s.gz' % curdate))
+        
+def webcab_backup():
+    with lcd(BILLING_ROOT_PATH):
+        local('tar -cvzf %s web' % os.path.join(BACKUP_DIR, 'web_%s.gz' % curdate))
+        
 def db_install():
     with lcd('/opt/ebs/data/'):
         local("""su postgres -c 'psql ebs -f sql/ebs_dump.sql'""")
