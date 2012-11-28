@@ -58,7 +58,7 @@ def accountgroup_edit(request):
             return {'form':form,  'status': True} 
         else:
 
-            return {'form':form,  'status': False} 
+            return {'form':form,  'status': False, 'item': model} 
     else:
         id = request.GET.get("id")
 
@@ -72,7 +72,7 @@ def accountgroup_edit(request):
         else:
             form = AccountGroupForm()
 
-    return { 'form':form, 'status': False} 
+    return { 'form':form, 'status': False, 'item': item} 
 
 @ajax_request
 @login_required

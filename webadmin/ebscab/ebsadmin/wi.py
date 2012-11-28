@@ -424,7 +424,7 @@ def authlogreport(request):
         
 
 
-    if request.method=='GET':
+    if request.method=='GET' and request.GET:
         data = request.GET
 
         #pageitems = 100
@@ -534,7 +534,7 @@ def ballancehistoryreport(request):
         
 
 
-    if request.method=='GET':
+    if request.method=='GET' and request.GET:
         form = BallanceHistoryForm(request.GET)
         if form.is_valid():
             
@@ -778,7 +778,7 @@ def subaccountedit(request):
     
         res = AccountAddonService.objects.filter(subaccount=subaccount)
         table = AccountAddonServiceTable(res)
-        table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+        table_to_report = RequestConfig(request, paginate=False).configure(table)
         if table_to_report:
             return create_report_http_response(table_to_report, request)
         

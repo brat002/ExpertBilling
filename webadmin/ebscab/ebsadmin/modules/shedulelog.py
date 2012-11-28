@@ -22,7 +22,7 @@ def shedulelog(request):
         
 
 
-    if request.method=='GET': 
+    if request.method=='GET' and request.GET: 
         data = request.GET
 
         #pageitems = 100

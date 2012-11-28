@@ -1274,12 +1274,12 @@ class SuspendedPeriod(models.Model):
            )
 class Group(models.Model):
     #make it an array
-    name = models.CharField(max_length=255)
-    trafficclass = models.ManyToManyField(TrafficClass)
+    name = models.CharField(verbose_name=u'Название', max_length=255)
+    trafficclass = models.ManyToManyField(TrafficClass, verbose_name=u'Классы трафика')
     #1 - in, 2-out, 3 - sum, 4-max
-    direction = models.IntegerField(choices=((0, u"Входящий"), (1, u"Исходящий"), (2, u"Вх.+Исх."), (3, u"Большее направление")))
+    direction = models.IntegerField(verbose_name=u'Направление', choices=((0, u"Входящий"), (1, u"Исходящий"), (2, u"Вх.+Исх."), (3, u"Большее направление")))
     # 1 -sum, 2-max
-    type = models.IntegerField(choices=((1, u"Сумма классов"), (2, u"Максимальный класс")))
+    type = models.IntegerField(verbose_name=u'Тип', choices=((1, u"Сумма классов"), (2, u"Максимальный класс")))
     
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('group_delete'), self.id)
@@ -1370,7 +1370,7 @@ class IPInUse(models.Model):
     datetime = models.DateTimeField(verbose_name=u'Дата выдачи')
     disabled = models.DateTimeField(blank=True, null=True, verbose_name=u'Дата освобождения')
     dynamic = models.BooleanField(default=False, verbose_name=u'Выдан динамически')
-    ack  = models.BooleanField(default=False, blank=True, verbose_name=u'Выдача подтверждена получением Accounting пакета')
+    ack  = models.BooleanField(default=False, blank=True, verbose_name=u'Подтверждён')
 
     class Meta:
         ordering = ['ip']
@@ -1506,15 +1506,15 @@ class AddonServiceTarif(models.Model):
            )
 
 class AccountAddonService(models.Model):    
-    service = models.ForeignKey(AddonService, null=True, on_delete = models.CASCADE)    
-    account = models.ForeignKey(Account, blank=True, null=True, on_delete = models.CASCADE)   
-    subaccount = models.ForeignKey('SubAccount', blank=True, null=True, on_delete = models.CASCADE) 
-    activated = models.DateTimeField()    
-    deactivated = models.DateTimeField(blank=True, null=True)    
+    service = models.ForeignKey(AddonService, null=True, verbose_name=u'Услуга', on_delete = models.CASCADE)    
+    account = models.ForeignKey(Account, verbose_name=u'Аккаунт', blank=True, null=True, on_delete = models.CASCADE)   
+    subaccount = models.ForeignKey('SubAccount', verbose_name=u'Субаккаунт', blank=True, null=True, on_delete = models.CASCADE) 
+    activated = models.DateTimeField(verbose_name=u'Активирована')    
+    deactivated = models.DateTimeField(verbose_name=u'Отключена', blank=True, null=True)    
     action_status = models.BooleanField()    
     speed_status = models.BooleanField()
-    temporary_blocked = models.DateTimeField(blank=True, null=True)
-    last_checkout = models.DateTimeField(blank=True, null=True)
+    temporary_blocked = models.DateTimeField(verbose_name=u'Пауза до', blank=True, null=True)
+    last_checkout = models.DateTimeField(verbose_name=u'Последнее списание', blank=True, null=True)
 
     class Meta:
         ordering = ['-activated', '-deactivated']

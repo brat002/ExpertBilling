@@ -69,8 +69,12 @@ def charts(request):
         form = ReportForm(request.GET)
         if form.is_valid():
             print "valid"
-            start_date = form.cleaned_data.get("start_date")
-            end_date = form.cleaned_data.get("end_date")
+            daterange = form.cleaned_data.get("daterange") or []
+            
+            start_date, end_date = None, None
+            if len(daterange)==2:
+                start_date, end_date = daterange
+
             accounts = form.cleaned_data.get("accounts")
             tariffs = form.cleaned_data.get("tariffs")
             groups = form.cleaned_data.get("groups")

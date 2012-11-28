@@ -2,28 +2,9 @@
 {{message}}
  <script type="text/javascript"> 
  $(document).ready(function() {
-     $('#id_created').datetimepicker({
-         showSecond: true,
-         timeFormat: 'hh:mm:ss',
-         stepHour: 1,
-         stepMinute: 1,
-         stepSecond: 1,
-         numberOfMonths: 1,
-         dateFormat: 'yy-mm-dd'
-     });
+     $('.datepicker').datepicker({'format': 'yyyy-mm-dd'});
+     $(".timepicker").mask("99:99:99");
  });
- $(document).ready(function() {
-     $('#id_deactivated').datetimepicker({
-         showSecond: true,
-         timeFormat: 'hh:mm:ss',
-         stepHour: 1,
-         stepMinute: 1,
-         stepSecond: 1,
-         numberOfMonths: 1,
-         dateFormat: 'yy-mm-dd'
-     });
- });
-
  </script>
 
 
@@ -32,7 +13,7 @@
                 {{form.id}}
                 <fieldset>
                   <div class="control-group">
-                  <div class="control-row">
+
                       <label class="control-label">{{form.name.label}}: </label>
                       <div class="controls">
                       {{ form.name }}
@@ -45,10 +26,10 @@
                           </p>
                       {% endif %}
                       </div>
-                  </div>
+
                   </div>
                   <div class="control-group">
-                  <div class="control-row">
+
                       <label class="control-label">{{form.settlement_period.label}}: </label>
                       <div class="controls">
                       {{ form.settlement_period }}
@@ -61,7 +42,7 @@
                           </p>
                       {% endif %}
                       </div>
-                  </div>
+
                   </div>               
                   <div class="control-group">
                       <label class="control-label">{{form.cash_method.label}}</label>
@@ -78,7 +59,7 @@
                       </div>
                   </div>
                   <div class="control-group">
-                  <div class="control-row">
+
                       <label class="control-label">{{form.cost.label}}:</label>
                       <div class="controls">
                       {{ form.cost }}
@@ -91,10 +72,10 @@
                           </p>
                       {% endif %}
                       </div>
-                  </div>
+
                   </div>
                   <div class="control-group">
-                  <div class="control-row">
+
                       <label class="control-label">{{form.condition.label}}:</label>
                       <div class="controls">
                       {{ form.condition }}
@@ -107,7 +88,7 @@
                           </p>
                       {% endif %}
                       </div>
-                  </div>
+
 
                   </div>
                   <div class="control-group">
@@ -127,7 +108,7 @@
                   </div>
                   <div class="control-group">
                   
-                      <div class="control-row">
+
                       <label class="control-label">{{form.deactivated.label}}:</label>
                       <div class="controls">
                       {{ form.deactivated }}
@@ -140,7 +121,7 @@
                           </p>
                       {% endif %}
                       </div>
-                  </div>
+
                   </div>
                 </fieldset>
                 
