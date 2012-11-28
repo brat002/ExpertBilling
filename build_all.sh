@@ -25,7 +25,7 @@ echo "Additional keys: " $5
 simple_build="core rad_auth rad_acct nf nffilter nfroutine"
 total_build="$crypto_build $simple_build"
 
-modules="db utilites dictionary packet auth bidict IPy isdlogger log_adapter logger option_parser period_utilities saver ssh_paramiko ssh_utilities syslog_dummy tools dictfile"
+modules="db utilites dictionary packet auth bidict IPy isdlogger log_adapter logger option_parser period_utilities saver ssh_paramiko ssh_utilities syslog_dummy tools dictfile queues"
 mkdir -p cmodules
 
 for bld in $modules; do
@@ -103,7 +103,7 @@ cp webadmin/blankpage_config builds/$1/web/
 cp webadmin/blankpage builds/$1/web/
 cp soft/billing builds/$1/data/soft/
 svn export soft/hotspot/ builds/$1/data/soft/hotspot/
-svn export soft/requirements.txt builds/$1/soft/
+cp soft/requirements.txt builds/$1/data/soft/
 #cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/data/sql
 cp sql/ebs_dump.sql builds/$1/data/sql/
@@ -146,10 +146,11 @@ fi
 
 cd builds/$1/
 tar -czvf ../ebs.tar.gz data
-cd ../ 
+
 rm -f web.tar.gz
-tar -czvf web.tar.gz web/
+tar -czvf ../web.tar.gz web
 chmod +x ../ebs_manage.py
+cd ../
 tar -czvf $1.tar.gz ebs.tar.gz ../ebs_manage.py ../install.txt web.tar.gz
 cd ../
 

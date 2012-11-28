@@ -1448,7 +1448,7 @@ if __name__ == "__main__":
         AU = sAU(_1i(), tmpconnection)        
 
         #-------------------
-        print "ebs: rad: configs read, about to start"
+        print "ebs: rad_auth: configs read, about to start"
         main()
     except Exception, ex:
         print 'Exception in rad, exiting: ', repr(ex)

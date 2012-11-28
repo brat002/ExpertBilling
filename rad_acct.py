@@ -653,7 +653,7 @@ if __name__ == "__main__":
 
         #-------------------
         
-        print "ebs: rad: configs read, about to start"
+        print "ebs: rad_acct: configs read, about to start"
         main()
     except Exception, ex:
         print 'Exception in rad, exiting: ', repr(ex)
