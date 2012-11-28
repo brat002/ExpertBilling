@@ -3,30 +3,10 @@
 {% block extra_head %}
 <script type="text/javascript" src="/media/dynatree/jquery.dynatree.js"></script>
 <link href="/media/dynatree/skin/ui.dynatree.css" rel="stylesheet" type="text/css" id="skinSheet">
-        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
-
-        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
 
         <script type="text/javascript"> 
         $(document).ready(function() {
-            $('#id_start_date').datepicker({
-                showSecond: true,
-                timeFormat: 'hh:mm:ss',
-                stepHour: 1,
-                stepMinute: 1,
-                stepSecond: 1,
-                numberOfMonths: 1,
-                dateFormat: 'yy-mm-dd'
-            });
-            $('#id_end_date').datepicker({
-                showSecond: true,
-                timeFormat: 'hh:mm:ss',
-                stepHour: 1,
-                stepMinute: 1,
-                stepSecond: 1,
-                numberOfMonths: 1,
-                dateFormat: 'yy-mm-dd'
-            });
+
             $(function(){
                 // Attach the dynatree widget to an existing <div id="tree"> element
                 // and pass the tree options as an argument to the dynatree() function:
@@ -102,31 +82,15 @@
                         </div>
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-agreement-no">{{form.start_date.label}}</label>
+                            <label class="control-label" for="input-agreement-no">{{form.daterange.label}}</label>
                             <div class="controls">
-                             {{ form.start_date }}
-                            {% if form.start_date.errors %}
-                                <span class="help-inline">{% for error in form.start_date.errors %}{{ error }}<br/> {% endfor %}</span>
+                             {{ form.daterange }}
+                            {% if form.daterange.errors %}
+                                <span class="help-inline">{% for error in form.daterange.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.start_date.help_text%}
+                            {% if form.daterange.help_text%}
                                 <p class="help-block">
-                                    {{ form.start_date.help_text|safe }}
-                                </p>
-                            {% endif %}
-                            </div>
-                        </div>
-                        </div>
-                    <div class="control-group">
-                        <div class="control-row">
-                            <label class="control-label" for="input-agreement-no">{{form.end_date.label}}</label>
-                            <div class="controls">
-                             {{ form.end_date }}
-                            {% if form.end_date.errors %}
-                                <span class="help-inline">{% for error in form.end_date.errors %}{{ error }}<br/> {% endfor %}</span>
-                            {% endif %}
-                            {% if form.end_date.help_text%}
-                                <p class="help-block">
-                                    {{ form.end_date.help_text|safe }}
+                                    {{ form.daterange.help_text|safe }}
                                 </p>
                             {% endif %}
                             </div>

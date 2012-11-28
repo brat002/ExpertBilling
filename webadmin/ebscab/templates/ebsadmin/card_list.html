@@ -6,9 +6,6 @@
         <script src="/media/js/smartspinner/smartspinner.js" type="text/javascript"></script>
         <link rel="stylesheet" href="/media/js/smartspinner/smartspinner.css" type="text/css" />
                 
-        
-        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
-        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
         <script type="text/javascript"> 
         $(document).ready(function() {
             $("#id_main_table th input[type=checkbox]").click(function(event) {
@@ -17,72 +14,6 @@
 
             });
             
-            $("#id_created").focus(function() {
-                $(function(){
-
-                     $('#id_created').daterangepicker({
-                          presetRanges: [
-                                         {text: 'Сейчас', dateStart: 'Now', dateEnd: 'Now' }
-                                       ],
-                          presets: {specificDate: 'Указанная дата',
-                              'allDatesBefore': 'До даты', 
-                              'allDatesAfter': 'После даты', 
-                              'dateRange': 'Диапазон дат'},
-                          rangeStartTitle: 'С',
-                          rangeEndTitle: 'По',
-                          doneButtonText: 'Выбрать',
-                          prevLinkText:'Назад',
-                          nextLinkText: 'Вперёд',
-                          dateFormat: 'yy-mm-dd',
-
-                     }); 
-        
-                 });
-                  });
-            $("#id_sold").focus(function() {
-                $(function(){
-
-                     $('#id_sold').daterangepicker({
-                          presetRanges: [
-                                         {text: 'Сейчас', dateStart: 'Now', dateEnd: 'Now' }
-                                       ],
-                          presets: {specificDate: 'Указанная дата',
-                              'allDatesBefore': 'До даты', 
-                              'allDatesAfter': 'После даты', 
-                              'dateRange': 'Диапазон дат'},
-                          rangeStartTitle: 'С',
-                          rangeEndTitle: 'По',
-                          doneButtonText: 'Выбрать',
-                          prevLinkText:'Назад',
-                          nextLinkText: 'Вперёд',
-                          dateFormat: 'yy-mm-dd',
-
-                     }); 
-        
-                 });
-                  });
-            $("#id_activated").focus(function() {
-                $(function(){
-
-                     $('#id_activated').daterangepicker({
-                          presetRanges: [
-                                         {text: 'Сейчас', dateStart: 'Now', dateEnd: 'Now' }
-                                       ],
-                          presets: {specificDate: 'Указанная дата',
-                              'allDatesBefore': 'До даты', 
-                              'allDatesAfter': 'После даты', 
-                              'dateRange': 'Диапазон дат'},
-                          rangeStartTitle: 'С',
-                          rangeEndTitle: 'По',
-                          doneButtonText: 'Выбрать',
-                          prevLinkText:'Назад',
-                          nextLinkText: 'Вперёд',
-                          dateFormat: 'yy-mm-dd',
-
-                     }); 
-        
-                 });
-                  });
             
             $(".btn_add").click(function(event) {
                 $('<div />').dialog2({

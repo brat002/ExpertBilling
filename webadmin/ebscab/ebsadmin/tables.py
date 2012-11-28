@@ -171,17 +171,17 @@ class AccountsReportTable(TableReport):
 class ActiveSessionTable(TableReport):
     session_status = django_tables.TemplateColumn("<span class='label {% if record.session_status == 'ACK' %}info{% endif %}'>{{ record.session_status }}</span>")
     date_start = FormatDateTimeColumn()
-    interrim_update = FormatDateTimeColumn()
+    #interrim_update = FormatDateTimeColumn()
     date_end = FormatDateTimeColumn()
     bytes = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}/{{record.bytes_out|filesizeformat}}")
-    account = django_tables.LinkColumn('account_edit', get_params={'id':A('account.id')})
+    #account = django_tables.LinkColumn('account_edit', get_params={'id':A('account.id')})
     subaccount = django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount.id')})
     
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         model = ActiveSession
-        exclude = ("speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse')
-        attrs = {'class': 'paleblue'}
+        exclude = ("speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account')
+        attrs = {'class': 'table table-bordered table-condensed'}
 
 class AuthLogTable(TableReport):
     account = django_tables.LinkColumn('account_edit', get_params={'id':A('account.id')})
@@ -221,7 +221,7 @@ class LogTable(TableReport):
 class NasTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     name = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')})
-    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?nas_id={{record.id}}' >Дополнительные RADIUS атрибуты</a>", verbose_name=u'Дополнительные RADIUS атрибуты', orderable=False)
+    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?nas={{record.id}}' >Дополнительные RADIUS атрибуты</a>", verbose_name=u'Дополнительные RADIUS атрибуты', orderable=False)
     id = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     def render_row_number(self):
         value = getattr(self, '_counter', 1)
@@ -307,6 +307,7 @@ class TrafficClassTable(TableReport):
     class Meta:
         model = TrafficClass
         exclude = ("weight", )
+        fields = ('id', 'name', 'directions', 'passthrough',  'd')
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         

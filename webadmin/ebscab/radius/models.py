@@ -64,7 +64,7 @@ class ActiveSession(models.Model):
     #Выставляется в случае, если был произведён платёж
     session_status=models.CharField(max_length=32, choices=SESSION_STATUS, null=True, blank=True)
     speed_string = models.CharField(max_length=255, blank=True, null=True)
-    acct_terminate_cause = models.CharField(max_length=128, blank=True, default = '')
+    acct_terminate_cause = models.CharField(verbose_name = u'Причина разрыва', max_length=128, blank=True, default = '')
     #speed_changed = models.BooleanField(blank=True, default=False)
     ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, on_delete=models.SET_NULL)
 

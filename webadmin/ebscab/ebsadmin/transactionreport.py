@@ -102,8 +102,11 @@ def transactionreport(request):
     if form.is_valid():
         #items = PeriodicalServiceHistory.objects.all()[0:200]
         account = form.cleaned_data.get('account')
-        date_start = form.cleaned_data.get('start_date')
-        date_end = form.cleaned_data.get('end_date')
+        daterange = form.cleaned_data.get('daterange') or []
+        date_start, date_end = None, None
+        if len(daterange)==2:
+            date_start, date_end = daterange
+
         systemusers = form.cleaned_data.get('systemuser')
         tariffs = form.cleaned_data.get('tarif')
         extra={}

@@ -34,11 +34,15 @@ def dealer_edit(request):
 
     item = None
     if request.method == 'POST': 
+        id = request.POST.get("dealer-id")
+        
         if id:
             item = Dealer.objects.get(id=id)
-            form = DealerForm(request.POST, instance=item)
+            form = DealerForm(request.POST, instance=item, prefix='dealer')
+            bank_form = BankDataForm(request.POST, instance=item.bank, prefix='bank')
         else:
-            form = DealerForm(request.POST)
+            form = DealerForm(request.POST, prefix='dealer')
+            bank_form = BankDataForm(request.POST, prefix='bank')
 
         if id:
             if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_dealer')):
@@ -48,15 +52,18 @@ def dealer_edit(request):
             return {'status':False, 'message': u'У вас нет прав на добавление дилеров'}
 
         
-        if form.is_valid():
+        if form.is_valid() and bank_form.is_valid():
  
             model = form.save(commit=False)
+            bank_model = bank_form.save(commit=False)
+            bank_model.save()
+            model.bank=bank_model
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return HttpResponseRedirect(reverse("dealer"))
         else:
             print form._errors
-            return {'form':form,  'status': False} 
+            return {'form':form,  'status': False,  'item': item, 'bank_form': bank_form} 
     else:
         id = request.GET.get("id")
         if id:
@@ -64,11 +71,11 @@ def dealer_edit(request):
                 return {'status':True}
 
             item = Dealer.objects.get(id=id)
-            form = DealerForm(instance=item)
-            bank_form = BankDataForm(item.bank)
+            form = DealerForm(instance=item, prefix='dealer')
+            bank_form = BankDataForm(instance=item.bank, prefix='bank')
         else:
-            form = DealerForm()
-            bank_form = BankDataForm()
+            form = DealerForm(preffix='dealer')
+            bank_form = BankDataForm(prefix='bank')
    
     return { 'form':form, 'bank_form': bank_form,  'item': item} 
 

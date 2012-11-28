@@ -1,50 +1,12 @@
 {% extends "ebsadmin/base.html" %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
-        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
-
-        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
 
         <script type="text/javascript"> 
         $(document).ready(function() {
-            $("#id_created").focus(function() {
-            $(function(){
 
-                 $('#id_created').daterangepicker({
-                	  presetRanges: [
-                	                 {text: 'Сейчас', dateStart: 'Now', dateEnd: 'Now' }
-                	               ],
-                	  presets: {specificDate: 'Указанная дата',
-                		  'allDatesBefore': 'До даты', 
-                		  'allDatesAfter': 'После даты', 
-                		  'dateRange': 'Диапазон дат'},
-                      rangeStartTitle: 'С',
-                      rangeEndTitle: 'По',
-                      doneButtonText: 'Выбрать',
-                      prevLinkText:'Назад',
-                      nextLinkText: 'Вперёд',
-                	  dateFormat: 'yy-mm-dd',
 
-                 }); 
-    
-             });
-              });
-            $('#id_date_start').datetimepicker({
-                showSecond: true,
-                timeFormat: 'hh:mm:ss',
-                stepHour: 1,
-                stepMinute: 1,
-                stepSecond: 1,
-                numberOfMonths: 1
-            });
-            $('#id_date_end').datetimepicker({
-                showSecond: true,
-                timeFormat: 'hh:mm:ss',
-                stepHour: 1,
-                stepMinute: 1,
-                stepSecond: 1,
-                numberOfMonths: 1
-            });
+
             {% if table %}
             $('#tab-control a[href="#result"]').tab('show');
             {% else %}

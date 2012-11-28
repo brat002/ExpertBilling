@@ -23,6 +23,10 @@ from itertools import chain
 from widgets import SplitDateTimeWidget
 
 class DateRangeField(forms.DateField):
+    def __init__(self, *args, **kwargs):
+        super(DateRangeField, self ).__init__(*args, **kwargs)
+        self.widget.attrs['class'] = 'daterange'
+        
     def clean(self, value):
         if isinstance(value, unicode):
             if value.rfind(" - ")!=-1:
@@ -159,7 +163,7 @@ class SearchAccountForm(forms.Form):
         
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
 
-    contract = AutoCompleteSelectMultipleField( 'account_contract', required = False)
+    contract = AutoCompleteSelectMultipleField( 'account_contract', label=u'Договор', required = False)
     organization = AutoCompleteSelectMultipleField( 'organization_name', label = u"Организация", required = False, widget = forms.TextInput(attrs={'class': 'input-small'}))
     username = AutoCompleteSelectMultipleField( 'account_username', required = False, label=u"Имя аккаунта")
     fullname = AutoCompleteSelectMultipleField( 'account_fullname', required = False, label=u"ФИО")
@@ -218,8 +222,9 @@ class TransactionReportForm(forms.Form):
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
 
     systemuser = forms.ModelMultipleChoiceField(label=u"Администратор",queryset=SystemUser.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
-    start_date = forms.DateTimeField(label=u"Начало",required=False)
-    end_date = forms.DateTimeField(label=u"Конец",required=False)
+    #start_date = forms.DateTimeField(label=u"Начало",required=False)
+    #end_date = forms.DateTimeField(label=u"Конец",required=False)
+    daterange = DateRangeField(label=u'Диапазон дат', required=False )
     
 class ActionLogFilterForm(forms.Form):
     systemuser = forms.ModelChoiceField(queryset=SystemUser.objects.all(), required=False)
@@ -227,9 +232,9 @@ class ActionLogFilterForm(forms.Form):
     end_date = forms.DateTimeField(required=True)
     
 class SearchAuthLogForm(forms.Form):
-    start_date = forms.DateTimeField(required=False)
-    end_date = forms.DateTimeField(required=False)
-    account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
+    start_date = forms.DateTimeField(required=False, label=u'С', widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    end_date = forms.DateTimeField(required=False, label=u'По', widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    account = AutoCompleteSelectMultipleField( 'account_fts', label=u'Аккаунт', required = False)
     nas = forms.ModelMultipleChoiceField(label=u"Сервер доступа", queryset=Nas.objects.all(), required=False)
 
 class IpInUseLogForm(forms.Form):
@@ -249,6 +254,15 @@ class AccountTariffBathForm(forms.Form):
 class AccountAddonServiceModelForm(ModelForm):
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.TextInput(attrs={'readonly':'readonly'}))
     subaccount = forms.ModelChoiceField(queryset=SubAccount.objects.all(), required=False, widget = forms.TextInput(attrs={'readonly':'readonly'}))
+    
+    
+    
+    def __init__(self, *args, **kwargs):
+        super(AccountAddonServiceModelForm, self).__init__(*args, **kwargs)
+        self.fields['activated'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['deactivated'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['temporary_blocked'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        
     class Meta:
         model = AccountAddonService
       
@@ -350,7 +364,7 @@ class AccountForm(ModelForm):
         self.fields['credit'].widget.attrs['class'] = 'input-small'
         self.fields['comment'].widget.attrs['class'] = 'input-xlarge span10'
         self.fields['comment'].widget.attrs['cols'] =10
-        self.fields['created'].widget = forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'})
+        self.fields['created'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
     
     class Meta:
         model = Account
@@ -395,7 +409,11 @@ class PeriodicalServiceForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(PeriodicalServiceForm, self).__init__(*args, **kwargs)
         self.fields['tarif'].widget = forms.widgets.HiddenInput()
+        self.fields['created'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['deactivated'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
         
+
+
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     #activation_type = forms.BooleanField(required=False, label=u'Начать списание с начала расчётного периода', widget=forms.widgets.CheckboxInput)
     
@@ -698,8 +716,8 @@ class NewsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(NewsForm, self).__init__(*args, **kwargs)
         self.fields['body'].widget.attrs['class'] = 'input-xlarge span8'
-        self.fields['created'].widget =widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'})
-        self.fields['age'].widget = forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'})
+        self.fields['created'].widget =SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['age'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
 
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     accounts = AutoCompleteSelectMultipleField( 'account_fts', label=u'Аккаунты', required = False)
@@ -746,9 +764,9 @@ class CardSearchForm(forms.Form):
     ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
     sold = DateRangeField(required=False, label=u"Проданы")
     not_sold = forms.BooleanField(required=False, label=u"Не проданные")
-    activated = DateRangeField(required=False, label=u"Активированы")
+    activated = DateRangeField(label=u'Активированы', required=False)
     activated_by = AutoCompleteSelectMultipleField( 'account_username', required = False)
-    created = DateRangeField(required=False, label=u"Созданы")
+    created = DateRangeField(label=u'Созданы', required=False )
     
 class CardBatchChangeForm(forms.Form):
     cards = forms.CharField(required=True, widget = forms.widgets.HiddenInput)
@@ -772,12 +790,12 @@ class CardBatchChangeForm(forms.Form):
     nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
     ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
     
-    date_start = forms.DateTimeField(label=u'Активировать с', required = False, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
-    date_end = forms.DateTimeField(label=u'Активировать по', required = False, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    date_start = forms.DateTimeField(label=u'Активировать с', required = False, widget=SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    date_end = forms.DateTimeField(label=u'Активировать по', required = False, widget=SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
     
 
 class DealerForm(ModelForm):
-    
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = Dealer    
 

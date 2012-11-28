@@ -1,9 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
-        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
-
-        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
 
         <script type="text/javascript"> 
         $(document).ready(function() {
@@ -57,7 +54,7 @@
             {{ form.non_field_errors }}
                 <fieldset>
                     <legend>Поиск по логу авторизаций</legend>
-                    {{form}}
+                    {{form|crispy}}
                 
                 </fieldset>
                 <fieldset>

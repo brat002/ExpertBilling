@@ -55,7 +55,7 @@ def group_edit(request):
             return HttpResponseRedirect(reverse("group"))
         else:
             print form._errors
-            return {'form':form,  'status': False} 
+            return {'form':form,  'status': False, 'item': model} 
 
     else:
         id = request.GET.get("id")
@@ -70,7 +70,7 @@ def group_edit(request):
         else:
             form = GroupForm()
 
-    return { 'form':form, 'status': False} 
+    return { 'form':form, 'status': False, 'item':item} 
 
 @ajax_request
 @login_required

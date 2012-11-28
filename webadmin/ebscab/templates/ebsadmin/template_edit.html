@@ -2,10 +2,7 @@
 {% load crispy_forms_tags %}
 {% load ebsadmin_tags %}
 {% block extra_head %}
-        <script type="text/javascript" src="/media/daterangepicker/daterangepicker.jQuery.js"></script>
 
-        <link rel="stylesheet" href="/media/daterangepicker/ui.daterangepicker.css" type="text/css" />
-        <link rel="stylesheet" href="/media/css/jquery-ui-1.7.2.custom.css" type="text/css" title="ui-theme" />
 		<script src="/media/codemirror/lib/codemirror.js"></script>
 		<link rel="stylesheet" href="/media/codemirror/lib/codemirror.css">
     <script src="/media/codemirror/mode/xml/xml.js"></script>
@@ -24,7 +21,7 @@
 	    		 dataType: "json", 
 	    		 success: function(data){
 		             if(data.success==true){
-		            	 $("#preview").html(editor.getValue());
+		            	 $("#preview").html(data.body);
 		             }
 		             else{
 		            	 
