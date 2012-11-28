@@ -12,10 +12,10 @@ import datetime
 
 BILLING_ROOT_PATH = '/opt/ebs/'
 BILLING_PATH = '/opt/ebs/data'
-WEBCAB_PATH = '/opt/ebs/data/ebscab/'
+WEBCAB_PATH = '/opt/ebs/web/ebscab/'
 BACKUP_DIR = '/opt/ebs/backups/'
 LAST_SQL = '/opt/ebs/data/etc/install.ini'
-FIRST_TIME_LAST_SQL='/opt/ebs/deploy/billing/etc/install.ini'
+
 DEPLOYMENT_DIR = '/opt/ebs/deploy/'
 BACKUP_DIR = '/opt/ebs/backups'
 curdate = datetime.datetime.now().strftime('%d-%m-%y_%H_%M_%S')
@@ -24,13 +24,22 @@ def get_tempdir():
     return tempfile.mkdtemp()
 
 def prepare_deploy():
+    
+    local('echo "deb http://www.rabbitmq.com/debian/ testing main" >/etc/apt/sources.list.d/')
+    
+    local('wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc && apt-key add rabbitmq-signing-key-public.asc')
     local('apt-get update')
-    local('apt-get install postgresql postgresql-contrib mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv')
+    local('apt-get install postgresql postgresql-contrib postgresql-server-dev-9.1 python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv rabbitmq-server')
 
+def configure_rabbit():
+    local("rabbitmqctl add_user ebs ebspassword")
+    local("rabbitmqctl add_vhost /ebs")
+    local("rabbitmqctl change_password ebs ebspassword")
+    local("rabbitmqctl set_permissions -p /ebs ebs '.*' '.*' '.*'")
+    local("rabbitmqctl set_user_tags ebs management")
     
 def requirements():
-    with prefix('source /opt/ebs/venv/bin/activate'):
-        local('pip install -U -r /opt/ebs/data/soft/requirements.txt')
+    local('pip install -E /opt/ebs/venv/ -U -r /opt/ebs/data/soft/requirements.txt')
     
 def virtualenv():
     with lcd('/opt/ebs/'):
@@ -57,33 +66,45 @@ def update_src():
     
 def setup_webcab():
     with lcd(WEBCAB_PATH):
-        local('cp ebscab/settings_local.py.tmpl ebscab/settings_local.py')
+        local('cp settings_local.py.tmpl settings_local.py')
         local('ln -sf default /etc/init.d/apache2/sites-enabled/ebs')
+        local('ln -sf blankpage_config /etc/init.d/apache2/sites-enabled/ebs_blankpage')
         local('a2dissite default')
+        local('/etc/init.d/apache reload')
         
 def deploy(tarfile):
     print('Installing expert billing system')
     if os.path.exists(os.path.join(BILLING_PATH, 'ebs_config.ini')):
         print "You cant`t install billing on existing installation"
+        print "Remove /opt/ebs and try again (rm -rf /opt/ebs)"
         sys.exit() 
     
     print('Preparing layout')
     layout()
     local('adduser --system --no-create-home --disabled-password ebs')
     prepare_deploy()
+    configure_rabbit()
     virtualenv()
+    
     unpack(tarfile)
+    requirements()
     update_src()#backup settings before deploy, restore settings after deploy
+    
     db_install()
     db_upgrade()
-    requirements()
+    
     setup_webcab()
+    init_scripts()
+    restart()
+    
+def restart():
+    local("billing restart")
 
 def upgrade():
     pass
 
 def init_scripts():
-    local('cp -f %s /etc/init.d/' % (os.path.join(BILLING_PATH,'init.d/')))
+    local('cp -f %s /etc/init.d/' % (os.path.join(BILLING_PATH,'init.d/*')))
     local('update-rc.d ebs_celery defaults')
     local('update-rc.d ebs_nfroutine defaults')
     local('update-rc.d ebs_nf defaults')
@@ -91,6 +112,8 @@ def init_scripts():
     local('update-rc.d ebs_rad_auth defaults')
     local('update-rc.d ebs_rad_acct defaults')
     local('update-rc.d ebs_core defaults')
+    local('cp /opt/ebs/data/soft/billing /usr/sbin/')
+    local('chmod +x /usr/sbin/billing')
 
 def db_backup():
     local("""su postgres -c 'pg_dump ebs | gzip >%s'""", (os.path.join(BACKUP_DIR, 'database_%s.gz' % curdate)))
@@ -103,7 +126,7 @@ def db_install():
 def db_upgrade():
     print("*"*80)
     print("Upgrading DB from sql/upgrade/*.sql files")
-    SQL_UPGRADE_PATH = os.path.join(BILLING_PATH, '/sql/upgrade')
+    SQL_UPGRADE_PATH = os.path.join(BILLING_PATH, 'sql/upgrade')
     install_config = ConfigParser.ConfigParser()
     first_time=False
     if not os.path.exists(LAST_SQL):
@@ -111,7 +134,7 @@ def db_upgrade():
         last_sql_id=0
     
     if first_time==True:
-        install_config.read(FIRST_TIME_LAST_SQL)
+        install_config.read(LAST_SQL)
         if not install_config.has_section('sql'):
             install_config.add_section('sql') 
     else:
@@ -122,7 +145,7 @@ def db_upgrade():
     available_files=[int(x.replace(".sql", '')) for x in os.listdir(SQL_UPGRADE_PATH)]
     
     for id in xrange(last_sql_id+1, max(available_files)+1):
-        upgrade_sql="%s%s.sql" % (SQL_UPGRADE_PATH, id)
+        upgrade_sql="%s/%s.sql" % (SQL_UPGRADE_PATH, id)
         if not os.path.exists(upgrade_sql):
             print "cannot find file %s" % upgrade_sql
             continue
@@ -136,7 +159,7 @@ def db_upgrade():
             
         
     if first_time==True:
-        with open(FIRST_TIME_LAST_SQL, 'wb') as configfile:
+        with open(LAST_SQL, 'wb') as configfile:
             install_config.write(configfile)
     else:
         with open(LAST_SQL, 'wb') as configfile:
