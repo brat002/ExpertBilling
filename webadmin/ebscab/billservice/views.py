@@ -7,7 +7,7 @@ import os, sys
 import logging
 
 
-log = logging.getLogger('billservice.views')
+
 
 #print os.path.abspath('../../../')
 sys.path.append(os.path.abspath('../../'))
@@ -20,7 +20,7 @@ CUR_PATH = os.getcwd()
 ROLE = 2
 
 from django.conf import settings
-import isdlogger
+
 
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponseRedirect, HttpResponse
@@ -42,7 +42,7 @@ from lib.decorators import render_to, ajax_request#, login_required
 from paymentgateways.qiwi.models import Invoice as QiwiInvoice
 from paymentgateways.qiwi.forms import QiwiPaymentRequestForm
 import math
-logger = isdlogger.isdlogger('logging', loglevel=settings.LOG_LEVEL, ident='webcab', filename=settings.WEBCAB_LOG)
+
 #rpc_protocol.install_logger(logger)
 #client_networking.install_logger(logger)
 from ebsadmin.cardlib import add_addonservice, del_addonservice, activate_pay_card
