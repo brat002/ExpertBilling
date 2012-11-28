@@ -20,7 +20,7 @@
      });
      $(".show-confirm").click(function() {
          a=$(this);
-         $.fn.dialog2.helpers.confirm("Удалить? Вы уверены, что хотите удалить строку?", {
+         $.fn.dialog2.helpers.confirm("Удалить? Вы уверены, что хотите удалить услугу тарификации трафика?", {
              confirm: function() {
                  $.getJSON(a.attr('href'),{},function(data,status){
                      if( status=='success' ){
@@ -55,6 +55,7 @@
  </script>
 {% endblock %}
 {% block tariff_content %}
+
 <form method="POST" action="{% url tariff_traffictransmitservice %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal">
 {{form.id}}
 {% if item %}

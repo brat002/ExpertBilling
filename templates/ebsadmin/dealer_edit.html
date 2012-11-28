@@ -3,40 +3,9 @@
 {% block extra_head %}
         <script type="text/javascript"> 
         $(document).ready(function() {
-        $("#id_btn_fill").click(function() {
-        	
-        	var input = $("<input>").attr("type", "hidden").attr("name", "fill").val("true");
-        	$('#id_form').append($(input));
-        	$('#id_form').submit();
-            });
-        $("#id_btn_test").click(function() {
-        	$("#id_btn_test").text('Подождите');
-        	setTimeout(function() {
-        	$.ajax({
-        		   type: "POST",
-        		   url: "{% url nas_test_credentials %}",
-        		   data: {login: $("#id_login").val(),password: $("#id_password").val(), host: $("#id_ipaddress").val()},
-        		   dataType: 'ajax',
-        		   async: false,
-        		   success: function(msg){
-        			   if (msg.status){
-        				   alert( "Тест прошёл успешно");
-        			   }
-        			   else{
-        				   alert( "Ошибка: " + msg.message );
-        			   }
-        			   $("#id_btn_test").text('Проверить');
-        		   },
-        		   error: function(msg){
-        		          alert("Ошибка соединения");
-        		          $("#id_btn_test").text('Проверить');
-        		       }
-        		 });}, 500);
-            });
 
         
-        $('#id_btn_fill').popover({title:'Заполнить значениями?', content: 'Заполнить значениями по-умолчанию для выбранного типа сервера доступа? Текущие настройки будут возвращены в первоначальное состояние'});
-        //activate latest tab, if it exists:
+
         var lastTab = $.cookie('last_tab');
         if (lastTab) {
             $('ul.nav-tabs').children().removeClass('active');
@@ -71,7 +40,7 @@
 </ul>
 
 <form id="id_form" method="POST" action="{% url dealer_edit %}?id={{item.id}}" class="well form-horizontal">
-
+{{form.id}}
             <legend>Профиль дилера{% objectlog item %}</legend>
              <fieldset>
                    <div class="control-group">

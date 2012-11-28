@@ -5108,6 +5108,7 @@ def templaterender(request):
         templ = mako_template(unicode(form.cleaned_data.get('body')), input_encoding='utf-8')
         data=''
         from django.db import connection
+        cur = connection.cursor()
         if templatetype.id==1:
     
             #account = Account.objects.get(id=form.cleaned_data.get('account'))
@@ -5115,16 +5116,16 @@ def templaterender(request):
 
             #tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
             try:
-                data=templ.render_unicode(account=account,  connection=connection)
+                data=templ.render_unicode(account=account,  connection=cur)
             except Exception, e:
                 data=u"Error %s" % str(e)
         if templatetype.id==2:
-            account = connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0].id
+            account = Account.objects.all()[0]
             #organization = self.connection.sql("SELECT * FROM billservice_organization LIMIT 1" )[0]
             #bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
-            operator = connection.get("SELECT * FROM billservice_operator LIMIT 1")
+            operator = Organization.objects.all()[0]
             try:
-                data=templ.render_unicode(account=account, operator=operator,  connection=connection)
+                data=templ.render_unicode(account=account, operator=operator,  connection=cur)
             except Exception, e:
                 data=u"Error %s" % str(e)
     

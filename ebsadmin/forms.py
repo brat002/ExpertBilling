@@ -6,6 +6,7 @@ from django.forms import ModelForm
 from billservice.models import Tariff, Account, Group, Tariff
 from nas.models import Nas, TrafficClass
 
+from billservice.forms import DateRangeField
 from ajax_select.fields import AutoCompleteSelectMultipleField
 from django.conf import settings
 chartdata = {
@@ -53,8 +54,7 @@ class ReportForm(forms.Form):
     nasses = forms.ModelMultipleChoiceField(queryset=Nas.objects.all(), required=False)
     groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), required=False)
     tariffs = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False)
-    start_date = forms.DateTimeField(required=True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
-    end_date = forms.DateTimeField(required=True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    daterange = DateRangeField(label=u'Диапазон', required=False )
     
     reporttype = forms.ChoiceField(choices=reporttypes, required=False)
     trafficsource = forms.CharField(required=False)
