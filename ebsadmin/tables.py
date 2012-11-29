@@ -673,6 +673,10 @@ class AccountPrepaysTraficTable(TableReport):
     id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     account_tarif = django_tables.Column(u'Аккаунт/Тариф')
     size = django_tables.TemplateColumn("{{record.size|filesizeformat}}", verbose_name=u'Остаток')
+    progress = django_tables.TemplateColumn("""    <div class="progress progress-success">
+          <div class="bar" style="width: {{record.in_percents}}%"></div>
+        </div>""", verbose_name=u'Расходовано')
+
     datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
     
     def render_bytes(self, value, record):
@@ -691,6 +695,9 @@ class AccountPrepaysRadiusTraficTable(TableReport):
     account_tarif = django_tables.Column(u'Аккаунт/Тариф')
     size = django_tables.TemplateColumn("{{record.size|filesizeformat}}", verbose_name=u'Остаток')
     datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
+    progress = django_tables.TemplateColumn("""    <div class="progress progress-success">
+          <div class="bar" style="width: {{record.in_percents}}%"></div>
+        </div>""", verbose_name=u'Расходовано')
     
     def render_bytes(self, value, record):
         return value
@@ -708,6 +715,9 @@ class AccountPrepaysTimeTable(TableReport):
     account_tarif = django_tables.Column(u'Аккаунт/Тариф')
     
     datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
+    progress = django_tables.TemplateColumn("""    <div class="progress progress-success">
+          <div class="bar" style="width: {{record.in_percents}}%"></div>
+        </div>""", verbose_name=u'Расходовано')
     
     def render_bytes(self, value, record):
         return value

@@ -542,6 +542,10 @@ class AccountPrepaysTrafic(models.Model):
     class Admin:
         pass
 
+    def in_percents(self):
+        a = self.size*100/self.prepaid_traffic.size
+        return a
+    
     class Meta:
         ordering = ['-datetime']
         verbose_name = u"Предоплаченый трафик"
@@ -570,7 +574,9 @@ class AccountPrepaysRadiusTrafic(models.Model):
 
     class Admin:
         pass
-
+    def in_percents(self):
+        a = self.size*100/self.prepaid_traffic.size
+        return a
     class Meta:
         ordering = ['-datetime']
         verbose_name = u"Предоплаченый radius трафик "
@@ -589,6 +595,10 @@ class AccountPrepaysTime(models.Model):
     current=models.BooleanField(default=False)
     reseted=models.BooleanField(default=False)
 
+    def in_percents(self):
+        a = self.size*100/self.prepaid_time_service.size
+        return a
+    
     class Admin:
         pass
 
