@@ -326,9 +326,9 @@ def get_promise(request):
             from decimal import Decimal
             cursor=connection.cursor()
             cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, description, type_id, approved, tarif_id, summ, created, promise)
-                              VALUES(%s, %s, 'Перевод средств на аккаунт %s', 'MONEY_TRANSFER_TO', True, get_tarif(%s), %s, now(), False)""" % (user.id, to_user.id, to_user.username, user.id, sum))
+                              VALUES(%s, %s, 'Перевод средств на аккаунт %s', 'MONEY_TRANSFER_TO', True, get_tarif(%s), %s, now(), False)""" % (user.id, to_user.id, to_user.username, user.id, -1*sum))
             cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, description, type_id, approved, tarif_id, summ, created, promise)
-                              VALUES(%s, %s, 'Перевод средств с аккаунта %s', 'MONEY_TRANSFER_FROM', True, get_tarif(%s), %s*(-1), now(), False)""" % (to_user.id, user.id, user.username, to_user.id, sum))
+                              VALUES(%s, %s, 'Перевод средств с аккаунта %s', 'MONEY_TRANSFER_FROM', True, get_tarif(%s), %s, now(), False)""" % (to_user.id, user.id, user.username, to_user.id, sum))
 
             cursor.connection.commit()
             allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance-Decimal(sum))

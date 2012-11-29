@@ -59,7 +59,7 @@ def activate_card(login, pin):
         
         transaction.approved = True
         transaction.tarif=card.tarif
-        transaction.summ=card.nominal*(-1)
+        transaction.summ=card.nominal
         transaction.created=now
         transaction.save()
 
@@ -96,7 +96,7 @@ def activate_pay_card(account_id, serial, card_id, pin):
                 transaction.type = TransactionType.objects.get(internal_name='PAY_CARD')
                 
                 transaction.approved = True
-                transaction.summ=card.nominal*(-1)
+                transaction.summ=card.nomina
                 transaction.created=now
                 transaction.save()            
                 
@@ -236,21 +236,7 @@ def del_addonservice(account_id, account_service_id):
         now = datetime.datetime.now()
         
         if (((now-accountservice.activated).seconds+(now-accountservice.activated).days*86400)<delta) or (service.wyte_cost and delta == 0):
-            try:
-                model = Object()
-                model.account_id = account_id
-                model.type_id = 'ADDONSERVICE_WYTE_PAY'
-                model.summ = service.wyte_cost
-                model.service_id = service.id
-                model.service_type = service.service_type
-                model.created = "now()"
-                model.accounttarif_id = account.accounttarif_id
-                model.accountaddonservice_id = account_service_id
-            except Exception, e:
-                logger.error("Error cannot make wyte transaction for account %s, %s", (account_id, e))
-            sql = model.save("billservice_addonservicetransaction")
-            cur.execute(sql)
-            
+
             ast = AddonServiceTransaction()
             ast.account = account
             ast.type = 'ADDONSERVICE_WYTE_PAY'
