@@ -3,7 +3,7 @@ from __future__ import with_statement
 from fabric.api import local
 from fabric.api import local, settings, abort
 from fabric.contrib.console import confirm
-
+from fabric.colors import green,red,yellow
 from fabric.api import lcd
 from fabric.context_managers import  prefix
 import os, sys
@@ -50,6 +50,7 @@ def virtualenv():
         
 
 def layout():
+    print(green('Preparing layout'))
     if not os.path.exists('/opt/ebs'): local('mkdir -p /opt/ebs/')
     if not os.path.exists('/opt/ebs/backups'): local('mkdir -p /opt/ebs/backups')
     if not os.path.exists('/opt/ebs/data'): local('mkdir -p /opt/ebs/data')
@@ -58,16 +59,19 @@ def layout():
     if not os.path.exists('/opt/ebs/deploy'): local('mkdir -p /opt/ebs/deploy')
 
 def unpack(tarfile):
+    print(green('Unpack archive to /opt/ebs/ directory'))
     local('tar -xvzf %s -C /opt/ebs/deploy/' % tarfile)
     with lcd('/opt/ebs/deploy'):
         local('tar -xvzf ebs.tar.gz -C %s' % BILLING_ROOT_PATH)
         local('tar -xvzf web.tar.gz -C %s' % BILLING_ROOT_PATH)
     
 def postconf():
+    print(green('Renaming ebs_config.ini.tmpl to ebs_config.ini'))
     local('mv /opt/ebs/data/ebs_config.ini.tmpl /opt/ebs/data/ebs_config.ini')
     
     
 def setup_webcab():
+    print(green('Setuping webcab'))
     with lcd(WEBCAB_PATH):
         local('cp settings_local.py.tmpl settings_local.py')
         local('ln -sf default /etc/apache2/sites-enabled/ebs ')
@@ -76,6 +80,7 @@ def setup_webcab():
         local('/etc/init.d/apache reload')
         
 def simple_setup_webcab():
+    print(green('Setuping webcab'))
     with lcd(WEBCAB_PATH):
         local('ln -sf default /etc/apache2/sites-enabled/ebs ')
         local('ln -sf  blankpage_config /etc/apache2/sites-enabled/ebs_blankpage')
@@ -89,7 +94,7 @@ def deploy(tarfile):
         print "Remove /opt/ebs and try again (rm -rf /opt/ebs)"
         sys.exit() 
     
-    print('Preparing layout')
+    
     layout()
     local('adduser --system --no-create-home --disabled-password ebs')
     prepare_deploy()
@@ -111,7 +116,6 @@ def deploy(tarfile):
 def upgrade_14(tarfile):
     print('Upgrading expert billing system from 1.4.1 version')
     
-    print('Preparing layout')
     layout()
     local('adduser --disabled-password ebs')
     prepare_deploy()
@@ -137,8 +141,8 @@ def upgrade_14(tarfile):
 def upgrade(tarfile):
     print('Upgrading expert billing system')
     
-    print('Preparing layout')
-    
+
+    stop()
     db_backup()
     data_backup()
     webcab_backup()
@@ -165,21 +169,24 @@ def upgrade(tarfile):
     
 
 def cleanup_14():
-    
+    print(green('Cneaning directory /opt/ebs/data /opt/ebs/web'))
     local('mkdir -p %s' % os.path.join(BACKUP_DIR, 'pre15', 'data/'))
     local('mkdir -p %s' % os.path.join(BACKUP_DIR, 'pre15', 'webcab/'))
     local(' mv -f %s %s' % (BILLING_PATH,os.path.join(BACKUP_DIR, 'pre15', 'data/')) )
     local(' mv -f %s %s' % (os.path.join(BILLING_PATH, 'web/'),os.path.join(BACKUP_DIR, 'pre15', 'web/')) )
     
 def restart():
+    print(green('Restarting processes'))
     local("billing restart")
 
 def stop():
+    print(green('Stopping processes'))
     local("billing force-stop")
     local("/etc/init.d/apache2 stop")
 
 
 def init_scripts():
+    print(green('Installing init script'))
     local('cp -f %s /etc/init.d/' % (os.path.join(BILLING_PATH,'init.d/*')))
     local('update-rc.d ebs_celery defaults')
     local('update-rc.d ebs_nfroutine defaults')
@@ -193,25 +200,29 @@ def init_scripts():
     local('chmod +x /usr/sbin/billing')
 
 def db_backup():
+    print(green('Database backup'))
     local("""su postgres -c 'pg_dump ebs | gzip >%s'""", (os.path.join(BACKUP_DIR, 'database_%s.gz' % curdate)))
 
 def data_backup():
+    print(green('/opt/ebs/data folder backup'))
     with lcd(BILLING_PATH):
         local('tar -cvzf %s .' % os.path.join(BACKUP_DIR, 'data_%s.gz' % curdate))
         
 
 def webcab_backup():
+    print(green('Webcab backup'))
     with lcd(BILLING_ROOT_PATH):
         local('tar -cvzf %s web' % os.path.join(BACKUP_DIR, 'web_%s.gz' % curdate))
         
 def db_install():
+    print(green('Installing initial databaes scheme'))
     with lcd('/opt/ebs/data/'):
         local("""su postgres -c 'psql ebs -f sql/ebs_dump.sql'""")
         local("""su postgres -c 'psql ebs -f sql/changes.sql'""")
 
 def db_upgrade():
     print("*"*80)
-    print("Upgrading DB from sql/upgrade/*.sql files")
+    print(green("Upgrading DB from sql/upgrade/*.sql files"))
     SQL_UPGRADE_PATH = os.path.join(BILLING_PATH, 'sql/upgrade')
     install_config = ConfigParser.ConfigParser()
     first_time=False
