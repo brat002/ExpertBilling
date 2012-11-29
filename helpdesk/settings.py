@@ -13,6 +13,7 @@ PERSONAL_AREA_MENU = [
     ('helpdesk_account_tickets', u'Список запросов'),
     ('helpdesk_account_tickets_add', u'Добавить запрос'),
     ('billservice_index', u'В кабинет'),
+    ('admin_dashboard', u'Интерфейс администратора'),
     #('account_logout', _(u'Logout')),
 ]
 # check for django-tagging support
