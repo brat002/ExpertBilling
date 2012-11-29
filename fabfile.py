@@ -30,7 +30,7 @@ def prepare_deploy():
     
     local('wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc && apt-key add rabbitmq-signing-key-public.asc')
     local('apt-get update')
-    local('apt-get install postgresql postgresql-contrib postgresql-server-dev-9.1 htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv rabbitmq-server')
+    local('apt-get install postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1 htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv rabbitmq-server')
 
 
 def configure_rabbit():
@@ -75,6 +75,13 @@ def setup_webcab():
         local('a2dissite default')
         local('/etc/init.d/apache reload')
         
+def simple_setup_webcab():
+    with lcd(WEBCAB_PATH):
+        local('ln -sf default /etc/apache2/sites-enabled/ebs ')
+        local('ln -sf  blankpage_config /etc/apache2/sites-enabled/ebs_blankpage')
+        local('a2dissite default')
+        local('/etc/init.d/apache reload')
+        
 def deploy(tarfile):
     print('Installing expert billing system')
     if os.path.exists(os.path.join(BILLING_PATH, 'ebs_config.ini')):
@@ -98,14 +105,79 @@ def deploy(tarfile):
     
     setup_webcab()
     init_scripts()
+    restart()
+    
+
+def upgrade_14(tarfile):
+    print('Upgrading expert billing system from 1.4.1 version')
+    
+    print('Preparing layout')
+    layout()
+    local('adduser --disabled-password ebs')
+    prepare_deploy()
+    configure_rabbit()
+    virtualenv()
+    
+    db_backup()
+    data_backup()
+    webcab_backup()
+
+    unpack(tarfile)
+    requirements()
+    #backup settings before deploy, restore settings after deploy
+    
+    #db_install()
+    db_upgrade()
+    
+    simple_setup_webcab()
+    init_scripts()
     postconf()
     restart()
+    
+def upgrade(tarfile):
+    print('Upgrading expert billing system')
+    
+    print('Preparing layout')
+    
+    db_backup()
+    data_backup()
+    webcab_backup()
+    cleanup_14()
+    layout()
+    local('adduser --system --no-create-home --disabled-password ebs')
+    prepare_deploy()
+    configure_rabbit()
+    virtualenv()
+    
+
+
+    unpack(tarfile)
+    requirements()
+    #backup settings before deploy, restore settings after deploy
+    
+    #db_install()
+    db_upgrade()
+    
+    simple_setup_webcab()
+    init_scripts()
+    postconf()
+    restart()
+    
+
+def cleanup_14():
+    
+    local('mkdir -p %s' % os.path.join(BACKUP_DIR, 'pre15', 'data/'))
+    local('mkdir -p %s' % os.path.join(BACKUP_DIR, 'pre15', 'webcab/'))
+    local(' mv -f %s %s' % (BILLING_PATH,os.path.join(BACKUP_DIR, 'pre15', 'data/')) )
+    local(' mv -f %s %s' % (os.path.join(BILLING_PATH, 'web/'),os.path.join(BACKUP_DIR, 'pre15', 'web/')) )
     
 def restart():
     local("billing restart")
 
-def upgrade():
-    pass
+def stop():
+    local("billing force-stop")
+    local("/etc/init.d/apache2 stop")
+
 
 def init_scripts():
     local('cp -f %s /etc/init.d/' % (os.path.join(BILLING_PATH,'init.d/*')))
@@ -127,6 +199,7 @@ def data_backup():
     with lcd(BILLING_PATH):
         local('tar -cvzf %s .' % os.path.join(BACKUP_DIR, 'data_%s.gz' % curdate))
         
+
 def webcab_backup():
     with lcd(BILLING_ROOT_PATH):
         local('tar -cvzf %s web' % os.path.join(BACKUP_DIR, 'web_%s.gz' % curdate))
