@@ -12,6 +12,7 @@ from ebsadmin.tables import ManufacturerTable
 
 from billservice.forms import ManufacturerForm
 from billservice.models import Manufacturer
+from django.contrib import messages
 
 log = LogItem.objects.log_action
 
@@ -53,9 +54,10 @@ def manufacturer_edit(request):
             model.save()
 
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Производитель успешно сохранён.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-
+            messages.error(request, u'При сохранении производителя возникли ошибки.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -85,7 +87,9 @@ def manufacturer_delete(request):
             return {"status": False, "message": u"Указанный производитель оборудования найден %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Производитель успешно удалён.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении производителя возникли ошибки.', extra_tags='alert-danger')
         return {"status": False, "message": "manufacturer not found"} 
     

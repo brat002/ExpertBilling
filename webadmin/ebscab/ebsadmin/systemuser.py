@@ -12,7 +12,7 @@ from tables import SystemUserTable
 from django.contrib.auth.models import User
 from billservice.forms import SystemUserForm
 from billservice.models import SystemUser
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -70,9 +70,10 @@ def systemuser_edit(request):
             u.is_superuser = form.cleaned_data.get("superuser")
             u.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Администратор успешно сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect(reverse("systemuser"))
         else:
-            print form._errors
+            messages.success(request, u'Ошибка при сохранении администратора.', extra_tags='alert-success')
             return {'form':form,  'item': item} 
     else:
         id = request.GET.get("id")
@@ -107,6 +108,8 @@ def systemuser_delete(request):
             return {"status": False, "message": u"Указанный администратор не найден %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Администратор успешно удалён.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'Ошибка при удалении администратора.', extra_tags='alert-danger')
         return {"status": False, "message": "systemuser not found"} 

@@ -13,7 +13,7 @@ from tables import SettlementPeriodTable
 from billservice.forms import SettlementPeriodForm
 from billservice.models import SettlementPeriod
 import datetime
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -53,10 +53,11 @@ def settlementperiod_edit(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Расчётный период удачно создан.', extra_tags='alert-success')
             return HttpResponseRedirect(reverse("settlementperiod"))
         else:
-
-            return {'form':form,  'status': False} 
+            messages.warning(request, u'Ошибка.', extra_tags='alert-danger')
+            return {'form':form,  'status': False, 'item':item} 
     else:
         id = request.GET.get("id")
 

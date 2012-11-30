@@ -12,7 +12,7 @@ from ebsadmin.tables import GroupTable
 
 from billservice.forms import GroupForm
 from billservice.models import Group
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -52,9 +52,10 @@ def group_edit(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Группа трафика успешно сохранена.', extra_tags='alert-success')
             return HttpResponseRedirect(reverse("group"))
         else:
-            print form._errors
+            messages.error(request, u'При сохранении группы трафика возникли ошибки.', extra_tags='alert-danger')
             return {'form':form,  'status': False, 'item': model} 
 
     else:
@@ -76,16 +77,18 @@ def group_edit(request):
 @login_required
 def group_delete(request):
     if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_group')):
-        return {'status':False, 'message': u'У вас нет прав на удаление оборудования'}
+        return {'status':False, 'message': u'У вас нет прав на удаление групп трафика'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = Group.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанное оборудование не найдено %s" % str(e)}
+            return {"status": False, "message": u"Указанная группа трафика не найдена %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Группа трафика успешно удалёна.', extra_tags='alert-success')
         return {"status": True}
     else:
-        return {"status": False, "message": "Hardware not found"} 
+        messages.error(request, u'При удалении группы трафика возникли ошибки.', extra_tags='alert-danger')
+        return {"status": False, "message": "Group not found"} 
     
