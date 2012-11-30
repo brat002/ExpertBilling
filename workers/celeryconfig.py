@@ -1,16 +1,13 @@
 import sys
+import os
 
 sys.path.append('.')
+import ConfigParser
+config = ConfigParser.ConfigParser()
+BILLING_PATH = '/opt/ebs/data/'
+config.read(os.path.join(BILLING_PATH, "ebs_config.ini"))
 
-#===============================================================================
-# BROKER_HOST = "localhost"
-# BROKER_PORT = 5672
-# BROKER_USER = "celeryuser"
-# BROKER_PASSWORD = "celery"
-# BROKER_VHOST = "celeryvhost"
-#===============================================================================
-
-BROKER_URL = 'amqp://celeryuser:celery@localhost:5672/celeryvhost'
+BROKER_URL = config.get("db", "kombu_dsn")
 
 CELERY_RESULT_BACKEND = "amqp"
 

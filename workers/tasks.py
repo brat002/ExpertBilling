@@ -12,7 +12,7 @@ import psycopg2
 import ConfigParser
 config = ConfigParser.ConfigParser()
 BILLING_PATH = '/opt/ebs/data/'
-config.read(os.path.join(BILLING_PATH, "/ebs_config.ini"))
+config.read(os.path.join(BILLING_PATH, "ebs_config.ini"))
 SSH_BACKEND = config.get("core", "ssh_backend")
 db_name = "db"
 DICT = dictionary.Dictionary(os.path.join(BILLING_PATH, "dicts/dictionary"),os.path.join(BILLING_PATH, "dicts/dictionary.microsoft"), os.path.join(BILLING_PATH, 'dicts/dictionary.mikrotik') , os.path.join(BILLING_PATH, 'dicts/dictionary.cisco'))
