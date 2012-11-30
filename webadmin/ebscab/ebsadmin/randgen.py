@@ -5,7 +5,7 @@
 import random
 import re
 import sys
-import ConfigParser
+from django.conf import settings
 import os
 # This should be done using gettext for i18n, but I can't be bothered to figure
 # out how to do it properly, so I'm using replacement strings for now.
@@ -163,8 +163,7 @@ def verifyGrammar(nameGrammar):
 # the dictionary data type.  I love python ;-)
 
 def nameGen():
-    ebsadmin_config = ConfigParser.ConfigParser()
-    ebsadmin_config.read(os.path.abspath("./ebsadmin/ebsadmin.ini"))
+
         
     nameGrammar=fooGrammar
     nameStr = random.choice(nameGrammar["name"])
@@ -179,29 +178,25 @@ def nameGen():
 import string
 
 def GenPasswd():
-    ebsadmin_config = ConfigParser.ConfigParser()
-    ebsadmin_config.read(os.path.abspath("./ebsadmin/ebsadmin.ini"))
     chars = ''
-    if ebsadmin_config.getboolean("credentials", 'password_contain_letters'):
+    if settings.password_contain_letters:
         chars += string.letters
-    if ebsadmin_config.getboolean("credentials", 'password_contain_digits'):
+    if settings.password_contain_digits:
         chars += string.digits
     newpasswd=''
-    for i in range(ebsadmin_config.getint("credentials", 'password_length')):
+    for i in range(settings.password_length):
         newpasswd = newpasswd + random.choice(chars)
     return newpasswd
 
 
 def GenUsername():
-    ebsadmin_config = ConfigParser.ConfigParser()
-    ebsadmin_config.read(os.path.abspath("./ebsadmin/ebsadmin.ini"))
     chars = ''
-    if ebsadmin_config.getboolean("credentials", 'login_contain_letters'):
+    if settings.login_contain_letters:
         chars += string.letters
-    if ebsadmin_config.getboolean("credentials", 'login_contain_digits'):
+    if settings.login_contain_digits:
         chars += string.digits
     newpasswd=''
-    for i in range(ebsadmin_config.getint("credentials", 'login_length')):
+    for i in range(settings.login_length):
         newpasswd = newpasswd + random.choice(chars)
     return newpasswd
 
