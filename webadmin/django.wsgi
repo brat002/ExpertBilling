@@ -2,7 +2,7 @@ import os
 import sys
 
 sys.stdout = sys.stderr
-
+sys.path.append('/opt/ebs/data/workers/')
 import site
 site.addsitedir('/opt/ebs/venv/lib/python2.6/site-packages')
 site.addsitedir('/opt/ebs/venv/lib/python2.7/site-packages')

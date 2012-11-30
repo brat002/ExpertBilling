@@ -698,7 +698,7 @@ class RadiusAccessBill(Thread):
                     logger.debug("RADCOTHREAD: Checking session: %s", repr(rs))
                     acc = caches.account_cache.by_account.get(rs.account_id)
                     #if acc.radius_traffic_transmit_service_id:continue
-                    if acc.time_access_service_id:
+                    if acc and acc.time_access_service_id:
                         logger.debug("RADCOTHREAD: Time tarification session: %s", rs.sessionid)
                         old_time = rs.lt_time or 0
                         logger.debug("RADCOTHREAD: Old session time: %s %s", (rs.sessionid, old_time))
@@ -750,7 +750,7 @@ class RadiusAccessBill(Thread):
                         logger.debug("RADCOTHREAD: Session %s was checkouted (Time)", (rs.sessionid, ))
                         cur.connection.commit()  
                     #
-                    if acc.radius_traffic_transmit_service_id:  
+                    if acc and acc.radius_traffic_transmit_service_id:  
                         logger.debug("RADCOTHREAD: Traffic tarification session: %s", rs.sessionid)
                         radius_traffic = caches.radius_traffic_transmit_service_cache.by_id.get(acc.radius_traffic_transmit_service_id)
                         lt_bytes_in = rs.lt_bytes_in or 0
@@ -867,8 +867,12 @@ class RadiusAccessBill(Thread):
                             checkouted=True
                             logger.debug("RADCOTHREAD: Session %s was checkouted (Traffic)", (rs.sessionid, ))
                     if checkouted==False:
+                        cur.execute("""UPDATE radius_activesession SET lt_bytes_in=%s, lt_bytes_out=%s, lt_time=%s
+                                       WHERE date_start=%s and account_id=%s AND sessionid=%s and nas_port_id=%s and nas_int_id=%s
+                                    """, (rs.bytes_in, rs.bytes_out, rs.session_time, rs.date_start, rs.account_id, unicode(rs.sessionid), rs.nas_port_id, rs.nas_int_id))
                         logger.debug("RADCOTHREAD: Session %s was not tarificated", (rs.sessionid, ))
                                 
+                        cur.connection.commit()
                 cur.connection.commit()
                 cur.close()
                 logger.info("TIMEALIVE: Time access thread run time: %s", time.clock() - a)

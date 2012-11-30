@@ -1,7 +1,7 @@
 # -*- coding=utf-8 -*-
 import os, sys
 import logging
-
+sys.path.append('/opt/ebs/data/workers/')
 DEBUG = True
 DEBUG_SQL=False
 TEMPLATE_DEBUG = DEBUG
