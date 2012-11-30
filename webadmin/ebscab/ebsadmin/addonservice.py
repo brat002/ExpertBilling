@@ -15,7 +15,7 @@ from billservice.models import AddonService
 
 log = LogItem.objects.log_action
 
-
+from django.contrib import messages
 
 @login_required
 @render_to('ebsadmin/addonservice_list.html')
@@ -53,9 +53,10 @@ def addonservice_edit(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Подключаемая услуга сохранена.', extra_tags='alert-success')
             return HttpResponseRedirect(reverse("addonservice"))
         else:
-            print form._errors
+            messages.error(request, u'Ошибка при сохранении подключаемой услуги.', extra_tags='alert-danger')
             return {'form':form,  'item': item} 
     else:
         id = request.GET.get("id")
@@ -83,8 +84,9 @@ def addonservice_delete(request):
             return {"status": False, "message": u"Указанная услуга не найдена %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
-        
+        messages.success(request, u'Подключаемая услуга удалена.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'Ошибка при удалении подключаемой услуги.', extra_tags='alert-danger')
         return {"status": False, "message": "TransactionType not found"} 
     

@@ -40,6 +40,7 @@ from nas.models import Nas
 from nas.forms import NasForm
 
 from django.db.models import Sum
+from django.contrib import messages
 
 log = LogItem.objects.log_action
 
@@ -734,9 +735,10 @@ def accountedit(request):
             #    print kq
             print 5
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            
+            messages.success(request, u'Аккаунт сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"), model.id))
         else:
+            messages.error(request, u'Ошибка при сохранении.', extra_tags='alert-danger')
             return {'org_form':org_form, 'bank_form': bank_form,  'prepaidtraffic':prepaidtraffic, 'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
     if account:
         
@@ -786,22 +788,6 @@ def subaccountedit(request):
 
         res = []
         prev = None
-        for li in LogItem.objects.filter(object_type1__id=ctype.pk, object_id1=subaccount.id)[:20]:
-            data = json.loads((li.serialized_data))
-            d = data['object1_str']
-            if prev:
-
-                res.append({'user': li.user, 'changed_fields': ', '.join([u"%s=>%s" % (x, d.get(x)) for x  in compare(prev, d)])})
-            else:
-
-                res.append({'user': li.user, 'changed_fields': ', '.join([u"%s=>%s" % (x, d.get(x)) for x  in d])})
-            prev = d
-        
-        #res = [u"%s=>%s" % (x, res.get(x)) for x  in res]
-        action_log_table = LogTable(res)
-        table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(action_log_table)
-        if table_to_report:
-            return create_report_http_response(table_to_report, request)
         
     if account_id:
         account = Account.objects.get(id=account_id)
@@ -970,9 +956,11 @@ def subaccountedit(request):
             model.vpn_ip_address = vpn_ip_address or '0.0.0.0'
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Субаккаунт сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect("%s?id=%s" % (reverse("subaccount"), model.id))
     
         else:
+            messages.warning(request, u'Ошибка.', extra_tags='alert-danger')
             return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, 'accountaddonservice_table':table,  'form':form}
     else:
         if subaccount:
@@ -1135,9 +1123,10 @@ def transaction(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Транзакция выполнены.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-
+            messages.success(request, u'Ошибка при выполнении операции.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -1167,31 +1156,26 @@ def accountaddonservice_edit(request):
     id = request.GET.get("id")
     accountaddonservice = None
     if request.method == 'POST': 
-        print 1
-        print request.POST
-        print request.GET
         if id:
-            print 11
+
             model = AccountAddonService.objects.get(id=id)
             form = AccountAddonServiceModelForm(request.POST, instance=model) 
             if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountaddonservice')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование привязок подключаемых услуг'}
         else:
-            print 22
             form = AccountAddonServiceModelForm(request.POST) 
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountaddonservice')):
             return {'status':False, 'message': u'У вас нет прав на добавление привязок подключаемых услуг'}
 
-        print 2
+
         if form.is_valid():
-            print 3
             model = form.save(commit=False)
             model.save()
-            print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Услуга добавлена.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-
+            messages.error(request, u'Услуга не добавлена.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -1341,7 +1325,7 @@ def subaccount_delete(request):
         
         log('DELETE', request.user, item)
         item.delete()
-        
+        messages.success(request, u'Субаккаунт удалён.', extra_tags='alert-success')
         return {"status": True}
     else:
         return {"status": False, "message": "SubAccount not found"}
@@ -1361,8 +1345,10 @@ def accounttariff_delete(request):
             return {"status": False, "message": u"Невозможно удалить вступивший в силу тарифный план"}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Тарифный план применён.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'Ошибка при изменении тарифного плана.', extra_tags='alert-danger')
         return {"status": False, "message": "AccountTarif not found"}
     
 @ajax_request

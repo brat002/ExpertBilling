@@ -8,7 +8,7 @@ from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 from object_log.models import LogItem
 
-from ebsadmin.tables import SwitchTable
+from ebsadmin.tables import SwitchTable, SwitchPortsTable
 
 from billservice.forms import SwitchForm
 from billservice.models import Switch
@@ -67,11 +67,98 @@ def switch_edit(request):
             item = Switch.objects.get(id=id)
             
             form = SwitchForm(instance=item)
+            ports = []
+            broken_ports = item.broken_ports.split(',')
+            uplink_ports = item.uplink_ports.split(',')
+            protected_ports = item.protected_ports.split(',')
+            monitored_ports = item.monitored_ports.split(',')
+            disabled_ports = item.disabled_ports.split(',')
+            for x in xrange(1, item.ports_count+1):
+                ports.append({'port': x, 'broken_port':str(x) in broken_ports,
+                              'uplink_port': str(x) in uplink_ports,
+                              'protected_port': str(x) in protected_ports,
+                              'monitored_port': str(x) in monitored_ports,
+                              'disabled_port': str(x) in disabled_ports,
+                               })
+            ports_table = SwitchPortsTable(ports)
+            table_to_report = RequestConfig(request, paginate=False).configure(ports_table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
         else:
             form = SwitchForm()
+            ports_table = None
+        
 
-    return { 'form':form, 'status': False, 'item':item} 
+    return { 'form':form,'ports_table': ports_table, 'status': False, 'item':item} 
 
+@ajax_request
+@login_required
+def switch_port_status(request):
+    if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_switch')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование коммутатора'}
+    print request.POST
+    switch_id = int(request.POST.get('switch_id',0))
+    port = int(request.POST.get('port',0))
+    port_type = request.POST.get('port_type')
+    port_state = request.POST.get('port_state') and 'checked' or False
+    if switch_id and port and port_type:
+
+        try:
+            item = Switch.objects.get(id=switch_id)
+        except Exception, e:
+            return {"status": False, "message": u"Указанный коммутатор не найден %s" % str(e)}
+        
+        if port_type=='broken_port':
+            broken_ports = item.broken_ports.split(',')
+            if port_state and port not in broken_ports:
+                broken_ports.append(port)
+            elif not port_state and port in broken_ports:
+                broken_ports.remove(port)
+            item.broken_ports = ','.join([str(x) for x in broken_ports])
+            item.save()
+
+        if port_type=='uplink_port':
+            uplink_ports = item.uplink_ports.split(',')
+            if port_state and port not in uplink_ports:
+                uplink_ports.append(port)
+            elif not port_state and port in uplink_ports:
+                uplink_ports.remove(port)
+            item.uplink_ports = ','.join([str(x) for x in uplink_ports])
+            item.save()
+
+        if port_type=='protected_port':
+            protected_ports = item.protected_ports.split(',')
+            if port_state and port not in protected_ports:
+                protected_ports.append(port)
+            elif not port_state and port in protected_ports:
+                protected_ports.remove(port)
+            item.protected_ports = ','.join([str(x) for x in protected_ports])
+            item.save()
+
+        if port_type=='monitored_port':
+            monitored_ports = item.monitored_ports.split(',')
+            if port_state and port not in monitored_ports:
+                monitored_ports.append(port)
+            elif not port_state and port in monitored_ports:
+                monitored_ports.remove(port)
+            item.monitored_ports = ','.join([str(x) for x in monitored_ports])
+            item.save()
+                        
+        if port_type=='disabled_port':
+            disabled_ports = item.disabled_ports.split(',')
+            if port_state and port not in disabled_ports:
+                disabled_ports.append(port)
+            elif not port_state and port in disabled_ports:
+                disabled_ports.remove(port)
+            item.disabled_ports = ','.join([str(x) for x in disabled_ports])
+            item.save()
+            
+        log('EDIT', request.user, item)
+        
+        return {"status": True}
+    else:
+        return {"status": False, "message": "Switch not found"} 
+    
 @ajax_request
 @login_required
 def switch_delete(request):

@@ -12,7 +12,7 @@ from billservice.models import City, Street, Operator, SaleCard, DealerPay, Deal
 from nas.models import Nas
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Div, Submit, Reset,  HTML, Button, Row, Field
+from crispy_forms.layout import Layout, Div, Submit, Reset,  HTML, Button, Row, Field, Fieldset
 from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 
 from django.contrib.auth.models import Group as AuthGroup
@@ -868,8 +868,86 @@ class DealerSelectForm(forms.Form):
     
 class SwitchForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_id = 'id-SwitchForm'
+        self.helper.form_class = 'well form-horizontal'
+        self.helper.form_method = 'post'
+        self.helper.form_action = reverse("switch_edit")
+        self.helper.layout = Layout(
+            Fieldset(
+                u'Общее',
+                 'id',
+                'name',
+                'comment',
+
+            ),    
+            Fieldset(
+                u'Данные техпаспорта',
+                'manufacturer',
+                'model',
+                'sn',
+            ),    
+            Fieldset(
+                u'Место установки',
+                'city',
+                'street',
+                'house',
+                'place'
+            ),    
+            Fieldset(
+                u'SNMP',
+                'snmp_support',
+                'snmp_version',
+                'snmp_community',
+            ),                  
+            Fieldset(
+                u'Управление портами',
+                HTML(u'Обратите внимание, что в текущей версии управление портами не реализовано'),
+                'management_method',
+                'username',
+                'password',
+                'enable_port',
+                'disable_port',
+            ),       
+            Fieldset(
+                u'Сетевая идентификация',
+                'ports_count',
+                'ipaddress',
+                'macaddress',
+            ),
+            Fieldset(
+                u'Option82',
+                'option82',
+                'option82_auth_type',
+                'option82_template',
+                'identify',
+                'secret',
+                'remote_id'
+            ),
+            FormActions(
+                Submit('save', u'Сохранить', css_class="btn-primary")
+            )
+               
+        )
+        
+        #self.helper.add_input(Submit('submit', 'Сохранить'))
+        #self.helper.add_input(Reset('reset', 'Сбросить'))
+        super(SwitchForm, self).__init__(*args, **kwargs)
+        self.fields['comment'].widget.attrs['class'] = 'input-xlarge span6'
+        self.fields['comment'].widget.attrs['rows'] = 3
+        self.fields['place'].widget.attrs['class'] = 'input-xlarge span6'
+        self.fields['place'].widget.attrs['rows'] = 3
+        self.fields['enable_port'].widget.attrs['class'] = 'input-xlarge span6'
+        self.fields['enable_port'].widget.attrs['rows'] = 3
+        
+        self.fields['disable_port'].widget.attrs['class'] = 'input-xlarge span6'
+        self.fields['disable_port'].widget.attrs['rows'] = 3
+        
     class Meta:
         model = Switch
+        exclude = ('broken_ports', 'uplink_ports', 'protected_ports', 'monitored_ports', 'disabled_ports')
         
 class GroupStatSearchForm(forms.Form):
 

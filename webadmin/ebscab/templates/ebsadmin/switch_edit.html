@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load crispy_forms_tags %}
+ {% load render_table from django_tables2 %}
 {% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript"> 
@@ -61,6 +62,29 @@
                 deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
                 onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
             });
+            
+            $("#id_main_table input[type=checkbox]").change(function(){
+                $.ajax(
+                        { 
+                            url: "{% url switch_port_status %}",
+                            data: {
+                                    port_type: $(this).attr('name'), 
+                                    port: $(this).closest('tr').find('td:first').find('input[type=hidden]').val(),
+                                    port_state: $(this).attr('checked'),
+                                    switch_id: $('#id_id').val(),
+                                  },        
+                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                            dataType: "json",   //return data in json format                                                                                                                                       
+                            success: function( data ) 
+                            {
+
+                            },
+                            error: function( data ) 
+                            {
+                                alert('Во время обращения к серверу возникла ошибка');
+                            },
+                        });   
+            })
         });
         </script>
 
@@ -70,21 +94,33 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url switch %}">Коммутаторs</a> <span class="divider">/</span>
+    <a href="{% url switch %}">Коммутаторы</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
+<ul class="nav nav-tabs" id="tab-panel">
+  <li><a href="#general" class='active' data-toggle="tab">Общее</a></li>
+  <li><a href="#ports" data-toggle="tab">Порты</a></li>
+</ul>
 <form method="POST" action="{% url switch_edit %}?id={{item.id}}"class="well form-horizontal">
-            <legend>Параметры коммутатора{% objectlog item %}</legend>
-             <fieldset>
-                  {{form|crispy}}
-                </fieldset>
-                <fieldset>
-                    <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
-                    </div>
-                </fieldset>
+<div class="tab-content">
+  <div class="tab-pane active" id="general">
+  <div>{% objectlog item %}</div>
+
+
+                  {% crispy form %}
+  
+
+
+</div>
+  <div class="tab-pane" id="ports">
+  {% if  ports_table%}
+  {% render_table ports_table %}
+  {% else %}
+  <div class="alert alert-success">Укажите количество портов и сохраните коммутатор, чтобы приступить к редактированию портов</div>
+  {% endif %}
+  </div>
             </form>
 
 

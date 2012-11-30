@@ -201,6 +201,8 @@ urlpatterns += patterns('ebsadmin.modules.hardware',
 
 urlpatterns += patterns('ebsadmin.modules.switch',
     url(r'^switch/edit/$', 'switch_edit', name='switch_edit'),
+    url(r'^switch/port/status/$', 'switch_port_status', name='switch_port_status'),
+    
     url(r'^switch/$', 'switch', name='switch'),
     url(r'^switch/delete/$', "switch_delete", name="switch_delete"),
 )

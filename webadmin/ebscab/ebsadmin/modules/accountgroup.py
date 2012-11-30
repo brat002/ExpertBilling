@@ -16,7 +16,7 @@ from billservice.forms import AccountGroupForm
 from billservice.models import AccountGroup
 
 log = LogItem.objects.log_action
-
+from django.contrib import messages
 
 
 @login_required
@@ -55,9 +55,10 @@ def accountgroup_edit(request):
             model.save()
 
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Группа успешно сохранена.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-
+            messages.error(request, u'Ошибка при сохранении группы.', extra_tags='alert-danger')
             return {'form':form,  'status': False, 'item': model} 
     else:
         id = request.GET.get("id")
@@ -87,7 +88,9 @@ def accountgroup_delete(request):
             return {"status": False, "message": u"Указанная группа не найдена %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Группа аккаунтов успешно удалена.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'Ошибка при удалении группы.', extra_tags='alert-danger')
         return {"status": False, "message": "AccountGroup not found"} 
     

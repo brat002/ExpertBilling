@@ -12,6 +12,7 @@ from ebsadmin.tables import TariffTable, PeriodicalServiceTable, TrafficTransmit
 
 from ebscab.billservice.forms import TariffForm, PeriodicalServiceForm, TrafficTransmitServiceForm, PrepaidTrafficForm, TrafficTransmitNodeForm, AccessParametersForm, TimeSpeedForm, OneTimeServiceForm, RadiusTrafficForm, RadiusTrafficNodeForm, TrafficLimitForm, SpeedLimitForm, TimeAccessServiceForm, TimeAccessNodeForm, AddonServiceTarifForm
 from ebscab.billservice.models import Tariff, PeriodicalService, TrafficTransmitService, TrafficTransmitNodes, PrepaidTraffic, AccessParameters, TimeSpeed, OneTimeService, RadiusTraffic, RadiusTrafficNode, TrafficLimit, SpeedLimit, TimeAccessService, TimeAccessNode, AddonServiceTarif
+from django.contrib import messages
 
 
 log = LogItem.objects.log_action
@@ -62,9 +63,10 @@ def tariff_edit(request):
             model.access_parameters = ap
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Тарифный план сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect("%s?id=%s" % (reverse("tariff_edit"), model.id))
         else:
-            print form._errors
+            messages.error(request, u'Во время сохранения тарифного плана возникли ошибки.', extra_tags='alert-danger')
             return {'form':form, "access_parameters": accessparameters_form, 'status': False} 
     else:
         id = request.GET.get("id")
@@ -159,9 +161,10 @@ def tariff_addonservicetariff_edit(request):
             model.save()
             print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Подключаемая услуга успешно добавлена в тарифный план.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-            print form._errors
+            messages.error(request, u'Ошибка при сохранении.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -214,27 +217,28 @@ def tariff_trafficlimit_edit(request):
     if request.method == 'POST': 
         id = request.POST.get("id")
         if id:
-            print 11
+            
             model = TrafficLimit.objects.get(id=id)
             form = TrafficLimitForm(request.POST, instance=model) 
             if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_trafficlimit')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование лимитов трафика'}
         else:
-            print 22
+            
             form = TrafficLimitForm(request.POST) 
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_periodicalservice')):
             return {'status':False, 'message': u'У вас нет прав на добавление лимитов трафика'}
 
-        print 2
+        
         if form.is_valid():
-            print 3
+            
             model = form.save(commit=False)
             model.save()
-            print 4
+            
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Лимит трафика успешно сохранён.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-
+            messages.error(request, u'При сохранении лимита трафика возникли ошибки.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -316,8 +320,10 @@ def tariff_traffictransmitservice(request):
                 tariff.traffic_transmit_service=model
                 tariff.save()
                 log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+                messages.success(request, u'Услуга тарификации трафика успешно сохранена.', extra_tags='alert-success')
                 return HttpResponseRedirect("%s?tariff_id=%s" % (reverse("tariff_traffictransmitservice"), tariff.id))
-            print form._errors
+            else:
+                messages.error(request, u'При сохранении услуги тарификации трафика произошла ошибка.', extra_tags='alert-danger')
         else:
             
             item = tariff.traffic_transmit_service
@@ -381,9 +387,10 @@ def tariff_radiustraffic(request):
                 log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
                 tariff.radius_traffic_transmit_service = item
                 tariff.save()
+                messages.success(request, u'Услуга RADIUS тарификации трафика успешно сохранена.', extra_tags='alert-success')
             else:
-                print 9
-                print form._errors
+                item = model
+                messages.error(request, u'При сохранении услуги RADIUS тарификации трафика произошла ошибка.', extra_tags='alert-danger')
         else:
             print 10
             item = tariff.radius_traffic_transmit_service
@@ -447,10 +454,10 @@ def tariff_timeaccessservice(request):
                 log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
                 tariff.time_access_service = item
                 tariff.save()
+                messages.success(request, u'Услуга RADIUS тарификации времени успешно сохранена.', extra_tags='alert-success')
             else:
                 item = model
-                print 9
-                print form._errors
+                messages.error(request, u'При сохранении услуги RADIUS тарификации времени произошла ошибка.', extra_tags='alert-danger')
         else:
             print 10
             item = tariff.time_access_service
@@ -501,9 +508,10 @@ def tariff_timeaccessnode_edit(request):
             item = model
             print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Правило тарификации времени успешно сохранено.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-            
+            messages.error(request, u'При сохранении правила тарификации времени произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -566,7 +574,10 @@ def tariff_accessparameters(request):
                 
                 item = model
                 log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+                messages.success(request, u'Параметры доступа успешно сохранены.', extra_tags='alert-success')
                 return HttpResponseRedirect("%s?tariff_id=%s" % (reverse("tariff_accessparameters"), tariff.id))
+            else:
+                messages.error(request, u'При сохранении параметров доступа произошла ошибка.', extra_tags='alert-danger')
         else:
             item = tariff.access_parameters
             
@@ -612,9 +623,10 @@ def tariff_timespeed_edit(request):
             model.save()
             print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Настройки скорости успешно сохранены.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:   
-            print form._errors
+            messages.error(request, u'При сохранении параметров скорости произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -659,10 +671,11 @@ def tariff_prepaidtraffic_edit(request):
             model = form.save(commit=False)
             model.save()
             print 4
-            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model)
+            messages.success(request, u'Настройки предоплаченного трафика успешно сохранены.', extra_tags='alert-success') 
             return {'form':form,  'status': True} 
         else:
-
+            messages.error(request, u'При сохранении настроек предоплаченного трафика произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -709,9 +722,10 @@ def tariff_traffictransmitnode_edit(request):
             model.save()
             print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Настройки NetFlow тарификации трафика успешно сохранены.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-            
+            messages.error(request, u'При сохранении настроек NetFlow тарификации трафика произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -764,9 +778,10 @@ def tariff_radiustrafficnode_edit(request):
             model.save()
             print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Правило RADIUS тарификации трафика успешно сохранены.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-            
+            messages.error(request, u'При сохранении настроек RADIUS тарификации трафика произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -818,9 +833,10 @@ def tariff_periodicalservice_edit(request):
             model.save()
             print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Периодическая услуга сохранена.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-
+            messages.error(request, u'При сохранении периодической услуги произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -920,9 +936,10 @@ def onetimeservice_edit(request):
             model.save()
             print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Разовая услуга сохранена.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-
+            messages.error(request, u'При сохранении разовой  услуги произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -953,8 +970,10 @@ def tariff_delete(request):
             return {"status": False, "message": u"Указанный тарифный план не найден %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Тарифный план удалён.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении тарифного плана произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "tariff not found"} 
     
 @ajax_request
@@ -970,8 +989,10 @@ def periodicalservice_delete(request):
             return {"status": False, "message": u"Указанная периодическая услуга не найдена %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Периодическая услуга удалёна.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении периодической услуги произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "PeriodicalService not found"} 
 
 @ajax_request
@@ -987,8 +1008,10 @@ def traffictransmitnode_delete(request):
             return {"status": False, "message": u"Указанное правило не найдено %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Настройка NetFlow тарификации трафика удалёна.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении настройки NetFlow тарификации трафика произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "TrafficTransmitNodes not found"} 
     
 
@@ -1005,8 +1028,10 @@ def tariff_timespeed_delete(request):
             return {"status": False, "message": u"Указанное правило не найдено %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Настройка скорости удалёна.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении настройки скорости произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "TimeSpeed not found"} 
     
 @ajax_request
@@ -1022,8 +1047,10 @@ def tariff_onetimeservice_delete(request):
             return {"status": False, "message": u"Указанная услуга не найдена %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Разовая услуга удалёна.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении разовой услуги произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "OneTimeService not found"} 
     
 @ajax_request
@@ -1039,8 +1066,10 @@ def tariff_radiustrafficservice_delete(request):
             return {"status": False, "message": u"Указанная услуга не найдена %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Услуга RADIUS тарификации трафика удалена.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении RADIUS тарификации трафика произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "RadiusTraffic not found"} 
 
 @ajax_request
@@ -1056,8 +1085,10 @@ def tariff_timeaccessservice_delete(request):
             return {"status": False, "message": u"Указанная услуга не найдена %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Услуга RADIUS тарификации времени удалена.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении RADIUS тарификации времени произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "TimeAccessService not found"} 
     
 @ajax_request
@@ -1073,8 +1104,10 @@ def tariff_traffictransmitservice_delete(request):
             return {"status": False, "message": u"Указанная услуга не найдена %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Услуга NetFlow тарификации трафика удалена.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении NetFlow тарификации трафика произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "TrafficTransmitService not found"} 
     
 @ajax_request
@@ -1090,8 +1123,10 @@ def radiustrafficnode_delete(request):
             return {"status": False, "message": u"Указанное правило не найдено %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Настройка RADIUS тарификации трафика удалена.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении настройки RADIUS тарификации трафика произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "RadiusTrafficNode not found"} 
 
 @ajax_request
@@ -1109,8 +1144,10 @@ def trafficlimit_delete(request):
             return {"status": False, "message": u"Указанное правило не найдено %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Лимит трафика удален.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении лимита трафика произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "TrafficLimit not found"} 
     
 @ajax_request
@@ -1143,8 +1180,10 @@ def timeaccessnode_delete(request):
             return {"status": False, "message": u"Указанное правило не найдено %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Настройка тарификации времени удалена.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении настройки тарификации времени произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "TimeAccessNode not found"} 
     
 @ajax_request
@@ -1160,7 +1199,9 @@ def addonservicetariff_delete(request):
             return {"status": False, "message": u"Указанное правило не найдено %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Подключаемая услуги удалена из тарифного плана.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении подклчюаемой услуги из тарифного плана произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "AddonServiceTarif not found"} 
     

@@ -8,7 +8,7 @@ class AccountFTSLookup(LookupChannel):
     model = Account
 
     def get_query(self,q,request):
-        return Account.objects.filter(Q(username__icontains=q) | Q(contactperson__icontains=q) | Q(fullname__icontains=q)  | Q(phone_h__icontains=q) | Q(phone_m__icontains=q)   ).order_by('username')
+        return Account.objects.filter(Q(username__istartswith=q) | Q(contactperson__istartswith=q) | Q(fullname__istartswith=q)  | Q(phone_h__istartswith=q) | Q(phone_m__istartswith=q)   ).order_by('username')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """
@@ -20,14 +20,14 @@ class AccountFTSLookup(LookupChannel):
 
     def format_item_display(self,obj):
         """ (HTML) formatted item for displaying item in the selected deck area """
-        return u"%s %s %s %s %s %s" % (escape(obj.username),escape(obj.fullname), escape(obj.contract), escape(obj.contactperson), escape(obj.phone_h), escape(obj.phone_m))
+        return u"%s %s %s %s %s" % (escape(obj.username),escape(obj.fullname), escape(obj.contract), escape(obj.phone_h), escape(obj.phone_m))
     
 class AccountFullnameLookup(LookupChannel):
 
     model = Account
 
     def get_query(self,q,request):
-        return Account.objects.filter(fullname__icontains=q).order_by('fullname')
+        return Account.objects.filter(fullname__istartswith=q).order_by('fullname')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """
@@ -66,7 +66,7 @@ class AccountContractLookup(LookupChannel):
     model = Account
 
     def get_query(self,q,request):
-        return Account.objects.filter(contract__icontains=q).order_by('contract')
+        return Account.objects.filter(contract__istartswith=q).order_by('contract')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """
@@ -85,7 +85,7 @@ class AccountContactPersonLookup(LookupChannel):
     model = Account
 
     def get_query(self,q,request):
-        return Account.objects.filter(contactperson__icontains=q).order_by('contactperson')
+        return Account.objects.filter(contactperson__istartswith=q).order_by('contactperson')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """
@@ -104,7 +104,7 @@ class CityLookup(LookupChannel):
     model = City
 
     def get_query(self,q,request):
-        return City.objects.filter(name__icontains=q).order_by('name')
+        return City.objects.filter(name__istartswith=q).order_by('name')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """
@@ -123,7 +123,7 @@ class StreetLookup(LookupChannel):
     model = Street
 
     def get_query(self,q,request):
-        return Street.objects.filter(name__icontains=q).order_by('name')
+        return Street.objects.filter(name__istartswith=q).order_by('name')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """
@@ -142,7 +142,7 @@ class HouseLookup(LookupChannel):
     model = House
 
     def get_query(self,q,request):
-        return House.objects.filter(name__icontains=q).order_by('name')
+        return House.objects.filter(name__istartswith=q).order_by('name')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """
@@ -161,7 +161,7 @@ class HardwareLookup(LookupChannel):
     model = Hardware
 
     def get_query(self,q,request):
-        return Hardware.objects.filter(Q(macaddress__icontains=q) |Q(name__icontains=q) | Q(model__name__icontains=q)| Q(sn__icontains=q)| Q(comment__icontains=q)).order_by('name')
+        return Hardware.objects.filter(Q(macaddress__istartswith=q) |Q(name__istartswith=q) | Q(model__name__istartswith=q)| Q(sn__istartswith=q)| Q(comment__istartswith=q)).order_by('name')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """
@@ -180,7 +180,7 @@ class OrganizationLookup(LookupChannel):
     model = Organization
 
     def get_query(self,q,request):
-        return Organization.objects.filter(name__icontains=q).order_by('name')
+        return Organization.objects.filter(name__istartswith=q).order_by('name')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """
@@ -199,7 +199,7 @@ class SubAccountFTSLookup(LookupChannel):
     model = SubAccount
 
     def get_query(self,q,request):
-        return SubAccount.objects.filter(Q(username__icontains=q) | Q(ipn_mac_address__icontains=q)).order_by('username')
+        return SubAccount.objects.filter(Q(username__istartswith=q) | Q(ipn_mac_address__istartswith=q)).order_by('username')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """

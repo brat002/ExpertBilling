@@ -17,7 +17,7 @@ from ebscab.lib.ssh_paramiko import ssh_client
 
 log = LogItem.objects.log_action
 
-
+from django.contrib import messages
 
 @login_required
 @render_to('ebsadmin/nas_list.html')
@@ -67,9 +67,10 @@ def nas_edit(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Сервер доступа успешно сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect(reverse("nas"))
         else:
-            print form._errors
+            messages.error(request, u'При сохранении сервера доступа возникли ошибки.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -99,8 +100,10 @@ def nas_delete(request):
             return {"status": False, "message": u"Указанный сервер доступа найден %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Сервер доступа успешно удалён.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'При удалении сервера доступа возникли ошибки.', extra_tags='alert-danger')
         return {"status": False, "message": "Nas not found"} 
     
 @login_required 
