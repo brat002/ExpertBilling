@@ -151,6 +151,14 @@ AUTHENTICATION_BACKENDS = (
     'billservice.backend.LoginUserBackend',
 )
 
+#credentials generation rules
+login_length=8
+password_length=8
+login_contain_letters=True
+login_contain_digits=True
+password_contain_letters=False
+password_contain_digits=True
+
 
 LOG_LEVEL = 0
 
