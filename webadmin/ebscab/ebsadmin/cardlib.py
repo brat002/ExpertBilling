@@ -55,7 +55,7 @@ def activate_card(login, pin):
         transaction.bill = u'Активация карты доступа'
         transaction.account=account
         transaction.accounttarif=ac
-        transaction.type = 'ACCESS_CARD'
+        transaction.type =  TransactionType.objects.get(internal_name= 'ACCESS_CARD')
         
         transaction.approved = True
         transaction.tarif=card.tarif
@@ -239,7 +239,7 @@ def del_addonservice(account_id, account_service_id):
 
             ast = AddonServiceTransaction()
             ast.account = account
-            ast.type = 'ADDONSERVICE_WYTE_PAY'
+            ast.type = TransactionType.objects.get(internal_name='ADDONSERVICE_WYTE_PAY')
             ast.summ = service.wyte_cost
             ast.service = service
             ast.service_type = service.service_type

@@ -13,6 +13,7 @@ import datetime
 
 BILLING_ROOT_PATH = '/opt/ebs/'
 BILLING_PATH = '/opt/ebs/data'
+WEBCAB_ROOT_PATH = '/opt/ebs/web/'
 WEBCAB_PATH = '/opt/ebs/web/ebscab/'
 BACKUP_DIR = '/opt/ebs/backups/'
 LAST_SQL = '/opt/ebs/data/etc/install.ini'
@@ -52,6 +53,7 @@ def virtualenv():
 def layout():
     print(green('Preparing layout'))
     if not os.path.exists('/opt/ebs'): local('mkdir -p /opt/ebs/')
+    local("chmod a+w /opt/ebs/backups")
     if not os.path.exists('/opt/ebs/backups'): local('mkdir -p /opt/ebs/backups')
     if not os.path.exists('/opt/ebs/data'): local('mkdir -p /opt/ebs/data')
     if not os.path.exists('/opt/ebs/stats'): local('mkdir -p /opt/ebs/stats')
@@ -74,18 +76,14 @@ def setup_webcab():
     print(green('Setuping webcab'))
     with lcd(WEBCAB_PATH):
         local('cp settings_local.py.tmpl settings_local.py')
-        local('ln -sf default /etc/apache2/sites-enabled/ebs ')
-        local('ln -sf  blankpage_config /etc/apache2/sites-enabled/ebs_blankpage')
-        local('a2dissite default')
-        local('/etc/init.d/apache reload')
+    
+    local('ln -sf %s /etc/apache2/sites-enabled/ebs ' % os.path.join(WEBCAB_ROOT_PATH, 'default'))
+    local('ln -sf  %s /etc/apache2/sites-enabled/ebs_blankpage'  % os.path.join(WEBCAB_ROOT_PATH, 'blankpage_config'))
+    local('a2dissite default')
+    local('a2enmod rewrite')
+    local('/etc/init.d/apache2 restart')
         
-def simple_setup_webcab():
-    print(green('Setuping webcab'))
-    with lcd(WEBCAB_PATH):
-        local('ln -sf default /etc/apache2/sites-enabled/ebs ')
-        local('ln -sf  blankpage_config /etc/apache2/sites-enabled/ebs_blankpage')
-        local('a2dissite default')
-        local('/etc/init.d/apache reload')
+
         
 def deploy(tarfile):
     print('Installing expert billing system')
@@ -96,7 +94,8 @@ def deploy(tarfile):
     
     
     layout()
-    local('adduser --system --no-create-home --disabled-password ebs')
+    with settings(warn_only=True):
+        local('adduser --disabled-password ebs')
     prepare_deploy()
     configure_rabbit()
     virtualenv()
@@ -115,9 +114,10 @@ def deploy(tarfile):
 
 def upgrade_14(tarfile):
     print('Upgrading expert billing system from 1.4.1 version')
-    
+    stop()
     layout()
-    local('adduser --disabled-password ebs')
+    with settings(warn_only=True):
+        local('adduser --disabled-password ebs')
     prepare_deploy()
     configure_rabbit()
     virtualenv()
@@ -125,7 +125,8 @@ def upgrade_14(tarfile):
     db_backup()
     data_backup()
     webcab_backup()
-
+    cleanup_14()
+    layout()
     unpack(tarfile)
     requirements()
     #backup settings before deploy, restore settings after deploy
@@ -133,7 +134,7 @@ def upgrade_14(tarfile):
     #db_install()
     db_upgrade()
     
-    simple_setup_webcab()
+    setup_webcab()
     init_scripts()
     postconf()
     restart()
@@ -146,9 +147,10 @@ def upgrade(tarfile):
     db_backup()
     data_backup()
     webcab_backup()
-    cleanup_14()
+
     layout()
-    local('adduser --system --no-create-home --disabled-password ebs')
+    with settings(warn_only=True):
+        local('adduser --disabled-password ebs')
     prepare_deploy()
     configure_rabbit()
     virtualenv()
@@ -172,17 +174,19 @@ def cleanup_14():
     print(green('Cneaning directory /opt/ebs/data /opt/ebs/web'))
     local('mkdir -p %s' % os.path.join(BACKUP_DIR, 'pre15', 'data/'))
     local('mkdir -p %s' % os.path.join(BACKUP_DIR, 'pre15', 'webcab/'))
-    local(' mv -f %s %s' % (BILLING_PATH,os.path.join(BACKUP_DIR, 'pre15', 'data/')) )
-    local(' mv -f %s %s' % (os.path.join(BILLING_PATH, 'web/'),os.path.join(BACKUP_DIR, 'pre15', 'web/')) )
+    local('tar -cvzf %s/data.tar.gz %s' % (BILLING_PATH,os.path.join(BACKUP_DIR, 'pre15', )) )
+    local('tar -xvzf %s/web.tar.gz %s' % (os.path.join(BILLING_ROOT_PATH, 'web/'),os.path.join(BACKUP_DIR, 'pre15')) )
     
 def restart():
-    print(green('Restarting processes'))
-    local("billing restart")
+    with settings(warn_only=True):
+        print(green('Restarting processes'))
+        local("billing restart")
 
 def stop():
     print(green('Stopping processes'))
-    local("billing force-stop")
-    local("/etc/init.d/apache2 stop")
+    with settings(warn_only=True):
+        local("billing force-stop")
+        local("/etc/init.d/apache2 stop")
 
 
 def init_scripts():
@@ -201,7 +205,7 @@ def init_scripts():
 
 def db_backup():
     print(green('Database backup'))
-    local("""su postgres -c 'pg_dump ebs | gzip >%s'""", (os.path.join(BACKUP_DIR, 'database_%s.gz' % curdate)))
+    local("""su postgres -c 'pg_dump ebs | gzip >%s'"""  % (os.path.join(BACKUP_DIR, 'database_%s.gz' % curdate)))
 
 def data_backup():
     print(green('/opt/ebs/data folder backup'))

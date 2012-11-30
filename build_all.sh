@@ -71,7 +71,7 @@ done
 
 cp license_$1.lic builds/$1/data/license.lic
 cp -r cmodules builds/$1/data/
-cp -r celery builds/$1/data/workers
+svn export workers builds/$1/data/workers
 cp license.lic.old license.lic
 cp ebs_config.ini.tmpl builds/$1/data/ebs_config.ini.tmpl
 #cp upgrade.py builds/$1/data/upgrade.py

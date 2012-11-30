@@ -1,3 +1,25 @@
+DROP FUNCTION bqarr_in(cstring) CASCADE;
+DROP FUNCTION _int_contains(integer[], integer[]) CASCADE;
+DROP FUNCTION _int_contained(integer[], integer[]) CASCADE;
+DROP FUNCTION _int_overlap(integer[], integer[]) CASCADE;
+DROP FUNCTION  _int_same(integer[], integer[]) CASCADE;
+DROP FUNCTION _int_different(integer[], integer[]) CASCADE;
+DROP FUNCTION _int_union(integer[], integer[]) CASCADE;
+DROP FUNCTION _int_inter(integer[], integer[]) CASCADE;
+DROP FUNCTION g_int_compress(internal)  CASCADE;
+DROP FUNCTION g_int_decompress(internal) CASCADE;
+DROP FUNCTION g_int_penalty(internal, internal, internal) CASCADE;
+DROP FUNCTION g_int_picksplit(internal, internal) CASCADE;
+DROP FUNCTION g_int_union(internal, internal) CASCADE;
+DROP FUNCTION g_int_same(integer[], integer[], internal) CASCADE;
+DROP FUNCTION g_intbig_compress(internal) CASCADE;
+DROP FUNCTION g_intbig_decompress(internal) CASCADE;
+DROP FUNCTION g_intbig_penalty(internal, internal, internal) CASCADE;
+DROP FUNCTION g_intbig_picksplit(internal, internal) CASCADE;
+DROP FUNCTION g_intbig_union(internal, internal) CASCADE;
+DROP FUNCTION g_intbig_same(internal, internal, internal) CASCADE;
+DROP extension intagg;
+DROP extension intarray;
 create extension intagg;
 create extension intarray;
 

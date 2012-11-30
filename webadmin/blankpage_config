@@ -9,10 +9,8 @@ Listen 85
             RewriteEngine On
             RewriteCond %{REQUEST_FILENAME} !-f
             RewriteRule .* index.html
-.
-
-                Options FollowSymLinks
-                AllowOverride None
+            Options FollowSymLinks
+            AllowOverride None
         </Directory>
 
 
