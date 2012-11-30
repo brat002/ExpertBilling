@@ -14,7 +14,7 @@
             });
             $(".show-confirm").click(function() {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить? Удаление устройства вызовет удаление всех связаных с ним объектов в системе.", {
+                $.fn.dialog2.helpers.confirm("Удалить? Перед удалением коммутатора убедитесь, что он не используется в биллинг-системе.", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -50,11 +50,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url hardware %}">Устройства</a> <span class="divider">/</span>
+    <a href="{% url switch %}">Коммутаторы</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
-<form class="align-right"><a href="{% url hardware_edit %}" id="id_btn_add" class="btn btn-success">Добавить</a>&nbsp;</form>
+<form class="align-right"><a href="{% url switch_edit %}" id="id_btn_add" class="btn btn-success">Добавить</a>&nbsp;</form>
 <div>
   {% render_table table %}
 </div>

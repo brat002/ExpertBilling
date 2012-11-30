@@ -727,3 +727,14 @@ class AccountPrepaysTimeTable(TableReport):
         #fields = (u'account', 'group', u'bytes')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}  
         
+class SwitchPortsTable(TableReport):
+    port = django_tables.TemplateColumn("<input type='hidden' name='port' value='{{record.port}}'>{{record.port}}", verbose_name=u'Порт')
+    broken_port = django_tables.TemplateColumn("<input type='checkbox' name='broken_port' {% if record.broken_port %} checked{% endif %}>", verbose_name=u'Битый')
+    uplink_port = django_tables.TemplateColumn("<input type='checkbox'  name='uplink_port' {% if record.uplink_port %} checked{% endif %}>", verbose_name=u'Аплинк')
+    protected_port = django_tables.TemplateColumn("<input type='checkbox'  name='protected_port' {% if record.protected_port %} checked{% endif %}>", verbose_name=u'Защита')
+    monitored_port = django_tables.TemplateColumn("<input type='checkbox'  name='monitored_port' {% if record.monitored_port %} checked{% endif %}>", verbose_name=u'Мониторинг')
+    disabled_port = django_tables.TemplateColumn("<input type='checkbox'  name='disabled_port' {% if record.disabled_port %} checked{% endif %}>", verbose_name=u'Отключён')
+    
+    class Meta:
+        attrs = {'class': 'table table-bordered table-condensed'}  
+        

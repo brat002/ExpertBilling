@@ -12,7 +12,7 @@ from tables import IPPoolTable
 
 from billservice.forms import IPPoolForm
 from billservice.models import IPPool
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -52,9 +52,10 @@ def ippool_edit(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'IP пул сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect(reverse("ippool"))
         else:
-
+            messages.error(request, u'Ошибка при сохранении IP пула.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -83,7 +84,9 @@ def ippool_delete(request):
             return {"status": False, "message": u"Указанный пул не найден %s" % str(e)}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'IP пул успешно удалён.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'Ошибка при удалении IP пула.', extra_tags='alert-danger')
         return {"status": False, "message": "IPPool not found"} 
     

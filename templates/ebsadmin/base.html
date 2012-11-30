@@ -249,6 +249,21 @@ html {
 </div>
 {% load crispy_forms_tags %}
 
-<div class="container">{% block body %} {% endblock %}</div>
+<div class="container">
+
+{% if messages %}
+
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+
+{% endif %}
+{% block body %} {% endblock %}
+</div>
 </body>
 </html>

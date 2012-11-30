@@ -10,11 +10,12 @@ ADMINS = (
      #('Your Name', 'your_email@domain.com'),
 )
 
+
 MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'NAME': 'ebs_onenet',
+        'NAME': 'ebs',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'USER': 'ebs',
         'PASSWORD': 'ebspassword',
@@ -72,11 +73,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'notification.context_processors.auth',
     'django.core.context_processors.request',
     'django.core.context_processors.media',
-    'notification.context_processors.footer',
-    'notification.context_processors.notices',
-    'notification.context_processors.setCurrency',
+    'django.contrib.messages.context_processors.messages',
     'lib.context_processors.default_current_view_name',
-    'notify.context_processors.notifications',
 )
 
 
@@ -87,7 +85,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     #'lib.threadlocals.ThreadLocalsMiddleware',
-    'notify.middleware.NotificationsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware'
     #'billservice.middleware.UrlFilter'
 
 )
@@ -107,6 +106,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.messages',
     'django.contrib.admin',
     'radius',
     'nas',
@@ -208,6 +208,7 @@ try:
 except:
     pass
 
+
 # define logging
 if DEBUG:
     LEVEL = logging.DEBUG
@@ -219,3 +220,6 @@ logging.basicConfig(level=LEVEL,
      filename=os.path.join(PROJECT_DIR, 'log/django.log'),
      filemode='a+')
 root = logging.basicConfig()
+
+
+    

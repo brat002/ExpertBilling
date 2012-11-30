@@ -12,7 +12,7 @@ from tables import TransactionTypeTable
 
 from billservice.forms import TransactionTypeForm
 from billservice.models import TransactionType
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -52,9 +52,10 @@ def transactiontype_edit(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, u'Тип проводки успешно сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect(reverse("transactiontype"))
         else:
-
+            messages.error(request, u'Ошибка при сохранении типа проводки.', extra_tags='alert-danger')
             return {'form':form,  'item': item} 
     else:
         id = request.GET.get("id")
@@ -85,7 +86,9 @@ def transactiontype_delete(request):
             return {"status": False, "message": u"Выбранный тип списания не может быть удалён"}
         log('DELETE', request.user, item)
         item.delete()
+        messages.success(request, u'Тип проводки успешно удалён.', extra_tags='alert-success')
         return {"status": True}
     else:
+        messages.error(request, u'Ошибка при удалении типа проводки.', extra_tags='alert-danger')
         return {"status": False, "message": "TransactionType not found"} 
     

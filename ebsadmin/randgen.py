@@ -163,8 +163,6 @@ def verifyGrammar(nameGrammar):
 # the dictionary data type.  I love python ;-)
 
 def nameGen():
-
-        
     nameGrammar=fooGrammar
     nameStr = random.choice(nameGrammar["name"])
     matchNonTerminal = reNonTerminal.search(nameStr)

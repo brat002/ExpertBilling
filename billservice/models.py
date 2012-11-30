@@ -7,6 +7,8 @@ import datetime, time
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.urlresolvers import reverse
+from django.db import connection
+connection.features.can_return_id_from_insert = False
 # Create your models here.
 # choiCe
 from lib.fields import IPNetworkField

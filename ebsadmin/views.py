@@ -187,13 +187,13 @@ def get_mac_for_ip(request):
     except Exception, e:
         return {'status':False, 'message':str(e)}
     try:
-        from utilites import rosExecute
+
         apiros = rosClient(nas.ipaddress, nas.login, nas.password)
         command='/ping =address=%s =count=1' % ipn_ip_address
-        rosExecute(apiros, command)
+        rosExecute(apiros, command).wait()
         command='/ip/arp/print ?address=%s' % ipn_ip_address
-        rosExecute(apiros, command)
-        mac = rosExecute(apiros, command).get('mac-address', '')
+        rosExecute(apiros, command).wait()
+        mac = rosExecute(apiros, command).get('mac-address', '').wait()
         apiros.close()
         del apiros
         del rosExecute
@@ -4129,14 +4129,14 @@ def streets(request):
     items = []
     if city_id:
         if city_id and term:
-            items = Street.objects.filter(city__id=city_id, name__icontains=term)
+            items = Street.objects.filter(city__id=city_id, name__istartswith=term)
         else:
             items = Street.objects.filter(city__id=city_id)
     elif id:
         items = [Street.objects.get(id=id)]
     else:
         if term:
-            items = Street.objects.filter(name__icontains=term)
+            items = Street.objects.filter(name__istartswith=term)
         else:
             items = Street.objects.all()
 
@@ -4693,7 +4693,7 @@ def houses(request):
     fields = request.POST.get('fields')
     if street_name:
         if term:
-            items = House.objects.filter(street__name__icontains=street_name, name__icontains = term)
+            items = House.objects.filter(street__name__icontains=street_name, name__istartswith = term)
         else:
             items = House.objects.filter(street__name__icontains=street_name)
     elif id:
@@ -5023,7 +5023,7 @@ def actions_set(request):
             command = n.subacc_delete_action
         #print command
 
-        sended = cred(account=acc, subacc=subacc, access_type='ipn', nas=nas,  format_string=command)
+        sended = cred(account=acc, subacc=subacc, access_type='ipn', nas=nas,  format_string=command).wait()
 
         if action=='create' and sended==True:
             sa.ipn_added=True

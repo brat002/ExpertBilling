@@ -200,7 +200,7 @@ def login_out(request):
 def index(request):
 
     if isinstance(request.user.account, SystemUser):
-        return HttpResponseRedirect(reverse("helpdesk_dashboard"))
+        return HttpResponseRedirect(reverse("admin_dashboard"))
 
     user = request.user.account
     tariff_id, tariff_name = user.get_account_tariff_info()
