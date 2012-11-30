@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import connection
 from billservice.forms import AccountForm, TimeSpeedForm, GroupForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
 from billservice.forms import TemplateForm, DocumentModelForm, SuspendedPeriodModelForm, TransactionModelForm, AddonServiceForm, CityForm, StreetForm, HouseForm
-from workers.tasks import cred, rosClient, rosExecute
+from tasks import cred, rosClient, rosExecute
 import IPy
 from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
 from IPy import IP

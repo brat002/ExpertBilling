@@ -164,7 +164,7 @@ def upgrade(tarfile):
     #db_install()
     db_upgrade()
     
-    simple_setup_webcab()
+    
     init_scripts()
     postconf()
     restart()
@@ -174,8 +174,10 @@ def cleanup_14():
     print(green('Cneaning directory /opt/ebs/data /opt/ebs/web'))
     local('mkdir -p %s' % os.path.join(BACKUP_DIR, 'pre15', 'data/'))
     local('mkdir -p %s' % os.path.join(BACKUP_DIR, 'pre15', 'webcab/'))
-    local('tar -cvzf %s/data.tar.gz %s' % (BILLING_PATH,os.path.join(BACKUP_DIR, 'pre15', )) )
-    local('tar -xvzf %s/web.tar.gz %s' % (os.path.join(BILLING_ROOT_PATH, 'web/'),os.path.join(BACKUP_DIR, 'pre15')) )
+    local('tar -cvzf %s/data.tar.gz %s' % (os.path.join(BACKUP_DIR, 'pre15', ), BILLING_PATH,) )
+    local('tar -cvzf %s/web.tar.gz %s' % (os.path.join(BACKUP_DIR, 'pre15'), os.path.join(BILLING_ROOT_PATH, 'web/'),) )
+    local('rm -rf %s' % BILLING_PATH)
+    local('rm -rf %s' % os.path.join(BILLING_ROOT_PATH, 'web/'))
     
 def restart():
     with settings(warn_only=True):
