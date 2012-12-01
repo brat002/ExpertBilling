@@ -631,25 +631,7 @@ def accountedit(request):
         RequestConfig(request, paginate = False).configure(accountaddonservice_table)
         
 
-        ctype = ContentType.objects.get_for_model(account)
 
-
-        res = []
-        prev = None
-        for li in LogItem.objects.filter(object_type1__id=ctype.pk, object_id1=account.id)[:20]:
-            data = json.loads((li.serialized_data))
-            d = data['object1_str']
-            if prev:
-
-                res.append({'user': li.user, 'changed_fields': ', '.join([u"%s=>%s" % (x, d.get(x)) for x  in compare(prev, d)])})
-            else:
-
-                res.append({'user': li.user, 'changed_fields': ', '.join([u"%s=>%s" % (x, d.get(x)) for x  in d])})
-            prev = d
-        
-        #res = [u"%s=>%s" % (x, res.get(x)) for x  in res]
-        action_log_table = LogTable(res)
-        RequestConfig(request, paginate = False).configure(action_log_table)
     
     print 11
     if request.method=='POST':
@@ -761,7 +743,7 @@ def accountedit(request):
         form = AccountForm(initial={'datetime': datetime.datetime.now()})
         org_form = OrganizationForm(prefix='org')
         bank_form = BankDataForm(prefix='org')
-    return { 'form':form, 'org_form':org_form, 'bank_form': bank_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "action_log_table":action_log_table, "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, } 
+    return { 'form':form, 'org_form':org_form, 'bank_form': bank_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, } 
 
 @login_required
 @render_to('ebsadmin/subaccount_edit.html')

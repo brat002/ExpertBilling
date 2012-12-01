@@ -29,6 +29,7 @@ def prepare_deploy():
     
     local('echo "deb http://www.rabbitmq.com/debian/ testing main" >/etc/apt/sources.list.d/rabbitmq.list')
     
+    local('apt-get update && apt-get install python-software-properties wget psmisc')
     local('wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc && apt-key add rabbitmq-signing-key-public.asc')
     local('apt-get update')
     local('apt-get install postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1 htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv rabbitmq-server')
@@ -53,8 +54,9 @@ def virtualenv():
 def layout():
     print(green('Preparing layout'))
     if not os.path.exists('/opt/ebs'): local('mkdir -p /opt/ebs/')
-    local("chmod a+w /opt/ebs/backups")
+    
     if not os.path.exists('/opt/ebs/backups'): local('mkdir -p /opt/ebs/backups')
+    local("chmod a+w /opt/ebs/backups")
     if not os.path.exists('/opt/ebs/data'): local('mkdir -p /opt/ebs/data')
     if not os.path.exists('/opt/ebs/stats'): local('mkdir -p /opt/ebs/stats')
     if not os.path.exists('/opt/ebs/web'): local('mkdir -p /opt/ebs/web')
