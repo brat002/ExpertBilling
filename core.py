@@ -199,7 +199,7 @@ class check_vpn_access(Thread):
 
                             if rs.speed_string != newspeed:                         
                                 logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
-                                change_speed.delay(account=acc._asdict(), subacc=subacc, nas=nas._asdict(), 
+                                change_speed.delay(account=acc._asdict(), subacc=subacc._asdict(), nas=nas._asdict(), 
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address,
                                                     speed=speed, cb=tasks.update_vpn_speed_state.subtask(session_id=rs.id, newspeed=newspeed))

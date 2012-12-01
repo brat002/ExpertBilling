@@ -269,6 +269,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
 
         try:
+            output=''
             if nas.get('type')!='localhost':
                 sshclient=ssh_client(host=nas.get('ipaddress'), username=nas.get('login'), password=nas.get('password'), command = command_string, logger = logger)
                 logger.info('ssh connected')
@@ -419,11 +420,12 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
         logger.info("Change Speed command_string= %s" % command_string)
         try:
             status = True
-            if nas.type!='localhost':
-                status=ssh_client(host=nas.get('ipaddress'), username=nas.get('login'), password=nas.get('password'), command = command_string)
+            output=''
+            if nas.get('type')!='localhost':
+                status=ssh_client(host=nas.get('ipaddress'), username=nas.get('login'), password=nas.get('password'), command = command_string, logger=logger)
                 logger.info('ssh connected')
 
-            elif nas.type=='localhost':
+            elif nas.get('type')=='localhost':
                 status, output = commands.getstatusoutput(command_string)
                 status = True if status==0 else False
             if status==True and cb:
@@ -469,11 +471,11 @@ def cred(account, subacc, access_type, nas, addonservice={},format_string='', cb
     if not command_string: return True
 
     try:
-        
+        output=''
         if nas.get('type')!='localhost':
-            status=ssh_client(host=nas.get('ipaddress'), username=nas.get('login'), password=nas.get('password'), command = command_string)
+            status=ssh_client(host=nas.get('ipaddress'), username=nas.get('login'), password=nas.get('password'), command = command_string, logger=logger)
             logger.info('CRED ssh connected')
-        elif nas.type=='localhost':
+        elif nas.get('type')=='localhost':
             status, output = commands.getstatusoutput(command_string)
             status = True if status==0 else False
             logger.info('Local command %s was executed with status %s and output %s' % (command_string, status, output))
