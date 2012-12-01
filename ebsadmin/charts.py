@@ -65,7 +65,7 @@ def charts(request):
     nasses_str = ''
     print request.GET
     report = request.GET.get("report")
-    if request.GET:
+    if request.method=='GET':
         form = ReportForm(request.GET)
         if form.is_valid():
             print "valid"
@@ -182,7 +182,7 @@ def charts(request):
                         subitems=[]
                         subitems.append((item[1], item[2]))
                     previtem = item[0]
-                
+                if previtem: res.append((previtem, subitems))
                 return render_to_response('ebsadmin/charts_multiline.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
     
             if report=='accountstraffic':

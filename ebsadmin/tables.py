@@ -180,7 +180,7 @@ class ActiveSessionTable(TableReport):
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         model = ActiveSession
-        exclude = ("speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account')
+        exclude = ("speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account', 'sessionid')
         attrs = {'class': 'table table-bordered table-condensed'}
 
 class AuthLogTable(TableReport):
