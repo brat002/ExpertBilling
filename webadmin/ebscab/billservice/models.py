@@ -11,6 +11,7 @@ from django.db import connection
 connection.features.can_return_id_from_insert = False
 # Create your models here.
 # choiCe
+import IPy
 from lib.fields import IPNetworkField
 PROTOCOLS = {'0':'-all-',
            '37':'ddp',
@@ -99,7 +100,13 @@ AUTH_TYPES=(
               ('BY_MAC', 'BY_MAC'),
               )
 
-
+STATUS_CLASS={
+              1:'',
+              2:'error',
+              3:'error',
+              4:'info',
+              }
+    
 class SoftDeleteManager(models.Manager):
     ''' Use this manager to get objects that have a deleted field '''
     def get_query_set(self):
@@ -614,7 +621,7 @@ class AccountPrepaysTime(models.Model):
         
 class TrafficLimit(models.Model):
     tarif             = models.ForeignKey('Tariff')
-    name              = models.CharField(max_length=255, verbose_name=u'Название лимита')
+    name              = models.CharField(max_length=255, verbose_name=u'Название')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', blank=True, null=True, on_delete = models.SET_NULL, help_text=u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода")
     size              = models.IntegerField(verbose_name=u'Размер в килобайтах', default=0)
     group             = models.ForeignKey("Group", verbose_name=u"Группа")
@@ -810,6 +817,10 @@ class Account(models.Model):
     def __unicode__(self):
         return '%s' % self.username
 
+
+    def get_sessions_class(self):
+        return STATUS_CLASS.get(self.status)
+    
     class Meta:
         ordering = ['username']
         verbose_name = u"Аккаунт"
@@ -895,6 +906,7 @@ class TransactionType(models.Model):
     name = models.CharField(max_length=255, unique=True)
     internal_name = models.CharField(max_length=32, unique=True)
     is_deletable = models.BooleanField(verbose_name=u'Может быть удалён', blank=True, default=True)
+    allowed_systemusers = models.ManyToManyField("SystemUser", blank=True, null=True)
     #content_type = models.ForeignKey(ContentType)
     #object_id = models.PositiveIntegerField()
     #content_object = generic.GenericForeignKey('content_type', 'object_id')
@@ -1373,8 +1385,12 @@ class IPPool(models.Model):
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('ippool_delete'), self.id)
 
+    def get_pool_size(self):
+        
+        return IPy.IP(self.end_ip).int()-IPy.IP(self.start_ip).int()
 
-
+    def get_used_ip_count(self):
+        return self.ipinuse_set.filter(disabled__isnull=True).count()
 
 class IPInUse(models.Model):
     pool = models.ForeignKey(IPPool, verbose_name=u'IP пул')

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 from __future__ import absolute_import
 from django import template
 from django.template import TemplateSyntaxError, Variable, Node
@@ -9,6 +9,7 @@ from django.utils.http import urlencode
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 import django_tables2 as tables
+from django_tables2.config import RequestConfig
 import re
 import StringIO
 import tokenize
@@ -20,7 +21,7 @@ kwarg_re = re.compile(r"(?:(.+)=)?(.+)")
 
 def token_kwargs(bits, parser):
     """
-    Based on Django's ``django.template.defaulttags.token_kwargs``, but with a
+    Based on Django's `~django.template.defaulttags.token_kwargs`, but with a
     few changes:
 
     - No legacy mode.
@@ -69,7 +70,7 @@ def set_url_param(parser, token):
         {% set_url_param name="help" age=20 %}
         ?name=help&age=20
 
-    **Deprecated** as of 0.7.0, use ``querystring``.
+    **Deprecated** as of 0.7.0, use `querystring`.
     """
     bits = token.contents.split()
     qschanges = {}
@@ -93,20 +94,23 @@ def set_url_param(parser, token):
 
 
 class QuerystringNode(Node):
-    def __init__(self, params):
+    def __init__(self, updates, removals):
         super(QuerystringNode, self).__init__()
-        self.params = params
+        self.updates = updates
+        self.removals = removals
 
     def render(self, context):
         request = context.get('request', None)
         if not request:
             return ""
         params = dict(request.GET)
-        for key, value in self.params.iteritems():
+        for key, value in self.updates.iteritems():
             key = key.resolve(context)
             value = value.resolve(context)
             if key not in ("", None):
                 params[key] = value
+        for removal in self.removals:
+            params.pop(removal.resolve(context), None)
         return escape("?" + urlencode(params, doseq=True))
 
 
@@ -122,17 +126,19 @@ def querystring(parser, token):
 
         {% querystring "name"="Ayers" "age"=20 %}
         ?name=Ayers&gender=male&age=20
+        {% querystring "name"="Ayers" without "gender" %}
+        ?name=Ayers
 
     """
     bits = token.split_contents()
     tag = bits.pop(0)
-    try:
-        return QuerystringNode(token_kwargs(bits, parser))
-    finally:
-        # ``bits`` should now be empty, if this is not the case, it means there
-        # was some junk arguments that token_kwargs couldn't handle.
-        if bits:
-            raise TemplateSyntaxError("Malformed arguments to '%s'" % tag)
+    updates = token_kwargs(bits, parser)
+    # ``bits`` should now be empty of a=b pairs, it should either be empty, or
+    # have ``without`` arguments.
+    if bits and bits.pop(0) != "without":
+        raise TemplateSyntaxError("Malformed arguments to '%s'" % tag)
+    removals = [parser.compile_filter(bit) for bit in bits]
+    return QuerystringNode(updates, removals)
 
 
 class RenderTableNode(Node):
@@ -150,8 +156,24 @@ class RenderTableNode(Node):
     def render(self, context):
         table = self.table.resolve(context)
 
-        if not isinstance(table, tables.Table):
-            raise ValueError("Expected Table object, but didn't find one.")
+        if isinstance(table, tables.Table):
+            pass
+        elif hasattr(table, "model"):
+            queryset = table
+
+            # We've been given a queryset, create a table using its model and
+            # render that.
+            class OnTheFlyTable(tables.Table):
+                class Meta:
+                    model = queryset.model
+                    attrs = {"class": "paleblue"}
+            table = OnTheFlyTable(queryset)
+            request = context.get('request')
+            if request:
+                RequestConfig(request).configure(table)
+        else:
+            raise ValueError("Expected table or queryset, not '%s'." %
+                             type(table).__name__)
 
         if self.template:
             template = self.template.resolve(context)
@@ -182,11 +204,39 @@ class RenderTableNode(Node):
 
 @register.tag
 def render_table(parser, token):
+    """
+    Render a HTML table.
+
+    The tag can be given either a `.Table` object, or a queryset. An optional
+    second argument can specify the template to use.
+
+    Example::
+
+        {% render_table table %}
+        {% render_table table "custom.html" %}
+        {% render_table user_queryset %}
+
+    When given a queryset, a `.Table` class is generated dynamically as
+    follows::
+
+        class OnTheFlyTable(tables.Table):
+            class Meta:
+                model = queryset.model
+                attrs = {"class": "paleblue"}
+
+    For configuration beyond this, a `.Table` class must be manually defined,
+    instantiated, and passed to this tag.
+
+    The context should include a *request* variable containing the current
+    request. This allows pagination URLs to be created without clobbering the
+    existing querystring.
+    """
     bits = token.split_contents()
     try:
         tag, table = bits.pop(0), parser.compile_filter(bits.pop(0))
     except ValueError:
-        raise TemplateSyntaxError(u"'%s' must be given a table." % bits[0])
+        raise TemplateSyntaxError(u"'%s' must be given a table or queryset."
+                                  % bits[0])
     template = parser.compile_filter(bits.pop(0)) if bits else None
     return RenderTableNode(table, template)
 
@@ -194,6 +244,7 @@ def render_table(parser, token):
 class NoSpacelessNode(Node):
     def __init__(self, nodelist):
         self.nodelist = nodelist
+        super(NoSpacelessNode, self).__init__()
 
     def render(self, context):
         return mark_safe(re.sub(r'>\s+<', '>&#32;<',
@@ -215,26 +266,11 @@ def title(value):
     """
     A slightly better title template filter.
 
-    Same as Django's builtin ``title`` filter, but operates on individual words
-    and leaves words unchanged if they already have a capital letter.
+    Same as Django's builtin `~django.template.defaultfilters.title` filter,
+    but operates on individual words and leaves words unchanged if they already
+    have a capital letter.
     """
     title_word = lambda w: w if RE_UPPERCASE.search(w) else old_title(w)
     return re.sub('(\S+)', lambda m: title_word(m.group(0)), value)
 title.is_safe = True
 
-@register.filter
-def get_sessions_class(value):
-    """
-    A slightly better title template filter.
-
-    Same as Django's builtin ``title`` filter, but operates on individual words
-    and leaves words unchanged if they already have a capital letter.
-    """
-    
-    if value.session_status=='ACK':
-        return "alert-info"
-    elif value.session_status=='ACTIVE':
-        return "alert-success"
-    else:
-        return "alert-error"
-get_sessions_class.is_safe = True

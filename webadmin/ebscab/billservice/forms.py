@@ -170,9 +170,9 @@ class SearchAccountForm(forms.Form):
     contactperson = AutoCompleteSelectMultipleField( 'account_contactperson', required = False, label =u"Контактное лицо")
     city = forms.ModelChoiceField(queryset=City.objects.all(), required=False,  label= u"Город")
     street = forms.CharField(label =u"Улица", required=False, widget = forms.TextInput(attrs={'class': 'input-large', 'placeholder': u'Улица'}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
-    house = forms.CharField(label =u"Дом", required=False, widget = forms.TextInput(attrs={'class': 'input-xsmall', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
+    house = forms.CharField(label =u"Дом", required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
     house_bulk = forms.CharField(label =u"Подъезд", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
-    room = forms.CharField(label =u"Квартира", required=False, widget = forms.TextInput(attrs={'class': 'input-xsmall', 'placeholder': u'Кв'}))
+    room = forms.CharField(label =u"Квартира", required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Кв'}))
     status = forms.ChoiceField(required=False, choices = (('0', u"--Любой--", ), ('1', u'Активен'), ('2', u'Не активен, списывать периодические услуги'),('3', u'Не активен, не списывать периодические услуги'),('4', u'Пользовательская блокировка'),))
     id = forms.IntegerField(required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
     #ballance_exp = forms.ChoiceField(required=False, choices = (('>', u"Больше", ), ('<', u'Меньше'), ('', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
@@ -241,6 +241,7 @@ class IpInUseLogForm(forms.Form):
     daterange = DateRangeField(label=u'Диапазон', required=False )    
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
     subaccount = AutoCompleteSelectMultipleField( 'subaccount_fts', required = False)
+    ippool = forms.ModelMultipleChoiceField(label=u"Пул", queryset=IPPool.objects.all(), required=False)
     ip = forms.IPAddressField(required=False)
     types = forms.ChoiceField(required=False, choices = (('dynamic', u"Динамические", ), ('static', u'Статические'), ('', u'Любые'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
     
@@ -581,6 +582,7 @@ class AccountPrepaysTraficForm(ModelForm):
         model = AccountPrepaysTrafic     
 
 class TransactionTypeForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         exclude=('is_deletable',)
         model = TransactionType     

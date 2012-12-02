@@ -103,7 +103,7 @@
   <li><a href="#general" class='active' data-toggle="tab">Общее</a></li>
   <li><a href="#ports" data-toggle="tab">Порты</a></li>
 </ul>
-<form method="POST" action="{% url switch_edit %}?id={{item.id}}"class="well form-horizontal">
+<form method="POST" action="{% url switch_edit %}?id={{item.id}}"class="well form-horizontal form-condensed">
 <div class="tab-content">
   <div class="tab-pane active" id="general">
   <div>{% objectlog item %}</div>

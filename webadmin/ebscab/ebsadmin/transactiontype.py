@@ -51,6 +51,7 @@ def transactiontype_edit(request):
  
             model = form.save(commit=False)
             model.save()
+            form.save_m2m()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Тип проводки успешно сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect(reverse("transactiontype"))

@@ -4693,16 +4693,16 @@ def houses(request):
     fields = request.POST.get('fields')
     if street_name:
         if term:
-            items = House.objects.filter(street__name__icontains=street_name, name__istartswith = term)
+            items = House.objects.filter(street__name__icontains=street_name, name__istartswith = term).distinct()
         else:
-            items = House.objects.filter(street__name__icontains=street_name)
+            items = House.objects.filter(street__name__icontains=street_name).distinct()
     elif id:
         items = [House.objects.get(id=id)]
     else:
         if term:
-            items = House.objects.filter(street__name__icontains=street_name)
+            items = House.objects.filter(name__istartswith=term).distinct()
         else:
-            items = House.objects.all()
+            items = House.objects.all().distinct()
 
     res=[]
     for item in items:

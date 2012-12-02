@@ -90,7 +90,7 @@
   
   <div class="row-fluid">
         <div class="span12">
-            <form action="{{form.action}}" method="GET" class="well form-horizontal">
+            <form action="{{form.action}}" method="GET" class="well form-horizontal form-condensed">
             {{ form.non_field_errors }}
             
                 <fieldset>
@@ -241,29 +241,13 @@
                                     {{ form.street.help_text|safe }}
                                 </p>
                             {% endif %}
-                            {{ form.house }}
-                            {% if form.house.errors %}
-                                <span class="help-inline">{% for error in form.house.errors %}{{ error }}<br/> {% endfor %}</span>
-                            {% endif %}
-                            {% if form.house.help_text%}
-                                <p class="help-block">
-                                    {{ form.house.help_text|safe }}
-                                </p>
-                            {% endif %}
-                            {{ form.room }}
-                            {% if form.room.errors %}
-                                <span class="help-inline">{% for error in form.room.errors %}{{ error }}<br/> {% endfor %}</span>
-                            {% endif %}
-                            {% if form.room.help_text%}
-                                <p class="help-block">
-                                    {{ form.room.help_text|safe }}
-                                </p>
-                            {% endif %}
+
                             </div>
                         </div>
                     </div>
 
                     <div class="control-group">
+                    <div class="control-row">
                         <label class="control-label" for="input-entrance">{{form.house_bulk.label}}</label>
                         <div class="controls">
                             {{ form.house_bulk }}
@@ -276,9 +260,30 @@
                                 </p>
                             {% endif %}
                         </div>
+                        </div>
+                        <div class="control-row">
+                        <label class="control-label" for="input-entrance">{{form.house.label}}</label>
+                        <div class="controls">
+                            {{ form.house }}
+                            {% if form.house.errors %}
+                                <span class="help-inline">{% for error in form.house.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.house.help_text%}
+                                <p class="help-block">
+                                    {{ form.house.help_text|safe }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        </div>
                     </div>
 
+
+
+
+
+
                     <div class="control-group">
+                    <div class="control-row">
                         <label class="control-label" for="input-floor">{{form.row.label}}</label>
                         <div class="controls">
                             {{ form.row }}
@@ -290,6 +295,21 @@
                                     {{ form.row.help_text|safe }}
                                 </p>
                             {% endif %}
+                        </div>
+                        </div>
+                        <div class="control-row">
+                        <label class="control-label" for="input-entrance">{{form.room.label}}</label>
+                        <div class="controls">
+                            {{ form.room }}
+                            {% if form.room.errors %}
+                                <span class="help-inline">{% for error in form.room.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.room.help_text%}
+                                <p class="help-block">
+                                    {{ form.room.help_text|safe }}
+                                </p>
+                            {% endif %}
+                        </div>
                         </div>
                     </div>
 
@@ -601,7 +621,7 @@
     </div>
   
   </div>
-  <div class="tab-pane {% if table %}active{% endif %}" id="result">{% if table %}{% render_table table %}{% endif %}</div>
+  <div class="tab-pane {% if table %}active{% endif %}" id="result">{% if table %}{% render_table table "django_tables2/sessions_table.html"  %}{% endif %}</div>
 
 </div>
  {% endblock %}

@@ -1,18 +1,17 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8
 import copy
-from django.conf import settings
-from django.core.paginator import Paginator
-from django.http import Http404
+from django.core.paginator       import Paginator
+from django.db.models.fields     import FieldDoesNotExist
 from django.utils.datastructures import SortedDict
-from django.template import RequestContext
-from django.template.loader import get_template
-from django.utils.encoding import StrAndUnicode
-import itertools
-import sys
+from django.template             import RequestContext
+from django.template.loader      import get_template
+from django.utils.encoding       import StrAndUnicode
 import warnings
-from .utils import Accessor, AttributeDict, OrderBy, OrderByTuple, Sequence
-from .rows import BoundRows
-from .columns import BoundColumns, Column
+from .config import RequestConfig
+from .utils import (Accessor, AttributeDict, cached_property, build_request,
+                    OrderBy, OrderByTuple, segment, Sequence)
+from .rows  import BoundRows
+from .      import columns
 
 
 QUERYSET_ACCESSOR_SEPARATOR = '__'
@@ -23,8 +22,8 @@ class TableData(object):
     Exposes a consistent API for :term:`table data`.
 
     :param  data: iterable containing data for each row
-    :type   data: :class:`QuerySet` or :class:`list` of :class:`dict`
-    :param table: :class:`.Table` object
+    :type   data: `~django.db.query.QuerySet` or `list` of `dict`
+    :param table: `.Table` object
     """
     def __init__(self, data, table):
         self.table = table
@@ -38,15 +37,42 @@ class TableData(object):
                 self.list = list(data)
             except:
                 raise ValueError('data must be QuerySet-like (have count and '
-                                 'order_by) or support list(data) -- %s is '
+                                 'order_by) or support list(data) -- %s has '
                                  'neither' % type(data).__name__)
 
     def __len__(self):
-        # Use the queryset count() method to get the length, instead of
-        # loading all results into memory. This allows, for example,
-        # smart paginators that use len() to perform better.
-        return (self.queryset.count() if hasattr(self, 'queryset')
-                                      else len(self.list))
+        if not hasattr(self, "_length"):
+            # Use the queryset count() method to get the length, instead of
+            # loading all results into memory. This allows, for example,
+            # smart paginators that use len() to perform better.
+            self._length = (self.queryset.count() if hasattr(self, 'queryset')
+                                                  else len(self.list))
+        return self._length
+
+    @property
+    def data(self):
+        return self.queryset if hasattr(self, "queryset") else self.list
+
+    @property
+    def ordering(self):
+        """
+        Returns the list of order by aliases that are enforcing ordering on the
+        data.
+
+        If the data is unordered, an empty sequence is returned. If the
+        ordering can not be determined, `None` is returned.
+
+        This works by inspecting the actual underlying data. As such it's only
+        supported for querysets.
+        """
+        if hasattr(self, "queryset"):
+            aliases = {}
+            for bound_column in self.table.columns:
+                aliases[bound_column.order_by_alias] = bound_column.order_by
+            try:
+                return segment(self.queryset.query.order_by, aliases).next()
+            except StopIteration:
+                pass
 
     def order_by(self, aliases):
         """
@@ -56,21 +82,23 @@ class TableData(object):
         :param aliases: optionally prefixed names of columns ('-' indicates
                         descending order) in order of significance with
                         regard to data ordering.
-        :type  aliases: :class:`~.utils.OrderByTuple`
+        :type  aliases: `~.utils.OrderByTuple`
         """
-        accessors = self._translate_aliases_to_accessors(aliases)
-        if hasattr(self, 'queryset'):
+        accessors = []
+        for alias in aliases:
+            bound_column = self.table.columns[OrderBy(alias).bare]
+            # bound_column.order_by reflects the current ordering applied to
+            # the table. As such we need to check the current ordering on the
+            # column and use the opposite if it doesn't match the alias prefix.
+            if alias[0] != bound_column.order_by_alias[0]:
+                accessors += bound_column.order_by.opposite
+            else:
+                accessors += bound_column.order_by
+        if hasattr(self, "queryset"):
             translate = lambda accessor: accessor.replace(Accessor.SEPARATOR, QUERYSET_ACCESSOR_SEPARATOR)
             self.queryset = self.queryset.order_by(*(translate(a) for a in accessors))
         else:
-            self.list.sort(cmp=accessors.cmp)
-
-    def _translate_aliases_to_accessors(self, aliases):
-        """
-        Translate from order by aliases to column accessors.
-        """
-        columns = (self.table.columns[OrderBy(alias).bare] for alias in aliases)
-        return OrderByTuple(itertools.chain(*(c.order_by for c in columns)))
+            self.list.sort(cmp=OrderByTuple(accessors).cmp)
 
     def __iter__(self):
         """
@@ -78,34 +106,53 @@ class TableData(object):
         with indexing into querysets, so this side-steps that problem (as well
         as just being a better way to iterate).
         """
-        return iter(self.list) if hasattr(self, 'list') else iter(self.queryset)
+        return iter(self.data)
 
     def __getitem__(self, key):
         """
-        Slicing returns a new :class:`.TableData` instance, indexing returns a
+        Slicing returns a new `.TableData` instance, indexing returns a
         single record.
         """
-        data = (self.list if hasattr(self, 'list') else self.queryset)[key]
-        if isinstance(key, slice):
-            return type(self)(data, self.table)
-        else:
-            return data
+        return self.data[key]
+
+    @cached_property
+    def verbose_name(self):
+        """
+        The full (singular) name for the data.
+
+        Queryset data has its model's `~django.db.Model.Meta.verbose_name`
+        honored. List data is checked for a ``verbose_name`` attribute, and
+        falls back to using ``"item"``.
+        """
+        if hasattr(self, "queryset"):
+            return self.queryset.model._meta.verbose_name
+        return getattr(self.list, "verbose_name", "item")
+
+    @cached_property
+    def verbose_name_plural(self):
+        """
+        The full (plural) name of the data.
+
+        This uses the same approach as `.verbose_name`.
+        """
+        if hasattr(self, "queryset"):
+            return self.queryset.model._meta.verbose_name_plural
+        return getattr(self.list, "verbose_name_plural", "items")
 
 
 class DeclarativeColumnsMetaclass(type):
     """
-    Metaclass that converts Column attributes on the class to a dictionary
-    called ``base_columns``, taking into account parent class ``base_columns``
-    as well.
+    Metaclass that converts `.Column` objects defined on a class to the
+    dictionary `.Table.base_columns`, taking into account parent class
+    ``base_columns`` as well.
     """
-    def __new__(cls, name, bases, attrs):
+    def __new__(mcs, name, bases, attrs):
 
         attrs["_meta"] = opts = TableOptions(attrs.get("Meta", None))
         # extract declared columns
-        columns = [(name_, attrs.pop(name_)) for name_, column in attrs.items()
-                                             if isinstance(column, Column)]
-        columns.sort(lambda x, y: cmp(x[1].creation_counter,
-                                      y[1].creation_counter))
+        cols = [(name_, attrs.pop(name_)) for name_, column in attrs.items()
+                                          if isinstance(column, columns.Column)]
+        cols.sort(key=lambda x: x[1].creation_counter)
 
         # If this class is subclassing other tables, add their fields as
         # well. Note that we loop over the bases in *reverse* - this is
@@ -118,18 +165,25 @@ class DeclarativeColumnsMetaclass(type):
         attrs["base_columns"] = SortedDict(parent_columns)
         # Possibly add some generated columns based on a model
         if opts.model:
-            fields = opts.model._meta.fields
+            extra = SortedDict()
+            # honor Table.Meta.fields, fallback to model._meta.fields
             if opts.fields:
-                fields = filter(lambda f: f.name in opts.fields, fields)
-
-            # We explicitly pass in verbose_name, so that if the table is
-            # instantiated with non-queryset data, model field verbose_names
-            # are used anyway.
-            extra = SortedDict(((f.name, Column(verbose_name=f.verbose_name))
-                                for f in fields))
+                # Each item in opts.fields is the name of a model field or a
+                # normal attribute on the model
+                for name in opts.fields:
+                    try:
+                        field = opts.model._meta.get_field(name)
+                    except FieldDoesNotExist:
+                        extra[name] = columns.Column()
+                    else:
+                        extra[name] = columns.library.column_for_field(field)
+            else:
+                for field in opts.model._meta.fields:
+                    extra[field.name] = columns.library.column_for_field(field)
             attrs["base_columns"].update(extra)
+
         # Explicit columns override both parent and generated columns
-        attrs["base_columns"].update(SortedDict(columns))
+        attrs["base_columns"].update(SortedDict(cols))
         # Apply any explicit exclude setting
         for exclusion in opts.exclude:
             if exclusion in attrs["base_columns"]:
@@ -140,21 +194,23 @@ class DeclarativeColumnsMetaclass(type):
             # Table's sequence defaults to sequence declared in Meta
             #attrs['_sequence'] = opts.sequence
             attrs["base_columns"] = SortedDict(((x, attrs["base_columns"][x]) for x in opts.sequence))
-        return super(DeclarativeColumnsMetaclass, cls).__new__(cls, name, bases, attrs)
+        return super(DeclarativeColumnsMetaclass, mcs).__new__(mcs, name, bases, attrs)
 
 
 class TableOptions(object):
     """
-    Extracts and exposes options for a :class:`.Table` from a ``class Meta``
-    when the table is defined. See ``Table`` for documentation on the impact of
+    Extracts and exposes options for a `.Table` from a `.Table.Meta`
+    when the table is defined. See `.Table` for documentation on the impact of
     variables in this class.
 
     :param options: options for a table
-    :type  options: :class:`Meta` on a :class:`.Table`
+    :type  options: `.Table.Meta` on a `.Table`
     """
+    # pylint: disable=R0902
     def __init__(self, options=None):
         super(TableOptions, self).__init__()
         self.attrs = AttributeDict(getattr(options, "attrs", {}))
+        self.default = getattr(options, "default", u"—")
         self.empty_text = getattr(options, "empty_text", None)
         self.fields = getattr(options, "fields", ())
         self.exclude = getattr(options, "exclude", ())
@@ -178,58 +234,125 @@ class TableOptions(object):
 
 class Table(StrAndUnicode):
     """
-    A collection of columns, plus their associated data rows.
+    A representation of a table.
 
-    :type  attrs: dict
-    :param attrs: A mapping of attributes to values that will be added to the
-            HTML ``<table>`` tag.
 
-    :type  data:  list or QuerySet-like
-    :param data: The :term:`table data`.
+    .. attribute:: attrs
 
-    :type  exclude: iterable
-    :param exclude: A list of columns to be excluded from this table.
+        HTML attributes to add to the ``<table>`` tag.
 
-    :type  order_by: None, tuple or string
-    :param order_by: sort the table based on these columns prior to display.
-            (default :attr:`.Table.Meta.order_by`)
+        :type: `dict`
 
-    :type  order_by_field: string or None
-    :param order_by_field: The name of the querystring field used to control
-            the table ordering.
+        When accessing the attribute, the value is always returned as an
+        `.AttributeDict` to allow easily conversion to HTML.
 
-    :type  page_field: string or None
-    :param page_field: The name of the querystring field used to control which
-            page of the table is displayed (used when a table is paginated).
 
-    :type  per_page_field: string or None
-    :param per_page_field: The name of the querystring field used to control
-            how many records are displayed on each page of the table.
+    .. attribute:: columns
 
-    :type  prefix: string
-    :param prefix: A prefix used on querystring arguments to allow multiple
-            tables to be used on a single page, without having conflicts
-            between querystring arguments. Depending on how the table is
-            rendered, will determine how the prefix is used. For example ``{%
-            render_table %}`` uses ``<prefix>-<argument>``.
+        The columns in the table.
 
-    :type  sequence: iterable
-    :param sequence: The sequence/order of columns the columns (from left to
-            right). Items in the sequence must be column names, or the
-            *remaining items* symbol marker ``"..."`` (string containing three
-            periods). If this marker is used, not all columns need to be
-            defined.
+        :type: `.BoundColumns`
 
-    :type  orderable: bool
-    :param orderable: Enable/disable column ordering on this table
 
-    :type  template: string
-    :param template: the template to render when using {% render_table %}
-            (default ``django_tables2/table.html``)
+    .. attribute:: default
 
-    :type  empty_text: string
-    :param empty_text: Empty text to render when the table has no data.
-            (default :attr:`.Table.Meta.empty_text`)
+        Text to render in empty cells (determined by `.Column.empty_values`,
+        default `.Table.Meta.default`)
+
+        :type: `unicode`
+
+
+    .. attribute:: empty_text
+
+        Empty text to render when the table has no data. (default
+        `.Table.Meta.empty_text`)
+
+        :type: `unicode`
+
+
+    .. attribute:: exclude
+
+        The names of columns that shouldn't be included in the table.
+
+        :type: iterable of `unicode`
+
+
+    .. attribute:: order_by_field
+
+        If not `None`, defines the name of the *order by* querystring field.
+
+        :type: `unicode`
+
+
+    .. attribute:: page
+
+        The current page in the context of pagination.
+
+        Added during the call to `.Table.paginate`.
+
+
+    .. attribute:: page_field
+
+        If not `None`, defines the name of the *current page* querystring
+        field.
+
+        :type: `unicode`
+
+
+    .. attribute:: paginator
+
+        The current paginator for the table.
+
+        Added during the call to `.Table.paginate`.
+
+
+    .. attribute:: per_page_field
+
+        If not `None`, defines the name of the *per page* querystring field.
+
+        :type: `unicode`
+
+
+    .. attribute:: prefix
+
+        A prefix for querystring fields to avoid name-clashes when using
+        multiple tables on a single page.
+
+        :type: `unicode`
+
+
+    .. attribute:: rows
+
+        The rows of the table (ignoring pagination).
+
+        :type: `.BoundRows`
+
+
+    .. attribute:: sequence
+
+        The sequence/order of columns the columns (from left to right).
+
+        :type: iterable
+
+        Items in the sequence must be :term:`column names <column name>`, or
+        ``"..."`` (string containing three periods). ``...`` can be used as a
+        catch-all for columns that aren't specified.
+
+
+    .. attribute:: orderable
+
+        Enable/disable column ordering on this table
+
+        :type: `bool`
+
+
+    .. attribute:: template
+
+        The template to render when using ``{% render_table %}`` (default
+        ``"django_tables2/table.html"``)
+
+        :type: `unicode`
+
     """
     __metaclass__ = DeclarativeColumnsMetaclass
     TableDataClass = TableData
@@ -237,12 +360,15 @@ class Table(StrAndUnicode):
     def __init__(self, data, order_by=None, orderable=None, empty_text=None,
                  exclude=None, attrs=None, sequence=None, prefix=None,
                  order_by_field=None, page_field=None, per_page_field=None,
-                 template=None, sortable=None):
+                 template=None, sortable=None, default=None, request=None):
         super(Table, self).__init__()
         self.exclude = exclude or ()
         self.sequence = sequence
         self.data = self.TableDataClass(data=data, table=self)
-        self.rows = BoundRows(self.data)
+        if default is None:
+            default = self._meta.default
+        self.default = default
+        self.rows = BoundRows(data=self.data, table=self)
         self.attrs = attrs
         self.empty_text = empty_text
         if sortable is not None:
@@ -272,7 +398,7 @@ class Table(StrAndUnicode):
         else:
             self._sequence = Sequence(self._meta.fields + ('...',))
             self._sequence.expand(self.base_columns.keys())
-        self.columns = BoundColumns(self)
+        self.columns = columns.BoundColumns(self)
         # `None` value for order_by means no order is specified. This means we
         # `shouldn't touch our data's ordering in any way. *However*
         # `table.order_by = None` means "remove any ordering from the data"
@@ -281,9 +407,17 @@ class Table(StrAndUnicode):
             order_by = self._meta.order_by
         if order_by is None:
             self._order_by = None
+            # If possible inspect the ordering on the data we were given and
+            # update the table to reflect that.
+            order_by = self.data.ordering
+            if order_by is not None:
+                self.order_by = order_by
         else:
             self.order_by = order_by
         self.template = template
+        # If a request is passed, configure for request
+        if request:
+            RequestConfig(request).configure(self)
 
     def __unicode__(self):
         return unicode(repr(self))
@@ -296,20 +430,12 @@ class Table(StrAndUnicode):
         generated will clobber the querystring of the request. Use the
         ``{% render_table %}`` template tag instead.
         """
-        # minimizes Django 1.3 dependency
-        from django.test.client import RequestFactory
-        request = RequestFactory().get('/')
         template = get_template(self.template)
+        request = build_request()
         return template.render(RequestContext(request, {'table': self}))
 
     @property
     def attrs(self):
-        """
-        The attributes that should be applied to the ``<table>`` tag when
-        rendering HTML.
-
-        :rtype: :class:`~.utils.AttributeDict` object.
-        """
         return self._attrs if self._attrs is not None else self._meta.attrs
 
     @attrs.setter
@@ -332,8 +458,9 @@ class Table(StrAndUnicode):
     @order_by.setter
     def order_by(self, value):
         """
-        Order the rows of the table based columns. ``value`` must be a sequence
-        of column names.
+        Order the rows of the table based on columns.
+
+        :param value: iterable of order by aliases.
         """
         # collapse empty values to ()
         order_by = () if not value else value
@@ -341,10 +468,10 @@ class Table(StrAndUnicode):
         order_by = order_by.split(',') if isinstance(order_by, basestring) else order_by
         valid = []
         # everything's been converted to a iterable, accept iterable!
-        for o in order_by:
-            name = OrderBy(o).bare
+        for alias in order_by:
+            name = OrderBy(alias).bare
             if name in self.columns and self.columns[name].orderable:
-                valid.append(o)
+                valid.append(alias)
         self._order_by = OrderByTuple(valid)
         self.data.order_by(self._order_by)
 
@@ -371,27 +498,22 @@ class Table(StrAndUnicode):
         Paginates the table using a paginator and creates a ``page`` property
         containing information for the current page.
 
-        :type     klass: Paginator ``class``
+        :type     klass: Paginator class
         :param    klass: a paginator class to paginate the results
-        :type  per_page: ``int``
+        :type  per_page: `int`
         :param per_page: how many records are displayed on each page
-        :type      page: ``int``
+        :type      page: `int`
         :param     page: which page should be displayed.
+
+        Extra arguments are passed to the paginator.
+
+        Pagination exceptions (`~django.core.paginator.EmptyPage` and
+        `~django.core.paginator.PageNotAnInteger`) may be raised from this
+        method and should be handled by the caller.
         """
         per_page = per_page or self._meta.per_page
         self.paginator = klass(self.rows, per_page, *args, **kwargs)
-        self._page_number = page
-
-    @property
-    def page(self):
-        if hasattr(self, '_page_number'):
-            try:
-                return self.paginator.page(self._page_number)
-            except:
-                if settings.DEBUG:
-                    raise
-                else:
-                    raise Http404(sys.exc_info()[1])
+        self.page = self.paginator.page(page)
 
     @property
     def per_page_field(self):

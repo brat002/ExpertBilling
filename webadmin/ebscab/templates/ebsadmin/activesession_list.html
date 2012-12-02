@@ -127,7 +127,7 @@
     </div>
   
   </div>
-  <div class="tab-pane" id="result">{% if table %}{% render_table table %}{% endif %}</div>
+  <div class="tab-pane" id="result">{% if table %}{% render_table table "django_tables2/sessions_table.html" %}{% endif %}</div>
 
 </div>
  {% endblock %}

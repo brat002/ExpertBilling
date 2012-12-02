@@ -26,7 +26,7 @@
     <tbody>
         {% for row in table.page.object_list|default:table.rows %} {# support pagination #}
         {% block table.tbody.row %}
-        <tr class="{% cycle "odd" "even" %}">
+        <tr  class="{{ row.record.get_row_class}}">
             {% for column, cell in row.items %}
                 <td {{ column.attrs.td.as_html }}>{{ cell }}</td>
             {% endfor %}

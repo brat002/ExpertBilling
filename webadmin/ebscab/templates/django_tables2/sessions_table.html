@@ -1,13 +1,14 @@
 {% spaceless %}
 {% load querystring from django_tables2 %}
-{% load get_sessions_class  from django_tables2 %}
+{% load format_paginator from ebsadmin_tags %}
 {% load trans blocktrans from i18n %}
-{% if table.page %}
-<div class="table-container">
-{% endif %}
+{% load ebsadmin_tags %}
+
+<div>
+
 {% block table %}
 
-<table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %}>
+<table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %} id="id_main_table">
     {% block table.thead %}
     <thead>
         <tr>
@@ -25,7 +26,7 @@
     <tbody>
         {% for row in table.page.object_list|default:table.rows %} {# support pagination #}
         {% block table.tbody.row %}
-        <tr class="{{ row.record|get_sessions_class}}">
+        <tr class="{{ row.record.get_sessions_class}}">
             {% for column, cell in row.items %}
                 <td {{ column.attrs.td.as_html }}>{{ cell }}</td>
             {% endfor %}
@@ -41,32 +42,44 @@
     </tbody>
     {% endblock table.tbody %}
     {% block table.tfoot %}
-    <tfoot></tfoot>
+    <tfoot>
+    </tfoot>
     {% endblock table.tfoot %}
 </table>
+{% if total_summ %}
+<strong>Всего на сумму:</strong> {{total_summ|intspace}}
+{% endif %}
+</div>
 {% endblock table %}
+
 
 {% if table.page %}
 
-<ul class="pagination">
-
+<div class="pagination  pagination-centered">
+    <ul>
     {% if table.page.has_previous %}
-    <li class="previous"><a href="{% querystring table.prefixed_page_field=table.page.previous_page_number %}">{% trans "Previous" %}</a></li>
+    <li><a href="{% querystring table.prefixed_page_field=table.page.previous_page_number %}">{% trans "Previous" %}</a></li>
     {% endif %}
-    {% for i in table.page.paginator.page_range %}
-    
-    {% ifequal table.page.number i%}
-    <li><strong><a class="disabled" >{{i}}</a></strong></li>
-    {% else %}
-    <li><a href="{% querystring table.prefixed_page_field=i %}" >{{i}}</a></li>
-    {% endifequal %}
-
+    {% for i in table.page.paginator.page_range|format_paginator:table.page.number  %}
+        {% ifequal i  '...' %}
+           <li><a class="disabled" >{{i}}</a></li>
+        {% else %}
+            {% ifequal table.page.number i%}
+              <li><a class="active" >{{i}}</a></li>
+            {% else %}
+              <li><a href="{% querystring table.prefixed_page_field=i %}" >{{i}}</a></li>
+            {% endifequal %}
+        {% endifequal %}
     {% endfor %}
+    
     {% if table.page.has_next %}
-    <li class="next"><a href="{% querystring table.prefixed_page_field=table.page.next_page_number %}">{% trans "Next" %}</a></li>
+    <li><a href="{% querystring table.prefixed_page_field=table.page.next_page_number %}">{% trans "Next" %}</a></li>
     {% endif %}
-</ul>
-
+    <li><a href="{% querystring "paginate"="False" %}">Все</a></li>
+    </ul>
 </div>
+
+
 {% endif %}
+
 {% endspaceless %}
