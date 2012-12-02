@@ -16,6 +16,9 @@ from radius.models import ActiveSession, AuthLog
 from object_log.models import LogItem
 from nas.models import Nas, TrafficClass, TrafficNode
 from django_tables2_reports.tables import TableReport
+from django.utils.safestring import mark_safe
+from django.utils.html import escape
+import itertools
 
 class FormatBlankColumn(django_tables.Column):
     def render(self, value):
@@ -39,6 +42,12 @@ class FormatBlankSpeedColumn(django_tables.LinkColumn):
     def render(self, value):
         return value if value else ''
     
+class YesNoColumn(django_tables.Column):
+    def render(self, value):
+        return mark_safe('<img src="/media/icons/16/%s.png" />'
+                         % ('accept' and True or 'cross'))
+
+
 class SubAccountsTable(TableReport):
     row_number = django_tables.Column(verbose_name="#")
     id = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
@@ -81,7 +90,7 @@ class AccountAddonServiceTable(TableReport):
     #service = django_tables.LinkColumn('subaccount_detail', args=[A('pk')])
     activated = FormatDateTimeColumn()
     deactivated = FormatDateTimeColumn()
-    temporary_blocked = FormatDateTimeColumn()
+    temporary_blocked = FormatDateTimeColumn(verbose_name=u'Отключена')
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     
@@ -147,7 +156,7 @@ class TotalTransactionReportTable(TableReport):
         
         
 class AccountsReportTable(TableReport):
-    row_number = django_tables.Column(verbose_name="#")
+    row_number = django_tables.Column(verbose_name=u'#', empty_values=())
     #id = FormatBlankColumn()
     username = django_tables.LinkColumn('account_edit', verbose_name=u'Имя', get_params={'id':A('pk')})
     contract = FormatBlankColumn(verbose_name=u'Договор')
@@ -159,28 +168,44 @@ class AccountsReportTable(TableReport):
     #credit = FormatFloatColumn()
     #created = FormatDateTimeColumn()
 
+    def __init__(self, *args, **kwargs):
+        super(AccountsReportTable, self).__init__(*args, **kwargs)
+        self.counter = itertools.count()
+
     def render_row_number(self):
-        value = getattr(self, '_counter', 0)
-        self._counter = value + 1
-        return '%d' % value
+        return '%d' % next(self.counter)
     
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class ActiveSessionTable(TableReport):
+    row_number = django_tables.Column(verbose_name=u'#', empty_values=())
     session_status = django_tables.TemplateColumn("<span class='label {% if record.session_status == 'ACK' %}info{% endif %}'>{{ record.session_status }}</span>")
     date_start = FormatDateTimeColumn()
     #interrim_update = FormatDateTimeColumn()
+    caller_id = django_tables.Column(verbose_name=u'Caller ID', empty_values=())
+    framed_ip_address = django_tables.Column(verbose_name=u'IP', empty_values=())
+    framed_protocol = django_tables.Column(verbose_name=u'Протокол', empty_values=())
+    session_time = django_tables.Column(verbose_name=u'Онлайн', empty_values=())
     date_end = FormatDateTimeColumn()
-    bytes = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}/{{record.bytes_out|filesizeformat}}")
+    nas_int = django_tables.Column(verbose_name=u'NAS', accessor=A('nas_int__name'))
+    bytes = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}/{{record.bytes_out|filesizeformat}}", verbose_name=u'Байт')
     #account = django_tables.LinkColumn('account_edit', get_params={'id':A('account.id')})
-    subaccount = django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount.id')})
-    
+    subaccount__username = django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount')}, verbose_name=u'Субаккаунт')
+
+    def __init__(self, *args, **kwargs):
+        super(ActiveSessionTable, self).__init__(*args, **kwargs)
+        self.counter = itertools.count()
+
+    def render_row_number(self):
+        return '%d' % next(self.counter)
+
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        model = ActiveSession
-        exclude = ("speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account', 'sessionid')
+        #model = ActiveSession
+        fields = ('row_number', 'subaccount__username', 'date_start', 'date_end',  'nas_int', 'caller_id', 'framed_ip_address', 'framed_protocol', 'session_time','bytes', 'session_status')
+        exclude = ("id", "speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account', 'sessionid', 'acct_terminate_cause')
         attrs = {'class': 'table table-bordered table-condensed'}
 
 class AuthLogTable(TableReport):
@@ -191,6 +216,7 @@ class AuthLogTable(TableReport):
     
     class Meta:
         model = AuthLog
+        exclude = ('type', 'id')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class BallanceHistoryTable(TableReport):
@@ -281,6 +307,8 @@ class IPPoolTable(TableReport):
     id = django_tables.LinkColumn('ippool_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('ippool_edit', get_params={'id':A('pk')})
     next_ippool = FormatBlankColumn()
+    pool_size = django_tables.Column(verbose_name=u'IP в пуле', accessor=A('get_pool_size'))
+    used_ip =  django_tables.Column(verbose_name=u'Используется', accessor=A('get_used_ip_count'))
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     class Meta:
@@ -672,10 +700,11 @@ class AccountPrepaysTraficTable(TableReport):
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
     id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     account_tarif = django_tables.Column(u'Аккаунт/Тариф')
+    prepaid_traffic = django_tables.TemplateColumn("{{record.prepaid_traffic.size|filesizeformat}}", verbose_name=u'Начислено')
     size = django_tables.TemplateColumn("{{record.size|filesizeformat}}", verbose_name=u'Остаток')
     progress = django_tables.TemplateColumn("""    <div class="progress progress-success">
           <div class="bar" style="width: {{record.in_percents}}%"></div>
-        </div>""", verbose_name=u'Расходовано')
+        </div>""", verbose_name=u'Осталось')
 
     datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
     

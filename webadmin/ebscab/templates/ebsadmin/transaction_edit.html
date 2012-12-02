@@ -1,4 +1,20 @@
 {% if not status %}
+<script  type="text/javascript" >
+$(document).ready(function() {
+	
+	function a(e) {
+        if ($("#id_type").val()=='{{promise_type.id}}'){
+            $("#id_promise_section").show()
+            $(".timepicker").val("00:00:00");
+        }else{
+            $("#id_promise_section").hide()
+        }
+    }
+    $('#id_type').change(a);
+    a();
+    });
+
+</script>
 {{message}}
 
            
@@ -76,21 +92,8 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
-                      <label class="control-label">{{form.promise.label}}</label>
-                      <div class="controls">
-                      <span class="add-on">{{ form.promise }}</span> 
-                      {% if form.promise.errors %}
-                          <span class="help-inline">{% for error in form.promise.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.promise.help_text%}
-                          <p class="help-block">
-                              {{ form.promise.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  <div class="control-group">
+
+                  <div class="control-group" id='id_promise_section'>
                       <label class="control-label">{{form.end_promise.label}}</label>
                       <div class="controls">
                       <span class="add-on">{{ form.end_promise }}</span> {{form.promise_never_expire}} <span class="help-inline">Никогда</span>

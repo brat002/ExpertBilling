@@ -32,37 +32,41 @@ SESSION_STATUS=(
                 (u"ACK", u"Cброшена",),
                 )
 
-
+STATUS_CLASS={
+              "ACTIVE": '',
+              "NACK": 'error',
+              "ACK": '',
+              }
 # Create your models here.
 class ActiveSession(models.Model):
-    account=models.ForeignKey(Account)
-    subaccount=models.ForeignKey(SubAccount)
+    account=models.ForeignKey(Account, verbose_name=u'Аккаунт')
+    subaccount=models.ForeignKey(SubAccount, verbose_name=u'Субаккаунт')
     #Атрибут радиуса Acct-Session-Id
-    sessionid=models.CharField(max_length=255, blank=True)
+    sessionid=models.CharField(max_length=255, blank=True, verbose_name=u'ID')
     #Время последнего обновления
-    interrim_update=models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    interrim_update=models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name=u'Последнее обновление')
     #Время старта сессии
-    date_start=models.DateTimeField(blank=True, null=True)
+    date_start=models.DateTimeField(blank=True, null=True, verbose_name=u'Начало')
     #Время конца сессии
-    date_end=models.DateTimeField(null=True,blank=True)
+    date_end=models.DateTimeField(null=True,blank=True, verbose_name=u'Конец')
     #Атрибут радиуса Calling-Station-Id. IP адрес или мак-адрес
-    caller_id=models.CharField(max_length=255, blank=True)
+    caller_id=models.CharField(max_length=255, blank=True, verbose_name=u'Caller ID')
     #Атрибут радиуса Called-Station-Id (IP адрес или имя сервиса для PPPOE)
-    called_id=models.CharField(max_length=255, blank=True)
-    framed_ip_address = models.CharField(max_length=255, blank=True, default='')
+    called_id=models.CharField(max_length=255, blank=True, verbose_name=u'Called ID')
+    framed_ip_address = models.CharField(max_length=255, blank=True, default='', verbose_name=u'IP')
     #Атрибут радиуса NAS-IP-Address
-    nas_id=models.CharField(max_length=255, blank=True)
-    nas_int=models.ForeignKey(Nas, blank=True, null=True)
+    nas_id=models.CharField(max_length=255, blank=True, verbose_name=u'Nas ID')
+    nas_int=models.ForeignKey(Nas, blank=True, null=True, verbose_name=u'NAS')
     #Атрибут радиуса Acct-Session-Time
-    session_time=models.IntegerField(default=0, null=True,blank=True)
+    session_time=models.IntegerField(default=0, null=True,blank=True, verbose_name=u'Время')
     #Нужно определить каким образом клиент подключился к серверу
-    framed_protocol=models.CharField(max_length=32, choices=SERVICE_TYPES)
+    framed_protocol=models.CharField(max_length=32, choices=SERVICE_TYPES, verbose_name=u'Протокол')
     #Атрибут радиуса Acct-Input-Octets
-    bytes_in=models.IntegerField(null=True,blank=True)
+    bytes_in=models.IntegerField(null=True,blank=True, verbose_name=u'IN')
     #Атрибут радиуса Acct-Output-Octets
-    bytes_out=models.IntegerField(null=True,blank=True)
+    bytes_out=models.IntegerField(null=True,blank=True, verbose_name=u'OUT')
     #Выставляется в случае, если был произведён платёж
-    session_status=models.CharField(max_length=32, choices=SESSION_STATUS, null=True, blank=True)
+    session_status=models.CharField(max_length=32, choices=SESSION_STATUS, null=True, blank=True, verbose_name=u'Статус')
     speed_string = models.CharField(max_length=255, blank=True, null=True)
     acct_terminate_cause = models.CharField(verbose_name = u'Причина разрыва', max_length=128, blank=True, default = '')
     #speed_changed = models.BooleanField(blank=True, default=False)
@@ -81,6 +85,9 @@ class ActiveSession(models.Model):
            ("activesession_view", u"Просмотр"),
            )
 
+    def get_sessions_class(self):
+        return STATUS_CLASS.get(self.session_status)
+    
     def __unicode__(self):
         return u"%s" % self.sessionid
 
@@ -92,4 +99,13 @@ class AuthLog(models.Model):
     nas = models.ForeignKey(Nas, blank=True, null=True, on_delete=models.SET_NULL)
     cause = models.TextField()
     datetime = models.DateTimeField()
+    
+
+            
+    def get_row_class(self):
+        if self.type not in ['AUTH_OK','DHCP_AUTH_OK']:
+            return 'error'
+        elif self.type in ['AUTH_OK','DHCP_AUTH_OK']:
+            return 'success'
+        return ''
     

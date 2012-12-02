@@ -209,6 +209,7 @@
         });
         </script>
 <style>
+
     .ui-autocomplete {
         max-height: 200px;
         overflow-y: auto;
@@ -232,7 +233,7 @@
 
 
 
-<form method="POST" action="{% url subaccount %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal">
+<form method="POST" action="{% url subaccount %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal form-condensed">
                 <fieldset>
                     <legend>Профиль субаккаунта{% objectlog subaccount %}</legend>
 

@@ -3,7 +3,7 @@ import os, sys
 import logging
 sys.path.append('/opt/ebs/data/workers/')
 DEBUG = True
-DEBUG_SQL=False
+DEBUG_SQL=True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -75,6 +75,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.contrib.messages.context_processors.messages',
     'lib.context_processors.default_current_view_name',
+    
 )
 
 
