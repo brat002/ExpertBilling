@@ -482,6 +482,7 @@ def ipinusereport(request):
             subaccount = form.cleaned_data.get('subaccount')
             types = form.cleaned_data.get('types')
             ip = form.cleaned_data.get('ip')
+            ippool = form.cleaned_data.get('ippool')
 
             daterange = form.cleaned_data.get('daterange') or []
             start_date, end_date = None, None
@@ -515,6 +516,9 @@ def ipinusereport(request):
             if end_date:
                 res = res.filter(datetime__lte=end_date)
             
+            if ippool:
+                res = res.filter(pool__in=ippool)
+                
             table = IPInUseTable(res)
             table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
             if table_to_report:
@@ -1090,6 +1094,7 @@ def transaction(request):
     account_id = request.GET.get("account_id")
     id = request.POST.get("id")
     
+    promise_type = TransactionType.objects.get(internal_name='PROMISE_PAYMENT')
     if request.method == 'POST': 
 
         form = TransactionModelForm(request.POST) 
@@ -1099,7 +1104,7 @@ def transaction(request):
             
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_transaction')):
             return {'status':False, 'message': u'У вас нет прав на создание платежей'}
-        
+        form.fields["type"].queryset = request.user.account.transactiontype_set
         
         if form.is_valid(): 
             model = form.save(commit=False)
@@ -1109,7 +1114,7 @@ def transaction(request):
             return {'form':form,  'status': True} 
         else:
             messages.success(request, u'Ошибка при выполнении операции.', extra_tags='alert-danger')
-            return {'form':form,  'status': False} 
+            return {'form':form,  'status': False, 'promise_type': promise_type} 
     else:
         id = request.GET.get("id")
 
@@ -1124,8 +1129,8 @@ def transaction(request):
             account= Account.objects.get(id=account_id)
         now = datetime.datetime.now()
         form = TransactionModelForm(initial={'account': account.id, 'created': now, 'type': TransactionType.objects.get(internal_name='MANUAL_TRANSACTION')}) # An unbound form
-
-    return { 'form':form, 'status': False, 'account':account} 
+        form.fields["type"].queryset = request.user.account.transactiontype_set
+    return { 'form':form, 'status': False, 'account':account, 'promise_type': promise_type} 
 
 
 @login_required
@@ -1198,7 +1203,7 @@ def activesessionreport(request):
     if request.GET:
         form = SessionFilterForm(request.GET)
         if form.is_valid():
-            res = ActiveSession.objects.select_related().all()
+            res = ActiveSession.objects.prefetch_related()
             if form.cleaned_data.get("account"):
                 res = res.filter(account__in=form.cleaned_data.get("account"))
 
@@ -1213,9 +1218,9 @@ def activesessionreport(request):
 
             if form.cleaned_data.get("nas"):
                 res = res.filter(nas_int__in=form.cleaned_data.get("nas"))
-                
+            res = res.values('subaccount__username', 'subaccount', 'framed_ip_address', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
             table = ActiveSessionTable(res)
-            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            table_to_report = RequestConfig(request, paginate={"per_page": 250} if not request.GET.get('paginate')=='False' else False).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
     
@@ -1226,8 +1231,15 @@ def activesessionreport(request):
             return {"table": table,  'form':form}
     else:
         table = None
-        form = SessionFilterForm()
-        return {"table": table, 'form':form} 
+        res = ActiveSession.objects.filter(session_status='ACTIVE').prefetch_related()
+        res = res.values('subaccount__username', 'subaccount', 'framed_ip_address', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
+        table = ActiveSessionTable(res)
+        table_to_report = RequestConfig(request, paginate={"per_page": 250} if not request.GET.get('paginate')=='False' else False).configure(table)
+        if table_to_report:
+            return create_report_http_response(table_to_report, request)
+    
+        form = SessionFilterForm(initial={'only_active': True})
+        return {"table": table, 'form':form, "table": table,} 
 
 
 @login_required
