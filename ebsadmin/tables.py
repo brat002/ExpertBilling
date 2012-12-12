@@ -161,10 +161,11 @@ class AccountsReportTable(TableReport):
     username = django_tables.LinkColumn('account_edit', verbose_name=u'Имя', get_params={'id':A('pk')})
     contract = FormatBlankColumn(verbose_name=u'Договор')
     fullname = FormatBlankColumn()
-    address = django_tables.TemplateColumn(u"{{record.street}} {{record.house}}-{{record.room}}")
+    address = django_tables.TemplateColumn(u"{{record.street|default:''}} {{record.house|default:''}}-{{record.room|default:''}}")
     entrance = django_tables.Column(verbose_name=u'Подъезд')
     row = django_tables.Column(verbose_name=u'Этаж')
     ballance = FormatFloatColumn()
+    d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
     #credit = FormatFloatColumn()
     #created = FormatDateTimeColumn()
 
@@ -177,7 +178,7 @@ class AccountsReportTable(TableReport):
     
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-bordered table-condensed'}
         
 class ActiveSessionTable(TableReport):
     row_number = django_tables.Column(verbose_name=u'#', empty_values=())
@@ -429,15 +430,15 @@ class CardTable(TableReport):
     ippool = FormatBlankColumn()
     ext_id = FormatBlankColumn()
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
-    
+
     def render_row_number(self):
         value = getattr(self, '_counter', 0)
         self._counter = value + 1
         return '%d' % value
-    
+
     def render_row_class(self, value, record):
         return 'disabled-row' if record.disabled else ''
-    
+
     class Meta:
         model = Card
         sequence = ('row_number', 'row_class',  'id', 'series', 'nominal', 'login', 'pin', 'type', 'tarif', 'nas', 'salecard', 'activated', 'activated_by', 'ippool', 'created', 'start_date', 'end_date', 'template',  'ext_id',  'd')
