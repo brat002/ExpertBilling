@@ -1,43 +1,34 @@
 #Выполните в консоли с правами суперпользователя:
 
-
+Установка:
 #cd /opt/
-#tar -xvzf путь к архиву с биллингом
+#tar -xvzf путь к архиву с биллингом fabfile.py
 
 #apt-get update
-#apt-get install postgresql postgresql-contrib mc openssh-server python-twisted python-psycopg2 openssl python-paramiko python-dateutil python-pytils python-crypto libpython2.6 libapache2-mod-wsgi python-jsonpickle python-simplejson rrdtool snmp python-pexpect python-pip
+apt-get install fabric postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1
 
-#pip install ipaddr mako IPy
+
 #mkdir /opt/ebs
 
 #su postgres
 $createuser -P -s ebs
 $createdb -O ebs ebs
-Для версии postgresql<9
-$psql ebs -f /usr/share/postgresql/8.4/contrib/int_aggregate.sql
-$psql ebs -f /usr/share/postgresql/8.4/contrib/_int.sql
-Для версии postgresql>9
-$psql ebs
-ebs=# create extension intagg;
-ebs=# create extension intarray;
-ebs=# exit;
+$exit
 $exit
 
-#Запустите утилиту установки биллинга и вводите требуемые значения для доступа к БД.
-python ebs_manage.py install имя распакованного архива с биллингом(вид ebs-*****.tar.gz)
 
-#Часть установки веб-кабинета инсталлятор выполнит автоматически. Инструкцию по настройке вы сможете найти на wiki.expertbilling.ru
-#В файле /opt/ebs/web/ebscab/settings.py настройте подключение к базе данных и другие необходимые вам параметры.
+Запустите утилиту установки биллинга с нуля. 
+#fab deploy:demo.tar.gz 
+При апгрейде с версии 1.4.1 нужно выполнить
+#fab upgrade_14:demo.tar.gz
 
-#После настройки веб-кабинета:
 
-#cd /opt/ebs/web/ebscab/
-#ln -s ../django django
-#python manage.py syncdb --noinput
+После установки откройте файл /opt/ebs/web/ebscab/settings_local.py и переопределите в нём значения из файла /opt/ebs/web/ebscab/settings.py.
+
+После настройки веб-кабинета:
+
 #/etc/init.d/apache2 reload
 
-Внимание!!! Это версия 1.4.1. В ней RPC сервер не используется. Вместо него интефрейс администратора подключается к веб-серверу. 
-Перед запуском EBSAdmin убедитесь, что веб-кабинет настроен и работает. Логи веб-кабинета находятся в
-/opt/ebs/web/errors.log
+Внимание!!! Это версия не финальная версия 1.5. О всех найденных прблемах просьба писать на форуме http://forum.expertbilling.ru/ 
 
-Имя и пароль для входа через EBSAdmin admin/admin.
+Имя и пароль по-умолчанию для входа в веб-кабинет admin/admin.

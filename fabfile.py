@@ -29,10 +29,10 @@ def prepare_deploy():
     
     local('echo "deb http://www.rabbitmq.com/debian/ testing main" >/etc/apt/sources.list.d/rabbitmq.list')
     
-    local('apt-get update && apt-get install python-software-properties wget psmisc')
+    local('apt-get  update && apt-get -y install python-software-properties wget psmisc')
     local('wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc && apt-key add rabbitmq-signing-key-public.asc')
     local('apt-get update')
-    local('apt-get install postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1 htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv rabbitmq-server')
+    local('apt-get -y install postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1 htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv rabbitmq-server')
 
 
 def configure_rabbit():
@@ -44,12 +44,43 @@ def configure_rabbit():
 
     
 def requirements():
-    local('pip install -E /opt/ebs/venv/ -U -r /opt/ebs/data/soft/requirements.txt')
+    with prefix('. /opt/ebs/venv/bin/activate'):
+        local('pip install -U -r /opt/ebs/data/soft/requirements.txt')
     
 def virtualenv():
     with lcd('/opt/ebs/'):
         local('virtualenv venv')
         
+def congratulations():
+    print("*"*80)
+    print(green("CONGRATULATIONS!!! Your ExpertBilling 1.5 was sucefully installed!"))
+    print(" Now you ExpertBilling include next new daemons in your system:")
+    print(""" * core (/etc/init.d/ebs_core) - ExpertBilling core
+ * nf (/etc/init.d/ebs_nf) - NetFlow collector
+ * nffilter (/etc/init.d/ebs_nffilter) - NetFlow filter
+ * nfroutine (/etc/init.d/ebs_nfroutine) - NetFlow tarificator
+ * rad_auth (/etc/init.d/ebs_rad_auth) - RADIUS authentication daemon
+ * rad_acct (/etc/init.d/ebs_rad_acct) - RADIUS accounting daemon
+ * celery (/etc/init.d/ebs_celery) - Asynchronous mechanism for executing tasks
+ * rabbitmq (/etc/init.d/rabbitmq-server) - AMQP server. ExpertBilling use rabbitmq server for storing arrived NetFlow statistics!!!
+ * postgresql (/etc/init.d/postgresql) - Database server
+ * apache2 (/etc/init.d/apache2) - web-server""")
+    print("""
+ For manage your server, please, use command "billing"
+ examples:
+ * billing start
+ * billing stop
+ * billing force-stop
+
+ or restart services manually
+    """)
+    print("   Now go to http://your.server.ip , login as admin and configure it!")
+    print(red( "   It is alpha version ExpertBilling. For any error report to our forum."))
+    print( "   Default admin username/password: admin/admin")
+    print( "   Please, read manual, refer to forum.expertbilling.ru and wiki.expertbilling.ru for detail information about system")
+    print( "   Contacts: ICQ: 162460666, e-mail: brat002@gmail.com")
+    print( "*"*80)
+
 
 def layout():
     print(green('Preparing layout'))
@@ -112,6 +143,7 @@ def deploy(tarfile):
     setup_webcab()
     init_scripts()
     restart()
+    congratulations()
     
 
 def upgrade_14(tarfile):
@@ -140,6 +172,7 @@ def upgrade_14(tarfile):
     init_scripts()
     postconf()
     restart()
+    congratulations()
     
 def upgrade(tarfile):
     print('Upgrading expert billing system')
@@ -170,6 +203,7 @@ def upgrade(tarfile):
     init_scripts()
     postconf()
     restart()
+    congratulations()
     
 
 def cleanup_14():

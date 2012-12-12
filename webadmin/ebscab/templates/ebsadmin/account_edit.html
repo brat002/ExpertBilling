@@ -15,7 +15,7 @@
         	        else
         	        	alert(data.generated)
         	    }else{
-        	        alert('В процессе отправки произошла ошибка :(')
+        	        alert('В процессе отправки произошла ошибка.')
         	    }
         	})
         	});
@@ -48,7 +48,6 @@
             })
             });
 
-        $('#id_created_0').datepicker({'format': 'yyyy-mm-dd'});
 
         	//$('#modal-accounttariff-dialog').popover({title:'Действие над аккаунтом', content: 'Cменить тарифный план'});
             $(function() {
@@ -363,10 +362,8 @@
                                     <label class="checkbox inline inline-text">{{account.ballance|floatformat:2}}{{CURRENCY}}</label>
 
                                     <div class="btn-group">
-                                        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#"><span class="caret"></span></a>
-                                        <ul class="dropdown-menu">
-                                            <li><a href="" id="modal-transaction-dialog" >Пополнить</a></li>
-                                        </ul>
+                                        <a href=""  class="btn btn-small btn-info" id="modal-transaction-dialog" >Пополнить</a>
+
                                     </div>
                                 </div>
                                 </div>
