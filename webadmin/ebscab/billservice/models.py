@@ -818,7 +818,7 @@ class Account(models.Model):
         return '%s' % self.username
 
 
-    def get_sessions_class(self):
+    def get_row_class(self):
         return STATUS_CLASS.get(self.status)
     
     class Meta:

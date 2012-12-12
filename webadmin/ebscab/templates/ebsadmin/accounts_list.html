@@ -5,13 +5,11 @@
 
         <script type="text/javascript"> 
         $(document).ready(function() {
-            $("#id_created").focus(function() {
-            $(function(){
+            $("#id_main_table th input[type=checkbox]").click(function(event) {
+                $("#id_main_table td input[type=checkbox]").attr("checked", this.checked);
 
-            	$("#id_created").daterangepicker({format:'yyyy-MM-dd'});
-    
-             });
-              });
+
+            });
             $('#id_house').autocomplete({
                 source: function( request, response )
                 {                      
@@ -621,7 +619,7 @@
     </div>
   
   </div>
-  <div class="tab-pane {% if table %}active{% endif %}" id="result">{% if table %}{% render_table table "django_tables2/sessions_table.html"  %}{% endif %}</div>
+  <div class="tab-pane {% if table %}active{% endif %}" id="result">{% if table %}{% render_table table  %}{% endif %}</div>
 
 </div>
  {% endblock %}
