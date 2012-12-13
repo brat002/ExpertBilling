@@ -142,6 +142,7 @@ def deploy(tarfile):
     
     setup_webcab()
     init_scripts()
+    postconf()
     restart()
     congratulations()
     
