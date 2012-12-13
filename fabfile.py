@@ -107,13 +107,14 @@ def postconf():
     
 def setup_webcab():
     print(green('Setuping webcab'))
-    with lcd(WEBCAB_PATH):
-        local('cp settings_local.py.tmpl settings_local.py')
-    
-    local('ln -sf %s /etc/apache2/sites-enabled/ebs ' % os.path.join(WEBCAB_ROOT_PATH, 'default'))
-    local('ln -sf  %s /etc/apache2/sites-enabled/ebs_blankpage'  % os.path.join(WEBCAB_ROOT_PATH, 'blankpage_config'))
-    local('a2dissite default')
-    local('a2enmod rewrite')
+    if not os.path.exists(os.path.join(WEBCAB_PATH, 'settings_local.py')):
+        with lcd(WEBCAB_PATH):
+            local('cp settings_local.py.tmpl settings_local.py')
+        
+        local('ln -sf %s /etc/apache2/sites-enabled/ebs ' % os.path.join(WEBCAB_ROOT_PATH, 'default'))
+        local('ln -sf  %s /etc/apache2/sites-enabled/ebs_blankpage'  % os.path.join(WEBCAB_ROOT_PATH, 'blankpage_config'))
+        local('a2dissite default')
+        local('a2enmod rewrite')
     local('/etc/init.d/apache2 restart')
     with prefix('. /opt/ebs/venv/bin/activate'):
         with lcd(WEBCAB_PATH):
@@ -202,7 +203,7 @@ def upgrade(tarfile):
     
     #db_install()
     db_upgrade()
-    
+    setup_webcab()
     
     init_scripts()
     postconf()
