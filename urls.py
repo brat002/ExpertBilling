@@ -3,7 +3,8 @@ from django.conf import settings
 from django.conf.urls.defaults import *
 from django.contrib import admin
 #from helpdesk import admin as helpdesk_admin
-
+from django.db import connection
+connection.features.can_return_id_from_insert = False
 from ajax_select import urls as ajax_select_urls
 
 
