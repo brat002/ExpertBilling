@@ -115,7 +115,10 @@ def setup_webcab():
     local('a2dissite default')
     local('a2enmod rewrite')
     local('/etc/init.d/apache2 restart')
-        
+    with prefix('. /opt/ebs/venv/bin/activate'):
+        with lcd(WEBCAB_PATH):
+            local('python manage.py syncdb --noinput')
+
 
         
 def deploy(tarfile):
