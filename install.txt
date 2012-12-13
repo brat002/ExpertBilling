@@ -1,15 +1,19 @@
 #Выполните в консоли с правами суперпользователя:
+sudo -s
+Возможно 2 варианта установки ExpertBilling 1.5. Обновление и апгрейд с версии 1.4.1. Апгрейд с более ранних версий не предусмотрен.
 
 Установка:
+Скачанный архив нужно положить в /opt/
 #cd /opt/
-#tar -xvzf путь к архиву с биллингом fabfile.py
+#tar -xvzf путь к архиву с биллингом fabfile.py install.txt
 
+Установка postgresql 9.1
 #apt-get update
 apt-get install fabric postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1
 
-
 #mkdir /opt/ebs
 
+Создание пользователя базы данных и базы данных. Рекомендуемый пароль - ebspassword:
 #su postgres
 $createuser -P -s ebs
 $createdb -O ebs ebs
@@ -17,18 +21,24 @@ $exit
 $exit
 
 
-Запустите утилиту установки биллинга с нуля. 
+Запустите установку биллинга с нуля с правами root-а из директории /opt/. 
 #fab deploy:demo.tar.gz 
+
+После того, как устанвока завершится - откройте в браузере айпи вашего сервера и войдите в веб-кабинет
+
+
 При апгрейде с версии 1.4.1 нужно выполнить
 #fab upgrade_14:demo.tar.gz
 
 
-После установки откройте файл /opt/ebs/web/ebscab/settings_local.py и переопределите в нём значения из файла /opt/ebs/web/ebscab/settings.py.
+После установки откройте файл /opt/ebs/web/ebscab/settings_local.py и переопределите в нём значения из файла /opt/ebs/web/ebscab/settings.py. Этот файл не будет перезатираться при обновлениях.
 
 После настройки веб-кабинета:
 
 #/etc/init.d/apache2 reload
 
 Внимание!!! Это версия не финальная версия 1.5. О всех найденных прблемах просьба писать на форуме http://forum.expertbilling.ru/ 
+
+
 
 Имя и пароль по-умолчанию для входа в веб-кабинет admin/admin.
