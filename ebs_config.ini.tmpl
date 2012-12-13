@@ -1,0 +1,200 @@
+[db]
+name = ebs
+username = ebs
+password = ebspassword
+host = 127.0.0.1
+port=5432
+kombu_dsn=amqp://ebs:ebspassword@localhost:5672//ebs
+
+
+#------------------------------------
+# #required# - required, default value present - optional
+#common options (can be used with [radius], [nf], [nfroutine], [core], [rpc]
+#recover = True; boolean - recover saved data after a graceful exit
+#cache_time = 60; int - cache renewal time
+#name = #default_name#; string - internal name
+#piddir = pid; string - directory for pid file storage
+#log_type = #required#; string (logging, syslog) - logger type 
+#log_ident = 'ebs'; string - ident for syslog logging
+#log_level = 0; int [0-4] loging level, 0 - DEBUG, 4 - CRITICAL
+#log_file = #required(for 'logging' type)#; string - log file name
+#log_format = '%(asctime)s %(levelname)-8s %(message)s'; string - log message format
+#log_filemode = 'a+'; string - (for 'logging' type)  - fopen mode
+#log_maxsize = 10485760; int - (for 'logging' type) - max logger file size
+#log_rotate = 3; int - (for 'logging' type) - number of log file rotations
+ 
+[radius]
+#session_timeout = 86400; int - seconds - radius session timeout
+#dict_list = dicts/dictionary,dicts/dictionary.microsoft,dicts/dictionary.mikrotik; string - comma-separated list of dictionary filenames
+#common_vpn = false; boolean - common vpn
+#ignore_nas_for_vpn = false; boolean - ignore NAS for VPN
+#max_datagram_len = 4096; int - bytes - datagram length
+#auth_port = 1812; int - authentification port
+#acct_port = 1813; int - accounting port
+#auth_sock_timeout = 5; int
+#acct_sock_timeout = 5; int
+#auth_thread_num = 2; int - number of authentication threads
+#acct_thread_num = 3; int - number of accounting threads
+#listen_thread_num = 2; int - number of listen&preprocessing threads
+#eap_id_type = eap-md5; default EAP id type
+#eap_access_types = 802.1x:eap-tls,pptp:eap-md5,pppoe:eap-md5; string - comma-separated list of colon-separated pairs, access type - default EAP type dictionary
+#poll_timeout = 500; int - milliseconds - poll timeout
+common_vpn = False
+ignore_nas_for_vpn = True
+bad_8021x_users_vlan = -1
+log_type = logging
+log_file = log/rad_log
+log_level= 3
+log_ident= ebs_rad
+ignore_nas_for_dhcp = True
+only_one = False
+sqllog_flush_timeout=30
+enable_sqllog=True
+sqllog_success=True
+mppe_support=True
+get_mac_from_pppoe=True
+dhcp_framed_guest_pool=''
+guest_dhcp_session_timeout=300
+auth_thread_num=4
+
+
+[core]
+#transactions_per_day = 24; int
+#vpn_sleep = 60; int - seconds - vpn thread sleep
+#periodical_sleep = 180; int - seconds - periodical services thread sleep
+#timeaccess_sleep = 60; int  - seconds - access by time thread sleep
+#limit_sleep = 110; int - seconds - limit thread sleep
+#settlement_period_sleep = 120; int - seconds - settlement period thread sleep
+#ipn_sleep = 120; int - seconds - IPN thread sleep
+#dict_list = dicts/dictionary,dicts/dictionary.microsoft,dicts/dictionary.mikrotik,dicts/dictionary.rfc3576; string - comma-separated list of dictionary filenames 
+log_type = logging
+log_file = log/core_log
+log_level= 0
+log_ident= ebs_core
+#deprecated
+transactions_per_day=24
+#ssh_backend = ssh $username@$host "$command"
+commandstring_ip_delimeter =,
+use_coeff_for_prepaid = True
+use_coeff_for_ps=True
+
+
+[nfroutine]
+#nfr_session = SET synchronous_commit TO OFF; string - comma-separated list of nfr stat session init queries
+#save_dir = '.'; string - directory to save data on graceful save
+#group_aggr_time = 300;  int - seconds - aggregation time for group statistics
+#stat_aggr_time  = 1800; int - seconds - aggregation time for global statistics
+#picker_aggr_time = 300; int - seconds - aggregation time for financial data picker
+#stat_dicts  = 10; int - number of mini-mod_hash dictionaries
+#group_dicts = 10; int - number of mini-mod_hash dictionaries
+#store_na_tarif   = false; boolean - store statistics for inactive tarifs
+#store_na_account = false; boolean - store statistics for inactive accounts
+#max_datagram_len = 32687; int - maximum incoming packet size
+#routine_threads = 3; int -  number of threads for full statistics for packet processing and statistic writing
+#groupstat_threads  = 1; int - number of threads for processing/writing group statistics
+#globalstat_threads = 1; int - number of threads for processing/writing global statistica
+#bill_threads = 1; int - number of threads for processing/writing financial data
+#allowed_nf_ip_list = 127.0.0.1; string - comma-separated list of allowed netflow server IP's
+log_type = logging
+log_file = log/nfroutine_log
+log_level= 0
+log_ident= ebs_nfroutine
+save_dir = temp
+group_aggr_time = 60
+
+[nfroutine_nf]
+#sock_type = 0; int - socket type: 0 - inet, 1 - unix; unix sockets are for test only
+sock_type = 0
+#deprecated, use 'sock_type' instead
+usock = 0 
+#deprecated
+dump_dir = nf_dump
+#deprecated
+recover = 1
+#deprecated
+recoverAttempted = 0
+#deprecated
+sock_timeout = 0.1
+
+
+[nfroutine_nf_inet]
+#nfr_host = 127.0.0.1; string - nfroutine host address
+#nfr_port = 36577; int - nfroutine port number
+#deprecated
+host = 127.0.0.1
+#deprecated
+port = 365
+
+[nfroutine_nf_unix]
+#nfr_host = #required# if sock_type = 1
+nfr_host = /var/ebs_nfr_ux
+#deprecated
+host = /var/ebs_nfr_ux
+
+[nf]
+log_type = logging
+log_file = log/nf_log
+log_level= 1
+log_ident= ebs_nf
+
+
+[nffilter]
+
+#sock_timeout = 5; int - seconds - sender sockets timeout
+#aggr_time = 120; int - seconds - max packet aggregation time
+#aggr_num = 200;  int - max packet aggregation number
+#prefix = #name + '_'#; string - dump file prefix
+#cache_dicts = 10; int - number of mini-mod_hash dictionaries
+#host = 0.0.0.0; string - host to listen on
+#port = 9996; int - port to listen on
+#file_pack = 300; int - number of packs in dump files
+#packet_pack = 37; int - number of packs in packets
+#check_classes = 0; boolean - pre-check classes
+#max_datagram_len = 8192; int - maximum incoming datagram size
+#nf_time_mod = 20; int - seconds - round down incoming packe time by...
+#max_sendbuf_len = 10000; int - max sender buffer length
+#queue_in=/opt/ebs/var/spool/nf_in
+#queue_out=/opt/ebs/var/spool/nf_out
+check_classes = 0
+log_type = logging
+log_file = log/nffilter_log
+log_level= 1
+log_ident= ebs_nffilter
+save_dir = nf_dump
+dump_dir = nf_dump
+skip_index_check=True
+
+
+[flow]
+write_flow = False
+flow_dir = temp
+#flow_dir = /var/flow
+flow_time = 20
+flow_count = 50
+flow_mail_warning = False
+flow_mail_subject = EBS billing flow warning
+flow_mail_use_tls = False
+flow_mail_host = smtp.gmail.com
+flow_mail_host_user = 
+flow_mail_host_password = 
+flow_mail_port = 25
+flow_mail_email_to   = admin@ebsadmin.com
+flow_mail_email_from = info@provider.com
+flow_mail_warning_template = ""
+
+
+[sendmail]
+log_type = logging
+log_file = log/sendmail_log
+log_level= 0
+log_ident= ebs_sendmail
+subject = Provider information
+use_tls = False
+send_if_less = 5000
+host = smtp.gmail.com
+host_user = 
+host_password = 
+port = 25
+email_from = info@provider.com
+fail_silently = False
+
