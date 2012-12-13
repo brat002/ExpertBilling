@@ -124,7 +124,7 @@ def login(request):
                             return HttpResponseRedirect(request.META.get("HTTP_REFERER").split('?next=')[1])
                     return HttpResponseRedirect(reverse("admin_dashboard"))
                 tariff = user.account.get_account_tariff()
-                if tariff.allow_express_pay:
+                if tariff and tariff.allow_express_pay:
                     request.session['express_pay']=True
                 request.session.modified = True
                 return HttpResponseRedirect('/')

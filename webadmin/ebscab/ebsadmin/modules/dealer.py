@@ -74,7 +74,7 @@ def dealer_edit(request):
             form = DealerForm(instance=item, prefix='dealer')
             bank_form = BankDataForm(instance=item.bank, prefix='bank')
         else:
-            form = DealerForm(preffix='dealer')
+            form = DealerForm(prefix='dealer')
             bank_form = BankDataForm(prefix='bank')
    
     return { 'form':form, 'bank_form': bank_form,  'item': item} 
