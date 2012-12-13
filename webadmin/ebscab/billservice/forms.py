@@ -446,6 +446,8 @@ class TrafficTransmitNodeForm(ModelForm):
         model = TrafficTransmitNodes
       
 class PrepaidTrafficForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    traffic_transmit_service = forms.ModelChoiceField(queryset=TrafficTransmitService.objects.all(), widget=forms.widgets.HiddenInput)
     class Meta:
         model = PrepaidTraffic  
 
