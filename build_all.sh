@@ -30,7 +30,7 @@ mkdir -p cmodules
 
 for bld in $modules; do
     cython $bld.py -o cmodules/$bld.c;
-    gcc $CFLAGS -I/usr/include/python2.7 --shared -o cmodules/$bld.so cmodules/$bld.c -lpython2.7 -lpthread -lm -lutil -ldl
+    gcc $CFLAGS -I/usr/include/python2.7 --shared -o cmodules/$bld.so cmodules/$bld.c -lpython2.7 -lpthread -lm -lutil -ldl -fPIC
 done
 
 current_dir=`pwd`
@@ -46,7 +46,7 @@ for blddir in $blddirs;do
         touch cmodules/$dir/__init__.pyc;
         touch cmodules/$dir/__init__.py;
         cython -v $dir/$bld.py -o cmodules/$dir/$bld.c;
-        gcc $CFLAGS -I/usr/include/python2.7 --shared -o cmodules/$dir/$bld.so cmodules/$dir/$bld.c -lpython2.7 -lpthread -lm -lutil -ldl;
+        gcc $CFLAGS -I/usr/include/python2.7 --shared -o cmodules/$dir/$bld.so cmodules/$dir/$bld.c -lpython2.7 -lpthread -lm -lutil -ldl  -fPIC;
         rm -rf cmodules/$dir/*.c;
     done
 done
