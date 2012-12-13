@@ -216,10 +216,11 @@ class LogItem(models.Model):
         return get_template(action.template)
 
     def save(self, *args, **kwargs):
-        content_type = ContentType.objects.get_for_model(self.object1)
+        
         
         sd = {}
         try:
+            content_type = ContentType.objects.get_for_model(self.object1)
             log = LogItem.objects.filter(object_type1=content_type, object_id1=self.object1.pk).order_by('-id').select_related('user').distinct()[0]
             if log:
                 sd = simplejson.loads(log.serialized_data)
