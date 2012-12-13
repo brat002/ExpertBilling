@@ -5,7 +5,7 @@ from django.db import models
 from lib.fields import IPNetworkField
 # Create your models here.
 from django.core.urlresolvers import reverse
-
+from django.db.models import Max
 
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
@@ -343,6 +343,11 @@ class TrafficClass(models.Model):
 
     class Admin:
         pass
+
+    def save(self):
+        if not self.id and not self.weight:
+            self.weight = (TrafficClass.objects.all().aggregate(Max('weight')).get("weight__max", 1) or 1) +1
+        super(TrafficClass, self).save()
 
     class Meta:
         verbose_name = u"Класс трафика"

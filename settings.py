@@ -154,12 +154,12 @@ AUTHENTICATION_BACKENDS = (
 )
 
 #credentials generation rules
-login_length=8
-password_length=8
-login_contain_letters=True
-login_contain_digits=True
-password_contain_letters=False
-password_contain_digits=True
+LOGIN_LENGTH=8
+PASSWORD_LENGTH=8
+LOGIN_CONTAIN_LETTERS=True
+LOGIN_CONTAIN_DIGITS=True
+PASSWORD_CONTAIN_LETTERS=False
+PASSWORD_CONTAIN_DIGITS=True
 
 
 LOG_LEVEL = 0

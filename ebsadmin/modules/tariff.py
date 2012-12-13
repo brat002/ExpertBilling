@@ -688,7 +688,9 @@ def tariff_prepaidtraffic_edit(request):
             item = PrepaidTraffic.objects.get(id=id)
             form = PrepaidTrafficForm(instance=item)
         else:
-            form = PrepaidTrafficForm()
+            tariff_id = request.GET.get("tariff_id")
+            tariff = Tariff.objects.get(id=tariff_id)
+            form = PrepaidTrafficForm(initial={'traffic_transmit_service': tariff.traffic_transmit_service})
    
     return { 'formset':None, 'form':form} 
 

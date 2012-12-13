@@ -88,11 +88,6 @@ def trafficclass_edit(request):
             print 11
             model = form.save(commit=False)
             print 22
-            if  not model.weight:
-                print 33
-                maxw = TrafficClass.objects.all().aggregate(Max('weight'))
-                maxw = maxw.get("weight__max", 1)+1
-                model.weight = maxw
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return {'form':form,  'status': True} 

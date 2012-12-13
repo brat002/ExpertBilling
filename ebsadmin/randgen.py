@@ -177,24 +177,24 @@ import string
 
 def GenPasswd():
     chars = ''
-    if settings.password_contain_letters:
+    if settings.PASSWORD_CONTAIN_LETTERS:
         chars += string.letters
-    if settings.password_contain_digits:
+    if settings.PASSWORD_CONTAIN_DIGITS:
         chars += string.digits
     newpasswd=''
-    for i in range(settings.password_length):
+    for i in range(settings.PASSWORD_LENGTH):
         newpasswd = newpasswd + random.choice(chars)
     return newpasswd
 
 
 def GenUsername():
     chars = ''
-    if settings.login_contain_letters:
+    if settings.LOGIN_CONTAIN_LETTERS:
         chars += string.letters
-    if settings.login_contain_digits:
+    if settings.LOGIN_CONTAIN_DIGITS:
         chars += string.digits
     newpasswd=''
-    for i in range(settings.login_length):
+    for i in range(settings.LOGIN_LENGTH):
         newpasswd = newpasswd + random.choice(chars)
     return newpasswd
 

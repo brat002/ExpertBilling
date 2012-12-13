@@ -1,3 +1,4 @@
+{% load crispy_forms_tags %}
 {% if not status %}
 {{message}}
  <script type="text/javascript"> 
@@ -8,41 +9,7 @@
 
 
             <form method="POST" action="{% url tariff_prepaidtraffic_edit %}?id={{item.id}}" class="well form-horizontal ajax">
-                <fieldset>
-                  <div class="control-group">
-                  <div class="control-row">
-                      <label class="control-label">{{form.group.label}}: </label>
-                      <div class="controls">
-                      {{ form.group }}
-                      {% if form.group.errors %}
-                          <span class="help-inline">{% for error in form.group.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.group.help_text%}
-                          <p class="help-block">
-                              {{ form.group.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  </div>
-                  <div class="control-group">
-                  <div class="control-row">
-                      <label class="control-label">{{form.size.label}}: </label>
-                      <div class="controls">
-                      {{ form.size }}
-                      {% if form.size.errors %}
-                          <span class="help-inline">{% for error in form.size.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.size.help_text%}
-                          <p class="help-block">
-                              {{ form.size.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  </div>               
-
-                </fieldset>
+            {{form|crispy}}
                 
                 <div class="form-actions">
                     <input type='submit' class="btn btn-primary" value="Save Changes">
