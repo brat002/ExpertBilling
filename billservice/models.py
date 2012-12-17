@@ -380,7 +380,7 @@ class TimeAccessNode(models.Model):
 class AccessParameters(models.Model):
     #name              = models.CharField(max_length=255, verbose_name=u'Название вида доступа')
     access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, default='PPTP', blank=True, verbose_name=u'Способ доступа')
-    access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Разрешённое время доступа', null=True, on_delete = models.SET_NULL)
+    access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Доступ разрешён', null=True, on_delete = models.SET_NULL)
     #ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
     ipn_for_vpn     = models.BooleanField(blank=True, default=False)
     #max_limit      = models.CharField(verbose_name=u"MAX (kbps)", max_length=64, blank=True, default="")
@@ -647,7 +647,7 @@ class TrafficLimit(models.Model):
             )
         
 class Tariff(models.Model):
-    name              = models.CharField(max_length=255, verbose_name=u'Название тарифного плана', unique = True)
+    name              = models.CharField(max_length=255, verbose_name=u'Название', unique = True)
     description       = models.TextField(verbose_name=u'Описание тарифного плана', blank=True, default='')
     access_parameters = models.ForeignKey(to=AccessParameters, verbose_name=u'Параметры доступа', null=True, blank=True, on_delete = models.SET_NULL)
     contracttemplate  = models.ForeignKey("ContractTemplate", verbose_name=u"Шаблон номера договора",  blank=True, null=True, on_delete = models.SET_NULL)
@@ -1473,10 +1473,10 @@ class AddonService(models.Model):
     sp_type = models.CharField(verbose_name=u"Способ списания",max_length=32, choices=(("AT_START",u"В начале расчётного периода"),("AT_END", u"В конце расчётного периода" ),("GRADUAL", u"На протяжении расчётного периода"),))    
     sp_period = models.ForeignKey(SettlementPeriod, verbose_name=u"Расчётный период", help_text=u"Период, в течении которого будет списываться стоимость услуги", related_name="addonservice_spperiod", blank=True, null=True, on_delete=models.SET_NULL)    
     timeperiod = models.ForeignKey(TimePeriod, verbose_name=u"Время активации", help_text=u"Время, когда возможна активация услуги",null=True, on_delete=models.SET_NULL)    
-    cost = models.DecimalField(verbose_name=u"Стоимость услуги", decimal_places=10, max_digits=30, blank=True, default=0)    
+    cost = models.DecimalField(verbose_name=u"Стоимость услуги", decimal_places=2, max_digits=10, blank=True, default=0)    
     cancel_subscription = models.BooleanField(verbose_name=u"Разрешить отключение", help_text=u"Разрешить самостоятельное отключение услуги", default = True)    
     wyte_period = models.ForeignKey(SettlementPeriod, verbose_name=u"Штрафуемый период", help_text=u"Списывать сумму штрафа при досрочном отключении услуги пользователем",  related_name="addonservice_wyteperiod", blank=True, null=True, on_delete=models.SET_NULL)    
-    wyte_cost = models.DecimalField(verbose_name=u"Сумма штрафа", decimal_places=10, max_digits=60, blank=True, default=0)    
+    wyte_cost = models.DecimalField(verbose_name=u"Сумма штрафа", decimal_places=2, max_digits=10, blank=True, default=0)    
     action = models.BooleanField(verbose_name=u"Выполнить действие", blank=True, default=False)    
     nas = models.ForeignKey(Nas, verbose_name=u"Сервер доступа", help_text=u"Сервер доступа, на котором будут производиться действия",  blank=True, null=True, on_delete=models.SET_NULL)    
     service_activation_action = models.TextField(verbose_name=u"Действие для активации услуги", blank=True, default='')    

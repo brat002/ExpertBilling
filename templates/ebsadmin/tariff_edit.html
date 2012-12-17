@@ -24,7 +24,7 @@
 </ul>
 
 <div class="row-fluid">
-
+{%  if tariff %}
 <div class="span3">
 
 <ul class="nav nav-list">
@@ -70,9 +70,14 @@
   <li {% if active == 'addst' %}class="active"{% endif %}>
     <a href="{% url tariff_addonservicetariff %}?tariff_id={{tariff.id}}">Доступные подключаемые услуги</a>
   </li>
-</ul></div>
-<div class="span9">
+</ul>
 
+</div>
+{% endif %}
+<div class="span9">
+{% if not tariff %}
+<div class="alert alert-info">Сохраните тарифный план, чтобы настроить его детально</div>
+{% endif %}
 {% block tariff_content %}
 {% endblock %}
 

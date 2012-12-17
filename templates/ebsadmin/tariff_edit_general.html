@@ -1,6 +1,6 @@
 {% extends "ebsadmin/tariff_edit.html" %}
 {% block tariff_content %}
-<form method="POST" action="{% url tariff_edit %}?id={{item.id}}"class="well form-horizontal">
+<form method="POST" action="{% url tariff_edit %}?id={{item.id}}" class="well form-horizontal form-condensed">
 {{form.id}}
 {{access_parameters.id}}
 {{form.time_access_service}}

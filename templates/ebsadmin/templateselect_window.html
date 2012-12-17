@@ -1,16 +1,34 @@
+{% load crispy_forms_tags %}
 {% if not status %}
 {{message}}
  <script type="text/javascript"> 
+ $(document).ready(function() {
+ 
+	 $("#dialog-accept").on("click", SendMessage);
+		//new message: raise newMessage event
+		function SendMessage(e) {
+		  //e.preventDefault();
+		  var msg = $("#id_template").val();
+		  if (msg) {
+		      $.event.trigger({
+		          type: "selectedTemplate",
+		          message: msg
+		      });
+		  }
+
+		}
+ })
+ 
  </script>
 
 
-            <form method="POST" action="{% url templaterender %}" class="well form-horizontal ajax">
+            <form id="template-select-form" action="#" class="well form-horizontal ajax">
                 <fieldset>
-                   {{form}}
+                   {{form|crispy}}
                 </fieldset>
                 
                 <div class="form-actions">
-                    <input type='submit' class="btn btn-primary" value="Выбрать">
+                    <a class="btn btn-primary close-dialog" id='dialog-accept'>Выбрать</a>
                     <a class="btn close-dialog" href="#">Закрыть</a>
                 </div>
             </form>
