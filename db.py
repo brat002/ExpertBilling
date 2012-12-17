@@ -96,10 +96,10 @@ def get_acctf_history(cursor, account_id):
     """
     Выбрать текущий аккаунттариф и следующий, если на текущем тарифе ест период. услуги, но нет списаний ИЛИ списания есть, но нет финального списания
     """
-    cursor.execute("""SELECT id, datetime, (SELECT id FROM billservice_accounttarif WHERE account_id=at.account_id and
+    cursor.execute("""SELECT id, date_trunc('second', datetime) as datetime, (SELECT id FROM billservice_accounttarif WHERE account_id=at.account_id and
                         datetime>at.datetime order by datetime asc LIMIT 1) as next_accounttarif_id, tarif_id
                         FROM billservice_accounttarif as at WHERE account_id=%s
-                        and datetime<now()
+                        and date_trunc('second', datetime)<now()
                         and 
                         True = (SELECT True from billservice_periodicalservice as ps WHERE ps.tarif_id=at.tarif_id LIMIT 1 )
                         and

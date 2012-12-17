@@ -206,7 +206,7 @@ def upgrade(tarfile):
     setup_webcab()
     
     init_scripts()
-    postconf()
+    #postconf()
     restart()
     congratulations()
     
