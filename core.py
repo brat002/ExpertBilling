@@ -312,6 +312,8 @@ class periodical_service_bill(Thread):
                 last_checkout_seconds = delta_from_last_checkout.seconds + delta_from_last_checkout.days*SECONDS_PER_DAY
                 nums,ost = divmod(last_checkout_seconds,self.PER_DAY)                                        
                 chk_date = last_checkout + self.PER_DAY_DELTA
+
+                  
                 if next_date and pss_type == PERIOD and chk_date>=next_date:
                     logger.debug('%s: Periodical Service: GRADUAL last billed is True for account: %s service:%s type:%s', (self.getName(), acc.account_id, ps.ps_id, pss_type))  
                     cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
@@ -321,6 +323,7 @@ class periodical_service_bill(Thread):
                 #Добавить проверку на окончание периода
                 #Смотрим на какую сумму должны были снять денег и снимаем её
                 while chk_date <= dateAT:    
+                    logger.debug('%s: Periodical Service: GRADUAL  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
                     period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)     
                     mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0                                       
                     cash_summ = mult*((self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY))
@@ -381,6 +384,7 @@ class periodical_service_bill(Thread):
                 period_end_ast= None
 
                 while first_time==True or chk_date <= period_start:
+                    logger.debug('%s: Periodical Service: AT_START  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
                     #Если следующее списание произойдёт уже на новом тарифе - отмечаем, что тарификация произведена
                     if next_date and pss_type == PERIOD and chk_date>=next_date:
                         logger.debug('%s: Periodical Service: AT_START last billed is True for account: %s service:%s type:%s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, next_date))  
@@ -448,6 +452,7 @@ class periodical_service_bill(Thread):
                 chk_date = last_checkout
 
                 while True:
+                    logger.debug('%s: Periodical Service: AT_END  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
                     mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
                     cash_summ = mult*ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
