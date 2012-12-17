@@ -270,7 +270,7 @@ def get_promise(request):
         return {'error_message': error_message, 'MAX_PROMISE_SUM': user.promise_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     if settings.ALLOW_PROMISE==True and user.ballance<user.promise_min_ballance:
         last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
-        error_message = u"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный баланс: %s %s" % (settings.promise_min_ballance, settings.CURRENCY)
+        error_message = u"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный баланс: %s %s" % (user.promise_min_ballance, settings.CURRENCY)
         return {'error_message': error_message, 'MAX_PROMISE_SUM': user.promise_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     
     
@@ -281,16 +281,16 @@ def get_promise(request):
             if not rf.is_valid():
                 last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
                 error_message = u"Проверьте введённые в поля данные"
-                return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
+                return {'MAX_PROMISE_SUM': user.promise_summ, 'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
             sum=rf.cleaned_data.get("sum", 0)
             if sum>settings.MAX_PROMISE_SUM:
                 last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
                 error_message = u"Вы превысили максимальный размер обещанного платежа"
-                return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
+                return {'MAX_PROMISE_SUM': user.promise_summ,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
             if sum<=0:
                 last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
                 error_message = u"Сумма обещанного платежа должна быть положительной"
-                return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
+                return {'MAX_PROMISE_SUM': user.promise_summ,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
             cursor = connection.cursor()
             cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, end_promise, promise_expired)
                               VALUES(%s, 'Обещанный платёж', 'PROMISE_PAYMENT', True, get_tarif(%s), %s, now(), '%s', False)""" % (user.id, user.id, sum, LEFT_PROMISE_DATE))
@@ -303,7 +303,7 @@ def get_promise(request):
         elif operation=='moneytransfer':
             last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
             if tarif.allow_ballance_transfer==False:
-                return {'error_message': u'Вам запрещено пользоваться сервисом перевода баланса.','MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
+                return {'error_message': u'Вам запрещено пользоваться сервисом перевода баланса.','MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
                 
             sum = request.POST.get("sum", 0)
             username = request.POST.get("username", '')
@@ -311,18 +311,18 @@ def get_promise(request):
                 try:
                     to_user=Account.objects.get(username=username)
                 except:
-                    return {'error_message': u'Абонент с указанным логином не найден','MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
+                    return {'error_message': u'Абонент с указанным логином не найден','MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
                     
             else:
-                return {'error_message': u'Логин абонента, которому вы хотите перевести средства, не указан.','MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
+                return {'error_message': u'Логин абонента, которому вы хотите перевести средства, не указан.','MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
             
             try:
                 float(sum)
             except:
-                return {'error_message': u'Указанная сумма не является числом. Разрешено вводить цифры 0-9 и точку, как разделитель разрядов.','MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
+                return {'error_message': u'Указанная сумма не является числом. Разрешено вводить цифры 0-9 и точку, как разделитель разрядов.','MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
             
             if sum>allow_transfer_summ:
-                return {'error_message': u'Указанная сумма слишком велика.','MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}    
+                return {'error_message': u'Указанная сумма слишком велика.','MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}    
             from decimal import Decimal
             cursor=connection.cursor()
             cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, description, type_id, approved, tarif_id, summ, created, promise)
@@ -335,7 +335,7 @@ def get_promise(request):
             return {'error_message': u'Перевод средств успешно выполнен.', 'disable_promise': False, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer,  'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     else:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
-        return {'MAX_PROMISE_SUM': settings.MAX_PROMISE_SUM, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
+        return {'MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
 
 
 @login_required
