@@ -182,3 +182,25 @@ def show_last_news_private(user):
             'news':news,
             }
 
+from django import template
+import mako.template as mako
+
+@register.tag('mako')
+def do_mako(parser, token):
+    nodelist = parser.parse(('endmako',))
+    parser.delete_first_token()
+    return makoNode(nodelist)
+
+class makoNode(template.Node):
+    def __init__(self, nodelist):
+        self.nodelist = nodelist
+        
+    def render(self, context):
+        block = self.nodelist.render(context)
+        #turn the context into a dict
+        parameters = {}
+        [parameters.update(parameter) for parameter in context]
+        #render with Mako
+        rendered = mako.Template(block, format_exceptions=True).render(**parameters)
+        return rendered
+

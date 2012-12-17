@@ -33,10 +33,14 @@ import ipaddr
 from django.db.models import Q
 from django.db import transaction
 from django.contrib.auth.models import Group as AuthGroup
+from django.http import HttpResponse
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from object_log.models import LogItem
+
+from django.template import Context, Template as DjangoTemplate
+
 log = LogItem.objects.log_action
 
 try:
@@ -48,6 +52,8 @@ except:
 import commands
 
 from django.contrib.auth.decorators import permission_required
+
+
 
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
@@ -5058,43 +5064,31 @@ def actions_set(request):
     return {'status':False, 'message':'Ok'}
             
       
-@ajax_request
+
 @login_required 
 def documentrender(request):
     if  not (request.user.is_staff==True and request.user.has_perm('billservice.documentrender')):
         return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
+    from django.utils.safestring import mark_safe
     form = DocumentRenderForm(request.POST)
     if form.is_valid():
         template = Template.objects.get(id=form.cleaned_data.get('template'))
-        templ = mako_template(unicode(template.body), input_encoding='utf-8')
+        t = DjangoTemplate(mark_safe(unicode(template.body)))
+        
         data=''
         if template.type.id==1:
     
             account = Account.objects.get(id=form.cleaned_data.get('account'))
+            c = Context({'account': account})
 
-            #tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
             try:
-                data=templ.render_unicode(account=account)
+                data=t.render(c)
             except Exception, e:
                 data=u"Error %s" % str(e)
-        if template.type.id==2:
-            account = connection.sql("SELECT id FROM billservice_account LIMIT 1" )[0].id
-            #organization = self.connection.sql("SELECT * FROM billservice_organization LIMIT 1" )[0]
-            #bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
-            operator = connection.get("SELECT * FROM billservice_operator LIMIT 1")
-            try:
-                data=templ.render_unicode(account=account, operator=operator,  connection=self.connection)
-            except Exception, e:
-                data=u"Error %s" % str(e)
-    
 
-                       
+        res = data.encode("utf-8", 'replace')
 
-        res = {'success': True, 'body':data.encode("utf-8", 'replace')}
-    else:
-        res={"success": False, "errors": form._errors}
-    #print instance_dict(item).keys()
-    return res
+    return HttpResponse(res)
 
 @ajax_request
 @login_required 

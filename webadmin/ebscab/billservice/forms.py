@@ -211,11 +211,8 @@ class AccountAddonForm(forms.Form):
     
 class DocumentRenderForm(forms.Form):
     account = forms.IntegerField(required=True)
-    #subaccount = forms.IntegerField(required=False)
-    contractnumber = forms.CharField(required=False)    
     template = forms.IntegerField(required=True)
-    date_start = forms.DateTimeField(required=True)
-    date_end = forms.DateTimeField(required=False)
+
 
 class TransactionReportForm(forms.Form):
 
