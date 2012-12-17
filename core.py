@@ -552,8 +552,11 @@ class periodical_service_bill(Thread):
                     acctf_raw_history = get_acctf_history(cur, acc.account_id)
                     by_id = {}
                     #Получаем историю смены субаккаунтов по которым не производились списания период. услуг
+                    #Начальная индексация
                     for acctf_id, acctf_datetime, next_acctf_id, acc_tarif_id in acctf_raw_history:
                         by_id[acctf_id] = (acctf_datetime, next_acctf_id, acc_tarif_id)
+
+                    for acctf_id, acctf_datetime, next_acctf_id, acc_tarif_id in acctf_raw_history:
                         next_date = by_id.get(next_acctf_id)
 
                         for ps in caches.periodicalsettlement_cache.by_id.get(acc_tarif_id,[]):
