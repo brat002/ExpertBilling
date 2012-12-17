@@ -338,7 +338,11 @@ class periodical_service_bill(Thread):
                         logger.debug('%s: Addon Service Checkout thread: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
                     cur.connection.commit()
                     chk_date += self.PER_DAY_DELTA
-
+                    if next_date and pss_type == PERIOD and chk_date>=next_date:
+                        logger.debug('%s: Periodical Service: GRADUAL last billed is True for account: %s service:%s type:%s', (self.getName(), acc.account_id, ps.ps_id, pss_type))  
+                        cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
+                        cur.connection.commit()
+                        return
             cur.connection.commit()
             
         if ps.cash_method == "AT_START":
@@ -564,7 +568,7 @@ class periodical_service_bill(Thread):
                             try:
                                 current = True if next_acctf_id is None else False
                                 dateAT = next_date if next_date else self.NOW
-                                logger.info("%s : preiter: %s %s %s %s %s", (self.getName(), self.NOW, dateAT, self.NOW, next_acctf_id, next_date))
+                                logger.info("%s : preiter: %s %s %s %s", (self.getName(), self.NOW, dateAT, current, next_date))
                                 self.iterate_ps(cur, caches, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, PERIOD)
                             
                             except Exception, ex:
