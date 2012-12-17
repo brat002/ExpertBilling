@@ -554,7 +554,7 @@ class periodical_service_bill(Thread):
                     #Получаем историю смены субаккаунтов по которым не производились списания период. услуг
                     #Начальная индексация
                     for acctf_id, acctf_datetime, next_acctf_id, acc_tarif_id in acctf_raw_history:
-                        by_id[acctf_id] = (acctf_datetime, next_acctf_id, acc_tarif_id)
+                        by_id[acctf_id] = acctf_datetime
 
                     for acctf_id, acctf_datetime, next_acctf_id, acc_tarif_id in acctf_raw_history:
                         next_date = by_id.get(next_acctf_id)
