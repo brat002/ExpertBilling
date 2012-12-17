@@ -301,7 +301,7 @@ class periodical_service_bill(Thread):
             
         if ps.cash_method == "GRADUAL":
 
-            logger.debug('%s: Periodical Service: GRADUAL last checkout %s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))                                  
+            logger.debug('%s: Periodical Service: GRADUAL last checkout %s for account: %s service:%s type:%s next date: %s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type, next_date))                                  
 
             
             if (dateAT - last_checkout).seconds + (dateAT - last_checkout).days*SECONDS_PER_DAY >= self.PER_DAY:
@@ -379,7 +379,7 @@ class periodical_service_bill(Thread):
                 while first_time==True or chk_date <= period_start:
                     #Если следующее списание произойдёт уже на новом тарифе - отмечаем, что тарификация произведена
                     if next_date and pss_type == PERIOD and chk_date>=next_date:
-                        logger.debug('%s: Periodical Service: AT_START last billed is True for account: %s service:%s type:%s', (self.getName(), acc.account_id, ps.ps_id, pss_type))  
+                        logger.debug('%s: Periodical Service: AT_START last billed is True for account: %s service:%s type:%s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, next_date))  
                         cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                         cur.connection.commit()
                         return
