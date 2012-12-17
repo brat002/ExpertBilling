@@ -6,6 +6,19 @@
 
         <script type="text/javascript"> 
         $(document).ready(function() {
+        	$(document).on("selectedTemplate", newMessageHandler);
+        	// newMessage event handler
+        	function newMessageHandler(e) {
+
+        		var data = {template:e.message, account:{{account.id}}};
+
+        		var $form = $('<form target="_blank" method="POST" action="{% url documentrender %}">');
+        		$.each(data, function(k,v){
+        		    $form.append('<input type="hidden" name="' + k + '" value="' + v + '">');
+        		});
+        		$form.append('</form>');
+        		$form.submit();
+        	}
         //$('#generate_username').popover({title:'Действие над аккаунтом', content: 'Сгенерировать имя пользователя'});
         $("#generate_username").click(function() {
         	$.getJSON('{% url generate_credentials %}',{action:'login'},function(data,status){
@@ -108,17 +121,25 @@
                     event.preventDefault();
                 });
             });
-            $(function() {
-                $("#modal-templateselect-dialog").click(function(event) {
-                    $('<div />').dialog2({
-                        title: "Выберите шаблон документа", 
-                        content: "{% url templateselect %}?account_id={{account.id}}", 
-                        id: "templateselect-modal"
-                    });
 
-                    event.preventDefault();
+            $("#modal-templateselect-dialog").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Выберите шаблон документа", 
+                    content: "{% url templateselect %}?account_id={{account.id}}", 
+                    id: "templateselect-modal",
+                    buttons: {
+                        Close: {
+                            primary: true, 
+                            click: function() {
+                                $(this).dialog2("close");
+                            }
+                        }
+                    }
                 });
+
+                event.preventDefault();
             });
+
             $(function() {
                 $(".open-custom-dialog").click(function(event) {
                     $('<div />').dialog2({
@@ -1119,7 +1140,7 @@
                             <div class="control-group">
 
                                 
-                                <div class="control-row">
+
                                     <label class="control-label" for="input-balance-limit">{{form.allow_block_after_summ.label}}:</label>
                                     <div class="controls">
                                    {{ form.allow_block_after_summ }}
@@ -1132,12 +1153,12 @@
                                        </p>
                                    {% endif %}
                                     </div>
-                                </div>
+
                             </div>
                             <div class="control-group">
 
                                 
-                                <div class="control-row">
+
                                     <label class="control-label" for="input-balance-limit">{{form.block_after_summ.label}}:</label>
                                     <div class="controls">
                                    {{ form.block_after_summ }}
@@ -1150,7 +1171,6 @@
                                        </p>
                                    {% endif %}
                                     </div>
-                                </div>
                             </div>
 
                             <div class="control-group">

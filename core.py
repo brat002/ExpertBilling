@@ -313,7 +313,7 @@ class periodical_service_bill(Thread):
                 nums,ost = divmod(last_checkout_seconds,self.PER_DAY)                                        
                 chk_date = last_checkout + self.PER_DAY_DELTA
                 if next_date and pss_type == PERIOD and chk_date>=next_date:
-                    cur.execute("UPDATE billservice_periodicalservicelog SET last_billed WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
+                    cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                     return
 
                 #Добавить проверку на окончание периода
@@ -377,7 +377,7 @@ class periodical_service_bill(Thread):
                 while first_time==True or chk_date <= period_start:
                     #Если следующее списание произойдёт уже на новом тарифе - отмечаем, что тарификация произведена
                     if next_date and pss_type == PERIOD and chk_date>=next_date:
-                        cur.execute("UPDATE billservice_periodicalservicelog SET last_billed WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
+                        cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                         return
                     
                     mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
@@ -472,7 +472,7 @@ class periodical_service_bill(Thread):
                         if pss_type == PERIOD:
                             tr_date = chk_date
                             if next_date and chk_date>=next_date:
-                                cur.execute("UPDATE billservice_periodicalservicelog SET last_billed WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
+                                cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                                 return
                             cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
                             new_summ=cur.fetchone()[0]
