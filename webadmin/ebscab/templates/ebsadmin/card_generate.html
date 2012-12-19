@@ -103,20 +103,6 @@
                       {% endif %}
                     </div>
                   </div>
-                    <div class="control-row span7">
-                      <label class="control-label">{{form.template.label}}: </label>
-                      <div class="controls">
-                      {{ form.template }}
-                      {% if form.template.errors %}
-                          <span class="help-inline">{% for error in form.template.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.template.help_text%}
-                          <p class="help-block">
-                              {{ form.template.help_text|safe }}
-                          </p>
-                      {% endif %}
-                    </div>
-                  </div>
                   </div>
                   
                 {% if form.card_type.value == '1' or form.card_type.value == '2' or form.card_type.value == '3' %}

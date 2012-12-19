@@ -12,10 +12,11 @@ from billservice.forms import TransactionReportForm, SearchAuthLogForm
 from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from tables import TemplateTable, AccountAddonServiceTable, IPInUseTable,  LogTable, BallanceHistoryTable, SubAccountsTable, AccountHardwareTable, SuspendedPeriodTable, AccountTarifTable, TotalTransactionReportTable, AccountsReportTable, AuthLogTable, ActiveSessionTable, NasTable
+from tables import TemplateTable, TicketTable, AccountAddonServiceTable, IPInUseTable,  LogTable, BallanceHistoryTable, SubAccountsTable, AccountHardwareTable, SuspendedPeriodTable, AccountTarifTable, TotalTransactionReportTable, AccountsReportTable, AuthLogTable, ActiveSessionTable, NasTable
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
+from django_tables2 import RequestConfig as DTRequestConfig
 from billservice.forms import SearchAccountForm
 
 from ebsadmin.transactionreport import TRANSACTION_MODELS
@@ -28,6 +29,7 @@ from billservice.forms import TransactionReportForm, TransactionModelForm, Addon
 from billservice.forms import AccountAddonServiceModelForm, AccountHardwareForm
 from billservice.models import TotalTransactionReport, AccountHardware, SuspendedPeriod, Organization, BankData, TrafficTransaction, Template, AccountPrepaysRadiusTrafic, AccountPrepaysTime, AccountPrepaysTrafic
 from billservice.forms import AccountTariffForm, AccountForm, SuspendedPeriodModelForm, OrganizationForm, BankDataForm, IpInUseLogForm, TemplateForm
+from helpdesk.models import Ticket
 from radius.forms import SessionFilterForm
 from radius.models import AuthLog, ActiveSession
 from object_log.models import LogItem
@@ -134,7 +136,6 @@ def transactionreport2(request):
         only_payments = request.GET.get("only_payments")
         only_credits = request.GET.get("only_credits")
         if form.is_valid():
-            print "tree", data.getlist('tree')
             
             #items = PeriodicalServiceHistory.objects.all()[0:200]
             page = int(request.GET.get("page", 1))
@@ -146,7 +147,7 @@ def transactionreport2(request):
 
                     
             pageitems = per_page
-            sort = request.GET.get("sort", '-created')
+            sort = request.GET.get("sortpaginate=True if not request.GET.get('paginate')=='False' else False", '-created')
             account = form.cleaned_data.get('account')
             date_start = form.cleaned_data.get('start_date')
             date_end = form.cleaned_data.get('end_date')
@@ -171,14 +172,14 @@ def transactionreport2(request):
                 for i in TransactionType.objects.all():
                     trtypes.append(i.internal_name)
                         
-            print "trtypes", trtypes  
+              
             with_id = []
             by_groups = {}
             for tr in trtypes:
                 l = tr.split("___")
                 tr_type = l[0]
                 id = None
-                print "!!!!!!!!!!", l
+
                 if len(l)==2:
                     tr_type, id = l
                 parent_tr_type = TRANSACTION_MODELS.get(tr_type, 'Transaction')
@@ -190,11 +191,11 @@ def transactionreport2(request):
                 elif parent_tr_type=='Transaction':
                     by_groups[parent_tr_type].append(tr_type)
                     
-            print 'by_groups', by_groups
+
             res = []
             total_summ = 0
             for key in by_groups:
-                print key
+
                 if key=='PeriodicalServiceHistory':
                     items = PeriodicalServiceHistory.objects.filter(service__id__in=by_groups[key])
                     if only_credits:
@@ -245,13 +246,13 @@ def transactionreport2(request):
                     if only_payments:
                         items = items.filter(summ__gte=0)
                     if account:
-                        print 1
+
                         items = items.filter(account__id__in=account)
                     if date_start:
-                        print 2
+
                         items = items.filter(created__gte=date_start)
                     if date_end:
-                        print 3
+
                         items = items.filter(created__lte=date_end)
                     if systemusers:
                         items = items.filter(systemuser__in=systemusers)
@@ -263,7 +264,7 @@ def transactionreport2(request):
             summ = total_summ
             tf = TransactionReportForm(request.GET)   
             table = TotalTransactionReportTable(res)
-            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
 
@@ -404,7 +405,7 @@ def accountsreport(request):
                     
             res = res.distinct()
             table = AccountsReportTable(res)
-            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
 
@@ -452,7 +453,7 @@ def authlogreport(request):
                 res = res.filter(datetime__lte=end_date)
             
             table = AuthLogTable(res)
-            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            table_to_report = RequestConfig(request,paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
             
@@ -520,7 +521,7 @@ def ipinusereport(request):
                 res = res.filter(pool__in=ippool)
                 
             table = IPInUseTable(res)
-            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
             
@@ -562,7 +563,7 @@ def ballancehistoryreport(request):
                 res = res.filter(datetime__lte=end_date)
             res = res.values('id', 'account', 'account__username', 'balance', 'datetime')
             table = BallanceHistoryTable(res)
-            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
             
@@ -616,25 +617,27 @@ def accountedit(request):
         
         res = SubAccount.objects.filter(account=account)
         subaccounts_table = SubAccountsTable(res)
-        RequestConfig(request, paginate = False).configure(subaccounts_table)
+        DTRequestConfig(request, paginate = False).configure(subaccounts_table)
     
         res = AccountTarif.objects.filter(account=account)
         accounttarif_table = AccountTarifTable(res)
-        RequestConfig(request, paginate = False).configure(accounttarif_table)
+        DTRequestConfig(request, paginate = False).configure(accounttarif_table)
     
         res = AccountHardware.objects.filter(account=account)
         accounthardware_table = AccountHardwareTable(res)
-        RequestConfig(request, paginate = False).configure(accounthardware_table)
+        DTRequestConfig(request, paginate = False).configure(accounthardware_table)
     
         res = SuspendedPeriod.objects.filter(account=account)
         suspendedperiod_table = SuspendedPeriodTable(res)
-        RequestConfig(request, paginate = False).configure(suspendedperiod_table)
+        DTRequestConfig(request, paginate = False).configure(suspendedperiod_table)
     
         res = AccountAddonService.objects.filter(account=account)
         accountaddonservice_table = AccountAddonServiceTable(res)
-        RequestConfig(request, paginate = False).configure(accountaddonservice_table)
+        DTRequestConfig(request, paginate = False).configure(accountaddonservice_table)
         
-
+        res = Ticket.objects.filter(owner=request.user) 
+        ticket_table = TicketTable(res)
+        DTRequestConfig(request, paginate = False).configure(ticket_table)
 
     
     print 11
@@ -725,7 +728,7 @@ def accountedit(request):
             return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"), model.id))
         else:
             messages.error(request, u'Ошибка при сохранении.', extra_tags='alert-danger')
-            return {'org_form':org_form, 'bank_form': bank_form,  'prepaidtraffic':prepaidtraffic, 'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
+            return {'ticket_table': ticket_table, 'org_form':org_form, 'bank_form': bank_form,  'prepaidtraffic':prepaidtraffic, 'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
     if account:
         
         
@@ -747,7 +750,8 @@ def accountedit(request):
         form = AccountForm(initial={'datetime': datetime.datetime.now()})
         org_form = OrganizationForm(prefix='org')
         bank_form = BankDataForm(prefix='org')
-    return { 'form':form, 'org_form':org_form, 'bank_form': bank_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, } 
+    return { 'form':form, 'org_form':org_form, 'bank_form': bank_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 
+            'ticket_table': ticket_table} 
 
 @login_required
 @render_to('ebsadmin/subaccount_edit.html')
@@ -766,11 +770,11 @@ def subaccountedit(request):
     
         res = AccountAddonService.objects.filter(subaccount=subaccount)
         table = AccountAddonServiceTable(res)
-        table_to_report = RequestConfig(request, paginate=False).configure(table)
+        table_to_report = DTRequestConfig(request, paginate=False).configure(table)
         if table_to_report:
             return create_report_http_response(table_to_report, request)
         
-        ctype = ContentType.objects.get_for_model(subaccount)
+
 
         res = []
         prev = None
@@ -1110,8 +1114,8 @@ def transaction(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'Транзакция выполнены.', extra_tags='alert-success')
-            return {'form':form,  'status': True} 
+            messages.success(request, u'Транзакция выполнена.', extra_tags='alert-success')
+            return {'form':form,  'status': True, 'transaction': model} 
         else:
             messages.success(request, u'Ошибка при выполнении операции.', extra_tags='alert-danger')
             return {'form':form,  'status': False, 'promise_type': promise_type} 
@@ -1189,8 +1193,9 @@ def accountaddonservice_edit(request):
 @render_to('ebsadmin/templateselect_window.html')
 def templateselect(request):
     
+    types = request.GET.getlist('type')
     form = TemplateSelectForm()
-
+    form.fields['template'].queryset=Template.objects.filter(type__id__in=types)
     return { 'form':form} 
 
 
@@ -1220,7 +1225,7 @@ def activesessionreport(request):
                 res = res.filter(nas_int__in=form.cleaned_data.get("nas"))
             res = res.values('subaccount__username', 'subaccount', 'framed_ip_address', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
             table = ActiveSessionTable(res)
-            table_to_report = RequestConfig(request, paginate={"per_page": 250} if not request.GET.get('paginate')=='False' else False).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
     
@@ -1234,7 +1239,7 @@ def activesessionreport(request):
         res = ActiveSession.objects.filter(session_status='ACTIVE').prefetch_related()
         res = res.values('subaccount__username', 'subaccount', 'framed_ip_address', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
         table = ActiveSessionTable(res)
-        table_to_report = RequestConfig(request, paginate={"per_page": 250} if not request.GET.get('paginate')=='False' else False).configure(table)
+        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
         if table_to_report:
             return create_report_http_response(table_to_report, request)
     

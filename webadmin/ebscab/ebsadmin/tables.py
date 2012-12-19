@@ -18,6 +18,8 @@ from nas.models import Nas, TrafficClass, TrafficNode
 from django_tables2_reports.tables import TableReport
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+
+from helpdesk.models import Ticket
 import itertools
 
 class FormatBlankColumn(django_tables.Column):
@@ -48,7 +50,7 @@ class YesNoColumn(django_tables.Column):
                          % ('accept' and True or 'cross'))
 
 
-class SubAccountsTable(TableReport):
+class SubAccountsTable(django_tables.Table):
     row_number = django_tables.Column(verbose_name="#")
     id = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
     username = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
@@ -74,14 +76,14 @@ class SubAccountsTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
 
-class AccountHardwareTable(TableReport):
+class AccountHardwareTable(django_tables.Table):
 
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     class Meta:
         model = AccountHardware
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
-class AccountAddonServiceTable(TableReport):
+class AccountAddonServiceTable(django_tables.Table):
     row_number = django_tables.Column(verbose_name="#")
     id = django_tables.LinkColumn('accountaddonservice', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     account =  FormatBlankColumn()
@@ -106,14 +108,14 @@ class AccountAddonServiceTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
             
         
-class SuspendedPeriodTable(TableReport):
+class SuspendedPeriodTable(django_tables.Table):
 
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     class Meta:
         model = SuspendedPeriod
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
-class AccountTarifTable(TableReport):
+class AccountTarifTable(django_tables.Table):
     row_number = django_tables.Column(verbose_name="#")
     id = FormatBlankColumn()
     tarif = FormatBlankColumn()
@@ -441,7 +443,7 @@ class CardTable(TableReport):
 
     class Meta:
         model = Card
-        sequence = ('row_number', 'row_class',  'id', 'series', 'nominal', 'login', 'pin', 'type', 'tarif', 'nas', 'salecard', 'activated', 'activated_by', 'ippool', 'created', 'start_date', 'end_date', 'template',  'ext_id',  'd')
+        sequence = ('row_number', 'row_class',  'id', 'series', 'nominal', 'login', 'pin', 'type', 'tarif', 'nas', 'salecard', 'activated', 'activated_by', 'ippool', 'created', 'start_date', 'end_date', 'ext_id',  'd')
         attrs = {'class': 'table table-bordered table-condensed'}
         exclude = ('ipinuse', 'disabled', 'ip')
 
@@ -466,7 +468,7 @@ class SaleCardsTable(TableReport):
     
     class Meta:
         model = Card
-        sequence = ('row_number', 'row_class',  'id', 'series', 'login', 'pin', 'nominal', 'type', 'tarif', 'nas',  'activated', 'ippool', 'created', 'start_date', 'end_date', 'template')
+        sequence = ('row_number', 'row_class',  'id', 'series', 'login', 'pin', 'nominal', 'type', 'tarif', 'nas',  'activated', 'ippool', 'created', 'start_date', 'end_date',)
         attrs = {'class': 'table table-bordered table-condensed'}
         exclude = ('ipinuse', 'disabled', 'ip', 'activated_by', 'ext_id', 'salecard')
         
@@ -767,4 +769,13 @@ class SwitchPortsTable(TableReport):
     
     class Meta:
         attrs = {'class': 'table table-bordered table-condensed'}  
+        
+class TicketTable(TableReport):
+
+
+    
+    class Meta:
+        model = Ticket
+        fields = ("id", 'title', 'queue', 'created', 'status', 'priority', )
+        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
         

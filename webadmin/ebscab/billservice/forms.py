@@ -210,8 +210,10 @@ class AccountAddonForm(forms.Form):
     temporary_blocked = forms.CheckboxInput()
     
 class DocumentRenderForm(forms.Form):
-    account = forms.IntegerField(required=True)
-    template = forms.IntegerField(required=True)
+    account = forms.IntegerField(required=False)
+    transaction = forms.IntegerField(required=False)
+    template = forms.IntegerField(label=u'Шаблон', required=True)
+    cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all(), required=False)
 
 
 class TransactionReportForm(forms.Form):
@@ -744,7 +746,7 @@ class CardGenerationForm(forms.Form):
     pin_letters = forms.BooleanField(label="a-Z", widget = forms.CheckboxInput)
     nominal = forms.FloatField(label=u"Номинал",widget=forms.widgets.Input(attrs={'class':'input-small'}))
     tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=u"Тариф", required=False)
-    template = forms.ModelChoiceField(queryset=Template.objects.filter(type__id=7), label=u"Шаблон печати")
+    #template = forms.ModelChoiceField(queryset=Template.objects.filter(type__id=7), label=u"Шаблон печати")
     nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
     ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
     date_start = forms.DateTimeField(label=u'Активировать с', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
@@ -760,13 +762,13 @@ class CardSearchForm(forms.Form):
     ext_id = forms.CharField(required=False)
     nominal = FloatConditionField(required=False, label=u"Номинал")
     tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=u"Тариф", required=False)
-    template = forms.ModelChoiceField(required=False, queryset=Template.objects.all(), label=u"Шаблон печати")
+    #template = forms.ModelChoiceField(required=False, queryset=Template.objects.all(), label=u"Шаблон печати")
     nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
     ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
     sold = DateRangeField(required=False, label=u"Проданы")
     not_sold = forms.BooleanField(required=False, label=u"Не проданные")
     activated = DateRangeField(label=u'Активированы', required=False)
-    activated_by = AutoCompleteSelectMultipleField( 'account_username', required = False)
+    activated_by = AutoCompleteSelectMultipleField( 'account_username', label=u'Активатор', required = False)
     created = DateRangeField(label=u'Созданы', required=False )
     
 class CardBatchChangeForm(forms.Form):
@@ -787,7 +789,7 @@ class CardBatchChangeForm(forms.Form):
     change_nominal = forms.BooleanField(required=False, label=u"Изменить номинал")
     nominal = forms.FloatField(required=False, label=u"Номинал",widget=forms.widgets.Input(attrs={'class':'input-small'}))
     tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=u"Тариф", required=False)
-    template = forms.ModelChoiceField(required=False, queryset=Template.objects.filter(type__id=7), label=u"Шаблон печати")
+    #template = forms.ModelChoiceField(required=False, queryset=Template.objects.filter(type__id=7), label=u"Шаблон печати")
     nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
     ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
     
