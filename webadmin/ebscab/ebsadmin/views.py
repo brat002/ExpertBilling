@@ -5071,20 +5071,27 @@ def documentrender(request):
         return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
     from django.utils.safestring import mark_safe
     form = DocumentRenderForm(request.POST)
+
     if form.is_valid():
         template = Template.objects.get(id=form.cleaned_data.get('template'))
         t = DjangoTemplate(mark_safe(unicode(template.body)))
-        
+        print template.type.id
         data=''
         if template.type.id==1:
     
             account = Account.objects.get(id=form.cleaned_data.get('account'))
             c = Context({'account': account})
-
-            try:
-                data=t.render(c)
-            except Exception, e:
-                data=u"Error %s" % str(e)
+        if template.type.id==5:
+            tr = Transaction.objects.get(id=form.cleaned_data.get('transaction'))
+            c = Context({'transaction': tr})
+        if template.type.id==7:
+            #cards
+            c = Context({'cards': form.cleaned_data.get('cards')})
+            
+        try:
+            data=t.render(c)
+        except Exception, e:
+            data=u"Error %s" % str(e)
 
         res = data.encode("utf-8", 'replace')
 

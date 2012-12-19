@@ -1,7 +1,8 @@
 {% if not status %}
 <script  type="text/javascript" >
 $(document).ready(function() {
-	
+
+    
 	function a(e) {
         if ($("#id_type").val()=='{{promise_type.id}}'){
             $("#id_promise_section").show()
@@ -17,6 +18,14 @@ $(document).ready(function() {
 </script>
 {{message}}
 
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
            
             
                 <form action='{% url transaction_edit %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax">
@@ -109,7 +118,7 @@ $(document).ready(function() {
                   </div>
                 </fieldset>
                 <div class="form-actions">
-				    <input type='submit' class="btn btn-primary" value="Отправить">
+				    <input type='submit' class="btn btn-primary" value="Оплатить">
 				    <a class="btn close-dialog" href="#">Закрыть</a>
 				</div>
                 </form>
@@ -122,10 +131,33 @@ $(document).ready(function() {
  });
  </script>
 {% else %}
-Операция произведена успешно.
  <script type="text/javascript"> 
  $(document).ready(function() {
-     location.reload();
+    $("#id_btn_print").click( function() {
+
+        var data = {transaction:{{transaction.id}}, template:7};
+
+        var $form = $('<form target="_blank" method="POST" action="{% url documentrender %}">');
+        $.each(data, function(k,v){
+            $form.append('<input type="hidden" name="' + k + '" value="' + v + '">');
+        });
+        $form.append('</form>');
+        $form.submit();
+    })
  });
  </script>
+ 
+{% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+<button type="button" class="close" data-dismiss="alert">×</button>
+{{ message }}
+</div>
+{% endfor %}
+
+
+                <div class="form-actions">
+                    <input id="id_btn_print" type='button' class="btn btn-info" value="Печать чека">
+                    <a class="btn close-dialog" href="#">Закрыть</a>
+                </div>
 {% endif %}

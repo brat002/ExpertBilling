@@ -1141,7 +1141,7 @@ class Card(models.Model):
     end_date = models.DateTimeField(blank=True, default='', verbose_name=u"по")
     disabled= models.BooleanField(default=False, blank=True)
     created = models.DateTimeField(verbose_name=u"Создана")
-    template = models.ForeignKey(Template, verbose_name=u"Шаблон")
+    #template = models.ForeignKey(Template, verbose_name=u"Шаблон")
     type = models.IntegerField(verbose_name=u"Тип", choices = ( (0, u"Экспресс-оплаты", ), (1, u'Хотспот'), (2, u'VPN доступ'), (3, u'Телефония'),))
     tarif = models.ForeignKey(Tariff, blank=True, null=True, verbose_name=u"Тариф")
     nas = models.ForeignKey(Nas, blank=True, null=True)

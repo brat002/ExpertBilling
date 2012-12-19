@@ -85,7 +85,7 @@ class ActiveSession(models.Model):
            ("activesession_view", u"Просмотр"),
            )
 
-    def get_sessions_class(self):
+    def get_row_class(self):
         return STATUS_CLASS.get(self.session_status)
     
     def __unicode__(self):
