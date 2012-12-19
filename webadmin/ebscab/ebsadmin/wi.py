@@ -334,6 +334,7 @@ def accountsreport(request):
                 res = Account.objects.all_with_deleted()
             else:
                 res = Account.objects.all()
+                
             if id:
                 res = res.filter(id=id)
             if room:
@@ -341,19 +342,19 @@ def accountsreport(request):
 
                 
             if account:
-                res = res.objects.filter(id__in=account)
+                res = res.filter(id__in=account)
                 
             if account_text:
-                res = res.objects.filter(username__icontains=account_text)
+                res = res.filter(username__icontains=account_text)
                 
             if contract_text:
-                res = res.objects.filter(contract__icontains=contract_text)
+                res = res.filter(contract__icontains=contract_text)
 
             if fullname_text:
-                res = res.objects.filter(fullname__icontains=fullname_text)
+                res = res.filter(fullname__icontains=fullname_text)
                 
             if contactperson_text:
-                res = res.objects.filter(contactperson__icontains=contactperson_text)
+                res = res.filter(contactperson__icontains=contactperson_text)
             
             if date_start:
                 res = res.filter(created__gte=date_start)
