@@ -3,7 +3,20 @@
 {% load format_paginator from ebsadmin_tags %}
 {% load trans blocktrans from i18n %}
 {% load ebsadmin_tags %}
-
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+            var per_page = $.cookie('ebs_per_page');
+            if (per_page){
+            	$("#id_per_page").val(per_page)
+            }else{
+            	$("#id_per_page").val(30)
+            }
+            $("#id_per_page").change(function(){
+            	$.cookie('ebs_per_page',  $("#id_per_page").val());
+            	location.href=location.href.replace(/&?paginate=False/i, "");
+            })
+        })
+</script>
 <div>
 
 {% block table %}
@@ -49,6 +62,20 @@
 {% if total_summ %}
 <strong>Всего на сумму:</strong> {{total_summ|intspace}}
 {% endif %}
+{% if table.page %}
+<div class="pull-right">
+        На странице: <select name="per_page" id="id_per_page">
+        <option value="25">25</option>
+        <option value="50"  selected="selected">50</option>
+        <option value="100">100</option>
+        <option value="200">200</option>
+        <option value="500">500</option>
+        <option value="1000">1000</option>
+        <option value="5000">5000</option>
+        <option value="10000">10000</option>
+        </select>
+        </div>
+        {% endif %}
 </div>
 {% endblock table %}
 
@@ -76,6 +103,7 @@
     <li><a href="{% querystring table.prefixed_page_field=table.page.next_page_number %}">{% trans "Next" %}</a></li>
     {% endif %}
     <li><a href="{% querystring "paginate"="False" %}">Все</a></li>
+
     </ul>
 </div>
 

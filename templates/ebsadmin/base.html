@@ -93,7 +93,7 @@ html {
           background-clip: padding-box;
 }
 .form-condensed .control-group {
-    margin-top: 5px;
+    margin-top: 4px;
     margin-bottom: 4px;
 }
 </style>
@@ -161,13 +161,13 @@ html {
        </a>
        <ul class="dropdown-menu">
            <li class="dropdown-submenu">
-		    <a tabindex="-1" href="#">Отчёты</a>
+		    <a tabindex="-1" href="#"><i class="cus-chart-line"></i> Отчёты</a>
 		    <ul class="dropdown-menu">
 		      {% charts_menu %}
 		    </ul>
 		  </li>
          
-         <li><a href="{% url transactionreport2 %}">Операции с л/c</a></li>
+         <li><a href="{% url transactionreport2 %}"><i class="cus-report"></i> Операции с л/c</a></li>
          <li><a href="{% url ipinuse_list %}">Занятые IP адреса</a></li>
          <li><a href="{% url authlog_list %}">История авторизаций</a></li>
          <li><a href="{% url ballancehistoryreport %}">История изменения баланса</a></li>
@@ -270,5 +270,10 @@ html {
 {% block body %} {% endblock %}
 
 </div>
+<footer class="well">
+<div class="row-fluid">
+<div class="span4">Биллинг-система ExpertBilling </div><div class="span4"></div><div class="span4"></div>
+</div>
+</footer>
 </body>
 </html>

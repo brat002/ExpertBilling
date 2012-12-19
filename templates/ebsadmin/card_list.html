@@ -25,7 +25,7 @@
                 event.preventDefault();
             });
             $("#id_btn_update").click(function(event) {
-            	values = jQuery("#id_main_table input[type=checkbox]").serializeArray();
+            	values = jQuery("#id_main_table input[type=checkbox]:checked").serializeArray();
             	
                 $('<div />').dialog2({
                     title: "Изменить параметры", 
@@ -40,7 +40,7 @@
                 a=$(this);
                 $.fn.dialog2.helpers.confirm("Вы действительно хотите удалить?", {
                     confirm: function() {
-                        values = jQuery("#id_main_table input[type=checkbox]").serializeArray();
+                        values = jQuery("#id_main_table input[type=checkbox]:checked").serializeArray();
 
                         $.getJSON('{% url card_delete %}',values,function(data,status){
                             if( status=='success' ){
@@ -65,7 +65,7 @@
             $("#id_btn_enable").click(function() {
                 a=$(this);
 
-                        values = jQuery("#id_main_table input[type=checkbox]").serializeArray();
+                        values = jQuery("#id_main_table input[type=checkbox]:checked").serializeArray();
 
                         $.getJSON('{% url card_manage %}?action=enable',values,function(data,status){
                             if( status=='success' ){
@@ -89,7 +89,7 @@
             $("#id_btn_disable").click(function() {
                 a=$(this);
 
-                        values = jQuery("#id_main_table input[type=checkbox]").serializeArray();
+                        values = jQuery("#id_main_table input[type=checkbox]:checked").serializeArray();
 
                         $.getJSON('{% url card_manage %}?action=disable',values,function(data,status){
                             if( status=='success' ){
@@ -136,6 +136,31 @@
 
                 event.preventDefault();
             });
+            $(document).on("selectedTemplate", documentPrintHandler);
+            
+            $("#id_btn_print").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Выберите шаблон карты", 
+                    content: "{% url templateselect %}?type=7", 
+                    id: "templateselect-modal",
+                });
+
+                event.preventDefault();
+            });
+            
+
+            function documentPrintHandler(e) {
+            	values = jQuery("#id_main_table tbody input[type=checkbox]:checked");
+                var data = {template:e.message, cards: values};
+
+                var $form = $('<form target="_blank" method="POST" action="{% url documentrender %}">');
+                $form.append('<input type="hidden" name="template" value="' + e.message + '">');
+                $.each(values, function(k, v){
+                    $form.append('<input type="hidden" name="cards" value="' + v.value + '">');
+                });
+                $form.append('</form>');
+                $form.submit();
+            }
             {% if table %}
             $('#tab-control a[href="#result"]').tab('show');
             {% else %}
@@ -402,20 +427,6 @@
                                             {% endif %}
                                     </div>
                                 </div>
-                                <div class="control-row">
-                                    <label class="control-label" for="input-fio">{{form.template.label}}:</label>
-                                    <div class="controls">
-                                            {{ form.template }}
-                                            {% if form.template.errors %}
-                                                <span class="help-inline">{% for error in form.template.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.template.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.template.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
                                 </div>
                                 <div class="control-group">
                                 <div class="control-row">
@@ -494,8 +505,8 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu">
-    <li><a href="#" id="id_btn_enable">Enable</a></li>
-    <li><a href="#" id="id_btn_disable">Disable</a></li>
+    <li><a href="#" id="id_btn_enable">Разрешить активацию</a></li>
+    <li><a href="#" id="id_btn_disable">Запретить активацию</a></li>
     <li><a href="#" id="id_btn_delete">Удалить</a></li>
   </ul>
 </div>
@@ -507,6 +518,11 @@
   <div class="btn-group">
   <a id="id_btn_sale" class="btn btn-warning " href="#"><i class="icon-shopping-cart icon-white"></i>
     Передать дилеру
+  </a>
+</div>
+  <div class="btn-group">
+  <a id="id_btn_print" class="btn btn-info " href="#"><i class="icon-print icon-white"></i>
+    Распечатать
   </a>
 </div>
 </div>

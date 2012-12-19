@@ -6,9 +6,9 @@
 
         <script type="text/javascript"> 
         $(document).ready(function() {
-        	$(document).on("selectedTemplate", newMessageHandler);
+        	$(document).on("selectedTemplate", documentPrintHandler);
         	// newMessage event handler
-        	function newMessageHandler(e) {
+        	function documentPrintHandler(e) {
 
         		var data = {template:e.message, account:{{account.id}}};
 
@@ -125,16 +125,8 @@
             $("#modal-templateselect-dialog").click(function(event) {
                 $('<div />').dialog2({
                     title: "Выберите шаблон документа", 
-                    content: "{% url templateselect %}?account_id={{account.id}}", 
+                    content: "{% url templateselect %}?account_id={{account.id}}&type=1&type=2", 
                     id: "templateselect-modal",
-                    buttons: {
-                        Close: {
-                            primary: true, 
-                            click: function() {
-                                $(this).dialog2("close");
-                            }
-                        }
-                    }
                 });
 
                 event.preventDefault();
@@ -298,7 +290,7 @@
                     <li class=""><a href="#tab-address" data-toggle="tab">Персональные данные</a></li>
                     <li class=""><a href="#tab-second" data-toggle="tab">Юр. лицо</a></li>
                     <li class=""><a href="#tab-third" data-toggle="tab">Прочее</a></li>
-                    <li class=""><a href="#tab-comment" data-toggle="tab">Комментарий</a></li>
+                    <li class=""><a href="#tab-helpdesk" data-toggle="tab">HelpDesk</a></li>
 
                 </ul>
 
@@ -317,7 +309,7 @@
                             <div class="control-row">
                                 <label class="control-label" id="modal-accounttariff-dialog"><a href="#">Тариф</a></label>
                                 <div class="controls">
-                                    <label class="checkbox inline inline-text">{{account.get_account_tariff.name}}</label>
+                                    <small class="checkbox inline inline-text  thumbnail">{{account.get_account_tariff.name}}</small>
                                     
                                 </div>
                             </div>
@@ -330,7 +322,7 @@
                             <div class="control-row">
                                 <label class="control-label">{{form.contract.label}}</label>
                                 <div class="controls">
-                                    <span>{{ form.contract }}<a id="modal-templateselect-dialog"><i class="icon-print"></i></a></span>
+                                    <span>{{ form.contract }}<a id="modal-templateselect-dialog" class="btn btn-info btn-mini" ><i class="icon-print icon-white"></i></a></span>
                                     {% if form.contract.errors %}
                                         <span class="help-inline">{% for error in form.contract.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}
@@ -1249,10 +1241,10 @@
                         </fieldset>
                     </div>
 
-                    <div class="tab-pane" id="tab-comment">
+                    <div class="tab-pane" id="tab-helpdesk">
                         <fieldset>
-                            <legend>Лог</legend>
-                               {% if action_log_table %} {% render_table action_log_table %} {% endif %}
+                            <legend>Запросы в HelpDesk</legend>
+                               {% if ticket_table %} {% render_table ticket_table %} {% endif %}
                            
 
                         </fieldset>
@@ -1271,32 +1263,19 @@
           <div class="well sidebar-nav">
             <ul class="nav nav-list">
               <li class="nav-header">Отчёты</li>
-              <li><a href="{% url authlog_list %}?account={{account.id}}"><i class="icon-info-sign"></i>История RADIUS авторизаций</a></li>
-              <li><a href="{% url activesessionreport %}?account={{account.id}}"><i class="icon-info-sign"></i>История RADIUS сессий</a></li>
+              <li><a href="{% url authlog_list %}?account={{account.id}}"><i class="icon-info-sign"></i>RADIUS авторизации</a></li>
+              <li><a href="{% url activesessionreport %}?account={{account.id}}"><i class="icon-info-sign"></i>RADIUS сессии</a></li>
               <li><a href="{% url ipinuse_list %}?account={{account.id}}"><i class="icon-info-sign"></i>Использованные IP-адреса</a></li>
               <li class="nav-header">Финансы</li>
               <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_payments=True">Пополнения баланса</a></li>
               <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_credits=True">Списания</a></li>
               <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">История изменения баланса</a></li>
               <li class="nav-header">Остатки</li>
-              <li><a href="{% url accountprepaystraffic %}?account={{account.id}}">Остаток предоплаченного NetFlow трафика</a></li>
-              <li><a href="{% url accountprepaysradiustraffic %}?account={{account.id}}">Остаток предоплаченного RADIUS трафика</a></li>
-              <li><a href="{% url accountprepaystime %}?account={{account.id}}">Остаток предоплаченного времени</a></li>
+              <li><a href="{% url accountprepaystraffic %}?account={{account.id}}"> NetFlow трафик</a></li>
+              <li><a href="{% url accountprepaysradiustraffic %}?account={{account.id}}">RADIUS трафик</a></li>
+              <li><a href="{% url accountprepaystime %}?account={{account.id}}">Время</a></li>
             </ul>
-          </div><!--/.well -->
-          <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">Предоплаченные единицы</li>
-              <li>Предоплаченный RADIUS трафик: {{prepaidradiustraffic}}</li>
-              <li>Предоплаченное RADIUS время: {{prepaidradiustime}}</li>
-              {% if prepaidtraffic %}
-              <li class="nav-header">NetFlow трафик</li>
-              {% for group, size in prepaidtraffic %}
-              <li>{{group}}: {%traffic_format size %}</li>
-              {% endfor %}
-              {% endif %}
-            </ul>
-          </div><!--/.well -->
+          </div>
         </div>
         {% endif %}
     </div>
