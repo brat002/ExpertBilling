@@ -297,7 +297,10 @@ def accountsreport(request):
         if form.is_valid():
             date_start, date_end = None, None
             account = form.cleaned_data.get('account')+form.cleaned_data.get('fullname')+form.cleaned_data.get('contactperson')+form.cleaned_data.get('username')+form.cleaned_data.get('contract') # - concatenate tuples
-            
+            account_text = request.GET.get('account_text')
+            contract_text = request.GET.get('contract_text')
+            fullname_text = request.GET.get('fullname_text')
+            contactperson_text = request.GET.get('contactperson_text')
             id = form.cleaned_data.get('id')
             passport = form.cleaned_data.get('passport')
             created = form.cleaned_data.get('created')
@@ -338,7 +341,20 @@ def accountsreport(request):
 
                 
             if account:
-                res = Account.objects.filter(id__in=account)
+                res = res.objects.filter(id__in=account)
+                
+            if account_text:
+                res = res.objects.filter(username__icontains=account_text)
+                
+            if contract_text:
+                res = res.objects.filter(contract__icontains=contract_text)
+
+            if fullname_text:
+                res = res.objects.filter(fullname__icontains=fullname_text)
+                
+            if contactperson_text:
+                res = res.objects.filter(contactperson__icontains=contactperson_text)
+            
             if date_start:
                 res = res.filter(created__gte=date_start)
             if date_end:
@@ -594,6 +610,7 @@ def accountedit(request):
     org = None
     prepaidradiustraffic = 0
     prepaidradiustime = 0
+    ticket_table = None
     prepaidtraffic = []
     if account_id:
         account = Account.objects.get(id=account_id)
