@@ -47,7 +47,6 @@ def ssh_client(host, username, password, command):
     if SSH_BACKEND==None:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        print 'login', username
         ssh.connect(host, username=username, password=password, allow_agent=False, look_for_keys=False, timeout=20)
         #logger.debug("NAS Manipulation command string %s", (command, ))   
         stdin, stdout, stderr = ssh.exec_command(command)
