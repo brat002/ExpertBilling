@@ -771,8 +771,13 @@ class SwitchPortsTable(TableReport):
         attrs = {'class': 'table table-bordered table-condensed'}  
         
 class TicketTable(TableReport):
+    
+    id = django_tables.LinkColumn('helpdesk_view', args=[A('id')])
+    title = django_tables.LinkColumn('helpdesk_view', args=[A('id')])
+    created = FormatDateTimeColumn(verbose_name=u'Создан')
+    status = django_tables.Column(verbose_name=u'Статус', accessor=A('_get_status'))
 
-
+    
     
     class Meta:
         model = Ticket

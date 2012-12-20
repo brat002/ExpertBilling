@@ -5179,7 +5179,7 @@ def testCredentials(request):
         return {'status':False, 'message': u'У вас нет на тестирование подключения'}
     host, login, password = request.POST.get('host'),request.POST.get('login'),request.POST.get('password')
     try:
-        #print host, login, password
+        print host, login, password
         a=ssh_client(host, login, password, '')
     except Exception, e:
         
