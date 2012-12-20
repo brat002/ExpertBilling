@@ -14,15 +14,14 @@
             });
         $("#id_btn_test").click(function() {
         	$("#id_btn_test").text('Подождите');
-        	setTimeout(function() {
+
         	$.ajax({
         		   type: "POST",
         		   url: "{% url nas_test_credentials %}",
         		   data: {login: $("#id_login").val(),password: $("#id_password").val(), host: $("#id_ipaddress").val()},
-        		   dataType: 'ajax',
         		   async: false,
         		   success: function(msg){
-        			   if (msg.status){
+        			   if (msg.status==true){
         				   alert( "Тест прошёл успешно");
         			   }
         			   else{
@@ -34,7 +33,7 @@
         		          alert("Ошибка соединения");
         		          $("#id_btn_test").text('Проверить');
         		       }
-        		 });}, 500);
+        		 });
             });
 
         

@@ -43,7 +43,7 @@ from nas.forms import NasForm
 
 from django.db.models import Sum
 from django.contrib import messages
-
+from django.contrib.auth.models import User
 log = LogItem.objects.log_action
 
 BAD_REQUEST = u"Ошибка передачи параметров"
@@ -653,9 +653,12 @@ def accountedit(request):
         accountaddonservice_table = AccountAddonServiceTable(res)
         DTRequestConfig(request, paginate = False).configure(accountaddonservice_table)
         
-        res = Ticket.objects.filter(owner=request.user) 
-        ticket_table = TicketTable(res)
-        DTRequestConfig(request, paginate = False).configure(ticket_table)
+        try:
+            res = Ticket.objects.filter(owner=User.objects.get(username=account.username)) 
+            ticket_table = TicketTable(res)
+            DTRequestConfig(request, paginate = False).configure(ticket_table)
+        except:
+            pass
 
     
     print 11
