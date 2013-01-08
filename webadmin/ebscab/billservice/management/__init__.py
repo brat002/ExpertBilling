@@ -1,5 +1,6 @@
 from django.contrib.auth import models as auth_models
 import django.db.models.signals
+from django.db import connection
 
 # Related ticket http://code.djangoproject.com/ticket/4748
 def alter_django_auth_permissions(sender, **kwargs):

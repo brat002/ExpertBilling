@@ -694,17 +694,37 @@ class RadiusAccessBill(Thread):
                 if 0: assert isinstance(caches, CoreCaches)
                 
                 cur = self.connection.cursor()
-                cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.bytes_in, rs.bytes_out, rs.interrim_update, rs.date_start, rs.date_end, tarif.time_access_service_id, tarif.radius_traffic_transmit_service_id, tarif.id, acc_t.id, rs.lt_time, rs.lt_bytes_in, rs.lt_bytes_out,rs.nas_port_id,rs.nas_int_id  
+                cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.bytes_in, rs.bytes_out, rs.interrim_update, rs.date_start, rs.date_end, acc_t.id, rs.lt_time, rs.lt_bytes_in, rs.lt_bytes_out,rs.nas_port_id,rs.nas_int_id  
                                  FROM radius_activesession AS rs
-                                 JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<rs.date_start ORDER BY datetime DESC LIMIT 1) 
-                                 JOIN billservice_tariff AS tarif ON tarif.id=acc_t.tarif_id
-                                 WHERE ((rs.lt_time<rs.session_time and tarif.time_access_service_id is not null) or (rs.lt_bytes_in<rs.bytes_in and rs.lt_bytes_out<rs.bytes_out and tarif.radius_traffic_transmit_service_id is not null))
+                                 LEFT JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<rs.date_start ORDER BY datetime DESC LIMIT 1) 
+                                 WHERE ((rs.lt_time<rs.session_time) or (rs.lt_bytes_in<rs.bytes_in or rs.lt_bytes_out<rs.bytes_out))
                                   ORDER BY rs.interrim_update ASC LIMIT 20000;""")
                 rows=cur.fetchall()
                 cur.connection.commit()
+
+                acctfs = []
+                for r in rows:
+                    if r[9]:
+                        acctfs.append(r[9])
+                
+                
+                if acctfs:
+                    cur.execute("""
+                        select acct.id, t.radius_traffic_transmit_service_id, t.time_access_service_id FROM billservice_accounttarif as acct
+                        LEFT JOIN billservice_tariff as t ON t.id=acct.tarif_id
+                        WHERE t.radius_traffic_transmit_service_id is not NULL or t.time_access_service_id is not NULL and acct.id in (%s)
+                        ;
+                    """ % ','.join(acctfs) )
+                    data = cur.fetchall()
+                    cur.connection.commit()
+                
+                acctf_cache = {}
+                for acct_id, radius_traffic_transmit_service_id, time_access_service_id in data:
+                    acctf_cache[acct_id] = (radius_traffic_transmit_service_id, time_access_service_id)
                 now = dateAT
                 for row in rows:
                     rs = BillSession(*row)
+                    radius_traffic_transmit_service_id, time_access_service_id = acctf_cache.get(rs.acctf_id, (None, None))
                     checkouted=False
                     #1. Ищем последнюю запись по которой была произведена оплата
                     #2. Получаем данные из услуги "Доступ по времени" из текущего ТП пользователя
@@ -716,7 +736,7 @@ class RadiusAccessBill(Thread):
                     logger.debug("RADCOTHREAD: Checking session: %s", repr(rs))
                     acc = caches.account_cache.by_account.get(rs.account_id)
                     #if acc.radius_traffic_transmit_service_id:continue
-                    if acc and acc.time_access_service_id:
+                    if acc and time_access_service_id:
                         logger.debug("RADCOTHREAD: Time tarification session: %s", rs.sessionid)
                         old_time = rs.lt_time or 0
                         logger.debug("RADCOTHREAD: Old session time: %s %s", (rs.sessionid, old_time))
@@ -725,14 +745,14 @@ class RadiusAccessBill(Thread):
                         total_time = rs.session_time - old_time
                         logger.debug("RADCOTHREAD: Tarification time for session: %s %s", (rs.sessionid, total_time))
                         if rs.date_end:
-                            taccs_service = caches.timeaccessservice_cache.by_id.get(rs.taccs_id)
+                            taccs_service = caches.timeaccessservice_cache.by_id.get(time_access_service_id)
                             logger.debug("RADCOTHREAD: Tarification time of end session : %s", (rs.sessionid, ))
                             if taccs_service.rounding:
                                 logger.debug("RADCOTHREAD: Rounding session time : %s", (rs.sessionid, ))
                                 if taccs_service.tarification_step>0:
                                     total_time = divmod(total_time, taccs_service.tarification_step)[1]*taccs_service.tarification_step+taccs_service.tarification_step
                         logger.debug("RADCOTHREAD: Searching for prepaid time for session : %s", (rs.sessionid, ))
-                        cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s and prepaid_time_service_id=%s and current=True""", (rs.acctf_id,rs.taccs_id,))
+                        cur.execute("""SELECT id, size FROM billservice_accountprepaystime WHERE account_tarif_id=%s and prepaid_time_service_id=%s and current=True""", (rs.acctf_id,time_access_service_id,))
                         result = cur.fetchone()
                         cur.connection.commit()
                         prepaid_id, prepaid = result if result else (0, -1)
@@ -746,7 +766,7 @@ class RadiusAccessBill(Thread):
                             cur.connection.commit()
                         #get the list of time periods and their cost
                         logger.debug("RADCOTHREAD: Searching for time tarification node for session : %s", (rs.sessionid, ))
-                        for period in caches.timeaccessnode_cache.by_id.get(rs.taccs_id, []):
+                        for period in caches.timeaccessnode_cache.by_id.get(time_access_service_id, []):
                             if 0: assert isinstance(period, TimeAccessNodeData)
                             #get period nodes and check them
                             for pnode in caches.timeperiodnode_cache.by_id.get(period.time_period_id, []):
@@ -757,20 +777,17 @@ class RadiusAccessBill(Thread):
                                     logger.debug("RADCOTHREAD: Summ for checkout for session %s %s", (rs.sessionid, summ))
                                     if summ > 0:
                                         #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
-                                        db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
+                                        db.timetransaction_fn(cur, time_access_service_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
                                         cur.connection.commit()
                                         logger.debug("RADCOTHREAD: Time for session %s was checkouted", (rs.sessionid, ))
                                     break
-                        cur.execute("""UPDATE radius_activesession SET lt_time=%s
-                                       WHERE date_start=%s AND account_id=%s AND sessionid=%s and nas_port_id=%s and nas_int_id=%s
-                                    """, (rs.session_time, rs.date_start, rs.account_id, unicode(rs.sessionid),rs.nas_port_id, rs.nas_int_id))
-                        checkouted=True
+
                         logger.debug("RADCOTHREAD: Session %s was checkouted (Time)", (rs.sessionid, ))
-                        cur.connection.commit()  
+
                     #
-                    if acc and acc.radius_traffic_transmit_service_id:  
+                    if acc and radius_traffic_transmit_service_id:  
                         logger.debug("RADCOTHREAD: Traffic tarification session: %s", rs.sessionid)
-                        radius_traffic = caches.radius_traffic_transmit_service_cache.by_id.get(acc.radius_traffic_transmit_service_id)
+                        radius_traffic = caches.radius_traffic_transmit_service_cache.by_id.get(radius_traffic_transmit_service_id)
                         lt_bytes_in = rs.lt_bytes_in or 0
                         lt_bytes_out = rs.lt_bytes_out or 0
                         logger.debug("RADCOTHREAD: Last bytes in/out for session: %s (%s/%s)", (rs.sessionid, lt_bytes_in,lt_bytes_out))
@@ -785,7 +802,7 @@ class RadiusAccessBill(Thread):
                         если данные найдены - обновляем значения в кэше приращёнными значениями.
                         Если не найдены - делаем запрос в базу данных и помещаем данные в кэш
                         """
-                        if self.get_actual_prices(caches.radius_traffic_node_cache.by_id.get(rs.traccs_id, [])) and acc.settlement_period_id:
+                        if self.get_actual_prices(caches.radius_traffic_node_cache.by_id.get(radius_traffic_transmit_service_id, [])) and acc.settlement_period_id:
                             sp = caches.settlementperiod_cache.by_id.get(acc.settlement_period_id)
                             if 0: assert isinstance(sp, SettlementPeriodData)
                             
@@ -863,7 +880,7 @@ class RadiusAccessBill(Thread):
                             logger.debug("RADCOTHREAD: Bytes for tarification for session %s %s ", (rs.sessionid, total_bytes))
                         #get the list of time periods and their cost
                         now = dateAT
-                        for period in self.valued_prices(total_bytes_value,caches.radius_traffic_node_cache.by_id.get(rs.traccs_id, [])):
+                        for period in self.valued_prices(total_bytes_value,caches.radius_traffic_node_cache.by_id.get(radius_traffic_transmit_service_id, [])):
                             if 0: assert isinstance(period, RadiusTrafficNodeData)
                             #get period nodes and check them
                             for pnode in caches.timeperiodnode_cache.by_id.get(period.timeperiod_id, []):
@@ -875,25 +892,21 @@ class RadiusAccessBill(Thread):
                                     if summ > 0:
                                         #timetransaction(cur, rs.taccs_id, rs.acctf_id, rs.account_id, rs.id, summ, now)
                                         #db.timetransaction_fn(cur, rs.taccs_id, rs.acctf_id, rs.account_id, summ, now, unicode(rs.sessionid), rs.interrim_update)
-                                        radiustraffictransaction(cur, rs.traccs_id, rs.acctf_id, rs.account_id, summ, created=now)
+                                        radiustraffictransaction(cur, radius_traffic_transmit_service_id, rs.acctf_id, rs.account_id, summ, created=now)
                                         cur.connection.commit()
                                     break
-                            cur.execute("""UPDATE radius_activesession SET lt_bytes_in=%s, lt_bytes_out=%s
-                                           WHERE date_start=%s and account_id=%s AND sessionid=%s and nas_port_id=%s and nas_int_id=%s
-                                        """, (rs.bytes_in, rs.bytes_out, rs.date_start, rs.account_id, unicode(rs.sessionid), rs.nas_port_id, rs.nas_int_id))
-                            cur.connection.commit()  
-                            checkouted=True
+
                             logger.debug("RADCOTHREAD: Session %s was checkouted (Traffic)", (rs.sessionid, ))
-                    if checkouted==False:
-                        cur.execute("""UPDATE radius_activesession SET lt_bytes_in=%s, lt_bytes_out=%s, lt_time=%s
-                                       WHERE date_start=%s and account_id=%s AND sessionid=%s and nas_port_id=%s and nas_int_id=%s
-                                    """, (rs.bytes_in, rs.bytes_out, rs.session_time, rs.date_start, rs.account_id, unicode(rs.sessionid), rs.nas_port_id, rs.nas_int_id))
-                        logger.debug("RADCOTHREAD: Session %s was not tarificated", (rs.sessionid, ))
-                                
-                        cur.connection.commit()
+
+                    cur.execute("""UPDATE radius_activesession SET lt_bytes_in=%s, lt_bytes_out=%s, lt_time=%s
+                                   WHERE date_start=%s and account_id=%s AND sessionid=%s and nas_port_id=%s and nas_int_id=%s
+                                """, (rs.bytes_in, rs.bytes_out, rs.session_time, rs.date_start, rs.account_id, unicode(rs.sessionid), rs.nas_port_id, rs.nas_int_id))
+                    logger.debug("RADCOTHREAD: Session %s was tarificated", (rs.sessionid, ))
+                            
+                    cur.connection.commit()
                 cur.connection.commit()
                 cur.close()
-                logger.info("TIMEALIVE: Time access thread run time: %s", time.clock() - a)
+                logger.info("RADCOTHREAD: Time access thread run time: %s", time.time() - a)
             except TraftransTableException, ex:
                 logger.info("%s : traftrans table not exists. Creating", (self.getName(),  )) 
                 self.connection.rollback()
