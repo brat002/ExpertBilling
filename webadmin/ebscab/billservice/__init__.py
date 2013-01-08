@@ -1,6 +1,8 @@
  #-*- coding=UTF-8 -*-
 
 from django.core.exceptions import ImproperlyConfigured
+from django.db import models
+import django.contrib.auth.models as m
 
 SESSION_KEY = '_auth_user_id'
 BACKEND_SESSION_KEY = '_auth_user_backend'
@@ -74,3 +76,5 @@ def log_out(request):
     if hasattr(request, 'user'):
         from django.contrib.auth.models import AnonymousUser
         request.user = AnonymousUser()
+
+m.Permission.name=models.CharField(max_length=128)
