@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS auth_permission;
+DROP TABLE IF EXISTS auth_permission CASCADE;
 CREATE TABLE auth_permission
 (
   id serial NOT NULL,
