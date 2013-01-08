@@ -49,6 +49,38 @@
                   </div>
                   </div>
                   <div class="control-group">
+
+                      <label class="control-label">{{form.vpn_ippool.label}}: </label>
+                      <div class="controls">
+                      {{ form.vpn_ippool }}
+                      {% if form.vpn_ippool.errors %}
+                          <span class="help-inline">{% for error in form.vpn_ippool.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.vpn_ippool.help_text%}
+                          <p class="help-block">
+                              {{ form.vpn_ippool.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+
+                  </div>
+                  <div class="control-group">
+
+                      <label class="control-label">{{form.vpn_guest_ippool.label}}: </label>
+                      <div class="controls">
+                      {{ form.vpn_guest_ippool }}
+                      {% if form.vpn_guest_ippool.errors %}
+                          <span class="help-inline">{% for error in form.vpn_guest_ippool.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.vpn_guest_ippool.help_text%}
+                          <p class="help-block">
+                              {{ form.vpn_guest_ippool.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+
+                  </div>
+                  <div class="control-group">
                   <div class="control-row">
                       <label class="control-label">{{access_parameters.access_time.label}}: </label>
                       <div class="controls">
