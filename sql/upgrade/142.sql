@@ -25,18 +25,3 @@ CREATE INDEX auth_permission_content_type_id
   USING btree
   (content_type_id );
 
-  CREATE TABLE django_content_type
-(
-  id serial NOT NULL,
-  name character varying(100) NOT NULL,
-  app_label character varying(100) NOT NULL,
-  model character varying(100) NOT NULL,
-  CONSTRAINT django_content_type_pkey PRIMARY KEY (id ),
-  CONSTRAINT django_content_type_app_label_model_key UNIQUE (app_label , model )
-)
-WITH (
-  OIDS=FALSE
-);
-ALTER TABLE django_content_type
-  OWNER TO ebs;
-  
