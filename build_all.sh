@@ -15,6 +15,7 @@ fi
 rm -rf modules
 rm -rf cmodules
 rm -rf builds/$1
+rm -rf builds/$1.tar.gz
 
 mkdir -p builds/$1/data
 
@@ -134,7 +135,7 @@ for bldd in $total_build; do
 done
 cp init/ebs_celery builds/$1/data/init.d/ebs_celery
 chmod +x builds/$1/data/init.d/ebs_celery
-svn export --force soft/celeryd builds/$1/data/soft/
+cp soft/celeryd builds/$1/data/soft/
 
 rm -rf modules
 
