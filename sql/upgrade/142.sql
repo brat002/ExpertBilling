@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS auth_permission;
 CREATE TABLE auth_permission
 (
   id serial NOT NULL,
