@@ -46,8 +46,30 @@ $(document).ready(function() {
 
 
   <style type="text/css">
-html {
-    overflow-y: scroll;
+
+html,body
+{
+height:100%;
+}
+
+#wrap
+{
+min-height: 100%;
+}
+
+#main
+{
+overflow:auto;
+padding-bottom:150px; /* this needs to be bigger than footer height*/
+}
+
+.footer
+{
+position: relative;
+margin-top: -150px; /* negative value of footer height */
+height: 150px;
+clear:both;
+padding-top:20px;
 }
   </style>
 <meta name="robots" content="NONE,NOARCHIVE">
@@ -103,6 +125,9 @@ html {
 <body style="padding-top: 60px;" >
 {% load render_table from django_tables2 %}
 {% load charts_menu from ebsadmin_tags %}
+<div id="wrap">
+<div id="main" class="container clear-top">
+
 
 <div class="navbar  navbar-fixed-top navbar-inverse">
   <div class="navbar-inner">
@@ -270,7 +295,9 @@ html {
 {% block body %} {% endblock %}
 
 </div>
-<footer class="well">
+</div>
+</div>
+<footer class="footer well">
 <div class="row-fluid">
 <div class="span4">Биллинг-система ExpertBilling </div><div class="span4"></div><div class="span4"></div>
 </div>
