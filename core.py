@@ -123,7 +123,7 @@ class check_vpn_access(Thread):
                     try: self.connection.close()
                     except: pass
                     break
-                a = time.clock()
+                a = time.time()
 
                 if cacheMaster.date > dateAT:
                     cacheMaster.lock.acquire()
@@ -228,7 +228,7 @@ class check_vpn_access(Thread):
                 #cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE dynamic=Tru3e and disabled is Null and ip::inet not in (SELECT DISTINCT framed_ip_address::inet FROM radius_activesession WHERE ipinuse_id is not NUll and (session_status='ACTIVE'));")    
                 #cur.connection.commit()   
                 cur.close()
-                logger.info("VPNALIVE: VPN thread run time: %s", time.clock() - a)
+                logger.info("VPNALIVE: VPN thread run time: %s", time.time() - a)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -525,10 +525,10 @@ class periodical_service_bill(Thread):
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         while True:
-            a_ = time.clock()
+            a_ = time.time()
             try:
                 if suicideCondition[self.__class__.__name__]: break
-                a = time.clock()
+                a = time.time()
 
                 if cacheMaster.date <= dateAT:
                     time.sleep(10); continue
@@ -607,7 +607,7 @@ class periodical_service_bill(Thread):
 
 
                 cur.close()
-                logger.info("PSALIVE: Period. service thread run time: %s", time.clock() - a)
+                logger.info("PSALIVE: Period. service thread run time: %s", time.time() - a)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -618,7 +618,7 @@ class periodical_service_bill(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             gc.collect()
-            time.sleep(abs(vars.PERIODICAL_SLEEP-(time.clock()-a_)) + random.randint(0,5))
+            time.sleep(abs(vars.PERIODICAL_SLEEP-(time.time()-a_)) + random.randint(0,5))
             
 
 class RadiusAccessBill(Thread):
@@ -678,7 +678,7 @@ class RadiusAccessBill(Thread):
                     try: self.connection.close()
                     except: pass
                     break
-                a = time.clock()
+                a = time.time()
                 if cacheMaster.date <= dateAT:
                     time.sleep(10); continue
                 else:
@@ -705,13 +705,13 @@ class RadiusAccessBill(Thread):
                 acctfs = []
                 for r in rows:
                     if r[9]:
-                        acctfs.append(r[9])
+                        acctfs.append(str(r[9]))
                 
                 
                 if acctfs:
                     cur.execute("""
                         select acct.id, t.radius_traffic_transmit_service_id, t.time_access_service_id FROM billservice_accounttarif as acct
-                        LEFT JOIN billservice_tariff as t ON t.id=acct.tarif_id
+                        JOIN billservice_tariff as t ON t.id=acct.tarif_id
                         WHERE t.radius_traffic_transmit_service_id is not NULL or t.time_access_service_id is not NULL and acct.id in (%s)
                         ;
                     """ % ','.join(acctfs) )
@@ -972,7 +972,7 @@ class limit_checker(Thread):
                     try:    self.connection.close()
                     except: pass
                     break
-                a = time.clock()
+                a = time.time()
                 if cacheMaster.date <= dateAT:
                     time.sleep(10); continue
                 else:
@@ -1055,7 +1055,7 @@ class limit_checker(Thread):
     
                 cur.connection.commit()
                 cur.close()                
-                logger.info("LMTALIVE: %s: run time: %s", (self.getName(), time.clock() - a))
+                logger.info("LMTALIVE: %s: run time: %s", (self.getName(), time.time() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -1090,7 +1090,7 @@ class addon_service(Thread):
                     try:    self.connection.close()
                     except: pass
                     break
-                a = time.clock()
+                a = time.time()
                 if cacheMaster.date <= dateAT:
                     time.sleep(10); continue
                 else:
@@ -1179,7 +1179,7 @@ class addon_service(Thread):
                     cur.connection.commit()
                 cur.connection.commit()
                 cur.close()                
-                logger.info("Addon Service: %s: run time: %s", (self.getName(), time.clock() - a))
+                logger.info("Addon Service: %s: run time: %s", (self.getName(), time.time() - a))
             except Exception, ex:
                 cur.connection.rollback()
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -1226,7 +1226,7 @@ class settlement_period_service_dog(Thread):
                     try: self.connection.close()
                     except: pass
                     break
-                a = time.clock()
+                a = time.time()
                 if cacheMaster.date <= dateAT:
                     time.sleep(10); continue
                 else:
@@ -1426,7 +1426,7 @@ class settlement_period_service_dog(Thread):
                                 cur.execute("UPDATE billservice_account SET status=1 WHERE id=%s and status=4;", (account.account_id,))
                                 cur.connection.commit()
                         
-                logger.info("SPALIVE: %s run time: %s", (self.getName(), time.clock() - a))
+                logger.info("SPALIVE: %s run time: %s", (self.getName(), time.time() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -1468,7 +1468,7 @@ class ipn_service(Thread):
                     try: self.connection.close()
                     except: pass
                     break
-                a = time.clock()
+                a = time.time()
 
                 if cacheMaster.date <= dateAT:
                     time.sleep(10); continue
@@ -1603,7 +1603,7 @@ class ipn_service(Thread):
         
                 cur.connection.commit()
                 cur.close()
-                logger.info("IPNALIVE: %s: run time: %s", (self.getName(), time.clock() - a))
+                logger.info("IPNALIVE: %s: run time: %s", (self.getName(), time.time() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
@@ -1664,7 +1664,7 @@ class AccountServiceThread(Thread):
                 break
             try: 
                 if flags.cacheFlag or (now() - cacheMaster.date).seconds > vars.CACHE_TIME:
-                    run_time = time.clock()                    
+                    run_time = time.time()                    
                     cur = self.connection.cursor()
                     #renewCaches(cur)
                     renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem,), False)
@@ -1681,7 +1681,7 @@ class AccountServiceThread(Thread):
                     if flags.cacheFlag:
                         with flags.cacheLock: flags.cacheFlag = False
                     
-                    logger.info("ast time : %s", time.clock() - run_time)
+                    logger.info("ast time : %s", time.time() - run_time)
             except Exception, ex:
                 logger.error("%s : #30310004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
