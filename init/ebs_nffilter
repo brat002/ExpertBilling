@@ -1,11 +1,11 @@
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:          nf
+# Provides:          nffilter
 # Required-Start:    $postgres $syslog $local_fs $network
 # Required-Stop:     $syslog $local_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Start the EBS nf daemon.
+# Short-Description: Start the EBS nffilter daemon.
 ### END INIT INFO
 trap '' 1 2 3 15
 
@@ -14,7 +14,7 @@ NAME=nffilter
 DPATH=/opt/ebs/data/
 DAEMON=$DPATH$NAME
 
-DESC="ebs billing nf daemon"
+DESC="ebs billing nffilter daemon"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/ebs_$NAME
 ERR_LOG=/opt/ebs/data/log/log.txt
@@ -33,7 +33,7 @@ start)
 
 		;;
 stop)
-        echo "Stopping ebs nf"
+        echo "Stopping ebs nffilter"
 	if [ `uname` = 'SunOS' ]
 	then
 	    pkill -SIGTERM -x $NAME
@@ -47,7 +47,7 @@ stop)
 	rm -f $PIDFILE
         ;;
 stop-force)
-        echo "Stopping ebs nf"
+        echo "Stopping ebs nffilter"
     if [ `uname` = 'SunOS' ]
     then
         pkill -9 -x $NAME

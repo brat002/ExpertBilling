@@ -6,25 +6,31 @@ start)
         echo "Starting ebs processes"
 	/etc/init.d/ebs_nfroutine start
 	/etc/init.d/ebs_nf start
+	/etc/init.d/ebs_nffilter start
 	/etc/init.d/ebs_rad_auth start
 	/etc/init.d/ebs_rad_acct start
 	/etc/init.d/ebs_core start
+	/etc/init.d/ebs_celery start
 		;;
 stop)
         echo "Stopping ebs processes"
 	/etc/init.d/ebs_nfroutine stop
 	/etc/init.d/ebs_nf stop
+	/etc/init.d/ebs_nffilter start
 	/etc/init.d/ebs_rad_auth stop
 	/etc/init.d/ebs_rad_acct stop
 	/etc/init.d/ebs_core stop
+	/etc/init.d/ebs_celery stop
         ;;
 force-stop)
         echo "Stopping ebs processes"
 	killall -9 nfroutine
-	killall -9 nf 
+	killall -9 nf
+	killall -9 nffilter 
 	killall -9 rad_auth
 	killall -9 rad_acct
 	killall -9 core 
+	/etc/init.d/ebs_celery stop
         ;;
 restart)
         echo "Restarting ebs processes"
