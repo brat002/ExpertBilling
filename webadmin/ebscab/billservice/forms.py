@@ -609,6 +609,7 @@ class SystemUserForm(ModelForm):
     
     class Meta:
         model = SystemUser
+        exclude = ('last_ip', 'last_login', 'created')
         
         
     

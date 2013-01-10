@@ -1076,6 +1076,9 @@ class SystemUser(models.Model):
     def has_perm(self, perm):
         return self.is_systemuser or self.permissiongroup.permissions.filter(internal_name=perm)
     
+    def delete(self):
+        return
+    
     class Meta:
         ordering = ['username']
         verbose_name = u"Пользователь системы"
