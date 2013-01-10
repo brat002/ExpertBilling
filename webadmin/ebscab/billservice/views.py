@@ -263,7 +263,7 @@ def get_promise(request):
         return HttpResponseRedirect('/')
     user = request.user.account
     allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance)
-    LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = user.promise_days)
+    LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = user.promise_days or settings.LEFT_PROMISE_DAYS)
     if settings.ALLOW_PROMISE==True and Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT'), promise_expired=False).count() >= 1:
         last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
         error_message = u"У вас есть незакрытые обещанные платежи"

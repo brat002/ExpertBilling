@@ -83,7 +83,9 @@ class SimpleDictCache(CacheItem):
     num = 0
     def reindex(self):
         self.by_id = {}
-        for tpl in self.data: self.by_id[tpl[self.num]] = tpl
+        for tpl in self.data: 
+            self.by_id[tpl[self.num]] = tpl
+            
         
     def __repr__(self):
         return self.__class__.__name__ + '\n'+ 'self.data:' + repr(self.data)  +  '\n\n' +repr(self.by_id)

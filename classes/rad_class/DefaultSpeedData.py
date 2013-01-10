@@ -46,4 +46,4 @@ class DefaultSpeedData(tuple):
     min_tx = property(itemgetter(8))
     min_rx = property(itemgetter(9))
     priority = property(itemgetter(10))
-    tarif_id = property(itemgetter(6))
+    tarif_id = property(itemgetter(11))
