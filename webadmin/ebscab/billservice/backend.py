@@ -42,7 +42,6 @@ class LoginUserBackend(ModelBackend):
             log.debug("User %s was %s" % (user, created and 'created' or 'found'))
             if created:
                 user.set_password(password)
-                user.first_name = account.fullname
                 user.is_active = True
                 user.email = account.email or ''
                 if isinstance(account, SystemUser):

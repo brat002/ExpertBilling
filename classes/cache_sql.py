@@ -60,7 +60,7 @@ core_sql = \
           'radiustrafnodes':"""select radiustraffic_id, "value",timeperiod_id, "cost"  from billservice_radiustrafficnode;""",
           'settlper':"""SELECT id, date_trunc('second', time_start), length, length_in, autostart FROM billservice_settlementperiod;""",
           'nas'     :"""SELECT id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2, identify, subacc_add_action, subacc_enable_action, subacc_disable_action,subacc_delete_action, subacc_ipn_speed_action, acct_interim_interval FROM nas_nas;""",
-          'defsp'   :"""SELECT accessparameters.max_tx, accessparameters.max_rx, accessparameters.burst_tx,accessparameters. burst_rx, 
+          'defsp'   :"""SELECT accessparameters.max_tx, accessparameters.max_rx, accessparameters.burst_tx,accessparameters.burst_rx, 
                         accessparameters.burst_treshold_tx, accessparameters.burst_treshold_rx,  accessparameters.burst_time_tx, 
                         accessparameters.burst_time_rx, accessparameters.min_tx, accessparameters.min_rx, accessparameters.priority,
                         tariff.id
@@ -68,7 +68,7 @@ core_sql = \
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=accessparameters.id
                         WHERE tariff.deleted is not True
                         ;""",
-          'newsp'   :"""SELECT timespeed.max_tx, timespeed.max_rx, timespeed.burst_tx,timespeed. burst_rx, 
+          'newsp'   :"""SELECT timespeed.max_tx, timespeed.max_rx, timespeed.burst_tx,timespeed.burst_rx, 
                         timespeed.burst_treshold_tx, timespeed.burst_treshold_rx,  timespeed.burst_time_tx, 
                         timespeed.burst_time_rx, timespeed.min_tx, timespeed.min_rx, timespeed.priority,
                         timenode.time_start, timenode.length, timenode.repeat_after,

@@ -137,13 +137,13 @@ class DefSpeedParametersCache(SimpleDictCache):
     __slots__ = ()
     datatype = AccessParametersDefault
     sql = core_sql['defsp']
-    num = 6
+    num = 11
 
 class SpeedParametersCache(SimpleDefDictCache):
     __slots__ = ()
     datatype = SpeedParameters
     sql = core_sql['newsp']
-    num = 9
+    num = 14
 
 class PeriodicalTarifCache(CacheItem):
     __slots__ = ()

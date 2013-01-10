@@ -63,14 +63,14 @@ class DefaultSpeedCache(SimpleDictCache):
     __slots__ = ()
     datatype = DefaultSpeedData
     sql = rad_sql['defspeed']
-    num = 6
+    num = 11
 
 class SpeedCache(SimpleDefDictCache):
     '''by tarif_id'''
     __slots__ = ()
     datatype = SpeedData
     sql = rad_sql['speed']
-    num = 9 
+    num = 14 
 
 class SpeedlimitCache(SimpleDictCache):
     '''By account_id'''
