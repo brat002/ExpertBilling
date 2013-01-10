@@ -1054,6 +1054,8 @@ class SystemUser(models.Model):
     passport_number  = models.CharField(max_length=512, blank=True, default ='')
     unp  = models.CharField(max_length=1024, blank=True, default ='')
     im  = models.CharField(max_length=512, blank=True, default ='')
+    permissiongroup = models.ForeignKey("PermissionGroup", blank=True, null=True, verbose_name=u"Группа доступа")
+    is_systemuser = models.BooleanField(verbose_name=u"Суперадминистратор")
     
     def __str__(self):
         return '%s' % self.username
@@ -1071,6 +1073,9 @@ class SystemUser(models.Model):
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('systemuser_delete'), self.id)
         
+    def has_perm(self, perm):
+        return self.is_systemuser or self.permissiongroup.permissions.filter(internal_name=perm)
+    
     class Meta:
         ordering = ['username']
         verbose_name = u"Пользователь системы"
@@ -1929,4 +1934,24 @@ class Switch(models.Model):
         permissions = (
            ("switch_view", u"Просмотр"),
            )
+        
+class Permission(models.Model):
+    name = models.CharField(max_length=500, verbose_name=u"Название")
+    app = models.CharField(max_length=500, verbose_name=u"Приложение")
+    internal_name = models.CharField(max_length=500, verbose_name=u"Внутреннее имя")
+    ordering = models.IntegerField()
+    
+    class Meta:
+        verbose_name = u"Право доступа"
+        verbose_name_plural = u"Права доступа"
+
+        
+class PermissionGroup(models.Model):
+    name = models.CharField(max_length=128, verbose_name=u"Название")
+    permissions = models.ManyToManyField(Permission, verbose_name=u"Права")
+    deletable = models.BooleanField(default=False, blank=True)
+    
+    class Meta:
+        verbose_name = u"Группа доступа"
+        verbose_name_plural = u"Группы доступа"
         

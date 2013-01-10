@@ -3,8 +3,9 @@ import os, sys
 import logging
 sys.path.append('/opt/ebs/data/workers/')
 DEBUG = True
-DEBUG_SQL=True
+DEBUG_SQL=False
 TEMPLATE_DEBUG = DEBUG
+USE_TZ = False
 
 ADMINS = (
      #('Your Name', 'your_email@domain.com'),
@@ -86,7 +87,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     #'lib.threadlocals.ThreadLocalsMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware'
     #'billservice.middleware.UrlFilter'
 

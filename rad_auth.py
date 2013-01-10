@@ -365,10 +365,14 @@ class HandleSAuth(HandleSBase):
             return pool.next_pool_id
         
         processed_pools=[]
+        first = True
         while True:
-            id=next(id)
-            if not id: return None,None   
-            if id in processed_pools: logger.error("Recursion in ippools was found");  return id,None
+            if first==False:
+                id=next(id)
+                if not id: return None,None   
+                if id in processed_pools: logger.error("Recursion in ippools was found");  return id,None
+            else:
+                first=False
             
             processed_pools.append(id)
 
@@ -435,7 +439,7 @@ class HandleSAuth(HandleSBase):
             sqlloggerthread.add_message(type="AUTH_NAS_NOT_FOUND", service=self.access_type, cause=u'Сервер доступа с IP %s не найден ' % self.nasip, datetime=self.datetime) 
             return '',None
         self.replypacket = packet.Packet(secret=str(nasses[0].secret),dict=vars.DICT)      
-        logger.warning("NAS or NASSES Found %s", (str(nasses),))
+        logger.info("NAS or NASSES Found %s", (str(nasses),))
         #if 0: assert isinstance(nas, NasData)
 
         
@@ -517,6 +521,7 @@ class HandleSAuth(HandleSBase):
 
         
         logger.debug("Account data : %s", repr(acc))
+        logger.debug("SubAccount data : %s", repr(subacc))
 
         process, ok, left = authobject._HandlePacket()
         if not process:
@@ -594,23 +599,24 @@ class HandleSAuth(HandleSBase):
             
 
             ipinuse_id=''
-            if (subacc.vpn_ip_address in ('0.0.0.0','') and (subacc.ipv4_vpn_pool_id or acc.vpn_ippool_id)) or acstatus==False:
+            if (subacc.vpn_ip_address in ('0.0.0.0','', None) and (subacc.ipv4_vpn_pool_id or acc.vpn_ippool_id)) or (acstatus==False and acc.vpn_guest_ippool_id) :
                
                 with vars.cursor_lock:
                     try:
                         self.create_cursor()
                         pool_id=subacc.ipv4_vpn_pool_id if subacc.ipv4_vpn_pool_id else acc.vpn_ippool_id
+                        logger.debug("Searching free ip for subaccount %s in vpn  pool with id %s ", (str(user_name), pool_id))
                         if acstatus==False:
                             pool_id=acc.vpn_guest_ippool_id
-                            logger.error("Searching free ip for subaccount %s in vpn guest pool with id %s ", (str(user_name), acc.vpn_guest_ippool_id))
+                            logger.debug("Searching free ip for subaccount %s in vpn guest pool with id %s ", (str(user_name), acc.vpn_guest_ippool_id))
                             self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
                        
                             vpn_ip_address = self.cursor.fetchone()[0]
-                        if not vpn_ip_address:
+                        else:
                             pool_id, vpn_ip_address = self.find_free_ip(pool_id)
 
                         #self.cursor.connection.commit()
-                        if not vpn_ip_address:
+                        if vpn_ip_address in ['0.0.0.0', '', None]:
                             logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, pool_id))
                             sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
                             #vars.cursor_lock.release()
@@ -642,7 +648,7 @@ class HandleSAuth(HandleSBase):
             self.replypacket.password = str(password) #Нельзя юникод
             self.replypacket.AddAttribute('Service-Type', 2)
             self.replypacket.AddAttribute('Framed-Protocol', 1)
-            if vpn_ip_address:
+            if vpn_ip_address not in ['0.0.0.0', '', None]:
                 self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             #self.replypacket.AddAttribute('Framed-Compression', 0)

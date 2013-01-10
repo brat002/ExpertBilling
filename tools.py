@@ -40,7 +40,7 @@ def EncodeDate(num):
 
 
 def DecodeString(str):
-    return str.decode('utf-8')
+    return str
 
 
 def DecodeOctets(str):
