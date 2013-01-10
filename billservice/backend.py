@@ -56,7 +56,8 @@ class LoginUserBackend(ModelBackend):
             return user
         log.debug('Auth failed for account %s'%account)
         return None
-    
+
+
     def get_user(self, user_id):
         try:
             user = User.objects.get(pk=user_id)
