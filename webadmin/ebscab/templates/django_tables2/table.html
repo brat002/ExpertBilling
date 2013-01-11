@@ -15,12 +15,32 @@
             	$.cookie('ebs_per_page',  $("#id_per_page").val());
             	location.href=location.href.replace(/&?paginate=False/i, "");
             })
+            $(".columns").multiselect({button:'btn btn-small'}); 
+            
+            $(".columns_submit").bind('click', function() {
+
+                var url = "{% url table_settings %}"; // the script where you handle the form input.
+                $(".columns_submit").attr('disabled', 'disabled');
+                var form = $(this).closest("form");
+                $.ajax({
+                       type: "POST",
+                       url: url,
+                       data: form.serialize(), // serializes the form's elements.
+                       success: function(data)
+                       {
+                    	   window.location.reload();
+                       }
+                     });
+
+                return false; // avoid to execute the actual submit of the form.
+            });
+
         })
 </script>
 <div>
 
 {% block table %}
-
+{% if table.columns_form %}<div class="pull-left"><form method="POST" action="">{{table.columns_form.columns}}&nbsp;{{table.columns_form.table_name}}<input type="button"  class="columns_submit btn btn-mini btn-primary" name="save_columns" value="Сохранить"></form></div>{% endif %}
 <table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %} id="id_main_table">
     {% block table.thead %}
     <thead>
