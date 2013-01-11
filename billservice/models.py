@@ -745,10 +745,10 @@ class Account(models.Model):
     room = models.CharField(verbose_name=u'Квартира', blank=True, max_length=255)
     
 
-    nas = models.ForeignKey(to=Nas, blank=True,null=True, verbose_name=u'Сервер доступа', on_delete = models.SET_NULL)
+    #nas = models.ForeignKey(to=Nas, blank=True,null=True, verbose_name=u'Сервер доступа', on_delete = models.SET_NULL)
 
-    ipn_added = models.BooleanField(verbose_name=u"Добавлен на сервере доступа", default=False, blank=True)
-    ipn_status = models.BooleanField(verbose_name=u"Статус на сервере доступа", default=False, blank=True)
+    #ipn_added = models.BooleanField(verbose_name=u"Добавлен на сервере доступа", default=False, blank=True)
+    #ipn_status = models.BooleanField(verbose_name=u"Статус на сервере доступа", default=False, blank=True)
     status=models.IntegerField(verbose_name=u'Статус', default=1, choices=((1, u"Активен"), (2, u"Не активен, списывать периодические услуги"), (3, u"Не активен, не списывать периодические услуги"), (4, u"Пользовательская блокировка"),))
     created=models.DateTimeField(verbose_name=u'Создан', help_text=u'Начало оказания услуг', default='')
     #NOTE: baLance
@@ -774,9 +774,9 @@ class Account(models.Model):
     systemuser = models.ForeignKey('SystemUser',verbose_name=u'Менеджер', blank=True,null=True, on_delete = models.SET_NULL)
     entrance_code = models.CharField(verbose_name=u'Код домофона', blank=True, max_length=256)
     private_passport_number = models.CharField(verbose_name=u'Идент. номер', blank=True, max_length=128)
-    allow_ipn_with_null = models.BooleanField()
-    allow_ipn_with_minus = models.BooleanField()
-    allow_ipn_with_block = models.BooleanField()
+    #allow_ipn_with_null = models.BooleanField()
+    #allow_ipn_with_minus = models.BooleanField()
+    #allow_ipn_with_block = models.BooleanField()
     deleted = models.DateTimeField(blank=True, null=True)
     promise_summ = models.IntegerField(u'Максимальный обещанный платёж', blank=True, default=0)
     promise_min_ballance = models.IntegerField(u'Минимальный баланс для обещанного платежа', blank=True, default=0)

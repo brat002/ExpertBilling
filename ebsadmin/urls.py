@@ -285,6 +285,8 @@ urlpatterns += patterns('ebsadmin.views',
      
      
      url(r'^gettariffs/$', 'get_tariffs'),
+     url(r'^table/settings/$', 'table_settings', name="table_settings"),
+     
      url(r'^actionlogs/$', 'actionlogs'),
      
      url(r'^accountsfortariff/$', 'accounts_for_tarif'),

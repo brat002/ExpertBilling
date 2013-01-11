@@ -43,6 +43,10 @@ from django.template import Context, Template as DjangoTemplate
 
 log = LogItem.objects.log_action
 
+from ebsadmin.forms import TableColumnsForm
+from ebsadmin.models import TableSettings
+import ebsadmin.tables
+
 try:
     import json
     json.loads("{}")
@@ -5392,4 +5396,36 @@ def instance_dict(instance, key_format=None, normal_fields=False, fields=[]):
             d[key(field.name)] = []
     return d
 
-        
+
+@ajax_request
+@login_required
+def table_settings(request):
+    
+
+    table_name = request.POST.get("table_name")
+    
+    table = getattr(ebsadmin.tables, table_name)
+
+
+    form = TableColumnsForm(request.POST)
+    form.fields['columns'].choices=[(x, x) for x in table.base_columns]
+    if form.is_valid():
+        print 1
+        try:
+            ts = TableSettings.objects.get(name=table_name, user=request.user)
+            #print ts.value['fields']
+            print form.cleaned_data.get('columns', [])
+            print 2
+            ts.value = {'fields': form.cleaned_data.get('columns', [])}
+            ts.save()
+            print 3
+        except Exception, e:
+            print e
+            print 4
+            ts = TableSettings.objects.create(name=table_name, value={'fields': form.cleaned_data.get('columns', [])}, user=request.user)
+            ts.save()
+            print 5
+    else:
+        print form._errors
+        print 6
+    return {"status": True}
