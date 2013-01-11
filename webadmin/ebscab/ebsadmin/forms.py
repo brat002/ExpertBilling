@@ -80,3 +80,8 @@ class TrafficNodesUploadForm(forms.Form):
     nodes_file = forms.FileField(label=u"Файл с сетями", help_text=u"Сети должны располагаться построчно")
     networks = forms.CharField(label=u"Наши сети(построчно)", required=True, widget=forms.widgets.Textarea)
 
+class TableColumnsForm(forms.Form):
+    table_name = forms.CharField(widget = forms.widgets.HiddenInput)
+    columns = forms.MultipleChoiceField(choices=(), widget = forms.widgets.SelectMultiple(attrs={'class': 'columns'}))
+    
+    

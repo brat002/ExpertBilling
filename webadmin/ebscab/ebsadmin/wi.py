@@ -287,7 +287,7 @@ def accountsreport(request):
 
 
     if request.method=='GET':
-        data = request.GET
+        data = request.GET or request.POST
 
         if not data:
             form = SearchAccountForm()
@@ -661,13 +661,13 @@ def accountedit(request):
             pass
 
     
-    print 11
+
     if request.method=='POST':
-        print 12
+
         if account and request.POST:
             form = AccountForm(request.POST, instance=account)
             org = Organization.objects.filter(account=account)
-            print 13
+
             if org:
                 org_form = OrganizationForm(request.POST, instance=org[0], prefix='org')
                 bank = org[0].bank
@@ -675,33 +675,33 @@ def accountedit(request):
                     bank_form = BankDataForm(request.POST, instance=bank, prefix='bankdata')
                 else:
                     bank_form = BankDataForm(request.POST, prefix='bankdata')
-                print 15
+
             else:
                 print request.POST
                 org_form = OrganizationForm(request.POST, prefix='org')
                 
                 bank_form = BankDataForm(request.POST, prefix='bankdata')
                 
-                print "blabla"
+
         else:
             form = AccountForm(request.POST)
             org_form = OrganizationForm(request.POST, prefix='org')
             bank_form = BankDataForm(request.POST, prefix='bankdata')
         
         
-        print 17
+
             
         if form.is_valid():
 
             if not org_form.is_valid():
-                print 0
+
                 return {'org_form':org_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime, 'bank_form': bank_form, "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
             
-            print 1
+
             model =form.save(commit=False)
             model.save()
             contract_num = form.cleaned_data.get("contract_num")
-            print 222, contract_num
+
             if not model.contract and contract_num:
                 contract_template = contract_num.template
                 contract_counter = contract_num.counter or 1
@@ -722,7 +722,7 @@ def accountedit(request):
                 contract = contract_template % d
                 model.contract = contract
                 model.save()
-                print 555
+
                 contract_num.count = contract_counter
                 contract_num.save()
                     
@@ -740,10 +740,7 @@ def accountedit(request):
             elif org: # if not organization and organization for account exists
                 org.delete()
                 
-            #===================================================================
-            #for kq in connection.queries:
-            #    print kq
-            print 5
+
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Аккаунт сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"), model.id))

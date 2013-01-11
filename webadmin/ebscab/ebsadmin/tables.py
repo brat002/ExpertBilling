@@ -18,6 +18,7 @@ from nas.models import Nas, TrafficClass, TrafficNode
 from django_tables2_reports.tables import TableReport
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
+from ebsadmin.models import TableSettings
 
 from helpdesk.models import Ticket
 import itertools
@@ -179,6 +180,7 @@ class AccountsReportTable(TableReport):
         return '%d' % next(self.counter)
     
     class Meta:
+        model = Account
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-bordered table-condensed'}
         
@@ -206,9 +208,9 @@ class ActiveSessionTable(TableReport):
 
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        #model = ActiveSession
+        model = ActiveSession
         fields = ('row_number', 'subaccount__username', 'date_start', 'date_end',  'nas_int', 'caller_id', 'framed_ip_address', 'framed_protocol', 'session_time','bytes', 'session_status')
-        exclude = ("id", "speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account', 'sessionid', 'acct_terminate_cause')
+        #exclude = ("id", "speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account', 'sessionid', 'acct_terminate_cause')
         attrs = {'class': 'table table-bordered table-condensed'}
 
 class AuthLogTable(TableReport):
@@ -303,7 +305,7 @@ class AddonServiceTable(TableReport):
     
     class Meta:
         model = AddonService
-        exclude = ('allow_activation', "wyte_period", 'wyte_cost', 'cancel_subscription', 'action', 'nas', 'service_activation_action', 'service_deactivation_action', 'change_speed', 'deactivate_service_for_blocked_account', 'change_speed_type', 'speed_units', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx', 'burst_treshold_tx', 'burst_treshold_rx', 'burst_time_tx', 'burst_time_rx', 'min_tx', 'min_rx', 'priority')
+        #exclude = ('allow_activation', "wyte_period", 'wyte_cost', 'cancel_subscription', 'action', 'nas', 'service_activation_action', 'service_deactivation_action', 'change_speed', 'deactivate_service_for_blocked_account', 'change_speed_type', 'speed_units', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx', 'burst_treshold_tx', 'burst_treshold_rx', 'burst_time_tx', 'burst_time_rx', 'min_tx', 'min_rx', 'priority')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class IPPoolTable(TableReport):
@@ -482,11 +484,16 @@ class SaleCardTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class DealerTable(TableReport):
+    def __init__(self,*args, **kwargs):
+        super(DealerTable, self).__init__(*args, **kwargs)
+
+        
     id = django_tables.LinkColumn('dealer_edit', get_params={'id':A('pk')})
     organization = django_tables.LinkColumn('dealer_edit', get_params={'id':A('pk')})
     
     class Meta:
         model = Dealer
+        available_fields = ('id', 'organization', 'contactperson', 'unp', 'phone')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class TariffTable(TableReport):

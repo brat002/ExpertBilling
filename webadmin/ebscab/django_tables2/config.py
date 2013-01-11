@@ -1,6 +1,7 @@
 # coding: utf-8
 from django.core.paginator import EmptyPage, PageNotAnInteger
-
+from ebsadmin.models import TableSettings
+from ebsadmin.forms import TableColumnsForm 
 
 class RequestConfig(object):
     """
@@ -32,6 +33,19 @@ class RequestConfig(object):
         """
         Configure a table using information from the request.
         """
+        try:
+            ts = TableSettings.objects.get(name=table.__class__.__name__, user=self.request.user)
+        except:
+            ts = TableSettings.objects.create(name=table.__class__.__name__, value={'fields': table.base_columns.keys()}, user=self.request.user)
+            
+
+        for key in table.base_columns:
+            column = table.base_columns.get(key)
+            if key not in ts.value.get('fields'):
+                column.visible = False
+        
+        table.columns_form = TableColumnsForm(initial={'columns':ts.value.get('fields'), 'table_name': table.__class__.__name__})
+        table.columns_form.fields['columns'].choices=[(x, x) for x in table.base_columns]
         order_by = self.request.GET.getlist(table.prefixed_order_by_field)
         if order_by:
             table.order_by = order_by

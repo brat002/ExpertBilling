@@ -20,6 +20,7 @@ log = LogItem.objects.log_action
 def dealer(request):
     res = Dealer.objects.all()
     table = DealerTable(res)
+    
     table_to_report = RequestConfig(request, paginate= False).configure(table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
