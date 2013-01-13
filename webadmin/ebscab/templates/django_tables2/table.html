@@ -22,6 +22,10 @@
                 var url = "{% url table_settings %}"; // the script where you handle the form input.
                 $(".columns_submit").attr('disabled', 'disabled');
                 var form = $(this).closest("form");
+                var c = [];
+                var columns = form.find(".columns").serialize();
+
+                var table_name = form.find("input[name=table_name]").val();
                 $.ajax({
                        type: "POST",
                        url: url,

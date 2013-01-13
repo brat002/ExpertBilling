@@ -5406,7 +5406,7 @@ def table_settings(request):
     
     table = getattr(ebsadmin.tables, table_name)
 
-
+    print request.POST.getlist("columns")
     form = TableColumnsForm(request.POST)
     form.fields['columns'].choices=[(x, x) for x in table.base_columns]
     if form.is_valid():
@@ -5414,7 +5414,7 @@ def table_settings(request):
         try:
             ts = TableSettings.objects.get(name=table_name, user=request.user)
             #print ts.value['fields']
-            print form.cleaned_data.get('columns', [])
+            print "columns", form.cleaned_data.get('columns', [])
             print 2
             ts.value = {'fields': form.cleaned_data.get('columns', [])}
             ts.save()
