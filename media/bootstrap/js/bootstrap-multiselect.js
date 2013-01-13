@@ -38,8 +38,20 @@
 			if ($(element).is(':selected')) {
 				$(element).attr('selected', true);
 			}
-			
-			$('ul', this.container).append('<li><a href="#" style="padding:0;"><label style="margin:0;padding: 3px 20px 3px 20px;width:100%;height:100%;cursor:pointer;"><input style="margin-bottom:5px;" type="checkbox" value="' + $(element).val() + '" /> ' + $(element).text() + '</label</a></li>');
+			var select = this.select;
+			$('ul', this.container).sortable({
+		        update : function () {
+		        	var order = $(this).find("input[type=checkbox]").map(function(i, e){
+	                    return $(e).val();
+	                })
+		        	var i=0;
+		        	select.find("option").each(function() {           
+		                $(this).val( order[i] );
+		                i+=1;
+		            });
+		        }
+				
+			}).append('<li><a href="#" style="padding:0;"><label style="margin:0;padding: 3px 20px 3px 20px;width:100%;height:100%;cursor:pointer;"><input style="margin-bottom:5px;" type="checkbox" value="' + $(element).val() + '" /> ' + $(element).text() + '</label</a></li>');
 			
 			var selected = $(element).attr('selected') || false;
 			var checkbox = $('ul li input[value="' + $(element).val() + '"]', this.container);
@@ -116,7 +128,9 @@
 			this.container.remove();
 			this.select.show();
 		},
-		
+		serialize: function(){
+			$('ul', this.container).sortable("toArray");
+		},
 		// Refreshs the checked options based on the current state of the select.
 		refresh: function() {
 			$('option', this.select).each($.proxy(function(index, element) {
