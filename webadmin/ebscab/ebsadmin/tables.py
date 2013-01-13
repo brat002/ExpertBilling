@@ -250,19 +250,16 @@ class LogTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
 class NasTable(TableReport):
-    row_number = django_tables.Column(verbose_name="#")
-    name = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')})
+    #row_number = django_tables.Column(verbose_name="#")
+    name = django_tables.LinkColumn('nas_edit', verbose_name=u"Имя", get_params={'id':A('pk')})
     radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?nas={{record.id}}' >Дополнительные RADIUS атрибуты</a>", verbose_name=u'Дополнительные RADIUS атрибуты', orderable=False)
     id = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    def render_row_number(self):
-        value = getattr(self, '_counter', 1)
-        self._counter = value + 1
-        return '%d' % value
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     class Meta:
         model = Nas
-        exclude = ("secret", 'login', 'password', 'snmp_version', 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
-        sequence=('row_number', 'id', 'name', 'radiusattrs', 'identify', 'type', 'ipaddress')
+        #exclude = ("secret", 'login', 'password', 'snmp_version', 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
+        #sequence=('row_number', 'id', 'name', 'radiusattrs', 'identify', 'type', 'ipaddress')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class TemplateTable(TableReport):
