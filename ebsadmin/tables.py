@@ -197,6 +197,7 @@ class ActiveSessionTable(TableReport):
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         model = ActiveSession
+        configurable=True
         available_fields = ('row_number', 'subaccount__username', 'date_start', 'date_end',  'nas_int', 'caller_id', 'framed_ip_address', 'framed_protocol', 'session_time','bytes', 'session_status')
         #exclude = ("id", "speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account', 'sessionid', 'acct_terminate_cause')
         attrs = {'class': 'table table-bordered table-condensed'}
