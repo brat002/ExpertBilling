@@ -1159,6 +1159,9 @@ class Card(models.Model):
     ext_id = models.CharField(max_length=512,  blank=True, null=True)
     salecard = models.ForeignKey("SaleCard", verbose_name=u"Продана", blank=True, null=True)
     
+    def get_row_class(self):
+        return 'error' if self.disabled else ''
+    
     class Meta:
         ordering = ['-series', '-created', 'activated']
         verbose_name = u"Карта"

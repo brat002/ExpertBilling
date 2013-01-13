@@ -33,24 +33,26 @@ class RequestConfig(object):
         """
         Configure a table using information from the request.
         """
-        try:
-            ts = TableSettings.objects.get(name=table.__class__.__name__, user=self.request.user)
-        except:
-            ts = TableSettings.objects.create(name=table.__class__.__name__, value={'fields': table.base_columns.keys()}, user=self.request.user)
+        if table.Meta.__dict__.get("configurable"):
+            try:
+                ts = TableSettings.objects.get(name=table.__class__.__name__, user=self.request.user)
+            except:
+                af = table.Meta.__dict__.get('available_fields')
+                ts = TableSettings.objects.create(name=table.__class__.__name__, value={'fields': af if af else table.base_columns.keys()}, user=self.request.user)
+                
+    
+            table.sequence = ts.value.get('fields')
+            for key in table.base_columns:
+                column = table.base_columns.get(key)
+                if key not in ts.value.get('fields'):
+                    column.visible = False
+    
+            selected_columns = ts.value.get('fields')
+            z = [x for x in  table.base_columns if x not in selected_columns]
+    
+            table.columns_form = TableColumnsForm(initial={'columns':selected_columns, 'table_name': table.__class__.__name__})
+            table.columns_form.fields['columns'].choices=[(x,table.base_columns[x].verbose_name or x) for x in  tuple(selected_columns)+tuple(z)]
             
-
-        table.sequence = ts.value.get('fields')
-        for key in table.base_columns:
-            column = table.base_columns.get(key)
-            if key not in ts.value.get('fields'):
-                column.visible = False
-
-        selected_columns = ts.value.get('fields')
-        z = [x for x in  table.base_columns if x not in selected_columns]
-
-        table.columns_form = TableColumnsForm(initial={'columns':selected_columns, 'table_name': table.__class__.__name__})
-        table.columns_form.fields['columns'].choices=[(x,table.base_columns[x].verbose_name or x) for x in  selected_columns+z]
-        
         order_by = self.request.GET.getlist(table.prefixed_order_by_field)
         if order_by:
             table.order_by = order_by
