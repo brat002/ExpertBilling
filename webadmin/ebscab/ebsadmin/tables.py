@@ -8,7 +8,7 @@ from billservice.models import TimeSpeed, AddonServiceTarif, PeriodicalServiceLo
 from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAccessNode 
 from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType
 from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model
-from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode
+from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode, SubAccount
 from billservice.models import News, TPChangeRule, Switch, AccountGroup, GroupStat, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, AccountPrepaysTime
 import django_tables2 as django_tables
 from django_tables2.utils import A
@@ -52,7 +52,6 @@ class YesNoColumn(django_tables.Column):
 
 
 class SubAccountsTable(django_tables.Table):
-    row_number = django_tables.Column(verbose_name="#")
     id = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
     username = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
     password = FormatBlankColumn()
@@ -67,12 +66,12 @@ class SubAccountsTable(django_tables.Table):
     
     
     
-    def render_row_number(self):
-        value = getattr(self, '_counter', 0)
-        self._counter = value + 1
-        return '%d' % value
+
     
     class Meta:
+        model = SubAccount
+        configurable=True
+        available_fields = ('id', 'username', 'password', 'nas', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'd')
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
@@ -85,7 +84,6 @@ class AccountHardwareTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
 class AccountAddonServiceTable(django_tables.Table):
-    row_number = django_tables.Column(verbose_name="#")
     id = django_tables.LinkColumn('accountaddonservice', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     account =  FormatBlankColumn()
     service =  django_tables.Column()
@@ -98,11 +96,6 @@ class AccountAddonServiceTable(django_tables.Table):
     
     
     
-
-    def render_row_number(self):
-        value = getattr(self, '_counter', 0)
-        self._counter = value + 1
-        return '%d' % value
     
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -117,18 +110,12 @@ class SuspendedPeriodTable(django_tables.Table):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
 class AccountTarifTable(django_tables.Table):
-    row_number = django_tables.Column(verbose_name="#")
     id = FormatBlankColumn()
     tarif = FormatBlankColumn()
     datetime = FormatDateTimeColumn()
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
-    
 
-    def render_row_number(self):
-        value = getattr(self, '_counter', 0)
-        self._counter = value + 1
-        return '%d' % value
     
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -153,9 +140,9 @@ class TotalTransactionReportTable(TableReport):
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed"'}
         
-        sequence = ("id", "account__username",  "type__name", "summ", "bill", "description", "end_promise",  "service__name", "created", 'd')
+        available_fields = ("id", "account__username",  "type__name", "summ", "bill", "description", "end_promise",  "service__name", "created", 'd')
         #model = TotalTransactionReport
-        exclude = ( 'table','tariff__name', "tariff", "systemuser")
+        #exclude = ( 'table','tariff__name', "tariff", "systemuser")
         
         
 class AccountsReportTable(TableReport):
@@ -181,6 +168,7 @@ class AccountsReportTable(TableReport):
     
     class Meta:
         model = Account
+        configurable = True
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-bordered table-condensed'}
         
@@ -209,7 +197,7 @@ class ActiveSessionTable(TableReport):
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         model = ActiveSession
-        fields = ('row_number', 'subaccount__username', 'date_start', 'date_end',  'nas_int', 'caller_id', 'framed_ip_address', 'framed_protocol', 'session_time','bytes', 'session_status')
+        available_fields = ('row_number', 'subaccount__username', 'date_start', 'date_end',  'nas_int', 'caller_id', 'framed_ip_address', 'framed_protocol', 'session_time','bytes', 'session_status')
         #exclude = ("id", "speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account', 'sessionid', 'acct_terminate_cause')
         attrs = {'class': 'table table-bordered table-condensed'}
 
@@ -259,7 +247,7 @@ class NasTable(TableReport):
     class Meta:
         model = Nas
         #exclude = ("secret", 'login', 'password', 'snmp_version', 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
-        #sequence=('row_number', 'id', 'name', 'radiusattrs', 'identify', 'type', 'ipaddress')
+        available_fields=( 'id', 'name', 'radiusattrs', 'identify', 'type', 'ipaddress')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class TemplateTable(TableReport):
@@ -269,7 +257,8 @@ class TemplateTable(TableReport):
     
     class Meta:
         model = Template
-        exclude = ("", 'body', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
+        configurable = False
+        exclude = ("", 'body')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class SettlementPeriodTable(TableReport):
@@ -292,7 +281,9 @@ class SystemUserTable(TableReport):
     
     class Meta:
         model = SystemUser
-        exclude = ("password", 'text_password', 'address', 'passport', 'passport_details', 'passport_number', 'unp', 'im', 'home_phone','mobile_phone', 'created', 'host')
+        configurable = True
+        available_fields = ('id', 'username', 'last_login', 'd')
+        #exclude = ("password", 'text_password', 'address', 'passport', 'passport_details', 'passport_number', 'unp', 'im', 'home_phone','mobile_phone', 'created', 'host')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class AddonServiceTable(TableReport):
@@ -302,6 +293,7 @@ class AddonServiceTable(TableReport):
     
     class Meta:
         model = AddonService
+        configurable = True
         #exclude = ('allow_activation', "wyte_period", 'wyte_cost', 'cancel_subscription', 'action', 'nas', 'service_activation_action', 'service_deactivation_action', 'change_speed', 'deactivate_service_for_blocked_account', 'change_speed_type', 'speed_units', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx', 'burst_treshold_tx', 'burst_treshold_rx', 'burst_time_tx', 'burst_time_rx', 'min_tx', 'min_rx', 'priority')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
@@ -315,6 +307,7 @@ class IPPoolTable(TableReport):
     
     class Meta:
         model = IPPool
+        configurable = True
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
@@ -325,6 +318,7 @@ class TransactionTypeTable(TableReport):
     
     class Meta:
         model = TransactionType
+        configurable = True
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
@@ -336,28 +330,33 @@ class TrafficClassTable(TableReport):
     
     class Meta:
         model = TrafficClass
-        exclude = ("weight", )
-        fields = ('id', 'name', 'directions', 'passthrough',  'd')
+        configurable = True
+        #exclude = ("weight", )
+        available_fields = ('id', 'name', 'directions', 'passthrough',  'd')
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class TrafficNodeTable(TableReport):
-    row_number = django_tables.Column(verbose_name="#")
+    row_number = django_tables.Column(verbose_name="#", empty_values=())
     #control = django_tables.TemplateColumn("<a class='edit'><i class='icon-edit'></i></a>", verbose_name=' ', orderable=False)
     id = django_tables.LinkColumn('trafficnode', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
+
+    def __init__(self, *args, **kwargs):
+        super(TrafficNodeTable, self).__init__(*args, **kwargs)
+        self.counter = itertools.count()
+
+    def render_row_number(self):
+        return '%d' % next(self.counter)
     
     class Meta:
         model = TrafficNode
+        configurable = True
         exclude = ("traffic_class", )
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        sequence = ('row_number', 'id', 'name', 'direction', 'protocol', 'src_ip', 'src_port', 'in_index', 'dst_ip', 'dst_port', 'out_index', 'src_as', 'dst_as', 'next_hop', 'd')
-    
-    def render_row_number(self):
-        value = getattr(self, '_counter', 0)
-        self._counter = value + 1
-        return '%d' % value
+        available_fields = ('row_number', 'id', 'name', 'direction', 'protocol', 'src_ip', 'src_port', 'in_index', 'dst_ip', 'dst_port', 'out_index', 'src_as', 'dst_as', 'next_hop', 'd')
+
     
 class RadiusAttrTable(TableReport):
     id = django_tables.LinkColumn('radiusattr_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
@@ -403,6 +402,7 @@ class HardwareTable(TableReport):
     
     class Meta:
         model = Hardware
+        configurable = True
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class SwitchTable(TableReport):
@@ -412,14 +412,13 @@ class SwitchTable(TableReport):
     
     class Meta:
         model = Switch
-        sequence = ("id", 'name', 'manufacturer', 'model', 'sn', 'city', 'street', 'place')
-        exclude = ('comment', 'snmp_version', 'ports_count', 'house', 'option82_template',  'identify',  'disable_port', 'remote_id', 'secret', 'option82_auth_type',  'monitored_ports', 'protected_ports', 'enable_port', 'snmp_community', 'broken_ports', 'uplink_ports', 'disabled_ports', 'password', 'ipaddress', 'macaddress', 'd', 'option82', 'username', 'snmp_support', 'management_method')
+        available_fields = ("id", 'name', 'manufacturer', 'model', 'sn', 'city', 'street', 'place')
+        #exclude = ('comment', 'snmp_version', 'ports_count', 'house', 'option82_template',  'identify',  'disable_port', 'remote_id', 'secret', 'option82_auth_type',  'monitored_ports', 'protected_ports', 'enable_port', 'snmp_community', 'broken_ports', 'uplink_ports', 'disabled_ports', 'password', 'ipaddress', 'macaddress', 'd', 'option82', 'username', 'snmp_support', 'management_method')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
         
 class CardTable(TableReport):
-    row_number = django_tables.Column(verbose_name="#")
-    row_class = django_tables.Column(visible=False)
+    row_number = django_tables.Column(verbose_name="#", empty_values=())
     start_date = FormatDateTimeColumn()
     end_date = FormatDateTimeColumn()
     created = FormatDateTimeColumn()
@@ -432,23 +431,24 @@ class CardTable(TableReport):
     ext_id = FormatBlankColumn()
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
 
-    def render_row_number(self):
-        value = getattr(self, '_counter', 0)
-        self._counter = value + 1
-        return '%d' % value
 
-    def render_row_class(self, value, record):
-        return 'disabled-row' if record.disabled else ''
+    def __init__(self, *args, **kwargs):
+        super(CardTable, self).__init__(*args, **kwargs)
+        self.counter = itertools.count()
+
+    def render_row_number(self):
+        return '%d' % next(self.counter)
+
 
     class Meta:
         model = Card
-        sequence = ('row_number', 'row_class',  'id', 'series', 'nominal', 'login', 'pin', 'type', 'tarif', 'nas', 'salecard', 'activated', 'activated_by', 'ippool', 'created', 'start_date', 'end_date', 'ext_id',  'd')
+        configurable = True
+        available_fields = ('row_number',   'id', 'series', 'nominal', 'login', 'pin', 'type', 'tarif', 'nas', 'salecard', 'activated', 'activated_by', 'ippool', 'created', 'start_date', 'end_date', 'ext_id',  'd')
         attrs = {'class': 'table table-bordered table-condensed'}
-        exclude = ('ipinuse', 'disabled', 'ip')
+        exclude = ('ipinuse', 'disabled', )
 
 class SaleCardsTable(TableReport):
-    row_number = django_tables.Column(verbose_name="#")
-    row_class = django_tables.Column(visible=False)
+    row_number = django_tables.Column(verbose_name="#", empty_values=())
     start_date = FormatDateTimeColumn()
     end_date = FormatDateTimeColumn()
     created = FormatDateTimeColumn()
@@ -467,9 +467,10 @@ class SaleCardsTable(TableReport):
     
     class Meta:
         model = Card
-        sequence = ('row_number', 'row_class',  'id', 'series', 'login', 'pin', 'nominal', 'type', 'tarif', 'nas',  'activated', 'ippool', 'created', 'start_date', 'end_date',)
+        configurable = True
+        available_fields = ('row_number',  'id', 'series', 'login', 'pin', 'nominal', 'type', 'tarif', 'nas',  'activated', 'ippool', 'created', 'start_date', 'end_date','ext_id',)
         attrs = {'class': 'table table-bordered table-condensed'}
-        exclude = ('ipinuse', 'disabled', 'ip', 'activated_by', 'ext_id', 'salecard')
+        exclude = ('ipinuse', 'disabled', 'ip', 'activated_by',  'salecard')
         
 class SaleCardTable(TableReport):
     id = django_tables.LinkColumn('salecard_edit', get_params={'id':A('pk')})
@@ -477,6 +478,7 @@ class SaleCardTable(TableReport):
     
     class Meta:
         model = SaleCard
+        configurable = True
         exclude = ("tarif", 'nas')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
@@ -490,6 +492,7 @@ class DealerTable(TableReport):
     
     class Meta:
         model = Dealer
+        configurable = True
         available_fields = ('id', 'organization', 'contactperson', 'unp', 'phone')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
@@ -500,8 +503,9 @@ class TariffTable(TableReport):
     
     class Meta:
         model = Tariff
+        configurable = True
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        fields = ( 'name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', 'radiusattrs')
+        available_fields = ( 'name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', 'radiusattrs')
         
 class PeriodicalServiceTable(TableReport):
     id = django_tables.LinkColumn('tariff_periodicalservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
@@ -618,7 +622,8 @@ class PeriodicalServiceLogTable(TableReport):
     
     class Meta:
         model = PeriodicalServiceLog
-        fields = ("id", 'accounttarif', 'service', 'datetime', 'd')
+        configurable = True
+        available_fields = ("id", 'accounttarif', 'service', 'datetime', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
         
 class SheduleLogTable(TableReport):
@@ -630,11 +635,12 @@ class SheduleLogTable(TableReport):
     prepaid_traffic_reset = FormatDateTimeColumn(verbose_name=u'Обнуление предоплаченного трафика')
     prepaid_traffic_accrued = FormatDateTimeColumn(verbose_name=u'Начисление предоплаченного трафика')
     prepaid_time_reset = FormatDateTimeColumn(verbose_name=u'Обнуление предоплаченного времени')
-    prepaid_time_accrued = FormatDateTimeColumn(verbose_name=u'Начисление предоплаченного врумени')
+    prepaid_time_accrued = FormatDateTimeColumn(verbose_name=u'Начисление предоплаченного врeмени')
     balance_blocked = FormatDateTimeColumn(verbose_name=u'Блокировка баланса')
     
     class Meta:
         model = SheduleLog
+        configurable = True
         #fields = ("id", 'accounttarif', 'service', 'datetime', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
 
@@ -648,7 +654,8 @@ class NewsTable(TableReport):
     
     class Meta:
         model = News
-        fields = ("id", 'body', 'created', 'age', 'public', 'private', 'agent', 'd')
+        configurable = True
+        available_fields = ("id", 'body', 'created', 'age', 'public', 'private', 'agent', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
         
 
@@ -665,7 +672,8 @@ class TPChangeRuleTable(TableReport):
     
     class Meta:
         model = TPChangeRule
-        fields = ("id", 'row_class',  'from_tariff', 'to_tariff', 'cost', 'ballance_min', 'on_next_sp', 'settlement_period', 'disabled', 'd')
+        configurable = True
+        available_fields = ("id", 'row_class',  'from_tariff', 'to_tariff', 'cost', 'ballance_min', 'on_next_sp', 'settlement_period', 'disabled', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
 
 class AccountGroupTable(TableReport):
@@ -685,7 +693,8 @@ class ActionLogTable(TableReport):
     
     class Meta:
         model = LogItem
-        fields = ('id', 'timestamp', 'user', 'action', 'object_type1', 'object1', 'changed_data')
+        configurable = True
+        availablwe_fields = ('id', 'timestamp', 'user', 'action', 'object_type1', 'object1', 'changed_data')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
 class GroupStatTable(TableReport):
@@ -698,7 +707,8 @@ class GroupStatTable(TableReport):
         return value
     
     class Meta:
-        fields = (u'account', 'group', u'bytes')
+        available_fields = (u'account', 'group', u'bytes')
+        configurable = True
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
       
 class AccountPrepaysTraficTable(TableReport):
@@ -720,6 +730,7 @@ class AccountPrepaysTraficTable(TableReport):
     
     class Meta:
         model = AccountPrepaysTrafic
+        configurable = True
         #fields = (u'account', 'group', u'bytes')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}  
 
@@ -740,6 +751,7 @@ class AccountPrepaysRadiusTraficTable(TableReport):
     
     class Meta:
         model = AccountPrepaysRadiusTrafic
+        configurable = True
         #fields = (u'account', 'group', u'bytes')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}  
         
@@ -760,6 +772,7 @@ class AccountPrepaysTimeTable(TableReport):
     
     class Meta:
         model = AccountPrepaysTime
+        configurable = True
         #fields = (u'account', 'group', u'bytes')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}  
         
@@ -785,6 +798,7 @@ class TicketTable(TableReport):
     
     class Meta:
         model = Ticket
-        fields = ("id", 'title', 'queue', 'created', 'status', 'priority', )
+        configurable = True
+        available_fields = ("id", 'title', 'queue', 'created', 'status', 'priority', )
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
         
