@@ -20,7 +20,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/groupstat_list.html')
 def groupstat(request):
         
-
+    if  not (request.user.account.has_perm('billservice.view_groupstat')):
+        return {'status': False}
 
     if request.GET: 
         data = request.GET

@@ -35,7 +35,7 @@
 
   <li class="active">{{form.name.value}}</li>
 </ul>
-<form method="POST" action="{% url tpchangerule_edit %}?id={{item.id}}"class="well form-horizontal">
+<form method="POST" action="{% url tpchangerule_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             {{form.id}}
             <legend>Правило перехода на тарифный план{% objectlog item %}</legend>
              <fieldset>

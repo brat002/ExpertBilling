@@ -28,7 +28,7 @@ $(document).ready(function() {
       {% endfor %}
            
             
-                <form action='{% url transaction_edit %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax">
+                <form action='{% url transaction_edit %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
                 <fieldset>
                 {{ form.account }}
                   <div class="control-group">

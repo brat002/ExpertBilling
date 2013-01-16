@@ -18,6 +18,7 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/operator_edit.html')
 def operator_edit(request):
+
     id = request.POST.get("id")
 
     item = None
@@ -27,11 +28,11 @@ def operator_edit(request):
         if id:
             model = Operator.objects.get(id=id)
             form = OperatorForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_operator')):
+            if  not (request.user.account.has_perm('billservice.change_operator')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование данных о провайдере'}
         else:
             form = OperatorForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_operator')):
+        if  not (request.user.account.has_perm('billservice.add_operator')):
             return {'status':False, 'message': u'У вас нет прав на добавление информации о провайдере'}
 
         if form.is_valid():
@@ -48,8 +49,8 @@ def operator_edit(request):
 
         items = Operator.objects.all()
         if items:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.operator_view')):
-                return {'status':True}
+            if  not (request.user.account.has_perm('billservice.view_operator')):
+                return {'status':False}
 
             item = items[0]
             

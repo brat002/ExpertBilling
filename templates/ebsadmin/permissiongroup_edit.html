@@ -1,32 +1,29 @@
 {% extends "ebsadmin/base.html" %}
-{% load crispy_forms_tags %}
-{% load ebsadmin_tags %}
 {% block extra_head %}
+
+
         <script type="text/javascript"> 
         $(document).ready(function() {
-
+   
         });
         </script>
 
 {% endblock %}
+{% load crispy_forms_tags %}
 {% block body %}
 <div class="span12">
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url group %}">Группы трафика</a> <span class="divider">/</span>
+    <a href="{% url permissiongroup %}">Группы доступа</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
-
-<form method="POST" action="{% url group_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
-            <legend>Параметры группы трафика{% objectlog item %}</legend>
-<div class="alert alert-danger">
-Внимание, изменение настроек группы трафика автоматически отразится на всех связанных тарифных планах
-</div>
+<form method="POST" action="{% url permissiongroup_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
+            <legend>Параметры группы доступа</legend>
              <fieldset>
-                  {{form|crispy}}
+                {{form|crispy}}
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
@@ -35,7 +32,7 @@
                 </fieldset>
             </form>
 
-
+            </form>
         </div>
 
     </div>

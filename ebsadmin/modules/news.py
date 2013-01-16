@@ -20,7 +20,7 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/news_list.html')
 def news(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.news_view')):
+    if  not (request.user.has_perm('billservice.view_news')):
         return {'status':False}
     res = News.objects.all()
     table = NewsTable(res)
@@ -41,11 +41,11 @@ def news_edit(request):
         if id:
             model = News.objects.get(id=id)
             form = NewsForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_news')):
+            if  not (request.user.account.has_perm('billservice.change_news')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование новости'}
         else:
             form = NewsForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_news')):
+        if  not (request.user.account.has_perm('billservice.add_news')):
             return {'status':False, 'message': u'У вас нет прав на добавление новости'}
 
 
@@ -71,7 +71,7 @@ def news_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.news_view')):
+            if  not (request.user.account.has_perm('billservice.view_news')):
                 return {'status':True}
 
             item = News.objects.get(id=id)
@@ -90,7 +90,7 @@ def news_edit(request):
 @ajax_request
 @login_required
 def news_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_news')):
+    if  not (request.user.account.has_perm('billservice.delete_news')):
         return {'status':False, 'message': u'У вас нет прав на удаление новостей'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

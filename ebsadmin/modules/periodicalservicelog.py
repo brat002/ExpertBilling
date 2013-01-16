@@ -20,7 +20,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/periodicalservicelog_list.html')
 def periodicalservicelog(request):
         
-
+    if  not (request.user.account.has_perm('billservice.view_periodicalservicelog')):
+        return {'status':False}
 
     if request.method=='GET' and request.GET: 
         data = request.GET
@@ -66,7 +67,7 @@ def periodicalservicelog(request):
 @ajax_request
 @login_required
 def periodicalservicelog_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_periodicalservicelog')):
+    if  not (request.user.account.has_perm('billservice.delete_periodicalservicelog')):
         return {'status':False, 'message': u'У вас нет прав на удаление истории списаний по период. услугам'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

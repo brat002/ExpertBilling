@@ -390,15 +390,15 @@ class AccessParameters(models.Model):
     #burst_time     = models.CharField(verbose_name=u"Burst Time", blank=True, max_length=64, default="")
 
     max_tx = models.CharField(verbose_name=u"MAX tx (kbps)", max_length=64, blank=True, default="")
-    max_rx = models.CharField(verbose_name=u"MAX rx (kbps)", max_length=64, blank=True, default="")
+    max_rx = models.CharField(verbose_name=u"rx (kbps)", max_length=64, blank=True, default="")
     burst_tx = models.CharField(verbose_name=u"Burst tx (kbps)", max_length=64, blank=True, default="")
-    burst_rx = models.CharField(verbose_name=u"Burst rx (kbps)", max_length=64, blank=True, default="")
+    burst_rx = models.CharField(verbose_name=u"rx (kbps)", max_length=64, blank=True, default="")
     burst_treshold_tx = models.CharField(verbose_name=u"Burst treshold tx (kbps)", max_length=64, blank=True, default="")
-    burst_treshold_rx = models.CharField(verbose_name=u"Burst treshold rx (kbps)", max_length=64, blank=True, default="")
+    burst_treshold_rx = models.CharField(verbose_name=u"rx (kbps)", max_length=64, blank=True, default="")
     burst_time_tx = models.CharField(verbose_name=u"Burst time tx (kbps)", max_length=64, blank=True, default="")
-    burst_time_rx = models.CharField(verbose_name=u"Burst time rx (kbps)", max_length=64, blank=True, default="")
+    burst_time_rx = models.CharField(verbose_name=u"rx (kbps)", max_length=64, blank=True, default="")
     min_tx = models.CharField(verbose_name=u"Min tx (kbps)", max_length=64, blank=True, default="")
-    min_rx = models.CharField(verbose_name=u"Min rx (kbps)", max_length=64, blank=True, default="")
+    min_rx = models.CharField(verbose_name=u"rx (kbps)", max_length=64, blank=True, default="")
 
     
     
@@ -857,7 +857,7 @@ class Account(models.Model):
     def get_account_tariff(self):
         tariff = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[:1]
         if tariff:
-          return tariff[0]
+            return tariff[0]
     
     def get_accounttariff(self):
         accounttarif = AccountTarif.objects.filter(account=self, datetime__lte=datetime.datetime.now()).order_by("-datetime")
@@ -1055,7 +1055,7 @@ class SystemUser(models.Model):
     unp  = models.CharField(max_length=1024, blank=True, default ='')
     im  = models.CharField(max_length=512, blank=True, default ='')
     permissiongroup = models.ForeignKey("PermissionGroup", blank=True, null=True, verbose_name=u"Группа доступа")
-    is_systemuser = models.BooleanField(verbose_name=u"Суперадминистратор")
+    is_superuser = models.BooleanField(verbose_name=u"Суперадминистратор")
     
     def __str__(self):
         return '%s' % self.username
@@ -1067,14 +1067,14 @@ class SystemUser(models.Model):
         """Always return True. This is a way to tell if the user has been authenticated in templates.
         """
         return True
-    is_staff = True
-    is_superuser = True    
+
 
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('systemuser_delete'), self.id)
         
     def has_perm(self, perm):
-        return self.is_systemuser or self.permissiongroup.permissions.filter(internal_name=perm)
+        app, internal_name = perm.split('.')
+        return self.status and (self.is_superuser or (self.permissiongroup.permissions.filter(app=app, internal_name=internal_name).exist() if self.permissiongroup else False))
     
     def delete(self):
         return
@@ -1947,6 +1947,8 @@ class Permission(models.Model):
     internal_name = models.CharField(max_length=500, verbose_name=u"Внутреннее имя")
     ordering = models.IntegerField()
     
+    def __unicode__(self):
+        return u"%s" % self.name
     class Meta:
         verbose_name = u"Право доступа"
         verbose_name_plural = u"Права доступа"
@@ -1961,3 +1963,6 @@ class PermissionGroup(models.Model):
         verbose_name = u"Группа доступа"
         verbose_name_plural = u"Группы доступа"
         
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('permissiongroup_delete'), self.id)
+    

@@ -20,6 +20,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/hardwaretype_list.html')
 def hardwaretype(request):
+    if  not (request.user.account.has_perm('billservice.view_hardwaretype')):
+        return {'status': False}
     res = HardwareType.objects.all()
     table = HardwareTypeTable(res)
     table_to_report = RequestConfig(request, paginate=False).configure(table)
@@ -40,11 +42,11 @@ def hardwaretype_edit(request):
         if id:
             model = HardwareType.objects.get(id=id)
             form = HardwareTypeForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_hardwaretype')):
+            if  not (request.user.account.has_perm('billservice.change_hardwaretype')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование типов оборудования'}
         else:
             form = HardwareTypeForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_hardwaretype')):
+        if  not (request.user.account.has_perm('billservice.add_hardwaretype')):
             return {'status':False, 'message': u'У вас нет прав на добавление типов оборудования'}
 
 
@@ -61,8 +63,8 @@ def hardwaretype_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.hardwaretype_view')):
-                return {'status':True}
+            if  not (request.user.account.has_perm('billservice.view_hardwaretype')):
+                return {'status':False}
 
             item = HardwareType.objects.get(id=id)
             
@@ -75,7 +77,7 @@ def hardwaretype_edit(request):
 @ajax_request
 @login_required
 def hardwaretype_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_hardwaretype')):
+    if  not (request.user.account.has_perm('billservice.delete_hardwaretype')):
         return {'status':False, 'message': u'У вас нет прав на удаление типов оборудования пулов'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

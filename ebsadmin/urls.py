@@ -39,6 +39,12 @@ urlpatterns += patterns('ebsadmin.settlementperiod',
     url(r'^settlementperiod/$', 'settlementperiod', name='settlementperiod'),
 )
 
+urlpatterns += patterns('ebsadmin.modules.permissiongroup',
+    url(r'^permissiongroup/edit/$', 'permissiongroup_edit', name='permissiongroup_edit'),
+    url(r'^permissiongroup/delete/$', 'permissiongroup_delete', name='permissiongroup_delete'),
+    url(r'^permissiongroup/$', 'permissiongroup', name='permissiongroup'),
+)
+
 urlpatterns += patterns('ebsadmin.transactiontype',
     url(r'^transactiontype/edit/$', 'transactiontype_edit', name='transactiontype_edit'),
     url(r'^transactiontype/delete/$', 'transactiontype_delete', name='transactiontype_delete'),
