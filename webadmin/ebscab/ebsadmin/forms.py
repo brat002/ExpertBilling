@@ -10,7 +10,7 @@ from billservice.forms import DateRangeField
 from ajax_select.fields import AutoCompleteSelectMultipleField
 from django.conf import settings
 chartdata = {
-'sessionsonline':{'name':u'Сессии рользователей', 'yname':u'Аккаунты', 'tabs':['accountsTab', 'nassesTab']},
+'sessionsonline':{'name':u'Сессии пользователей', 'yname':u'Аккаунты', 'tabs':['accountsTab', 'nassesTab']},
 #'sessionsdynamic':{'name':u'Динамика сессий', 'yname':u'Количество', 'tabs':['accountsTab', 'nassesTab']},
 #'trafficclasses': {'name':u'Потребление трафика по классам трафика', 'yname':u'МБ', 'tabs':['classesTab', 'nassesTab']},
 #'trafficgroups': {'name':u'Потребление трафика по группам трафика',  'yname':u'МБ','tabs':['accountsTab', 'groupsTab', 'nassesTab']},
