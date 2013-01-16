@@ -20,6 +20,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/group_list.html')
 def group(request):
+    if  not (request.user.account.has_perm('billservice.view_group')):
+        return {'status': False}
     res = Group.objects.all()
     table = GroupTable(res)
     table_to_report = RequestConfig(request, paginate=False).configure(table)
@@ -40,11 +42,11 @@ def group_edit(request):
         if id:
             model = Group.objects.get(id=id)
             form = GroupForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_group')):
+            if  not (request.user.account.has_perm('billservice.change_group')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование групп трафика'}
         else:
             form = GroupForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_group')):
+        if  not (request.user.account.has_perm('billservice.add_group')):
             return {'status':False, 'message': u'У вас нет прав на добавление групп трафика'}
 
         if form.is_valid():
@@ -62,8 +64,8 @@ def group_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.group_view')):
-                return {'status':True}
+            if  not (request.user.account.has_perm('billservice.view_group')):
+                return {'status':False}
 
             item = Group.objects.get(id=id)
             
@@ -76,7 +78,7 @@ def group_edit(request):
 @ajax_request
 @login_required
 def group_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_group')):
+    if  not (request.user.account.has_perm('billservice.delete_group')):
         return {'status':False, 'message': u'У вас нет прав на удаление групп трафика'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

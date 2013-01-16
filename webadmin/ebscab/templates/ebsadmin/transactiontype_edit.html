@@ -20,7 +20,7 @@
 
   <li class="active">{{form.name.value}}</li>
 </ul>
-<form method="POST" action="{% url transactiontype_edit %}?id={{item.id}}"class="well form-horizontal">
+<form method="POST" action="{% url transactiontype_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
 {{form.id}}
             <legend>Параметры{% objectlog item %}</legend>
              <fieldset>

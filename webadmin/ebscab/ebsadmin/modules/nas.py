@@ -22,6 +22,8 @@ from django.contrib import messages
 @login_required
 @render_to('ebsadmin/nas_list.html')
 def nas(request):
+    if  not (request.user.account.has_perm('nas.view_nas')):
+        return {'status':False}
     res = Nas.objects.all()
     table = NasTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -39,27 +41,28 @@ def nas_edit(request):
     item = None
     if request.method == 'POST': 
         fill = request.POST.get("fill", False)
-        print actions.get(request.POST.get("type", ''), {})
+        if id:
+            if  not (request.user.account.has_perm('nas.change_nas')):
+                return {'status':False, 'message': u'У вас нет прав на редактирование серверов доступа'}
+        else:
+            if  not (request.user.account.has_perm('nas.add_nas')):
+                return {'status':False, 'message': u'У вас нет прав на добавление Серверов доступа'}
+        
         if fill:
             if id:
                 item = Nas.objects.get(id=id)
                 form = NasForm(initial=actions.get(request.POST.get("type", ''), {}), instance=item)
             else:
-                 form = NasForm(initial=actions.get(request.POST.get("type", ''), {}),)
+                form = NasForm(initial=actions.get(request.POST.get("type", ''), {}),)
             return {'form':form,  'status': False, 'item':item} 
             
         if id:
             item = Nas.objects.get(id=id)
             form = NasForm(request.POST, instance=item)
         else:
-             form = NasForm(request.POST)
+            form = NasForm(request.POST)
 
-        if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('nas.change_nas')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование серверов доступа'}
-            
-        if  not (request.user.is_staff==True and request.user.has_perm('nas.add_nas')):
-            return {'status':False, 'message': u'У вас нет прав на добавление Серверов доступа'}
+
 
         
         if form.is_valid():
@@ -77,8 +80,8 @@ def nas_edit(request):
         fill = request.GET.get("fill", False)
         nas_type = request.GET.get("nas_type", '')
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('nas.nas_view')):
-                return {'status':True}
+            if  not (request.user.account.has_perm('nas.nas_view')):
+                return {'status':False}
 
             item = Nas.objects.get(id=id)
             form = NasForm(initial=actions.get(nas_type, {}), instance=item)
@@ -90,7 +93,7 @@ def nas_edit(request):
 @ajax_request
 @login_required
 def nas_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_nas')):
+    if  not (request.user.account.has_perm('nas.delete_nas')):
         return {'status':False, 'message': u'У вас нет прав на удаление серверов доступа'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
@@ -109,8 +112,8 @@ def nas_delete(request):
 @login_required 
 @ajax_request
 def testCredentials(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.testcredentials')):
-        return {'status':False, 'message': u'У вас нет на тестирование подключения'}
+    if  not (request.user.account.has_perm('billservice.testcredentials')):
+        return {'status':False, 'message': u'У вас нет прав на тестирование подключения'}
     host, login, password = request.POST.get('host'),request.POST.get('login'),request.POST.get('password')
     try:
         #print host, login, password

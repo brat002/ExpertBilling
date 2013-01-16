@@ -370,7 +370,8 @@ def qiwi_payment(request):
     autoaccept = form.cleaned_data.get("autoaccept", False)
 
     if autoaccept==True and not (password): return {'status_message':u"Для автоматического зачисления необходимо указать пароль"}
-    #print "summ=",type(summ), summ,summ>=1, len(phone)
+    if summ<settings.QIWI_MIN_SUMM: return {'status_message':u"Минимальная сумма платежа %s" % settings.QIWI_MIN_SUMM}
+
     if summ>=1 and len(phone)==10:
         from paymentgateways.qiwi.qiwiapi import create_invoice, accept_invoice_id, lifetime, get_balance
         #if autoaccept:

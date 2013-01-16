@@ -18,6 +18,9 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/dealer_list.html')
 def dealer(request):
+    if  not (request.user.account.has_perm('billservice.view_dealer')):
+        return {'status': False}
+    
     res = Dealer.objects.all()
     table = DealerTable(res)
     
@@ -36,21 +39,20 @@ def dealer_edit(request):
     item = None
     if request.method == 'POST': 
         id = request.POST.get("dealer-id")
-        
+
+
         if id:
+            if  not (request.user.account.has_perm('billservice.change_dealer')):
+                return {'status':False, 'message': u'У вас нет прав на редактирование дилеров'}
             item = Dealer.objects.get(id=id)
             form = DealerForm(request.POST, instance=item, prefix='dealer')
             bank_form = BankDataForm(request.POST, instance=item.bank, prefix='bank')
         else:
             form = DealerForm(request.POST, prefix='dealer')
             bank_form = BankDataForm(request.POST, prefix='bank')
-
-        if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_dealer')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование дилеров'}
             
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_dealer')):
-            return {'status':False, 'message': u'У вас нет прав на добавление дилеров'}
+            if  not (request.user.account.has_perm('billservice.add_dealer')):
+                return {'status':False, 'message': u'У вас нет прав на добавление дилеров'}
 
         
         if form.is_valid() and bank_form.is_valid():
@@ -68,7 +70,7 @@ def dealer_edit(request):
     else:
         id = request.GET.get("id")
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.dealer_view')):
+            if  not (request.user.account.has_perm('billservice.view_dealer')):
                 return {'status':True}
 
             item = Dealer.objects.get(id=id)

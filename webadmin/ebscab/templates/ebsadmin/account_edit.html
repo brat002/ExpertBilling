@@ -6,8 +6,10 @@
 
         <script type="text/javascript"> 
         $(document).ready(function() {
+        	{% if account %}
         	$(document).on("selectedTemplate", documentPrintHandler);
         	// newMessage event handler
+        	
         	function documentPrintHandler(e) {
 
         		var data = {template:e.message, account:{{account.id}}};
@@ -18,7 +20,9 @@
         		});
         		$form.append('</form>');
         		$form.submit();
+        		
         	}
+        	{% endif %}
         //$('#generate_username').popover({title:'Действие над аккаунтом', content: 'Сгенерировать имя пользователя'});
         $("#generate_username").click(function() {
         	$.getJSON('{% url generate_credentials %}',{action:'login'},function(data,status){
@@ -63,64 +67,64 @@
 
 
         	//$('#modal-accounttariff-dialog').popover({title:'Действие над аккаунтом', content: 'Cменить тарифный план'});
-            $(function() {
-                $("#modal-accounttariff-dialog").click(function(event) {
-                    $('<div/>').dialog2({
-                        title: "Изменение тарифного плана", 
-                        content: "/ebsadmin/accounttariff/edit/?account_id={{account.id}}", 
-                        id: "server-notice"
-                    });
 
-                    event.preventDefault();
-                });
-            });
-            $(function() {
-                $("#modal-accounttariff-dialog-table").click(function(event) {
-                    $('<div/>').dialog2({
-                        title: "Изменение тарифного плана", 
-                        content: "/ebsadmin/accounttariff/edit/?account_id={{account.id}}", 
-                        id: "server-notice"
-                    });
+             $("#modal-accounttariff-dialog").click(function(event) {
+                 $('<div/>').dialog2({
+                     title: "Изменение тарифного плана", 
+                     content: "/ebsadmin/accounttariff/edit/?account_id={{account.id}}", 
+                     id: "server-notice"
+                 });
 
-                    event.preventDefault();
+                 event.preventDefault();
+             });
+
+
+            $("#modal-accounttariff-dialog-table").click(function(event) {
+                $('<div/>').dialog2({
+                    title: "Изменение тарифного плана", 
+                    content: "/ebsadmin/accounttariff/edit/?account_id={{account.id}}", 
+                    id: "server-notice"
                 });
+
+                event.preventDefault();
             });
+
 
             //$('#modal-suspendedperiod-dialog-table').popover({title:'Добавить период без списаний', content: 'Добавить период, во время которого с аккаунта не будут производиться списания по периодическим и подключаемым услугам.'});
-            $(function() {
-                $("#modal-suspendedperiod-dialog-table").click(function(event) {
-                    $('<div/>').dialog2({
-                        title: "Добавить период без списаний услуг", 
-                        content: "{% url suspendedperiod %}?account_id={{account.id}}", 
-                        id: "server-notice"
-                    });
 
-                    event.preventDefault();
+            $("#modal-suspendedperiod-dialog-table").click(function(event) {
+                $('<div/>').dialog2({
+                    title: "Добавить период без списаний услуг", 
+                    content: "{% url suspendedperiod %}?account_id={{account.id}}", 
+                    id: "server-notice"
                 });
-            });
-            $(function() {
-                $("#modal-transaction-dialog").click(function(event) {
-                    $('<div/>').dialog2({
-                        title: "Внести платёж", 
-                        content: "{% url transaction_edit %}?account_id={{account.id}}", 
-                        id: "server-notice"
-                    });
 
-                    event.preventDefault();
-                });
+                event.preventDefault();
             });
+
+
+            $("#modal-transaction-dialog").click(function(event) {
+                $('<div/>').dialog2({
+                    title: "Внести платёж", 
+                    content: "{% url transaction_edit %}?account_id={{account.id}}", 
+                    id: "server-notice"
+                });
+
+                event.preventDefault();
+            });
+
             
-            $(function() {
-                $("#modal-accountaddonservice-dialog").click(function(event) {
-                    $('<div />').dialog2({
-                        title: "Прикрепить подключаемую услугу", 
-                        content: "{% url accountaddonservice %}?account_id={{account.id}}", 
-                        id: "accountaddonservicer-modal"
-                    });
 
-                    event.preventDefault();
+            $("#modal-accountaddonservice-dialog").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Прикрепить подключаемую услугу", 
+                    content: "{% url accountaddonservice %}?account_id={{account.id}}", 
+                    id: "accountaddonservicer-modal"
                 });
+
+                event.preventDefault();
             });
+
 
             $("#modal-templateselect-dialog").click(function(event) {
                 $('<div />').dialog2({
@@ -234,14 +238,14 @@
             }else
                 $('#tab-control a[href="#tab-first"]').tab('show');
             
-            $(function() {
+
                 $('a[data-toggle="tab"]').on('shown', function(e){
                   //save the latest tab using a cookie:
                   $.cookie('account_last_tab', $(e.target).attr('href'));
                 });
 
 
-              });
+
         });
         </script>
 <style type="text/css">
@@ -281,9 +285,6 @@
 <div class="row-fluid">
 
 <div class="span9">
-
-
-
             <form class="well form-horizontal  form-condensed" method="POST" action="{% url account_edit %}{% if account %}?id={{account.id}}{% endif %}">
                 <ul class="nav nav-tabs" id="tab-control">
                     <li class="active"><a href="#tab-first" data-toggle="tab">Карточка</a></li>
@@ -300,19 +301,19 @@
                             <legend>Карточка клиента{% objectlog account %}</legend>
                             {% if account %}
                             <div class="control-group">
-                            <div class="control-row">
-                                <label class="control-label">ID аккаунта</label>
-                                <div class="controls">
-                                    <label class="checkbox">{{account.id}}</label>
-                                </div>
-                            </div>
-                            <div class="control-row">
-                                <label class="control-label" id="modal-accounttariff-dialog"><a href="#">Тариф</a></label>
-                                <div class="controls">
-                                    <small class="checkbox inline inline-text  thumbnail">{{account.get_account_tariff.name}}</small>
-                                    
-                                </div>
-                            </div>
+	                            <div class="control-row">
+	                                <label class="control-label">ID аккаунта</label>
+	                                <div class="controls">
+	                                    <label class="checkbox">{{account.id}}</label>
+	                                </div>
+	                            </div>
+	                            <div class="control-row">
+	                                <label class="control-label" id="modal-accounttariff-dialog"><a href="#">Тариф</a></label>
+	                                <div class="controls">
+	                                    <small class="checkbox inline inline-text  thumbnail">{{account.get_account_tariff.name}}</small>
+	                                    
+	                                </div>
+	                            </div>
                             </div>
                             {% endif %}
 
@@ -1249,13 +1250,14 @@
 
                         </fieldset>
                     </div>
-                </div>
-                
                 <fieldset>
                     <div class="form-actions form-actions-center">
                         <button class="btn btn-primary" type="submit">Сохранить</button>
                     </div>
                 </fieldset>
+                </div>
+                
+
             </form>
         </div>
         {% if account %}

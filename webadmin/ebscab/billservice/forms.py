@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.admin import widgets   
 from datetime import datetime, date
 from django.forms import ModelForm
-from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction
+from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction, PermissionGroup, Permission
 from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode, PeriodicalServiceLog, Switch
 from billservice.models import Organization, BalanceHistory, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService, SheduleLog
 from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
@@ -605,7 +605,7 @@ class SystemUserForm(ModelForm):
     last_login = forms.CharField(label="Последний логин", widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
     created = forms.CharField(label="Создан", widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
     authgroup = forms.ModelMultipleChoiceField(queryset = AuthGroup.objects.all(), required=False)
-    superuser = forms.BooleanField(label=u"Суперадминистратор",widget=forms.CheckboxInput, required=False)
+    is_superuser = forms.BooleanField(label=u"Суперадминистратор",widget=forms.CheckboxInput, required=False)
     
     class Meta:
         model = SystemUser
@@ -685,6 +685,14 @@ class AccountGroupForm(ModelForm):
     name = forms.CharField(required=True, label=u"Название")
     class Meta:
         model = AccountGroup
+        
+class PermissionGroupForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    permissions = forms.ModelMultipleChoiceField(label=u'Права', queryset = Permission.objects.all(), widget = forms.widgets.CheckboxSelectMultiple)
+    class Meta:
+        exclude = ('deletable',)
+        model = PermissionGroup
+        
         
 class TPChangeRuleForm(ModelForm):
     def __init__(self, *args, **kwargs):

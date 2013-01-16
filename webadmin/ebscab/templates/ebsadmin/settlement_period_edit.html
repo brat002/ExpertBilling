@@ -63,7 +63,7 @@
 
   <li class="active">{{form.name.value}}</li>
 </ul>
-<form method="POST" action="{% url settlementperiod_edit %}?id={{item.id}}"class="well form-horizontal">
+<form method="POST" action="{% url settlementperiod_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>Параметры расчётного периода</legend>
              <fieldset>
                             <div class="control-group {% if form.name.errors %}error{% endif %}">

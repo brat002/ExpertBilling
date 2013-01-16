@@ -19,7 +19,7 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/actionlog_list.html')
 def actionlog(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.actionlog_view')):
+    if  not (request.user.account.has_perm('object_log.view_logitem')):
         return {'status':False}
     
     if request.GET:

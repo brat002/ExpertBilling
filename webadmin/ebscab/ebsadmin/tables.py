@@ -7,7 +7,7 @@ from billservice.models import SettlementPeriod, SystemUser, PrepaidTraffic
 from billservice.models import TimeSpeed, AddonServiceTarif, PeriodicalServiceLog, News
 from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAccessNode 
 from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType
-from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model
+from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, PermissionGroup
 from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode, SubAccount
 from billservice.models import News, TPChangeRule, Switch, AccountGroup, GroupStat, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, AccountPrepaysTime
 import django_tables2 as django_tables
@@ -414,6 +414,7 @@ class SwitchTable(TableReport):
     
     class Meta:
         model = Switch
+        configurable=True
         available_fields = ("id", 'name', 'manufacturer', 'model', 'sn', 'city', 'street', 'place')
         #exclude = ('comment', 'snmp_version', 'ports_count', 'house', 'option82_template',  'identify',  'disable_port', 'remote_id', 'secret', 'option82_auth_type',  'monitored_ports', 'protected_ports', 'enable_port', 'snmp_community', 'broken_ports', 'uplink_ports', 'disabled_ports', 'password', 'ipaddress', 'macaddress', 'd', 'option82', 'username', 'snmp_support', 'management_method')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -802,5 +803,18 @@ class TicketTable(TableReport):
         model = Ticket
         configurable = True
         available_fields = ("id", 'title', 'queue', 'created', 'status', 'priority', )
+        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
+        
+class PermissionGroupTable(TableReport):
+    
+    id = django_tables.LinkColumn('permissiongroup_edit', get_params={'id':A('pk')})
+    name = django_tables.LinkColumn('permissiongroup_edit', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+
+    
+    
+    class Meta:
+        model = PermissionGroup
+        available_fields = ("id", 'name', 'd', )
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
         

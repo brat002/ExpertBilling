@@ -33,7 +33,7 @@
 
   <li class="active">{{form.name.value}}</li>
 </ul>
-<form method="POST" action="{% url salecard_edit %}?id={{item.id}}"class="well form-horizontal">
+<form method="POST" action="{% url salecard_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>Накладная на передачу карт дилеру</legend>
              <fieldset>
              {{form.cards}}

@@ -39,13 +39,13 @@ def systemuser_edit(request):
             item = SystemUser.objects.get(id=id)
             form = SystemUserForm(request.POST, instance=item)
         else:
-             form = SystemUserForm(request.POST)
+            form = SystemUserForm(request.POST)
              
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_systemuser')):
+            if  not (request.user.account.has_perm('billservice.change_systemuser')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование системных пользователей'}
             
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_systemuser')):
+        if  not (request.user.account.has_perm('billservice.add_systemuser')):
             return {'status':False, 'message': u'У вас нет прав на добавление системных пользователей'}
 
         
@@ -53,6 +53,8 @@ def systemuser_edit(request):
             authgroups = form.cleaned_data.get('authgroup')
             model = form.save(commit=False)
             model.save()
+
+            print model.is_superuser
             u = User.objects.filter(username=model.username)
             if not u:
                 u = User.objects.create_user(model.username, model.email, model.text_password)
@@ -67,7 +69,7 @@ def systemuser_edit(request):
                 
             u.is_staff = True
             u.is_active = model.status
-            u.is_superuser = form.cleaned_data.get("superuser")
+            u.is_superuser = form.cleaned_data.get("is_superuser")
             u.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Администратор успешно сохранён.', extra_tags='alert-success')
@@ -79,7 +81,7 @@ def systemuser_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.systemuser_view')):
+            if  not (request.user.account.has_perm('billservice.view_systemuser')):
                 return {'status':True}
             item = SystemUser.objects.get(id=id)
             u = User.objects.filter(username=item.username)
@@ -87,7 +89,7 @@ def systemuser_edit(request):
                 u = User.objects.create_user(item.username, item.email, item.text_password)
             else:
                 u=u[0]
-            
+            print item.is_superuser
             form = SystemUserForm(initial={'authgroup': u.groups.all(), 'superuser': u.is_superuser}, instance=item)
         else:
             form = SystemUserForm()
@@ -98,7 +100,7 @@ def systemuser_edit(request):
 @ajax_request
 @login_required
 def systemuser_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_systemuser')):
+    if  not (request.user.account.has_perm('billservice.delete_systemuser')):
         return {'status':False, 'message': u'У вас нет прав на удаление администраторов'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

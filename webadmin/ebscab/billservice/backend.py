@@ -47,16 +47,18 @@ class LoginUserBackend(ModelBackend):
                 if isinstance(account, SystemUser):
                     log.debug("superuser!")
                     user.is_staff = True
+                    
                     if account.username=='admin':
                         user.is_superuser = True
                 user.save()
+
             log.debug("User authorized: account is %s, user is %s" % (account, user))
             user.account = account
             return user
         log.debug('Auth failed for account %s'%account)
         return None
 
-
+        
     def get_user(self, user_id):
         try:
             user = User.objects.get(pk=user_id)

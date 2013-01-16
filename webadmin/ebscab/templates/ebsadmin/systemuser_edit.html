@@ -43,7 +43,7 @@
 
   <li class="active">{{form.username.value}}</li>
 </ul>
-<form method="POST" action="{% url systemuser_edit %}?id={{item.id}}"class="well form-horizontal">
+<form method="POST" action="{% url systemuser_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>Параметры учётной записи{% objectlog item %}</legend>
              <fieldset>
                  <div class="control-group ">
@@ -160,16 +160,16 @@
                      </div>
                      </div>
                  <div class="control-group ">
-                     <div class="control-row {% if form.authgroup.errors %}error{% endif %}">
-                         <label class="control-label" for="input-floor">{{form.authgroup.label}}</label>
+                     <div class="control-row {% if form.permissiongroup.errors %}error{% endif %}">
+                         <label class="control-label" for="input-floor">{{form.permissiongroup.label}}</label>
                          <div class="controls">
-                                 {{ form.authgroup }}
-                                 {% if form.authgroup.errors %}
-                                     <span class="help-inline error">{% for error in form.authgroup.errors %}{{ error }}<br/> {% endfor %}</span>
+                                 {{ form.permissiongroup }}
+                                 {% if form.permissiongroup.errors %}
+                                     <span class="help-inline error">{% for error in form.permissiongroup.errors %}{{ error }}<br/> {% endfor %}</span>
                                  {% endif %}
-                                 {% if form.authgroup.help_text%}
+                                 {% if form.permissiongroup.help_text%}
                                      <p class="help-block">
-                                         {{ form.authgroup.help_text|safe }}
+                                         {{ form.permissiongroup.help_text|safe }}
                                      </p>
                                  {% endif %}
                          </div>
@@ -182,16 +182,16 @@
                      </div>
                      </div>
                  <div class="control-group ">
-                     <div class="control-row {% if form.superuser.errors %}error{% endif %}">
-                         <label class="control-label" for="input-floor">{{form.superuser.label}}</label>
+                     <div class="control-row {% if form.is_superuser.errors %}error{% endif %}">
+                         <label class="control-label" for="input-floor">{{form.is_superuser.label}}</label>
                          <div class="controls">
-                                 {{ form.superuser }}
-                                 {% if form.superuser.errors %}
-                                     <span class="help-inline error">{% for error in form.superuser.errors %}{{ error }}<br/> {% endfor %}</span>
+                                 {{ form.is_superuser }}
+                                 {% if form.is_superuser.errors %}
+                                     <span class="help-inline error">{% for error in form.is_superuser.errors %}{{ error }}<br/> {% endfor %}</span>
                                  {% endif %}
-                                 {% if form.superuser.help_text%}
+                                 {% if form.is_superuser.help_text%}
                                      <p class="help-block">
-                                         {{ form.superuser.help_text|safe }}
+                                         {{ form.is_superuser.help_text|safe }}
                                      </p>
                                  {% endif %}
                          </div>
