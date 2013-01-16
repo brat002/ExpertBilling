@@ -6,7 +6,7 @@ from billservice.models import Account, City, Street, House, Hardware, Organizat
 class AccountFTSLookup(LookupChannel):
 
     model = Account
-    min_length=4
+    min_length=2
     def get_query(self,q,request):
         return Account.objects.filter(Q(username__istartswith=q) | Q(contactperson__istartswith=q) | Q(fullname__istartswith=q)  | Q(phone_h__istartswith=q) | Q(phone_m__istartswith=q)   ).order_by('username')
 
@@ -25,7 +25,7 @@ class AccountFTSLookup(LookupChannel):
 class AccountFullnameLookup(LookupChannel):
 
     model = Account
-    min_length=4
+    min_length=2
     def get_query(self,q,request):
         return Account.objects.filter(fullname__istartswith=q).order_by('fullname')
 
@@ -45,7 +45,7 @@ class AccountFullnameLookup(LookupChannel):
 class AccountUsernameLookup(LookupChannel):
 
     model = Account
-    min_length=4
+    min_length=2
     def get_query(self,q,request):
         return Account.objects.filter(username__icontains=q).order_by('username')
 
@@ -64,7 +64,7 @@ class AccountUsernameLookup(LookupChannel):
 class AccountContractLookup(LookupChannel):
 
     model = Account
-    min_length=4
+    min_length=2
     def get_query(self,q,request):
         return Account.objects.filter(contract__istartswith=q).order_by('contract')
 
@@ -83,7 +83,7 @@ class AccountContractLookup(LookupChannel):
 class AccountContactPersonLookup(LookupChannel):
 
     model = Account
-    min_length=4
+    min_length=2
     def get_query(self,q,request):
         return Account.objects.filter(contactperson__istartswith=q).order_by('contactperson')
 
@@ -159,7 +159,7 @@ class HouseLookup(LookupChannel):
 class HardwareLookup(LookupChannel):
 
     model = Hardware
-    min_length=2
+    min_length=1
     def get_query(self,q,request):
         return Hardware.objects.filter(Q(macaddress__istartswith=q) |Q(name__istartswith=q) | Q(model__name__istartswith=q)| Q(sn__istartswith=q)| Q(comment__istartswith=q)).order_by('name')
 
@@ -178,7 +178,7 @@ class HardwareLookup(LookupChannel):
 class OrganizationLookup(LookupChannel):
 
     model = Organization
-    min_length=2
+    min_length=1
     def get_query(self,q,request):
         return Organization.objects.filter(name__istartswith=q).order_by('name')
 
@@ -197,7 +197,7 @@ class OrganizationLookup(LookupChannel):
 class SubAccountFTSLookup(LookupChannel):
 
     model = SubAccount
-    min_length=4
+    min_length=2
     def get_query(self,q,request):
         return SubAccount.objects.filter(Q(username__istartswith=q) | Q(ipn_mac_address__istartswith=q)).order_by('username')
 
