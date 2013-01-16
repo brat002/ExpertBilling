@@ -1959,6 +1959,9 @@ class PermissionGroup(models.Model):
     permissions = models.ManyToManyField(Permission, verbose_name=u"Права")
     deletable = models.BooleanField(default=False, blank=True)
     
+    def __unicode__(self):
+        return u"%s" % self.name
+    
     class Meta:
         verbose_name = u"Группа доступа"
         verbose_name_plural = u"Группы доступа"
