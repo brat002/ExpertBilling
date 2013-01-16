@@ -203,6 +203,6 @@ INSERT INTO billservice_permission(name, app, internal_name, ordering) VALUES('�
 INSERT INTO billservice_permission(name, app, internal_name, ordering) VALUES('Изменять Коммутатор','billservice','change_switch',205);
 INSERT INTO billservice_permission(name, app, internal_name, ordering) VALUES('Удалять Коммутатор','billservice','delete_switch',206);
 INSERT INTO billservice_permission(name, app, internal_name, ordering) VALUES('Просматривать Коммутатор','billservice','view_switch',207);
-INSERT INTO billservice_permission(name, app, internal_name, ordering) VALUES('Просматривать лог действий','object_log','view_logitem',208;
+INSERT INTO billservice_permission(name, app, internal_name, ordering) VALUES('Просматривать лог действий','object_log','view_logitem',208);
 
 ALTER TABLE billservice_permission ADD CONSTRAINT billservice_permission_name_app_internal_name_uniq UNIQUE (name, app, internal_name);
