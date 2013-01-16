@@ -20,6 +20,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/model_list.html')
 def model(request):
+    if  not (request.user.account.has_perm('billservice.view_model')):
+        return {'status':False}
     res = Model.objects.all()
     table = ModelTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -40,11 +42,11 @@ def model_edit(request):
         if id:
             model = Model.objects.get(id=id)
             form = ModelForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_model')):
+            if  not (request.user.account.has_perm('billservice.change_model')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование моделей оборудования'}
         else:
             form = ModelForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_model')):
+        if  not (request.user.account.has_perm('billservice.add_model')):
             return {'status':False, 'message': u'У вас нет прав на добавление моделей оборудования'}
 
 
@@ -61,7 +63,7 @@ def model_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.model_view')):
+            if  not (request.user.account.has_perm('billservice.view_model')):
                 return {'status':True}
 
             item = Model.objects.get(id=id)
@@ -75,8 +77,9 @@ def model_edit(request):
 @ajax_request
 @login_required
 def model_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_model')):
+    if  not ( request.user.account.has_perm('billservice.delete_model')):
         return {'status':False, 'message': u'У вас нет прав на удаление моделей оборудования'}
+    
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:

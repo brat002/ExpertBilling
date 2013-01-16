@@ -20,6 +20,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/hardware_list.html')
 def hardware(request):
+    if  not (request.user.account.has_perm('billservice.view_hardware')):
+        return {'status': False}
     res = Hardware.objects.all()
     table = HardwareTable(res)
     table_to_report = RequestConfig(request, paginate=False).configure(table)
@@ -40,11 +42,11 @@ def hardware_edit(request):
         if id:
             model = Hardware.objects.get(id=id)
             form = HardwareForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_hardware')):
+            if  not (request.user.account.has_perm('billservice.change_hardware')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование оборудования'}
         else:
             form = HardwareForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_hardware')):
+        if  not (request.user.account.has_perm('billservice.add_hardware')):
             return {'status':False, 'message': u'У вас нет прав на добавление оборудования'}
 
 
@@ -61,8 +63,8 @@ def hardware_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.hardware_view')):
-                return {'status':True}
+            if  not (request.user.account.has_perm('billservice.view_hardware')):
+                return {'status':False}
 
             item = Hardware.objects.get(id=id)
             
@@ -75,7 +77,7 @@ def hardware_edit(request):
 @ajax_request
 @login_required
 def hardware_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_hardware')):
+    if  not (request.user.account.has_perm('billservice.delete_hardware')):
         return {'status':False, 'message': u'У вас нет прав на удаление оборудования'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

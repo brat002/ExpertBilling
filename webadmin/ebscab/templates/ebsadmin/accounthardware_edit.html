@@ -26,7 +26,7 @@
 {% block body %}
 {% if not status %}
 {{message}}
-                <form action='{% url accounthardware %}?_id={{item.id}}' method="POST" class="well form-horizontal ajax">
+                <form action='{% url accounthardware %}?_id={{item.id}}' method="POST" class="well form-horizontal  form-condensed  ajax">
                 {{ form.account }}
                 <fieldset>
                   <div class="control-group">

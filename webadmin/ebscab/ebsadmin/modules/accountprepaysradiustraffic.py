@@ -21,6 +21,8 @@ log = LogItem.objects.log_action
 def accountprepaysradiustraffic(request):
         
 
+    if not request.user.account.has_perm('billservice.view_accountprepaysradiustraffic'):
+        return {'status': False}
 
     if request.method=='GET' and request.GET: 
         data = request.GET
@@ -81,11 +83,11 @@ def accountprepaysradiustraffic_edit(request):
         if id:
             model = AccountPrepaysRadiusTrafic.objects.get(id=id)
             form = AccountPrepaysRadiusTraficForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountprepaysradiustraffic')):
+            if  not (request.user.account.has_perm('billservice.change_accountprepaysradiustraffic')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование предоплаченного RADIUS трафика'}
         else:
             form = AccountPrepaysRadiusTraficForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountprepaysradiustraffic')):
+        if  not (request.user.account.has_perm('billservice.add_accountprepaysradiustraffic')):
             return {'status':False, 'message': u'У вас нет прав на добавление RADIUS предоплаченного трафика.'}
 
 
@@ -102,8 +104,8 @@ def accountprepaysradiustraffic_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountprepaysradiustraffic_view')):
-                return {'status':True}
+            if  not (request.user.has_perm('billservice.view_accountprepaysradiustraffic')):
+                return {'status':False}
 
             item = AccountPrepaysRadiusTrafic.objects.get(id=id)
             
@@ -116,7 +118,7 @@ def accountprepaysradiustraffic_edit(request):
 @ajax_request
 @login_required
 def accountprepaysradiustraffic_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_accountprepaysradiustrafic')):
+    if  not (request.user.account.has_perm('billservice.delete_accountprepaysradiustrafic')):
         return {'status':False, 'message': u'У вас нет прав на удаление предоплаченного NetFlow трафика'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

@@ -19,7 +19,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/accountprepaystime_list.html')
 def accountprepaystime(request):
-        
+    if  not (request.user.account.has_perm('billservice.delete_accountprepaystime')):
+        return {'status': False}
 
 
     if request.method=='GET' and request.GET: 
@@ -80,11 +81,11 @@ def accountprepaystime_edit(request):
         if id:
             model = AccountPrepaysTime.objects.get(id=id)
             form = AccountPrepaysTimeForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountprepaystime')):
+            if  not (request.user.account.has_perm('billservice.change_accountprepaystime')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование предоплаченного времени'}
         else:
             form = AccountPrepaysTimeForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountprepaystime')):
+        if  not (request.user.account.has_perm('billservice.add_accountprepaystime')):
             return {'status':False, 'message': u'У вас нет прав на добавление предоплаченного времени'}
 
 
@@ -101,7 +102,7 @@ def accountprepaystime_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountprepaystime_view')):
+            if  not (request.user.account.has_perm('billservice.view_accountprepaystime')):
                 return {'status':True}
 
             item = AccountPrepaysTime.objects.get(id=id)
@@ -115,7 +116,7 @@ def accountprepaystime_edit(request):
 @ajax_request
 @login_required
 def accountprepaystime_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_accountprepaystime')):
+    if  not (request.user.account.has_perm('billservice.delete_accountprepaystime')):
         return {'status':False, 'message': u'У вас нет прав на удаление предоплаченного времени'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

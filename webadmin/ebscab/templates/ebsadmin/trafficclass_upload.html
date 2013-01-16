@@ -19,7 +19,7 @@
   </li>
 
 </ul>
-<form method="POST" action="{% url trafficclass %}?id={{item.id}}"class="well form-horizontal">
+<form method="POST" action="{% url trafficclass %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>Параметры</legend>
              <fieldset>
                   {{form|crispy}}

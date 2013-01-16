@@ -8,7 +8,7 @@
 {% block body %}
 {% if not status %}
 {{message}}
-                <form action='{% url hardwaretype_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax">
+                <form action='{% url hardwaretype_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
                 <fieldset>
                   {{ form.id }}
                   <div class="control-group">

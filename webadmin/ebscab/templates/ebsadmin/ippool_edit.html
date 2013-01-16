@@ -19,7 +19,7 @@
 
   <li class="active">{{form.name.value}}</li>
 </ul>
-<form method="POST" action="{% url ippool_edit %}?id={{item.id}}"class="well form-horizontal">
+<form method="POST" action="{% url ippool_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>Параметры IP пула{% objectlog item %}</legend>
              <fieldset>
                   {{form|crispy}}

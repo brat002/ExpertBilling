@@ -9,7 +9,7 @@
 {% block body %}
 {% if not status %}
 {{message}}
-                <form action='{% url accountgroup_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax">
+                <form action='{% url accountgroup_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal  form-condensed  ajax">
                 <legend>Группа абонентов{% objectlog item %}</legend>
                 <fieldset>
                   {{ form.id }}

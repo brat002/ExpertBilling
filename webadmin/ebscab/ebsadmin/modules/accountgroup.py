@@ -22,6 +22,9 @@ from django.contrib import messages
 @login_required
 @render_to('ebsadmin/accountgroup_list.html')
 def accountgroup(request):
+
+    if not request.user.account.has_perm('billservice.view_accountgroup'):
+        return {'status': False}
     res = AccountGroup.objects.all()
     table = AccountGroupTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -42,11 +45,11 @@ def accountgroup_edit(request):
         if id:
             model = AccountGroup.objects.get(id=id)
             form = AccountGroupForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountgroup')):
+            if  not (request.user.account.has_perm('billservice.change_accountgroup')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование типов оборудования'}
         else:
             form = AccountGroupForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountgroup')):
+        if  not (request.user.account.has_perm('billservice.add_accountgroup')):
             return {'status':False, 'message': u'У вас нет прав на добавление типов оборудования'}
 
 
@@ -64,7 +67,7 @@ def accountgroup_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountgroup_view')):
+            if  not (request.user.has_perm('billservice.accountgroup_view')):
                 return {'status':True}
 
             item = AccountGroup.objects.get(id=id)
@@ -78,7 +81,7 @@ def accountgroup_edit(request):
 @ajax_request
 @login_required
 def accountgroup_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_accountgroup')):
+    if  not (request.user.account.has_perm('billservice.delete_accountgroup')):
         return {'status':False, 'message': u'У вас нет прав на удаление групп пользователей'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

@@ -20,8 +20,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/accountprepaystraffic_list.html')
 def accountprepaystraffic(request):
         
-
-
+    if  not (request.user.account.has_perm('billservice.delete_accountprepaystime')):
+        return {'status': False}
+    
     if request.method=='GET' and request.GET: 
         data = request.GET
 
@@ -84,11 +85,11 @@ def accountprepaystraffic_edit(request):
         if id:
             model = AccountPrepaysTrafic.objects.get(id=id)
             form = AccountPrepaysTraficForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountprepaystraffic')):
+            if  not (request.user.account.has_perm('billservice.change_accountprepaystraffic')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование предоплаченного времени'}
         else:
             form = AccountPrepaysTraficForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountprepaystraffic')):
+        if  not (request.user.account.has_perm('billservice.add_accountprepaystraffic')):
             return {'status':False, 'message': u'У вас нет прав на добавление предоплаченного времени'}
 
 
@@ -105,8 +106,8 @@ def accountprepaystraffic_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountprepaystraffic_view')):
-                return {'status':True}
+            if  not (request.user.has_perm('billservice.view_accountprepaystraffic')):
+                return {'status':False}
 
             item = AccountPrepaysTrafic.objects.get(id=id)
             
@@ -119,7 +120,7 @@ def accountprepaystraffic_edit(request):
 @ajax_request
 @login_required
 def accountprepaystraffic_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_accountprepaystrafic')):
+    if  not (request.user.account.has_perm('billservice.delete_accountprepaystrafic')):
         return {'status':False, 'message': u'У вас нет прав на удаление предоплаченного NetFlow трафика'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

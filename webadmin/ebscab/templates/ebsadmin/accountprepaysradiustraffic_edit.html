@@ -9,7 +9,7 @@
 {% block body %}
 {% if not status %}
 {{message}}
-                <form action='{% url accountprepaysradiustraffic_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax">
+                <form action='{% url accountprepaysradiustraffic_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal  form-condensed  ajax">
                 <legend>Предоплаченный трафик</legend>
                 <fieldset>
                   {{ form.id }}

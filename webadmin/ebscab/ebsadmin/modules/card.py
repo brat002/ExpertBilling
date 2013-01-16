@@ -25,7 +25,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/card_list.html')
 def card(request):
     
-
+    if  not (request.user.account.has_perm('billservice.view_card')):
+        return {'status': False}
+    
     if request.GET: 
         res = Card.objects.all()
         form = CardSearchForm(request.GET)
@@ -51,53 +53,52 @@ def card(request):
             activated_by = form.cleaned_data.get("activated_by")
             dealer = form.cleaned_data.get("dealer")
     
-            print 1
+
             if type(created)==tuple:
                 date_start, date_end = created
-                print 2
+
             if date_start:
                 res = res.filter(created__gte=date_start, created__lte=date_end)
-                print 3
+
             elif created:
                 res = res.filter(created=created)
-                print 4
-            print created, "s", series
+
             if id:
                 res = res.filter(id=id)
-                print 5
+
             if card_type:
                 res = res.filter(type=card_type)
-                print 6
+
             if series:
                 res = res.filter(series=series)
-                print 7
+
             if tariff:
                 res = res.filter(tarif=tariff)
-                print 7
+
 
             if login:
                 res = res.filter(login=login)
-                print 7
+
             if pin:
                 res = res.filter(pin=pin)
-                print 7
+
             if template:
                 res = res.filter(template=template)
-                print 7
+
             if nas:
                 res = res.filter(nas=nas)
-                print 7
+
             if ippool:
                 res = res.filter(ippool=ippool)
-                print 7
+
             if type(activated)==tuple:
                 ac_date_start, ac_date_end = activated
-                print 2
+
             if ac_date_start:
                 res = res.filter(activated__gte=ac_date_start, activated__lte=ac_date_end)
             elif activated:
                 res = res.filter(activated=activated)
-                print 4
+
             if activated_by:
                 res = res.filter(activated_by__in=activated_by)
             
@@ -109,13 +110,12 @@ def card(request):
             elif sold:
                 if type(sold)==tuple:
                     s_date_start, s_date_end = sold
-                    print 2
+
                 if s_date_start:
                     res = res.filter(salecard__created__gte=s_date_start, salecard__created__lte=s_date_end)
                 elif sold:
                     res = res.filter(salecard__created=sold)
-                    print 4
-            print "nominal", nominal
+
             if type(nominal)==tuple:
                 cond, value = nominal
                 if cond==">":
@@ -148,11 +148,11 @@ def card_edit(request):
         if id:
             model = Card.objects.get(id=id)
             form = CardForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_card')):
+            if  not (request.user.account.has_perm('billservice.change_card')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование карт'}
         else:
             form = CardForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_card')):
+        if  not (request.user.account.has_perm('billservice.add_card')):
             return {'status':False, 'message': u'У вас нет прав на добавление карт'}
 
 
@@ -161,7 +161,7 @@ def card_edit(request):
             model.save()
 
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            return HttpResponseRedirect(reverse("hardware")) 
+            return HttpResponseRedirect(reverse("card")) 
         else:
 
             return {'form':form,  'status': False} 
@@ -169,8 +169,8 @@ def card_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.card_view')):
-                return {'status':True}
+            if  not (request.user.has_perm('billservice.view_card')):
+                return {'status':False}
 
             item = Card.objects.get(id=id)
             
@@ -189,17 +189,17 @@ def salecard_edit(request):
 
     item = None
     ids = request.GET.getlist('d')
-    print request.POST
+
     if request.method == 'POST': 
 
         if id:
             model = SaleCard.objects.get(id=id)
             form = SaleCardForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_salecard')):
+            if  not (request.user.account.has_perm('billservice.change_salecard')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование карт'}
         else:
             form = SaleCardForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_salecard')):
+        if  not (request.user.account.has_perm('billservice.add_salecard')):
             return {'status':False, 'message': u'У вас нет прав на добавление карт'}
 
         
@@ -221,14 +221,13 @@ def salecard_edit(request):
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return HttpResponseRedirect(reverse("card")) 
         else:
-            print form._errors
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_salecard')):
+            return {'status':True}
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.salecard_view')):
-                return {'status':True}
+
 
             item = SaleCard.objects.get(id=id)
             dealer = item.dealer
@@ -261,13 +260,13 @@ def card_generate(request):
     item = None
     model = None
     if request.method == 'POST': 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.edit_card')):
-            return {'status':False, 'message': u'У вас нет прав на редактирование карт'}
+        if  not (request.user.account.has_perm('billservice.add_card')):
+            return {'status':False, 'message': u'У вас нет прав на создание карт'}
         form = CardGenerationForm(request.POST)
-        print request.POST
+
         if form.is_valid():
             card_type = int(form.cleaned_data.get("card_type"))
-            print "card_type", card_type, type(card_type)
+
             pin_mask = ''
             if form.cleaned_data.get("pin_letters")==True:
                 pin_mask+=string.letters
@@ -361,8 +360,8 @@ def card_generate(request):
 
             return {'form':form,  'status': False} 
     else:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_card')):
-            return {'status':True}
+        if  not (request.user.account.has_perm('billservice.add_card')):
+            return {'status':False}
         now = datetime.datetime.now()
         card_type = request.GET.get("card_type")
         form = CardGenerationForm(initial={'card_type':card_type, 'count':100, 'nominal':0, "date_start":now, 'date_end':now+datetime.timedelta(days=365), 'login_length_from':6, 'login_length_to':6, 'pin_length_from':6, 'pin_length_to':6, 'login_letters':True, 'login_numbers':True, 'pin_letters':True, 'pin_numbers':True,})
@@ -375,15 +374,15 @@ def card_update(request):
     item = None
     model = None
     ids = request.GET.getlist('d')
-    print 1
+
     if request.method == 'POST': 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_card')):
+        if  not (request.user.account.has_perm('billservice.change_card')):
             return {'status':False, 'message': u'У вас нет прав на добавление карт'}
         form = CardBatchChangeForm(request.POST)
-        print request.POST
+
         if form.is_valid():
             card_type = int(form.cleaned_data.get("card_type"))
-            print "card_type", card_type, type(card_type)
+
             pin_mask = ''
             if form.cleaned_data.get("pin_letters")==True:
                 pin_mask+=string.letters
@@ -471,24 +470,23 @@ def card_update(request):
                 log('EDIT', request.user, model)
             return {'form':form,  'status': True} 
         else:
-            print form._errors
+
             return {'form':form,  'status': False} 
     else:
-        print 2
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.edit_card')):
-            return {'status':True}
-        print 3
+
+        if  not (request.user.account.has_perm('billservice.edit_card')):
+            return {'status':False}
+
         card_type = request.GET.get("card_type")
-        print ids
-        print 
+
         form = CardBatchChangeForm(initial={'cards': ','.join(ids), 'card_type':card_type,  'login_length_from':6, 'login_length_to':6, 'pin_length_from':6, 'pin_length_to':6, 'login_letters':True, 'login_numbers':True, 'pin_letters':True, 'pin_numbers':True,})
-        print 4
+
     return { 'form':form, 'status': False} 
 
 @ajax_request
 @login_required
 def card_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_card')):
+    if  not (request.user.account.has_perm('billservice.delete_card')):
         return {'status':False, 'message': u'У вас нет прав на удаление карточек'}
     id = request.GET.getlist('d')
     if id:
@@ -506,7 +504,7 @@ def card_delete(request):
 @ajax_request
 @login_required
 def card_manage(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.edit_card')):
+    if  not (request.user.account.has_perm('billservice.edit_card')):
         return {'status':False, 'message': u'У вас нет прав на редактирование карточек'}
     id = request.GET.getlist('d')
     action = request.GET.get('action')
@@ -531,6 +529,9 @@ def card_manage(request):
 @login_required
 @render_to('ebsadmin/salecard_list.html')
 def salecard(request):
+    if  not (request.user.account.has_perm('billservice.view_salecard')):
+        return {'status': False}
+    
     res = SaleCard.objects.all()
     table = SaleCardTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)

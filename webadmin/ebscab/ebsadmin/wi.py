@@ -1121,10 +1121,10 @@ def transaction(request):
 
         form = TransactionModelForm(request.POST) 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.edit_transaction')):
+            if  not (request.user.account.has_perm('billservice.edit_transaction')):
                 return {'status':False, 'message': u'У вас нет прав на создание платежей'}
             
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_transaction')):
+        if  not (request.user.account.has_perm('billservice.add_transaction')):
             return {'status':False, 'message': u'У вас нет прав на создание платежей'}
         form.fields["type"].queryset = request.user.account.transactiontype_set
         

@@ -63,7 +63,7 @@
  </script>
 {% endblock %}
 {% block tariff_content %}
-<form method="POST" action="{% url tariff_radiustraffic %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal">
+<form method="POST" action="{% url tariff_radiustraffic %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
 {{form.id}}
 <div class="btn-toolbar"><a href="{{item.get_remove_url}}" class="btn btn-danger align-right show-confirm">Удалить услугу</a></div>
             <legend>Тарификация трафика по RADIUS</legend>
