@@ -76,15 +76,15 @@
                  </div>
                   <div class="control-group">
                   
-                      <label class="control-label">{{access_parameters.ipn_for_vpn.label}}: </label>
+                      <label class="control-label">{{form.ipn_for_vpn.label}}: </label>
                       <div class="controls">
-                      {{ access_parameters.ipn_for_vpn }}
-                      {% if access_parameters.ipn_for_vpn.errors %}
-                          <span class="help-inline">{% for error in access_parameters.ipn_for_vpn.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {{ form.ipn_for_vpn }}
+                      {% if form.ipn_for_vpn.errors %}
+                          <span class="help-inline">{% for error in form.ipn_for_vpn.errors %}{{ error }}<br/> {% endfor %}</span>
                       {% endif %}
-                      {% if access_parameters.ipn_for_vpn.help_text%}
+                      {% if form.ipn_for_vpn.help_text%}
                           <p class="help-block">
-                              {{ access_parameters.ipn_for_vpn.help_text|safe }}
+                              {{ form.ipn_for_vpn.help_text|safe }}
                           </p>
                       {% endif %}
                       </div>
