@@ -202,7 +202,7 @@ class check_vpn_access(Thread):
                                 change_speed.delay(account=acc._asdict(), subacc=subacc._asdict(), nas=nas._asdict(), 
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address,
-                                                    speed=speed, cb=tasks.update_vpn_speed_state.subtask(session_id=rs.id, newspeed=newspeed))
+                                                    speed=speed, cb=tasks.update_vpn_speed_state.s(session_id=rs.id, newspeed=newspeed))
 
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         else:
@@ -1168,12 +1168,12 @@ class addon_service(Thread):
                         not accountaddonservice.temporary_blocked and \
                          ((service.deactivate_service_for_blocked_account==False) or (service.deactivate_service_for_blocked_account==True and ((acc.ballance or 0+acc.credit or 0)>0 and acc.disabled_by_limit==False and acc.balance_blocked==False and acc.account_status==1 ))):
                             #выполняем service_activation_action
-                            sended = cred.delay(acc._asdict(), subacc._asdict(), 'ipn', nas._asdict(), addonservice=service._asdict(), format_string=service.service_activation_action, cb=tasks.adds_enable_state.subtask(accountaddonservice.id))
+                            sended = cred.delay(acc._asdict(), subacc._asdict(), 'ipn', nas._asdict(), addonservice=service._asdict(), format_string=service.service_activation_action, cb=tasks.adds_enable_state.s(accountaddonservice.id))
                             #if sended is True: cur.execute()
                         
                         if (accountaddonservice.deactivated or accountaddonservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance or 0 +acc.credit or 0)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accountaddonservice.action_status==True:
                             #выполняем service_deactivation_action
-                            sended = cred.delay(acc, subacc, 'ipn', nas, addonservice=service._asdict(), format_string=service.service_deactivation_action, cb=tasks.adds_disable_state.subtask(accountaddonservice.id))
+                            sended = cred.delay(acc, subacc, 'ipn', nas, addonservice=service._asdict(), format_string=service.service_deactivation_action, cb=tasks.adds_disable_state.s(accountaddonservice.id))
 
 
                     cur.connection.commit()
@@ -1572,10 +1572,10 @@ class ipn_service(Thread):
                                 ipn_speed_action = nas.subacc_ipn_speed_action
                                 
                                 if ipn_speed_action:
-                                    cs = change_speed.subtask(account=acc._asdict(), subacc=subacc._asdict(), nas=nas._asdict(),
+                                    cs = change_speed.s(account=acc._asdict(), subacc=subacc._asdict(), nas=nas._asdict(),
                                                                 access_type=access_type,
                                                                 format_string=ipn_speed_action,
-                                                                speed=speed, cb = tasks.update_ipn_speed_state.subtask(subaccount_id=id, newspeed=newspeed))
+                                                                speed=speed, cb = tasks.update_ipn_speed_state.s(subaccount_id=id, newspeed=newspeed))
 
                                 
    
@@ -1586,15 +1586,15 @@ class ipn_service(Thread):
                             logger.info("IPNALIVE: %s: new status for subaccount/service %s/%s ipn_add=%s ipn_enable=%s ipn_disable=%s change_speed=%s", (self.getName(), repr(acc), repr(subacc), ipn_add, ipn_enable, ipn_disable, newspeed))
                             if ipn_add:
                                 #если нужно добавить субаккаунт - добавляем и, если нужно, активируем/деактивируем и, если нужно, устанавливаем скорость
-                                cb = cred.subtask(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_enable_action, cb=tasks.ipn_enable_state.subtask(id, cb = cs) if ipn_enable else tasks.ipn_disable_state.subtask(id, cb=cs))
-                                cred.delay(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_add_action, cb = tasks.ipn_add_state.subtask(id, cb = cb))
+                                cb = cred.s(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_enable_action, cb=tasks.ipn_enable_state.s(id, cb = cs) if ipn_enable else tasks.ipn_disable_state.s(id, cb=cs))
+                                cred.delay(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_add_action, cb = tasks.ipn_add_state.s(id, cb = cb))
                             else:
                                 if ipn_enable:
                                     #Активируем и, если нужно, устанавливаем скорость
-                                    cred.delay(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_enable_action, cb=tasks.ipn_enable_state.subtask(id, cb=cs))
+                                    cred.delay(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_enable_action, cb=tasks.ipn_enable_state.s(id, cb=cs))
                                 elif ipn_disable:
                                     #Деактивируем и, если нужно, устанавливаем скорость
-                                    cred.delay(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_disable_action, cb = tasks.ipn_disable_state.subtask(id, cb=cs))
+                                    cred.delay(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_disable_action, cb = tasks.ipn_disable_state.s(id, cb=cs))
                                 elif cs:
                                     #Просто сменить скорость
                                     cs.apply_async()
