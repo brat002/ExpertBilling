@@ -144,7 +144,7 @@ class check_vpn_access(Thread):
 
                 cur.connection.commit()
                 cur.execute("""SELECT rs.id,rs.account_id, rs.subaccount_id, rs.sessionid,rs.framed_ip_address, rs.speed_string,
-                                    lower(rs.framed_protocol) AS access_type,rs.nas_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start,rs.ipinuse_id, rs.caller_id, ((SELECT pool_id FROM billservice_ipinuse WHERE id=rs.ipinuse_id)=(SELECT vpn_guest_ippool_id FROM billservice_tariff WHERE id=get_tarif(rs.account_id)))::boolean as guest_pool
+                                    lower(rs.framed_protocol) AS access_type,rs.nas_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start,rs.ipinuse_id, rs.caller_id, ((SELECT pool_id FROM billservice_ipinuse WHERE id=rs.ipinuse_id)=(SELECT vpn_guest_ippool_id FROM billservice_tariff WHERE id=get_tarif(rs.account_id)))::boolean as guest_pool, rs.nas_port_id
                                     FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", (dateAT, dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
@@ -202,7 +202,7 @@ class check_vpn_access(Thread):
                                 change_speed.delay(account=acc._asdict(), subacc=subacc._asdict(), nas=nas._asdict(), 
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address,
-                                                    speed=speed, cb=tasks.update_vpn_speed_state.s(session_id=rs.id, newspeed=newspeed))
+                                                    speed=speed, cb=tasks.update_vpn_speed_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id, newspeed=newspeed))
 
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         else:

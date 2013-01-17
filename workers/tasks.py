@@ -80,18 +80,18 @@ def convert_values(value):
         return str(value)
 
 @task
-def update_vpn_speed_state(state, session_id, newspeed):
+def update_vpn_speed_state(nas_id, nas_port_id, session_id, newspeed):
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s;
-                """ , (newspeed, session_id,))
+    cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s and nas_id=%s and nas_port_id=%s;
+                """ , (newspeed, session_id, nas_id, nas_port_id))
     conn.commit()
     cur.close()
     conn.close()
 
 @task
-def update_ipn_speed_state(state, subaccount_id, newspeed):
+def update_ipn_speed_state(subaccount_id, newspeed):
 
     conn = get_connection()
     cur = conn.cursor()
