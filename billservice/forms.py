@@ -372,6 +372,19 @@ class AccountForm(ModelForm):
         widgets = {
           'comment': forms.Textarea(attrs={'rows':4, 'cols':15}),
         }
+        
+    def clean_username(self):
+        """
+        Validate that the username is alphanumeric and is not already
+        in use.
+        
+        """
+        existing = SystemUser.objects.filter(username__iexact=self.cleaned_data['username'])
+        if existing.exists():
+            raise forms.ValidationError(u"Нельзя создать пользователя с именем существующего администратора.")
+        else:
+            return self.cleaned_data['username']
+        
 class AccessParametersForm(ModelForm):
     class Meta:
         model = AccessParameters
