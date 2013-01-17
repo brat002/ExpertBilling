@@ -22,6 +22,9 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/trafficclass_list.html')
 def trafficclass(request):
+    if  not (request.user.account.has_perm('nas.view_trafficclass')):
+        return {'status':False}
+    
     res = TrafficClass.objects.all()
     table = TrafficClassTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -40,8 +43,8 @@ def trafficclass_upload(request):
 @ajax_request
 @login_required
 def trafficclass_weight(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('nas.change_trafficclass')):
-        return {'status':False, 'message': u'У вас нет прав на измегегте классов'}
+    if  not (request.user.account.has_perm('nas.change_trafficclass')):
+        return {'status':False, 'message': u'У вас нет прав на изменение классов'}
     ids = request.POST.getlist("id")
     k=1
     if ids:

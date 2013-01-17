@@ -19,8 +19,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/shedulelog_list.html')
 def shedulelog(request):
-        
-
+    if  not (request.user.account.has_perm('billservice.view_shedulelog')):
+        return {'status':False}
 
     if request.method=='GET' and request.GET: 
         data = request.GET
@@ -30,18 +30,11 @@ def shedulelog(request):
         if form.is_valid():
             
             account = form.cleaned_data.get('account')
-
-
-            
-            
             
             res = SheduleLog.objects.all()
             if account:
                 res = res.filter(accounttarif__account__id__in=account)
 
-  
-
-            
             table = SheduleLogTable(res)
             table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
             if table_to_report:
@@ -55,20 +48,5 @@ def shedulelog(request):
         form = SheduleLogSearchForm()
         return { 'form':form}   
 
-@ajax_request
-@login_required
-def shedulelog_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_periodicalservicelog')):
-        return {'status':False, 'message': u'У вас нет прав на удаление истории списаний по период. услугам'}
-    id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
-    if id:
-        try:
-            item = PeriodicalServiceLog.objects.get(id=id)
-        except Exception, e:
-            return {"status": False, "message": u"Указанное списание не найдено %s" % str(e)}
-        log('DELETE', request.user, item)
-        item.delete()
-        return {"status": True}
-    else:
-        return {"status": False, "message": "PeriodicalServiceLog not found"} 
+
     

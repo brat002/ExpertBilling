@@ -20,6 +20,8 @@ from django.contrib import messages
 @login_required
 @render_to('ebsadmin/addonservice_list.html')
 def addonservice(request):
+    if  not (request.user.account.has_perm('billservice.view_addonservice')):
+        return {'status':False}
     res = AddonService.objects.all()
     table = AddonServiceTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -41,10 +43,10 @@ def addonservice_edit(request):
         else:
              form = AddonServiceForm(request.POST)
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_addonservice')):
+            if  not (request.user.account.has_perm('billservice.change_addonservice')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование подключаемых услуг'}
             
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_addonservice')):
+        if  not (request.user.account.has_perm('billservice.add_addonservice')):
             return {'status':False, 'message': u'У вас нет прав на добавление подключаемых услуг'}
 
         
@@ -62,8 +64,8 @@ def addonservice_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.addonservice_view')):
-                return {'status':True}
+            if  not (request.user.account.has_perm('billservice.view_addonservice')):
+                return {'status':False}
 
             item = AddonService.objects.get(id=id)
             form = AddonServiceForm(instance=item)
@@ -74,7 +76,7 @@ def addonservice_edit(request):
 @ajax_request
 @login_required
 def addonservice_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_addonservice')):
+    if  not (request.user.account.has_perm('billservice.delete_addonservice')):
         return {'status':False, 'message': u'У вас нет прав на удаление подключаемых услуг'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

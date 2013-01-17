@@ -103,6 +103,7 @@ cp webadmin/default builds/$1/web/
 cp webadmin/blankpage_config builds/$1/web/
 cp webadmin/blankpage builds/$1/web/
 cp soft/billing builds/$1/data/soft/
+cp soft/backup_and_ftp_netflow.sh builds/$1/data/soft/
 svn export soft/hotspot/ builds/$1/data/soft/hotspot/
 cp soft/requirements.txt builds/$1/data/soft/
 #cp -r ebscab/ builds/$1/ebscab/

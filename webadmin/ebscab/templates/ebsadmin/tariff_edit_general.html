@@ -33,7 +33,7 @@
                   </div>
                   </div>
                   <div class="control-group">
-                  <div class="control-row">
+                  
                       <label class="control-label">{{access_parameters.access_type.label}}: </label>
                       <div class="controls">
                       {{ access_parameters.access_type }}
@@ -46,8 +46,26 @@
                           </p>
                       {% endif %}
                       </div>
+                  
                   </div>
+                  <div class="control-group">
+                  
+                      <label class="control-label">{{access_parameters.ipn_for_vpn.label}}: </label>
+                      <div class="controls">
+                      {{ access_parameters.ipn_for_vpn }}
+                      {% if access_parameters.ipn_for_vpn.errors %}
+                          <span class="help-inline">{% for error in access_parameters.ipn_for_vpn.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if access_parameters.ipn_for_vpn.help_text%}
+                          <p class="help-block">
+                              {{ access_parameters.ipn_for_vpn.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  
                   </div>
+
+                  
                   <div class="control-group">
 
                       <label class="control-label">{{form.vpn_ippool.label}}: </label>
