@@ -146,7 +146,7 @@ urlpatterns += patterns('ebsadmin.modules.periodicalservicelog',
 )
 
 urlpatterns += patterns('ebsadmin.modules.shedulelog',
-    url(r'^shedulelog/delete/$', 'shedulelog_delete', name='shedulelog_delete'),
+
     url(r'^shedulelog/$', 'shedulelog', name='shedulelog'),
     
 )

@@ -19,6 +19,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/address_list.html')
 def address(request):
+    if  not (request.user.account.has_perm('billservice.view_address')):
+        return {'status':False}
     res = []
     for city in  City.objects.all():
         s=[]
@@ -43,12 +45,12 @@ def city_edit(request):
     if len(v)==2:
         prefix, id = v
     if id:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_city')):
+        if  not (request.user.account.has_perm('billservice.change_city')):
             return {'status':False, 'message':u'У вас нет прав на изменение городов'}
         item = City.objects.get(id=id)
         form = CityForm({"name":value}, instance=item)
     else:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_city')):
+        if  not (request.user.account.has_perm('billservice.add_city')):
             return {'status':False, 'message':u'У вас нет прав на добавление городов'}
         form = CityForm({'name': value})
         
@@ -82,12 +84,12 @@ def street_edit(request):
         prefix, parent_id = v
         
     if id:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_street')):
+        if  not (request.user.account.has_perm('billservice.change_street')):
             return {'status':False, 'message':u'У вас нет прав на изменение улиц'}
         item = Street.objects.get(id=id)
         form = StreetForm({"name":value, "city": item.city.id}, instance=item)
     else:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_street')):
+        if  not (request.user.account.has_perm('billservice.add_street')):
             return {'status':False, 'message':u'У вас нет прав на добавление улиц'}
         form = StreetForm({'city':parent_id, 'name': value})
     
@@ -122,12 +124,12 @@ def house_edit(request):
         prefix, parent_id = v
         
     if id:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_house')):
+        if  not (request.user.account.has_perm('billservice.change_house')):
             return {'status':False, 'message':u'У вас нет прав на изменение Домов'}
         item = House.objects.get(id=id)
         form = HouseForm({"name":value, 'street':item.street.id}, instance=item)
     else:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_house')):
+        if  not (request.user.account.has_perm('billservice.add_house')):
             return {'status':False, 'message':u'У вас нет прав на добавление Домов'}
         form = HouseForm({'street':parent_id, 'name': value})
     
@@ -157,7 +159,7 @@ def address_delete(request):
         return {"status": False, "message": "Object not found"}
     
     if prefix=='CITY':
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_city')):
+        if  not (request.user.account.has_perm('billservice.delete_city')):
             return {'status':False, 'message':u'У вас нет прав на удаление городов'}
     
         model = City.objects.get(id=id)
@@ -166,7 +168,7 @@ def address_delete(request):
         return {"status": True}
 
     if prefix=='STREET':
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_street')):
+        if  not (request.user.account.has_perm('billservice.delete_street')):
             return {'status':False, 'message':u'У вас нет прав на удаление улиц'}
     
         model = Street.objects.get(id=id)
@@ -175,7 +177,7 @@ def address_delete(request):
         return {"status": True}
 
     if prefix=='HOUSE':
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_house')):
+        if  not (request.user.account.has_perm('billservice.delete_house')):
             return {'status':False, 'message':u'У вас нет прав на удаление домов'}
     
         model = House.objects.get(id=id)

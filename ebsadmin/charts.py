@@ -53,6 +53,9 @@ from forms import chartdata
 
 def charts(request):
 
+    if  not (request.user.account.has_perm('billservice.view_charts')):
+        return {'status':False}
+    
     from django.db import connection
     cur = connection.cursor()
     

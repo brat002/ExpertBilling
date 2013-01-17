@@ -39,19 +39,19 @@ class RequestConfig(object):
             except:
                 af = table.Meta.__dict__.get('available_fields')
                 ts = TableSettings.objects.create(name=table.__class__.__name__, value={'fields': af if af else table.base_columns.keys()}, user=self.request.user)
-                
-    
+
+            bc = table.base_columns
             table.sequence = ts.value.get('fields')
             for key in table.base_columns:
                 column = table.base_columns.get(key)
                 if key not in ts.value.get('fields'):
                     column.visible = False
-    
+
             selected_columns = ts.value.get('fields')
             z = [x for x in  table.base_columns if x not in selected_columns]
-    
+
             table.columns_form = TableColumnsForm(initial={'columns':selected_columns, 'table_name': table.__class__.__name__})
-            table.columns_form.fields['columns'].choices=[(x,table.base_columns[x].verbose_name or x) for x in  tuple(selected_columns)+tuple(z)]
+            table.columns_form.fields['columns'].choices=[(x,table.base_columns.get(x).verbose_name or x) for x in  tuple(selected_columns)+tuple(z) if bc.get(x)]
             
         order_by = self.request.GET.getlist(table.prefixed_order_by_field)
         if order_by:

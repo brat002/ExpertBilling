@@ -23,6 +23,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/timeperiod_list.html')
 def timeperiod(request):
+    if  not (request.user.account.has_perm('billservice.view_timeperiod')):
+        return {'status':False}
     res = []
     for tp in  TimePeriod.objects.all():
         s=[]
@@ -47,12 +49,12 @@ def timeperiod_edit(request):
     if len(v)==2:
         prefix, id = v
     if id:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_timeperiod')):
+        if  not (request.user.account.has_perm('billservice.change_timeperiod')):
             return {'status':False, 'message':u'У вас нет прав на изменение периодов'}
         item = TimePeriod.objects.get(id=id)
         form = TimePeriodForm({"name":value}, instance=item)
     else:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_timeperiod')):
+        if  not (request.user.account.has_perm('billservice.add_timeperiod')):
             return {'status':False, 'message':u'У вас нет прав на добавление периодов'}
         form = TimePeriodForm({'name': value})
         
@@ -93,13 +95,12 @@ def timeperiodnode_edit(request):
         else:
             form = TimePeriodNodeForm(request.POST)
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_timeperiodnode')):
+            if  not (request.user.account.has_perm('billservice.change_timeperiodnode')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование подпериодов'}
-            
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_timeperiodnode')):
-            return {'status':False, 'message': u'У вас нет прав на добавление попериодов'}
+        else:
+            if  not (request.user.account.has_perm('billservice.add_timeperiodnode')):
+                return {'status':False, 'message': u'У вас нет прав на добавление подпериодов'}
 
-        print form
         if form.is_valid():
  
             model = form.save(commit=False)
@@ -111,6 +112,8 @@ def timeperiodnode_edit(request):
 
             return {"status":False,"form":render_to_string('ebsadmin/timeperiodnode_edit.html', {'form': form})} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_timeperiodnode')):
+            return {'status':True}
         key = request.GET.get('key','')
         v = key.split("___")
         id = None
@@ -118,8 +121,7 @@ def timeperiodnode_edit(request):
             prefix, id = v
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.timeperiodnode_view')):
-                return {'status':True}
+
 
             item = TimePeriodNode.objects.get(id=id)
             form = TimePeriodNodeForm(initial={"time_end": item.time_start+datetime.timedelta(seconds=item.length)},instance=item)
@@ -142,7 +144,7 @@ def timeperiod_delete(request):
         return {"status": False, "message": "Object not found"}
     
     if prefix=='TP':
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_timeperiod')):
+        if  not (request.user.account.has_perm('billservice.delete_timeperiod')):
             return {'status':False, 'message':u'У вас нет прав на удаление периодов'}
     
         model = TimePeriod.objects.get(id=id)
@@ -151,7 +153,7 @@ def timeperiod_delete(request):
         return {"status": True}
 
     if prefix=='NODE':
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_timeperiodnode')):
+        if  not (request.user.account.has_perm('billservice.delete_timeperiodnode')):
             return {'status':False, 'message':u'У вас нет прав на удаление подпериодов'}
     
         model = TimePeriodNode.objects.get(id=id)

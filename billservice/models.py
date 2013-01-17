@@ -382,7 +382,7 @@ class AccessParameters(models.Model):
     access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, default='PPTP', blank=True, verbose_name=u'Способ доступа')
     access_time       = models.ForeignKey(to=TimePeriod, verbose_name=u'Доступ разрешён', null=True, on_delete = models.SET_NULL)
     #ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=u'Пул адресов', blank=True, null=True)
-    ipn_for_vpn     = models.BooleanField(blank=True, default=False)
+    ipn_for_vpn     = models.BooleanField(verbose_name=u'Выполнять IPN действия', blank=True, default=False)
     #max_limit      = models.CharField(verbose_name=u"MAX (kbps)", max_length=64, blank=True, default="")
     #min_limit      = models.CharField(verbose_name=u"MIN (kbps)", max_length=64, blank=True, default="")
     #burst_limit    = models.CharField(verbose_name=u"Burst", max_length=64, blank=True, default="")

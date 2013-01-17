@@ -54,7 +54,7 @@ def systemuser_edit(request):
             model = form.save(commit=False)
             model.save()
 
-            print model.is_superuser
+
             u = User.objects.filter(username=model.username)
             if not u:
                 u = User.objects.create_user(model.username, model.email, model.text_password)
@@ -78,11 +78,12 @@ def systemuser_edit(request):
             messages.success(request, u'Ошибка при сохранении администратора.', extra_tags='alert-success')
             return {'form':form,  'item': item} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_systemuser')):
+            return {'status':True}
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.account.has_perm('billservice.view_systemuser')):
-                return {'status':True}
+
             item = SystemUser.objects.get(id=id)
             u = User.objects.filter(username=item.username)
             if not u:
