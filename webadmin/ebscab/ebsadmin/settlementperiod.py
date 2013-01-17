@@ -21,6 +21,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/settlement_period_list.html')
 def settlementperiod(request):
+    if  not (request.user.account.has_perm('billservice.view_settlementperiod')):
+        return {'status':False}
     res = SettlementPeriod.objects.all()
     table = SettlementPeriodTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -39,12 +41,12 @@ def settlementperiod_edit(request):
             item = SettlementPeriod.objects.get(id=id)
             form = SettlementPeriodForm(request.POST, instance=item)
         else:
-             form = SettlementPeriodForm(request.POST)
+            form = SettlementPeriodForm(request.POST)
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_settlementperiod')):
+            if  not (request.user.account.has_perm('billservice.change_settlementperiod')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование расчётных периодов'}
             
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_settlementperiod')):
+        if  not (request.user.account.has_perm('billservice.add_settlementperiod')):
             return {'status':False, 'message': u'У вас нет прав на добавление расчётных периодов'}
 
         
@@ -59,11 +61,12 @@ def settlementperiod_edit(request):
             messages.warning(request, u'Ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False, 'item':item} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_settlementperiod')):
+            return {'status':False}
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.settlementperiod_view')):
-                return {'status':True}
+
 
             item = SettlementPeriod.objects.get(id=id)
             form = SettlementPeriodForm(instance=item)
@@ -76,7 +79,7 @@ def settlementperiod_edit(request):
 @ajax_request
 @login_required
 def settlementperiod_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_settlementperiod')):
+    if  not (request.user.account.has_perm('billservice.delete_settlementperiod')):
         return {'status':False, 'message': u'У вас нет прав на удаление расчётных периодов'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

@@ -929,7 +929,7 @@ def subaccountedit(request):
                             obj.save()
                             log('EDIT', request.user, obj)
                             ipn_ipinuse = IPInUse.objects.create(pool=ipv4_ipn_pool,ip=ipn_ip_address,datetime=datetime.datetime.now())
-                            log('CREATE', request.user, ipn_ip_address.ipn_ipinuse)
+                            log('CREATE', request.user, obj)
                     else:
                         obj = IPInUse.objects.get(id=ipn_ipinuse.id)
                         obj.disabled=datetime.datetime.now()

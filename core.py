@@ -717,7 +717,7 @@ class RadiusAccessBill(Thread):
                     """ % ','.join(acctfs) )
                     data = cur.fetchall()
                     cur.connection.commit()
-                
+                data=[]
                 acctf_cache = {}
                 for acct_id, radius_traffic_transmit_service_id, time_access_service_id in data:
                     acctf_cache[acct_id] = (radius_traffic_transmit_service_id, time_access_service_id)
@@ -1504,7 +1504,7 @@ class ipn_service(Thread):
                         period = caches.timeperiodaccess_cache.in_period[acc.tarif_id]# True/False
                         for id, ipn_ip_address, ipn_mac_address, vpn_ip_address, nas_id, subacc in access_list:
                             sended, recreate_speed = (None, False)
-                            
+                            logger.info("IPNALIVE: %s: check and set new status for subaccount/service %s/%s", (self.getName(), repr(acc), repr(subacc),))
                             nas = caches.nas_cache.by_id.get(nas_id)
                             
                             if not nas:
@@ -1582,6 +1582,8 @@ class ipn_service(Thread):
                                     subacc = subacc._replace(speed=newspeed)
                                                           
                                 cur.connection.commit()
+                                
+                            logger.info("IPNALIVE: %s: new status for subaccount/service %s/%s ipn_add=%s ipn_enable=%s ipn_disable=%s change_speed=%s", (self.getName(), repr(acc), repr(subacc), ipn_add, ipn_enable, ipn_disable, newspeed))
                             if ipn_add:
                                 #если нужно добавить субаккаунт - добавляем и, если нужно, активируем/деактивируем и, если нужно, устанавливаем скорость
                                 cb = cred.subtask(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_enable_action, cb=tasks.ipn_enable_state(id, cb = cs) if ipn_enable else tasks.ipn_disable_state(id, cb=cs))

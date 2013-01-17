@@ -21,7 +21,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/tpchangerule_list.html')
 def tpchangerule(request):
-
+    if  not (request.user.account.has_perm('billservice.view_tpchangerule')):
+        return {'status':False}
 
     items = TPChangeRule.objects.all()
     table = TPChangeRuleTable(items)
@@ -45,11 +46,11 @@ def tpchangerule_edit(request):
         if id:
             model = TPChangeRule.objects.get(id=id)
             form = TPChangeRuleForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_tpchangerule')):
+            if  not (request.user.account.has_perm('billservice.change_tpchangerule')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование правил смены тарифных планов'}
         else:
             form = TPChangeMultipleRuleForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_tpchangerule')):
+        if  not (request.user.account.has_perm('billservice.add_tpchangerule')):
             return {'status':False, 'message': u'У вас нет прав на добавление правил смены тарифных планов'}
 
 
@@ -91,8 +92,8 @@ def tpchangerule_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tpchangerule_view')):
-                return {'status':True}
+            if  not (request.user.account.has_perm('billservice.view_tpchangerule')):
+                return {'status':False}
 
             item = TPChangeRule.objects.get(id=id)
             
@@ -107,7 +108,7 @@ def tpchangerule_edit(request):
 @ajax_request
 @login_required
 def tpchangerule_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_tpchangerule')):
+    if  not (request.user.account.has_perm('billservice.delete_tpchangerule')):
         return {'status':False, 'message': u'У вас нет прав на удаление правил смены тарифных планов'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

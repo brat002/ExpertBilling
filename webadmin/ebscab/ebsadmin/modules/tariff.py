@@ -22,9 +22,10 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/tariff_list.html')
 def tariff(request):
+    if  not (request.user.account.has_perm('billservice.view_tariff')):
+        return {'status':False}
     res = Tariff.objects.all()
     table = TariffTable(res)
-    print request.COOKIES.get("ebs_per_page")
     table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
@@ -34,9 +35,6 @@ def tariff(request):
 @login_required
 @render_to('ebsadmin/tariff_edit_general.html')
 def tariff_edit(request):
-
-    
-
     item = None
     tariff = None
     if request.method == 'POST': 
@@ -46,14 +44,14 @@ def tariff_edit(request):
             form = TariffForm(request.POST, instance=tariff)
             accessparameters_form = AccessParametersForm(request.POST, instance=tariff.access_parameters, prefix="ap")
         else:
-             form = TariffForm(request.POST)
-             accessparameters_form = AccessParametersForm(request.POST, prefix="ap")
+            form = TariffForm(request.POST)
+            accessparameters_form = AccessParametersForm(request.POST, prefix="ap")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('nas.change_tariff')):
+            if  not (request.user.account.has_perm('billservice.change_tariff')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование тарифных планов'}
             
-        if  not (request.user.is_staff==True and request.user.has_perm('nas.add_tariff')):
+        if  not (request.user.account.has_perm('billservice.add_tariff')):
             return {'status':False, 'message': u'У вас нет прав на добавление тарифных планов'}
 
         
@@ -73,7 +71,7 @@ def tariff_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
+            if  not (request.user.account.has_perm('billservice.view_tariff')):
                 return {'status':True}
 
             tariff = Tariff.objects.get(id=id)
@@ -90,7 +88,9 @@ def tariff_edit(request):
 def tariff_periodicalservice(request):
 
     
-
+    if  not (request.user.account.has_perm('billservice.view_tariff')):
+        return {'status':False}
+        
     item = None
 
     id = request.GET.get("id")
@@ -98,8 +98,7 @@ def tariff_periodicalservice(request):
     items = PeriodicalService.objects.filter(tarif__id=tariff_id)
     tariff = Tariff.objects.get(id=tariff_id)
     if items:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-            return {'status':True}
+
 
         #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
         
@@ -115,6 +114,8 @@ def tariff_periodicalservice(request):
 @login_required
 @render_to('ebsadmin/tariff_addonservice.html')
 def tariff_addonservicetariff(request):
+    if  not (request.user.account.has_perm('billservice.view_tariff')):
+        return {'status':False}
     item = None
 
     id = request.GET.get("id")
@@ -122,9 +123,6 @@ def tariff_addonservicetariff(request):
     items = AddonServiceTarif.objects.filter(tarif__id=tariff_id)
     tariff = Tariff.objects.get(id=tariff_id)
     if items:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-            return {'status':True}
-
         #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
         
         #formset = PeriodicalServiceFormSet(queryset=items)
@@ -140,27 +138,24 @@ def tariff_addonservicetariff(request):
 @render_to('ebsadmin/tariff_addonservicetariff_edit.html')
 def tariff_addonservicetariff_edit(request):
 
+    
     item = None
     if request.method == 'POST': 
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'}
         id = request.POST.get("id")
         if id:
-            print 11
             model = AddonServiceTarif.objects.get(id=id)
             form = AddonServiceTarifForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_addonservicetarif')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование правил активации покдлчюаемых услуг'}
         else:
-            print 22
-            form = AddonServiceTarifForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_addonservicetarif')):
-            return {'status':False, 'message': u'У вас нет прав на добавление правил активации подключаемых услуг'}
 
-        print 2
+            form = AddonServiceTarifForm(request.POST) 
+
         if form.is_valid():
-            print 3
+
             model = form.save(commit=False)
             model.save()
-            print 4
+
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Подключаемая услуга успешно добавлена в тарифный план.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
@@ -172,8 +167,8 @@ def tariff_addonservicetariff_edit(request):
         tariff_id = request.GET.get("tariff_id")
         
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-                return {'status':True}
+            if  not (request.user.account.has_perm('billservice.view_tariff')):
+                return {'status':False}
 
             item = AddonServiceTarif.objects.get(id=id)
             form = AddonServiceTarifForm(instance=item)
@@ -186,7 +181,8 @@ def tariff_addonservicetariff_edit(request):
 @render_to('ebsadmin/tariff_trafficlimit.html')
 def tariff_trafficlimit(request):
 
-    
+    if  not (request.user.account.has_perm('billservice.view_tariff')):
+        return {'status':False}
 
     item = None
 
@@ -195,12 +191,8 @@ def tariff_trafficlimit(request):
     items = TrafficLimit.objects.filter(tarif__id=tariff_id)
     tariff = Tariff.objects.get(id=tariff_id)
     if items:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-            return {'status':True}
 
-        #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
-        
-        #formset = PeriodicalServiceFormSet(queryset=items)
+
         table = TrafficLimitTable(items)
         RequestConfig(request, paginate = False).configure(table)
     else:
@@ -216,18 +208,17 @@ def tariff_trafficlimit_edit(request):
 
     item = None
     if request.method == 'POST': 
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'}
         id = request.POST.get("id")
         if id:
             
             model = TrafficLimit.objects.get(id=id)
             form = TrafficLimitForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_trafficlimit')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование лимитов трафика'}
         else:
             
             form = TrafficLimitForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_periodicalservice')):
-            return {'status':False, 'message': u'У вас нет прав на добавление лимитов трафика'}
+
 
         
         if form.is_valid():
@@ -246,7 +237,7 @@ def tariff_trafficlimit_edit(request):
         tariff_id = request.GET.get("tariff_id")
         
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
+            if  not (request.user.account.has_perm('billservice.view_tariff')):
                 return {'status':True}
 
             #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
@@ -262,15 +253,16 @@ def tariff_trafficlimit_edit(request):
 def tariff_onetimeservice(request):
 
     
-
+    if  not (request.user.account.has_perm('billservice.view_tariff')):
+        return {'status':False}
+        
     item = None
 
     id = request.GET.get("id")
     tariff_id = request.GET.get("tariff_id")
     tariff = Tariff.objects.get(id=tariff_id)
     if tariff_id:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-            return {'status':True}
+
 
         #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
         items = OneTimeService.objects.filter(tarif__id=tariff_id)
@@ -287,7 +279,9 @@ def tariff_onetimeservice(request):
 def tariff_traffictransmitservice(request):
 
     
-
+    if  not (request.user.account.has_perm('billservice.view_tariff')):
+        return {'status':False}
+    
     item = None
 
     id = request.GET.get("id")
@@ -296,21 +290,19 @@ def tariff_traffictransmitservice(request):
     prepaidtable = None
     
     if tariff_id:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-            return {'status':True}
+
         if request.method == 'POST': 
+            if  not (request.user.account.has_perm('billservice.change_tariff')):
+                return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'}
             id = request.POST.get("id")
             if id:
                 print 11
                 model = TrafficTransmitService.objects.get(id=id)
                 form = TrafficTransmitServiceForm(request.POST, instance=model) 
-                if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_traffictransmitservice')):
-                    return {'status':False, 'message': u'У вас нет прав на редактирование правил тарификации NetFlow трафика'}
             else:
                 print 22
                 form = TrafficTransmitServiceForm(request.POST) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_traffictransmitservice')):
-                return {'status':False, 'message': u'У вас нет прав на добавление правил тарификации NetFlow трафика'}
+
     
             print 2
             if form.is_valid():
@@ -347,7 +339,8 @@ def tariff_traffictransmitservice(request):
 @render_to('ebsadmin/tariff_radiustraffic.html')
 def tariff_radiustraffic(request):
 
-    
+    if  not (request.user.account.has_perm('billservice.view_tariff')):
+        return {'status':False}
 
     item = None
 
@@ -356,32 +349,29 @@ def tariff_radiustraffic(request):
     tariff = Tariff.objects.get(id=tariff_id)
     prepaidtable = None
     
-    print 1
+
     if tariff_id:
-        print 2
+
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
             return {'status':True}
-        print 3
+
         if request.method == 'POST':
-            print 4 
+            if  not (request.user.account.has_perm('billservice.change_tariff')):
+                return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'}
             id = request.POST.get("id")
             if id:
-                print 5
+
                 
                 model = RadiusTraffic.objects.get(id=id)
                 form = RadiusTrafficForm(request.POST, instance=model) 
-                if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_radiustraffic')):
-                    return {'status':False, 'message': u'У вас нет прав на редактирование правил тарификации Radius трафика'}
+
             else:
-                print 6
+
                 form = RadiusTrafficForm(request.POST) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_radiustraffic')):
-                return {'status':False, 'message': u'У вас нет прав на добавление правил тарификации Radius трафика'}
+
     
-            print 7
+
             if form.is_valid():
-                print 8
-                print form
                 model = form.save(commit=False)
                 model.save()
                 item = model
@@ -393,13 +383,11 @@ def tariff_radiustraffic(request):
                 item = model
                 messages.error(request, u'При сохранении услуги RADIUS тарификации трафика произошла ошибка.', extra_tags='alert-danger')
         else:
-            print 10
             item = tariff.radius_traffic_transmit_service
             form = RadiusTrafficForm(instance=item)
             
         #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
         
-        print 11
         #formset = PeriodicalServiceFormSet(queryset=items)
         items =RadiusTrafficNode.objects.filter(radiustraffic=item)
         form = RadiusTrafficForm(instance=item)
@@ -415,7 +403,8 @@ def tariff_radiustraffic(request):
 @render_to('ebsadmin/tariff_timeaccessservice.html')
 def tariff_timeaccessservice(request):
 
-    
+    if  not (request.user.account.has_perm('billservice.view_tariff')):
+        return {'status':False}
 
     item = None
 
@@ -423,32 +412,28 @@ def tariff_timeaccessservice(request):
     tariff_id = request.GET.get("tariff_id")
     tariff = Tariff.objects.get(id=tariff_id)
     
-    print 1
+
     if tariff_id:
-        print 2
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-            return {'status':True}
-        print 3
+
+
         if request.method == 'POST':
-            print 4 
+            if  not (request.user.account.has_perm('billservice.change_tariff')):
+                return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
             id = request.POST.get("id")
             if id:
-                print 5
+
                 
                 model = TimeAccessService.objects.get(id=id)
                 form = TimeAccessServiceForm(request.POST, instance=model) 
-                if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_timeaccessservice')):
-                    return {'status':False, 'message': u'У вас нет прав на редактирование правил тарификации Radius трафика'}
+
             else:
-                print 6
+
                 form = TimeAccessServiceForm(request.POST) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_timeaccessservice')):
-                return {'status':False, 'message': u'У вас нет прав на добавление правил тарификации Radius трафика'}
+
     
-            print 7
+
             if form.is_valid():
-                print 8
-                print form.cleaned_data
+
                 model = form.save(commit=False)
                 model.save()
                 item = model
@@ -460,14 +445,11 @@ def tariff_timeaccessservice(request):
                 item = model
                 messages.error(request, u'При сохранении услуги RADIUS тарификации времени произошла ошибка.', extra_tags='alert-danger')
         else:
-            print 10
+
             item = tariff.time_access_service
             form = TimeAccessServiceForm(instance=item)
             
-        #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
-        
-        print 11
-        #formset = PeriodicalServiceFormSet(queryset=items)
+
         items =TimeAccessNode.objects.filter(time_access_service=item)
         #form = TimeAccessServiceForm(instance=item)
         table = TimeAccessNodeTable(items)
@@ -482,32 +464,25 @@ def tariff_timeaccessservice(request):
 @render_to('ebsadmin/tariff_timeaccessnode_edit.html')
 def tariff_timeaccessnode_edit(request):
 
-    
+
 
     item = None
     if request.method == 'POST': 
         id = request.POST.get("id")
-        print request.POST
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
         
         if id:
-            print 11
             model = TimeAccessNode.objects.get(id=id)
             form = TimeAccessNodeForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_timeaccessnode')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование правил тарификации RADIUS времени'}
         else:
-            print 22
             form = TimeAccessNodeForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_timeaccessnode')):
-            return {'status':False, 'message': u'У вас нет прав на добавление правил тарификации RADIUS времени'}
 
-        print 2
+
         if form.is_valid():
-            print 3
             model = form.save(commit=False)
             model.save()
             item = model
-            print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Правило тарификации времени успешно сохранено.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
@@ -515,6 +490,8 @@ def tariff_timeaccessnode_edit(request):
             messages.error(request, u'При сохранении правила тарификации времени произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_tariff')):
+            return {'status':False}
         id = request.GET.get("id")
         tariff_id = request.GET.get("tariff_id")
         time_access_service_id = request.GET.get("time_access_service_id")
@@ -522,8 +499,7 @@ def tariff_timeaccessnode_edit(request):
         if time_access_service_id:
             tas = TimeAccessService.objects.get(id=time_access_service_id)
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-                return {'status':True}
+
 
             #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
             item = TimeAccessNode.objects.get(id=id)
@@ -533,39 +509,36 @@ def tariff_timeaccessnode_edit(request):
             
         else:
             form = TimeAccessNodeForm(initial={"time_access_service": tas})
-        print "tts", tas, tariff_id
+
     return { 'item':item, 'form':form} 
 
 @login_required
 @render_to('ebsadmin/tariff_accessparameters.html')
 def tariff_accessparameters(request):
 
-    
+
 
     item = None
 
     id = request.GET.get("id")
     tariff_id = request.GET.get("tariff_id")
-    print "tariff_id", tariff_id
+
     tariff = Tariff.objects.get(id=tariff_id)
     prepaidtable = None
     
     if tariff:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-            return {'status':True}
+
         if request.method == 'POST': 
             id = request.POST.get("id")
             if tariff.access_parameters:
                 print 11
                 model = tariff.access_parameters
                 form = AccessParametersForm(request.POST, instance=model) 
-                if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accessparameters')):
-                    return {'status':False, 'message': u'У вас нет прав на редактирование параметров доступа'}
+
             else:
                 print 22
                 form = AccessParametersForm(request.POST) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accessparameters')):
-                return {'status':False, 'message': u'У вас нет прав на добавление параметров доступа'}
+
     
             print 2
             if form.is_valid():
@@ -581,7 +554,9 @@ def tariff_accessparameters(request):
                 messages.error(request, u'При сохранении параметров доступа произошла ошибка.', extra_tags='alert-danger')
         else:
             item = tariff.access_parameters
-            
+
+        if  not (request.user.account.has_perm('billservice.view_tariff')):
+            return {'status':False}
         #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
         
         form = AccessParametersForm(instance=item)
@@ -591,6 +566,10 @@ def tariff_accessparameters(request):
         RequestConfig(request, paginate = False).configure(table)
 
     else:
+        if  not (request.user.account.has_perm('billservice.view_tariff')):
+            return {'status':False}
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
         form = AccessParametersForm()
    
     return { 'formset':None, 'table':table, 'tariff': tariff,  'item':item, 'form':form, 'active': 'accessparameters'} 
@@ -604,25 +583,26 @@ def tariff_timespeed_edit(request):
 
     item = None
     if request.method == 'POST': 
+
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
         id = request.POST.get("id")
         if id:
-            print 11
+
             model = TimeSpeed.objects.get(id=id)
             form = TimeSpeedForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_timespeed')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование правил изменения скорости'}
-        else:
-            print 22
-            form = TimeSpeedForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_timespeed')):
-            return {'status':False, 'message': u'У вас нет прав на добавление правил изменения скорости'}
 
-        print 2
+        else:
+
+            form = TimeSpeedForm(request.POST) 
+
+
+
         if form.is_valid():
-            print 3
+
             model = form.save(commit=False)
             model.save()
-            print 4
+
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Настройки скорости успешно сохранены.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
@@ -630,14 +610,12 @@ def tariff_timespeed_edit(request):
             messages.error(request, u'При сохранении параметров скорости произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_tariff')):
+            return {'status':False}
         id = request.GET.get("id")
         access_parameters = request.GET.get("access_parameters")
         ap = AccessParameters.objects.get(id=access_parameters)
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-                return {'status':True}
-
-            #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
             item = TimeSpeed.objects.get(id=id)
             form = TimeSpeedForm(instance=item)
         else:
@@ -653,25 +631,23 @@ def tariff_prepaidtraffic_edit(request):
 
     item = None
     if request.method == 'POST': 
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
         id = request.POST.get("id")
         if id:
-            print 11
             model = PrepaidTraffic.objects.get(id=id)
             form = PrepaidTrafficForm(request.POST, instance=model) 
             if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_prepaidtraffic')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование правил начисления предоплаченного трафика'}
         else:
-            print 22
             form = PrepaidTrafficForm(request.POST) 
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_prepaidtraffic')):
             return {'status':False, 'message': u'У вас нет прав на добавление правил начисления предоплаченного трафика'}
 
-        print 2
+
         if form.is_valid():
-            print 3
             model = form.save(commit=False)
             model.save()
-            print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model)
             messages.success(request, u'Настройки предоплаченного трафика успешно сохранены.', extra_tags='alert-success') 
             return {'form':form,  'status': True} 
@@ -680,12 +656,10 @@ def tariff_prepaidtraffic_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_tariff')):
+            return {'status':False}
+        
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-                return {'status':True}
-
-            #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
             item = PrepaidTraffic.objects.get(id=id)
             form = PrepaidTrafficForm(instance=item)
         else:
@@ -703,27 +677,26 @@ def tariff_traffictransmitnode_edit(request):
 
     item = None
     if request.method == 'POST': 
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
         id = request.POST.get("id")
-        print request.POST
+
         
         if id:
-            print 11
+
             model = TrafficTransmitNodes.objects.get(id=id)
             form = TrafficTransmitNodeForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_traffictransmitnodes')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование правил тарификации трафика'}
-        else:
-            print 22
-            form = TrafficTransmitNodeForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_traffictransmitnodes')):
-            return {'status':False, 'message': u'У вас нет прав на добавление правил тарификации трафика'}
 
-        print 2
+        else:
+
+            form = TrafficTransmitNodeForm(request.POST) 
+
+
+   
         if form.is_valid():
-            print 3
+         
             model = form.save(commit=False)
             model.save()
-            print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Настройки NetFlow тарификации трафика успешно сохранены.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
@@ -731,14 +704,15 @@ def tariff_traffictransmitnode_edit(request):
             messages.error(request, u'При сохранении настроек NetFlow тарификации трафика произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_tariff')):
+            return {'status':False}
         id = request.GET.get("id")
         tariff_id = request.GET.get("tariff_id")
         tts = None
         if tariff_id:
             tts = Tariff.objects.get(id=tariff_id).traffic_transmit_service
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-                return {'status':True}
+
 
             #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
             item = TrafficTransmitNodes.objects.get(id=id)
@@ -759,27 +733,28 @@ def tariff_radiustrafficnode_edit(request):
 
     item = None
     if request.method == 'POST': 
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
         id = request.POST.get("id")
-        print request.POST
+
         
         if id:
-            print 11
+
             model = RadiusTrafficNode.objects.get(id=id)
             form = RadiusTrafficNodeForm(request.POST, instance=model) 
             if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_radiustrafficnode')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование правил тарификации RADIUS трафика'}
         else:
-            print 22
             form = RadiusTrafficNodeForm(request.POST) 
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_radiustrafficnode')):
             return {'status':False, 'message': u'У вас нет прав на добавление правил тарификации RADIUS трафика'}
 
-        print 2
+
         if form.is_valid():
-            print 3
+
             model = form.save(commit=False)
             model.save()
-            print 4
+
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Правило RADIUS тарификации трафика успешно сохранены.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
@@ -787,6 +762,8 @@ def tariff_radiustrafficnode_edit(request):
             messages.error(request, u'При сохранении настроек RADIUS тарификации трафика произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_tariff')):
+            return {'status':False}
         id = request.GET.get("id")
         tariff_id = request.GET.get("tariff_id")
         radius_traffic_id = request.GET.get("radius_traffic_id")
@@ -816,25 +793,27 @@ def tariff_periodicalservice_edit(request):
 
     item = None
     if request.method == 'POST': 
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
         id = request.POST.get("id")
         if id:
-            print 11
+
             model = PeriodicalService.objects.get(id=id)
             form = PeriodicalServiceForm(request.POST, instance=model) 
             if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_periodicalservice')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование периодических услуг'}
         else:
-            print 22
+
             form = PeriodicalServiceForm(request.POST) 
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_periodicalservice')):
             return {'status':False, 'message': u'У вас нет прав на добавление периодических услуг'}
 
-        print 2
+
         if form.is_valid():
-            print 3
+
             model = form.save(commit=False)
             model.save()
-            print 4
+
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Периодическая услуга сохранена.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
@@ -842,12 +821,12 @@ def tariff_periodicalservice_edit(request):
             messages.error(request, u'При сохранении периодической услуги произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_tariff')):
+            return {'status':False}
         id = request.GET.get("id")
         tariff_id = request.GET.get("tariff_id")
         
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-                return {'status':True}
 
             #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
             item = PeriodicalService.objects.get(id=id)
@@ -867,41 +846,40 @@ def tariff_speedlimit_edit(request):
     trafficlimit_id = request.GET.get("trafficlimit_id")
     trafficlimit = TrafficLimit.objects.get(id=trafficlimit_id)
     if request.method == 'POST': 
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
         id = request.POST.get("id")
         if id:
-            print 11
+
             model = SpeedLimit.objects.get(id=id)
             form = SpeedLimitForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_speedlimit')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование правил изменения скорости для лимитов'}
-        else:
-            print 22
-            form = SpeedLimitForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_speedlimit')):
-            return {'status':False, 'message': u'У вас нет прав на добавление правил изменения скорости для лимитов'}
 
-        print 2
+        else:
+
+            form = SpeedLimitForm(request.POST) 
+
         if form.is_valid():
-            print 3
+
             model = form.save(commit=False)
             model.save()
             item = model
             trafficlimit.speedlimit=model
             trafficlimit.save()
-            print 4
+
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return {'form':form,  'status': True} 
         else:
 
             return {'form':form,  'trafficlimit': trafficlimit, 'status': False} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_tariff')):
+            return {'status':False}
         id = request.GET.get("id")
         trafficlimit_id = request.GET.get("trafficlimit_id")
         trafficlimit = TrafficLimit.objects.get(id=trafficlimit_id)
         
         if trafficlimit:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-                return {'status':True}
+
 
             #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
             item = trafficlimit.speedlimit
@@ -919,25 +897,20 @@ def onetimeservice_edit(request):
 
     item = None
     if request.method == 'POST': 
+        if  not (request.user.account.has_perm('billservice.change_tariff')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
         id = request.POST.get("id")
         if id:
-            print 11
             model = OneTimeService.objects.get(id=id)
             form = OneTimeServiceForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_onetimeservice')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование разовых услуг'}
         else:
-            print 22
             form = OneTimeServiceForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_onetimeservice')):
-            return {'status':False, 'message': u'У вас нет прав на добавление разовых услуг'}
 
-        print 2
+
+
         if form.is_valid():
-            print 3
             model = form.save(commit=False)
             model.save()
-            print 4
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Разовая услуга сохранена.', extra_tags='alert-success')
             return {'form':form,  'status': True} 
@@ -945,14 +918,12 @@ def onetimeservice_edit(request):
             messages.error(request, u'При сохранении разовой  услуги произошла ошибка.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_tariff')):
+            return {'status':False}
         id = request.GET.get("id")
         tariff_id = request.GET.get("tariff_id")
         
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-                return {'status':True}
-
-            #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
             item = OneTimeService.objects.get(id=id)
             form = OneTimeServiceForm(instance=item)
         else:
@@ -963,7 +934,7 @@ def onetimeservice_edit(request):
 @ajax_request
 @login_required
 def tariff_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_tariff')):
+    if  not (request.user.account.has_perm('billservice.delete_tariff')):
         return {'status':False, 'message': u'У вас нет прав на удаление тарифных планов'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
@@ -982,8 +953,8 @@ def tariff_delete(request):
 @ajax_request
 @login_required
 def periodicalservice_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_periodicalservice')):
-        return {'status':False, 'message': u'У вас нет прав на удаление периодических услуг'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1001,8 +972,8 @@ def periodicalservice_delete(request):
 @ajax_request
 @login_required
 def traffictransmitnode_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_traffictransmitnodes')):
-        return {'status':False, 'message': u'У вас нет прав на удаление правил NetFlow тарификации'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1021,8 +992,8 @@ def traffictransmitnode_delete(request):
 @ajax_request
 @login_required
 def tariff_timespeed_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_timespeed')):
-        return {'status':False, 'message': u'У вас нет прав на удаление правил изменения скорости'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1040,8 +1011,8 @@ def tariff_timespeed_delete(request):
 @ajax_request
 @login_required
 def tariff_onetimeservice_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_onetimeservice')):
-        return {'status':False, 'message': u'У вас нет прав на удаление разовых услуг'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1059,8 +1030,8 @@ def tariff_onetimeservice_delete(request):
 @ajax_request
 @login_required
 def tariff_radiustrafficservice_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_radiustraffic')):
-        return {'status':False, 'message': u'У вас нет прав на удаление RADIUS тарификации трафика'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1078,8 +1049,8 @@ def tariff_radiustrafficservice_delete(request):
 @ajax_request
 @login_required
 def tariff_timeaccessservice_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_timeaccessservice')):
-        return {'status':False, 'message': u'У вас нет прав на удаление RADIUS тарификации трафика'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1097,8 +1068,8 @@ def tariff_timeaccessservice_delete(request):
 @ajax_request
 @login_required
 def tariff_traffictransmitservice_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_traffictransmitservice')):
-        return {'status':False, 'message': u'У вас нет прав на удаление NetFlow тарфикации трафика'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1116,8 +1087,8 @@ def tariff_traffictransmitservice_delete(request):
 @ajax_request
 @login_required
 def radiustrafficnode_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_radiustrafficnode')):
-        return {'status':False, 'message': u'У вас нет прав на удаление правил RADIUS тарификации'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1135,8 +1106,8 @@ def radiustrafficnode_delete(request):
 @ajax_request
 @login_required
 def trafficlimit_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_trafficlimit')):
-        return {'status':False, 'message': u'У вас нет прав на удаление лимитов трафика'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1156,8 +1127,8 @@ def trafficlimit_delete(request):
 @ajax_request
 @login_required
 def speedlimit_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_speedlimit')):
-        return {'status':False, 'message': u'У вас нет прав на удаление правил изменения скорости'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1173,8 +1144,8 @@ def speedlimit_delete(request):
 @ajax_request
 @login_required
 def timeaccessnode_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_timeaccessnode')):
-        return {'status':False, 'message': u'У вас нет прав на удаление правил тарификации времени'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1192,8 +1163,8 @@ def timeaccessnode_delete(request):
 @ajax_request
 @login_required
 def addonservicetariff_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_addonservicetarif')):
-        return {'status':False, 'message': u'У вас нет прав на удаление правил активации подклчюаемых услуг'}
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:

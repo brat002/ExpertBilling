@@ -172,6 +172,31 @@ class AccountsReportTable(TableReport):
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-bordered table-condensed'}
         
+class AccountsCashierReportTable(TableReport):
+    row_number = django_tables.Column(verbose_name=u'#', empty_values=())
+    #id = FormatBlankColumn()
+    username = django_tables.LinkColumn('account_edit', verbose_name=u'Имя', get_params={'id':A('pk')})
+    contract = FormatBlankColumn(verbose_name=u'Договор')
+    fullname = FormatBlankColumn()
+    address = django_tables.TemplateColumn(u"{{record.street|default:''}} {{record.house|default:''}}-{{record.room|default:''}}")
+    entrance = django_tables.Column(verbose_name=u'Подъезд')
+    row = django_tables.Column(verbose_name=u'Этаж')
+    ballance = FormatFloatColumn()
+
+
+    def __init__(self, *args, **kwargs):
+        super(AccountsCashierReportTable, self).__init__(*args, **kwargs)
+        self.counter = itertools.count()
+
+    def render_row_number(self):
+        return '%d' % next(self.counter)
+    
+    class Meta:
+        #model = Account
+
+        #attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-bordered table-condensed'}
+        
 class ActiveSessionTable(TableReport):
     row_number = django_tables.Column(verbose_name=u'#', empty_values=())
     session_status = django_tables.TemplateColumn("<span class='label {% if record.session_status == 'ACK' %}info{% endif %}'>{{ record.session_status }}</span>")
@@ -631,7 +656,7 @@ class PeriodicalServiceLogTable(TableReport):
         
 class SheduleLogTable(TableReport):
 
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn("  ", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     accounttarif = FormatBlankColumn(verbose_name=u'Тариф аккаунта')
     ballance_checkout = FormatDateTimeColumn(verbose_name=u'Доснятие до стоимости')

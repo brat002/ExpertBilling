@@ -20,6 +20,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/ippool_list.html')
 def ippool(request):
+    if  not (request.user.account.has_perm('billservice.view_ippool')):
+        return {'status':False}
     res = IPPool.objects.all()
     table = IPPoolTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -38,12 +40,12 @@ def ippool_edit(request):
             item = IPPool.objects.get(id=id)
             form = IPPoolForm(request.POST, instance=item)
         else:
-             form = IPPoolForm(request.POST)
+            form = IPPoolForm(request.POST)
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_ippool')):
+            if  not (request.user.account.has_perm('billservice.change_ippool')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование IP пулов'}
             
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_ippool')):
+        if  not (request.user.account.has_perm('billservice.add_ippool')):
             return {'status':False, 'message': u'У вас нет прав на добавление IP пулов'}
 
         
@@ -61,7 +63,7 @@ def ippool_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.ippool_view')):
+            if  not (request.user.account.has_perm('billservice.view_ippool')):
                 return {'status':True}
 
             item = IPPool.objects.get(id=id)
@@ -74,7 +76,7 @@ def ippool_edit(request):
 @ajax_request
 @login_required
 def ippool_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_ippool')):
+    if  not (request.user.account.has_perm('billservice.delete_ippool')):
         return {'status':False, 'message': u'У вас нет прав на удаление IP пулов'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

@@ -20,6 +20,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/switch_list.html')
 def switch(request):
+    if  not (request.user.account.has_perm('billservice.view_switch')):
+        return {'status':False}
     res = Switch.objects.all()
     table = SwitchTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -40,11 +42,11 @@ def switch_edit(request):
         if id:
             model = Switch.objects.get(id=id)
             form = SwitchForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_switch')):
+            if  not (request.user.account.has_perm('billservice.change_switch')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование коммутатора'}
         else:
             form = SwitchForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_switch')):
+        if  not (request.user.account.has_perm('billservice.add_switch')):
             return {'status':False, 'message': u'У вас нет прав на добавление коммутатора'}
 
 
@@ -61,8 +63,8 @@ def switch_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.switch_view')):
-                return {'status':True}
+            if  not (request.user.account.has_perm('billservice.view_switch')):
+                return {'status':False}
 
             item = Switch.objects.get(id=id)
             
@@ -94,7 +96,7 @@ def switch_edit(request):
 @ajax_request
 @login_required
 def switch_port_status(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_switch')):
+    if  not (request.user.account.has_perm('billservice.change_switch')):
         return {'status':False, 'message': u'У вас нет прав на редактирование коммутатора'}
     print request.POST
     switch_id = int(request.POST.get('switch_id',0))
@@ -162,7 +164,7 @@ def switch_port_status(request):
 @ajax_request
 @login_required
 def switch_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_switch')):
+    if  not (request.user.account.has_perm('billservice.delete_switch')):
         return {'status':False, 'message': u'У вас нет прав на удаление коммутатора'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

@@ -4035,7 +4035,7 @@ def get_accounts_for_cashier(request):
         items = items.filter(phone_m__icontains=phone_m)
      
     #id, contract,username,fullname,ballance,credit,status,created,(SELECT name FROM billservice_street WHERE id=account.street_id) as street,(SELECT name FROM billservice_house WHERE id=account.house_id) as house,house_bulk,room, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name
-    items = items.extra(select={"tarif_name": "(SELECT name FROM billservice_tariff WHERE id=get_tarif(billservice_account.id))"}).values('id', 'contract','username','fullname','ballance','credit','status','created', "street__name", 'house__name', 'house_bulk', 'room', 'tarif_name')
+    items = items.extra(select={"tarif_name": "(SELECT name FROM billservice_tariff WHERE id=get_tarif(billservice_account.id))"}).values('id', 'contract','username','fullname','ballance','credit','status','created', "street", 'house', 'house_bulk', 'room', 'tarif_name')
     res = []             
     for item in items:
         
