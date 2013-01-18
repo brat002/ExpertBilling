@@ -47,21 +47,7 @@ from django.contrib.auth.models import User
 log = LogItem.objects.log_action
 
 BAD_REQUEST = u"Ошибка передачи параметров"
-"""
-План по переходу на человеческую систему пополнений/списаний
-1.В местах, где происходит списание денег, меняем списание положительной суммы на отрицательную.
-1.1 Периодические услуги
-1.2 Подклчюаемые услуги
-1.3 Разовые услуги
-1.4 Списание за радиус время
-1.5 Списание за радиус трафик
-1.4 Списание за трафик.
-1.5 Обещанный платёж
-1.6 Блокировка аккаунта
-2. Переделываем триггер acct_transaction_fn, чтобы он пополнения делал с плюсом, Списания с минусом. Апдейтим все данные во всех таблицах и меняем суммы на противоположные по знаку.
-3. Переделываем веб-кабинет, чтобы он показывал адекватные суммы.
 
-"""
 def compare(old, new):
     r = {}
     for key in new:
@@ -127,7 +113,8 @@ def gettransactiontypes(current=[]):
 @login_required
 @render_to('ebsadmin/transactionreport_list.html')
 def transactionreport2(request):
-
+    if  not (request.user.account.has_perm('billservice.view_transactiontype')):
+        return {'status': False}
     if request.GET:
         data = request.GET
         #pageitems = 100
@@ -284,7 +271,8 @@ def transactionreport2(request):
 @render_to('ebsadmin/accounts_list.html')
 def accountsreport(request):
         
-
+    if  not (request.user.account.has_perm('billservice.view_account')):
+        return {'status': False}
 
     if request.method=='GET':
         data = request.GET or request.POST
@@ -441,7 +429,8 @@ def accountsreport(request):
 @render_to('ebsadmin/authlog_list.html')
 def authlogreport(request):
         
-
+    if  not (request.user.account.has_perm('radius.view_authlog')):
+        return {'status': False}
 
     if request.method=='GET' and request.GET:
         data = request.GET
@@ -487,7 +476,8 @@ def authlogreport(request):
 @render_to('ebsadmin/ipinuse_list.html')
 def ipinusereport(request):
         
-
+    if  not (request.user.account.has_perm('billservice.view_ipinuse')):
+        return {'status': False}
 
     if request.method=='GET' and request.GET:
         data = request.GET
@@ -519,7 +509,7 @@ def ipinusereport(request):
                     res = res.filter(Q(activesession__ipinuse__isnull=False) | Q(activesession__subaccount=subacc))
                 res = res.filter(id__in=t)
                 
-            print ip
+
             if ip:
                 res = res.filter(ip=ip)
             if types:
@@ -555,7 +545,9 @@ def ipinusereport(request):
 @render_to('ebsadmin/ballancehistory_list.html')
 def ballancehistoryreport(request):
         
-
+    if  not (request.user.account.has_perm('billservice.view_balancehostory')):
+        return {'status': False}
+    
 
     if request.method=='GET' and request.GET:
         form = BallanceHistoryForm(request.GET)
@@ -614,6 +606,8 @@ def accountedit(request):
     ticket_table = None
     prepaidtraffic = []
     if account_id:
+        if  not (request.user.account.has_perm('billservice.change_account')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование аккаунтов'}
         account = Account.objects.get(id=account_id)
         
         try:
@@ -660,7 +654,9 @@ def accountedit(request):
         except:
             pass
 
-    
+    else:
+        if  not (request.user.account.has_perm('billservice.add_account')):
+            return {'status':False, 'message': u'У вас нет прав на создание аккаунтов'}
 
     if request.method=='POST':
 
@@ -784,6 +780,8 @@ def subaccountedit(request):
     table =None
     action_log_table = None
     if id:
+        if  not (request.user.account.has_perm('billservice.change_subaccount')):
+            return {'status':False, 'message': u'У вас нет прав на редактирование субаккаунтов'}        
         subaccount = SubAccount.objects.get(id=id)
     
         res = AccountAddonService.objects.filter(subaccount=subaccount)
@@ -796,7 +794,9 @@ def subaccountedit(request):
 
         res = []
         prev = None
-        
+    else:
+        if  not (request.user.account.has_perm('billservice.add_subaccount')):
+            return {'status':False, 'message': u'У вас нет прав на создание субаккаунтов'}       
     if account_id:
         account = Account.objects.get(id=account_id)
     elif subaccount:
@@ -981,13 +981,14 @@ def subaccountedit(request):
 @login_required
 @render_to('ebsadmin/accounttarif_edit.html')
 def accounttarif_edit(request):
-    
+
     account = None
     account_id = request.GET.get("account_id")
     id = request.POST.get("id")
     
     if request.method == 'POST': 
-
+        if  not (request.user.account.has_perm('billservice.change_accounttarif')):
+            return {'status':False, 'message': u'У вас нет прав на изменение тарифных планов у аккаунта'}   
         form = AccountTariffForm(request.POST) 
         if id:
             if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accounttariff')):
@@ -1010,7 +1011,7 @@ def accounttarif_edit(request):
 
         if id:
             if  not (request.user.is_staff==True and request.user.has_perm('billservice.accounttarif_view')):
-                return {'status':True}
+                return {'status':False}
             
             accounttariff = AccountTarif.objects.get(id=id)
             form = AccountTariffForm(instance=accounttariff)
@@ -1033,11 +1034,11 @@ def accounthardware(request):
 
         form = AccountHardwareForm(request.POST) 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accounthardware')):
+            if  not (request.user.account.has_perm('billservice.change_accounthardware')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование связок тарифных планов'}
-            
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accounthardware')):
-            return {'status':False, 'message': u'У вас нет прав на добавление связок тарифных планов'}
+        else:
+            if  not (request.user.account.has_perm('billservice.add_accounthardware')):
+                return {'status':False, 'message': u'У вас нет прав на добавление связок тарифных планов'}
         
         
         if form.is_valid(): 
@@ -1051,10 +1052,10 @@ def accounthardware(request):
     else:
         id = request.GET.get("id")
         account_id = request.GET.get("account_id")
-
+        if  not (request.user.account.has_perm('billservice.view_accounthardware')):
+            return {'status':False}
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.accounthardware_view')):
-                return {'status':True}
+
             
             accounttariff = AccountHardware.objects.get(id=id)
             form = AccountHardwareForm(instance=accounttariff)
@@ -1077,11 +1078,11 @@ def suspendedperiod(request):
 
         form = SuspendedPeriodModelForm(request.POST) 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_suspendedperiod')):
+            if  not (request.user.account.has_perm('billservice.change_suspendedperiod')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование периодов без списаний'}
-            
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_suspendedperiod')):
-            return {'status':False, 'message': u'У вас нет прав на добавление периодов без списаний'}
+        else:
+            if  not (request.user.account.has_perm('billservice.add_suspendedperiod')):
+                return {'status':False, 'message': u'У вас нет прав на добавление периодов без списаний'}
         
         
         if form.is_valid(): 
@@ -1094,10 +1095,10 @@ def suspendedperiod(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_accounthardware')):
+            return {'status':False}
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.accounthardware_view')):
-                return {'status':True}
+
             
             accounttariff = SuspendedPeriod.objects.get(id=id)
             form = SuspendedPeriodModelForm(instance=accounttariff)
@@ -1123,9 +1124,9 @@ def transaction(request):
         if id:
             if  not (request.user.account.has_perm('billservice.edit_transaction')):
                 return {'status':False, 'message': u'У вас нет прав на создание платежей'}
-            
-        if  not (request.user.account.has_perm('billservice.add_transaction')):
-            return {'status':False, 'message': u'У вас нет прав на создание платежей'}
+        else:
+            if  not (request.user.account.has_perm('billservice.add_transaction')):
+                return {'status':False, 'message': u'У вас нет прав на создание платежей'}
         form.fields["type"].queryset = request.user.account.transactiontype_set
         
         if form.is_valid(): 
@@ -1139,10 +1140,10 @@ def transaction(request):
             return {'form':form,  'status': False, 'promise_type': promise_type} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_transaction')):
+            return {'status':False}
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.transaction_view')):
-                return {'status':True}
+
             
             accounttariff = AccountTarif.objects.get(id=id)
             form = TransactionModelForm(instance=accounttariff)
@@ -1169,11 +1170,11 @@ def accountaddonservice_edit(request):
 
             model = AccountAddonService.objects.get(id=id)
             form = AccountAddonServiceModelForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountaddonservice')):
+            if  not (request.user.account.has_perm('billservice.change_accountaddonservice')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование привязок подключаемых услуг'}
         else:
             form = AccountAddonServiceModelForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountaddonservice')):
+        if  not (request.user.account.has_perm('billservice.add_accountaddonservice')):
             return {'status':False, 'message': u'У вас нет прав на добавление привязок подключаемых услуг'}
 
 
@@ -1188,10 +1189,10 @@ def accountaddonservice_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_accountaddonservice')):
+            return {'status':False}
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountaddonservice_view')):
-                return {'status':True}
+
 
             accountaddonservice = AccountAddonService.objects.get(id=id)
             
@@ -1210,7 +1211,8 @@ def accountaddonservice_edit(request):
 @login_required
 @render_to('ebsadmin/templateselect_window.html')
 def templateselect(request):
-    
+    if  not (request.user.account.has_perm('billservice.view_template')):
+        return {'status':False}
     types = request.GET.getlist('type')
     form = TemplateSelectForm()
     form.fields['template'].queryset=Template.objects.filter(type__id__in=types)
@@ -1222,7 +1224,8 @@ def templateselect(request):
 @login_required
 @render_to('ebsadmin/activesession_list.html')
 def activesessionreport(request):
-
+    if  not (request.user.account.has_perm('radius.view_activesession')):
+        return {'status': False}
     if request.GET:
         form = SessionFilterForm(request.GET)
         if form.is_valid():
@@ -1268,6 +1271,8 @@ def activesessionreport(request):
 @login_required
 @render_to('ebsadmin/template_list.html')
 def template(request):
+    if  not (request.user.account.has_perm('billservice.view_template')):
+        return {'status':False}
     res = Template.objects.all()
     table = TemplateTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -1282,8 +1287,7 @@ def template_edit(request):
     id = request.GET.get("id")
     item = None
     if id:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.template_view')):
-            return {'status':True}
+
 
         item = Template.objects.get(id=id)
         
@@ -1292,12 +1296,12 @@ def template_edit(request):
         if item:
             form = TemplateForm(request.POST, instance=item)
         else:
-             form = TemplateForm(request.POST)
+            form = TemplateForm(request.POST)
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_template')):
+            if  not (request.user.account.has_perm('billservice.change_template')):
                 return {'status':False, 'message': u'У вас нет прав на редактирование iшаблонов документов'}
             
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_template')):
+        if  not (request.user.account.has_perm('billservice.add_template')):
             return {'status':False, 'message': u'У вас нет прав на добавление шаблонов документов'}
 
         
@@ -1311,6 +1315,8 @@ def template_edit(request):
 
             return { 'form':form, 'template': item} 
     else:
+        if  not (request.user.account.has_perm('billservice.view_template')):
+            return {'status':False}
         if item:
             form = TemplateForm(instance=item)
         else:
@@ -1322,7 +1328,7 @@ def template_edit(request):
 @ajax_request
 @login_required
 def subaccount_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_subaccount')):
+    if  not (request.user.account.has_perm('billservice.delete_subaccount')):
         return {'status':True, 'message': u'У вас нет прав на удаление субаккаунта'}
     id = request.POST.get('id') or request.GET.get('id')
     if id:
@@ -1350,7 +1356,7 @@ def subaccount_delete(request):
 @ajax_request
 @login_required
 def accounttariff_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_accounttarif')):
+    if  not (request.user.account.has_perm('billservice.delete_accounttarif')):
         return {'status':False, 'message': u'У вас нет прав на удаление связки тарифа'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
@@ -1371,7 +1377,7 @@ def accounttariff_delete(request):
 @ajax_request
 @login_required
 def accounthardware_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_accounthardware')):
+    if  not (request.user.account.has_perm('billservice.delete_accounthardware')):
         return {'status':False, 'message':u'У вас нет прав на удаление оборудования аккаунта'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
@@ -1385,7 +1391,7 @@ def accounthardware_delete(request):
 @ajax_request
 @login_required
 def suspendedperiod_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_suspendedperiod')):
+    if  not (request.user.account.has_perm('billservice.delete_suspendedperiod')):
         return {'status':False, 'message': u'У вас нет прав на удаление периода простоя'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
@@ -1402,7 +1408,7 @@ def suspendedperiod_delete(request):
 @ajax_request
 @login_required
 def template_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_template')):
+    if  not (request.user.account.has_perm('billservice.delete_template')):
         return {'status':False, 'message': u'У вас нет прав на шаблонов'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

@@ -96,7 +96,8 @@ TRANSACTION_MODELS = {"PS_GRADUAL":'PeriodicalServiceHistory',
 @ajax_request
 @login_required
 def transactionreport(request):
-
+    if  not (request.user.account.has_perm('billservice.view_transactionreport')):
+        return {'status': False}
     data = json.loads(request.POST.get('data','{}'))
     form = TransactionReportForm(data)
     if form.is_valid():

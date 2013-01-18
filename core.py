@@ -1131,15 +1131,15 @@ class addon_service(Thread):
                         cur.execute("SELECT id FROM billservice_addonservicetransaction WHERE type_id ='ADDONSERVICE_ONETIME' and accountaddonservice_id=%s", (accountaddonservice.id,))
                         transactions = cur.fetchall()
                         if not transactions and accountaddonservice.activated<=dateAT and not accountaddonservice.temporary_blocked:
-                            sql = """
+
+                            cur.execute("""
                             INSERT INTO billservice_addonservicetransaction(
                                         service_id, service_type, account_id, accountaddonservice_id, 
                                         accounttarif_id, type_id, summ, created)
                                 VALUES (%s, 'onetime', %s, %s, 
                                         %s, '%s', (-1)*%s, '%s')
 
-                            """ % (service.id, acc.account_id, accountaddonservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,)
-                            cur.execute(sql)
+                            """,  (service.id, acc.account_id, accountaddonservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,))
                             cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = %s WHERE id=%s", (dateAT, accountaddonservice.id))
 
                             

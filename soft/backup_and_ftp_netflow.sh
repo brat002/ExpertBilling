@@ -4,7 +4,7 @@ ftp_site=ip
 username=ebs
 passwd=ebs
 remote_dir=EBS
-backupdir=/collector/flow/netflow.`date +'%Y-%m-%d'`*
+backupdir=/collector/flow/netflow.`date --date='1 days ago' +'%Y-%m-%d'`*
 filename="backup-$(date '+%F-%H%M').tar.gz"
 
 echo "Creating a backup file $filename of $backupdir."

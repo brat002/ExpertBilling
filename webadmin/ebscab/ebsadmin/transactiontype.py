@@ -20,6 +20,8 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/transactiontype_list.html')
 def transactiontype(request):
+    if  not (request.user.account.has_perm('billservice.view_transactiontype')):
+        return {'status': False}
     res = TransactionType.objects.all()
     table = TransactionTypeTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -35,16 +37,17 @@ def transactiontype_edit(request):
     item = None
     if request.method == 'POST': 
         if id:
+            if  not (request.user.account.has_perm('billservice.change_transactiontype')):
+                return {'status':False, 'message': u'У вас нет прав на редактирование типов проводок'}
             item = TransactionType.objects.get(id=id)
             form = TransactionTypeForm(request.POST, instance=item)
         else:
-             form = TransactionTypeForm(request.POST)
-        if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_transactiontype')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование типов проводок'}
+            if  not (request.user.account.has_perm('billservice.add_transactiontype')):
+                return {'status':False, 'message': u'У вас нет прав на добавление типов транзакций'}
+            form = TransactionTypeForm(request.POST)
+
             
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_transactiontype')):
-            return {'status':False, 'message': u'У вас нет прав на добавление типов транзакций'}
+
 
         
         if form.is_valid():
@@ -62,8 +65,8 @@ def transactiontype_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.transactiontype_view')):
-                return {'status':True}
+            if  not (request.user.account.has_perm('billservice.view_transactiontype')):
+                return {'status':False}
 
             item = TransactionType.objects.get(id=id)
             form = TransactionTypeForm(instance=item)
@@ -75,7 +78,7 @@ def transactiontype_edit(request):
 @ajax_request
 @login_required
 def transactiontype_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_transactiontype')):
+    if  not (request.user.account.has_perm('billservice.delete_transactiontype')):
         return {'status':False, 'message': u'У вас нет прав на удаление типов проводок'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
