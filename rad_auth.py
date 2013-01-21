@@ -657,7 +657,8 @@ class HandleSAuth(HandleSBase):
                 self.replypacket.AddAttribute('Framed-IPv6-Prefix', '::/128')
             #account_speed_limit_cache
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
-            self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc.id,ipinuse_id,nas.id,str(self.session_speed))))
+            if self.session_speed:
+                self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc.id,ipinuse_id,nas.id,str(self.session_speed))))
             self.add_values(acc.tarif_id, nas.id)
             #print "Setting Speed For User" , self.speed
             if vars.SQLLOG_SUCCESS:
@@ -793,8 +794,14 @@ class HandlelISGAuth(HandleSAuth):
             else:
                 self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
+            #self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
+            #self.replypacket.AddAttribute('Class', str("%s,0,%s,%s" % (subacc.id,nas_id,str(self.session_speed))))
+            
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
-            self.replypacket.AddAttribute('Class', str("%s,0,%s,%s" % (subacc.id,nas_id,str(self.session_speed))))
+            if self.session_speed:
+                self.replypacket.AddAttribute('Class', str("%s,0,%s,%s" % (subacc.id,nas_id,str(self.session_speed))))
+
+
             self.add_values(acc.tarif_id, nas.id)
             if vars.SQLLOG_SUCCESS:
                 sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)

@@ -144,10 +144,10 @@ class groupDequeThread(Thread):
         #get a record from prepays cache
         if force_db==True:
             self.cur.execute("""
-                SELECT prepais.id, prepais.size
-                FROM billservice_accountprepaystrafic as prepais
-                 JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
-                  WHERE prepais.size>0 and account_tarif_id=%s and prepaidtraffic.group_id=%s and current=True;
+                    SELECT prepais.id, prepais.size
+                    FROM billservice_accountprepaystrafic as prepais
+                     JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
+                      WHERE prepais.size>0 and account_tarif_id=%s and prepaidtraffic.group_id=%s and current=True;
             """, (acctf_id, group_id))
             prepInf = self.cur.fetchone()
         else:
@@ -210,7 +210,7 @@ class groupDequeThread(Thread):
                 trafic_cost = self.get_actual_cost(octets_summ, gdate, nodes) if nodes else 0
                 summ = (trafic_cost * octets) / MEGABYTE
                 
-        logger.info("traffic_transmit_service_id=%s acctf_id=%s account_id=%s summ=%s", (traffic_transmit_service_id, acctf_id, account_id, summ))
+        logger.info("traffic_transmit_service_id=%s acctf_id=%s account_id=%s bytes=%s traffic_cost=%s summ=%s", (traffic_transmit_service_id, acctf_id, account_id, octets, trafic_cost, summ))
         if summ <> 0:
             logger.debug("Tarificate group bytes traffic_transmit_service_id=%s, acctf_id=%s, account_id=%s, summ=%s, created=%s",  (traffic_transmit_service_id, acctf_id, account_id, summ, gdate,))
             return traffictransaction(self.cur, traffic_transmit_service_id, acctf_id, account_id, summ=summ, created=gdate)
