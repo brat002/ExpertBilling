@@ -344,7 +344,7 @@ def cred(account, subacc, access_type, nas, addonservice={},format_string=''):
 def create_speed(default, speeds,  correction, addonservicespeed, speed, date_, fMem):          
     if speed=='':            
         defaults = default            
-        defaults = map(lambda x: x if x else 0, defaults[:10]) if defaults else [0,0,0,0,0,0,0,0,0,0,8]            
+        defaults = map(lambda x: x if x else 0, defaults[:11]) if defaults else [0,0,0,0,0,0,0,0,0,0,8]            
         result=[]            
         min_delta, minimal_period = -1, []            
         now=date_            
@@ -356,7 +356,7 @@ def create_speed(default, speeds,  correction, addonservicespeed, speed, date_, 
                 minimal_period=speed                    
             min_delta=delta            
         
-        minimal_period = map(lambda x: x if x else 0, minimal_period[:10]) if minimal_period else [0,0,0,0,0,0,0,0,0,0,8]          
+        minimal_period = map(lambda x: x if x else 0, minimal_period[:11]) if minimal_period else [0,0,0,0,0,0,0,0,0,0,8]          
         for k in xrange(0, 11):                
             s=minimal_period[k]                
             if s=='0' or s=='' or s==0 or s==None:                    
