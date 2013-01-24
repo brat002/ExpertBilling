@@ -9,8 +9,7 @@ sys.path.insert(0, "modules")
 sys.path.append("cmodules")
 import gc
 import copy
-import glob
-import random
+
 import signal
 import os, sys
 import marshal

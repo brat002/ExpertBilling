@@ -1414,12 +1414,17 @@ if __name__ == "__main__":
         raw_uid, raw_crc = a
         l_uid = raw_uid[:32]
         srts=int(str(raw_uid[32:]).strip().lower(),16)
-        if l_uid==md5(b64decode('Z'+'nJlZ'+'WR'+'vbQ==')).hexdigest().upper():
-            o = str(b64decode('ZnJlZWRvbQ=='))
+        if l_uid==md5(str('freedom')).hexdigest().upper():
+            o = str('freedom')
         else:
-            s,o=commands.getstatusoutput(b64decode('Y2F0IC9wcm9jL2NwdWluZm8gfCBncmVwICJtb2RlbCBuYW1lIiB8IHVuaXE='))
-        uid = md5(o).hexdigest()
-        uid+=hex(srts)
+            s,o=commands.getstatusoutput(b64decode('Y2F0IC9wcm9jL2NwdWluZm8gfCBncmVwICJtb2RlbCBuYW1lIg='))
+        uid = md5(o).hexdigest().upper()
+        
+        if l_uid!=uid:
+            print b64decode('SW5jb3JyZWN0IGhhc2guIE5ldyBoYXJkd2FyZT8=')
+            sys.exit()
+            
+        uid+=str(hex(srts))
         uid=uid.upper()
         crc=0
         i=0

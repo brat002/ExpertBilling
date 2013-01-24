@@ -1,4 +1,5 @@
 {% extends "ebsadmin/tariff_edit.html" %}
+{% load ebsadmin_tags %}
 {% block tariff_content %}
 <form method="POST" action="{% url tariff_edit %}?id={{item.id}}" class="well form-horizontal form-condensed">
 {{form.id}}

@@ -1074,7 +1074,8 @@ class SystemUser(models.Model):
         
     def has_perm(self, perm):
         app, internal_name = perm.split('.')
-        return self.status and (self.is_superuser or (self.permissiongroup.permissions.filter(app=app, internal_name=internal_name).exist() if self.permissiongroup else False))
+        print app, internal_name, self.permissiongroup.permissions.filter(app=app, internal_name=internal_name) if self.permissiongroup else ''
+        return self.status and (self.is_superuser or (self.permissiongroup.permissions.filter(app=app, internal_name=internal_name).exists() if self.permissiongroup else False))
     
     def delete(self):
         return
@@ -1634,7 +1635,7 @@ class SubAccount(models.Model):
     allow_vpn_with_block = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать RADIUS авторизацию при наличии блокировок по лимитам или балансу")   
     allow_ipn_with_null = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать IPN авторизацию при нулевом балансе")
     allow_ipn_with_minus = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать IPN авторизацию при отрицательном балансе")
-    allow_ipn_with_block = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать IPN авторизацию при нулевом балансе")  
+    allow_ipn_with_block = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешать IPN авторизацию при наличии блокировок по лимитам или балансу")  
     associate_pptp_ipn_ip = models.BooleanField(blank=True, default=False, verbose_name=u"Привязать PPTP/L2TP авторизацию к IPN IP")  
     associate_pppoe_ipn_mac = models.BooleanField(blank=True, default=False, verbose_name=u"Привязать PPPOE авторизацию к IPN MAC")  
     ipn_speed = models.TextField(blank=True, help_text=u"Не менять указанные настройки скорости")
