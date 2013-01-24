@@ -46,3 +46,40 @@ def objectlog(o):
         ct_id = ContentType.objects.get_for_model(o).id
     
     return {'ct_id': ct_id, 'item':o}
+
+def permission(parser, token):
+    try:
+        # get the arguments passed to the template tag; 
+        # first argument is the tag name
+        tag_name, perm = token.split_contents()
+
+    except ValueError:
+        raise template.TemplateSyntaxError("%r tag requires exactly 1 arguments" % token.contents.split()[0])
+    # look for the 'endpermission' terminator tag
+    nodelist = parser.parse(('endpermission',))
+    parser.delete_first_token()
+    return PermissionNode(nodelist, perm)
+
+
+class PermissionNode(template.Node):
+    def __init__(self, nodelist, permission):
+        self.nodelist = nodelist
+        # evaluate the user instance as a variable and store
+        self.request = template.Variable('request')
+        # store the permission string
+        self.permission = permission
+
+
+    def render(self, context):
+        
+        
+        
+        request = self.request.resolve(context)
+
+        if request.user.account.has_perm(self.permission):
+            content = self.nodelist.render(context)
+            return content 
+        return ""
+
+register.tag('permission', permission)
+

@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
  {% load render_table from django_tables2 %}
+ {% load ebsadmin_tags %}
 {% block extra_head %}
           <script type="text/javascript"> 
         $(document).ready(function() {
@@ -41,10 +42,16 @@
   </li>
 </ul>
 </div>
+{% permission billservice.add_settlementperiod %}
 <div class="btn-toolbar pull-right"><a href="{% url settlementperiod_edit %}" class="btn btn-success align-right">Добавить</a> </div>
+{% endpermission %}
+{% permission billservice.view_settlementperiod %}
 <div>
+
   {% render_table table %}
+  
 </div>
+{% endpermission %}
     </div>
   
 
