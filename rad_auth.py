@@ -1417,7 +1417,7 @@ if __name__ == "__main__":
         if l_uid==md5(str('freedom')).hexdigest().upper():
             o = str('freedom')
         else:
-            s,o=commands.getstatusoutput(b64decode('Y2F0IC9wcm9jL2NwdWluZm8gfCBncmVwICJtb2RlbCBuYW1lIg='))
+            s,o=commands.getstatusoutput(b64decode('Y2F0IC9wcm9jL2NwdWluZm8gfCBncmVwICJtb2RlbCBuYW1lIg=='))
         uid = md5(o).hexdigest().upper()
         
         if l_uid!=uid:
