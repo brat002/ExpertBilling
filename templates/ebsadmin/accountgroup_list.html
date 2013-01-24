@@ -1,4 +1,6 @@
 {% extends "ebsadmin/base.html" %}
+{% if status != False %}
+{% load ebsadmin_tags %}
  {% load render_table from django_tables2 %}
 {% block extra_head %}
         <script type="text/javascript"> 
@@ -71,4 +73,4 @@
   
 
  {% endblock %}
-
+{% endif %}

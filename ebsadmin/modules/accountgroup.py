@@ -22,9 +22,9 @@ from django.contrib import messages
 @login_required
 @render_to('ebsadmin/accountgroup_list.html')
 def accountgroup(request):
-
     if not request.user.account.has_perm('billservice.view_accountgroup'):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     res = AccountGroup.objects.all()
     table = AccountGroupTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -46,11 +46,13 @@ def accountgroup_edit(request):
             model = AccountGroup.objects.get(id=id)
             form = AccountGroupForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountgroup')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование типов оборудования'}
+                messages.error(request, u'Ошибка при сохранении группы.', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.META.PATH_INFO)
         else:
             form = AccountGroupForm(request.POST) 
         if  not (request.user.account.has_perm('billservice.add_accountgroup')):
-            return {'status':False, 'message': u'У вас нет прав на добавление типов оборудования'}
+            messages.error(request, u'У вас нет прав на добавление типов оборудования', extra_tags='alert-danger')
+            return HttpResponseRedirect(request.META.PATH_INFO)
 
 
         if form.is_valid():
