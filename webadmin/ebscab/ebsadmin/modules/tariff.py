@@ -13,7 +13,7 @@ from ebsadmin.tables import TariffTable, PeriodicalServiceTable, TrafficTransmit
 from ebscab.billservice.forms import TariffForm, PeriodicalServiceForm, TrafficTransmitServiceForm, PrepaidTrafficForm, TrafficTransmitNodeForm, AccessParametersForm, TimeSpeedForm, OneTimeServiceForm, RadiusTrafficForm, RadiusTrafficNodeForm, TrafficLimitForm, SpeedLimitForm, TimeAccessServiceForm, TimeAccessNodeForm, AddonServiceTarifForm
 from ebscab.billservice.models import Tariff, PeriodicalService, TrafficTransmitService, TrafficTransmitNodes, PrepaidTraffic, AccessParameters, TimeSpeed, OneTimeService, RadiusTraffic, RadiusTrafficNode, TrafficLimit, SpeedLimit, TimeAccessService, TimeAccessNode, AddonServiceTarif
 from django.contrib import messages
-
+from django.contrib import messages
 
 log = LogItem.objects.log_action
 
@@ -23,7 +23,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/tariff_list.html')
 def tariff(request):
     if  not (request.user.account.has_perm('billservice.view_tariff')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+    
     res = Tariff.objects.all()
     table = TariffTable(res)
     table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
@@ -49,10 +51,15 @@ def tariff_edit(request):
 
         if id:
             if  not (request.user.account.has_perm('billservice.change_tariff')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование тарифных планов'}
+                messages.error(request, u'У вас нет прав на редактирование тарифных планов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
             
-        if  not (request.user.account.has_perm('billservice.add_tariff')):
-            return {'status':False, 'message': u'У вас нет прав на добавление тарифных планов'}
+        else:
+            if  not (request.user.account.has_perm('billservice.add_tariff')):
+                messages.error(request, u'У вас нет прав на создание тарифных планов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
 
         
         if form.is_valid() and accessparameters_form.is_valid():
@@ -89,7 +96,8 @@ def tariff_periodicalservice(request):
 
     
     if  not (request.user.account.has_perm('billservice.view_tariff')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
         
     item = None
 
@@ -115,7 +123,8 @@ def tariff_periodicalservice(request):
 @render_to('ebsadmin/tariff_addonservice.html')
 def tariff_addonservicetariff(request):
     if  not (request.user.account.has_perm('billservice.view_tariff')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     item = None
 
     id = request.GET.get("id")
@@ -168,7 +177,8 @@ def tariff_addonservicetariff_edit(request):
         
         if id:
             if  not (request.user.account.has_perm('billservice.view_tariff')):
-                return {'status':False}
+                messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+                return {}
 
             item = AddonServiceTarif.objects.get(id=id)
             form = AddonServiceTarifForm(instance=item)
@@ -182,7 +192,8 @@ def tariff_addonservicetariff_edit(request):
 def tariff_trafficlimit(request):
 
     if  not (request.user.account.has_perm('billservice.view_tariff')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     item = None
 
@@ -238,7 +249,8 @@ def tariff_trafficlimit_edit(request):
         
         if id:
             if  not (request.user.account.has_perm('billservice.view_tariff')):
-                return {'status':True}
+                messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+                return {}
 
             #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
             item = TrafficLimit.objects.get(id=id)
@@ -252,9 +264,9 @@ def tariff_trafficlimit_edit(request):
 @render_to('ebsadmin/tariff_onetimeservice.html')
 def tariff_onetimeservice(request):
 
-    
     if  not (request.user.account.has_perm('billservice.view_tariff')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
         
     item = None
 
@@ -280,7 +292,8 @@ def tariff_traffictransmitservice(request):
 
     
     if  not (request.user.account.has_perm('billservice.view_tariff')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
     item = None
 
@@ -340,7 +353,8 @@ def tariff_traffictransmitservice(request):
 def tariff_radiustraffic(request):
 
     if  not (request.user.account.has_perm('billservice.view_tariff')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     item = None
 
@@ -404,7 +418,8 @@ def tariff_radiustraffic(request):
 def tariff_timeaccessservice(request):
 
     if  not (request.user.account.has_perm('billservice.view_tariff')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     item = None
 
@@ -491,7 +506,8 @@ def tariff_timeaccessnode_edit(request):
             return {'form':form,  'status': False} 
     else:
         if  not (request.user.account.has_perm('billservice.view_tariff')):
-            return {'status':False}
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {}
         id = request.GET.get("id")
         tariff_id = request.GET.get("tariff_id")
         time_access_service_id = request.GET.get("time_access_service_id")
@@ -531,18 +547,14 @@ def tariff_accessparameters(request):
         if request.method == 'POST': 
             id = request.POST.get("id")
             if tariff.access_parameters:
-                print 11
                 model = tariff.access_parameters
                 form = AccessParametersForm(request.POST, instance=model) 
 
             else:
-                print 22
                 form = AccessParametersForm(request.POST) 
 
     
-            print 2
             if form.is_valid():
-                print 3
                 model = form.save(commit=False)
                 model.save()
                 
@@ -556,7 +568,8 @@ def tariff_accessparameters(request):
             item = tariff.access_parameters
 
         if  not (request.user.account.has_perm('billservice.view_tariff')):
-            return {'status':False}
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
         
         form = AccessParametersForm(instance=item)
@@ -567,9 +580,12 @@ def tariff_accessparameters(request):
 
     else:
         if  not (request.user.account.has_perm('billservice.view_tariff')):
-            return {'status':False}
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if  not (request.user.account.has_perm('billservice.change_tariff')):
-            return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
+            messages.error(request, u'У вас нет прав на редактирование тарифного плана', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
+
         form = AccessParametersForm()
    
     return { 'formset':None, 'table':table, 'tariff': tariff,  'item':item, 'form':form, 'active': 'accessparameters'} 

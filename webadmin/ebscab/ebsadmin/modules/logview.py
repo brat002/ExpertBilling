@@ -9,6 +9,7 @@ from object_log.models import LogItem
 from ebsadmin.forms import LogViewer
 import commands
 import os
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -17,10 +18,18 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/logview.html')
 def logview(request):
         
+    denied = False
     if  not (request.user.account.has_perm('billservice.view_log_files')):
-        return {'status':False, 'message': u'У вас нет прав на просмотр лог-файлов'}
+        #return {'status':False, 'message': u'У вас нет прав на просмотр лог-файлов'}
+        messages.error(request, u'У вас нет прав на просмотр лог-файлов', extra_tags='alert-danger')
+        denied = True
     if  not (request.user.account.has_perm('billservice.list_log_files')):
-        return {'status':False, 'message': u'У вас нет прав на получение списка лог-файлов'}
+        #return {'status':False, 'message': u'У вас нет прав на получение списка лог-файлов'}
+        messages.error(request, u'У вас нет прав на получение списка лог-файлов', extra_tags='alert-danger')
+        denied = True
+    if denied:
+        return {'status': False}
+    
     
     logfiles = os.listdir('/opt/ebs/data/log/')
     

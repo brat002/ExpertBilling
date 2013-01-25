@@ -22,7 +22,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/settlement_period_list.html')
 def settlementperiod(request):
     if  not (request.user.account.has_perm('billservice.view_settlementperiod')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+    
     res = SettlementPeriod.objects.all()
     table = SettlementPeriodTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -44,10 +46,14 @@ def settlementperiod_edit(request):
             form = SettlementPeriodForm(request.POST)
         if id:
             if  not (request.user.account.has_perm('billservice.change_settlementperiod')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование расчётных периодов'}
+                messages.error(request, u'У вас нет прав на редактирование расчётных периодов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
             
-        if  not (request.user.account.has_perm('billservice.add_settlementperiod')):
-            return {'status':False, 'message': u'У вас нет прав на добавление расчётных периодов'}
+        else:
+            if  not (request.user.account.has_perm('billservice.add_settlementperiod')):
+                messages.error(request, u'У вас нет прав на создание расчётных периодов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
 
         
         if form.is_valid():
@@ -62,7 +68,8 @@ def settlementperiod_edit(request):
             return {'form':form,  'status': False, 'item':item} 
     else:
         if  not (request.user.account.has_perm('billservice.view_settlementperiod')):
-            return {'status':False}
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         id = request.GET.get("id")
 
         if id:

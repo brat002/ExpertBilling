@@ -86,12 +86,12 @@ def accountprepaysradiustraffic_edit(request):
             form = AccountPrepaysRadiusTraficForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountprepaysradiustraffic')):
                 messages.error(request, u'У вас нет прав на редактирование предоплаченного RADIUS трафика', extra_tags='alert-danger')
-                return HttpResponseRedirect(request.META.path)
+                return HttpResponseRedirect(request.path)
         else:
             form = AccountPrepaysRadiusTraficForm(request.POST) 
         if  not (request.user.account.has_perm('billservice.add_accountprepaysradiustraffic')):
             messages.error(request, u'У вас нет прав на добавление RADIUS предоплаченного трафика.', extra_tags='alert-danger')
-            return HttpResponseRedirect(request.META.path)
+            return HttpResponseRedirect(request.path)
 
 
         if form.is_valid():
@@ -108,7 +108,7 @@ def accountprepaysradiustraffic_edit(request):
 
         if  not (request.user.account.has_perm('billservice.view_accountprepaysradiustraffic')):
             messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
-            return HttpResponseRedirect('/ebsadmin/')
+            return {'status': False}
             
         if id:
             item = AccountPrepaysRadiusTrafic.objects.get(id=id)

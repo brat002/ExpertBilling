@@ -16,6 +16,7 @@
           </div>
 
       {% endfor %}
+{% if form %}
                 <form action='{% url model_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
                 <fieldset>
                   {{ form.id }}
@@ -73,6 +74,7 @@
                     <a class="btn close-dialog" href="#">Close</a>
                 </div>
                 </form>
+{% endif %}
 {% else %}
 Операция произведена успешно.
  <script type="text/javascript"> 

@@ -21,7 +21,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/ippool_list.html')
 def ippool(request):
     if  not (request.user.account.has_perm('billservice.view_ippool')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+    
     res = IPPool.objects.all()
     table = IPPoolTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -43,10 +45,14 @@ def ippool_edit(request):
             form = IPPoolForm(request.POST)
         if id:
             if  not (request.user.account.has_perm('billservice.change_ippool')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование IP пулов'}
+                messages.error(request, u'У вас нет прав на редактирование IP пулов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+        else:
             
-        if  not (request.user.account.has_perm('billservice.add_ippool')):
-            return {'status':False, 'message': u'У вас нет прав на добавление IP пулов'}
+            if  not (request.user.account.has_perm('billservice.add_ippool')):
+                messages.error(request, u'У вас нет прав на создание IP пулов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
 
         
         if form.is_valid():
@@ -61,11 +67,10 @@ def ippool_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_ippool')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if id:
-            if  not (request.user.account.has_perm('billservice.view_ippool')):
-                return {'status':True}
-
             item = IPPool.objects.get(id=id)
             form = IPPoolForm(instance=item)
         else:

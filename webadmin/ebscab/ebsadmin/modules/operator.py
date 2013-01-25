@@ -11,7 +11,7 @@ from object_log.models import LogItem
 
 from billservice.forms import OperatorForm
 from billservice.models import Operator
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
     
@@ -29,11 +29,13 @@ def operator_edit(request):
             model = Operator.objects.get(id=id)
             form = OperatorForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_operator')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование данных о провайдере'}
+                messages.error(request, u'У вас нет прав на редактирование данных о провайдере', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = OperatorForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_operator')):
-            return {'status':False, 'message': u'У вас нет прав на добавление информации о провайдере'}
+            if  not (request.user.account.has_perm('billservice.add_operator')):
+                messages.error(request, u'У вас нет прав на создание данных о провайдере', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
         if form.is_valid():
  
@@ -46,11 +48,13 @@ def operator_edit(request):
             return {'form':form,  'status': False} 
 
     else:
-
+        if  not (request.user.account.has_perm('billservice.view_operator')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
+        
         items = Operator.objects.all()
         if items:
-            if  not (request.user.account.has_perm('billservice.view_operator')):
-                return {'status':False}
+
 
             item = items[0]
             

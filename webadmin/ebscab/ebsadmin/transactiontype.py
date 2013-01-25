@@ -21,7 +21,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/transactiontype_list.html')
 def transactiontype(request):
     if  not (request.user.account.has_perm('billservice.view_transactiontype')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+
     res = TransactionType.objects.all()
     table = TransactionTypeTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -38,12 +40,15 @@ def transactiontype_edit(request):
     if request.method == 'POST': 
         if id:
             if  not (request.user.account.has_perm('billservice.change_transactiontype')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование типов проводок'}
+                messages.error(request, u'У вас нет прав на редактирование типов проводок', extra_tags='alert-danger')
+                return {}
+
             item = TransactionType.objects.get(id=id)
             form = TransactionTypeForm(request.POST, instance=item)
         else:
             if  not (request.user.account.has_perm('billservice.add_transactiontype')):
-                return {'status':False, 'message': u'У вас нет прав на добавление типов транзакций'}
+                messages.error(request, u'У вас нет прав на создание типов проводок', extra_tags='alert-danger')
+                return {}
             form = TransactionTypeForm(request.POST)
 
             
@@ -63,11 +68,11 @@ def transactiontype_edit(request):
             return {'form':form,  'item': item} 
     else:
         id = request.GET.get("id")
+        if  not (request.user.account.has_perm('billservice.view_transactiontype')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect(reverse("transactiontype"))
 
         if id:
-            if  not (request.user.account.has_perm('billservice.view_transactiontype')):
-                return {'status':False}
-
             item = TransactionType.objects.get(id=id)
             form = TransactionTypeForm(instance=item)
         else:

@@ -12,7 +12,7 @@ from ebsadmin.tables import SwitchTable, SwitchPortsTable
 
 from billservice.forms import SwitchForm
 from billservice.models import Switch
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -21,7 +21,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/switch_list.html')
 def switch(request):
     if  not (request.user.account.has_perm('billservice.view_switch')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+    
     res = Switch.objects.all()
     table = SwitchTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -43,11 +45,13 @@ def switch_edit(request):
             model = Switch.objects.get(id=id)
             form = SwitchForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_switch')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование коммутатора'}
+                messages.error(request, u'У вас нет прав на редактирование коммутатора', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = SwitchForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_switch')):
-            return {'status':False, 'message': u'У вас нет прав на добавление коммутатора'}
+            if  not (request.user.account.has_perm('billservice.add_switch')):
+                messages.error(request, u'У вас нет прав на создание коммутатора', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
 
         if form.is_valid():
@@ -61,10 +65,11 @@ def switch_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_switch')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if id:
-            if  not (request.user.account.has_perm('billservice.view_switch')):
-                return {'status':False}
+
 
             item = Switch.objects.get(id=id)
             
@@ -98,7 +103,7 @@ def switch_edit(request):
 def switch_port_status(request):
     if  not (request.user.account.has_perm('billservice.change_switch')):
         return {'status':False, 'message': u'У вас нет прав на редактирование коммутатора'}
-    print request.POST
+
     switch_id = int(request.POST.get('switch_id',0))
     port = int(request.POST.get('port',0))
     port_type = request.POST.get('port_type')

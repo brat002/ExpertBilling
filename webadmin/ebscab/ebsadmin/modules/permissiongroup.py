@@ -12,7 +12,7 @@ from ebsadmin.tables import PermissionGroupTable
 
 from billservice.forms import PermissionGroupForm
 from billservice.models import PermissionGroup
-
+from django.contrib import messages
 
 log = LogItem.objects.log_action
 
@@ -22,7 +22,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/permissiongroup_list.html')
 def permissiongroup(request):
     if  not (request.user.account.has_perm('billservice.view_permissiongroup')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     items = PermissionGroup.objects.all()
     table = PermissionGroupTable(items)
@@ -47,12 +48,15 @@ def permissiongroup_edit(request):
             model = PermissionGroup.objects.get(id=id)
             form = PermissionGroupForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_permissionrule')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование групп доступа'}
+                messages.error(request, u'У вас нет прав на редактирование групп доступа', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
+            
+            if  not (request.user.account.has_perm('billservice.add_permissiongroup')):
+                messages.error(request, u'У вас нет прав на создание групп доступа', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+            
             form = PermissionGroupForm(request.POST) 
-        if  not (request.user.has_perm('billservice.add_permissiongroup')):
-            return {'status':False, 'message': u'У вас нет прав на добавление групп доступа'}
-
 
         if form.is_valid():
 
@@ -68,10 +72,10 @@ def permissiongroup_edit(request):
             return {'form':form,  'status': False,  } 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_permissiongroup')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if id:
-            if  not (request.user.account.has_perm('billservice.view_permissiongroup')):
-                return {'status':False}
 
             item = PermissionGroup.objects.get(id=id)
             

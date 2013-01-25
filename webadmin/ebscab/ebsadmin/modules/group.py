@@ -20,8 +20,10 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/group_list.html')
 def group(request):
+
     if  not (request.user.account.has_perm('billservice.view_group')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     res = Group.objects.all()
     table = GroupTable(res)
     table_to_report = RequestConfig(request, paginate=False).configure(table)
@@ -43,11 +45,14 @@ def group_edit(request):
             model = Group.objects.get(id=id)
             form = GroupForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_group')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование групп трафика'}
+                messages.error(request, u'У вас нет прав на редактирование групп трафика', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
         else:
             form = GroupForm(request.POST) 
         if  not (request.user.account.has_perm('billservice.add_group')):
-            return {'status':False, 'message': u'У вас нет прав на добавление групп трафика'}
+                messages.error(request, u'У вас нет прав на создание групп трафика', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
         if form.is_valid():
  
@@ -62,10 +67,11 @@ def group_edit(request):
 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_group')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if id:
-            if  not (request.user.account.has_perm('billservice.view_group')):
-                return {'status':False}
+
 
             item = Group.objects.get(id=id)
             

@@ -11,7 +11,7 @@ from object_log.models import LogItem
 from ebsadmin.tables import SheduleLogTable
 from billservice.forms import SheduleLogSearchForm
 from billservice.models import SheduleLog
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -20,7 +20,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/shedulelog_list.html')
 def shedulelog(request):
     if  not (request.user.account.has_perm('billservice.view_shedulelog')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET' and request.GET: 
         data = request.GET

@@ -12,7 +12,7 @@ from ebsadmin.tables import ModelTable
 
 from billservice.forms import ModelHardwareForm as ModelForm
 from billservice.models import Model
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -21,7 +21,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/model_list.html')
 def model(request):
     if  not (request.user.account.has_perm('billservice.view_model')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     res = Model.objects.all()
     table = ModelTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -43,11 +44,13 @@ def model_edit(request):
             model = Model.objects.get(id=id)
             form = ModelForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_model')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование моделей оборудования'}
+                messages.error(request, u'У вас нет прав на редактирование моделей оборудования', extra_tags='alert-danger')
+                return {}
         else:
             form = ModelForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_model')):
-            return {'status':False, 'message': u'У вас нет прав на добавление моделей оборудования'}
+            if  not (request.user.account.has_perm('billservice.add_model')):
+                messages.error(request, u'У вас нет прав на создание моделей оборудования', extra_tags='alert-danger')
+                return {}
 
 
         if form.is_valid():
@@ -61,10 +64,10 @@ def model_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_model')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {}
         if id:
-            if  not (request.user.account.has_perm('billservice.view_model')):
-                return {'status':True}
 
             item = Model.objects.get(id=id)
             
