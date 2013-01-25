@@ -11,7 +11,7 @@ from object_log.models import LogItem
 from ebsadmin.tables import AccountPrepaysTimeTable
 from billservice.forms import AccountPrepaysTimeSearchForm, AccountPrepaysTimeForm
 from billservice.models import AccountPrepaysTime
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -19,8 +19,9 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/accountprepaystime_list.html')
 def accountprepaystime(request):
-    if  not (request.user.account.has_perm('billservice.delete_accountprepaystime')):
-        return {'status': False}
+    if  not (request.user.account.has_perm('billservice.view_accountprepaystime')):
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
 
     if request.method=='GET' and request.GET: 
@@ -82,11 +83,13 @@ def accountprepaystime_edit(request):
             model = AccountPrepaysTime.objects.get(id=id)
             form = AccountPrepaysTimeForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountprepaystime')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование предоплаченного времени'}
+                messages.error(request, u'У вас нет прав на редактирование предоплаченного времени', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = AccountPrepaysTimeForm(request.POST) 
         if  not (request.user.account.has_perm('billservice.add_accountprepaystime')):
-            return {'status':False, 'message': u'У вас нет прав на добавление предоплаченного времени'}
+            messages.error(request, u'У вас нет прав на добавление предоплаченного времени', extra_tags='alert-danger')
+            return HttpResponseRedirect(request.path)
 
 
         if form.is_valid():
@@ -100,10 +103,11 @@ def accountprepaystime_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
+        if  not (request.user.account.has_perm('billservice.view_accountprepaystime')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
 
         if id:
-            if  not (request.user.account.has_perm('billservice.view_accountprepaystime')):
-                return {'status':True}
 
             item = AccountPrepaysTime.objects.get(id=id)
             

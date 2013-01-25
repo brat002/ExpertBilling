@@ -1,6 +1,13 @@
 {% load ebsadmin_tags %}
 {% if not status %}
-{{message}}
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
  <script type="text/javascript"> 
  $(document).ready(function() {
      $('.datepicker').datepicker({'format': 'yyyy-mm-dd'});

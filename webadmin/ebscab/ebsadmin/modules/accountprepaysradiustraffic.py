@@ -11,7 +11,7 @@ from object_log.models import LogItem
 from ebsadmin.tables import AccountPrepaysRadiusTraficTable
 from billservice.forms import AccountPrepaysRadiusTraficSearchForm, AccountPrepaysRadiusTraficForm
 from billservice.models import AccountPrepaysRadiusTrafic
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -22,7 +22,8 @@ def accountprepaysradiustraffic(request):
         
 
     if not request.user.account.has_perm('billservice.view_accountprepaysradiustraffic'):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET' and request.GET: 
         data = request.GET
@@ -84,11 +85,13 @@ def accountprepaysradiustraffic_edit(request):
             model = AccountPrepaysRadiusTrafic.objects.get(id=id)
             form = AccountPrepaysRadiusTraficForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountprepaysradiustraffic')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование предоплаченного RADIUS трафика'}
+                messages.error(request, u'У вас нет прав на редактирование предоплаченного RADIUS трафика', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.META.path)
         else:
             form = AccountPrepaysRadiusTraficForm(request.POST) 
         if  not (request.user.account.has_perm('billservice.add_accountprepaysradiustraffic')):
-            return {'status':False, 'message': u'У вас нет прав на добавление RADIUS предоплаченного трафика.'}
+            messages.error(request, u'У вас нет прав на добавление RADIUS предоплаченного трафика.', extra_tags='alert-danger')
+            return HttpResponseRedirect(request.META.path)
 
 
         if form.is_valid():
@@ -103,10 +106,11 @@ def accountprepaysradiustraffic_edit(request):
     else:
         id = request.GET.get("id")
 
+        if  not (request.user.account.has_perm('billservice.view_accountprepaysradiustraffic')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
+            
         if id:
-            if  not (request.user.has_perm('billservice.view_accountprepaysradiustraffic')):
-                return {'status':False}
-
             item = AccountPrepaysRadiusTrafic.objects.get(id=id)
             
             form = AccountPrepaysRadiusTraficForm(instance=item)
