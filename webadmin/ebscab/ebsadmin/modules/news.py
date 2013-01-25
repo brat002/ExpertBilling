@@ -12,7 +12,7 @@ from ebsadmin.tables import NewsTable
 
 from billservice.forms import NewsForm
 from billservice.models import News, AccountViewedNews, Account
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -21,7 +21,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/news_list.html')
 def news(request):
     if  not (request.user.has_perm('billservice.view_news')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     res = News.objects.all()
     table = NewsTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -42,11 +43,13 @@ def news_edit(request):
             model = News.objects.get(id=id)
             form = NewsForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_news')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование новости'}
+                messages.error(request, u'У вас нет прав на редактирование новости', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = NewsForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_news')):
-            return {'status':False, 'message': u'У вас нет прав на добавление новости'}
+            if  not (request.user.account.has_perm('billservice.add_news')):
+                messages.error(request, u'У вас нет прав на создание новости', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
 
         if form.is_valid():
@@ -69,10 +72,11 @@ def news_edit(request):
             return {'form':form,  'status': False, 'item': model} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_news')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if id:
-            if  not (request.user.account.has_perm('billservice.view_news')):
-                return {'status':True}
+
 
             item = News.objects.get(id=id)
             accounts = [x.get("account__id") for x in AccountViewedNews.objects.filter(news=item).values('account__id')]

@@ -11,7 +11,7 @@ from django.db.models import Sum
 from ebsadmin.tables import GroupStatTable
 from billservice.forms import GroupStatSearchForm
 from billservice.models import GroupStat
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -21,7 +21,9 @@ log = LogItem.objects.log_action
 def groupstat(request):
         
     if  not (request.user.account.has_perm('billservice.view_groupstat')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+
 
     if request.GET: 
         data = request.GET

@@ -15,7 +15,7 @@ from billservice.forms import TimePeriodForm, TimePeriodNodeForm
 from billservice.models import TimePeriod, TimePeriodNode
 import datetime
 import simplejson as json
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -24,7 +24,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/timeperiod_list.html')
 def timeperiod(request):
     if  not (request.user.account.has_perm('billservice.view_timeperiod')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+
     res = []
     for tp in  TimePeriod.objects.all():
         s=[]

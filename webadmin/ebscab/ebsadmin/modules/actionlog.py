@@ -10,7 +10,7 @@ from object_log.models import LogItem
 from object_log.forms import LogItemFilterForm
 from django.contrib.contenttypes.models import ContentType
 from ebsadmin.tables import ActionLogTable
-
+from django.contrib import messages
 
 log = LogItem.objects.log_action
 
@@ -20,7 +20,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/actionlog_list.html')
 def actionlog(request):
     if  not (request.user.account.has_perm('object_log.view_logitem')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
     if request.GET:
         form = LogItemFilterForm(request.GET)

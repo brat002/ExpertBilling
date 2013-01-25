@@ -11,6 +11,7 @@ from object_log.models import LogItem
 from ebsadmin.tables import PeriodicalServiceLogTable
 from billservice.forms import PeriodicalServiceLogSearchForm
 from billservice.models import PeriodicalServiceLog
+from django.contrib import messages
 
 log = LogItem.objects.log_action
 
@@ -21,7 +22,8 @@ log = LogItem.objects.log_action
 def periodicalservicelog(request):
         
     if  not (request.user.account.has_perm('billservice.view_periodicalservicelog')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET' and request.GET: 
         data = request.GET

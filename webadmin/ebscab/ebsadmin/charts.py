@@ -1,12 +1,12 @@
 #-*-coding:utf-8 -*-
 from billservice.models import BalanceHistory
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, HttpResponseRedirect
 import datetime
 from django.contrib.auth.decorators import login_required
 from ebsadmin.forms import ReportForm
 from billservice import authenticate, log_in
 from forms import chartdata
-
+from django.contrib import messages
 """
 Сессии:
 1. Сессии онлайн(гант) с выбором:
@@ -54,7 +54,8 @@ from forms import chartdata
 def charts(request):
 
     if  not (request.user.account.has_perm('billservice.view_charts')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
     from django.db import connection
     cur = connection.cursor()

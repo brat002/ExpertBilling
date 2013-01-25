@@ -12,7 +12,7 @@ from ebsadmin.tables import TPChangeRuleTable
 
 from billservice.forms import TPChangeRuleForm, TPChangeMultipleRuleForm
 from billservice.models import TPChangeRule
-
+from django.contrib import messages
 
 log = LogItem.objects.log_action
 
@@ -22,7 +22,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/tpchangerule_list.html')
 def tpchangerule(request):
     if  not (request.user.account.has_perm('billservice.view_tpchangerule')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     items = TPChangeRule.objects.all()
     table = TPChangeRuleTable(items)
@@ -47,11 +48,13 @@ def tpchangerule_edit(request):
             model = TPChangeRule.objects.get(id=id)
             form = TPChangeRuleForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_tpchangerule')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование правил смены тарифных планов'}
+                messages.error(request, u'У вас нет прав на редактирование правил смены тарифных планов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = TPChangeMultipleRuleForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_tpchangerule')):
-            return {'status':False, 'message': u'У вас нет прав на добавление правил смены тарифных планов'}
+            if  not (request.user.account.has_perm('billservice.add_tpchangerule')):
+                messages.error(request, u'У вас нет прав на редактирование правил смены тарифных планов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
 
         if form.is_valid():
@@ -90,10 +93,10 @@ def tpchangerule_edit(request):
             return {'form':form,  'status': False,  } 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_tpchangerule')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if id:
-            if  not (request.user.account.has_perm('billservice.view_tpchangerule')):
-                return {'status':False}
 
             item = TPChangeRule.objects.get(id=id)
             

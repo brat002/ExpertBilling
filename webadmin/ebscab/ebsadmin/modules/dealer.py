@@ -12,14 +12,15 @@ from ebsadmin.tables import DealerTable
 
 from ebscab.billservice.forms import DealerForm, BankDataForm, DealerSelectForm
 from ebscab.billservice.models import Dealer
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 @login_required
 @render_to('ebsadmin/dealer_list.html')
 def dealer(request):
     if  not (request.user.account.has_perm('billservice.view_dealer')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
     res = Dealer.objects.all()
     table = DealerTable(res)
@@ -43,7 +44,8 @@ def dealer_edit(request):
 
         if id:
             if  not (request.user.account.has_perm('billservice.change_dealer')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование дилеров'}
+                messages.error(request, u'У вас нет прав на редактирование дилеров', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
             item = Dealer.objects.get(id=id)
             form = DealerForm(request.POST, instance=item, prefix='dealer')
             bank_form = BankDataForm(request.POST, instance=item.bank, prefix='bank')
@@ -52,7 +54,8 @@ def dealer_edit(request):
             bank_form = BankDataForm(request.POST, prefix='bank')
             
             if  not (request.user.account.has_perm('billservice.add_dealer')):
-                return {'status':False, 'message': u'У вас нет прав на добавление дилеров'}
+                messages.error(request, u'У вас нет прав на создание дилеров', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
         
         if form.is_valid() and bank_form.is_valid():
@@ -69,10 +72,10 @@ def dealer_edit(request):
             return {'form':form,  'status': False,  'item': item, 'bank_form': bank_form} 
     else:
         id = request.GET.get("id")
+        if  not (request.user.account.has_perm('billservice.view_dealer')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if id:
-            if  not (request.user.account.has_perm('billservice.view_dealer')):
-                return {'status':True}
-
             item = Dealer.objects.get(id=id)
             form = DealerForm(instance=item, prefix='dealer')
             bank_form = BankDataForm(instance=item.bank, prefix='bank')
@@ -85,7 +88,9 @@ def dealer_edit(request):
 @login_required
 @render_to('ebsadmin/dealerselect_window.html')
 def dealer_select(request):
-    
+    if  not (request.user.account.has_perm('billservice.view_dealer')):
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return {}
     form = DealerSelectForm()
 
     return { 'form':form} 
@@ -98,7 +103,7 @@ def dealer_delete(request):
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
-            item = Nas.objects.get(id=id)
+            item = Dealer.objects.get(id=id)
         except Exception, e:
             return {"status": False, "message": u"Указанный сервер доступа найден %s" % str(e)}
         log('DELETE', request.user, item)

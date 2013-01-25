@@ -13,14 +13,16 @@ from billservice.models import City, Street, House
 import simplejson as json
 
 log = LogItem.objects.log_action
-
+from django.contrib import messages
 
 
 @login_required
 @render_to('ebsadmin/address_list.html')
 def address(request):
     if  not (request.user.account.has_perm('billservice.view_address')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+
     res = []
     for city in  City.objects.all():
         s=[]

@@ -21,7 +21,8 @@ from django.contrib import messages
 @render_to('ebsadmin/addonservice_list.html')
 def addonservice(request):
     if  not (request.user.account.has_perm('billservice.view_addonservice')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     res = AddonService.objects.all()
     table = AddonServiceTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -41,13 +42,16 @@ def addonservice_edit(request):
             item = AddonService.objects.get(id=id)
             form = AddonServiceForm(request.POST, instance=item)
         else:
-             form = AddonServiceForm(request.POST)
+            form = AddonServiceForm(request.POST)
+        
         if id:
             if  not (request.user.account.has_perm('billservice.change_addonservice')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование подключаемых услуг'}
+                messages.error(request, u'У вас нет прав на редактирование подключаемых услуг', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
             
         if  not (request.user.account.has_perm('billservice.add_addonservice')):
-            return {'status':False, 'message': u'У вас нет прав на добавление подключаемых услуг'}
+                messages.error(request, u'У вас нет прав на создание подключаемых услуг', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
         
         if form.is_valid():
@@ -62,11 +66,10 @@ def addonservice_edit(request):
             return {'form':form,  'item': item} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_addonservice')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if id:
-            if  not (request.user.account.has_perm('billservice.view_addonservice')):
-                return {'status':False}
-
             item = AddonService.objects.get(id=id)
             form = AddonServiceForm(instance=item)
         else:

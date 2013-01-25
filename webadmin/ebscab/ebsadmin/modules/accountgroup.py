@@ -50,9 +50,9 @@ def accountgroup_edit(request):
                 return HttpResponseRedirect(request.path)
         else:
             form = AccountGroupForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_accountgroup')):
-            messages.error(request, u'У вас нет прав на добавление групп абонентов', extra_tags='alert-danger')
-            return HttpResponseRedirect(request.path)
+            if  not (request.user.account.has_perm('billservice.add_accountgroup')):
+                messages.error(request, u'У вас нет прав на добавление групп абонентов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
 
         if form.is_valid():
@@ -70,7 +70,7 @@ def accountgroup_edit(request):
         
         if not request.user.account.has_perm('billservice.view_accountgroup'):
             messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
-            return HttpResponseRedirect('/ebsadmin/')
+            return {'status': False}
         
         if id:
             item = AccountGroup.objects.get(id=id)

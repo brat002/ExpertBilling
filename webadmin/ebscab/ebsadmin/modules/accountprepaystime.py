@@ -105,7 +105,7 @@ def accountprepaystime_edit(request):
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_accountprepaystime')):
             messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
-            return HttpResponseRedirect('/ebsadmin/')
+            return {'status': False}
 
         if id:
 

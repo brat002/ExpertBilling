@@ -14,7 +14,7 @@ from tables import TrafficClassTable, TrafficNodeTable
 from ebsadmin.forms import TrafficNodesUploadForm
 from nas.forms import TrafficClassForm, TrafficNodeForm
 from nas.models import TrafficClass, TrafficNode
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -23,7 +23,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/trafficclass_list.html')
 def trafficclass(request):
     if  not (request.user.account.has_perm('nas.view_trafficclass')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
     res = TrafficClass.objects.all()
     table = TrafficClassTable(res)
@@ -60,6 +61,9 @@ def trafficclass_weight(request):
 @login_required
 @render_to('ebsadmin/trafficnode_list.html')
 def trafficnode_list(request):
+    if  not (request.user.account.has_perm('nas.view_trafficnode')):
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     id = request.GET.get("id")
     res = TrafficNode.objects.filter(traffic_class__id=id)
     table = TrafficNodeTable(res)
@@ -80,17 +84,19 @@ def trafficclass_edit(request):
         if id:
             model = TrafficClass.objects.get(id=id)
             form = TrafficClassForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_trafficclass')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование классов трафика'}
+            if  not (request.user.account.has_perm('nas.change_trafficclass')):
+                messages.error(request, u'У вас нет прав на редактирование классов трафика', extra_tags='alert-danger')
+                return {}
         else:
             form = TrafficClassForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_trafficclass')):
-            return {'status':False, 'message': u'У вас нет прав на добавление классов трафика'}
+            if  not (request.user.account.has_perm('nas.add_trafficclass')):
+                messages.error(request, u'У вас нет прав на создание классов трафика', extra_tags='alert-danger')
+                return {}
+
+            
 
         if form.is_valid():
-            print 11
             model = form.save(commit=False)
-            print 22
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return {'form':form,  'status': True} 
@@ -99,10 +105,11 @@ def trafficclass_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('nas.view_trafficclass')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {}
+        
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('nas.trafficclass_view')):
-                return {'status':True}
 
             item = TrafficClass.objects.get(id=id)
             
@@ -122,27 +129,24 @@ def trafficnode(request):
     accountaddonservice = None
     item = None
     if request.method == 'POST': 
-        print 1
-        print request.POST
-        print request.GET
         if id:
-            print 11
             model = TrafficNode.objects.get(id=id)
             form = TrafficNodeForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountaddonservice')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование привязок подключаемых услуг'}
+            if  not (request.user.account.has_perm('nas.change_trafficnode')):
+                messages.error(request, u'У вас нет прав на изменение составляющих класса трафика', extra_tags='alert-danger')
+                return {}
         else:
-            print 22
             form = TrafficNodeForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountaddonservice')):
-            return {'status':False, 'message': u'У вас нет прав на добавление привязок подключаемых услуг'}
+            if  not (request.user.account.has_perm('nas.add_trafficnode')):
+                messages.error(request, u'У вас нет прав на создание составляющих класса трафика', extra_tags='alert-danger')
+                return {}
 
-        print 2
+
         if form.is_valid():
-            print 3
+
             model = form.save(commit=False)
             model.save()
-            print 4
+
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return {'form':form,  'status': True} 
         else:
@@ -152,9 +156,11 @@ def trafficnode(request):
         id = request.GET.get("id")
         traffic_class_id = request.GET.get("traffic_class")
 
+        if  not (request.user.account.has_perm('nas.view_trafficnode')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {}
+    
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('nas.trafficnode_view')):
-                return {'status':True}
 
             item = TrafficNode.objects.get(id=id)
             
