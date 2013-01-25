@@ -20,6 +20,10 @@ log = LogItem.objects.log_action
 @login_required
 @render_to('ebsadmin/systemuser_list.html')
 def systemuser(request):
+    if  not (request.user.account.has_perm('billservice.view_systemuser')):
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+    
     res = SystemUser.objects.all()
     table = SystemUserTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -43,10 +47,13 @@ def systemuser_edit(request):
              
         if id:
             if  not (request.user.account.has_perm('billservice.change_systemuser')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование системных пользователей'}
-            
-        if  not (request.user.account.has_perm('billservice.add_systemuser')):
-            return {'status':False, 'message': u'У вас нет прав на добавление системных пользователей'}
+                messages.error(request, u'У вас нет прав на редактирование системных пользователей', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+        else:
+            if  not (request.user.account.has_perm('billservice.add_systemuser')):
+                messages.error(request, u'У вас нет прав на создание системных пользователей', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
 
         
         if form.is_valid():
@@ -79,7 +86,8 @@ def systemuser_edit(request):
             return {'form':form,  'item': item} 
     else:
         if  not (request.user.account.has_perm('billservice.view_systemuser')):
-            return {'status':True}
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         id = request.GET.get("id")
 
         if id:

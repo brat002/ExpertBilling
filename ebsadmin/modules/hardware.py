@@ -12,7 +12,7 @@ from ebsadmin.tables import HardwareTable
 
 from billservice.forms import HardwareForm
 from billservice.models import Hardware
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -21,7 +21,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/hardware_list.html')
 def hardware(request):
     if  not (request.user.account.has_perm('billservice.view_hardware')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+
     res = Hardware.objects.all()
     table = HardwareTable(res)
     table_to_report = RequestConfig(request, paginate=False).configure(table)
@@ -43,11 +45,13 @@ def hardware_edit(request):
             model = Hardware.objects.get(id=id)
             form = HardwareForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_hardware')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование оборудования'}
+                messages.error(request, u'У вас нет прав на редактирование оборудования', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = HardwareForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_hardware')):
-            return {'status':False, 'message': u'У вас нет прав на добавление оборудования'}
+            if  not (request.user.account.has_perm('billservice.add_hardware')):
+                messages.error(request, u'У вас нет прав на создание оборудования', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
 
         if form.is_valid():
@@ -61,10 +65,11 @@ def hardware_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_hardware')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if id:
-            if  not (request.user.account.has_perm('billservice.view_hardware')):
-                return {'status':False}
+
 
             item = Hardware.objects.get(id=id)
             

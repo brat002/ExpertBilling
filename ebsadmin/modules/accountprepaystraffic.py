@@ -11,7 +11,7 @@ from object_log.models import LogItem
 from ebsadmin.tables import AccountPrepaysTraficTable
 from billservice.forms import AccountPrepaysTraficSearchForm, AccountPrepaysTraficForm
 from billservice.models import AccountPrepaysTrafic
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -20,8 +20,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/accountprepaystraffic_list.html')
 def accountprepaystraffic(request):
         
-    if  not (request.user.account.has_perm('billservice.delete_accountprepaystime')):
-        return {'status': False}
+    if  not (request.user.account.has_perm('billservice.view_accountprepaystraffic')):
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
     if request.method=='GET' and request.GET: 
         data = request.GET
@@ -86,11 +87,14 @@ def accountprepaystraffic_edit(request):
             model = AccountPrepaysTrafic.objects.get(id=id)
             form = AccountPrepaysTraficForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountprepaystraffic')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование предоплаченного времени'}
+                messages.error(request, u'У вас нет прав на редактирование предоплаченного трафика', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = AccountPrepaysTraficForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_accountprepaystraffic')):
-            return {'status':False, 'message': u'У вас нет прав на добавление предоплаченного времени'}
+            if  not (request.user.account.has_perm('billservice.add_accountprepaystraffic')):
+                messages.error(request, u'У вас нет прав на добавление предоплаченного трафика', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
 
 
         if form.is_valid():
@@ -106,8 +110,9 @@ def accountprepaystraffic_edit(request):
         id = request.GET.get("id")
 
         if id:
-            if  not (request.user.has_perm('billservice.view_accountprepaystraffic')):
-                return {'status':False}
+            if  not (request.user.account.has_perm('billservice.view_accountprepaystraffic')):
+                messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+                return {}
 
             item = AccountPrepaysTrafic.objects.get(id=id)
             

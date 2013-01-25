@@ -16,7 +16,7 @@ from billservice.models import Card, Dealer, SaleCard, DealerPay
 import string
 import random
 import datetime
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -26,7 +26,8 @@ log = LogItem.objects.log_action
 def card(request):
     
     if  not (request.user.account.has_perm('billservice.view_card')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
     if request.GET: 
         res = Card.objects.all()
@@ -149,11 +150,13 @@ def card_edit(request):
             model = Card.objects.get(id=id)
             form = CardForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_card')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование карт'}
+                messages.error(request, u'У вас нет прав на редактирование карт', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = CardForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_card')):
-            return {'status':False, 'message': u'У вас нет прав на добавление карт'}
+            if  not (request.user.account.has_perm('billservice.add_card')):
+                messages.error(request, u'У вас нет прав на создание карт', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
 
         if form.is_valid():
@@ -167,11 +170,10 @@ def card_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_card')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {'status': False}
         if id:
-            if  not (request.user.has_perm('billservice.view_card')):
-                return {'status':False}
-
             item = Card.objects.get(id=id)
             
             form = CardForm(instance=item)
@@ -196,11 +198,13 @@ def salecard_edit(request):
             model = SaleCard.objects.get(id=id)
             form = SaleCardForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_salecard')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование карт'}
+                messages.error(request,u'У вас нет прав на редактирование накладных на карты', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = SaleCardForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_salecard')):
-            return {'status':False, 'message': u'У вас нет прав на добавление карт'}
+            if  not (request.user.account.has_perm('billservice.add_salecard')):
+                messages.error(request,u'У вас нет прав на создание накладных на карты', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
         
         if form.is_valid():
@@ -225,10 +229,9 @@ def salecard_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_salecard')):
-            return {'status':True}
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {'status': False}
         if id:
-
-
             item = SaleCard.objects.get(id=id)
             dealer = item.dealer
             form = SaleCardForm(instance=item)
@@ -260,9 +263,11 @@ def card_generate(request):
     item = None
     model = None
     if request.method == 'POST': 
-        if  not (request.user.account.has_perm('billservice.add_card')):
-            return {'status':False, 'message': u'У вас нет прав на создание карт'}
         form = CardGenerationForm(request.POST)
+        if  not (request.user.account.has_perm('billservice.add_card')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {'status':False, 'form': form}
+        
 
         if form.is_valid():
             card_type = int(form.cleaned_data.get("card_type"))
@@ -360,8 +365,6 @@ def card_generate(request):
 
             return {'form':form,  'status': False} 
     else:
-        if  not (request.user.account.has_perm('billservice.add_card')):
-            return {'status':False}
         now = datetime.datetime.now()
         card_type = request.GET.get("card_type")
         form = CardGenerationForm(initial={'card_type':card_type, 'count':100, 'nominal':0, "date_start":now, 'date_end':now+datetime.timedelta(days=365), 'login_length_from':6, 'login_length_to':6, 'pin_length_from':6, 'pin_length_to':6, 'login_letters':True, 'login_numbers':True, 'pin_letters':True, 'pin_numbers':True,})
@@ -376,10 +379,11 @@ def card_update(request):
     ids = request.GET.getlist('d')
 
     if request.method == 'POST': 
-        if  not (request.user.account.has_perm('billservice.change_card')):
-            return {'status':False, 'message': u'У вас нет прав на добавление карт'}
         form = CardBatchChangeForm(request.POST)
-
+        if  not (request.user.account.has_perm('billservice.change_card')):
+            messages.error(request, u'У вас нет прав на изменение карт.', extra_tags='alert-danger')
+            return {'status':False, 'form': form}
+        
         if form.is_valid():
             card_type = int(form.cleaned_data.get("card_type"))
 
@@ -530,7 +534,8 @@ def card_manage(request):
 @render_to('ebsadmin/salecard_list.html')
 def salecard(request):
     if  not (request.user.account.has_perm('billservice.view_salecard')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
     res = SaleCard.objects.all()
     table = SaleCardTable(res)

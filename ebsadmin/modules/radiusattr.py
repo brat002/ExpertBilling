@@ -13,7 +13,7 @@ from ebsadmin.tables import RadiusAttrTable
 from billservice.forms import IPPoolForm, RadiusAttrsForm
 from billservice.models import RadiusAttrs, Tariff
 from ebscab.nas.models import Nas 
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -22,7 +22,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/radiusattr_list.html')
 def radiusattr(request):
     if  not (request.user.account.has_perm('billservice.view_radiusattrs')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
     nas_id = request.GET.get("nas")
     tarif_id = request.GET.get("tarif")
@@ -65,12 +66,14 @@ def radiusattr_edit(request):
             model = RadiusAttrs.objects.get(id=id)
             form = RadiusAttrsForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_radiusattrs')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование радиус атрибутов'}
+                messages.error(request, u'У вас нет прав на редактирование радиус атрибутов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
+            if  not (request.user.account.has_perm('billservice.add_radiusattrs')):
+                messages.error(request, u'У вас нет прав на создание радиус атрибутов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+            
             form = RadiusAttrsForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_radiusattrs')):
-            return {'status':False, 'message': u'У вас нет прав на добавление радиус атрибутов'}
-
 
         if form.is_valid():
             model = form.save(commit=False)
@@ -83,10 +86,10 @@ def radiusattr_edit(request):
             return {'form':form,  'status': False, 'nas':nas, 'tariff':tariff } 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_radiusattrs')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {}
         if id:
-            if  not (request.user.account.has_perm('billservice.view_radiusattrs')):
-                return {'status':False}
 
             item = RadiusAttrs.objects.get(id=id)
             

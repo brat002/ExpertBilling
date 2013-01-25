@@ -14,7 +14,7 @@ from ebscab.nas.forms import NasForm
 from ebscab.nas.models import Nas
 from ebscab.nas.models import actions
 from ebscab.lib.ssh_paramiko import ssh_client
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 from django.contrib import messages
@@ -23,7 +23,8 @@ from django.contrib import messages
 @render_to('ebsadmin/nas_list.html')
 def nas(request):
     if  not (request.user.account.has_perm('nas.view_nas')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     res = Nas.objects.all()
     table = NasTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -43,10 +44,13 @@ def nas_edit(request):
         fill = request.POST.get("fill", False)
         if id:
             if  not (request.user.account.has_perm('nas.change_nas')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование серверов доступа'}
+                messages.error(request, u'У вас нет прав на редактирование серверов доступа', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
         else:
             if  not (request.user.account.has_perm('nas.add_nas')):
-                return {'status':False, 'message': u'У вас нет прав на добавление Серверов доступа'}
+                messages.error(request, u'У вас нет прав на создание серверов доступа', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         
         if fill:
             if id:
@@ -76,13 +80,13 @@ def nas_edit(request):
             messages.error(request, u'При сохранении сервера доступа возникли ошибки.', extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
+        if  not (request.user.account.has_perm('nas.view_nas')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         id = request.GET.get("id")
         fill = request.GET.get("fill", False)
         nas_type = request.GET.get("nas_type", '')
         if id:
-            if  not (request.user.account.has_perm('nas.nas_view')):
-                return {'status':False}
-
             item = Nas.objects.get(id=id)
             form = NasForm(initial=actions.get(nas_type, {}), instance=item)
         else:

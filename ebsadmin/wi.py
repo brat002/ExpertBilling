@@ -113,8 +113,10 @@ def gettransactiontypes(current=[]):
 @login_required
 @render_to('ebsadmin/transactionreport_list.html')
 def transactionreport2(request):
-    if  not (request.user.account.has_perm('billservice.view_transactiontype')):
-        return {'status': False}
+    if  not (request.user.account.has_perm('billservice.view_transaction')):
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+    
     if request.GET:
         data = request.GET
         #pageitems = 100
@@ -272,7 +274,8 @@ def transactionreport2(request):
 def accountsreport(request):
         
     if  not (request.user.account.has_perm('billservice.view_account')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET':
         data = request.GET or request.POST
@@ -430,7 +433,8 @@ def accountsreport(request):
 def authlogreport(request):
         
     if  not (request.user.account.has_perm('radius.view_authlog')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET' and request.GET:
         data = request.GET
@@ -477,7 +481,8 @@ def authlogreport(request):
 def ipinusereport(request):
         
     if  not (request.user.account.has_perm('billservice.view_ipinuse')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET' and request.GET:
         data = request.GET
@@ -546,7 +551,8 @@ def ipinusereport(request):
 def ballancehistoryreport(request):
         
     if  not (request.user.account.has_perm('billservice.view_balancehostory')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
 
     if request.method=='GET' and request.GET:
@@ -607,7 +613,9 @@ def accountedit(request):
     prepaidtraffic = []
     if account_id:
         if  not (request.user.account.has_perm('billservice.change_account')):
-            return {'status':False, 'message': u'У вас нет прав на редактирование аккаунтов'}
+            messages.error(request, u'У вас нет прав на редактирование аккаунтов', extra_tags='alert-danger')
+            return HttpResponseRedirect(request.path)
+
         account = Account.objects.get(id=account_id)
         
         try:
@@ -656,7 +664,8 @@ def accountedit(request):
 
     else:
         if  not (request.user.account.has_perm('billservice.add_account')):
-            return {'status':False, 'message': u'У вас нет прав на создание аккаунтов'}
+            messages.error(request, u'У вас нет прав на создание аккаунтов', extra_tags='alert-danger')
+            return HttpResponseRedirect(request.path)
 
     if request.method=='POST':
 
@@ -781,7 +790,8 @@ def subaccountedit(request):
     action_log_table = None
     if id:
         if  not (request.user.account.has_perm('billservice.change_subaccount')):
-            return {'status':False, 'message': u'У вас нет прав на редактирование субаккаунтов'}        
+            messages.error(request, u'У вас нет прав на редактирование субаккаунтов', extra_tags='alert-danger')
+            return HttpResponseRedirect(request.path)
         subaccount = SubAccount.objects.get(id=id)
     
         res = AccountAddonService.objects.filter(subaccount=subaccount)
@@ -796,7 +806,8 @@ def subaccountedit(request):
         prev = None
     else:
         if  not (request.user.account.has_perm('billservice.add_subaccount')):
-            return {'status':False, 'message': u'У вас нет прав на создание субаккаунтов'}       
+            messages.error(request, u'У вас нет прав на создание аккаунтов', extra_tags='alert-danger')
+            return HttpResponseRedirect(request.path)  
     if account_id:
         account = Account.objects.get(id=account_id)
     elif subaccount:
@@ -971,6 +982,9 @@ def subaccountedit(request):
             messages.warning(request, u'Ошибка.', extra_tags='alert-danger')
             return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, 'accountaddonservice_table':table,  'form':form}
     else:
+        if  not (request.user.account.has_perm('billservice.view_subaccount')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if subaccount:
             
             form = SubAccountForm(instance=subaccount)
@@ -987,15 +1001,17 @@ def accounttarif_edit(request):
     id = request.POST.get("id")
     
     if request.method == 'POST': 
-        if  not (request.user.account.has_perm('billservice.change_accounttarif')):
-            return {'status':False, 'message': u'У вас нет прав на изменение тарифных планов у аккаунта'}   
+
         form = AccountTariffForm(request.POST) 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accounttariff')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование связок тарифных планов'}
+            if  not (request.user.account.has_perm('billservice.change_accounttarif')):
+                messages.error(request, u'У вас нет прав на изменение тарифных планов у аккаунта', extra_tags='alert-danger')
+                return {}
             
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accounttariff')):
-            return {'status':False, 'message': u'У вас нет прав на добавление связок тарифных планов'}
+        else:
+            if  not (request.user.account.has_perm('billservice.add_accounttarif')):
+                messages.error(request, u'У вас нет прав на создание тарифных планов у аккаунта', extra_tags='alert-danger')
+                return {}
         
         
         if form.is_valid(): 
@@ -1008,10 +1024,11 @@ def accounttarif_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
+        if  not (request.user.account.has_perm('billservice.accounttarif_view')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {}
 
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.accounttarif_view')):
-                return {'status':False}
             
             accounttariff = AccountTarif.objects.get(id=id)
             form = AccountTariffForm(instance=accounttariff)
@@ -1035,10 +1052,13 @@ def accounthardware(request):
         form = AccountHardwareForm(request.POST) 
         if id:
             if  not (request.user.account.has_perm('billservice.change_accounthardware')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование связок тарифных планов'}
+                messages.error(request, u'У вас нет прав на редактирование связок тарифных планов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             if  not (request.user.account.has_perm('billservice.add_accounthardware')):
-                return {'status':False, 'message': u'У вас нет прав на добавление связок тарифных планов'}
+                messages.error(request, u'У вас нет прав на создание связок тарифных планов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
         
         
         if form.is_valid(): 
@@ -1053,10 +1073,10 @@ def accounthardware(request):
         id = request.GET.get("id")
         account_id = request.GET.get("account_id")
         if  not (request.user.account.has_perm('billservice.view_accounthardware')):
-            return {'status':False}
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"),account_id))
+        
         if id:
-
-            
             accounttariff = AccountHardware.objects.get(id=id)
             form = AccountHardwareForm(instance=accounttariff)
         elif account_id:
@@ -1079,10 +1099,12 @@ def suspendedperiod(request):
         form = SuspendedPeriodModelForm(request.POST) 
         if id:
             if  not (request.user.account.has_perm('billservice.change_suspendedperiod')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование периодов без списаний'}
+                messages.error(request, u'У вас нет прав на редактирование периодов без списаний', extra_tags='alert-danger')
+                return {}
         else:
             if  not (request.user.account.has_perm('billservice.add_suspendedperiod')):
-                return {'status':False, 'message': u'У вас нет прав на добавление периодов без списаний'}
+                messages.error(request, u'У вас нет прав на создание периодов без списаний', extra_tags='alert-danger')
+                return {}
         
         
         if form.is_valid(): 
@@ -1096,7 +1118,8 @@ def suspendedperiod(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_accounthardware')):
-            return {'status':False}
+            messages.error(request, u'У вас нет прав на доступ в этот раздел', extra_tags='alert-danger')
+            return {}
         if id:
 
             
@@ -1123,17 +1146,19 @@ def transaction(request):
         form = TransactionModelForm(request.POST) 
         if id:
             if  not (request.user.account.has_perm('billservice.edit_transaction')):
-                return {'status':False, 'message': u'У вас нет прав на создание платежей'}
+                messages.error(request, u'У вас нет прав на изменение платежей', extra_tags='alert-danger')
+                return {}
         else:
             if  not (request.user.account.has_perm('billservice.add_transaction')):
-                return {'status':False, 'message': u'У вас нет прав на создание платежей'}
+                messages.error(request, u'У вас нет прав на создание платежей', extra_tags='alert-danger')
+                return {}
         form.fields["type"].queryset = request.user.account.transactiontype_set
         
         if form.is_valid(): 
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'Транзакция выполнена.', extra_tags='alert-success')
+            messages.success(request, u'Операция выполнена.', extra_tags='alert-success')
             return {'form':form,  'status': True, 'transaction': model} 
         else:
             messages.success(request, u'Ошибка при выполнении операции.', extra_tags='alert-danger')
@@ -1141,7 +1166,8 @@ def transaction(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_transaction')):
-            return {'status':False}
+            messages.error(request, u'У вас нет прав на просмотр платежей', extra_tags='alert-danger')
+            return {}
         if id:
 
             
@@ -1171,11 +1197,14 @@ def accountaddonservice_edit(request):
             model = AccountAddonService.objects.get(id=id)
             form = AccountAddonServiceModelForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountaddonservice')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование привязок подключаемых услуг'}
+                messages.error(request, u'У вас нет прав на редактирование привязок подключаемых услуг', extra_tags='alert-danger')
+                return {}
+
         else:
             form = AccountAddonServiceModelForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_accountaddonservice')):
-            return {'status':False, 'message': u'У вас нет прав на добавление привязок подключаемых услуг'}
+            if  not (request.user.account.has_perm('billservice.add_accountaddonservice')):
+                messages.error(request, u'У вас нет прав на создание привязок подключаемых услуг', extra_tags='alert-danger')
+                return {}
 
 
         if form.is_valid():
@@ -1190,7 +1219,8 @@ def accountaddonservice_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_accountaddonservice')):
-            return {'status':False}
+            messages.error(request, u'У вас нет прав на просмотр привязок подключаемых услуг', extra_tags='alert-danger')
+            return {}
         if id:
 
 
@@ -1212,7 +1242,8 @@ def accountaddonservice_edit(request):
 @render_to('ebsadmin/templateselect_window.html')
 def templateselect(request):
     if  not (request.user.account.has_perm('billservice.view_template')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на просмотр списка шаблонов', extra_tags='alert-danger')
+        return {}
     types = request.GET.getlist('type')
     form = TemplateSelectForm()
     form.fields['template'].queryset=Template.objects.filter(type__id__in=types)

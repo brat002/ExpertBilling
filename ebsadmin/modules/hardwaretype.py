@@ -12,7 +12,7 @@ from ebsadmin.tables import HardwareTypeTable
 
 from billservice.forms import HardwareTypeForm
 from billservice.models import HardwareType
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -21,7 +21,9 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/hardwaretype_list.html')
 def hardwaretype(request):
     if  not (request.user.account.has_perm('billservice.view_hardwaretype')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+    
     res = HardwareType.objects.all()
     table = HardwareTypeTable(res)
     table_to_report = RequestConfig(request, paginate=False).configure(table)
@@ -43,11 +45,13 @@ def hardwaretype_edit(request):
             model = HardwareType.objects.get(id=id)
             form = HardwareTypeForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_hardwaretype')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование типов оборудования'}
+                messages.error(request, u'У вас нет прав на редактирование типов оборудования', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = HardwareTypeForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_hardwaretype')):
-            return {'status':False, 'message': u'У вас нет прав на добавление типов оборудования'}
+            if  not (request.user.account.has_perm('billservice.add_hardwaretype')):
+                messages.error(request, u'У вас нет прав на создание типов оборудования', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
 
         if form.is_valid():
@@ -61,10 +65,11 @@ def hardwaretype_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-
+        if  not (request.user.account.has_perm('billservice.view_hardwaretype')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {}
         if id:
-            if  not (request.user.account.has_perm('billservice.view_hardwaretype')):
-                return {'status':False}
+
 
             item = HardwareType.objects.get(id=id)
             

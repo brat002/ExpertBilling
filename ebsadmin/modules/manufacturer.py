@@ -13,7 +13,7 @@ from ebsadmin.tables import ManufacturerTable
 from billservice.forms import ManufacturerForm
 from billservice.models import Manufacturer
 from django.contrib import messages
-
+from django.contrib import messages
 log = LogItem.objects.log_action
 
 
@@ -22,7 +22,8 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/manufacturer_list.html')
 def manufacturer(request):
     if  not (request.user.account.has_perm('billservice.view_manufacturer')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     
     res = Manufacturer.objects.all()
     table = ManufacturerTable(res)
@@ -45,11 +46,14 @@ def manufacturer_edit(request):
             model = Manufacturer.objects.get(id=id)
             form = ManufacturerForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_manufacturer')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование производителей оборудования'}
+                messages.error(request, u'У вас нет прав на редактирование производителей оборудования', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
         else:
             form = ManufacturerForm(request.POST) 
-        if  not (request.user.account.has_perm('billservice.add_manufacturer')):
-            return {'status':False, 'message': u'У вас нет прав на добавление производителей оборудования'}
+            if  not (request.user.account.has_perm('billservice.add_manufacturer')):
+                messages.error(request, u'У вас нет прав на создание производителей оборудования', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
 
 
         if form.is_valid():
@@ -65,9 +69,10 @@ def manufacturer_edit(request):
     else:
         id = request.GET.get("id")
 
+        if  not (request.user.account.has_perm('billservice.view_manufacturers')):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return {}
         if id:
-            if  not (request.user.is_staff==True and request.user.account.has_perm('billservice.view_manufacturer')):
-                return {'status':True}
 
             item = Manufacturer.objects.get(id=id)
             
