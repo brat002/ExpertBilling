@@ -47,12 +47,12 @@ def accountgroup_edit(request):
             form = AccountGroupForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountgroup')):
                 messages.error(request, u'Ошибка при сохранении группы.', extra_tags='alert-danger')
-                return HttpResponseRedirect(request.META.PATH_INFO)
+                return HttpResponseRedirect(request.path)
         else:
             form = AccountGroupForm(request.POST) 
         if  not (request.user.account.has_perm('billservice.add_accountgroup')):
-            messages.error(request, u'У вас нет прав на добавление типов оборудования', extra_tags='alert-danger')
-            return HttpResponseRedirect(request.META.PATH_INFO)
+            messages.error(request, u'У вас нет прав на добавление групп абонентов', extra_tags='alert-danger')
+            return HttpResponseRedirect(request.path)
 
 
         if form.is_valid():
@@ -67,11 +67,12 @@ def accountgroup_edit(request):
             return {'form':form,  'status': False, 'item': model} 
     else:
         id = request.GET.get("id")
-
+        
+        if not request.user.account.has_perm('billservice.view_accountgroup'):
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
+        
         if id:
-            if  not (request.user.has_perm('billservice.accountgroup_view')):
-                return {'status':True}
-
             item = AccountGroup.objects.get(id=id)
             
             form = AccountGroupForm(instance=item)

@@ -1,3 +1,11 @@
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
 {% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
 
