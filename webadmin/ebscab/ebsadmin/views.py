@@ -1219,7 +1219,7 @@ def session_reset(request):
 @ajax_request
 @systemuser_required
 def cities(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.city_view')):
+    if  not (request.user.account.has_perm('billservice.view_city')):
         return {'status':True,'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -1239,54 +1239,58 @@ def cities(request):
 
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
-@ajax_request
-@systemuser_required
-def cities_set(request):
-    
-    id = request.POST.get('id')
-    if id:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_city')):
-            return {'status':False, 'message':u'У вас нет прав на изменение городов'}
-        item = City.objects.get(id=id)
-        form = CityForm(request.POST, instance=item)
-    else:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_city')):
-            return {'status':False, 'message':u'У вас нет прав на добавление городов'}
-        form = CityForm(request.POST)
-        
-    if form.is_valid():
-        try:
-            model = form.save(commit=False)
-            model.save()
-            res={"status": True}
-            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-        except Exception, e:
-            res={"status": False, "message": str(e)}
-    else:
-        res={"status": False, "errors": form._errors}
- 
-    return res
+#===============================================================================
+# @ajax_request
+# @systemuser_required
+# def cities_set(request):
+#    
+#    id = request.POST.get('id')
+#    if id:
+#        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_city')):
+#            return {'status':False, 'message':u'У вас нет прав на изменение городов'}
+#        item = City.objects.get(id=id)
+#        form = CityForm(request.POST, instance=item)
+#    else:
+#        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_city')):
+#            return {'status':False, 'message':u'У вас нет прав на добавление городов'}
+#        form = CityForm(request.POST)
+#        
+#    if form.is_valid():
+#        try:
+#            model = form.save(commit=False)
+#            model.save()
+#            res={"status": True}
+#            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+#        except Exception, e:
+#            res={"status": False, "message": str(e)}
+#    else:
+#        res={"status": False, "errors": form._errors}
+# 
+#    return res
+#===============================================================================
 
 
-@ajax_request
-@systemuser_required
-def cities_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_city')):
-        return {'status':False, 'message':u'У вас нет прав на удаление городов'}
-    id = int(request.POST.get('id',0))
-    if id:
-        model = City.objects.get(id=id)
-        log('DELETE', request.user, model)
-        model.delete()
-        return {"status": True}
-    else:
-        return {"status": False, "message": "City not found"}
+#===============================================================================
+# @ajax_request
+# @systemuser_required
+# def cities_delete(request):
+#    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_city')):
+#        return {'status':False, 'message':u'У вас нет прав на удаление городов'}
+#    id = int(request.POST.get('id',0))
+#    if id:
+#        model = City.objects.get(id=id)
+#        log('DELETE', request.user, model)
+#        model.delete()
+#        return {"status": True}
+#    else:
+#        return {"status": False, "message": "City not found"}
+#===============================================================================
     
     
 @ajax_request
 @systemuser_required
 def accounthardware(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.accounthardware_view')):
+    if  not (request.user.account.has_perm('billservice.view_accounthardware')):
         return {'status':True, 'records':[], 'totalCount':0}
     fields = request.POST.get('fields',[])
     id = request.POST.get('id',None)
@@ -2438,1682 +2442,1686 @@ def templates_save(request):
     return res
 
 
-@ajax_request
-@systemuser_required
-def accountprepaystrafic(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountprepaystraffic_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-
-   if id and id!='None':
-       items = AccountPrepaysTrafic.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'AccountPrepaysTrafic item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'AccountPrepaysTrafic >1 items with id=%s' % id}
-
-   else:
-       items = AccountPrepaysTrafic.objects.all()
-   #from django.core import serializers
-   #from django.http import HttpResponse
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields))
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def accountprepaystrafic_set(request):
-   
-   id = request.POST.get('id')
-   if id:
-       if  not (request.user.is_staff==True and  request.user.has_perm('billservice.change_accountprepaystraffic')):
-           return {'status':True, 'message': u'У вас нет прав на изменение размера предоплаченного трафика'}
-       item = AccountPrepaysTrafic.objects.get(id=id)
-       form = AccountPrepaysTraficForm(request.POST, instance=item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountprepaystraffic')):
-           return {'status':True, 'message': u'У вас нет прав на добавление предоплаченного трафика'}
-       form = AccountPrepaysTraficForm(request.POST)
-       
-   if form.is_valid():
-       try:
-           model = form.save(commit=False)
-           model.save()
-           res={"status": True, 'id':model.id}
-           log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-       except Exception, e:
-           res={"status": False, "message": str(e)}
-   else:
-       res={"status": False, "errors": form._errors}
-
-   return res
-#===
-
-#===
-@ajax_request
-@systemuser_required
-def accountprepaysradiustrafic(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountprepaysradiustrafic_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-
-   if id and id!='None':
-       items = AccountPrepaysRadiusTrafic.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'AccountPrepaysRadiusTrafic item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'AccountPrepaysRadiusTrafic >1 items with id=%s' % id}
-
-   else:
-       items = AccountPrepaysRadiusTrafic.objects.all()
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields))
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def accountprepaysradiustrafic_set(request):
-   
-   id = request.POST.get('id')
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountprepaysradiustraffic')):
-           return {'status':True, 'message': u'У вас нет прав на изменение размера предоплаченного RADIUS трафика'}
-
-       item = AccountPrepaysRadiusTrafic.objects.get(id=id)
-       form = AccountPrepaysRadiusTraficForm(request.POST, instance=item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountprepaysradiustraffic')):
-           return {'status':True, 'message': u'У вас нет прав на добавление предоплаченного RADIUS трафика'}
-       form = AccountPrepaysRadiusTraficForm(request.POST)
-       
-   if form.is_valid():
-       try:
-           model = form.save(commit=False)
-           model.save()
-           res={"status": True, 'id':model.id}
-           log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-       except Exception, e:
-           res={"status": False, "message": str(e)}
-   else:
-       res={"status": False, "errors": form._errors}
-
-   return res
-
-@ajax_request
-@systemuser_required
-def templates_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_template')):
-       return {'status':False, 'message': u'У вас нет прав на удаление шаблона'}
-   id = int(request.POST.get('id',0))
-   if id:
-       model = Template.objects.get(id=id)
-       log('DELETE', request.user, model)
-       model.delete()
-       return {"status": True}
-   else:
-       return {"status": False, "message": "RadiusAttrs not found"}
-   
-@ajax_request
-@systemuser_required
-def templatetypes(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.templatetype_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   type = request.POST.get('type',None)
-   if id and id!='None':
-       items = TemplateType.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'TemplateType item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
-       
-   elif type and type!='None':
-       items = Template.objects.filter(type=type)
-   else:
-       items = TemplateType.objects.all()
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields))
-   return {"records": res, 'status':True, 'totalCount':len(res)}
- 
-@ajax_request
-@systemuser_required
-def periodicalservices(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.periodicalservice_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   tarif_id = request.POST.get('tarif',None)
-   deleted = bool(request.POST.get('deleted',None)=='True')
-   normal_fields = bool(request.POST.get('normal_fields',None)=='True')
-
-   if id and id!='None':
-       items = PeriodicalService.objects.filter(id=id, deleted=deleted)
-       if not items:
-           return {'status':False, 'message': 'PeriodicalService item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
-       
-   elif tarif_id and tarif_id!='None':
-       items = PeriodicalService.objects.filter(tarif__id=tarif_id, deleted=deleted)
-   else:
-       items = PeriodicalService.objects.filter( deleted=deleted)
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-   
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-
-
-@ajax_request
-@systemuser_required
-def transactions(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.transaction_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   limit = request.POST.get('limit',None)
-   normal_fields = bool(request.POST.get('normal_fields',None)=='True')
-
-   if id and id!='None':
-       items = Transaction.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'Transaction item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
-   else:
-       items = Transaction.objects.filter()
-       if limit:
-           items = items[:limit]
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-   
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def groups(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.group_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   normal_fields = bool(request.POST.get('normal_fields',None)=='True')
-   if id and id!='None':
-       items = Group.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'Group item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'Group >1 items with id=%s' % id}
-   else:
-       items = Group.objects.all()
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def groups_detail(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.group_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-
-   from django.db import connection
-   
-   cur = connection.cursor()
-   cur.execute("SELECT gr.*  FROM billservice_group as gr")
-
-   items = cur.fetchall()
-   
-   res=[]
-   for item in items:
-       id, name, direction, grtype = item
-       cur.execute("SELECT name FROM nas_trafficclass WHERE id IN (SELECT trafficclass_id FROM billservice_group_trafficclass WHERE group_id=%s)", (id,))
-
-       d = cur.fetchall()
-       classnames=''
-       if d:
-           classnames = ''.join([unicode(x[0]) for x in d])
-       res.append({'id':id, 'name': name, 'direction':direction, 'type': grtype, 'classnames': classnames})
-
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def onetimeservices(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.onetimeservice_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   tarif_id = request.POST.get('tarif_id',None)
-   normal_fields = bool(request.POST.get('normal_fields',False)=='True')
-
-   if id and id!='None':
-       items = OneTimeService.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'OneTimeService item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
-       
-   elif tarif_id and tarif_id!='None':
-       items = OneTimeService.objects.filter(tarif__id=tarif_id)
-   else:
-       items = OneTimeService.objects.all()
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-   
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def trafficlimites(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.trafficlimit_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   tarif_id = request.POST.get('tarif_id',None)
-   normal_fields = bool(request.POST.get('normal_fields',False)=='True')
-
-   if id and id!='None':
-       items = TrafficLimit.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'TrafficLimit item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
-       
-   elif tarif_id and tarif_id!='None':
-       items = TrafficLimit.objects.filter(tarif__id=tarif_id)
-   else:
-       items = TrafficLimit.objects.all()
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-  
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def speedlimites(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.speedlimit_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   limit_id = request.POST.get('limit_id',None)
-   normal_fields = bool(request.POST.get('normal_fields',False)=='True')
-
-   if id and id!='None':
-       items = SpeedLimit.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'SpeedLimit item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
-       
-   elif limit_id and limit_id!='None':
-       items = SpeedLimit.objects.filter(limit__id=limit_id)
-   else:
-       items = SpeedLimit.objects.all()
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-  
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def addonservicetariff(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.addonservicetarif_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   tarif_id = request.POST.get('tarif_id',None)
-   normal_fields = bool(request.POST.get('normal_fields',False)=='True')
-
-   if id and id!='None':
-       items = AddonServiceTarif.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'AddonServiceTarif item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'AddonServiceTarif >1 items with id=%s' % id}
-       
-   elif tarif_id and tarif_id!='None':
-       items = AddonServiceTarif.objects.filter(tarif__id=tarif_id)
-   else:
-       items = AddonServiceTarif.objects.all()
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
-  
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-
-@ajax_request
-@systemuser_required
-def get_cards_nominal(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.card_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   from django.db import connection
-   cur = connection.cursor()
-   
-   cur.execute("SELECT nominal FROM billservice_card GROUP BY nominal ORDER BY nominal ASC")
-   
-   res = cur.fetchall()
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def get_next_cardseries(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.card_view')):
-       return {'status':True, 'records':[0], 'totalCount':1}
-   from django.db import connection
-   cur = connection.cursor()
-   
-   cur.execute("SELECT MAX(series) as series FROM billservice_card")
-   
-   res = cur.fetchone()[0] 
-   
-
-   res = res if res else 0
-   return {"records": [res+1], 'status':True, 'totalCount':1}
-
-
-@ajax_request
-@systemuser_required
-def switches(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('nas.switch_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   if id:
-       items = Switch.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'Switch item with id=%s not found' % id}
-       if len(items)>1:
-           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
-       
-   else:
-       items = Switch.objects.all()
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields))
-   
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def switches_set(request):
-   
-   id = request.POST.get('id')
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_switch')):
-           return {'status':False, 'message': u'У вас нет прав на изменение коммутаторов'}
-       item = Switch.objects.get(id=id)
-       form = SwitchForm(request.POST, instance=item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_switch')):
-           return {'status':False, 'message': u'У вас нет прав на добавление коммутаторов'}
-       form = SwitchForm(request.POST)
-       
-   if form.is_valid():
-       try:
-           item = form.save(commit=False)
-           item.save()
-           res={"status": True, 'id':item.id}
-           log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
-       except Exception, e:
-           res={"status": False, "message": str(e)}
-   else:
-       res={"status": False, "errors": form._errors}
-
-   return res
-
-@ajax_request
-@systemuser_required
-def switches_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_switch')):
-       return {'status':False, 'message': u'У вас нет прав на удаление коммутаторов'}
-       
-   id = int(request.POST.get('id',0))
-   if id:
-       model = Switch.objects.get(id=id)
-       log('DELETE', request.user, model)
-       model.delete()
-       return {"status": True}
-   else:
-       return {"status": False, "message": "Switch not found"}
-   
-@ajax_request
-@systemuser_required
-def organizations(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.organization_view')):
-       return {'status':False, 'records':[], 'totalCount':0}
-   
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   account_id = request.POST.get('account_id',None)
-   if id:
-       items = Organization.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'Organization item with id=%s not found' % id}
-   elif account_id:
-       items = Organization.objects.filter(account__id=account_id)
-
-   else:
-       items = Organization.objects.all()
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields))
-   
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def banks(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.bankdata_view')):
-       return {'status':False, 'records':[], 'totalCount':0}
-   
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   if id:
-       items = BankData.objects.filter(id=id)
-       if not items:
-           return {'status':False, 'message': 'Bank item with id=%s not found' % id}
-   else:
-       items = BankData.objects.all()
-
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields))
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def banks_set(request):
-   
-   id = request.POST.get('id')
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_bankdata')):
-           return {'status':False, 'message': u'У вас нет прав на изменение банка'}
-       item = BankData.objects.get(id=id)
-       form =BankDataForm(request.POST, instance=item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_bankdata')):
-           return {'status':False, 'message': u'У вас нет прав на добавление банка'}
-       form = BankDataForm(request.POST)
-       
-   if form.is_valid():
-       try:
-           item = form.save(commit=False)
-           item.save()
-           res={"status": True, 'id':item.id}
-           log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
-       except Exception, e:
-           res={"status": False, "message": str(e)}
-   else:
-       res={"status": False, "errors": form._errors}
-   return res
-
-
-@ajax_request
-@systemuser_required
-def dealerpays(request):
-
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.dealerpay_view')):
-       return {'status':False, 'records':[], 'totalCount':0}
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   dealer_id = request.POST.get('dealer_id',None)
-   
-   if id:
-       items = DealerPay.objects.filter(id=id)
-       if not item:
-           return {'status':False, 'message': 'DealerPay item with id=%s not found' % id}
-   elif dealer_id:
-       items = DealerPay.objects.filter(dealer__id=dealer_id)
-   else:
-       items = DealerPay.objects.all()
-
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields))
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def dealerpay_set(request):
-   
-   id = request.POST.get('id')
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_dealerpay')):
-           return {'status':False, 'message': u'У вас нет прав на изменение платежа'}
-       item = DealerPay.objects.get(id=id)
-       form = DealerPayForm(request.POST, instance=item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_dealerpay')):
-           return {'status':False, 'message': u'У вас нет прав на добавление платежа'}
-       form = DealerPayForm(request.POST)
-       
-   if form.is_valid():
-       try:
-           item = form.save(commit=False)
-           item.save()
-           res={"status": True, 'id':item.id}
-           log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
-       except Exception, e:
-           res={"status": False, "message": str(e)}
-   else:
-       res={"status": False, "errors": form._errors}
-   return res
-
-
-@ajax_request
-@systemuser_required
-def returncards(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_card')):
-       return {'status':False, 'message': u'У вас нет прав на изменение состояния карт'}
-   data = json.loads(request.POST.get('data', '{}'))
-   dealer_id = data.get('dealer_id',None)
-   cards = data.get('cards',[])
-   if cards and dealer_id:
-       from django.db import connection
-       
-       cur = connection.cursor()
-       
-       try:
-           for card in cards:
-               cur.execute("DELETE FROM billservice_salecard_cards WHERE card_id=%s", (card, ))
-           Card.objects.filter(id__in=cards).update(sold=None)
-           res={"status": True}
-       except Exception, e:
-           res={"status": False, "message": str(e)}
-   else:
-       res={"status": False, "message": u"Карты не указаны"}
-   return res
-
-@ajax_request
-@systemuser_required
-def salecards(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.salecard_view')):
-       return {'status':False, 'records':[], 'totalCount':0}
-   
-   fields = request.POST.get('fields',[])
-   id = request.POST.get('id',None)
-   dealer_id = request.POST.get('dealer_id',None)
-   
-   if id:
-       items = SaleCard.objects.filter(id=id)
-       if not item:
-           return {'status':False, 'message': 'SaleCard item with id=%s not found' % id}
-   elif dealer_id:
-       items = SaleCard.objects.filter(dealer__id=dealer_id)
-   else:
-       items = SaleCard.objects.all()
-
-
-   res=[]
-   for item in items:
-       res.append(instance_dict(item, fields=fields))
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-
-
-@ajax_request
-@systemuser_required
-def salecards_set(request):
-   
-   data = json.loads(request.POST.get('data', '{}'))
-   id = data.get('model',{}).get('id')
-   cards = data.get('cards',[])
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_salecard')):
-           return {'status':False, 'message': u'У вас нет прав на изменение продажи карт'}
-       item = SaleCard.objects.get(id=id)
-       form =SaleCardForm(data.get('model',{}), instance=item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_salecard')):
-           return {'status':False, 'message': u'У вас нет прав на добавление продажи карт'}
-       form = SaleCardForm(data.get('model',{}))
-       
-   if form.is_valid():
-       try:
-           item = form.save(commit=False)
-           item.save()
-           log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
-           if cards:
-               for card in cards:
-                   c = Card.objects.get(id=card)
-                   c.sold = item.created
-                   c.save()
-                   item.cards.add(c)
-                   log('EDIT', request.user, c)
-           res={"status": True, 'id':item.id}
-       except Exception, e:
-           res={"status": False, "message": str(e)}
-   else:
-       res={"status": False, "errors": form._errors}
-   return res
-
-@ajax_request
-@systemuser_required
-def salecards_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_salecard')):
-       return {'status':False, 'message': u'У вас нет прав на удаление продажи карт'}
-   id = int(request.POST.get('id',0))
-   if id:
-       model = SaleCard.objects.get(id=id)
-       log('DELETE', request.user, model)
-       model.delete()
-       return {"status": True}
-   else:
-       return {"status": False, "message": "SaleCard not found"}
-   
-
-@ajax_request
-@systemuser_required
-def tpchange_save(request):
-   
-   id = request.POST.get('id')
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accounttarif')):
-           return {'status':False, 'message': u'У вас нет прав на изменение связки тарифного плана'}
-       item = AccountTarif.objects.get(id=id)
-       form = AccountTariffForm(request.POST, instance=item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accounttarif')):
-           return {'status':False, 'message': u'У вас нет прав на добавяление связки тарифного плана продажи карт'}
-       form = AccountTariffForm(request.POST)
-       
-   if form.is_valid():
-       try:
-           model = form.save(commit = False)
-           model.save()
-           res={"success": True}
-           log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-       except Exception, e:
-           res={"success": False, "message": str(e)}
-   else:
-       res={"success": False, "errors": form._errors}
-   
-   return res
-
-
-
-
-@systemuser_required
-@ajax_request
-#@transaction.commit_manually
-def tariffs_set(request):
-   
-   if  not request.user.is_staff==True:
-       return {'status':False, 'message': u'У вас нет прав на создание/изменение тарифного плана'}
-
-   
-   data = request.POST.get("data", {})
-   
-   js = json.loads(data)
-
-
-   if js['access_parameters']:
-       if 'id' in js['access_parameters']:
-           item = AccessParameters.objects.get(id=js['access_parameters']['id'])
-           form = AccessParametersForm(js['access_parameters'], instance=item)
-       else:
-           form = AccessParametersForm(js['access_parameters'])
-       
-       
-       if form.is_valid():
-           access_parameters = form.save(commit=False)
-           access_parameters.save()
-           log('EDIT', request.user, access_parameters) if 'id' in js['access_parameters'] else log('CREATE', request.user, access_parameters) 
-       else:
-           transaction.rollback()
-           return {'status':False, 'errors': form._errors}
-       
-       speeditem_ids = []
-       
-       for speed in js.get('speeds', []):
-           speed['access_parameters']=access_parameters.id
-           if speed.get('id'):
-               item = TimeSpeed.objects.get(id=speed.get('id'))
-               form = TimeSpeedForm(speed, instance=item)
-           else:
-               form = TimeSpeedForm(speed)
-
-           if form.is_valid():
-               speeditem = form.save(commit=False)
-               speeditem.save()
-               log('EDIT', request.user, speeditem) if speed.get('id') else log('CREATE', request.user, speeditem) 
-               
-           else:
-               transaction.rollback()
-               return {'status':False, 'errors': form._errors}
-           speeditem_ids.append(speeditem.id)
-
-
-       for d in TimeSpeed.objects.filter(access_parameters=access_parameters).exclude(id__in=speeditem_ids):
-           log('DELETE', request.user, d)
-           d.delete()
-               
-   if js.get('model'):
-       if js.get('model').get('id'):
-           if not request.user.has_perm('billservice.change_tariff'):
-               transaction.rollback()
-               return {'status':False, 'message': u'У вас нет прав на изменение тарифного плана'}
-           item = Tariff.objects.get(id=js['model']['id'])
-           form = TariffForm(js['model'], instance=item)
-       else:
-           if not request.user.has_perm('billservice.add_tariff'):
-               transaction.rollback()
-               return {'status':False, 'message': u'У вас нет прав на добавление тарифного плана'}
-           js['model']['access_parameters']=access_parameters.id
-           form = TariffForm(js['model'])
-           
-       
-       if form.is_valid():
-           tariff = form.save(commit=False)
-           tariff.save()
-       else:
-           transaction.rollback()
-           return {'status':False, 'errors': form._errors}
-       
-
-       
-   
-   if js['periodicalservices']:
-       
-       periodicalservices_ids = []
-       for periodicalservice in js.get('periodicalservices', []):
-           periodicalservice['tarif']=tariff.id
-           if periodicalservice.get('id'):
-               
-               item = PeriodicalService.objects.get(id=periodicalservice.get('id'))
-               form = PeriodicalServiceForm(periodicalservice, instance=item)
-           else:
-               form = PeriodicalServiceForm(periodicalservice)
-           
-       
-           if form.is_valid():
-               periodicalservice_item = form.save(commit=False)
-               periodicalservice_item.save()
-               log('EDIT', request.user, periodicalservice_item) if periodicalservice.get('id') else log('CREATE', request.user, periodicalservice_item) 
-
-           else:
-               transaction.rollback()
-               return {'status':False, 'errors': form._errors}
-           periodicalservices_ids.append(periodicalservice_item.id)
-       
-
-       if periodicalservices_ids:
-           for d in PeriodicalService.objects.filter(tarif=tariff).exclude(id__in=periodicalservices_ids):
-               log('DELETE', request.user, d)
-               d.delete()
-   else:
-       PeriodicalService.objects.filter(tarif=tariff).update(deleted=True, deactivated = datetime.datetime.now())
-       
-   if js['addonservices']:
-       
-       addonservices_ids = []
-       for obj in js.get('addonservices', []):
-           obj['tarif']=tariff.id
-           if obj.get('id'):
-               
-               item = AddonServiceTarif.objects.get(id=obj.get('id'))
-               form = AddonServiceTarifForm(obj, instance=item)
-
-           else:
-
-               form = AddonServiceTarifForm(obj)
-           
-       
-           if form.is_valid():
-
-               addonservice_item = form.save(commit=False)
-               addonservice_item.save()
-               
-               log('EDIT', request.user, addonservice_item) if obj.get('id') else log('CREATE', request.user, addonservice_item)
-           else:
-
-               transaction.rollback()
-               return {'status':False, 'errors': form._errors}
-           addonservices_ids.append(addonservice_item.id)
-       
-
-       if addonservices_ids:
-           for d in AddonServiceTarif.objects.filter(tarif=tariff).exclude(id__in=addonservices_ids):
-               log('DELETE', request.user, d)
-               d.delete()
-   else:
-       for d in AddonServiceTarif.objects.filter(tarif=tariff):
-           log('DELETE', request.user, d)
-           d.delete()
-           
-   if js.get('onetimeservices'):
-       
-       onetimeservices_ids = []
-       for onetimeservice in js.get('onetimeservices', []):
-           onetimeservice['tarif']=tariff.id
-           if onetimeservice.get('id'):
-               
-               item = OneTimeService.objects.get(id=onetimeservice.get('id'))
-               form = OneTimeServiceForm(onetimeservice, instance=item)
-
-           else:
-
-               form = OneTimeServiceForm(onetimeservice)
-           
-       
-           if form.is_valid():
-
-               onetimeservice_item = form.save(commit=False)
-               onetimeservice_item.save()
-               log('EDIT', request.user, onetimeservice_item) if onetimeservice.get('id') else log('CREATE', request.user, onetimeservice_item)
-
-           else:
-
-               transaction.rollback()
-               return {'status':False, 'errors': form._errors}
-           onetimeservices_ids.append(onetimeservice_item.id)
-       
-
-       if onetimeservices_ids:
-           for d in OneTimeService.objects.filter(tarif=tariff).exclude(id__in=onetimeservices_ids):
-               log('DELETE', request.user, d)
-               d.delete()
-   else:
-       for d in OneTimeService.objects.filter(tarif=tariff):
-           log('DELETE', request.user, d)
-           d.delete()
-       
-   if js.get('limites'):
-       
-       limites_ids = []
-       speedlimites_ids = []
-       for (limit, speedlimit) in js.get('limites', []):
-           limit['tarif']=tariff.id
-           if limit.get('id'):
-
-               item = TrafficLimit.objects.get(id=limit.get('id'))
-               form = TrafficLimitForm(limit, instance=item)
-
-           else:
-
-               form = TrafficLimitForm(limit)
-           
-       
-           if form.is_valid():
-
-               limit_item = form.save(commit=False)
-               limit_item.save()
-               log('EDIT', request.user, limit_item) if limit.get('id') else log('CREATE', request.user, limit_item)
-
-           else:
-
-               transaction.rollback()
-               return {'status':False, 'errors': form._errors}
-           limites_ids.append(limit_item.id)
-           
-           if limit_item.action ==0:
-               for d in SpeedLimit.objects.filter(limit=limit_item):
-                   log('DELETE', request.user, d)
-                   d.delete()
-           elif  limit_item.action ==1:
-               if speedlimit:
-                   speedlimit['limit']=limit_item.id
-                   if speedlimit.get('id'):
-                       
-                       item = SpeedLimit.objects.get(id=speedlimit.get('id'))
-                       form = SpeedLimitForm(speedlimit, instance=item)
-                   else:
-                       form = SpeedLimitForm(speedlimit)
-   
-                   if form.is_valid():
-                       speedlimit_item = form.save(commit=False)
-                       speedlimit_item.save()
-                       log('EDIT', request.user, speedlimit_item) if speedlimit.get('id') else log('CREATE', request.user, speedlimit_item)
-
-                   else:
-
-                       transaction.rollback()
-                       return {'status':False, 'errors': form._errors}
-                   speedlimites_ids.append(speedlimit_item.id)
-   
-           if speedlimites_ids:
-               for d in SpeedLimit.objects.filter(limit=limit_item).exclude(id__in=speedlimites_ids):
-                   log('DELETE', request.user, d)
-                   d.delete()
-           
-       if limites_ids:
-           for d in TrafficLimit.objects.filter(tarif=tariff).exclude(id__in=limites_ids):
-               log('DELETE', request.user, d)
-               d.delete()
-               
-   else:
-       for tl in TrafficLimit.objects.filter(tarif=tariff):
-            for d in SpeedLimit.objects.filter(limit=tl):
-                log('DELETE', request.user, d)
-                d.delete()
-            log('DELETE', request.user, tl)
-            tl.delete()
-           
-   if js.get('time_access_service'):
-       obj = js.get('time_access_service')
-       if obj.get('id'):
-           
-           item = TimeAccessService.objects.get(id=obj.get('id'))
-           form = TimeAccessServiceForm(obj, instance=item)
-
-       else:
-
-           form = TimeAccessServiceForm(obj)
-       
-   
-       if form.is_valid():
-
-           timeaccessservice = form.save(commit=False)
-           timeaccessservice.save()
-           log('EDIT', request.user, timeaccessservice) if obj.get('id') else log('CREATE', request.user, timeaccessservice)
-           tariff.time_access_service = timeaccessservice
-           tariff.save()
-
-       else:
-
-           transaction.rollback()
-           return {'status':False, 'errors': form._errors}
-
-       
-       time_access_nodes_ids = []
-       
-       for timeaccessnode in js.get('timeaccessnodes', []):
-
-           timeaccessnode['time_access_service']=timeaccessservice.id
-           if timeaccessnode.get('id'):
-               item = TimeAccessNode.objects.get(id=timeaccessnode.get('id'))
-               form = TimeAccessNodeForm(timeaccessnode, instance=item)
-
-           else:
-
-               form = TimeAccessNodeForm(timeaccessnode)
-
-           if form.is_valid():
-               timeaccessnode_item = form.save(commit=False)
-               timeaccessnode_item.save()
-               log('EDIT', request.user, timeaccessnode_item) if timeaccessnode.get('id') else log('CREATE', request.user, timeaccessnode_item)
-           else:
-               transaction.rollback()
-               return {'status':False, 'errors': form._errors}
-           time_access_nodes_ids.append(timeaccessnode_item.id)
-           
-       if time_access_nodes_ids:
-           for d in TimeAccessNode.objects.filter(time_access_service=timeaccessservice).exclude(id__in=time_access_nodes_ids):
-               log('DELETE', request.user, d)
-               d.delete()
-   else:
-       if tariff.time_access_service:
-           for d in TimeAccessNode.objects.filter(id=tariff.time_access_service):
-               log('DELETE', request.user, d)
-               d.delete()
-           log('DELETE', request.user, tariff.time_access_service)
-           tariff.time_access_service.delete()
-
-   if js.get('traffic_transmit_service'):
-       if 'id' in js.get('traffic_transmit_service'):
-           item = TrafficTransmitService.objects.get(id=js.get('traffic_transmit_service')['id'])
-           form = TrafficTransmitServiceForm(js.get('traffic_transmit_service'), instance=item)
-
-       else:
-
-           form = TrafficTransmitServiceForm(js.get('traffic_transmit_service', {}))
-           
-       
-       if form.is_valid():
-
-           traffic_transmit_service = form.save(commit=False)
-           traffic_transmit_service.save()
-           log('EDIT', request.user, traffic_transmit_service) if 'id' in js.get('traffic_transmit_service') else log('CREATE', request.user, traffic_transmit_service)
-           tariff.traffic_transmit_service = traffic_transmit_service
-           tariff.save()
-
-       else:
-           transaction.rollback()
-           return {'status':False, 'errors': form._errors}
-       
-       traffictransmitnodes_ids = []
-       for traffictransmitnode in js.get('traffictransmitnodes', []):
-
-           traffictransmitnode['traffic_transmit_service']=traffic_transmit_service.id
-           if traffictransmitnode.get('id'):
-               item = TrafficTransmitNodes.objects.get(id=traffictransmitnode.get('id'))
-               form = TrafficTransmitNodeForm(traffictransmitnode, instance=item)
-
-           else:
-
-               form = TrafficTransmitNodeForm(traffictransmitnode)
-
-           if form.is_valid():
-               traffictransmitnode_item = form.save(commit=False)
-               traffictransmitnode_item.save()
-               log('EDIT', request.user, traffictransmitnode_item) if traffictransmitnode.get('id') else log('CREATE', request.user, traffictransmitnode_item)
-           else:
-
-               transaction.rollback()
-               return {'status':False, 'errors': form._errors}
-           traffictransmitnodes_ids.append(traffictransmitnode_item.id)
-           
-       if traffictransmitnodes_ids:
-           for d in TrafficTransmitNodes.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=traffictransmitnodes_ids):
-               log('DELETE', request.user, d)
-               d.delete()
-           
-       prepaidtraffic_ids = []
-       for prepaidtrafficnode in js.get('prepaidtrafficnodes', []):
-
-           prepaidtrafficnode['traffic_transmit_service']=traffic_transmit_service.id
-           if prepaidtrafficnode.get('id'):
-               item = PrepaidTraffic.objects.get(id=prepaidtrafficnode.get('id'))
-               form = PrepaidTrafficForm(prepaidtrafficnode, instance=item)
-
-           else:
-
-               form = PrepaidTrafficForm(prepaidtrafficnode)
-
-           if form.is_valid():
-               prepaidtraffictransmitnode_item = form.save(commit=False)
-               prepaidtraffictransmitnode_item.save()
-               log('EDIT', request.user, prepaidtraffictransmitnode_item) if prepaidtrafficnode.get('id') else log('CREATE', request.user, prepaidtraffictransmitnode_item)
-           else:
-
-               transaction.rollback()
-               return {'status':False, 'errors': form._errors}
-           prepaidtraffic_ids.append(prepaidtraffictransmitnode_item.id)
-       if traffictransmitnodes_ids:
-           for d in PrepaidTraffic.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=prepaidtraffic_ids):
-               log('DELETE', request.user, d)
-               d.delete()
-           
-   else:
-       if tariff.traffic_transmit_service:
-           for d in TrafficTransmitService.objects.filter(id=tariff.traffic_transmit_service.id):
-               log('DELETE', request.user, d)
-               d.delete()
-           for d in TrafficTransmitNodes.objects.filter(traffic_transmit_service=tariff.traffic_transmit_service):
-               log('DELETE', request.user, d)
-               d.delete()
-           
-   if js.get('radius_traffic_service'):
-       if 'id' in js.get('radius_traffic_service'):
-           item = RadiusTraffic.objects.get(id=js.get('radius_traffic_service')['id'])
-           form = RadiusTrafficForm(js.get('radius_traffic_service'), instance=item)
-
-       else:
-
-           form = RadiusTrafficForm(js.get('radius_traffic_service', {}))
-           
-       
-       if form.is_valid():
-
-           radius_traffic_service = form.save(commit=False)
-           radius_traffic_service.save()
-           log('EDIT', request.user, radius_traffic_service) if 'id' in js.get('radius_traffic_service') else log('CREATE', request.user, radius_traffic_service)
-           tariff.radius_traffic_transmit_service = radius_traffic_service
-           tariff.save()
-
-       else:
-
-           transaction.rollback()
-           return {'status':False, 'errors': form._errors}
-       
-       radiustraffictransmitnodes_ids = []
-       for radtraffictransmitnode in js.get('radiustrafficnodes', []):
-
-           radtraffictransmitnode['radiustraffic']=radius_traffic_service.id
-           if radtraffictransmitnode.get('id'):
-               item = RadiusTrafficNode.objects.get(id=radtraffictransmitnode.get('id'))
-               form = RadiusTrafficNodeForm(radtraffictransmitnode, instance=item)
-
-           else:
-
-               form = RadiusTrafficNodeForm(radtraffictransmitnode)
-
-           if form.is_valid():
-               radtraffictransmitnode_item = form.save(commit=False)
-               radtraffictransmitnode_item.save()
-               #log('EDIT', request.user, radtraffictransmitnode_item) if 'id' in radtraffictransmitnode.get('id') else log('CREATE', request.user, radtraffictransmitnode_item)
-           else:
-
-               transaction.rollback()
-               return {'status':False, 'errors': form._errors}
-           radiustraffictransmitnodes_ids.append(radtraffictransmitnode_item.id)
-           
-       if radiustraffictransmitnodes_ids:
-           for d in RadiusTrafficNode.objects.filter(radiustraffic=radius_traffic_service).exclude(id__in=radiustraffictransmitnodes_ids):
-               log('DELETE', request.user, d)
-               d.delete()
-       
-   else:
-       if tariff.radius_traffic_transmit_service:
-           for d in RadiusTrafficNode.objects.filter(radiustraffic=tariff.radius_traffic_transmit_service):
-               log('DELETE', request.user, d)
-               d.delete()
-           log('DELETE', request.user, tariff.radius_traffic_transmit_service)
-           tariff.radius_traffic_transmit_service.delete()
-           
-   log('EDIT', request.user, tariff) if js.get('model').get('id') else log('CREATE', request.user, tariff) 
-   transaction.commit()
-
-   return {'status':True, 'tariff_id':tariff.id}
-
-@ajax_request
-@systemuser_required
-def groups_save(request):
-   
-   id = request.POST.get('id')
-   traffic_classes = request.POST.get('traffic_classes','').split(',')
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_group')):
-           return {'status':False, 'message': u'У вас нет прав на изменение группы трафика'}
-
-       item = Group.objects.get(id=id)
-       form = GroupForm(request.POST, instance=item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_group')):
-           return {'status':False, 'message': u'У вас нет прав на добавление группы трафика'}
-       form = GroupForm(request.POST)
-       
-   if form.is_valid():
-       try:
-           model = form.save(commit=False)
-           model.save()
-           log('EDIT', request.user, model) if id else log('CREATE', request.user, model)
-           if id:
-               for d in GroupTrafficClass.objects.filter(group=model):
-                   log('DELETE', request.user, d)
-                   d.delete()
-           for item in traffic_classes:
-               gt = GroupTrafficClass.objects.create(group=model, trafficclass = TrafficClass.objects.get(id=item))
-               log('CREATE', request.user, gt)
-           res={"status": True}
-       except Exception, e:
-           res={"status": False, "message": str(e)}
-   else:
-       res={"status": False, "errors": form._errors}
-   
-   return res
-
-@ajax_request
-@systemuser_required
-def nas_save(request):
-   id = request.POST.get('id')
-
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('nas.change_nas')):
-           return {'status':False, 'message': u'У вас нет прав на изменение сервера доступа'}
-       nas = Nas.objects.get(id=id)
-       form = NasForm(request.POST, instance = nas)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('nas.add_nas')):
-           return {'status':False, 'message': u'У вас нет прав на добавление сервера доступа'}
-       form = NasForm(request.POST)
-       
-   
-   if form.is_valid():
-       item = form.save(commit=False)
-       item.save()
-       log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
-       return {"status": True, "message": 'yes'}
-   else:
-       return {"status": False, "message": form._errors}
-
-@ajax_request
-@systemuser_required
-def contracttemplates_set(request):
-   id = request.POST.get('id')
-
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_contracttemplate')):
-           return {'status':False, 'message': u'У вас нет прав на изменение шаблона номера договора'}
-       item = ContractTemplate.objects.get(id=id)
-       form = ContractTemplateForm(request.POST, instance = item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_contracttemplate')):
-           return {'status':False, 'message': u'У вас нет прав на добавление шаблона номера договора'}
-       form = ContractTemplateForm(request.POST)
-       
-   
-   if form.is_valid():
-       model = form.save(commit = False)
-       model.save()
-       log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-       return {"status": True}
-   else:
-       return {"status": False, "message": form._errors}
-
-@ajax_request
-@systemuser_required
-def contracttemplate_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_contracttemplate')):
-       return {'status':False, 'message': u'У вас нет прав на удаление шаблона номера договора'}
-   id = int(request.POST.get('id',0))
-   if id:
-       model = ContractTemplate.objects.get(id=id)
-       log('DELETE', request.user, model)
-       model.delete()
-       return {"status": True}
-   else:
-       return {"status": False, "message": "ContractTemplate not found"}
-   
-
-@systemuser_required
-@ajax_request
-def settlementperiod_save(request):
-   id = request.POST.get('id')
-
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_settlementperiod')):
-           return {'status':False, 'message': u'У вас нет прав на изменение расчётного периода'}
-       item = SettlementPeriod.objects.get(id=id)
-       form = SettlementPeriodForm(request.POST, instance = item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_settlementperiod')):
-           return {'status':False, 'message': u'У вас нет прав на добавление расчётного периода'}
-       form = SettlementPeriodForm(request.POST)
-       
-   
-   if form.is_valid():
-       d = form.save(commit=False)
-       d.save()
-       log('EDIT', request.user, d) if id else log('CREATE', request.user, d) 
-       return {"status": True}
-   else:
-       return {"status": False, "message": form._errors}
-
-
-@systemuser_required
-@ajax_request
-def addonservices_set(request):
-   data = json.loads(request.POST.get('data', "{}"))
-   id = data.get('id')
-   if id:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_addonservice')):
-           return {'status':False, 'message': u'У вас нет прав на изменение подключаемой услуги'}
-       item = AddonService.objects.get(id=id)
-       form = AddonServiceForm(data, instance = item)
-   else:
-       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_addonservice')):
-           return {'status':False, 'message': u'У вас нет прав на изменение подключаемой услуги'}
-       form = AddonServiceForm(data)
-       
-   
-   if form.is_valid():
-       d = form.save(commit=False)
-       d.save()
-       log('EDIT', request.user, d) if id else log('CREATE', request.user, d) 
-       return {"status": True}
-   else:
-       return {"status": False, "message": form._errors}
-   
-@ajax_request
-@systemuser_required
-def settlementperiod_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_settlementperiod')):
-       return {'status':False, 'message': u'У вас нет прав на удаление расчётного периода'}
-   id = int(request.POST.get('id',0))
-   if id:
-       for d in SettlementPeriod.objects.filter(id=id):
-           log('DELETE', request.user, d)
-           d.delete()
-       return {"status": True}
-   else:
-       return {"status": False, "message": "Settlementperiod not found"}
-
-@ajax_request
-@systemuser_required
-def addonservices_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_addonservice')):
-       return {'status':False, 'message': u'У вас нет прав на удаление подключаемой услуги'}
-   id = int(request.POST.get('id',0))
-   if id:
-       for d in AddonService.objects.filter(id=id):
-           log('DELETE', request.user, d)
-           d.delete()
-       return {"status": True}
-   else:
-       return {"status": False, "message": "AddonService not found"}
-
-
-
-@ajax_request
-@systemuser_required
-def groups_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_group')):
-       return {'status':False, 'message': u'У вас нет прав на удаление группы трафика'}
-   id = int(request.POST.get('id',0))
-   if id:
-       for d in Group.objects.filter(id=id):
-           log('DELETE', request.user, d)
-           d.delete()
-       return {"status": True}
-   else:
-       return {"status": False, "message": "Group not found"}
-
-
-@ajax_request
-@systemuser_required
-def tariffs_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_tariff')):
-       return {'status':False, 'message': u'У вас нет прав на удаление тарифа'}
-   id = int(request.POST.get('id',0))
-   if id:
-       try:
-           item = Tariff.objects.all_with_deleted().get(id=id)
-           log('DELETE', request.user, item)
-           item.delete()
-       except Exception, e:
-           return {"status": False, "message": u"Указанный тарифный план не найден %s" % str(e)}
-
-
-       
-       
-
-       return {"status": True}
-   else:
-       return {"status": False, "message": "AccountTarif not found"}
- 
- 
-@ajax_request
-@systemuser_required
-def accounttariffs_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_accounttarif')):
-       return {'status':False, 'message': u'У вас нет прав на удаление связки тарифа'}
-   id = int(request.POST.get('id',0))
-   if id:
-       try:
-           item = AccountTarif.objects.get(id=id)
-       except Exception, e:
-           return {"status": False, "message": u"Указанный тарифный план не найден тарифный план %s" % str(e)}
-       if item.datetime<datetime.datetime.now():
-           return {"status": False, "message": u"Невозможно удалить вступивший в силу тарифный план"}
-       log('DELETE', request.user, item)
-       item.delete()
-       return {"status": True}
-   else:
-       return {"status": False, "message": "AccountTarif not found"}
- 
-@ajax_request
-@systemuser_required
-def suspendedperiod_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_suspendedperiod')):
-       return {'status':False, 'message': u'У вас нет прав на удаление периода простоя'}
-   id = int(request.POST.get('id',0))
-   if id:
-       try:
-           item = SuspendedPeriod.objects.get(id=id)
-       except Exception, e:
-           return {"status": False, "message": u"Указанный период не найден %s" % str(e)}
-       log('DELETE', request.user, item)
-       item.delete()
-       return {"status": True}
-   else:
-       return {"status": False, "message": "SuspendedPeriod not found"} 
-
-@ajax_request
-@systemuser_required
-def get_tariffs(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   items = Tariff.objects.all_with_deleted().order_by('name')
-   res=[]
-   for item in items:
-       try:
-           access_type = item.access_parameters.access_type
-       except:
-           access_type = ''
-       res.append({'active':item.active,'id':item.id, 'access_type':access_type, 'name':item.name, 'deleted':item.deleted})
-   
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-
-@ajax_request
-@systemuser_required
-def accounts_for_tarif(request):
-   
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.account_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   
-   tarif_id = int(request.POST.get('tarif_id', -1000))
-   
-
-   items = cache.get(str(tarif_id))
-   if items:
-       return {"records": items, 'status':True, 'totalCount':len(items)}
-   
-   from django.db import connection
-   
-   cur = connection.cursor()
-   
-   items = []
-   if tarif_id==-3000:
-       try:
-           
-           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address 
-           FROM billservice_account AS acc 
-           LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
-           WHERE acc.deleted is Null and get_tarif(acc.id) is Null ORDER BY acc.username ASC;""")
-           items = dictfetchall(cur)
-       except Exception, e:
-           return { 'status':False, 'message':str(e)}
-   
-   elif tarif_id==-1000:
-
-       try:
-           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  tariff.name as tariff_name, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
-           FROM billservice_account AS acc 
-           LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
-           JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
-           LEFT JOIN billservice_organization as org ON org.account_id=acc.id
-           WHERE acc.deleted is Null 
-           ORDER BY acc.username ASC;""" )
-
-           items = dictfetchall(cur)
-       except Exception, e:
-           return { 'status':False, 'message':str(e)}
-
-   elif tarif_id==-4000:#Физ лица
-       try:
-           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  tariff.name as tariff_name, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
-           FROM billservice_account AS acc 
-           LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
-           JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
-           LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
-           WHERE  acc.deleted is Null and  acc.id not IN (SELECT account_id FROM billservice_organization) ORDER BY acc.username ASC;""" )
-           items = dictfetchall(cur)
-       except Exception, e:
-           return { 'status':False, 'message':str(e)}        
-
-   elif tarif_id==-5000:#Юр лица
-       try:
-           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  tariff.name as tariff_name, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
-           FROM billservice_account AS acc 
-           LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
-           JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
-           LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
-           WHERE acc.deleted is Null and  acc.id IN (SELECT account_id FROM billservice_organization)  ORDER BY acc.username ASC;""" )
-           items = dictfetchall(cur)
-       except Exception, e:
-           return { 'status':False, 'message':str(e)}        
-
-   elif tarif_id==-12000:#Архив
-       try:
-           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,   tariff.name as tariff_name, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
-           FROM billservice_account AS acc 
-           LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
-           JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
-           LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
-           WHERE acc.deleted is not Null  ORDER BY acc.username ASC;""" )
-           items = dictfetchall(cur)
-       except Exception, e:
-           return { 'status':False, 'message':str(e)}   
-   else:
-       
-       try:
-           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs, COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
-           FROM billservice_account AS acc 
-           JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
-           JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
-           LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
-           WHERE acc.deleted is Null and %s=get_tarif(acc.id)  ORDER BY acc.username ASC;""", (tarif_id,) )
-           items = dictfetchall(cur)
-       except Exception, e:
-           return { 'status':False, 'message':str(e)}   
-   sps = SettlementPeriod.objects.all().values("id", "time_start", "autostart", "length", "length_in")
-   sps_dict = {}
-   for sp in sps:
-       sps_dict[sp.get("id")] = sp
-   #iterate accounts
-   res = []
-   for item in items:
-       sp = sps_dict.get(item.get("settlement_period_id"))
-       if sp:
-               
-           if sp.get("autostart"):
-               time_start = item.get("accounttarif_datetime")
-           else:
-               time_start = sp.get("time_start")
-           start, end,length = settlement_period_info(time_start, sp.get("length_in"), sp.get("length"))
-           item['sp_end'] = end
-       res.append(item)
-
-
-   cache.set(str(tarif_id), res, 60)
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-   
-@ajax_request
-@systemuser_required
-def get_accounts_for_cashier(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.cashier_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   
-   data = json.loads(request.POST.get("data", "{}"))
-   fullname, city, street, house, bulk, room, username, contract, phone_h, phone_m = \
-   data.get("fullname"), data.get("city"), data.get("street"),  data.get("house"), data.get("bulk"),data.get("room"),  data.get("username"), data.get("agreement"), data.get("phone_h"),data.get("phone_m"),  
-   items = Account.objects.all()
-   
-   if fullname:
-       items = items.filter(fullname__icontains=fullname)
-       
-   if city:
-       items = items.filter(city__id=city)
-   
-   if street:
-       items = items.filter(street__id=street)
-   
-   if house:
-       items = items.filter(house__id=house)
-
-   if bulk:
-       items = items.filter(hbulk__icontains=bulk)
-
-   if room:
-       items = items.filter(room__icontains=room)
-       
-   if username:
-       items = items.filter(username__icontains=username)
-
-   if contract:
-       items = items.filter(contract__icontains=contract)
-     
-   if phone_h:
-       items = items.filter(phone_h__icontains=phone_h)
-
-   if phone_m:
-       items = items.filter(phone_m__icontains=phone_m)
-    
-   #id, contract,username,fullname,ballance,credit,status,created,(SELECT name FROM billservice_street WHERE id=account.street_id) as street,(SELECT name FROM billservice_house WHERE id=account.house_id) as house,house_bulk,room, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name
-   items = items.extra(select={"tarif_name": "(SELECT name FROM billservice_tariff WHERE id=get_tarif(billservice_account.id))"}).values('id', 'contract','username','fullname','ballance','credit','status','created', "street", 'house', 'house_bulk', 'room', 'tarif_name')
-   res = []             
-   for item in items:
-       
-       res.append(item)
-       
-   return {"records": res, 'status':True, 'totalCount':len(res)}
-@ajax_request
-@systemuser_required
-def nas_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_nas')):
-       return {'status':True, 'message': u'У вас нет прав на удаление сервера доступа'}
-   id = request.POST.get('id')
-   if id:
-       for d in Nas.objects.filter(id=id):
-           log('DELETE', request.user, d)
-           d.delete()
-       return {"status": True}
-   else:
-       return {"status": False, "message": "Nas not found"}
-
-
-@ajax_request
-@systemuser_required
-def subaccount_delete(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_subaccount')):
-       return {'status':True, 'message': u'У вас нет прав на удаление субаккаунта'}
-   id = request.POST.get('id') or request.GET.get('id')
-   if id:
-       #TODO: СДелать удаление субаккаунта с сервера доступа, если он там был
-       item = SubAccount.objects.get(id=id)
-       if item.vpn_ipinuse:
-           for d in IPInUse.objects.filter(id=item.vpn_ipinuse):
-               log('DELETE', request.user, d)
-               d.delete()
-       if item.ipn_ipinuse:
-           for d in IPInUse.objects.filter(id=item.ipn_ipinuse):
-               log('DELETE', request.user, d)
-               d.delete()
-       if item.vpn_ipv6_ipinuse:
-           for d in IPInUse.objects.filter(id=item.vpn_ipv6_ipinuse):
-               log('DELETE', request.user, d)
-               d.delete()
-       
-       log('DELETE', request.user, item)
-       item.delete()
-       
-       return {"status": True}
-   else:
-       return {"status": False, "message": "SubAccount not found"}
-
-@ajax_request
-@systemuser_required
-def account_delete(request):
-   id = request.POST.get('id')
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_account')):
-       return {'status':True, 'message': u'У вас нет прав на удаление аккаунта'}
-   if id:
-       try:
-          model = Account.objects.all_with_deleted().get(id=id)
-          log('DELETE', request.user, model)
-          model.delete()
-       except Exception, e:
-           return {"status": False, "message": "%s" % str(e)}
-       
-       return {"status": True}
-   else:
-       return {"status": False, "message": "Account not found"}
+#===============================================================================
+# @ajax_request
+# @systemuser_required
+# def accountprepaystrafic(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountprepaystraffic_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+# 
+#   if id and id!='None':
+#       items = AccountPrepaysTrafic.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'AccountPrepaysTrafic item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'AccountPrepaysTrafic >1 items with id=%s' % id}
+# 
+#   else:
+#       items = AccountPrepaysTrafic.objects.all()
+#   #from django.core import serializers
+#   #from django.http import HttpResponse
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields))
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def accountprepaystrafic_set(request):
+#   
+#   id = request.POST.get('id')
+#   if id:
+#       if  not (request.user.is_staff==True and  request.user.has_perm('billservice.change_accountprepaystraffic')):
+#           return {'status':True, 'message': u'У вас нет прав на изменение размера предоплаченного трафика'}
+#       item = AccountPrepaysTrafic.objects.get(id=id)
+#       form = AccountPrepaysTraficForm(request.POST, instance=item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountprepaystraffic')):
+#           return {'status':True, 'message': u'У вас нет прав на добавление предоплаченного трафика'}
+#       form = AccountPrepaysTraficForm(request.POST)
+#       
+#   if form.is_valid():
+#       try:
+#           model = form.save(commit=False)
+#           model.save()
+#           res={"status": True, 'id':model.id}
+#           log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+#       except Exception, e:
+#           res={"status": False, "message": str(e)}
+#   else:
+#       res={"status": False, "errors": form._errors}
+# 
+#   return res
+# #===
+# 
+# #===
+# @ajax_request
+# @systemuser_required
+# def accountprepaysradiustrafic(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.accountprepaysradiustrafic_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+# 
+#   if id and id!='None':
+#       items = AccountPrepaysRadiusTrafic.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'AccountPrepaysRadiusTrafic item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'AccountPrepaysRadiusTrafic >1 items with id=%s' % id}
+# 
+#   else:
+#       items = AccountPrepaysRadiusTrafic.objects.all()
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields))
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def accountprepaysradiustrafic_set(request):
+#   
+#   id = request.POST.get('id')
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accountprepaysradiustraffic')):
+#           return {'status':True, 'message': u'У вас нет прав на изменение размера предоплаченного RADIUS трафика'}
+# 
+#       item = AccountPrepaysRadiusTrafic.objects.get(id=id)
+#       form = AccountPrepaysRadiusTraficForm(request.POST, instance=item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accountprepaysradiustraffic')):
+#           return {'status':True, 'message': u'У вас нет прав на добавление предоплаченного RADIUS трафика'}
+#       form = AccountPrepaysRadiusTraficForm(request.POST)
+#       
+#   if form.is_valid():
+#       try:
+#           model = form.save(commit=False)
+#           model.save()
+#           res={"status": True, 'id':model.id}
+#           log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+#       except Exception, e:
+#           res={"status": False, "message": str(e)}
+#   else:
+#       res={"status": False, "errors": form._errors}
+# 
+#   return res
+# 
+# @ajax_request
+# @systemuser_required
+# def templates_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_template')):
+#       return {'status':False, 'message': u'У вас нет прав на удаление шаблона'}
+#   id = int(request.POST.get('id',0))
+#   if id:
+#       model = Template.objects.get(id=id)
+#       log('DELETE', request.user, model)
+#       model.delete()
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "RadiusAttrs not found"}
+#   
+# @ajax_request
+# @systemuser_required
+# def templatetypes(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.templatetype_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   type = request.POST.get('type',None)
+#   if id and id!='None':
+#       items = TemplateType.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'TemplateType item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+#       
+#   elif type and type!='None':
+#       items = Template.objects.filter(type=type)
+#   else:
+#       items = TemplateType.objects.all()
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields))
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def periodicalservices(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.periodicalservice_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+# 
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   tarif_id = request.POST.get('tarif',None)
+#   deleted = bool(request.POST.get('deleted',None)=='True')
+#   normal_fields = bool(request.POST.get('normal_fields',None)=='True')
+# 
+#   if id and id!='None':
+#       items = PeriodicalService.objects.filter(id=id, deleted=deleted)
+#       if not items:
+#           return {'status':False, 'message': 'PeriodicalService item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+#       
+#   elif tarif_id and tarif_id!='None':
+#       items = PeriodicalService.objects.filter(tarif__id=tarif_id, deleted=deleted)
+#   else:
+#       items = PeriodicalService.objects.filter( deleted=deleted)
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+#   
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# 
+# 
+# @ajax_request
+# @systemuser_required
+# def transactions(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.transaction_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   limit = request.POST.get('limit',None)
+#   normal_fields = bool(request.POST.get('normal_fields',None)=='True')
+# 
+#   if id and id!='None':
+#       items = Transaction.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'Transaction item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+#   else:
+#       items = Transaction.objects.filter()
+#       if limit:
+#           items = items[:limit]
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+#   
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def groups(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.group_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   normal_fields = bool(request.POST.get('normal_fields',None)=='True')
+#   if id and id!='None':
+#       items = Group.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'Group item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'Group >1 items with id=%s' % id}
+#   else:
+#       items = Group.objects.all()
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+# 
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def groups_detail(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.group_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+# 
+#   from django.db import connection
+#   
+#   cur = connection.cursor()
+#   cur.execute("SELECT gr.*  FROM billservice_group as gr")
+# 
+#   items = cur.fetchall()
+#   
+#   res=[]
+#   for item in items:
+#       id, name, direction, grtype = item
+#       cur.execute("SELECT name FROM nas_trafficclass WHERE id IN (SELECT trafficclass_id FROM billservice_group_trafficclass WHERE group_id=%s)", (id,))
+# 
+#       d = cur.fetchall()
+#       classnames=''
+#       if d:
+#           classnames = ''.join([unicode(x[0]) for x in d])
+#       res.append({'id':id, 'name': name, 'direction':direction, 'type': grtype, 'classnames': classnames})
+# 
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def onetimeservices(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.onetimeservice_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   tarif_id = request.POST.get('tarif_id',None)
+#   normal_fields = bool(request.POST.get('normal_fields',False)=='True')
+# 
+#   if id and id!='None':
+#       items = OneTimeService.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'OneTimeService item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+#       
+#   elif tarif_id and tarif_id!='None':
+#       items = OneTimeService.objects.filter(tarif__id=tarif_id)
+#   else:
+#       items = OneTimeService.objects.all()
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+#   
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def trafficlimites(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.trafficlimit_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   tarif_id = request.POST.get('tarif_id',None)
+#   normal_fields = bool(request.POST.get('normal_fields',False)=='True')
+# 
+#   if id and id!='None':
+#       items = TrafficLimit.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'TrafficLimit item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+#       
+#   elif tarif_id and tarif_id!='None':
+#       items = TrafficLimit.objects.filter(tarif__id=tarif_id)
+#   else:
+#       items = TrafficLimit.objects.all()
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+#  
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def speedlimites(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.speedlimit_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   limit_id = request.POST.get('limit_id',None)
+#   normal_fields = bool(request.POST.get('normal_fields',False)=='True')
+# 
+#   if id and id!='None':
+#       items = SpeedLimit.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'SpeedLimit item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+#       
+#   elif limit_id and limit_id!='None':
+#       items = SpeedLimit.objects.filter(limit__id=limit_id)
+#   else:
+#       items = SpeedLimit.objects.all()
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+#  
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def addonservicetariff(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.addonservicetarif_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   tarif_id = request.POST.get('tarif_id',None)
+#   normal_fields = bool(request.POST.get('normal_fields',False)=='True')
+# 
+#   if id and id!='None':
+#       items = AddonServiceTarif.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'AddonServiceTarif item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'AddonServiceTarif >1 items with id=%s' % id}
+#       
+#   elif tarif_id and tarif_id!='None':
+#       items = AddonServiceTarif.objects.filter(tarif__id=tarif_id)
+#   else:
+#       items = AddonServiceTarif.objects.all()
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields, normal_fields=normal_fields))
+#  
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# 
+# @ajax_request
+# @systemuser_required
+# def get_cards_nominal(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.card_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   from django.db import connection
+#   cur = connection.cursor()
+#   
+#   cur.execute("SELECT nominal FROM billservice_card GROUP BY nominal ORDER BY nominal ASC")
+#   
+#   res = cur.fetchall()
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def get_next_cardseries(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.card_view')):
+#       return {'status':True, 'records':[0], 'totalCount':1}
+#   from django.db import connection
+#   cur = connection.cursor()
+#   
+#   cur.execute("SELECT MAX(series) as series FROM billservice_card")
+#   
+#   res = cur.fetchone()[0] 
+#   
+# 
+#   res = res if res else 0
+#   return {"records": [res+1], 'status':True, 'totalCount':1}
+# 
+# 
+# @ajax_request
+# @systemuser_required
+# def switches(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('nas.switch_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   if id:
+#       items = Switch.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'Switch item with id=%s not found' % id}
+#       if len(items)>1:
+#           return {'status':False, 'message': 'Returned >1 items with id=%s' % id}
+#       
+#   else:
+#       items = Switch.objects.all()
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields))
+#   
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def switches_set(request):
+#   
+#   id = request.POST.get('id')
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_switch')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение коммутаторов'}
+#       item = Switch.objects.get(id=id)
+#       form = SwitchForm(request.POST, instance=item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_switch')):
+#           return {'status':False, 'message': u'У вас нет прав на добавление коммутаторов'}
+#       form = SwitchForm(request.POST)
+#       
+#   if form.is_valid():
+#       try:
+#           item = form.save(commit=False)
+#           item.save()
+#           res={"status": True, 'id':item.id}
+#           log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
+#       except Exception, e:
+#           res={"status": False, "message": str(e)}
+#   else:
+#       res={"status": False, "errors": form._errors}
+# 
+#   return res
+# 
+# @ajax_request
+# @systemuser_required
+# def switches_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_switch')):
+#       return {'status':False, 'message': u'У вас нет прав на удаление коммутаторов'}
+#       
+#   id = int(request.POST.get('id',0))
+#   if id:
+#       model = Switch.objects.get(id=id)
+#       log('DELETE', request.user, model)
+#       model.delete()
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "Switch not found"}
+#   
+# @ajax_request
+# @systemuser_required
+# def organizations(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.organization_view')):
+#       return {'status':False, 'records':[], 'totalCount':0}
+#   
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   account_id = request.POST.get('account_id',None)
+#   if id:
+#       items = Organization.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'Organization item with id=%s not found' % id}
+#   elif account_id:
+#       items = Organization.objects.filter(account__id=account_id)
+# 
+#   else:
+#       items = Organization.objects.all()
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields))
+#   
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def banks(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.bankdata_view')):
+#       return {'status':False, 'records':[], 'totalCount':0}
+#   
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   if id:
+#       items = BankData.objects.filter(id=id)
+#       if not items:
+#           return {'status':False, 'message': 'Bank item with id=%s not found' % id}
+#   else:
+#       items = BankData.objects.all()
+# 
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields))
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def banks_set(request):
+#   
+#   id = request.POST.get('id')
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_bankdata')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение банка'}
+#       item = BankData.objects.get(id=id)
+#       form =BankDataForm(request.POST, instance=item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_bankdata')):
+#           return {'status':False, 'message': u'У вас нет прав на добавление банка'}
+#       form = BankDataForm(request.POST)
+#       
+#   if form.is_valid():
+#       try:
+#           item = form.save(commit=False)
+#           item.save()
+#           res={"status": True, 'id':item.id}
+#           log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
+#       except Exception, e:
+#           res={"status": False, "message": str(e)}
+#   else:
+#       res={"status": False, "errors": form._errors}
+#   return res
+# 
+# 
+# @ajax_request
+# @systemuser_required
+# def dealerpays(request):
+# 
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.dealerpay_view')):
+#       return {'status':False, 'records':[], 'totalCount':0}
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   dealer_id = request.POST.get('dealer_id',None)
+#   
+#   if id:
+#       items = DealerPay.objects.filter(id=id)
+#       if not item:
+#           return {'status':False, 'message': 'DealerPay item with id=%s not found' % id}
+#   elif dealer_id:
+#       items = DealerPay.objects.filter(dealer__id=dealer_id)
+#   else:
+#       items = DealerPay.objects.all()
+# 
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields))
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def dealerpay_set(request):
+#   
+#   id = request.POST.get('id')
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_dealerpay')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение платежа'}
+#       item = DealerPay.objects.get(id=id)
+#       form = DealerPayForm(request.POST, instance=item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_dealerpay')):
+#           return {'status':False, 'message': u'У вас нет прав на добавление платежа'}
+#       form = DealerPayForm(request.POST)
+#       
+#   if form.is_valid():
+#       try:
+#           item = form.save(commit=False)
+#           item.save()
+#           res={"status": True, 'id':item.id}
+#           log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
+#       except Exception, e:
+#           res={"status": False, "message": str(e)}
+#   else:
+#       res={"status": False, "errors": form._errors}
+#   return res
+# 
+# 
+# @ajax_request
+# @systemuser_required
+# def returncards(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_card')):
+#       return {'status':False, 'message': u'У вас нет прав на изменение состояния карт'}
+#   data = json.loads(request.POST.get('data', '{}'))
+#   dealer_id = data.get('dealer_id',None)
+#   cards = data.get('cards',[])
+#   if cards and dealer_id:
+#       from django.db import connection
+#       
+#       cur = connection.cursor()
+#       
+#       try:
+#           for card in cards:
+#               cur.execute("DELETE FROM billservice_salecard_cards WHERE card_id=%s", (card, ))
+#           Card.objects.filter(id__in=cards).update(sold=None)
+#           res={"status": True}
+#       except Exception, e:
+#           res={"status": False, "message": str(e)}
+#   else:
+#       res={"status": False, "message": u"Карты не указаны"}
+#   return res
+# 
+# @ajax_request
+# @systemuser_required
+# def salecards(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.salecard_view')):
+#       return {'status':False, 'records':[], 'totalCount':0}
+#   
+#   fields = request.POST.get('fields',[])
+#   id = request.POST.get('id',None)
+#   dealer_id = request.POST.get('dealer_id',None)
+#   
+#   if id:
+#       items = SaleCard.objects.filter(id=id)
+#       if not item:
+#           return {'status':False, 'message': 'SaleCard item with id=%s not found' % id}
+#   elif dealer_id:
+#       items = SaleCard.objects.filter(dealer__id=dealer_id)
+#   else:
+#       items = SaleCard.objects.all()
+# 
+# 
+#   res=[]
+#   for item in items:
+#       res.append(instance_dict(item, fields=fields))
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# 
+# 
+# @ajax_request
+# @systemuser_required
+# def salecards_set(request):
+#   
+#   data = json.loads(request.POST.get('data', '{}'))
+#   id = data.get('model',{}).get('id')
+#   cards = data.get('cards',[])
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_salecard')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение продажи карт'}
+#       item = SaleCard.objects.get(id=id)
+#       form =SaleCardForm(data.get('model',{}), instance=item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_salecard')):
+#           return {'status':False, 'message': u'У вас нет прав на добавление продажи карт'}
+#       form = SaleCardForm(data.get('model',{}))
+#       
+#   if form.is_valid():
+#       try:
+#           item = form.save(commit=False)
+#           item.save()
+#           log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
+#           if cards:
+#               for card in cards:
+#                   c = Card.objects.get(id=card)
+#                   c.sold = item.created
+#                   c.save()
+#                   item.cards.add(c)
+#                   log('EDIT', request.user, c)
+#           res={"status": True, 'id':item.id}
+#       except Exception, e:
+#           res={"status": False, "message": str(e)}
+#   else:
+#       res={"status": False, "errors": form._errors}
+#   return res
+# 
+# @ajax_request
+# @systemuser_required
+# def salecards_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_salecard')):
+#       return {'status':False, 'message': u'У вас нет прав на удаление продажи карт'}
+#   id = int(request.POST.get('id',0))
+#   if id:
+#       model = SaleCard.objects.get(id=id)
+#       log('DELETE', request.user, model)
+#       model.delete()
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "SaleCard not found"}
+#   
+# 
+# @ajax_request
+# @systemuser_required
+# def tpchange_save(request):
+#   
+#   id = request.POST.get('id')
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_accounttarif')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение связки тарифного плана'}
+#       item = AccountTarif.objects.get(id=id)
+#       form = AccountTariffForm(request.POST, instance=item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_accounttarif')):
+#           return {'status':False, 'message': u'У вас нет прав на добавяление связки тарифного плана продажи карт'}
+#       form = AccountTariffForm(request.POST)
+#       
+#   if form.is_valid():
+#       try:
+#           model = form.save(commit = False)
+#           model.save()
+#           res={"success": True}
+#           log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+#       except Exception, e:
+#           res={"success": False, "message": str(e)}
+#   else:
+#       res={"success": False, "errors": form._errors}
+#   
+#   return res
+# 
+# 
+# 
+# 
+# @systemuser_required
+# @ajax_request
+# #@transaction.commit_manually
+# def tariffs_set(request):
+#   
+#   if  not request.user.is_staff==True:
+#       return {'status':False, 'message': u'У вас нет прав на создание/изменение тарифного плана'}
+# 
+#   
+#   data = request.POST.get("data", {})
+#   
+#   js = json.loads(data)
+# 
+# 
+#   if js['access_parameters']:
+#       if 'id' in js['access_parameters']:
+#           item = AccessParameters.objects.get(id=js['access_parameters']['id'])
+#           form = AccessParametersForm(js['access_parameters'], instance=item)
+#       else:
+#           form = AccessParametersForm(js['access_parameters'])
+#       
+#       
+#       if form.is_valid():
+#           access_parameters = form.save(commit=False)
+#           access_parameters.save()
+#           log('EDIT', request.user, access_parameters) if 'id' in js['access_parameters'] else log('CREATE', request.user, access_parameters) 
+#       else:
+#           transaction.rollback()
+#           return {'status':False, 'errors': form._errors}
+#       
+#       speeditem_ids = []
+#       
+#       for speed in js.get('speeds', []):
+#           speed['access_parameters']=access_parameters.id
+#           if speed.get('id'):
+#               item = TimeSpeed.objects.get(id=speed.get('id'))
+#               form = TimeSpeedForm(speed, instance=item)
+#           else:
+#               form = TimeSpeedForm(speed)
+# 
+#           if form.is_valid():
+#               speeditem = form.save(commit=False)
+#               speeditem.save()
+#               log('EDIT', request.user, speeditem) if speed.get('id') else log('CREATE', request.user, speeditem) 
+#               
+#           else:
+#               transaction.rollback()
+#               return {'status':False, 'errors': form._errors}
+#           speeditem_ids.append(speeditem.id)
+# 
+# 
+#       for d in TimeSpeed.objects.filter(access_parameters=access_parameters).exclude(id__in=speeditem_ids):
+#           log('DELETE', request.user, d)
+#           d.delete()
+#               
+#   if js.get('model'):
+#       if js.get('model').get('id'):
+#           if not request.user.has_perm('billservice.change_tariff'):
+#               transaction.rollback()
+#               return {'status':False, 'message': u'У вас нет прав на изменение тарифного плана'}
+#           item = Tariff.objects.get(id=js['model']['id'])
+#           form = TariffForm(js['model'], instance=item)
+#       else:
+#           if not request.user.has_perm('billservice.add_tariff'):
+#               transaction.rollback()
+#               return {'status':False, 'message': u'У вас нет прав на добавление тарифного плана'}
+#           js['model']['access_parameters']=access_parameters.id
+#           form = TariffForm(js['model'])
+#           
+#       
+#       if form.is_valid():
+#           tariff = form.save(commit=False)
+#           tariff.save()
+#       else:
+#           transaction.rollback()
+#           return {'status':False, 'errors': form._errors}
+#       
+# 
+#       
+#   
+#   if js['periodicalservices']:
+#       
+#       periodicalservices_ids = []
+#       for periodicalservice in js.get('periodicalservices', []):
+#           periodicalservice['tarif']=tariff.id
+#           if periodicalservice.get('id'):
+#               
+#               item = PeriodicalService.objects.get(id=periodicalservice.get('id'))
+#               form = PeriodicalServiceForm(periodicalservice, instance=item)
+#           else:
+#               form = PeriodicalServiceForm(periodicalservice)
+#           
+#       
+#           if form.is_valid():
+#               periodicalservice_item = form.save(commit=False)
+#               periodicalservice_item.save()
+#               log('EDIT', request.user, periodicalservice_item) if periodicalservice.get('id') else log('CREATE', request.user, periodicalservice_item) 
+# 
+#           else:
+#               transaction.rollback()
+#               return {'status':False, 'errors': form._errors}
+#           periodicalservices_ids.append(periodicalservice_item.id)
+#       
+# 
+#       if periodicalservices_ids:
+#           for d in PeriodicalService.objects.filter(tarif=tariff).exclude(id__in=periodicalservices_ids):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#   else:
+#       PeriodicalService.objects.filter(tarif=tariff).update(deleted=True, deactivated = datetime.datetime.now())
+#       
+#   if js['addonservices']:
+#       
+#       addonservices_ids = []
+#       for obj in js.get('addonservices', []):
+#           obj['tarif']=tariff.id
+#           if obj.get('id'):
+#               
+#               item = AddonServiceTarif.objects.get(id=obj.get('id'))
+#               form = AddonServiceTarifForm(obj, instance=item)
+# 
+#           else:
+# 
+#               form = AddonServiceTarifForm(obj)
+#           
+#       
+#           if form.is_valid():
+# 
+#               addonservice_item = form.save(commit=False)
+#               addonservice_item.save()
+#               
+#               log('EDIT', request.user, addonservice_item) if obj.get('id') else log('CREATE', request.user, addonservice_item)
+#           else:
+# 
+#               transaction.rollback()
+#               return {'status':False, 'errors': form._errors}
+#           addonservices_ids.append(addonservice_item.id)
+#       
+# 
+#       if addonservices_ids:
+#           for d in AddonServiceTarif.objects.filter(tarif=tariff).exclude(id__in=addonservices_ids):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#   else:
+#       for d in AddonServiceTarif.objects.filter(tarif=tariff):
+#           log('DELETE', request.user, d)
+#           d.delete()
+#           
+#   if js.get('onetimeservices'):
+#       
+#       onetimeservices_ids = []
+#       for onetimeservice in js.get('onetimeservices', []):
+#           onetimeservice['tarif']=tariff.id
+#           if onetimeservice.get('id'):
+#               
+#               item = OneTimeService.objects.get(id=onetimeservice.get('id'))
+#               form = OneTimeServiceForm(onetimeservice, instance=item)
+# 
+#           else:
+# 
+#               form = OneTimeServiceForm(onetimeservice)
+#           
+#       
+#           if form.is_valid():
+# 
+#               onetimeservice_item = form.save(commit=False)
+#               onetimeservice_item.save()
+#               log('EDIT', request.user, onetimeservice_item) if onetimeservice.get('id') else log('CREATE', request.user, onetimeservice_item)
+# 
+#           else:
+# 
+#               transaction.rollback()
+#               return {'status':False, 'errors': form._errors}
+#           onetimeservices_ids.append(onetimeservice_item.id)
+#       
+# 
+#       if onetimeservices_ids:
+#           for d in OneTimeService.objects.filter(tarif=tariff).exclude(id__in=onetimeservices_ids):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#   else:
+#       for d in OneTimeService.objects.filter(tarif=tariff):
+#           log('DELETE', request.user, d)
+#           d.delete()
+#       
+#   if js.get('limites'):
+#       
+#       limites_ids = []
+#       speedlimites_ids = []
+#       for (limit, speedlimit) in js.get('limites', []):
+#           limit['tarif']=tariff.id
+#           if limit.get('id'):
+# 
+#               item = TrafficLimit.objects.get(id=limit.get('id'))
+#               form = TrafficLimitForm(limit, instance=item)
+# 
+#           else:
+# 
+#               form = TrafficLimitForm(limit)
+#           
+#       
+#           if form.is_valid():
+# 
+#               limit_item = form.save(commit=False)
+#               limit_item.save()
+#               log('EDIT', request.user, limit_item) if limit.get('id') else log('CREATE', request.user, limit_item)
+# 
+#           else:
+# 
+#               transaction.rollback()
+#               return {'status':False, 'errors': form._errors}
+#           limites_ids.append(limit_item.id)
+#           
+#           if limit_item.action ==0:
+#               for d in SpeedLimit.objects.filter(limit=limit_item):
+#                   log('DELETE', request.user, d)
+#                   d.delete()
+#           elif  limit_item.action ==1:
+#               if speedlimit:
+#                   speedlimit['limit']=limit_item.id
+#                   if speedlimit.get('id'):
+#                       
+#                       item = SpeedLimit.objects.get(id=speedlimit.get('id'))
+#                       form = SpeedLimitForm(speedlimit, instance=item)
+#                   else:
+#                       form = SpeedLimitForm(speedlimit)
+#   
+#                   if form.is_valid():
+#                       speedlimit_item = form.save(commit=False)
+#                       speedlimit_item.save()
+#                       log('EDIT', request.user, speedlimit_item) if speedlimit.get('id') else log('CREATE', request.user, speedlimit_item)
+# 
+#                   else:
+# 
+#                       transaction.rollback()
+#                       return {'status':False, 'errors': form._errors}
+#                   speedlimites_ids.append(speedlimit_item.id)
+#   
+#           if speedlimites_ids:
+#               for d in SpeedLimit.objects.filter(limit=limit_item).exclude(id__in=speedlimites_ids):
+#                   log('DELETE', request.user, d)
+#                   d.delete()
+#           
+#       if limites_ids:
+#           for d in TrafficLimit.objects.filter(tarif=tariff).exclude(id__in=limites_ids):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#               
+#   else:
+#       for tl in TrafficLimit.objects.filter(tarif=tariff):
+#            for d in SpeedLimit.objects.filter(limit=tl):
+#                log('DELETE', request.user, d)
+#                d.delete()
+#            log('DELETE', request.user, tl)
+#            tl.delete()
+#           
+#   if js.get('time_access_service'):
+#       obj = js.get('time_access_service')
+#       if obj.get('id'):
+#           
+#           item = TimeAccessService.objects.get(id=obj.get('id'))
+#           form = TimeAccessServiceForm(obj, instance=item)
+# 
+#       else:
+# 
+#           form = TimeAccessServiceForm(obj)
+#       
+#   
+#       if form.is_valid():
+# 
+#           timeaccessservice = form.save(commit=False)
+#           timeaccessservice.save()
+#           log('EDIT', request.user, timeaccessservice) if obj.get('id') else log('CREATE', request.user, timeaccessservice)
+#           tariff.time_access_service = timeaccessservice
+#           tariff.save()
+# 
+#       else:
+# 
+#           transaction.rollback()
+#           return {'status':False, 'errors': form._errors}
+# 
+#       
+#       time_access_nodes_ids = []
+#       
+#       for timeaccessnode in js.get('timeaccessnodes', []):
+# 
+#           timeaccessnode['time_access_service']=timeaccessservice.id
+#           if timeaccessnode.get('id'):
+#               item = TimeAccessNode.objects.get(id=timeaccessnode.get('id'))
+#               form = TimeAccessNodeForm(timeaccessnode, instance=item)
+# 
+#           else:
+# 
+#               form = TimeAccessNodeForm(timeaccessnode)
+# 
+#           if form.is_valid():
+#               timeaccessnode_item = form.save(commit=False)
+#               timeaccessnode_item.save()
+#               log('EDIT', request.user, timeaccessnode_item) if timeaccessnode.get('id') else log('CREATE', request.user, timeaccessnode_item)
+#           else:
+#               transaction.rollback()
+#               return {'status':False, 'errors': form._errors}
+#           time_access_nodes_ids.append(timeaccessnode_item.id)
+#           
+#       if time_access_nodes_ids:
+#           for d in TimeAccessNode.objects.filter(time_access_service=timeaccessservice).exclude(id__in=time_access_nodes_ids):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#   else:
+#       if tariff.time_access_service:
+#           for d in TimeAccessNode.objects.filter(id=tariff.time_access_service):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#           log('DELETE', request.user, tariff.time_access_service)
+#           tariff.time_access_service.delete()
+# 
+#   if js.get('traffic_transmit_service'):
+#       if 'id' in js.get('traffic_transmit_service'):
+#           item = TrafficTransmitService.objects.get(id=js.get('traffic_transmit_service')['id'])
+#           form = TrafficTransmitServiceForm(js.get('traffic_transmit_service'), instance=item)
+# 
+#       else:
+# 
+#           form = TrafficTransmitServiceForm(js.get('traffic_transmit_service', {}))
+#           
+#       
+#       if form.is_valid():
+# 
+#           traffic_transmit_service = form.save(commit=False)
+#           traffic_transmit_service.save()
+#           log('EDIT', request.user, traffic_transmit_service) if 'id' in js.get('traffic_transmit_service') else log('CREATE', request.user, traffic_transmit_service)
+#           tariff.traffic_transmit_service = traffic_transmit_service
+#           tariff.save()
+# 
+#       else:
+#           transaction.rollback()
+#           return {'status':False, 'errors': form._errors}
+#       
+#       traffictransmitnodes_ids = []
+#       for traffictransmitnode in js.get('traffictransmitnodes', []):
+# 
+#           traffictransmitnode['traffic_transmit_service']=traffic_transmit_service.id
+#           if traffictransmitnode.get('id'):
+#               item = TrafficTransmitNodes.objects.get(id=traffictransmitnode.get('id'))
+#               form = TrafficTransmitNodeForm(traffictransmitnode, instance=item)
+# 
+#           else:
+# 
+#               form = TrafficTransmitNodeForm(traffictransmitnode)
+# 
+#           if form.is_valid():
+#               traffictransmitnode_item = form.save(commit=False)
+#               traffictransmitnode_item.save()
+#               log('EDIT', request.user, traffictransmitnode_item) if traffictransmitnode.get('id') else log('CREATE', request.user, traffictransmitnode_item)
+#           else:
+# 
+#               transaction.rollback()
+#               return {'status':False, 'errors': form._errors}
+#           traffictransmitnodes_ids.append(traffictransmitnode_item.id)
+#           
+#       if traffictransmitnodes_ids:
+#           for d in TrafficTransmitNodes.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=traffictransmitnodes_ids):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#           
+#       prepaidtraffic_ids = []
+#       for prepaidtrafficnode in js.get('prepaidtrafficnodes', []):
+# 
+#           prepaidtrafficnode['traffic_transmit_service']=traffic_transmit_service.id
+#           if prepaidtrafficnode.get('id'):
+#               item = PrepaidTraffic.objects.get(id=prepaidtrafficnode.get('id'))
+#               form = PrepaidTrafficForm(prepaidtrafficnode, instance=item)
+# 
+#           else:
+# 
+#               form = PrepaidTrafficForm(prepaidtrafficnode)
+# 
+#           if form.is_valid():
+#               prepaidtraffictransmitnode_item = form.save(commit=False)
+#               prepaidtraffictransmitnode_item.save()
+#               log('EDIT', request.user, prepaidtraffictransmitnode_item) if prepaidtrafficnode.get('id') else log('CREATE', request.user, prepaidtraffictransmitnode_item)
+#           else:
+# 
+#               transaction.rollback()
+#               return {'status':False, 'errors': form._errors}
+#           prepaidtraffic_ids.append(prepaidtraffictransmitnode_item.id)
+#       if traffictransmitnodes_ids:
+#           for d in PrepaidTraffic.objects.filter(traffic_transmit_service=traffic_transmit_service).exclude(id__in=prepaidtraffic_ids):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#           
+#   else:
+#       if tariff.traffic_transmit_service:
+#           for d in TrafficTransmitService.objects.filter(id=tariff.traffic_transmit_service.id):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#           for d in TrafficTransmitNodes.objects.filter(traffic_transmit_service=tariff.traffic_transmit_service):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#           
+#   if js.get('radius_traffic_service'):
+#       if 'id' in js.get('radius_traffic_service'):
+#           item = RadiusTraffic.objects.get(id=js.get('radius_traffic_service')['id'])
+#           form = RadiusTrafficForm(js.get('radius_traffic_service'), instance=item)
+# 
+#       else:
+# 
+#           form = RadiusTrafficForm(js.get('radius_traffic_service', {}))
+#           
+#       
+#       if form.is_valid():
+# 
+#           radius_traffic_service = form.save(commit=False)
+#           radius_traffic_service.save()
+#           log('EDIT', request.user, radius_traffic_service) if 'id' in js.get('radius_traffic_service') else log('CREATE', request.user, radius_traffic_service)
+#           tariff.radius_traffic_transmit_service = radius_traffic_service
+#           tariff.save()
+# 
+#       else:
+# 
+#           transaction.rollback()
+#           return {'status':False, 'errors': form._errors}
+#       
+#       radiustraffictransmitnodes_ids = []
+#       for radtraffictransmitnode in js.get('radiustrafficnodes', []):
+# 
+#           radtraffictransmitnode['radiustraffic']=radius_traffic_service.id
+#           if radtraffictransmitnode.get('id'):
+#               item = RadiusTrafficNode.objects.get(id=radtraffictransmitnode.get('id'))
+#               form = RadiusTrafficNodeForm(radtraffictransmitnode, instance=item)
+# 
+#           else:
+# 
+#               form = RadiusTrafficNodeForm(radtraffictransmitnode)
+# 
+#           if form.is_valid():
+#               radtraffictransmitnode_item = form.save(commit=False)
+#               radtraffictransmitnode_item.save()
+#               #log('EDIT', request.user, radtraffictransmitnode_item) if 'id' in radtraffictransmitnode.get('id') else log('CREATE', request.user, radtraffictransmitnode_item)
+#           else:
+# 
+#               transaction.rollback()
+#               return {'status':False, 'errors': form._errors}
+#           radiustraffictransmitnodes_ids.append(radtraffictransmitnode_item.id)
+#           
+#       if radiustraffictransmitnodes_ids:
+#           for d in RadiusTrafficNode.objects.filter(radiustraffic=radius_traffic_service).exclude(id__in=radiustraffictransmitnodes_ids):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#       
+#   else:
+#       if tariff.radius_traffic_transmit_service:
+#           for d in RadiusTrafficNode.objects.filter(radiustraffic=tariff.radius_traffic_transmit_service):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#           log('DELETE', request.user, tariff.radius_traffic_transmit_service)
+#           tariff.radius_traffic_transmit_service.delete()
+#           
+#   log('EDIT', request.user, tariff) if js.get('model').get('id') else log('CREATE', request.user, tariff) 
+#   transaction.commit()
+# 
+#   return {'status':True, 'tariff_id':tariff.id}
+# 
+# @ajax_request
+# @systemuser_required
+# def groups_save(request):
+#   
+#   id = request.POST.get('id')
+#   traffic_classes = request.POST.get('traffic_classes','').split(',')
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_group')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение группы трафика'}
+# 
+#       item = Group.objects.get(id=id)
+#       form = GroupForm(request.POST, instance=item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_group')):
+#           return {'status':False, 'message': u'У вас нет прав на добавление группы трафика'}
+#       form = GroupForm(request.POST)
+#       
+#   if form.is_valid():
+#       try:
+#           model = form.save(commit=False)
+#           model.save()
+#           log('EDIT', request.user, model) if id else log('CREATE', request.user, model)
+#           if id:
+#               for d in GroupTrafficClass.objects.filter(group=model):
+#                   log('DELETE', request.user, d)
+#                   d.delete()
+#           for item in traffic_classes:
+#               gt = GroupTrafficClass.objects.create(group=model, trafficclass = TrafficClass.objects.get(id=item))
+#               log('CREATE', request.user, gt)
+#           res={"status": True}
+#       except Exception, e:
+#           res={"status": False, "message": str(e)}
+#   else:
+#       res={"status": False, "errors": form._errors}
+#   
+#   return res
+# 
+# @ajax_request
+# @systemuser_required
+# def nas_save(request):
+#   id = request.POST.get('id')
+# 
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('nas.change_nas')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение сервера доступа'}
+#       nas = Nas.objects.get(id=id)
+#       form = NasForm(request.POST, instance = nas)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('nas.add_nas')):
+#           return {'status':False, 'message': u'У вас нет прав на добавление сервера доступа'}
+#       form = NasForm(request.POST)
+#       
+#   
+#   if form.is_valid():
+#       item = form.save(commit=False)
+#       item.save()
+#       log('EDIT', request.user, item) if id else log('CREATE', request.user, item) 
+#       return {"status": True, "message": 'yes'}
+#   else:
+#       return {"status": False, "message": form._errors}
+# 
+# @ajax_request
+# @systemuser_required
+# def contracttemplates_set(request):
+#   id = request.POST.get('id')
+# 
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_contracttemplate')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение шаблона номера договора'}
+#       item = ContractTemplate.objects.get(id=id)
+#       form = ContractTemplateForm(request.POST, instance = item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_contracttemplate')):
+#           return {'status':False, 'message': u'У вас нет прав на добавление шаблона номера договора'}
+#       form = ContractTemplateForm(request.POST)
+#       
+#   
+#   if form.is_valid():
+#       model = form.save(commit = False)
+#       model.save()
+#       log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": form._errors}
+# 
+# @ajax_request
+# @systemuser_required
+# def contracttemplate_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_contracttemplate')):
+#       return {'status':False, 'message': u'У вас нет прав на удаление шаблона номера договора'}
+#   id = int(request.POST.get('id',0))
+#   if id:
+#       model = ContractTemplate.objects.get(id=id)
+#       log('DELETE', request.user, model)
+#       model.delete()
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "ContractTemplate not found"}
+#   
+# 
+# @systemuser_required
+# @ajax_request
+# def settlementperiod_save(request):
+#   id = request.POST.get('id')
+# 
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_settlementperiod')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение расчётного периода'}
+#       item = SettlementPeriod.objects.get(id=id)
+#       form = SettlementPeriodForm(request.POST, instance = item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_settlementperiod')):
+#           return {'status':False, 'message': u'У вас нет прав на добавление расчётного периода'}
+#       form = SettlementPeriodForm(request.POST)
+#       
+#   
+#   if form.is_valid():
+#       d = form.save(commit=False)
+#       d.save()
+#       log('EDIT', request.user, d) if id else log('CREATE', request.user, d) 
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": form._errors}
+# 
+# 
+# @systemuser_required
+# @ajax_request
+# def addonservices_set(request):
+#   data = json.loads(request.POST.get('data', "{}"))
+#   id = data.get('id')
+#   if id:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_addonservice')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение подключаемой услуги'}
+#       item = AddonService.objects.get(id=id)
+#       form = AddonServiceForm(data, instance = item)
+#   else:
+#       if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_addonservice')):
+#           return {'status':False, 'message': u'У вас нет прав на изменение подключаемой услуги'}
+#       form = AddonServiceForm(data)
+#       
+#   
+#   if form.is_valid():
+#       d = form.save(commit=False)
+#       d.save()
+#       log('EDIT', request.user, d) if id else log('CREATE', request.user, d) 
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": form._errors}
+#   
+# @ajax_request
+# @systemuser_required
+# def settlementperiod_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_settlementperiod')):
+#       return {'status':False, 'message': u'У вас нет прав на удаление расчётного периода'}
+#   id = int(request.POST.get('id',0))
+#   if id:
+#       for d in SettlementPeriod.objects.filter(id=id):
+#           log('DELETE', request.user, d)
+#           d.delete()
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "Settlementperiod not found"}
+# 
+# @ajax_request
+# @systemuser_required
+# def addonservices_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_addonservice')):
+#       return {'status':False, 'message': u'У вас нет прав на удаление подключаемой услуги'}
+#   id = int(request.POST.get('id',0))
+#   if id:
+#       for d in AddonService.objects.filter(id=id):
+#           log('DELETE', request.user, d)
+#           d.delete()
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "AddonService not found"}
+# 
+# 
+# 
+# @ajax_request
+# @systemuser_required
+# def groups_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_group')):
+#       return {'status':False, 'message': u'У вас нет прав на удаление группы трафика'}
+#   id = int(request.POST.get('id',0))
+#   if id:
+#       for d in Group.objects.filter(id=id):
+#           log('DELETE', request.user, d)
+#           d.delete()
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "Group not found"}
+# 
+# 
+# @ajax_request
+# @systemuser_required
+# def tariffs_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_tariff')):
+#       return {'status':False, 'message': u'У вас нет прав на удаление тарифа'}
+#   id = int(request.POST.get('id',0))
+#   if id:
+#       try:
+#           item = Tariff.objects.all_with_deleted().get(id=id)
+#           log('DELETE', request.user, item)
+#           item.delete()
+#       except Exception, e:
+#           return {"status": False, "message": u"Указанный тарифный план не найден %s" % str(e)}
+# 
+# 
+#       
+#       
+# 
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "AccountTarif not found"}
+# 
+# 
+# @ajax_request
+# @systemuser_required
+# def accounttariffs_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_accounttarif')):
+#       return {'status':False, 'message': u'У вас нет прав на удаление связки тарифа'}
+#   id = int(request.POST.get('id',0))
+#   if id:
+#       try:
+#           item = AccountTarif.objects.get(id=id)
+#       except Exception, e:
+#           return {"status": False, "message": u"Указанный тарифный план не найден тарифный план %s" % str(e)}
+#       if item.datetime<datetime.datetime.now():
+#           return {"status": False, "message": u"Невозможно удалить вступивший в силу тарифный план"}
+#       log('DELETE', request.user, item)
+#       item.delete()
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "AccountTarif not found"}
+# 
+# @ajax_request
+# @systemuser_required
+# def suspendedperiod_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_suspendedperiod')):
+#       return {'status':False, 'message': u'У вас нет прав на удаление периода простоя'}
+#   id = int(request.POST.get('id',0))
+#   if id:
+#       try:
+#           item = SuspendedPeriod.objects.get(id=id)
+#       except Exception, e:
+#           return {"status": False, "message": u"Указанный период не найден %s" % str(e)}
+#       log('DELETE', request.user, item)
+#       item.delete()
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "SuspendedPeriod not found"} 
+# 
+# @ajax_request
+# @systemuser_required
+# def get_tariffs(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   items = Tariff.objects.all_with_deleted().order_by('name')
+#   res=[]
+#   for item in items:
+#       try:
+#           access_type = item.access_parameters.access_type
+#       except:
+#           access_type = ''
+#       res.append({'active':item.active,'id':item.id, 'access_type':access_type, 'name':item.name, 'deleted':item.deleted})
+#   
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# 
+# @ajax_request
+# @systemuser_required
+# def accounts_for_tarif(request):
+#   
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.account_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   
+#   tarif_id = int(request.POST.get('tarif_id', -1000))
+#   
+# 
+#   items = cache.get(str(tarif_id))
+#   if items:
+#       return {"records": items, 'status':True, 'totalCount':len(items)}
+#   
+#   from django.db import connection
+#   
+#   cur = connection.cursor()
+#   
+#   items = []
+#   if tarif_id==-3000:
+#       try:
+#           
+#           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address 
+#           FROM billservice_account AS acc 
+#           LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
+#           WHERE acc.deleted is Null and get_tarif(acc.id) is Null ORDER BY acc.username ASC;""")
+#           items = dictfetchall(cur)
+#       except Exception, e:
+#           return { 'status':False, 'message':str(e)}
+#   
+#   elif tarif_id==-1000:
+# 
+#       try:
+#           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  tariff.name as tariff_name, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
+#           FROM billservice_account AS acc 
+#           LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+#           JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
+#           LEFT JOIN billservice_organization as org ON org.account_id=acc.id
+#           WHERE acc.deleted is Null 
+#           ORDER BY acc.username ASC;""" )
+# 
+#           items = dictfetchall(cur)
+#       except Exception, e:
+#           return { 'status':False, 'message':str(e)}
+# 
+#   elif tarif_id==-4000:#Физ лица
+#       try:
+#           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  tariff.name as tariff_name, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
+#           FROM billservice_account AS acc 
+#           LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+#           JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
+#           LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
+#           WHERE  acc.deleted is Null and  acc.id not IN (SELECT account_id FROM billservice_organization) ORDER BY acc.username ASC;""" )
+#           items = dictfetchall(cur)
+#       except Exception, e:
+#           return { 'status':False, 'message':str(e)}        
+# 
+#   elif tarif_id==-5000:#Юр лица
+#       try:
+#           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,  tariff.name as tariff_name, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
+#           FROM billservice_account AS acc 
+#           LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+#           JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
+#           LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
+#           WHERE acc.deleted is Null and  acc.id IN (SELECT account_id FROM billservice_organization)  ORDER BY acc.username ASC;""" )
+#           items = dictfetchall(cur)
+#       except Exception, e:
+#           return { 'status':False, 'message':str(e)}        
+# 
+#   elif tarif_id==-12000:#Архив
+#       try:
+#           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status,   tariff.name as tariff_name, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs,COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
+#           FROM billservice_account AS acc 
+#           LEFT JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+#           JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
+#           LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
+#           WHERE acc.deleted is not Null  ORDER BY acc.username ASC;""" )
+#           items = dictfetchall(cur)
+#       except Exception, e:
+#           return { 'status':False, 'message':str(e)}   
+#   else:
+#       
+#       try:
+#           cur.execute("""SELECT acc.id, acc.room, acc.username, acc.fullname, acc.email, acc.nas_id, acc.ipn_status, acc.ipn_added, acc.suspended, acc.created, acc.ballance, acc.credit, acc.contract, acc.disabled_by_limit, acc.balance_blocked, acc."comment", acc.status, tariff.settlement_period_id, org.id as org_id, org.name as org_name,ARRAY(SELECT DISTINCT vpn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as vpn_ips,ARRAY(SELECT DISTINCT ipn_ip_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_ips,ARRAY(SELECT DISTINCT ipn_mac_address FROM billservice_subaccount as subacc WHERE subacc.account_id=acc.id) as ipn_macs, COALESCE((SELECT True FROM radius_activesession WHERE account_id=acc.id and session_status='ACTIVE' limit 1), False) as account_online, ((SELECT name FROM billservice_street where id=acc.street_id) || ', '|| (SELECT name FROM billservice_house where id=acc.house_id)) as address, at.datetime as accounttarif_datetime
+#           FROM billservice_account AS acc 
+#           JOIN billservice_accounttarif as at ON at.id=(SELECT id FROM billservice_accounttarif WHERE account_id=acc.id and datetime<now() ORDER BY datetime DESC LIMIT 1)
+#           JOIN billservice_tariff as tariff ON tariff.id=at.tarif_id
+#           LEFT JOIN billservice_organization as org ON org.account_id=acc.id 
+#           WHERE acc.deleted is Null and %s=get_tarif(acc.id)  ORDER BY acc.username ASC;""", (tarif_id,) )
+#           items = dictfetchall(cur)
+#       except Exception, e:
+#           return { 'status':False, 'message':str(e)}   
+#   sps = SettlementPeriod.objects.all().values("id", "time_start", "autostart", "length", "length_in")
+#   sps_dict = {}
+#   for sp in sps:
+#       sps_dict[sp.get("id")] = sp
+#   #iterate accounts
+#   res = []
+#   for item in items:
+#       sp = sps_dict.get(item.get("settlement_period_id"))
+#       if sp:
+#               
+#           if sp.get("autostart"):
+#               time_start = item.get("accounttarif_datetime")
+#           else:
+#               time_start = sp.get("time_start")
+#           start, end,length = settlement_period_info(time_start, sp.get("length_in"), sp.get("length"))
+#           item['sp_end'] = end
+#       res.append(item)
+# 
+# 
+#   cache.set(str(tarif_id), res, 60)
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+#   
+# @ajax_request
+# @systemuser_required
+# def get_accounts_for_cashier(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.cashier_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   
+#   data = json.loads(request.POST.get("data", "{}"))
+#   fullname, city, street, house, bulk, room, username, contract, phone_h, phone_m = \
+#   data.get("fullname"), data.get("city"), data.get("street"),  data.get("house"), data.get("bulk"),data.get("room"),  data.get("username"), data.get("agreement"), data.get("phone_h"),data.get("phone_m"),  
+#   items = Account.objects.all()
+#   
+#   if fullname:
+#       items = items.filter(fullname__icontains=fullname)
+#       
+#   if city:
+#       items = items.filter(city__id=city)
+#   
+#   if street:
+#       items = items.filter(street__id=street)
+#   
+#   if house:
+#       items = items.filter(house__id=house)
+# 
+#   if bulk:
+#       items = items.filter(hbulk__icontains=bulk)
+# 
+#   if room:
+#       items = items.filter(room__icontains=room)
+#       
+#   if username:
+#       items = items.filter(username__icontains=username)
+# 
+#   if contract:
+#       items = items.filter(contract__icontains=contract)
+#     
+#   if phone_h:
+#       items = items.filter(phone_h__icontains=phone_h)
+# 
+#   if phone_m:
+#       items = items.filter(phone_m__icontains=phone_m)
+#    
+#   #id, contract,username,fullname,ballance,credit,status,created,(SELECT name FROM billservice_street WHERE id=account.street_id) as street,(SELECT name FROM billservice_house WHERE id=account.house_id) as house,house_bulk,room, (SELECT name FROM billservice_tariff WHERE id=get_tarif(account.id)) as tarif_name
+#   items = items.extra(select={"tarif_name": "(SELECT name FROM billservice_tariff WHERE id=get_tarif(billservice_account.id))"}).values('id', 'contract','username','fullname','ballance','credit','status','created', "street", 'house', 'house_bulk', 'room', 'tarif_name')
+#   res = []             
+#   for item in items:
+#       
+#       res.append(item)
+#       
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+# @ajax_request
+# @systemuser_required
+# def nas_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_nas')):
+#       return {'status':True, 'message': u'У вас нет прав на удаление сервера доступа'}
+#   id = request.POST.get('id')
+#   if id:
+#       for d in Nas.objects.filter(id=id):
+#           log('DELETE', request.user, d)
+#           d.delete()
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "Nas not found"}
+# 
+# 
+# @ajax_request
+# @systemuser_required
+# def subaccount_delete(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_subaccount')):
+#       return {'status':True, 'message': u'У вас нет прав на удаление субаккаунта'}
+#   id = request.POST.get('id') or request.GET.get('id')
+#   if id:
+#       #TODO: СДелать удаление субаккаунта с сервера доступа, если он там был
+#       item = SubAccount.objects.get(id=id)
+#       if item.vpn_ipinuse:
+#           for d in IPInUse.objects.filter(id=item.vpn_ipinuse):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#       if item.ipn_ipinuse:
+#           for d in IPInUse.objects.filter(id=item.ipn_ipinuse):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#       if item.vpn_ipv6_ipinuse:
+#           for d in IPInUse.objects.filter(id=item.vpn_ipv6_ipinuse):
+#               log('DELETE', request.user, d)
+#               d.delete()
+#       
+#       log('DELETE', request.user, item)
+#       item.delete()
+#       
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "SubAccount not found"}
+#===============================================================================
+
+#===============================================================================
+# @ajax_request
+# @systemuser_required
+# def account_delete(request):
+#   id = request.POST.get('id')
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_account')):
+#       return {'status':True, 'message': u'У вас нет прав на удаление аккаунта'}
+#   if id:
+#       try:
+#          model = Account.objects.all_with_deleted().get(id=id)
+#          log('DELETE', request.user, model)
+#          model.delete()
+#       except Exception, e:
+#           return {"status": False, "message": "%s" % str(e)}
+#       
+#       return {"status": True}
+#   else:
+#       return {"status": False, "message": "Account not found"}
+#===============================================================================
    
 @ajax_request
 @systemuser_required
@@ -4142,7 +4150,7 @@ def document_save(request):
 @ajax_request
 @systemuser_required
 def streets(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.street_view')):
+    if  not (request.user.has_perm('billservice.view_street')):
         return {'status':True, 'records':[], 'totalCount':0}
     city_id = request.POST.get('city_id')
     term = request.POST.get('term')
@@ -4166,48 +4174,50 @@ def streets(request):
         res.append(instance_dict(item))
     return {"records": res, 'status':True, 'totalCount':len(items)}
 
-@ajax_request
-@systemuser_required
-def streets_set(request):
-    
-    id = request.POST.get('id')
-    if id:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_street')):
-            return {'status':False, 'message':u'У вас нет прав на изменение улицы'}
-        item = Street.objects.get(id=id)
-        form = StreetForm(request.POST, instance=item)
-    else:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_street')):
-            return {'status':False, 'message':u'У вас нет прав на добавление улицы'}
-        form = StreetForm(request.POST)
-        
-    if form.is_valid():
-        try:
-            model = form.save(commit = False)
-            model.save()
-            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            res={"status": True}
-        except Exception, e:
-
-            res={"status": False, "message": str(e)}
-    else:
-        res={"status": False, "errors": form._errors}
- 
-    return res
-
-@ajax_request
-@systemuser_required
-def streets_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_street')):
-        return {'status':False, 'message':u'У вас нет прав на удаление улицы'}
-    id = int(request.POST.get('id',0))
-    if id:
-        for d in Street.objects.filter(id=id):
-            log('DELETE', request.user, d)
-            d.delete()
-        return {"status": True}
-    else:
-        return {"status": False, "message": "Street not found"}
+#===============================================================================
+# @ajax_request
+# @systemuser_required
+# def streets_set(request):
+#    
+#    id = request.POST.get('id')
+#    if id:
+#        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_street')):
+#            return {'status':False, 'message':u'У вас нет прав на изменение улицы'}
+#        item = Street.objects.get(id=id)
+#        form = StreetForm(request.POST, instance=item)
+#    else:
+#        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_street')):
+#            return {'status':False, 'message':u'У вас нет прав на добавление улицы'}
+#        form = StreetForm(request.POST)
+#        
+#    if form.is_valid():
+#        try:
+#            model = form.save(commit = False)
+#            model.save()
+#            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+#            res={"status": True}
+#        except Exception, e:
+# 
+#            res={"status": False, "message": str(e)}
+#    else:
+#        res={"status": False, "errors": form._errors}
+# 
+#    return res
+# 
+# @ajax_request
+# @systemuser_required
+# def streets_delete(request):
+#    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_street')):
+#        return {'status':False, 'message':u'У вас нет прав на удаление улицы'}
+#    id = int(request.POST.get('id',0))
+#    if id:
+#        for d in Street.objects.filter(id=id):
+#            log('DELETE', request.user, d)
+#            d.delete()
+#        return {"status": True}
+#    else:
+#        return {"status": False, "message": "Street not found"}
+#===============================================================================
     
 
 #===============================================================================
@@ -4608,7 +4618,7 @@ def streets_delete(request):
 @ajax_request
 @systemuser_required
 def getipfrompool(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.ippool_view')):
+    if  not (request.user.account.has_perm('billservice.view_ippool')):
         return {'status':True, 'records':[], 'totalCount':0}
     default_ip='0.0.0.0'
     if default_ip:
@@ -4661,7 +4671,7 @@ def getipfrompool(request):
 @ajax_request
 @systemuser_required
 def getipfrompool2(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.ippool_view')):
+    if  not (request.user.account.has_perm('billservice.view_ippool')):
         return {'status':True, 'records':[], 'totalCount':0}
     default_ip='0.0.0.0'
     if default_ip:
@@ -4707,7 +4717,7 @@ def getipfrompool2(request):
 @ajax_request
 @systemuser_required
 def houses(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.house_view')):
+    if  not (request.user.account.has_perm('billservice.view_house')):
         return {'status':True, 'records':[], 'totalCount':0}
     street_name = request.POST.get('street_name')
     city_id = request.POST.get('city_id')
@@ -4733,48 +4743,50 @@ def houses(request):
     
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
-@ajax_request
-@systemuser_required
-def houses_set(request):
-    
-    id = request.POST.get('id')
-    if id:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_house')):
-            return {'status':False, 'message': u'У вас нет прав на редактирование домов'}
-        item = House.objects.get(id=id)
-        form = HouseForm(request.POST, instance=item)
-    else:
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_house')):
-            return {'status':False, 'message': u'У вас нет прав на добавление домов'}
-        form = HouseForm(request.POST)
-        
-    if form.is_valid():
-        try:
-            model = form.save(commit = False)
-            model.save()
-            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            res={"status": True}
-        except Exception, e:
-
-            res={"status": False, "message": str(e)}
-    else:
-        res={"status": False, "errors": form._errors}
- 
-    return res
-
-@ajax_request
-@systemuser_required
-def houses_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_house')):
-        return {'status':False, 'message': u'У вас нет прав на удаление домов'}
-    id = int(request.POST.get('id',0))
-    if id:
-        for d in House.objects.filter(id=id):
-            log('DELETE', request.user, d)
-            d.delete()
-        return {"status": True}
-    else:
-        return {"status": False, "message": "House not found"}
+#===============================================================================
+# @ajax_request
+# @systemuser_required
+# def houses_set(request):
+#    
+#    id = request.POST.get('id')
+#    if id:
+#        if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_house')):
+#            return {'status':False, 'message': u'У вас нет прав на редактирование домов'}
+#        item = House.objects.get(id=id)
+#        form = HouseForm(request.POST, instance=item)
+#    else:
+#        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_house')):
+#            return {'status':False, 'message': u'У вас нет прав на добавление домов'}
+#        form = HouseForm(request.POST)
+#        
+#    if form.is_valid():
+#        try:
+#            model = form.save(commit = False)
+#            model.save()
+#            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+#            res={"status": True}
+#        except Exception, e:
+# 
+#            res={"status": False, "message": str(e)}
+#    else:
+#        res={"status": False, "errors": form._errors}
+# 
+#    return res
+# 
+# @ajax_request
+# @systemuser_required
+# def houses_delete(request):
+#    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_house')):
+#        return {'status':False, 'message': u'У вас нет прав на удаление домов'}
+#    id = int(request.POST.get('id',0))
+#    if id:
+#        for d in House.objects.filter(id=id):
+#            log('DELETE', request.user, d)
+#            d.delete()
+#        return {"status": True}
+#    else:
+#        return {"status": False, "message": "House not found"}
+#===============================================================================
     
 #===============================================================================
 # @ajax_request
@@ -4962,22 +4974,24 @@ def houses_delete(request):
 #===============================================================================
 
 
-@systemuser_required
-@ajax_request
-def transactiontypes(request):
-   if  not (request.user.is_staff==True and request.user.has_perm('billservice.transactiontype_view')):
-       return {'status':True, 'records':[], 'totalCount':0}
-   id = request.POST.get('id')
-   if id:
-       items = TransactionType.objects.filter(id=id).order_by('name')
-   else:
-       items = TransactionType.objects.all().order_by('name')
-
-   res=[]
-   for item in items:
-       res.append({"id":item.id, "name":item.name, "internal_name":item.internal_name})
-   
-   return {"records": res, 'status':True, 'totalCount':len(res)}
+#===============================================================================
+# @systemuser_required
+# @ajax_request
+# def transactiontypes(request):
+#   if  not (request.user.is_staff==True and request.user.has_perm('billservice.transactiontype_view')):
+#       return {'status':True, 'records':[], 'totalCount':0}
+#   id = request.POST.get('id')
+#   if id:
+#       items = TransactionType.objects.filter(id=id).order_by('name')
+#   else:
+#       items = TransactionType.objects.all().order_by('name')
+# 
+#   res=[]
+#   for item in items:
+#       res.append({"id":item.id, "name":item.name, "internal_name":item.internal_name})
+#   
+#   return {"records": res, 'status':True, 'totalCount':len(res)}
+#===============================================================================
 
 #===============================================================================
 # @ajax_request
@@ -5012,7 +5026,7 @@ def transactiontypes(request):
 @ajax_request
 @systemuser_required
 def actions_set(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.actions_set')):
+    if  not (request.user.account.has_perm('billservice.actions_set')):
         return {'status':False, 'message': u'У вас нет прав на управление состоянием субаккаунтов'}
     subaccount = request.POST.get('subaccount_id')
     action = request.POST.get('action')
@@ -5196,7 +5210,7 @@ def cheque_render(request):
 @systemuser_required 
 @ajax_request
 def testCredentials(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.testcredentials')):
+    if  not (request.user.account.has_perm('billservice.testcredentials')):
         return {'status':False, 'message': u'У вас нет на тестирование подключения'}
     host, login, password = request.POST.get('host'),request.POST.get('login'),request.POST.get('password')
     try:
@@ -5210,7 +5224,7 @@ def testCredentials(request):
 @systemuser_required 
 @ajax_request
 def get_ports_status(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.getportsstatus')):
+    if  not (request.user.account.has_perm('billservice.getportsstatus')):
         return {'status':False, 'message': u'У вас нет прав на получение статуса портов'}
     switch_id = request.POST.get('switch_id')
     if not switch_id: 
