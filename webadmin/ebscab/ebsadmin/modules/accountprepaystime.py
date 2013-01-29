@@ -1,7 +1,6 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -13,10 +12,10 @@ from billservice.forms import AccountPrepaysTimeSearchForm, AccountPrepaysTimeFo
 from billservice.models import AccountPrepaysTime
 from django.contrib import messages
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/accountprepaystime_list.html')
 def accountprepaystime(request):
     if  not (request.user.account.has_perm('billservice.view_accountprepaystime')):
@@ -70,7 +69,7 @@ def accountprepaystime(request):
         form = AccountPrepaysTimeSearchForm()
         return { 'form':form}   
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/accountprepaystime_edit.html')
 def accountprepaystime_edit(request):
     id = request.POST.get("id")
@@ -118,7 +117,7 @@ def accountprepaystime_edit(request):
     return { 'form':form, 'status': False} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def accountprepaystime_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_accountprepaystime')):
         return {'status':False, 'message': u'У вас нет прав на удаление предоплаченного времени'}

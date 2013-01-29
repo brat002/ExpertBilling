@@ -39,7 +39,7 @@
           background-clip: padding-box;
 }
 </style>
-
+{% if form %}
             <form method="POST" action="{% url tariff_speedlimit_edit %}?trafficlimit_id={{trafficlimit.id}}" class="well form-horizontal ajax form-condensed ">
             {{form.id}}
                 <fieldset>
@@ -245,7 +245,7 @@
                     <a class="btn close-dialog" href="#">Close</a>
                 </div>
             </form>
-
+{% endif %}
 {% else %}
 Операция произведена успешно.
  <script type="text/javascript"> 

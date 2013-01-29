@@ -1,7 +1,6 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2.config import RequestConfig
@@ -14,12 +13,12 @@ from ebsadmin.tables import AccountGroupTable
 
 from billservice.forms import AccountGroupForm
 from billservice.models import AccountGroup
-
+from billservice.helpers import systemuser_required
 log = LogItem.objects.log_action
 from django.contrib import messages
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/accountgroup_list.html')
 def accountgroup(request):
     if not request.user.account.has_perm('billservice.view_accountgroup'):
@@ -33,7 +32,7 @@ def accountgroup(request):
             
     return {"table": table} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/accountgroup_edit.html')
 def accountgroup_edit(request):
     id = request.POST.get("id")
@@ -82,7 +81,7 @@ def accountgroup_edit(request):
     return { 'form':form, 'status': False, 'item': item} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def accountgroup_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_accountgroup')):
         return {'status':False, 'message': u'У вас нет прав на удаление групп пользователей'}

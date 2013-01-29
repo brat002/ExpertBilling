@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+from billservice.helpers import systemuser_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -17,7 +17,7 @@ log = LogItem.objects.log_action
 
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/systemuser_list.html')
 def systemuser(request):
     if  not (request.user.account.has_perm('billservice.view_systemuser')):
@@ -31,7 +31,7 @@ def systemuser(request):
         return create_report_http_response(table_to_report, request)
     return {"table": table} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/systemuser_edit.html')
 def systemuser_edit(request):
 
@@ -107,7 +107,7 @@ def systemuser_edit(request):
 
 
 @ajax_request
-@login_required
+@systemuser_required
 def systemuser_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_systemuser')):
         return {'status':False, 'message': u'У вас нет прав на удаление администраторов'}

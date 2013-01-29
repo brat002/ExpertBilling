@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -14,10 +14,10 @@ from billservice.forms import NewsForm
 from billservice.models import News, AccountViewedNews, Account
 from django.contrib import messages
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/news_list.html')
 def news(request):
     if  not (request.user.has_perm('billservice.view_news')):
@@ -30,7 +30,7 @@ def news(request):
         return create_report_http_response(table_to_report, request)
     return {"table": table} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/news_edit.html')
 def news_edit(request):
     id = request.POST.get("id")
@@ -92,7 +92,7 @@ def news_edit(request):
     return { 'form':form, 'status': False, 'item': item} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def news_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_news')):
         return {'status':False, 'message': u'У вас нет прав на удаление новостей'}

@@ -1,7 +1,6 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -17,11 +16,12 @@ import string
 import random
 import datetime
 from django.contrib import messages
+from billservice.models import systemuser_required
 log = LogItem.objects.log_action
 
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/card_list.html')
 def card(request):
     
@@ -137,7 +137,7 @@ def card(request):
     
     return {"table": table, 'form':form} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/card_edit.html')
 def card_edit(request):
     id = request.POST.get("id")
@@ -184,7 +184,7 @@ def card_edit(request):
 
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/salecard_edit.html')
 def salecard_edit(request):
     id = request.POST.get("id")
@@ -256,7 +256,7 @@ def salecard_edit(request):
         
     return { 'form':form, 'table': table, 'status': False, 'dealer':dealer, 'cards_sum': cards_sum} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/card_generate.html')
 def card_generate(request):
     id = request.GET.get("id")
@@ -371,7 +371,7 @@ def card_generate(request):
    
     return { 'form':form, 'status': False} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/card_update.html')
 def card_update(request):
     item = None
@@ -488,7 +488,7 @@ def card_update(request):
     return { 'form':form, 'status': False} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def card_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_card')):
         return {'status':False, 'message': u'У вас нет прав на удаление карточек'}
@@ -506,7 +506,7 @@ def card_delete(request):
         return {"status": False, "message": "Card not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def card_manage(request):
     if  not (request.user.account.has_perm('billservice.edit_card')):
         return {'status':False, 'message': u'У вас нет прав на редактирование карточек'}
@@ -530,7 +530,7 @@ def card_manage(request):
     else:
         return {"status": False, "message": "Card not found"}
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/salecard_list.html')
 def salecard(request):
     if  not (request.user.account.has_perm('billservice.view_salecard')):

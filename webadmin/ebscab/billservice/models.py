@@ -1074,7 +1074,7 @@ class SystemUser(models.Model):
         
     def has_perm(self, perm):
         app, internal_name = perm.split('.')
-        print app, internal_name, self.permissiongroup.permissions.filter(app=app, internal_name=internal_name) if self.permissiongroup else ''
+        #print app, internal_name, self.permissiongroup.permissions.filter(app=app, internal_name=internal_name) if self.permissiongroup else ''
         return self.status and (self.is_superuser or (self.permissiongroup.permissions.filter(app=app, internal_name=internal_name).exists() if self.permissiongroup else False))
     
     def delete(self):
@@ -1916,7 +1916,7 @@ class Switch(models.Model):
     monitored_ports = models.TextField(blank=True, verbose_name=u"Порты с мониторингом", default='')
     disabled_ports = models.TextField(blank=True, verbose_name=u"Отключенные порты", default='')
     snmp_support = models.BooleanField(default=False, verbose_name=u"Поддержка SNMP")
-    snmp_version = models.CharField(max_length=10, choices=((1, u"v1",),(1, u"v2c",)), verbose_name=u"Версия SNMP", blank=True, default='v1')#version
+    snmp_version = models.CharField(max_length=10, choices=((1, u"v1",),(2, u"v2c",)), verbose_name=u"Версия SNMP", blank=True, default='v1')#version
     snmp_community = models.CharField(max_length=128, verbose_name=u"SNMP компьюнити", blank=True, default='')#
     ipaddress = models.IPAddressField(blank=True, verbose_name=u"IP адрес", default=None)
     macaddress = models.CharField(max_length=32, verbose_name=u"MAC адрес", blank=True, default='')

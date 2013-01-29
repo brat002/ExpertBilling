@@ -17,6 +17,7 @@
           </div>
 
       {% endfor %}
+{% if form %}
                 <form action='{% url accountprepaystraffic_edit %}?id={{item.id}}'' method="POST" class="well  form-condensed form-horizontal ajax">
                 <legend>Предоплаченный трафик</legend>
                 <fieldset>
@@ -28,6 +29,7 @@
                     <a class="btn close-dialog" href="#">Close</a>
                 </div>
                 </form>
+{% endif %}
 {% else %}
 Операция произведена успешно.
  <script type="text/javascript"> 

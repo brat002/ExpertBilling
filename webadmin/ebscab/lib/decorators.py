@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from functools import update_wrapper, wraps, WRAPPER_ASSIGNMENTS
+from django.core.urlresolvers import reverse
 
 def available_attrs(fn):
     return tuple(a for a in WRAPPER_ASSIGNMENTS if hasattr(fn, a))
@@ -81,4 +82,5 @@ def render_xml(func):
         xml = func(request, *args, **kwargs)
         return HttpResponse(response,mimetype="text/xml",contenttype="text/xml;charset=utf-8")
     return wrapper
+
 
