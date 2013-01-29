@@ -107,7 +107,6 @@ class groupDequeThread(Thread):
                 if from_start < min_from_start or min_from_start == 0:
                     min_from_start = from_start
                     cost = node.traffic_cost
-                    
         return cost
 
     def get_prepaid_octets(self, octets_in, prepInf, queues, force_db=False):
@@ -142,18 +141,18 @@ class groupDequeThread(Thread):
             group_edge = tarif_edges.group_edges
 
         #get a record from prepays cache
-        if force_db==True:
-            self.cur.execute("""
-                    SELECT prepais.id, prepais.size
-                    FROM billservice_accountprepaystrafic as prepais
-                     JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
-                      WHERE prepais.size>0 and account_tarif_id=%s and prepaidtraffic.group_id=%s and current=True;
-            """, (acctf_id, group_id))
-            prepInf = self.cur.fetchone()
-        else:
-            prepInf = self.caches.prepays_cache.by_tts_acctf_group.get((traffic_transmit_service_id, acctf_id, group_id))                            
+
+        self.cur.execute("""
+                SELECT prepais.id, prepais.size
+                FROM billservice_accountprepaystrafic as prepais
+                 JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
+                  WHERE prepais.size>0 and account_tarif_id=%s and prepaidtraffic.group_id=%s and current=True;
+        """, (acctf_id, group_id))
+        
+        prepInf = self.cur.fetchone()
+        logger.info("Preprepaid for group_id=%s acctf_id=%s account_id=%s pre octets=%s prepinf=%s", (group_id, acctf_id, account_id, octets, prepInf))
         octets, prepaid_left = self.get_prepaid_octets(octets, prepInf, queues, force_db)
-        traffic_cost = 0
+        trafic_cost = 0.00
         summ = 0
         if octets > 0:
             #if group_id in group_edge:
@@ -210,7 +209,7 @@ class groupDequeThread(Thread):
                 trafic_cost = self.get_actual_cost(octets_summ, gdate, nodes) if nodes else 0
                 summ = (trafic_cost * octets) / MEGABYTE
                 
-        logger.info("traffic_transmit_service_id=%s acctf_id=%s account_id=%s bytes=%s traffic_cost=%s summ=%s", (traffic_transmit_service_id, acctf_id, account_id, octets, trafic_cost, summ))
+        logger.info("traffic_transmit_service_id=%s group_id=%s acctf_id=%s account_id=%s bytes=%s traffic_cost=%s summ=%s", (traffic_transmit_service_id, group_id, acctf_id, account_id, octets, trafic_cost, summ))
         if summ <> 0:
             logger.debug("Tarificate group bytes traffic_transmit_service_id=%s, acctf_id=%s, account_id=%s, summ=%s, created=%s",  (traffic_transmit_service_id, acctf_id, account_id, summ, gdate,))
             return traffictransaction(self.cur, traffic_transmit_service_id, acctf_id, account_id, summ=summ, created=gdate)

@@ -1,0 +1,1 @@
+INSERT INTO billservice_permission(name, app, internal_name, ordering) VALUES('Просматривать отчёт по операциям с л/c','billservice','view_transactionreport',209);

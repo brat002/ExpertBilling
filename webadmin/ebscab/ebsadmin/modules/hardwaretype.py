@@ -13,7 +13,7 @@ from billservice.forms import HardwareTypeForm
 from billservice.models import HardwareType
 from django.contrib import messages
 log = LogItem.objects.log_action
-from billservice/helpers import systemuser_required
+from billservice.helpers import systemuser_required
 
 
 @systemuser_required
