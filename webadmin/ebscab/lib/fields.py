@@ -9,6 +9,7 @@ class IPNetworkWidget(widgets.TextInput):
     def render(self, name, value, attrs=None):
         if isinstance(value, _IPAddrBase):
             value = u'%s' % value
+            value = value.replace('/32', '')
         return super(IPNetworkWidget, self).render(name, value, attrs)
 
 class IPNetworkManager(models.Manager):
@@ -84,6 +85,7 @@ class IPNetworkField(models.Field):
     def get_prep_value(self, value):
         if isinstance(value, _IPAddrBase):
             value = '%s' % value
+            
         return unicode(value)
       
     def formfield(self, **kwargs):
