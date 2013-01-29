@@ -10,8 +10,8 @@ def systemuser_required(func):
         if not user.id:
             return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.get_full_path()),)
         else:
-            if isinstance(user.account)!=SystemUser:
-                return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.get_full_path()),)
+            if not isinstance(user.account, SystemUser):
+                return HttpResponseRedirect(reverse('billservice_index'))
 
             return func(request, *args, **kw)
     return wrapper

@@ -296,7 +296,7 @@ class periodical_service_bill(Thread):
         #Расчитываем параметры расчётного периода на момент последнего списания
         period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)                                
         # Проверка на расчётный период без повторения
-        if period_end < dateAT: return
+        #if period_end < dateAT: return
 
             
         if ps.cash_method == "GRADUAL":
@@ -572,8 +572,10 @@ class periodical_service_bill(Thread):
                             
                             try:
                                 current = True if next_acctf_id is None else False
+                                if acc.account_status in [3,4, '3', '4']: continue
+                                
                                 dateAT = next_date if next_date else self.NOW
-                                logger.info("%s : preiter: %s %s %s %s", (self.getName(), self.NOW, dateAT, current, next_date))
+                                logger.info("%s : preiter: acctf=%s %s %s %s %s", (self.getName(), acctf_id, self.NOW, dateAT, current, next_date))
                                 self.iterate_ps(cur, caches, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, PERIOD)
                             
                             except Exception, ex:
