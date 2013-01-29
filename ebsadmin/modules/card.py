@@ -16,7 +16,7 @@ import string
 import random
 import datetime
 from django.contrib import messages
-from billservice.models import systemuser_required
+from billservice.helpers import systemuser_required
 log = LogItem.objects.log_action
 
 
