@@ -1,7 +1,6 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -14,10 +13,10 @@ from billservice.forms import GroupForm
 from billservice.models import Group
 from django.contrib import messages
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/group_list.html')
 def group(request):
 
@@ -32,7 +31,7 @@ def group(request):
             
     return {"table": table} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/group_edit.html')
 def group_edit(request):
     id = request.POST.get("id")
@@ -40,7 +39,7 @@ def group_edit(request):
     item = None
 
     if request.method == 'POST': 
-
+        model = None
         if id:
             model = Group.objects.get(id=id)
             form = GroupForm(request.POST, instance=model) 
@@ -82,7 +81,7 @@ def group_edit(request):
     return { 'form':form, 'status': False, 'item':item} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def group_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_group')):
         return {'status':False, 'message': u'У вас нет прав на удаление групп трафика'}

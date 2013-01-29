@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -14,10 +14,10 @@ from billservice.forms import IPPoolForm
 from billservice.models import IPPool
 from django.contrib import messages
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/ippool_list.html')
 def ippool(request):
     if  not (request.user.account.has_perm('billservice.view_ippool')):
@@ -31,7 +31,7 @@ def ippool(request):
         return create_report_http_response(table_to_report, request)
     return {"table": table} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/ippool_edit.html')
 def ippool_edit(request):
 
@@ -79,7 +79,7 @@ def ippool_edit(request):
     return { 'form':form, 'item': item} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def ippool_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_ippool')):
         return {'status':False, 'message': u'У вас нет прав на удаление IP пулов'}

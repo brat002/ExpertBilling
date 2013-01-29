@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -13,9 +13,9 @@ from billservice.forms import OperatorForm
 from billservice.models import Operator
 from django.contrib import messages
 log = LogItem.objects.log_action
-
+from billservice.helpers import systemuser_required
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/operator_edit.html')
 def operator_edit(request):
 

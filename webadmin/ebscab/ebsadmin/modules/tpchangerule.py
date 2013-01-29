@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -15,10 +15,10 @@ from billservice.models import TPChangeRule
 from django.contrib import messages
 
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tpchangerule_list.html')
 def tpchangerule(request):
     if  not (request.user.account.has_perm('billservice.view_tpchangerule')):
@@ -35,7 +35,7 @@ def tpchangerule(request):
 
 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tpchangerule_edit.html')
 def tpchangerule_edit(request):
     
@@ -109,7 +109,7 @@ def tpchangerule_edit(request):
 
 
 @ajax_request
-@login_required
+@systemuser_required
 def tpchangerule_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_tpchangerule')):
         return {'status':False, 'message': u'У вас нет прав на удаление правил смены тарифных планов'}

@@ -1,7 +1,7 @@
 #-*-coding:utf-8-*-
 from billservice.forms import TransactionReportForm
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+from billservice.helpers import systemuser_required
 from billservice.models import Transaction, TransactionType, PeriodicalServiceHistory, PeriodicalService, AccountAddonService, TotalTransactionReport as TransactionReport, OneTimeServiceHistory, SubAccount, AccountTarif, SuspendedPeriod, AccountHardware
 from views import instance_dict
 import billservice.models as bsmodels
@@ -94,7 +94,7 @@ TRANSACTION_MODELS = {"PS_GRADUAL":'PeriodicalServiceHistory',
 
 #print bsmodels.__dict__
 @ajax_request
-@login_required
+@systemuser_required
 def transactionreport(request):
     if  not (request.user.account.has_perm('billservice.view_transactionreport')):
         return {'status': False}

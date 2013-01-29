@@ -16,34 +16,19 @@
  </script>
            
 {% if form %}
-                <form action='{% url accounttariff_edit %}?account_id={{account.id}}' method="POST" class="well form-horizontal  form-condensed ajax">
+                <form action='{% url account_management_accounttariff %}' method="POST" class="well form-horizontal  form-condensed ajax">
                 <fieldset>
+                {{ form.accounts }}
                   <div class="control-group">
-
-                      <label class="control-label">{{ form.account.label }}: </label>
+                      <label class="control-label">{{ form.tariff.label }}: </label>
                       <div class="controls">
-                      {{ form.account }}
-                      {% if form.account.errors %}
-                          <span class="help-inline">{% for error in form.account.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {{ form.tariff }}
+                      {% if form.tariff.errors %}
+                          <span class="help-inline">{% for error in form.tariff.errors %}{{ error }}<br/> {% endfor %}</span>
                       {% endif %}
-                      {% if form.account.help_text%}
+                      {% if form.tariff.help_text%}
                           <p class="help-block">
-                              {{ form.account.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-
-                  </div>
-                  <div class="control-group">
-                      <label class="control-label">{{ form.tarif.label }}: </label>
-                      <div class="controls">
-                      {{ form.tarif }}
-                      {% if form.tarif.errors %}
-                          <span class="help-inline">{% for error in form.tarif.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.tarif.help_text%}
-                          <p class="help-block">
-                              {{ form.tarif.help_text|safe }}
+                              {{ form.tariff.help_text|safe }}
                           </p>
                       {% endif %}
                       </div>

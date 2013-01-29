@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -16,10 +16,10 @@ from django.contrib import messages
 from django.contrib import messages
 
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_list.html')
 def tariff(request):
     if  not (request.user.account.has_perm('billservice.view_tariff')):
@@ -34,7 +34,7 @@ def tariff(request):
             
     return {"table": table} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_edit_general.html')
 def tariff_edit(request):
     item = None
@@ -90,7 +90,7 @@ def tariff_edit(request):
    
     return { 'form':form, 'tariff': tariff,  "access_parameters": accessparameters_form, 'active': 'general'} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_periodicalservice.html')
 def tariff_periodicalservice(request):
 
@@ -119,7 +119,7 @@ def tariff_periodicalservice(request):
    
     return { 'formset':None, 'table':table, 'tariff':tariff, 'active': 'ps'} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_addonservice.html')
 def tariff_addonservicetariff(request):
     if  not (request.user.account.has_perm('billservice.view_tariff')):
@@ -143,7 +143,7 @@ def tariff_addonservicetariff(request):
    
     return { 'table':table, 'tariff':tariff, 'active': 'addst'} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_addonservicetariff_edit.html')
 def tariff_addonservicetariff_edit(request):
 
@@ -187,7 +187,7 @@ def tariff_addonservicetariff_edit(request):
    
     return { 'item':item, 'form':form} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_trafficlimit.html')
 def tariff_trafficlimit(request):
 
@@ -211,7 +211,7 @@ def tariff_trafficlimit(request):
    
     return { 'formset':None, 'table':table, 'tariff':tariff, 'active': 'trafficlimit'} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/trafficlimit_edit.html')
 def tariff_trafficlimit_edit(request):
 
@@ -260,7 +260,7 @@ def tariff_trafficlimit_edit(request):
    
     return { 'formset':None, 'form':form} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_onetimeservice.html')
 def tariff_onetimeservice(request):
 
@@ -286,7 +286,7 @@ def tariff_onetimeservice(request):
    
     return { 'formset':None, 'table':table, 'tariff':tariff, 'active': 'ots'} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_traffictransmitservice.html')
 def tariff_traffictransmitservice(request):
 
@@ -348,7 +348,7 @@ def tariff_traffictransmitservice(request):
    
     return { 'formset':None, 'table':table, 'tariff': tariff,  'item':item, 'form':form, 'prepaidtraffic_table':prepaidtable, 'active': 'tts'} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_radiustraffic.html')
 def tariff_radiustraffic(request):
 
@@ -413,7 +413,7 @@ def tariff_radiustraffic(request):
    
     return { 'formset':None, 'table':table, 'tariff': tariff,  'item':item, 'form':form,  'active': 'rts'} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_timeaccessservice.html')
 def tariff_timeaccessservice(request):
 
@@ -475,7 +475,7 @@ def tariff_timeaccessservice(request):
    
     return { 'table':table, 'tariff': tariff,  'item':item, 'form':form,  'active': 'timeaccess'} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_timeaccessnode_edit.html')
 def tariff_timeaccessnode_edit(request):
 
@@ -528,7 +528,7 @@ def tariff_timeaccessnode_edit(request):
 
     return { 'item':item, 'form':form} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_accessparameters.html')
 def tariff_accessparameters(request):
 
@@ -591,7 +591,7 @@ def tariff_accessparameters(request):
     return { 'formset':None, 'table':table, 'tariff': tariff,  'item':item, 'form':form, 'active': 'accessparameters'} 
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_timespeed_edit.html')
 def tariff_timespeed_edit(request):
 
@@ -639,7 +639,7 @@ def tariff_timespeed_edit(request):
    
     return { 'formset':None, 'form':form} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_prepaidtraffic_edit.html')
 def tariff_prepaidtraffic_edit(request):
 
@@ -685,7 +685,7 @@ def tariff_prepaidtraffic_edit(request):
    
     return { 'formset':None, 'form':form} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_traffictransmitnode_edit.html')
 def tariff_traffictransmitnode_edit(request):
 
@@ -741,7 +741,7 @@ def tariff_traffictransmitnode_edit(request):
    
     return { 'formset':None, 'form':form} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/tariff_radiustrafficnode_edit.html')
 def tariff_radiustrafficnode_edit(request):
 
@@ -801,7 +801,7 @@ def tariff_radiustrafficnode_edit(request):
         print "tts", tts, tariff_id
     return { 'formset':None, 'form':form} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/periodicalservice_edit.html')
 def tariff_periodicalservice_edit(request):
 
@@ -852,7 +852,7 @@ def tariff_periodicalservice_edit(request):
    
     return { 'formset':None, 'form':form} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/speedlimit_edit.html')
 def tariff_speedlimit_edit(request):
 
@@ -905,7 +905,7 @@ def tariff_speedlimit_edit(request):
    
     return { 'trafficlimit':trafficlimit, 'form':form, 'item': item}
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/onetimeservice_edit.html')
 def onetimeservice_edit(request):
 
@@ -948,7 +948,7 @@ def onetimeservice_edit(request):
     return { 'formset':None, 'form':form} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def tariff_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_tariff')):
         return {'status':False, 'message': u'У вас нет прав на удаление тарифных планов'}
@@ -967,7 +967,7 @@ def tariff_delete(request):
         return {"status": False, "message": "tariff not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def periodicalservice_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -986,7 +986,7 @@ def periodicalservice_delete(request):
         return {"status": False, "message": "PeriodicalService not found"} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def traffictransmitnode_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -1006,7 +1006,7 @@ def traffictransmitnode_delete(request):
     
 
 @ajax_request
-@login_required
+@systemuser_required
 def tariff_timespeed_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -1025,7 +1025,7 @@ def tariff_timespeed_delete(request):
         return {"status": False, "message": "TimeSpeed not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def tariff_onetimeservice_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -1044,7 +1044,7 @@ def tariff_onetimeservice_delete(request):
         return {"status": False, "message": "OneTimeService not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def tariff_radiustrafficservice_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -1063,7 +1063,7 @@ def tariff_radiustrafficservice_delete(request):
         return {"status": False, "message": "RadiusTraffic not found"} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def tariff_timeaccessservice_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -1082,7 +1082,7 @@ def tariff_timeaccessservice_delete(request):
         return {"status": False, "message": "TimeAccessService not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def tariff_traffictransmitservice_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -1101,7 +1101,7 @@ def tariff_traffictransmitservice_delete(request):
         return {"status": False, "message": "TrafficTransmitService not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def radiustrafficnode_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -1120,7 +1120,7 @@ def radiustrafficnode_delete(request):
         return {"status": False, "message": "RadiusTrafficNode not found"} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def trafficlimit_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -1141,7 +1141,7 @@ def trafficlimit_delete(request):
         return {"status": False, "message": "TrafficLimit not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def speedlimit_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -1158,7 +1158,7 @@ def speedlimit_delete(request):
         return {"status": False, "message": "SpeedLimit not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def timeaccessnode_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
@@ -1177,7 +1177,7 @@ def timeaccessnode_delete(request):
         return {"status": False, "message": "TimeAccessNode not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def addonservicetariff_delete(request):
     if  not (request.user.account.has_perm('billservice.change_tariff')):
         return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 

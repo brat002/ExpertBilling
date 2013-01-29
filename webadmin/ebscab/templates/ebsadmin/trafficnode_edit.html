@@ -17,7 +17,7 @@
  });
  </script>
 
-
+{% if form %}
             <form method="POST" action="{% url trafficnode %}?id={{item.id}}" class="well form-horizontal ajax form-condensed ">
             {{ form.id }}
             {{ form.traffic_class }}
@@ -215,7 +215,7 @@
                     <a class="btn close-dialog" href="#">Close</a>
                 </div>
             </form>
-
+{% endif %}
 {% else %}
 Операция произведена успешно.
  <script type="text/javascript"> 

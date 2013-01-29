@@ -68,6 +68,111 @@
                 deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
                 onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
             });
+            
+            $('.management').live('click', function(event){
+            	var arr = new Array();
+
+            	$.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
+            		data.name='accounts';
+            		arr.push(data); 
+            	  
+            	});
+
+                $.ajax(
+                        {
+                            url: this.href,
+                            data: $.param(arr)
+                                  ,        
+                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                            dataType: "json",   //return data in json format                                                                                                                                       
+                            success: function( data ) 
+                            {
+                               if(data.status==true)
+                                   {
+                                   location.reload();
+                                   }else{
+                                       alert(data.message)
+                                   }
+                            },
+                            failure: function(data)
+                            {
+                                alert('Произошла ошибка в обработке запросов сервером');
+                            }
+                        });
+                event.preventDefault();
+                        
+                }
+                
+            );
+            
+            $("#modal-accounttariff-dialog-table").click(function(event) {
+                var arr = new Array();
+
+                $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                    data.name='accounts';
+                    arr.push(data); 
+                  
+                });
+
+                $('<div/>').dialog2({
+                    title: "Изменение тарифного плана", 
+                    content: this.href+'?'+$.param(arr), 
+                    id: "server-notice"
+                });
+
+                event.preventDefault();
+            });
+            
+            $("#modal-suspendedperiod-dialog-table").click(function(event) {
+                var arr = new Array();
+
+                $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                    data.name='accounts';
+                    arr.push(data); 
+                  
+                });
+
+                $('<div/>').dialog2({
+                    title: "Добавление периода без списаний периодических услуг", 
+                    content: this.href+'?'+$.param(arr), 
+                    id: "server-notice"
+                });
+
+                event.preventDefault();
+            });
+            
+            $(".show-confirm").click(function() {
+                a=$(this);
+                var arr = new Array();
+
+                $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                    data.name='accounts';
+                    arr.push(data); 
+                  
+                });
+                $.fn.dialog2.helpers.confirm("Поместить в архив? Выбранный аккаунт(-ы) будет помещён в архив и не будут отображаться.", {
+                    confirm: function() {
+                        $.getJSON(a.attr('href'),arr,function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('Произошла непредвиденная ошибка')
+                            }
+
+                        })                      
+                        }, 
+                    decline: function() {  }
+                });
+
+                event.preventDefault();
+            });
+            
             $('#tab-control a[href="#filter"]').tab('show');
             {% if table %}
             $('#tab-control a[href="#result"]').tab('show');
@@ -160,7 +265,20 @@
                             {% endif %}
                             </div>
                         </div>
-                        
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">{{form.systemuser.label}}</label>
+                            <div class="controls">
+                             {{ form.systemuser }}
+                            {% if form.systemuser.errors %}
+                                <span class="help-inline">{% for error in form.systemuser.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.systemuser.help_text%}
+                                <p class="help-block">
+                                    {{ form.systemuser.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
                     </div>
                     <div class="control-group">
                         <div class="control-row">
@@ -624,29 +742,26 @@
   <div class="tab-pane {% if table %}active{% endif %}" id="result">
           <div class="btn-toolbar">
                 <div class="btn-group">
-                <a class="btn dropdown-toggle btn-primary " data-toggle="dropdown" href="#">
+                <a class="btn dropdown-toggle btn-info " data-toggle="dropdown" href="#">
 				    <i class="icon-pause icon-white"></i> Изменить статус
 				    <span class="caret"></span>
 				  </a>
 				  <ul class="dropdown-menu">
-				    <li><a href="#">Активен</a></li>
-				    <li><a href="#">Не активен</a></li>
+				    <li><a href="{% url account_management_status %}?status=1" class='management'>Активен</a></li>
+				    <li><a href="{% url account_management_status %}?status=3" class='management'>Не активен</a></li>
 				  </ul>
 				  </div>
 				<div class="btn-group">
-                    <a href="#" class=" btn btn-success"><i class=' icon-share icon-white'></i> Изменить ТП</a>
-                </div>
-                <div class="btn-group">
-                    <a href="#" class=" btn btn-warning"><i class=' icon-plus icon-white'></i> Пополнить баланс</a>
+                    <a href="{% url account_management_accounttariff %}" id="modal-accounttariff-dialog-table" class=" btn btn-success"><i class=' icon-share icon-white'></i> Изменить ТП</a>
                 </div>
                 <div class="btn-group">
                 <button class=" btn btn-primary"><i class=' icon-print icon-white'></i> Отчёт</button>
                 </div>
                 <div class="btn-group">
-                <button class=" btn btn-danger"><i class=' icon-trash icon-white'></i> В архив</button>
+                <a class=" btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> В архив</a>
                 </div>
                 <div class="btn-group">
-                <button class=" btn btn-danger"><i class=' icon-calendar icon-white'></i> Период без ПУ</button>
+                <a href="{% url account_management_suspendedperiod %}"  id="modal-suspendedperiod-dialog-table" class="btn btn-danger"><i class=' icon-calendar icon-white'></i> Период без ПУ</a>
                 </div>
                 <div class="btn-group">
 
@@ -661,6 +776,7 @@
                     <li><a href="#">Отключить на NAS</a></li>
                   </ul>
                   </div>
+                  <hr />
 
                 
                 

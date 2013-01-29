@@ -1,7 +1,6 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -14,10 +13,10 @@ from billservice.models import PeriodicalServiceLog
 from django.contrib import messages
 
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/periodicalservicelog_list.html')
 def periodicalservicelog(request):
         
@@ -67,7 +66,7 @@ def periodicalservicelog(request):
         return { 'form':form}   
 
 @ajax_request
-@login_required
+@systemuser_required
 def periodicalservicelog_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_periodicalservicelog')):
         return {'status':False, 'message': u'У вас нет прав на удаление истории списаний по период. услугам'}

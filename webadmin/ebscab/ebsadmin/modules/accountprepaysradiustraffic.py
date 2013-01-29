@@ -1,7 +1,6 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -13,10 +12,10 @@ from billservice.forms import AccountPrepaysRadiusTraficSearchForm, AccountPrepa
 from billservice.models import AccountPrepaysRadiusTrafic
 from django.contrib import messages
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/accountprepaysradiustraffic_list.html')
 def accountprepaysradiustraffic(request):
         
@@ -72,7 +71,7 @@ def accountprepaysradiustraffic(request):
         form = AccountPrepaysRadiusTraficSearchForm()
         return { 'form':form}   
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/accountprepaysradiustraffic_edit.html')
 def accountprepaysradiustraffic_edit(request):
     id = request.POST.get("id")
@@ -120,7 +119,7 @@ def accountprepaysradiustraffic_edit(request):
     return { 'form':form, 'status': False} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def accountprepaysradiustraffic_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_accountprepaysradiustrafic')):
         return {'status':False, 'message': u'У вас нет прав на удаление предоплаченного NetFlow трафика'}

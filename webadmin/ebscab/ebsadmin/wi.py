@@ -10,7 +10,7 @@ from django.db import connection
 
 from billservice.forms import TransactionReportForm, SearchAuthLogForm
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from tables import TemplateTable, TicketTable, AccountAddonServiceTable, IPInUseTable,  LogTable, BallanceHistoryTable, SubAccountsTable, AccountHardwareTable, SuspendedPeriodTable, AccountTarifTable, TotalTransactionReportTable, AccountsReportTable, AuthLogTable, ActiveSessionTable, NasTable
 from django.http import HttpResponseRedirect
@@ -45,7 +45,7 @@ from django.db.models import Sum
 from django.contrib import messages
 from django.contrib.auth.models import User
 log = LogItem.objects.log_action
-
+from billservice.helpers import systemuser_required
 BAD_REQUEST = u"Ошибка передачи параметров"
 
 def compare(old, new):
@@ -110,7 +110,7 @@ def gettransactiontypes(current=[]):
         res = json.dumps({'title': u'Все', 'key':'all', 'children': res, 'isFolder':True, 'select': True}, ensure_ascii=False)
         return res
             
-@login_required
+@systemuser_required
 @render_to('ebsadmin/transactionreport_list.html')
 def transactionreport2(request):
     if  not (request.user.account.has_perm('billservice.view_transaction')):
@@ -269,7 +269,7 @@ def transactionreport2(request):
         return { 'form':form, 'ojax': res}   
     
         
-@login_required
+@systemuser_required
 @render_to('ebsadmin/accounts_list.html')
 def accountsreport(request):
         
@@ -319,7 +319,7 @@ def accountsreport(request):
             
             if type(created)==tuple:
                 date_start, date_end = created
-            systemusers = form.cleaned_data.get('systemuser')
+            systemuser = form.cleaned_data.get('systemuser')
 
             if deleted:
                 res = Account.objects.all_with_deleted()
@@ -346,6 +346,8 @@ def accountsreport(request):
                 
             if contactperson_text:
                 res = res.filter(contactperson__icontains=contactperson_text)
+            if systemuser:
+                res = res.filter(systemuser=systemuser)
             
             if date_start:
                 res = res.filter(created__gte=date_start)
@@ -428,7 +430,7 @@ def accountsreport(request):
         form = SearchAccountForm()
         return { 'form':form}   
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/authlog_list.html')
 def authlogreport(request):
         
@@ -476,7 +478,7 @@ def authlogreport(request):
         form = SearchAuthLogForm()
         return { 'form':form}   
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/ipinuse_list.html')
 def ipinusereport(request):
         
@@ -546,7 +548,7 @@ def ipinusereport(request):
         form = IpInUseLogForm()
         return { 'form':form}   
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/ballancehistory_list.html')
 def ballancehistoryreport(request):
         
@@ -591,7 +593,7 @@ def ballancehistoryreport(request):
         form = BallanceHistoryForm()
         return { 'form':form}  
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/account_edit.html')
 def accountedit(request):
     
@@ -770,13 +772,13 @@ def accountedit(request):
             bank_form = BankDataForm(prefix='org')
             form = AccountForm(instance=account)
     else:
-        form = AccountForm(initial={'datetime': datetime.datetime.now()})
+        form = AccountForm(initial={'created': datetime.datetime.now()})
         org_form = OrganizationForm(prefix='org')
         bank_form = BankDataForm(prefix='org')
     return { 'form':form, 'org_form':org_form, 'bank_form': bank_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 
             'ticket_table': ticket_table} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/subaccount_edit.html')
 def subaccountedit(request):
     
@@ -992,54 +994,9 @@ def subaccountedit(request):
             form = SubAccountForm(initial={'account':account,})
         return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form} 
     
-@login_required
-@render_to('ebsadmin/accounttarif_edit.html')
-def accounttarif_edit(request):
 
-    account = None
-    account_id = request.GET.get("account_id")
-    id = request.POST.get("id")
-    
-    if request.method == 'POST': 
 
-        form = AccountTariffForm(request.POST) 
-        if id:
-            if  not (request.user.account.has_perm('billservice.change_accounttarif')):
-                messages.error(request, u'У вас нет прав на изменение тарифных планов у аккаунта', extra_tags='alert-danger')
-                return {}
-            
-        else:
-            if  not (request.user.account.has_perm('billservice.add_accounttarif')):
-                messages.error(request, u'У вас нет прав на создание тарифных планов у аккаунта', extra_tags='alert-danger')
-                return {}
-        
-        
-        if form.is_valid(): 
-            model = form.save(commit=False)
-            model.save()
-            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            return {'form':form,  'status': True} 
-        else:
-
-            return {'form':form,  'status': False} 
-    else:
-        id = request.GET.get("id")
-        if  not (request.user.account.has_perm('billservice.accounttarif_view')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
-            return {}
-
-        if id:
-            
-            accounttariff = AccountTarif.objects.get(id=id)
-            form = AccountTariffForm(instance=accounttariff)
-        elif account_id:
-            
-            account= Account.objects.get(id=account_id)
-        form = AccountTariffForm(initial={'account': account.id, 'datetime': datetime.datetime.now()}) # An unbound form
-
-    return { 'form':form, 'status': False, 'account':account} 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/accounthardware_edit.html')
 def accounthardware(request):
     
@@ -1086,7 +1043,7 @@ def accounthardware(request):
 
     return { 'form':form, 'status': False, 'account':account} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/suspendedperiod_edit.html')
 def suspendedperiod(request):
     
@@ -1132,7 +1089,7 @@ def suspendedperiod(request):
 
     return { 'form':form, 'status': False, 'account':account} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/transaction_edit.html')
 def transaction(request):
     
@@ -1182,7 +1139,7 @@ def transaction(request):
     return { 'form':form, 'status': False, 'account':account, 'promise_type': promise_type} 
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/accountaddonservice_edit.html')
 def accountaddonservice_edit(request):
     
@@ -1238,7 +1195,7 @@ def accountaddonservice_edit(request):
 
     return { 'form':form, 'status': False, 'account':account, "accountaddonservice":accountaddonservice} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/templateselect_window.html')
 def templateselect(request):
     if  not (request.user.account.has_perm('billservice.view_template')):
@@ -1252,11 +1209,12 @@ def templateselect(request):
 
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/activesession_list.html')
 def activesessionreport(request):
     if  not (request.user.account.has_perm('radius.view_activesession')):
-        return {'status': False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
     if request.GET:
         form = SessionFilterForm(request.GET)
         if form.is_valid():
@@ -1299,11 +1257,13 @@ def activesessionreport(request):
         return {"table": table, 'form':form, "table": table,} 
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/template_list.html')
 def template(request):
     if  not (request.user.account.has_perm('billservice.view_template')):
-        return {'status':False}
+        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        return HttpResponseRedirect('/ebsadmin/')
+    
     res = Template.objects.all()
     table = TemplateTable(res)
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
@@ -1311,7 +1271,7 @@ def template(request):
         return create_report_http_response(table_to_report, request)
     return {"table": table} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/template_edit.html')
 def template_edit(request):
 
@@ -1330,10 +1290,13 @@ def template_edit(request):
             form = TemplateForm(request.POST)
         if id:
             if  not (request.user.account.has_perm('billservice.change_template')):
-                return {'status':False, 'message': u'У вас нет прав на редактирование iшаблонов документов'}
+                messages.error(request, u'У вас нет прав на редактирование iшаблонов документов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
             
-        if  not (request.user.account.has_perm('billservice.add_template')):
-            return {'status':False, 'message': u'У вас нет прав на добавление шаблонов документов'}
+        else:
+            if  not (request.user.account.has_perm('billservice.add_template')):
+                messages.error(request, u'У вас нет прав на создание iшаблонов документов', extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
 
         
         if form.is_valid():
@@ -1347,7 +1310,8 @@ def template_edit(request):
             return { 'form':form, 'template': item} 
     else:
         if  not (request.user.account.has_perm('billservice.view_template')):
-            return {'status':False}
+            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            return HttpResponseRedirect('/ebsadmin/')
         if item:
             form = TemplateForm(instance=item)
         else:
@@ -1357,7 +1321,7 @@ def template_edit(request):
     return { 'form':form, 'template': item} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def subaccount_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_subaccount')):
         return {'status':True, 'message': u'У вас нет прав на удаление субаккаунта'}
@@ -1385,7 +1349,7 @@ def subaccount_delete(request):
         return {"status": False, "message": "SubAccount not found"}
     
 @ajax_request
-@login_required
+@systemuser_required
 def accounttariff_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_accounttarif')):
         return {'status':False, 'message': u'У вас нет прав на удаление связки тарифа'}
@@ -1406,7 +1370,7 @@ def accounttariff_delete(request):
         return {"status": False, "message": "AccountTarif not found"}
     
 @ajax_request
-@login_required
+@systemuser_required
 def accounthardware_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_accounthardware')):
         return {'status':False, 'message':u'У вас нет прав на удаление оборудования аккаунта'}
@@ -1420,7 +1384,7 @@ def accounthardware_delete(request):
         return {"status": False, "message": "AccountHardware not found"}
 
 @ajax_request
-@login_required
+@systemuser_required
 def suspendedperiod_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_suspendedperiod')):
         return {'status':False, 'message': u'У вас нет прав на удаление периода простоя'}
@@ -1437,10 +1401,10 @@ def suspendedperiod_delete(request):
         return {"status": False, "message": "SuspendedPeriod not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def template_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_template')):
-        return {'status':False, 'message': u'У вас нет прав на шаблонов'}
+        return {'status':False, 'message': u'У вас нет прав на удаление шаблонов'}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
@@ -1452,4 +1416,6 @@ def template_delete(request):
         return {"status": True}
     else:
         return {"status": False, "message": "Template not found"} 
+    
+
     

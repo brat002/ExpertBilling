@@ -1,7 +1,6 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to
-from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -10,11 +9,11 @@ from object_log.models import LogItem
 from django.contrib import messages
 
 from billservice.models import Account
-
+from billservice.helpers import systemuser_required
 log = LogItem.objects.log_action
 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/admin_dashboard.html')
 def admin_dashboard(request):
  

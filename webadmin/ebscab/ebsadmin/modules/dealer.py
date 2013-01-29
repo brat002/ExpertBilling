@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -14,8 +14,9 @@ from ebscab.billservice.forms import DealerForm, BankDataForm, DealerSelectForm
 from ebscab.billservice.models import Dealer
 from django.contrib import messages
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/dealer_list.html')
 def dealer(request):
     if  not (request.user.account.has_perm('billservice.view_dealer')):
@@ -31,7 +32,7 @@ def dealer(request):
             
     return {"table": table} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/dealer_edit.html')
 def dealer_edit(request):
 
@@ -85,7 +86,7 @@ def dealer_edit(request):
    
     return { 'form':form, 'bank_form': bank_form,  'item': item} 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/dealerselect_window.html')
 def dealer_select(request):
     if  not (request.user.account.has_perm('billservice.view_dealer')):
@@ -96,7 +97,7 @@ def dealer_select(request):
     return { 'form':form} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def dealer_delete(request):
     if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_nas')):
         return {'status':False, 'message': u'У вас нет прав на удаление серверов доступа'}

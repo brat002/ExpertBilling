@@ -230,7 +230,11 @@
 {% block body %}
 <div class="row-fluid">
 {% if message %}<div class="alert alert-error">{{message}}<a class="close" data-dismiss="alert" href="#">&times;</a></div>{% endif %}
-
+<ul class="breadcrumb">
+  <li>
+    Аккаунты: <a href="{% url account_edit%}?id={{subaccount.account.id}}">{{subaccount.account.username}}</a> <span class="divider">/</span>Субаккаунт: {{subaccount.username|default:subaccount.id}}
+  </li>
+</ul>
 
 
 <form method="POST" action="{% url subaccount %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal form-condensed">
