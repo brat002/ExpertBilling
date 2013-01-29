@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -15,10 +15,10 @@ from billservice.models import Manufacturer
 from django.contrib import messages
 from django.contrib import messages
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/manufacturer_list.html')
 def manufacturer(request):
     if  not (request.user.account.has_perm('billservice.view_manufacturer')):
@@ -33,7 +33,7 @@ def manufacturer(request):
             
     return {"table": table} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/manufacturer_edit.html')
 def manufacturer_edit(request):
     id = request.POST.get("id")
@@ -83,7 +83,7 @@ def manufacturer_edit(request):
     return { 'form':form, 'status': False} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def manufacturer_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_manufacturer')):
         return {'status':False, 'message': u'У вас нет прав на удаление производителей оборудования'}

@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+from billservice.helpers import systemuser_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -20,7 +20,7 @@ log = LogItem.objects.log_action
 
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/timeperiod_list.html')
 def timeperiod(request):
     if  not (request.user.account.has_perm('billservice.view_timeperiod')):
@@ -41,7 +41,7 @@ def timeperiod(request):
     return {"ojax": ojax, 'form':form} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def timeperiod_edit(request):
     
     key = request.GET.get('key','')
@@ -73,7 +73,7 @@ def timeperiod_edit(request):
  
     return res
 
-@login_required
+@systemuser_required
 @ajax_request
 def timeperiodnode_edit(request):
 
@@ -134,7 +134,7 @@ def timeperiodnode_edit(request):
 
 
 @ajax_request
-@login_required
+@systemuser_required
 def timeperiod_delete(request):
 
     key = request.GET.get('key','')

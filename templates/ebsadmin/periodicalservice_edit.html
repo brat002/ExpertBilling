@@ -15,7 +15,7 @@
  });
  </script>
 
-
+{% if form %}
             <form method="POST" action="{% url tariff_periodicalservice_edit %}?id={{item.id}}" class="well form-horizontal form-condensed ajax">
                 {{form.tarif}}
                 {{form.id}}
@@ -138,7 +138,7 @@
                     <a class="btn close-dialog" href="#">Close</a>
                 </div>
             </form>
-
+{% endif %}
 {% else %}
 Операция произведена успешно.
  <script type="text/javascript"> 

@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -14,10 +14,10 @@ from billservice.forms import SwitchForm
 from billservice.models import Switch
 from django.contrib import messages
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/switch_list.html')
 def switch(request):
     if  not (request.user.account.has_perm('billservice.view_switch')):
@@ -32,7 +32,7 @@ def switch(request):
             
     return {"table": table} 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/switch_edit.html')
 def switch_edit(request):
     id = request.POST.get("id")
@@ -99,7 +99,7 @@ def switch_edit(request):
     return { 'form':form,'ports_table': ports_table, 'status': False, 'item':item} 
 
 @ajax_request
-@login_required
+@systemuser_required
 def switch_port_status(request):
     if  not (request.user.account.has_perm('billservice.change_switch')):
         return {'status':False, 'message': u'У вас нет прав на редактирование коммутатора'}
@@ -167,7 +167,7 @@ def switch_port_status(request):
         return {"status": False, "message": "Switch not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def switch_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_switch')):
         return {'status':False, 'message': u'У вас нет прав на удаление коммутатора'}

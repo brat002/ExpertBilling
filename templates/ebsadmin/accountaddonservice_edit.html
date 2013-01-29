@@ -7,7 +7,15 @@
      $(".timepicker").mask("99:99:99");
  });
  </script>
+     {% for message in messages %}
 
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+{% if form %}
 
             <form method="POST" action="{% url accountaddonservice %}?id={{accountaddonservice.id}}" class="well form-horizontal  form-condensed  ajax">
                 <fieldset>
@@ -113,7 +121,7 @@
                     <a class="btn close-dialog" href="#">Закрыть</a>
                 </div>
             </form>
-
+{% endform %}
 {% else %}
 Операция произведена успешно.
  <script type="text/javascript"> 

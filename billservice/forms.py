@@ -197,7 +197,7 @@ class SearchAccountForm(forms.Form):
     limit_blocked = forms.ChoiceField(label=u'Блокировка по лимитам', required=False, choices = (('yes', u"Да", ), ('no', u'Нет'), ('undefined', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
     nas = forms.ModelMultipleChoiceField(label=u"Сервер доступа субаккаунта", queryset=Nas.objects.all(), required=False)
     deleted = forms.BooleanField(label=u"В архиве", widget = forms.widgets.CheckboxInput, required=False)
-    systemuser_filter = forms.MultipleChoiceField(required=False)
+    systemuser = forms.ModelChoiceField(queryset=SystemUser.objects.all(),label=u'Менеджер',  required=False)
     elevator_direction = forms.CharField(required=False, label=u'Направление от лифта')
     created = DateRangeField(required=False, label=u"Создан")
 
@@ -281,6 +281,13 @@ class SuspendedPeriodModelForm(ModelForm):
         model = SuspendedPeriod
         exclude = ('activated_by_account',)
 
+class SuspendedPeriodBatchForm(forms.Form):
+    accounts = forms.ModelMultipleChoiceField(queryset=Account.objects.all(), widget = forms.widgets.MultipleHiddenInput)
+    start_date = forms.DateTimeField(widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    end_date = forms.DateTimeField(widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+
+
+
 class TransactionModelForm(ModelForm):
     #created = forms.DateTimeField(required=True)
     account = forms.ModelChoiceField(queryset=Account.objects.all(), widget = forms.HiddenInput)
@@ -317,6 +324,15 @@ class AccountTariffForm(ModelForm):
     class Meta:
         model = AccountTarif
     
+class BatchAccountTariffForm(forms.Form):
+    accounts = forms.ModelMultipleChoiceField(queryset=Account.objects.all(), widget = forms.widgets.MultipleHiddenInput)
+    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all())
+    datetime = forms.DateTimeField(widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    
+
+        
+
+
 class SettlementPeriodForm(ModelForm):
     time_start = forms.DateTimeField(label=u'Начало периода', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
     class Meta:
@@ -390,6 +406,7 @@ class AccessParametersForm(ModelForm):
         model = AccessParameters
         
 class GroupForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = Group
 
@@ -999,6 +1016,7 @@ class AccountPrepaysTimeSearchForm(forms.Form):
     daterange = DateRangeField(label=u'Диапазон', required=False )
     current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
     
-        
-        
-        
+class AccountManagementForm(forms.Form):
+    accounts = forms.ModelMultipleChoiceField(queryset = Account.objects.all())
+
+    

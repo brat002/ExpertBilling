@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -15,10 +15,10 @@ from billservice.models import RadiusAttrs, Tariff
 from ebscab.nas.models import Nas 
 from django.contrib import messages
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/radiusattr_list.html')
 def radiusattr(request):
     if  not (request.user.account.has_perm('billservice.view_radiusattrs')):
@@ -45,7 +45,7 @@ def radiusattr(request):
             
     return {"table": table, 'nas':nas, 'tariff':tariff,  'model_name': nas.__class__.__name__ if nas else tariff.__class__.__name__ if tariff else '' } 
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/radiusattr_edit.html')
 def radiusattr_edit(request):
     
@@ -103,7 +103,7 @@ def radiusattr_edit(request):
 
 
 @ajax_request
-@login_required
+@systemuser_required
 def radiusattr_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_radiusattrs')):
         return {'status':False, 'message': u'У вас нет прав на удаление радиус атрибутов'}

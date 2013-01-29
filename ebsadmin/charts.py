@@ -2,7 +2,7 @@
 from billservice.models import BalanceHistory
 from django.shortcuts import render_to_response, HttpResponseRedirect
 import datetime
-from django.contrib.auth.decorators import login_required
+from billservice.helpers import systemuser_required
 from ebsadmin.forms import ReportForm
 from billservice import authenticate, log_in
 from forms import chartdata
@@ -50,7 +50,7 @@ from django.contrib import messages
 7. История изменения баланса у аккаунта(-ов
 
 """
-
+@systemuser_required
 def charts(request):
 
     if  not (request.user.account.has_perm('billservice.view_charts')):

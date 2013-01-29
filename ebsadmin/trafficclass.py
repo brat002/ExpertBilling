@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+from billservice.helpers import systemuser_required
 from django.core.urlresolvers import reverse
 from django.db.models import F, Max
 from django.http import HttpResponseRedirect
@@ -19,7 +19,7 @@ log = LogItem.objects.log_action
 
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/trafficclass_list.html')
 def trafficclass(request):
     if  not (request.user.account.has_perm('nas.view_trafficclass')):
@@ -35,14 +35,14 @@ def trafficclass(request):
     
     
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/trafficclass_upload.html')
 def trafficclass_upload(request):
     form = TrafficNodesUploadForm()
     return {"form":form} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def trafficclass_weight(request):
     if  not (request.user.account.has_perm('nas.change_trafficclass')):
         return {'status':False, 'message': u'У вас нет прав на изменение классов'}
@@ -58,7 +58,7 @@ def trafficclass_weight(request):
         k+=1
     return {'status':True}
     
-@login_required
+@systemuser_required
 @render_to('ebsadmin/trafficnode_list.html')
 def trafficnode_list(request):
     if  not (request.user.account.has_perm('nas.view_trafficnode')):
@@ -74,7 +74,7 @@ def trafficnode_list(request):
     
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/trafficclass_edit.html')
 def trafficclass_edit(request):
     id = request.GET.get("id")
@@ -120,7 +120,7 @@ def trafficclass_edit(request):
     return { 'form':form, 'status': False, 'item': item} 
 
 
-@login_required
+@systemuser_required
 @render_to('ebsadmin/trafficnode_edit.html')
 def trafficnode(request):
 
@@ -172,7 +172,7 @@ def trafficnode(request):
 
 
 @ajax_request
-@login_required
+@systemuser_required
 def trafficnode_delete(request):
     if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_trafficnode')):
         return {'status':False, 'message': u'У вас нет прав на удаление направлений'}
@@ -190,7 +190,7 @@ def trafficnode_delete(request):
         return {"status": False, "message": "TrafficNode not found"} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def trafficclass_delete(request):
     if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_trafficclass')):
         return {'status':False, 'message': u'У вас нет прав на удаление классов трафика'}

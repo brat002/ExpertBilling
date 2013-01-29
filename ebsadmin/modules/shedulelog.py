@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
@@ -13,10 +13,10 @@ from billservice.forms import SheduleLogSearchForm
 from billservice.models import SheduleLog
 from django.contrib import messages
 log = LogItem.objects.log_action
+from billservice.helpers import systemuser_required
 
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/shedulelog_list.html')
 def shedulelog(request):
     if  not (request.user.account.has_perm('billservice.view_shedulelog')):

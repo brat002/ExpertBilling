@@ -28,7 +28,7 @@ $(document).ready(function() {
 
       {% endfor %}
            
-            
+{% if form %}
                 <form action='{% url transaction_edit %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
                 <fieldset>
                 {{ form.account }}
@@ -131,6 +131,7 @@ $(document).ready(function() {
      
  });
  </script>
+ {% endif %}
 {% else %}
  <script type="text/javascript"> 
  $(document).ready(function() {

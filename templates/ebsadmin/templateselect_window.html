@@ -9,6 +9,7 @@
           </div>
 
       {% endfor %}
+{% if form %}
  <script type="text/javascript"> 
  $(document).ready(function() {
  
@@ -40,7 +41,7 @@
                     <a class="btn close-dialog" href="#">Закрыть</a>
                 </div>
             </form>
-
+{% endif %}
 {% else %}
 Операция произведена успешно.
  <script type="text/javascript"> 

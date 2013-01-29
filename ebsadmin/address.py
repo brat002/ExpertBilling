@@ -1,7 +1,7 @@
 # -*-coding: utf-8 -*-
 
 from ebscab.lib.decorators import render_to, ajax_request
-from django.contrib.auth.decorators import login_required
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from object_log.models import LogItem
@@ -14,9 +14,9 @@ import simplejson as json
 
 log = LogItem.objects.log_action
 from django.contrib import messages
+from billservice.helpers import systemuser_required
 
-
-@login_required
+@systemuser_required
 @render_to('ebsadmin/address_list.html')
 def address(request):
     if  not (request.user.account.has_perm('billservice.view_address')):
@@ -37,7 +37,7 @@ def address(request):
     return {"ojax": ojax} 
     
 @ajax_request
-@login_required
+@systemuser_required
 def city_edit(request):
     
     key = request.GET.get('key','')
@@ -70,7 +70,7 @@ def city_edit(request):
     return res
 
 @ajax_request
-@login_required
+@systemuser_required
 def street_edit(request):
     
     key = request.GET.get('key','')
@@ -110,7 +110,7 @@ def street_edit(request):
 
     
 @ajax_request
-@login_required
+@systemuser_required
 def house_edit(request):
     
     key = request.GET.get('key','')
@@ -149,7 +149,7 @@ def house_edit(request):
     return res
 
 @ajax_request
-@login_required
+@systemuser_required
 def address_delete(request):
 
     key = request.GET.get('key','')
