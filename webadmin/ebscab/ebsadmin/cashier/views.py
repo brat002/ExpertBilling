@@ -9,7 +9,7 @@ from django_tables2_reports.utils import create_report_http_response
 from object_log.models import LogItem
 
 from ebsadmin.tables import AccountsCashierReportTable
-from billservice.forms import SheduleLogSearchForm
+from billservice.forms import CashierAccountForm
 from billservice.models import Account
 
 log = LogItem.objects.log_action
@@ -27,7 +27,7 @@ def index(request):
         data = request.GET
 
         #pageitems = 100
-        form = SheduleLogSearchForm(data)
+        form = CashierAccountForm(data)
         if form.is_valid():
             
             account = form.cleaned_data.get('account')
@@ -56,6 +56,6 @@ def index(request):
         res = Account.objects.filter(status=1)
         table = AccountsCashierReportTable(res)
         table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
-        form = SheduleLogSearchForm()
+        form = CashierAccountForm()
         return { 'form':form, 'table': table}   
 

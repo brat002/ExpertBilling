@@ -50,7 +50,18 @@ class YesNoColumn(django_tables.Column):
         return mark_safe('<img src="/media/icons/16/%s.png" />'
                          % ('accept' and True or 'cross'))
 
-
+class RadioColumn(django_tables.Column):
+    def render(self, value, bound_column):
+        default = {
+            'type': 'radio',
+            'name': bound_column.name,
+            'value': value
+        }
+        general = self.attrs.get('input')
+        specific = self.attrs.get('td__input')
+        attrs = django_tables.utils.AttributeDict(default, **(specific or general or {}))
+        return mark_safe(u'<input %s/>' % attrs.as_html())
+    
 class SubAccountsTable(django_tables.Table):
     id = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
     username = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
@@ -173,15 +184,18 @@ class AccountsReportTable(TableReport):
         attrs = {'class': 'table table-bordered table-condensed'}
         
 class AccountsCashierReportTable(TableReport):
+    d = RadioColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
     row_number = django_tables.Column(verbose_name=u'#', empty_values=())
     #id = FormatBlankColumn()
-    username = django_tables.LinkColumn('account_edit', verbose_name=u'Имя', get_params={'id':A('pk')})
+    username = django_tables.Column(verbose_name=u'Имя')
     contract = FormatBlankColumn(verbose_name=u'Договор')
     fullname = FormatBlankColumn()
     address = django_tables.TemplateColumn(u"{{record.street|default:''}} {{record.house|default:''}}-{{record.room|default:''}}")
     entrance = django_tables.Column(verbose_name=u'Подъезд')
     row = django_tables.Column(verbose_name=u'Этаж')
     ballance = FormatFloatColumn()
+    
+    
 
 
     def __init__(self, *args, **kwargs):

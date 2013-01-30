@@ -27,12 +27,25 @@
 
                 event.preventDefault();
             });
-            $("#id_main_table").selectable({filter:'tbody tr'});
+            //$("#id_main_table").selectable({filter:'tbody tr'});
+            $("#id_main_table tbody").css('cursor', 'pointer');
+            $("#id_main_table tbody tr").click(function(){
+            	
+                $(this).find('input').attr('checked', true);
+                $("#id_main_table tbody tr").attr('class', '');
+                $(this).closest('tr').attr('class', 'ui-selected');
+                //$(this).find('input').cl4ck();
+                //$(this).closest('tr').attr('class', 'ui-selected');
+            })
+            $("#id_main_table tbody input[type=radio]").click(function(){
+            	$("#id_main_table tbody tr").attr('class', '');
+            	$(this).closest('tr').attr('class', 'ui-selected');
+            })
         });
         </script>
 <style type="text/css">
-.ui-selecting, .ui-selected { background: lightBlue }  
-#plate { background-color:#505050; height:100px;width:200px;color:white; }
+.ui-selecting, .ui-selected { background: #88BCFF }  
+.plate { background-color:#505050; height:100px;width:200px;color:white; }
 
 </style>
 

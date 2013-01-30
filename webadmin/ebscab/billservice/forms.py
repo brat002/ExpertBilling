@@ -201,6 +201,21 @@ class SearchAccountForm(forms.Form):
     elevator_direction = forms.CharField(required=False, label=u'Направление от лифта')
     created = DateRangeField(required=False, label=u"Создан")
 
+class CashierAccountForm(forms.Form):
+    account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
+
+    contract = AutoCompleteSelectMultipleField( 'account_contract', label=u'Договор', required = False)
+    username = AutoCompleteSelectMultipleField( 'account_username', required = False, label=u"Имя аккаунта")
+    fullname = AutoCompleteSelectMultipleField( 'account_fullname', required = False, label=u"ФИО")
+
+    city = forms.ModelChoiceField(queryset=City.objects.all(), required=False,  label= u"Город")
+    street = forms.CharField(label =u"Улица", required=False, widget = forms.TextInput(attrs={'class': 'input-large', 'placeholder': u'Улица'}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
+    house = forms.CharField(label =u"Дом", required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
+    house_bulk = forms.CharField(label =u"Подъезд", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    room = forms.CharField(label =u"Квартира", required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Кв'}))
+    phone = forms.CharField(label=u"Телефон", required = False)
+
+    
 class AccountAddonForm(forms.Form):
     account = forms.IntegerField(required=False)
     subaccount = forms.IntegerField(required=False)    
