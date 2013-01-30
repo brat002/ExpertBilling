@@ -830,8 +830,8 @@ class Account(models.Model):
            ("get_tariff", u"Получить тариф для аккаунта"),
            ("cashier_view", u"Список аккаунтов для кассира")
             )
-        
-    def _ips(self):
+    @property
+    def ips(self):
         vpn_ips=[]
         ipn_ips=[]
         macs = []
@@ -840,10 +840,11 @@ class Account(models.Model):
             if sa.vpn_ip_address:
                 vpn_ips.append(sa.vpn_ip_address)  
             if sa.ipn_ip_address:
-                ipn_ips.append(sa.ipn_ip_address)  
+                ipn_ips.append(str(sa.ipn_ip_address))  
             if sa.ipn_mac_address:
-                macs.append(sa.ipn_mac_address)  
-        return ', '.join(vpn_ips), ', '.join(ipn_ips), ', '.join(macs), 
+                macs.append(sa.ipn_mac_address)
+        
+        return '%s %s %s' % ( ', '.join(vpn_ips), ', '.join(ipn_ips), ', '.join(macs),) 
     
     @models.permalink
     def change_password_url_ajax(self):
@@ -968,7 +969,7 @@ class Transaction(models.Model):
 class AccountTarif(models.Model):
     account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, related_name='related_accounttarif')
     tarif     = models.ForeignKey(to=Tariff, verbose_name=u'Тарифный план', related_name="account_tarif")
-    datetime  = models.DateTimeField(default='', blank=True)
+    datetime  = models.DateTimeField(verbose_name=u'C даты', default='', blank=True)
     periodical_billed = models.BooleanField(blank=True)
 
     class Admin:
