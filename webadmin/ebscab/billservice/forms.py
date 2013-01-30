@@ -333,7 +333,7 @@ class TransactionModelForm(ModelForm):
         exclude = ('systemuser', 'accounttarif', 'approved', 'tarif', 'promise_expired')
         
 class AccountTariffForm(ModelForm):
-    account = forms.ModelChoiceField(queryset=Account.objects.all(), widget = forms.TextInput(attrs={'readonly':'readonly'}))
+    account = forms.ModelChoiceField(label=u'Аккаунт', queryset=Account.objects.all(), widget = forms.TextInput(attrs={'readonly':'readonly'}))
     
     def __init__(self, *args, **kwargs):
         super(AccountTariffForm, self).__init__(*args, **kwargs)
@@ -345,8 +345,8 @@ class AccountTariffForm(ModelForm):
     
 class BatchAccountTariffForm(forms.Form):
     accounts = forms.ModelMultipleChoiceField(queryset=Account.objects.all(), widget = forms.widgets.MultipleHiddenInput)
-    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all())
-    datetime = forms.DateTimeField(widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    tariff = forms.ModelChoiceField(label=u'Тариф', queryset=Tariff.objects.all())
+    datetime = forms.DateTimeField(label=u'С даты', widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
     
 
         
