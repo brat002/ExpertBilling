@@ -7,7 +7,7 @@ DROP INDEX IF EXISTS billservice_timetransaction_account_id;
 DROP INDEX IF EXISTS billservice_timetransaction_traffictransmitservice_id_account_i;
 ALTER TABLE radius_activesession DROP CONSTRAINT IF EXISTS  radius_activesession_pkey;
 DROP INDEX IF EXISTS radius_activesession_account_id;
-ALTER TABLE billservice_transaction DROP CONSTRAINT IF EXISTS billservice_transaction_pkey;
+ALTER TABLE billservice_transaction DROP CONSTRAINT IF EXISTS billservice_transaction_pkey CASCADE; 
 DROP INDEX IF EXISTS billservice_transaction_account_id;
 DROP INDEX IF EXISTS billservice_transaction_tarif_id;
 DROP INDEX IF EXISTS fki_billservice_systemuser_fkey;
