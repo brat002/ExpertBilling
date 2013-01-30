@@ -8,9 +8,9 @@ from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 from object_log.models import LogItem
 
-from ebsadmin.tables import AccountsCashierReportTable
+from ebsadmin.tables import AccountsCashierReportTable, CashierReportTable
 from billservice.forms import CashierAccountForm
-from billservice.models import Account
+from billservice.models import Account, Transaction
 
 log = LogItem.objects.log_action
 
@@ -30,17 +30,34 @@ def index(request):
         form = CashierAccountForm(data)
         if form.is_valid():
             
-            account = form.cleaned_data.get('account')
-
-
-            
-            
-            
             res = Account.objects.all()
-            if account:
-                res = res.filter(accounttarif__account__id__in=account)
+            
+            contract = form.cleaned_data.get('contract')
+            username = form.cleaned_data.get('username')
+            fullname = form.cleaned_data.get('fullname')
+            city = form.cleaned_data.get('city')
+            street = form.cleaned_data.get('street')
+            house = form.cleaned_data.get('house')
+            
+            
+            if contract:
+                res = res.filter(contract__icontains=contract)
 
-  
+            if username:
+                res = res.filter(username__icontains=username)
+
+            if fullname:
+                res = res.filter(fullname__icontains=fullname)
+    
+            if city:
+                res = res.filter(city=city)        
+                
+            if street:
+                res = res.filter(street__icontains=street)
+
+            if house:
+                res = res.filter(house__icontains=house)
+                
 
             
             table = AccountsCashierReportTable(res)
@@ -58,4 +75,24 @@ def index(request):
         table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
         form = CashierAccountForm()
         return { 'form':form, 'table': table}   
+
+
+@systemuser_required
+@render_to('cassa/transactionreport.html')
+def transactionreport(request):
+        
+    if  not (request.user.account.has_perm('billservice.view_transaction')):
+        return {'status':False}
+
+    res = Transaction.objects.filter(systemuser=request.user.account).order_by('-created')
+
+            
+    table = CashierReportTable(res)
+    table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+    if table_to_report:
+        return create_report_http_response(table_to_report, request)
+    
+    return {"table": table, }   
+    
+  
 

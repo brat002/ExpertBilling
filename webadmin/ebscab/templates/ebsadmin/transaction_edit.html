@@ -14,6 +14,10 @@ $(document).ready(function() {
     }
     $('#id_type').change(a);
     a();
+    $("#transaction-close-button").live('click', function(){
+    	location.reload();
+    }
+    		)
     });
 
 </script>
@@ -160,6 +164,6 @@ $(document).ready(function() {
 
                 <div class="form-actions">
                     <input id="id_btn_print" type='button' class="btn btn-info" value="Печать чека">
-                    <a class="btn close-dialog" href="#">Закрыть</a>
+                    <a class="btn close-dialog" id="transaction-close-button" href="#">Закрыть</a>
                 </div>
 {% endif %}

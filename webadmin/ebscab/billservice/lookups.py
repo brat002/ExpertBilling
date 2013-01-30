@@ -8,7 +8,7 @@ class AccountFTSLookup(LookupChannel):
     model = Account
     min_length=2
     def get_query(self,q,request):
-        return Account.objects.filter(Q(username__istartswith=q) | Q(contactperson__istartswith=q) | Q(fullname__istartswith=q)  | Q(phone_h__istartswith=q) | Q(phone_m__istartswith=q)   ).order_by('username')
+        return Account.objects.filter(Q(username__istartswith=q) | Q(contactperson__icontains=q) | Q(fullname__icontains=q)  | Q(phone_h__icontains=q) | Q(phone_m__icontains=q)   ).order_by('username')
 
     def get_result(self,obj):
         u""" result is the simple text that is the completion of what the person typed """
