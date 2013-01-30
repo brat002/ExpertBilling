@@ -39,7 +39,21 @@ $(document).ready(function() {
           e.preventDefault();
           $(this).tab('show');
         })
+            $(document).on("selectedTemplate", documentPrintHandler);
+            // newMessage event handler
+            
+            function documentPrintHandler(e) {
 
+                var data = {template:e.message, account:{{account.id}}};
+
+                var $form = $('<form target="_blank" method="POST" action="{% url documentrender %}">');
+                $.each(data, function(k,v){
+                    $form.append('<input type="hidden" name="' + k + '" value="' + v + '">');
+                });
+                $form.append('</form>');
+                $form.submit();
+                
+            }
     });
 
 </script>

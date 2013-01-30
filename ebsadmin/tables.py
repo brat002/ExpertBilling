@@ -1,7 +1,7 @@
 #-*-coding=utf-8-*-
 
 from billservice.forms import AccountForm
-from billservice.models import Account, SuspendedPeriod, AccountHardware
+from billservice.models import Account, SuspendedPeriod, AccountHardware, Transaction
 from billservice.models import AccountAddonService, BalanceHistory, IPInUse, Template 
 from billservice.models import SettlementPeriod, SystemUser, PrepaidTraffic
 from billservice.models import TimeSpeed, AddonServiceTarif, PeriodicalServiceLog, News
@@ -156,6 +156,17 @@ class TotalTransactionReportTable(TableReport):
         #exclude = ( 'table','tariff__name', "tariff", "systemuser")
         
         
+class CashierReportTable(TableReport):
+    
+    summ = FormatFloatColumn(verbose_name=u'Сумма')
+    created = FormatDateTimeColumn(verbose_name=u'Создан')
+    class Meta:
+        model = Transaction
+        fields = ('id', 'account', 'type', 'bill', 'description',  'summ', 'promise', 'promise_expired', 'created')
+        #attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+        
+
 class AccountsReportTable(TableReport):
     row_number = django_tables.Column(verbose_name=u'#', empty_values=())
     #id = FormatBlankColumn()
@@ -166,6 +177,7 @@ class AccountsReportTable(TableReport):
     entrance = django_tables.Column(verbose_name=u'Подъезд')
     row = django_tables.Column(verbose_name=u'Этаж')
     ballance = FormatFloatColumn()
+    tariff  = FormatBlankColumn()
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
     #credit = FormatFloatColumn()
     #created = FormatDateTimeColumn()
@@ -190,6 +202,7 @@ class AccountsCashierReportTable(TableReport):
     username = django_tables.Column(verbose_name=u'Имя')
     contract = FormatBlankColumn(verbose_name=u'Договор')
     fullname = FormatBlankColumn()
+    tariff  = FormatBlankColumn()
     address = django_tables.TemplateColumn(u"{{record.street|default:''}} {{record.house|default:''}}-{{record.room|default:''}}")
     entrance = django_tables.Column(verbose_name=u'Подъезд')
     row = django_tables.Column(verbose_name=u'Этаж')
