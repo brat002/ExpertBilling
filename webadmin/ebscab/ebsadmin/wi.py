@@ -1113,6 +1113,7 @@ def transaction(request):
         
         if form.is_valid(): 
             model = form.save(commit=False)
+            model.systemuser = request.user.account
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Операция выполнена.', extra_tags='alert-success')

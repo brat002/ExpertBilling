@@ -7,21 +7,7 @@
         <script type="text/javascript"> 
         $(document).ready(function() {
         	{% if account %}
-        	$(document).on("selectedTemplate", documentPrintHandler);
-        	// newMessage event handler
-        	
-        	function documentPrintHandler(e) {
 
-        		var data = {template:e.message, account:{{account.id}}};
-
-        		var $form = $('<form target="_blank" method="POST" action="{% url documentrender %}">');
-        		$.each(data, function(k,v){
-        		    $form.append('<input type="hidden" name="' + k + '" value="' + v + '">');
-        		});
-        		$form.append('</form>');
-        		$form.submit();
-        		
-        	}
         	{% endif %}
         //$('#generate_username').popover({title:'Действие над аккаунтом', content: 'Сгенерировать имя пользователя'});
         $("#generate_username").click(function() {

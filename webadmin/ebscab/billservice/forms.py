@@ -20,7 +20,7 @@ from django.contrib.auth.models import Group as AuthGroup
 from django.core.urlresolvers import reverse
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectMultipleWidget, AutoCompleteSelectField
 from itertools import chain
-from widgets import SplitDateTimeWidget
+from widgets import SplitDateTimeWidget, CheckboxSelectMultipleWithSelectAll
 
 class DateRangeField(forms.DateField):
     def __init__(self, *args, **kwargs):
@@ -202,20 +202,24 @@ class SearchAccountForm(forms.Form):
     created = DateRangeField(required=False, label=u"Создан")
 
 class CashierAccountForm(forms.Form):
-    account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
 
-    contract = AutoCompleteSelectMultipleField( 'account_contract', label=u'Договор', required = False)
-    username = AutoCompleteSelectMultipleField( 'account_username', required = False, label=u"Имя аккаунта")
-    fullname = AutoCompleteSelectMultipleField( 'account_fullname', required = False, label=u"ФИО")
+    contract = forms.CharField(label=u'Договор', required = False)
+    username = forms.CharField(required = False, label=u"Имя аккаунта")
+    fullname = forms.CharField(required = False, label=u"ФИО")
 
     city = forms.ModelChoiceField(queryset=City.objects.all(), required=False,  label= u"Город")
     street = forms.CharField(label =u"Улица", required=False, widget = forms.TextInput(attrs={'class': 'input-large', 'placeholder': u'Улица'}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
     house = forms.CharField(label =u"Дом", required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
-    house_bulk = forms.CharField(label =u"Подъезд", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    #house_bulk = forms.CharField(label =u"Подъезд", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
     room = forms.CharField(label =u"Квартира", required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Кв'}))
     phone = forms.CharField(label=u"Телефон", required = False)
 
     
+    def __init__(self, *args, **kwargs):
+        super(CashierAccountForm, self).__init__(*args, **kwargs)
+        
+        
+        
 class AccountAddonForm(forms.Form):
     account = forms.IntegerField(required=False)
     subaccount = forms.IntegerField(required=False)    
@@ -733,7 +737,7 @@ class AccountGroupForm(ModelForm):
         
 class PermissionGroupForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
-    permissions = forms.ModelMultipleChoiceField(label=u'Права', queryset = Permission.objects.all(), widget = forms.widgets.CheckboxSelectMultiple)
+    permissions = forms.ModelMultipleChoiceField(label=u'Права', queryset = Permission.objects.all(), widget = CheckboxSelectMultipleWithSelectAll)
     class Meta:
         exclude = ('deletable',)
         model = PermissionGroup
