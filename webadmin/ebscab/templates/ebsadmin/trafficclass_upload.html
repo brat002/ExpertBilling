@@ -1,5 +1,6 @@
 {% extends "ebsadmin/base.html" %}
 {% load ebsadmin_tags %}
+{% load render_table from django_tables2 %}
 {% load crispy_forms_tags %}
 {% load ebsadmin_tags %}
 {% block extra_head %}
@@ -16,11 +17,14 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url trafficclass %}">Загрузка сетей в класс</a> <span class="divider">/</span>
+    <a href="{% url trafficclass %}">Классы трафика</a> <span class="divider">/</span>Загрузка сетей в класс
   </li>
 
 </ul>
-<form method="POST" action="{% url trafficclass %}?id={{item.id}}"class="well form-horizontal form-condensed ">
+<div class="alert"><h3>Внимание!</h3>
+Данная утилита создаст подклассы в выбранном классе, сопоставив каждую сеть из указанного файла с каждой сетью из поля ниже. <br />Предварительно убедитесь в том, что вы не создадите дубликатов и, при необходимости, очистите класс от предыдущих подсетей.
+</div>
+<form method="POST" action="{% url trafficclass_upload %}" class="well form-horizontal form-condensed " enctype="multipart/form-data" >
             <legend>Параметры</legend>
              <fieldset>
                   {{form|crispy}}
@@ -28,14 +32,17 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">Создать</button>
                     </div>
                 </fieldset>
             </form>
 
-            </form>
-        </div>
 
+        </div>
+        {% if table %}
+        <legend>Созданные сети:</legend>
+{% render_table table %}
+{% endif %}
     </div>
 
  {% endblock %}

@@ -412,7 +412,28 @@ class TrafficNodeTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         available_fields = ('row_number', 'id', 'name', 'direction', 'protocol', 'src_ip', 'src_port', 'in_index', 'dst_ip', 'dst_port', 'out_index', 'src_as', 'dst_as', 'next_hop', 'd')
 
+
+class UploadTrafficNodeTable(TableReport):
+    row_number = django_tables.Column(verbose_name="#", empty_values=())
+    src_net = django_tables.Column(verbose_name="Src Net")
+    dst_net = django_tables.Column(verbose_name="Dst Net")
+    direction = django_tables.Column(verbose_name="Direction")
+    #control = django_tables.TemplateColumn("<a class='edit'><i class='icon-edit'></i></a>", verbose_name=' ', orderable=False)
     
+    
+    
+
+    def __init__(self, *args, **kwargs):
+        super(UploadTrafficNodeTable, self).__init__(*args, **kwargs)
+        self.counter = itertools.count()
+
+    def render_row_number(self):
+        return '%d' % next(self.counter)
+    
+    class Meta:
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        fields = ('row_number', 'src_net', 'dst_net')
+            
 class RadiusAttrTable(TableReport):
     id = django_tables.LinkColumn('radiusattr_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
