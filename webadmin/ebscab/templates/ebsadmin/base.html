@@ -38,12 +38,12 @@ $(document).ready(function() {
     $('#tab-control a').click(function (e) {
           e.preventDefault();
           $(this).tab('show');
-        })
+        });
             $(document).on("selectedTemplate", documentPrintHandler);
             // newMessage event handler
             
             function documentPrintHandler(e) {
-
+                {% if account %}
                 var data = {template:e.message, account:{{account.id}}};
 
                 var $form = $('<form target="_blank" method="POST" action="{% url documentrender %}">');
@@ -52,7 +52,7 @@ $(document).ready(function() {
                 });
                 $form.append('</form>');
                 $form.submit();
-                
+                {% endif %}
             }
     });
 

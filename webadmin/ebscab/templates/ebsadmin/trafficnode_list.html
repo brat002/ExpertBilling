@@ -120,9 +120,11 @@
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="{% url trafficclass_upload %}" class="btn btn-info">Загрузить из файла</a>&nbsp;<a href="#" class="btn btn-success" id='id_btn_add'>Добавить</a>&nbsp;<a href="#" id="id_btn_delete" class="btn btn-danger">Удалить</a> </div>
+<div class="btn-toolbar pull-right"><a href="{% url trafficclass_upload %}?traffic_class={{item.id}}" class="btn btn-info">Загрузить из файла</a>&nbsp;<a href="#" class="btn btn-success" id='id_btn_add'>Добавить</a>&nbsp;<a href="#" id="id_btn_delete" class="btn btn-danger">Удалить</a> </div>
 <div>
+{% if table %}
   {% render_table table %}
+  {% endif %}
 </div>
     </div>
   

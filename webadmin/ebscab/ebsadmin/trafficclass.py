@@ -9,12 +9,13 @@ from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 from object_log.models import LogItem
 from lib import instance_dict
-from tables import TrafficClassTable, TrafficNodeTable
+from tables import TrafficClassTable, TrafficNodeTable, UploadTrafficNodeTable
 
 from ebsadmin.forms import TrafficNodesUploadForm
 from nas.forms import TrafficClassForm, TrafficNodeForm
 from nas.models import TrafficClass, TrafficNode
 from django.contrib import messages
+from IPy import IP
 log = LogItem.objects.log_action
 
 
@@ -38,8 +39,46 @@ def trafficclass(request):
 @systemuser_required
 @render_to('ebsadmin/trafficclass_upload.html')
 def trafficclass_upload(request):
-    form = TrafficNodesUploadForm()
-    return {"form":form} 
+    table = None
+    if request.POST:
+        form = TrafficNodesUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            nodes_file = form.cleaned_data.get('nodes_file')
+            networks = form.cleaned_data.get('networks')
+            traffic_class = form.cleaned_data.get('traffic_class')
+            res = []
+            bulk = []
+            for line in nodes_file:
+                for network in networks.split('\n'):
+                    line = line.strip()
+                    network = network.strip()
+                    try:
+                        IP(line)
+                        IP(network)
+                    except Exception, e:
+                        print e
+                        continue
+                    res.append({'src_net': line, 'dst_net': network, 'direction': 'INPUT'})
+                    res.append({'dst_net': line, 'src_net': network, 'direction': 'OUTPUT'})
+                    bulk.append(TrafficNode(traffic_class=traffic_class, src_ip=line, dst_ip=network, direction='INPUT'))
+                    bulk.append(TrafficNode(traffic_class=traffic_class, src_ip=network, dst_ip=line, direction='OUTPUT'))
+            TrafficNode.objects.bulk_create(bulk)
+            table = UploadTrafficNodeTable(res)
+            table_to_report = RequestConfig(request, paginate=False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
+        else:
+            print form._errors
+    else:
+        traffic_class = request.GET.get('traffic_class')
+        if traffic_class:
+            form = TrafficNodesUploadForm(initial={'traffic_class': TrafficClass.objects.get(id=traffic_class)})
+        else:
+            form = TrafficNodesUploadForm()
+        
+    
+    
+    return {"form":form, 'table': table} 
     
 @ajax_request
 @systemuser_required
