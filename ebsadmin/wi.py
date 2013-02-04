@@ -1248,7 +1248,7 @@ def activesessionreport(request):
     else:
         table = None
         res = ActiveSession.objects.filter(session_status='ACTIVE').prefetch_related()
-        res = res.values('subaccount__username', 'subaccount', 'framed_ip_address', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
+        res = res.values('id', 'subaccount__username', 'subaccount', 'framed_ip_address', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
         table = ActiveSessionTable(res)
         table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
         if table_to_report:

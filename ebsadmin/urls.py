@@ -33,6 +33,8 @@ urlpatterns += patterns('ebsadmin.wi',
     url(r'^suspendedperiod/delete/$', 'suspendedperiod_delete', name='suspendedperiod_delete'),
     url(r'^suspendedperiod/$', 'suspendedperiod', name='suspendedperiod'),
     url(r'^activesessionreport/$', 'activesessionreport', name='activesessionreport'),
+
+    
     url(r'^ballancehistoryreport/$', 'ballancehistoryreport', name='ballancehistoryreport'),
     url(r'^template/edit/$', 'template_edit', name='template_edit'),
     url(r'^template/delete/$', 'template_delete', name='template_delete'),
@@ -508,7 +510,7 @@ urlpatterns += patterns('ebsadmin.views',
 #     
 #     
 #     url(r'^sessions/$', 'sessions'),
-#     url(r'^sessions/reset/$', 'session_reset'),
+     url(r'^sessions/reset/$', 'session_reset', name="session_reset"),
 #===============================================================================
      
 #     url(r'^cities/set/$', 'cities_set'),

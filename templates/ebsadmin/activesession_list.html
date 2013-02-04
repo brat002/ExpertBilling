@@ -6,7 +6,34 @@
         <script type="text/javascript"> 
         $(document).ready(function() {
 
+            $("#id_main_table tbody .sreset").live("click", function(){
+                var a=$(this);
+                $(this).text('Waiting');
 
+                $.ajax({
+                       type: "POST",
+                       url: "{% url session_reset %}",
+                       data: {id: $(this).attr('data')},
+                       async: false,
+                       success: function(msg){
+                           if (msg.status==true){
+                        	   //alert(msg.message );
+                        	   a.closest("tr").fadeOut();
+                        		//a.closest("tr").hide();   
+
+                           }
+                           else{
+                               alert( "Ошибка: " + msg.message );
+                           }
+                           
+                       },
+                       error: function(msg){
+                              alert("Ошибка соединения");
+                              
+                           }
+                     });
+                $(this).text('Reset'); 
+            });
 
             {% if table %}
             $('#tab-control a[href="#result"]').tab('show');

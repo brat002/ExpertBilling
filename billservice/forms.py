@@ -458,6 +458,11 @@ class PeriodicalServiceForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(PeriodicalServiceForm, self).__init__(*args, **kwargs)
         self.fields['tarif'].widget = forms.widgets.HiddenInput()
+
+        for myField in self.fields:
+            self.fields[myField].widget.attrs['class'] = 'input-xlarge span5'
+
+
         self.fields['created'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
         self.fields['deactivated'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
         

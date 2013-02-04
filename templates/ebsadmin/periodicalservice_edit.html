@@ -84,15 +84,32 @@
                   </div>
                   <div class="control-group">
 
-                      <label class="control-label">{{form.condition.label}}:</label>
+                      <label class="control-label">{{form.ps_condition.label}}:</label>
                       <div class="controls">
-                      {{ form.condition }}
-                      {% if form.condition.errors %}
-                          <span class="help-inline">{% for error in form.condition.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {{ form.ps_condition }}
+                      {% if form.ps_condition.errors %}
+                          <span class="help-inline">{% for error in form.ps_condition.errors %}{{ error }}<br/> {% endfor %}</span>
                       {% endif %}
-                      {% if form.condition.help_text%}
+                      {% if form.ps_condition.help_text%}
                           <p class="help-block">
-                              {{ form.condition.help_text|safe }}
+                              {{ form.ps_condition.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+
+
+                  </div>
+                  <div class="control-group">
+
+                      <label class="control-label">{{form.condition_summ.label}}:</label>
+                      <div class="controls">
+                      {{ form.condition_summ }}
+                      {% if form.condition_summ.errors %}
+                          <span class="help-inline">{% for error in form.condition_summ.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.condition_summ.help_text%}
+                          <p class="help-block">
+                              {{ form.condition_summ.help_text|safe }}
                           </p>
                       {% endif %}
                       </div>
