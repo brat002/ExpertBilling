@@ -207,12 +207,22 @@ class PeriodicalService(models.Model):
     Справочник периодических услуг
     TO-DO: Сделать справочники валют
     """
+    ps_condition = (
+                    (0, u'При любом балансе'),
+                    (1, u'Меньше'),
+                    (2, u'Меньше или равно'),
+                    (3, u'Равно'),
+                    (4, u'Больше или равно'),
+                    (5, u'Больше'),
+                    )
     tarif             = models.ForeignKey('Tariff')
     name              = models.CharField(max_length=255, verbose_name=u'Название')
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=u'Период', null=True, on_delete=models.SET_NULL)
     cost              = models.DecimalField(verbose_name=u'Стоимость', default=0, blank=True, decimal_places=2, max_digits=30)
     cash_method       = models.CharField(verbose_name=u'Способ списания', max_length=255, choices=CASH_METHODS, default='AT_START', blank=True)
-    condition         = models.IntegerField(verbose_name=u"Условие", default = 0, choices=((0, u"Списывать при любом балансе"),(1, u"Списывать при полождительном балансе"),(2, u"Списывать при отрицательном балансе"),(2, u"Списывать при нулевом и положительном балансе"))) # 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
+    #condition         = models.IntegerField(verbose_name=u"Условие", default = 0, choices=((0, u"Списывать при любом балансе"),(1, u"Списывать при полождительном балансе"),(2, u"Списывать при отрицательном балансе"),(2, u"Списывать при нулевом и положительном балансе"))) # 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
+    ps_condition         = models.IntegerField(verbose_name=u"Условие списания", default = 0, choices=ps_condition)
+    condition_summ              = models.DecimalField(verbose_name=u'Сумма для условия', default=0, blank=True, decimal_places=2, max_digits=30) 
     deactivated     = models.DateTimeField(verbose_name=u"Отключить", blank=True, null=True)
     created     = models.DateTimeField(verbose_name=u"Активировать", help_text=U'Не указывайте, если списания должны начаться с начала расчётного периода', blank=True, null=True)
     deleted     = models.BooleanField(blank=True, default=False)
@@ -221,6 +231,8 @@ class PeriodicalService(models.Model):
     (1, u"Списывать при полождительном балансе"),
     (2, u"Списывать при отрицательном балансе"),
     (3, u"Списывать при нулевом и положительном балансе")
+    
+
     
     """
     планы:
@@ -991,23 +1003,23 @@ class AccountTarif(models.Model):
             )
         
 class AccountIPNSpeed(models.Model):
-      """
-      Класс описывает настройки скорости для пользователей с тарифными планами IPN
-      После создания пользователя должна создваться запись в этой таблице
-      """
-      account = models.ForeignKey(to=Account)
-      speed   = models.CharField(max_length=32, default='')
-      state   = models.BooleanField(blank=True, default=False)
-      static  = models.BooleanField(verbose_name=u"Статическая скорость", help_text=u"Пока опция установлена, биллинг не будет менять для этого клиента скорость", blank=True, default=False)
-      datetime  = models.DateTimeField(default='')
-
-      def __unicode__(self):
-          return u"%s %s" % (self.account, self.speed)
-
-      class Admin:
-          pass
-
-      class Meta:
+    """
+    Класс описывает настройки скорости для пользователей с тарифными планами IPN
+    После создания пользователя должна создваться запись в этой таблице
+    """
+    account = models.ForeignKey(to=Account)
+    speed   = models.CharField(max_length=32, default='')
+    state   = models.BooleanField(blank=True, default=False)
+    static  = models.BooleanField(verbose_name=u"Статическая скорость", help_text=u"Пока опция установлена, биллинг не будет менять для этого клиента скорость", blank=True, default=False)
+    datetime  = models.DateTimeField(default='')
+    
+    def __unicode__(self):
+        return u"%s %s" % (self.account, self.speed)
+    
+    class Admin:
+        pass
+    
+    class Meta:
         verbose_name = u"Скорость IPN клиента"
         verbose_name_plural = u"Скорости IPN клиентов"
 

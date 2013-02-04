@@ -80,7 +80,7 @@ core_sql = \
           'periodtf':"""SELECT id, settlement_period_id FROM billservice_tariff  as tarif
                         WHERE id in (SELECT tarif_id FROM billservice_periodicalservice WHERE deleted=False or deleted is Null) AND tarif.active=True and tarif.deleted is not True""",
           'periodset':"""SELECT b.id, b.name, b.cost, b.cash_method, c.name, date_trunc('second', c.time_start),
-                        c.length, c.length_in, c.autostart, b.tarif_id, b.condition, date_trunc('second', b.created), b.deactivated, b.deleted
+                        c.length, c.length_in, c.autostart, b.tarif_id, b.ps_condition, b.condition_summ, date_trunc('second', b.created), b.deactivated, b.deleted
                         FROM billservice_periodicalservice as b 
                         JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
                         WHERE deactivated is Null or (deactivated>=%s) and (deleted=False or deleted is Null);""",
@@ -143,7 +143,9 @@ core_sql = \
         'addon_periodical': """SELECT accas.id, ads.name, ads.cost, ads.sp_type, sp.name, date_trunc('second',sp.time_start),
                         sp.length, sp.length_in, sp.autostart,
                         accas.account_id, accas.activated, accas.deactivated, accas.temporary_blocked, accas.last_checkout,ads.id, accas.subaccount_id
-                        FROM billservice_addonservice AS ads JOIN billservice_settlementperiod AS sp ON ads.sp_period_id = sp.id JOIN billservice_accountaddonservice AS accas ON accas.service_id = ads.id 
+                        FROM billservice_addonservice AS ads 
+                        JOIN billservice_settlementperiod AS sp ON ads.sp_period_id = sp.id 
+                        JOIN billservice_accountaddonservice AS accas ON accas.service_id = ads.id 
                         WHERE ads.service_type = 'periodical' AND (accas.deactivated ISNULL OR accas.last_checkout ISNULL OR NOT accas.last_checkout >= accas.deactivated);""",
         'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice, allow_ipn_with_null, allow_ipn_with_minus, allow_ipn_with_block, vlan, vpn_ipv6_ip_address,ipv4_ipn_pool_id,ipv4_vpn_pool_id FROM billservice_subaccount;""",
                         }

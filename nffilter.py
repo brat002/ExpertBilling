@@ -88,8 +88,9 @@ class Worker(ConsumerMixin):
         body = body['data']
         data_bulk = body.split("_|_|_")
         for data in data_bulk:
-            data, addr = data.split("|<>|")
             try:
+                data, addr = data.split("|<>|")
+            
                 nfPacketHandle(data, addr, queues.nfFlowCache)
             except Exception, ex:
                 logger.error("NFF exception: %s \n %s", (repr(ex), traceback.format_exc()))

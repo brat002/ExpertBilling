@@ -239,7 +239,8 @@ class ActiveSessionTable(TableReport):
     bytes = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}/{{record.bytes_out|filesizeformat}}", verbose_name=u'Байт')
     #account = django_tables.LinkColumn('account_edit', get_params={'id':A('account.id')})
     subaccount__username = django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount')}, verbose_name=u'Субаккаунт')
-
+    action = django_tables.TemplateColumn("<button data='{{record.id}}' class='btn btn-success btn-mini sreset'>Reset</button>", verbose_name=u'Action')
+    
     def __init__(self, *args, **kwargs):
         super(ActiveSessionTable, self).__init__(*args, **kwargs)
         self.counter = itertools.count()
@@ -251,7 +252,7 @@ class ActiveSessionTable(TableReport):
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         model = ActiveSession
         configurable=True
-        available_fields = ('row_number', 'subaccount__username', 'date_start', 'date_end',  'nas_int', 'caller_id', 'framed_ip_address', 'framed_protocol', 'session_time','bytes', 'session_status')
+        available_fields = ('row_number', 'subaccount__username', 'date_start', 'date_end',  'nas_int', 'caller_id', 'framed_ip_address', 'framed_protocol', 'session_time','bytes', 'session_status', 'action')
         #exclude = ("id", "speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account', 'sessionid', 'acct_terminate_cause')
         attrs = {'class': 'table table-bordered table-condensed'}
 

@@ -12,6 +12,7 @@ from IPy import IP, IPint, parseAddress
 from collections import defaultdict
 
 
+
 class NfCaches(CacheCollection):
     __slots__ = ('nas_cache', 'account_cache', 'class_cache', 'group_cache', 'tfgroup_cache', 'nas_port_cache')
     
