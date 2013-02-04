@@ -1,0 +1,10 @@
+ALTER TABLE billservice_periodicalservice ADD COLUMN ps_condition integer;
+ALTER TABLE billservice_periodicalservice ADD COLUMN condition_summ numeric;
+UPDATE billservice_periodicalservice SET condition_summ = 0;
+ALTER TABLE billservice_periodicalservice ALTER COLUMN condition_summ SET NOT NULL;
+UPDATE billservice_periodicalservice SET ps_condition = 0 WHERE condition=0;
+UPDATE billservice_periodicalservice SET ps_condition = 1 WHERE condition=2;
+UPDATE billservice_periodicalservice SET ps_condition = 4 WHERE condition=1;
+UPDATE billservice_periodicalservice SET ps_condition = 5 WHERE condition=3;
+ALTER TABLE billservice_periodicalservice ALTER COLUMN ps_condition SET NOT NULL;
+ALTER TABLE billservice_periodicalservice ALTER COLUMN ps_condition SET DEFAULT 0;
