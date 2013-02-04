@@ -330,7 +330,7 @@ class periodical_service_bill(Thread):
                     if pss_type == PERIOD:
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-")
 
-                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
+                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_GRADUAL', cash_summ, chk_date, ps.condition, ps.condition_summ))
                         new_summ=cur.fetchone()[0]
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                         
@@ -409,7 +409,7 @@ class periodical_service_bill(Thread):
                                 
 
                     if pss_type == PERIOD:
-                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, 'PS_AT_START', cash_summ, chk_date, ps.condition))
+                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_AT_START', cash_summ, chk_date, ps.condition, ps.condition_summ))
                         new_summ=cur.fetchone()[0]
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                         logger.debug('%s: Periodical Service: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
@@ -470,7 +470,7 @@ class periodical_service_bill(Thread):
                         if pss_type == PERIOD:
                             cash_summ = 0
                             #ps_history(cur, ps.ps_id, acc.acctf_id, acc.account_id, 'PS_AT_END', ZERO_SUM, tr_date)
-                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
+                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_AT_END', cash_summ, tr_date, ps.condition, ps.condition_summ))
                             logger.debug('%s: Periodical Service: AT END First time checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
 #                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                         elif pss_type == ADDON:
@@ -489,7 +489,7 @@ class periodical_service_bill(Thread):
                                 cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                                 cur.connection.commit()
                                 return
-                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, 'PS_AT_END', cash_summ, tr_date, ps.condition))
+                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_AT_END', cash_summ, tr_date, ps.condition, ps.condition_summ))
                             new_summ=cur.fetchone()[0]
                             #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                             logger.debug('%s: Periodical Service: AT END iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))

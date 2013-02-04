@@ -14,7 +14,7 @@ from billservice.helpers import systemuser_required
 from django.db import connection
 from billservice.forms import AccountForm, TimeSpeedForm, GroupForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
 from billservice.forms import TemplateForm, DocumentModelForm, SuspendedPeriodModelForm, TransactionModelForm, AddonServiceForm, CityForm, StreetForm, HouseForm
-from tasks import cred, rosClient, rosExecute
+from tasks import cred, rosClient, rosExecute, PoD
 import IPy
 from randgen import GenUsername as nameGen , GenPasswd as GenPasswd2
 from IPy import IP
@@ -1046,20 +1046,19 @@ def session_reset(request):
         return {'status':False, 'message':u'У вас нет прав на сброс сессии'}
     
     id = request.POST.get('id',None)
-    sessionid = request.POST.get('sessionid',None)
     res = False
-    if id and id!='None' and sessionid:
-        session = ActiveSession.objects.get(id=id, sessionid=sessionid)
+    if id and id!='None':
+        session = ActiveSession.objects.get(id=id)
         if not session:
-            return {'status':False, 'message': 'Session item with id=%s and sessionid %s not found' % (id, sessionid)}
+            return {'status':False, 'message': 'Session item with id=%s not found' % (id, )}
        
 
+        n = session.nas_int
+        nas = instance_dict(n)
 
-        nas = instance_dict(session.nas_int)
+        acc = instance_dict(session.account)
 
-        account = instance_dict(session.account)
-
-        subaccount = instance_dict(session.subaccount)
+        subacc = instance_dict(session.subaccount)
         
         """
         res = PoD(dict=vars.DICT, 
@@ -1072,7 +1071,8 @@ def session_reset(request):
                   caller_id=session.caller_id,
                   format_string=nas.reset_action)
         """
-        return {"message": u"Данная функция временно не реализована", 'status':False}
+        #res = PoD.delay(acc, subacc, nas, access_type=session.framed_protocol, session_id=str(session.sessionid), vpn_ip_address=session.framed_ip_address, caller_id=str(session.caller_id), format_string=str(n.reset_action))
+        return {'status':True, 'message': u'Сессия поставлена в очередь на сброс.'}
     
     return {"message": u"Данная функция временно не реализована", 'status':False}
 
