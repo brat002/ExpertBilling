@@ -491,6 +491,9 @@ class ApiRos:
         self.sk = sk
         self.currenttag = 0
         
+    def close(self):
+        self.sk.close()
+        
     def login(self, username, pwd):
         for repl, attrs in self.talk(["/login"]):
             chal = binascii.unhexlify(attrs['=ret'])
@@ -540,7 +543,6 @@ class ApiRos:
 
     def readWord(self):
         ret = self.readStr(self.readLen())
-        #print ">>> " + ret
         return ret
 
     def writeLen(self, l):
@@ -615,8 +617,8 @@ class ApiRos:
             ret += s
         return ret
 
-@task
-def rosClient(host, login, password, command):
+
+def rosClient(host, login, password):
     """
     @param host: IP address or Hostname
     @param login: Username of System user
@@ -632,23 +634,9 @@ def rosClient(host, login, password, command):
         
     apiros = ApiRos(s);
     apiros.login(str(login), str(password))
-    x=['']
-    commands = command.split(" ")
+    return apiros
 
-    commands.append(" ")
-    result = []
-    apiros.writeSentence(commands)
-    while True:
-        x = apiros.readSentence()
-        #print x
-        if x[0]=='!done':
-            break
-        result.append(x)
-        
-    s.close()
-    return result
 
-@task
 def rosExecute(apiros, command):
 
     x=['']
