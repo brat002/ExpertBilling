@@ -63,7 +63,10 @@ $(document).ready(function() {
 
 
   <style type="text/css">
-
+.table td {
+    padding: 2px; 
+    
+}
 html,body
 {
 height:100%;
@@ -267,7 +270,7 @@ padding-top:20px;
          <li class="divider"></li>
          <li><a href="{% url systemuser %}"><i class="icon-user"></i>&nbsp;Системные пользователи</a></li>
          <li><a href="{% url permissiongroup %}"><i class="cus-group"></i>&nbsp;Группы доступа</a></li>
-         <li><a href="{% url accountgroup %}">Группы абонентов</a></li>
+         <li><a href="{% url accountgroup %}"><i class="cus-group-gear"></i>&nbsp;Группы абонентов</a></li>
          
        </ul>
      </li>

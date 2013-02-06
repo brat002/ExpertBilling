@@ -101,7 +101,10 @@ class AuthLog(models.Model):
     datetime = models.DateTimeField()
     
 
-            
+    class Meta:
+        verbose_name = u'RADIUS авторизации'
+        ordering = ['-datetime']
+        
     def get_row_class(self):
         if self.type not in ['AUTH_OK','DHCP_AUTH_OK']:
             return 'error'
