@@ -202,10 +202,10 @@ def get_mac_for_ip(request):
 
         apiros = rosClient(nas.ipaddress, nas.login, nas.password)
         command='/ping =address=%s =count=1' % ipn_ip_address
-        rosExecute(apiros, command).wait()
+        rosExecute(apiros, command)
         command='/ip/arp/print ?address=%s' % ipn_ip_address
-        rosExecute(apiros, command).wait()
-        mac = rosExecute(apiros, command).get('mac-address', '').wait()
+        #rosExecute(apiros, command)
+        mac = rosExecute(apiros, command).get('mac-address', '')
         apiros.close()
         del apiros
         del rosExecute
@@ -1071,7 +1071,7 @@ def session_reset(request):
                   caller_id=session.caller_id,
                   format_string=nas.reset_action)
         """
-        #res = PoD.delay(acc, subacc, nas, access_type=session.framed_protocol, session_id=str(session.sessionid), vpn_ip_address=session.framed_ip_address, caller_id=str(session.caller_id), format_string=str(n.reset_action))
+        res = PoD.delay(acc, subacc, nas, access_type=session.framed_protocol, session_id=str(session.sessionid), vpn_ip_address=session.framed_ip_address, caller_id=str(session.caller_id), format_string=str(n.reset_action))
         return {'status':True, 'message': u'Сессия поставлена в очередь на сброс.'}
     
     return {"message": u"Данная функция временно не реализована", 'status':False}

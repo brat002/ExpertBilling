@@ -123,9 +123,6 @@ INSTALLED_APPS = (
     'ajax_select',
     'ebsadmin',
     'django_tables2_reports',
-    
-
-    
 )
 
 AJAX_LOOKUP_CHANNELS = {
