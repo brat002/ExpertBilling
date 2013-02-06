@@ -157,18 +157,18 @@ def find_account_by_port(nasses,flow):
     #global caches
     caches = cacheMaster.cache
     if not caches.nas_port_cache.by_nas_id: 
-        logger.debug("Nas ports cache is empty return", ())
+        #logger.debug("Nas ports cache is empty return", ())
         return None, None, None
     acc_data_src,acc_data_dst = None, None
     for nasitem in nasses:
-        logger.debug("Checking flow port for nas_id=: %s. Nas-Port. In index=%s, out index=%s. cache len=%s", (nasitem.id, flow.in_index,flow.out_index, len(caches.nas_port_cache.by_nas_id)))
+        #logger.debug("Checking flow port for nas_id=: %s. Nas-Port. In index=%s, out index=%s. cache len=%s", (nasitem.id, flow.in_index,flow.out_index, len(caches.nas_port_cache.by_nas_id)))
         if not acc_data_src:
             acc_data_src = caches.nas_port_cache.by_nas_id.get(nasitem.id,{}).get(flow.in_index,None)
-            logger.debug("Search for flow src port  account=%s", (acc_data_src, ))
+            #logger.debug("Search for flow src port  account=%s", (acc_data_src, ))
             nas_id = nasitem.id
         if not acc_data_dst: 
             acc_data_dst = caches.nas_port_cache.by_nas_id.get(nasitem.id,{}).get(flow.out_index,None)
-            logger.debug("Search for flow dst port account=%s", (acc_data_dst, ))
+            #logger.debug("Search for flow dst port account=%s", (acc_data_dst, ))
             nas_id = nasitem.id
         if acc_data_dst and acc_data_src: return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
     return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
@@ -178,7 +178,7 @@ def find_account_by_ip(nasses,flow,src=False, dst=False):
     caches = cacheMaster.cache
     for nasitem in nasses:
 
-        logger.debug("Checking flow for nas_id=: %s Account-id", (nasitem.id, ))
+        #logger.debug("Checking flow for nas_id=: %s Account-id", (nasitem.id, ))
         if src:
             if not acc_data_src:
                 #Если нашли - больше не проверяем
@@ -192,7 +192,7 @@ def find_account_by_ip(nasses,flow,src=False, dst=False):
                 if acc_data_dst:
                     nas_id = nasitem.id
         if acc_data_dst and acc_data_src:  
-            logger.debug(" Account with nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
+            #logger.debug(" Account with nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
             return caches.account_cache.by_id.get(acc_data_src), caches.account_cache.by_id.get(acc_data_dst), nas_id
     if src:
         if not acc_data_src:
@@ -211,7 +211,7 @@ def find_account_by_ip(nasses,flow,src=False, dst=False):
             else:
                 nas_id = None
             
-    logger.debug(" Account without nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
+    #logger.debug(" Account without nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
     return acc_data_src,acc_data_dst, nas_id
 
 
@@ -244,7 +244,7 @@ def nfPacketHandle(data, addr, flowCache):
         flow_data = data[offset:offset + vars.flowLENGTH]
         flow = flow_class(flow_data)
         if 0: assert isinstance(flow, Flow5Data)
-        logger.debug("New flow arrived. src_ip=%s dst_ip=%s in_index=%s, out_index=%s: ", (IPy.intToIp(flow.src_addr, 4),IPy.intToIp(flow.dst_addr, 4), flow.in_index, flow.out_index))
+        #logger.debug("New flow arrived. src_ip=%s dst_ip=%s in_index=%s, out_index=%s: ", (IPy.intToIp(flow.src_addr, 4),IPy.intToIp(flow.dst_addr, 4), flow.in_index, flow.out_index))
         #look for account for ip address
         if vars.SKIP_INDEX_CHECK==False and (flow.out_index == 0 or flow.in_index == flow.out_index):
             logger.debug("flow int index==flow out index %s==%s or out index==0 rejecting", (flow.in_index,flow.out_index,))
@@ -252,7 +252,7 @@ def nfPacketHandle(data, addr, flowCache):
         acc_data_src = None
         acc_data_dst = None
         nas_id = None
-        nasses_list=[nasitem.id for nasitem in nasses]
+        #nasses_list=[nasitem.id for nasitem in nasses]
 
         acc_data_src,acc_data_dst, nas_id = find_account_by_port(nasses, flow)
         acc_data_src_ip, acc_data_dst_ip, nas_id_ip=None,None,None
@@ -270,6 +270,7 @@ def nfPacketHandle(data, addr, flowCache):
             
         if not (acc_data_src and acc_data_dst):
             acc_data_src_ip,acc_data_dst_ip, nas_id_ip = find_account_by_ip(nasses, flow, src, dst)
+            pass
             
         if  acc_data_src:
             acc_data_src=acc_data_src
@@ -315,40 +316,6 @@ def nfPacketHandle(data, addr, flowCache):
             flow.padding = local
             flow.account_id = acc_acct_tf
             flow.node_direction = None
-            if vars.CHECK_CLASSES:
-                break_outer = False
-                for nclass, nnodes in caches.class_cache.classes:                        
-                    for nnode in nnodes:
-                        if 0: assert isinstance(nnode,ClassData)
-                        if (flow.src_addr & nnode.src_mask) != nnode.src_ip:continue
-                        if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:continue
-                        if ((flow.protocol != nnode.protocol) and nnode.protocol): continue
-                        if ((flow.src_port != nnode.src_port) and nnode.src_port):continue
-                        if ((flow.dst_port != nnode.dst_port) and nnode.dst_port):continue
-                        if ((flow.in_index != nnode.in_index) and nnode.in_index):continue
-                        if ((flow.out_index != nnode.out_index) and nnode.out_index):continue
-                        if ((flow.next_hop != nnode.next_hop) and (nnode.next_hop and nnode.next_hop!='0.0.0.0')):continue
-                        if ((flow.src_as != nnode.src_as) and nnode.src_as):continue
-                        if ((flow.dst_as != nnode.dst_as) and nnode.dst_as):continue
-                                                    
-                         #======================================================
-                         # if (((flow.src_addr & nnode.src_mask) == nnode.src_ip) and \
-                         #   ((flow.dst_addr & nnode.dst_mask) == nnode.dst_ip) and \
-                         #   ((flow.next_hop == nnode.next_hop) or (not nnode.next_hop)) and \
-                         #   ((flow.src_port == nnode.src_port) or (not nnode.src_port)) and \
-                         #   ((flow.dst_port == nnode.dst_port) or (not nnode.dst_port)) and \
-                         #   ((flow.in_index == nnode.in_index) or (not nnode.in_index)) and \
-                         #   ((flow.out_index == nnode.out_index) or (not nnode.out_index)) and \
-                         #   ((flow.src_as == nnode.src_as) or (not nnode.src_as)) and \
-                         #   ((flow.dst_as == nnode.dst_as) or (not nnode.dst_as)) and \
-                         #   ((flow.protocol == nnode.protocol) or (not nnode.protocol))):
-                         #======================================================
-                            
-                        flowCache.addflow5(flow)
-                        break_outer = True
-                        break
-                    if break_outer: break
-                continue
             
             flowCache.addflow5(flow)         
                 
@@ -531,13 +498,15 @@ class FlowDequeThread(Thread):
                                 break
                             #found passthrough=false
                             if not passthr:
-                                self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
+                                if not vars.SKIP_GROUPS_PROCESSING:
+                                    self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                 nfwrite_list.append(flow)
                                 break                   
                         #traversed all the nodes
                         else:
                             if classLst:
-                                self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
+                                if not vars.SKIP_GROUPS_PROCESSING:
+                                    self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                 nfwrite_list.append(flow)
                             else: 
                                 nfwrite_list.append(flow)

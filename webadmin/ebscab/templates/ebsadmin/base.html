@@ -246,18 +246,28 @@ padding-top:20px;
          <li><a href="{% url template %}"><i class="cus-report-edit"></i>&nbsp;Шаблоны документов</a></li> 
          <li class="divider"></li>
          <li><a href="{% url nas %}"><i class="cus-disconnect"></i> Сервера доступа</a></li>
-         <li><a href="{% url ippool %}"><i class="cus-page-white-dvd"></i>&nbsp;IP пулы</a></li>
          <li><a href="{% url switch %}"><i class="cus-cog-edit"></i>&nbsp;Коммутаторы</a></li>
+         <li><a href="{% url ippool %}"><i class="cus-page-white-dvd"></i>&nbsp;IP пулы</a></li>
+         <li><a href="{% url group %}"><i class="cus-link-go"></i> Группы трафика</a></li>
+         <li><a href="{% url trafficclass %}"><i class="cus-table-refresh"></i>&nbsp;Классы трафика</a></li>
          <li class="divider"></li>
          <li><a href="{% url address %}"><i class="cus-house-go"></i>&nbsp;Адреса</a></li> 
          <li><a href="{% url news %}"><i class="cus-newspaper"></i>&nbsp;Модуль новостей</a></li>
-         <li class="nav-header">Оборудование</li>
-         <li><a href="{% url hardware %}"><i class="cus-table-add"></i>&nbsp;Устройства</a></li>
+
+         
+		  <li class="dropdown-submenu">
+		    <a tabindex="-1" href="#"><i class="cus-wrench-orange"></i> Оборудование</a>
+		    <ul class="dropdown-menu">
+		     <li><a href="{% url hardware %}"><i class="cus-table-add"></i>&nbsp;Устройства</a></li>
+	         <li><a href="{% url manufacturer %}">Производители оборудования</a></li>
+	         <li><a href="{% url hardwaretype %}">Типы оборудования</a></li>
+	         <li><a href="{% url model %}">Модели оборудования</a></li>
+		    </ul>
+		  </li>
          <li class="divider"></li>
-         <li><a href="{% url group %}"><i class="cus-link-go"></i> Группы трафика</a></li>
-         <li><a href="{% url trafficclass %}"><i class="cus-table-refresh"></i>&nbsp;Классы трафика</a></li>
          <li><a href="{% url systemuser %}"><i class="icon-user"></i>&nbsp;Системные пользователи</a></li>
          <li><a href="{% url permissiongroup %}"><i class="cus-group"></i>&nbsp;Группы доступа</a></li>
+         <li><a href="{% url accountgroup %}">Группы абонентов</a></li>
          
        </ul>
      </li>
@@ -274,15 +284,9 @@ padding-top:20px;
          
          <li><a href="{% url logview %}"><i class="icon-tasks"></i>&nbsp;Просмотр логов</a></li>
          <li><a href="{% url actionlog %}"><i class="icon-list-alt"></i>&nbsp;История действий пользователей</a></li>
-         <li><a href="{% url operator_edit %}">Информация о провайдере</a></li>
          <li><a href="{% url periodicalservicelog %}">Последние списания период. услуг</a></li>
          <li><a href="{% url shedulelog %}">Последние сервисные процедуры</a></li>
-         <li class="nav-header">Сервисные справочники</li>
-         <li><a href="{% url manufacturer %}">Производители оборудования</a></li>
-         <li><a href="{% url hardwaretype %}">Типы оборудования</a></li>
-         <li><a href="{% url model %}">Модели оборудования</a></li>
-         <li><a href="{% url accountgroup %}">Группы абонентов</a></li>
-         <li class="nav-header"></li>
+         <li><a href="{% url operator_edit %}">Информация о провайдере</a></li>
          <li><a href="{% url cashier_index %}">Интерфейс кассира</a></li>
          <li><a href="{% url helpdesk_dashboard %}">Хелпдеск</a></li>
          <li><a href="/accounts/logout/"><i class="icon-off"></i>&nbsp;Выйти ({{request.user.account}})</a></li>

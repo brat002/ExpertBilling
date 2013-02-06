@@ -13,8 +13,8 @@
             64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br />";
             
             
-        	$('#id_vpn_speed').popover({title: 'Формат', content:infotext, html:true, trigger: 'focus', placement: 'right'})
-        	$('#id_ipn_speed').popover({title: 'Формат', content:infotext, html:true, trigger: 'focus', placement: 'right'})
+        	$('#id_vpn_speed').popover({title: 'Формат', content:infotext, html:true, trigger: 'hover', placement: 'right'})
+        	$('#id_ipn_speed').popover({title: 'Формат', content:infotext, html:true, trigger: 'hover', placement: 'right'})
         $("#generate_username").click(function() {
             $.getJSON('{% url generate_credentials %}',{action:'login'},function(data,status){
                 if( status=='success' ){
@@ -61,7 +61,7 @@
                 event.preventDefault();
             });
         });
-        $('#id_assign_vpn_ip_address').popover({title:'Подбор IP адреса', content: 'Выдать следующий IP из пула или показать дсотупные'});
+        $('#id_assign_vpn_ip_address').popover({title:'Подбор IP адреса', content: 'Выдать следующий IP из пула или показать доcтупные', trigger: 'hover'});
         $('#id_vpn_ip_address').autocomplete({
         	source: function( request, response )
             {                      
@@ -116,7 +116,7 @@
                 });   
         });
 
-        $('#id_assign_ipn_ip_address').popover({title:'Подбор IP адреса', content: 'Выдать следующий IP из пула или показать дсотупные'});
+        $('#id_assign_ipn_ip_address').popover({title:'Подбор IP адреса', content: 'Выдать следующий IP из пула или показать дсотупные', trigger: 'hover'});
         $('#id_ipn_ip_address').autocomplete({
             source: function( request, response )
             {                      
@@ -171,7 +171,7 @@
                 });   
         });
         
-        $('#id_get_mac_address').popover({title:'Внимание', content: 'Этот функционал поддерживается только при использовании RouterOS MikroTik'});
+        $('#id_get_mac_address').popover({title:'Внимание', content: 'Этот функционал поддерживается только при использовании RouterOS MikroTik', trigger: 'hover'});
         $('#id_get_mac_address').click(function(){
         	if (!$('#id_nas').val()==null){
                 $.fn.dialog2.helpers.alert("Вы не выбрали сервер доступа.", { 

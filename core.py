@@ -43,7 +43,7 @@ from ctypes import Structure
 from hashlib import md5
 import commands
 from base64 import b64decode
-from base64 import b64encode
+
 #===============================================================================
 # from importlib import import_module ##DONT REMOVE
 # import contextlib
@@ -55,7 +55,7 @@ from base64 import b64encode
 # import kombu.entity
 #===============================================================================
 import celery.task
-import kombu.entity
+
 
 sys.path.append("/opt/ebs/data/workers/")
 sys.path.append("workers/")
@@ -64,8 +64,8 @@ sys.path.append("celery/")
 from tasks import PoD, change_speed, cred, update_vpn_speed_state, update_ipn_speed_state
 import tasks
 
-from db import transaction, ps_history, get_last_checkout, get_acctf_history, radiustraffictransaction
-from db import timetransaction, get_last_addon_checkout, addon_history, check_in_suspended, TraftransTableException
+from db import transaction, get_last_checkout, get_acctf_history, radiustraffictransaction
+from db import get_last_addon_checkout, addon_history, check_in_suspended, TraftransTableException
 
 
 from classes.cacheutils import CacheMaster
@@ -74,7 +74,7 @@ from classes.flags import CoreFlags
 from classes.vars import CoreVars
 from utilites import renewCaches, savepid, get_connection, check_running, getpid, rempid
 
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ_COMMITTED, ISOLATION_LEVEL_SERIALIZABLE
+from psycopg2.extensions import  ISOLATION_LEVEL_SERIALIZABLE
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession

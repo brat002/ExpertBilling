@@ -223,7 +223,7 @@ class NfFilterVars(Vars):
                  'FLOW_MAIL_WARNING', 'FLOW_MAIL_SUBJECT', 'FLOW_MAIL_USE_TLS', \
                  'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', 'FLOW_MAIL_HOST_PASSWORD', \
                  'FLOW_MAIL_PORT', 'FLOW_MAIL_EMAIL_TO', 'FLOW_MAIL_EMAIL_FROM',\
-                 'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', 'FLOW_INTERVAL', 'FLOW_WHEN', 'SKIP_INDEX_CHECK', 'QUEUE_IN', 'QUEUE_OUT')
+                 'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', 'FLOW_INTERVAL', 'FLOW_WHEN', 'SKIP_INDEX_CHECK', 'QUEUE_IN', 'QUEUE_OUT', 'SKIP_GROUPS_PROCESSING')
     def __init__(self):
         super(NfFilterVars, self).__init__()
         self.name = 'nf'
@@ -271,6 +271,7 @@ class NfFilterVars(Vars):
         self.QUEUE_IN = '/opt/ebs/var/spool/nf_in'
         self.QUEUE_OUT = '/opt/ebs/var/spool/nf_out'
         self.SKIP_INDEX_CHECK = False
+        self.SKIP_GROUPS_PROCESSING = False
         self.types.update({'addr': ('HOST', 'PORT'), 'nfraddr': ('NFR_HOST', 'NFR_PORT', 'SOCK_TIMEOUT'),\
                            'cachedicts': ('CACHE_DICTS',), 'filepack': ('FILE_PACK',), 'checkclasses': ('CHECK_CLASSES',), 'prefix': ('PREFIX',), 'aggr':('AGGR_TIME', 'AGGR_NUM'),\
                            'savedir': ('SAVE_DIR',), 'readdir': ('READ_DIR',), 'dumpdir': ('DUMP_DIR',)})
@@ -301,6 +302,8 @@ class NfFilterVars(Vars):
         if config.has_option(name, 'skip_index_check'): self.SKIP_INDEX_CHECK = config.getboolean(name, 'skip_index_check')
         if config.has_option(name, 'queue_in'):       self.QUEUE_IN = config.get(name, 'queue_in')
         if config.has_option(name, 'queue_out'):       self.QUEUE_OUT = config.get(name, 'queue_out')
+        if config.has_option(name, 'skip_groups_processing'):       self.SKIP_GROUPS_PROCESSING = config.get(name, 'skip_groups_processing')
+        
         
         flow_opts = ['%bWRITE_FLOW', 'FLOW_DIR', '%iFLOW_TIME', '%iFLOW_COUNT', 'FLOW_MAIL_WARNING', \
                      'FLOW_MAIL_SUBJECT', '%bFLOW_MAIL_USE_TLS', 'FLOW_MAIL_HOST', 'FLOW_MAIL_HOST_USER', \

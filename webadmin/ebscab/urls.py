@@ -23,9 +23,11 @@ urlpatterns = patterns('',
     (r'^webmoney/', include('paymentgateways.webmoney.urls')),
     (r'^ebsadmin/', include('ebsadmin.urls')),
     (r'^cassa/', include('ebsadmin.cashier.urls')),
+    (r'^reports/', include('ebsadmin.reportsystem.urls')),
     (r'^admin/lookups/', include(ajax_select_urls)),
     (r'^admin/', include(admin.site.urls)),
     (r'^admin_media/jsi18n', 'django.views.i18n.javascript_catalog'),
+
     
 
 )
