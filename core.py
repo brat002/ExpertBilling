@@ -293,8 +293,8 @@ class periodical_service_bill(Thread):
         else:
             last_checkout = lc
         
-        #Расчитываем параметры расчётного периода на момент последнего списания
-        period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)                                
+        #Расчитываем параметры расчётного периода на момент окончания тарифного плана или сейчас
+        period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, dateAT)           
         # Проверка на расчётный период без повторения
         #if period_end < dateAT: return
 
@@ -379,8 +379,11 @@ class periodical_service_bill(Thread):
             #if (first_time or (ps.created or last_checkout) <= period_start) or (not first_time and last_checkout < period_start):
             if first_time or last_checkout < period_start:
                 cash_summ = ps.cost
-
-                chk_date = last_checkout
+                
+                #Зачем это нужно:
+                # У нас может возникать ситуация, когда первый раз уже снимали и когда не снимали. Если не снимали - первое списание нужно выполнить. Если не снимали - нужно сразу выполнить следующее
+                period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)
+                chk_date = last_checkout+datetime.timedelta(seconds=delta_ast) if lc else last_checkout
                 period_end_ast= None
 
                 while first_time==True or chk_date <= period_start:
@@ -395,6 +398,9 @@ class periodical_service_bill(Thread):
                     mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
                     cash_summ = mult*ps.cost # Установить сумму равной нулю, если пользователь в блокировке
                     
+                    #if first_time == False:
+                    #    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    #    chk_date =  chk_date+datetime.timedelta(seconds=delta_ast)
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                         # если указана дата начала перид. услуги и она в будующем - прпускаем её списание
@@ -555,27 +561,29 @@ class periodical_service_bill(Thread):
                 #get a list of tarifs with periodical services & loop                
 
                 for acc_id in caches.account_cache.by_account:
-
+                    
                     acc =  caches.account_cache.by_account.get(acc_id)
+                    if acc.account_status in [3,4, '3', '4']: continue
+                    if acc_id == 6050:
+                        pass
+                    
                     if 0: assert isinstance(acc, AccountData)
                     acctf_raw_history = get_acctf_history(cur, acc.account_id)
                     by_id = {}
                     #Получаем историю смены субаккаунтов по которым не производились списания период. услуг
                     #Начальная индексация
-                    for acctf_id, acctf_datetime, next_acctf_id, acc_tarif_id in acctf_raw_history:
-                        by_id[acctf_id] = acctf_datetime
 
-                    for acctf_id, acctf_datetime, next_acctf_id, acc_tarif_id in acctf_raw_history:
-                        next_date = by_id.get(next_acctf_id)
+                    for acctf_id, acctf_datetime, next_acctf_id, next_date, acc_tarif_id in acctf_raw_history:
+
 
                         for ps in caches.periodicalsettlement_cache.by_id.get(acc_tarif_id,[]):
                             
                             try:
                                 current = True if next_acctf_id is None else False
-                                if acc.account_status in [3,4, '3', '4']: continue
+                                
                                 
                                 dateAT = next_date if next_date else self.NOW
-                                logger.info("%s : preiter: acctf=%s %s %s %s %s", (self.getName(), acctf_id, self.NOW, dateAT, current, next_date))
+                                logger.info("%s : preiter: acctf=%s now=%s dateat=%s current=%s next_date=%s", (self.getName(), acctf_id, self.NOW, dateAT, current, next_date))
                                 self.iterate_ps(cur, caches, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, PERIOD)
                             
                             except Exception, ex:
@@ -1847,7 +1855,7 @@ if __name__ == "__main__":
        
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
-    Watcher()
+    #Watcher()
     try:
         import psyco
         psyco.full(memory=100)
