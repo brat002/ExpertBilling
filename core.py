@@ -28,7 +28,7 @@ import utilites
 import itertools
 import db
 
-from decimal import Decimal
+from cdecimal import Decimal
 from copy import copy, deepcopy
 from threading import Thread, Lock
 from collections import defaultdict
@@ -1855,7 +1855,7 @@ if __name__ == "__main__":
        
     config = ConfigParser.ConfigParser()
     config.read("ebs_config.ini")
-    #Watcher()
+    Watcher()
     try:
         import psyco
         psyco.full(memory=100)

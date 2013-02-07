@@ -32,7 +32,7 @@ from db import traffictransaction, TraftransTableException, GpstTableException
 from bisect import bisect_left
 
 
-from decimal import Decimal
+from cdecimal import Decimal
 from classes.nfroutine_cache import *
 from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
