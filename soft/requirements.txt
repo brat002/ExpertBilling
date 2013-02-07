@@ -30,3 +30,4 @@ django-tables2-reports==0.0.3
 SQLAlchemy
 django-jsonfield==0.8.12
 http://m3.diggit.ru/media/soft/pysubnettree.zip
+cdecimal
