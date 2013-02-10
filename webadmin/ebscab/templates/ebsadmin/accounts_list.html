@@ -194,13 +194,14 @@
   
   <div class="row-fluid">
         <div class="span12">
-
+    
             <form action="{{form.action}}" method="GET" class="well form-horizontal form-condensed">
+            
             {{ form.non_field_errors }}
             
                 <fieldset>
                     <legend>Поиск аккаунта</legend>
-
+                    
                     <div class="control-group">
                         <div class="control-row">
                             <label class="control-label" for="input-agreement-no">{{form.contract.label}}</label>
@@ -327,6 +328,10 @@
                             {% endif %}
                         </div>
                     </div>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                    </div>
            </fieldset>
                 <fieldset>
                     <legend>Адрес</legend>
@@ -445,6 +450,10 @@
                             {% endif %}
                         </div>
                     </div>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                    </div>
                 </fieldset>
 
 
@@ -536,7 +545,10 @@
                             {% endif %}
                             </div>
                         </div>
-            
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                    </div>
                 </fieldset>
                 
            <fieldset>
@@ -627,7 +639,11 @@
                         </div>
                     </div>
                     </div>
-
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                    </div>
+                </fieldset>
 
                 <fieldset>
                     <legend>Блокировка</legend>
@@ -662,6 +678,10 @@
                             {% endif %}
                             </div>
                         </div>
+                    </div>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
                     </div>
                 </fieldset>
 
@@ -705,6 +725,10 @@
                                 <input type="text" class="input-xlarge" id="input-settlement-account">
                             </div>
                         </div>
+                    </div>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
                     </div>
                 </fieldset>
                 <fieldset>

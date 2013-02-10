@@ -423,7 +423,7 @@ class periodical_service_bill(Thread):
                     elif pss_type == ADDON:
                         cash_summ = cash_summ * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
-                        logger.debug('%s: Addon Service Checkout thread: GRADUAL checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))                        
+                        logger.debug('%s: Addon Service Checkout thread: AT START checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))                        
                     cur.connection.commit()
                     chk_date = period_end_ast
                     first_time=False
@@ -480,7 +480,7 @@ class periodical_service_bill(Thread):
                             logger.debug('%s: Periodical Service: AT END First time checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
 #                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::character varying, %s::decimal, %s::timestamp without time zone, %s);", (ps.ps_id, acc.acctf_id, acc.account_id, 'PS_GRADUAL', cash_summ, chk_date, ps.condition))
                         elif pss_type == ADDON:
-                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, tr_date)
+                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, tr_date)
                             logger.debug('%s: Addon Service Checkout: AT END First time checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
                     else:
                         if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
@@ -506,7 +506,7 @@ class periodical_service_bill(Thread):
                                 #сделать расчёт остатка - сейчас эта штука компенсируется штрафами за досрочное отключение
                                 cash_summ = 0
                                 tr_date = ps.deactivated
-                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, tr_date)
+                            addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, tr_date)
                             logger.debug('%s: Addon Service Checkout thread: AT END checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
                     cur.connection.commit()
                     chk_date = period_end_ast
