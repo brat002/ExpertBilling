@@ -1683,6 +1683,7 @@ class SubAccount(models.Model):
 class BalanceHistory(models.Model):
     account=models.ForeignKey(Account)
     balance = models.DecimalField(max_digits=30, decimal_places=20)
+    summ = models.DecimalField(max_digits=30, default=0, decimal_places=6)
     datetime = models.DateTimeField()
     
     class Meta:
