@@ -269,7 +269,8 @@ class AuthLogTable(TableReport):
         
 class BallanceHistoryTable(TableReport):
     account__username = django_tables.LinkColumn('account_edit', get_params={'id':A('account')})
-    balance = FormatBlankColumn()
+    balance = FormatBlankColumn(verbose_name=u'Новый баланс')
+    summ = FormatBlankColumn(verbose_name=u'Сумма')
     datetime = FormatDateTimeColumn()
     
     class Meta:

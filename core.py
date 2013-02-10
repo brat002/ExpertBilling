@@ -583,7 +583,7 @@ class periodical_service_bill(Thread):
                                 
                                 
                                 dateAT = next_date if next_date else self.NOW
-                                logger.info("%s : preiter: acctf=%s now=%s dateat=%s current=%s next_date=%s", (self.getName(), acctf_id, self.NOW, dateAT, current, next_date))
+                                #logger.info("%s : preiter: acctf=%s now=%s dateat=%s current=%s next_date=%s", (self.getName(), acctf_id, self.NOW, dateAT, current, next_date))
                                 self.iterate_ps(cur, caches, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, PERIOD)
                             
                             except Exception, ex:
@@ -1147,7 +1147,7 @@ class addon_service(Thread):
                                         service_id, service_type, account_id, accountaddonservice_id, 
                                         accounttarif_id, type_id, summ, created)
                                 VALUES (%s, 'onetime', %s, %s, 
-                                        %s, '%s', (-1)*%s, '%s')
+                                        %s, %s, (-1)*%s,%s)
 
                             """,  (service.id, acc.account_id, accountaddonservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,))
                             cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = %s WHERE id=%s", (dateAT, accountaddonservice.id))
@@ -1514,11 +1514,11 @@ class ipn_service(Thread):
                         period = caches.timeperiodaccess_cache.in_period[acc.tarif_id]# True/False
                         for id, ipn_ip_address, ipn_mac_address, vpn_ip_address, nas_id, subacc in access_list:
                             sended, recreate_speed = (None, False)
-                            logger.info("IPNALIVE: %s: check and set new status for subaccount/service %s/%s", (self.getName(), repr(acc), repr(subacc),))
+                            #logger.info("IPNALIVE: %s: check and set new status for subaccount/service %s/%s", (self.getName(), repr(acc), repr(subacc),))
                             nas = caches.nas_cache.by_id.get(nas_id)
                             
                             if not nas:
-                                logger.info("IPNALIVE: %s: nas not set for subaccount/service %s/%s", (self.getName(), repr(acc), repr(subacc),))
+                                #logger.info("IPNALIVE: %s: nas not set for subaccount/service %s/%s", (self.getName(), repr(acc), repr(subacc),))
                                 continue
                             if 0: assert isinstance(nas, NasData)
                             access_type = 'IPN'
