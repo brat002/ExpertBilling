@@ -250,8 +250,8 @@ class ActionLogFilterForm(forms.Form):
     end_date = forms.DateTimeField(required=True)
     
 class SearchAuthLogForm(forms.Form):
-    start_date = forms.DateTimeField(required=False, label=u'С', widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
-    end_date = forms.DateTimeField(required=False, label=u'По', widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     account = AutoCompleteSelectMultipleField( 'account_fts', label=u'Аккаунт', required = False)
     nas = forms.ModelMultipleChoiceField(label=u"Сервер доступа", queryset=Nas.objects.all(), required=False)
 
@@ -278,9 +278,9 @@ class AccountAddonServiceModelForm(ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(AccountAddonServiceModelForm, self).__init__(*args, **kwargs)
-        self.fields['activated'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
-        self.fields['deactivated'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
-        self.fields['temporary_blocked'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['activated'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['deactivated'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['temporary_blocked'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
 
 
     class Meta:
@@ -294,8 +294,8 @@ class SuspendedPeriodModelForm(ModelForm):
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.TextInput(attrs={'readonly':'readonly'}))
     def __init__(self, *args, **kwargs):
         super(SuspendedPeriodModelForm, self).__init__(*args, **kwargs)
-        self.fields['start_date'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
-        self.fields['end_date'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['start_date'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['end_date'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
 
     class Meta:
         model = SuspendedPeriod
@@ -303,8 +303,8 @@ class SuspendedPeriodModelForm(ModelForm):
 
 class SuspendedPeriodBatchForm(forms.Form):
     accounts = forms.ModelMultipleChoiceField(queryset=Account.objects.all(), widget = forms.widgets.MultipleHiddenInput)
-    start_date = forms.DateTimeField(widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
-    end_date = forms.DateTimeField(widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    start_date = forms.DateTimeField(widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
 
 
 
@@ -321,8 +321,8 @@ class TransactionModelForm(ModelForm):
         self.fields['account'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['bill'].widget.attrs['class'] = 'input-xlarge span5'
-        self.fields['created'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
-        self.fields['end_promise'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['created'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['end_promise'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
 
     def clean_summ(self):
         summ = self.cleaned_data.get('summ',0)
@@ -339,7 +339,7 @@ class AccountTariffForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(AccountTariffForm, self).__init__(*args, **kwargs)
 
-        self.fields['datetime'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['datetime'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
         
     class Meta:
         model = AccountTarif
@@ -347,7 +347,7 @@ class AccountTariffForm(ModelForm):
 class BatchAccountTariffForm(forms.Form):
     accounts = forms.ModelMultipleChoiceField(queryset=Account.objects.all(), widget = forms.widgets.MultipleHiddenInput)
     tariff = forms.ModelChoiceField(label=u'Тариф', queryset=Tariff.objects.all())
-    datetime = forms.DateTimeField(label=u'С даты', widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    datetime = forms.DateTimeField(label=u'С даты', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
 
         
@@ -400,7 +400,7 @@ class AccountForm(ModelForm):
         self.fields['credit'].widget.attrs['class'] = 'input-small'
         self.fields['comment'].widget.attrs['class'] = 'input-xlarge span10'
         self.fields['comment'].widget.attrs['cols'] =10
-        self.fields['created'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['created'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
     
     class Meta:
         model = Account
@@ -464,8 +464,8 @@ class PeriodicalServiceForm(ModelForm):
             self.fields[myField].widget.attrs['class'] = 'input-xlarge span5'
 
 
-        self.fields['created'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
-        self.fields['deactivated'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['created'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['deactivated'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
         
 
 
@@ -787,8 +787,8 @@ class NewsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(NewsForm, self).__init__(*args, **kwargs)
         self.fields['body'].widget.attrs['class'] = 'input-xlarge span8'
-        self.fields['created'].widget =SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
-        self.fields['age'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
+        self.fields['created'].widget =forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['age'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
 
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     accounts = AutoCompleteSelectMultipleField( 'account_fts', label=u'Аккаунты', required = False)
@@ -861,8 +861,8 @@ class CardBatchChangeForm(forms.Form):
     nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
     ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
     
-    date_start = forms.DateTimeField(label=u'Активировать с', required = False, widget=SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
-    date_end = forms.DateTimeField(label=u'Активировать по', required = False, widget=SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    date_start = forms.DateTimeField(label=u'Активировать с', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=u'Активировать по', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
 
 class DealerForm(ModelForm):
