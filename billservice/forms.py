@@ -281,7 +281,8 @@ class AccountAddonServiceModelForm(ModelForm):
         self.fields['activated'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
         self.fields['deactivated'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
         self.fields['temporary_blocked'].widget = SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'})
-        
+
+
     class Meta:
         model = AccountAddonService
       
@@ -554,8 +555,12 @@ class AddonServiceForm(ModelForm):
             self.fields[myField].widget.attrs['class'] = 'input-xlarge'
         
         self.fields['service_activation_action'].widget.attrs['class'] = 'span8'
+        self.fields['service_activation_action'].widget.attrs['rows'] = 3
         self.fields['service_deactivation_action'].widget.attrs['class'] = 'span8'
-          
+        self.fields['service_deactivation_action'].widget.attrs['rows'] = 3  
+        self.fields['comment'].widget.attrs['class'] = 'input-xlarge span6'
+        self.fields['comment'].widget.attrs['rows'] = 3
+        
     class Meta:
         model = AddonService  
 
