@@ -1,6 +1,6 @@
 BeautifulSoup==3.2.1
 DateUtils==0.5.2
-Django==1.4.2
+Django==1.4.3
 IPy==0.75
 Mako==0.7.3
 MarkupSafe==0.15
@@ -29,5 +29,4 @@ zope.interface==4.0.2
 django-tables2-reports==0.0.3
 SQLAlchemy
 django-jsonfield==0.8.12
-http://m3.diggit.ru/media/soft/pysubnettree.zip
 cdecimal
