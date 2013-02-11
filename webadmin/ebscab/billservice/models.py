@@ -1497,7 +1497,7 @@ class AddonService(models.Model):
     service_type = models.CharField(verbose_name=u"Тип услуги",max_length=32, choices=(("onetime", u"Разовая услуга"),("periodical", u"Периодическая услуга"),))    
     sp_type = models.CharField(verbose_name=u"Способ списания",max_length=32, choices=(("AT_START",u"В начале расчётного периода"),("AT_END", u"В конце расчётного периода" ),("GRADUAL", u"На протяжении расчётного периода"),))    
     sp_period = models.ForeignKey(SettlementPeriod, verbose_name=u"Расчётный период", help_text=u"Период, в течении которого будет списываться стоимость услуги", related_name="addonservice_spperiod", blank=True, null=True, on_delete=models.SET_NULL)    
-    timeperiod = models.ForeignKey(TimePeriod, verbose_name=u"Время активации", help_text=u"Время, когда возможна активация услуги",null=True, on_delete=models.SET_NULL)    
+    timeperiod = models.ForeignKey(TimePeriod, verbose_name=u"Время активации", help_text=u"Время, когда услуга будет активирована",null=True, on_delete=models.SET_NULL)    
     cost = models.DecimalField(verbose_name=u"Стоимость услуги", decimal_places=2, max_digits=10, blank=True, default=0)    
     cancel_subscription = models.BooleanField(verbose_name=u"Разрешить отключение", help_text=u"Разрешить самостоятельное отключение услуги", default = True)    
     wyte_period = models.ForeignKey(SettlementPeriod, verbose_name=u"Штрафуемый период", help_text=u"Списывать сумму штрафа при досрочном отключении услуги пользователем",  related_name="addonservice_wyteperiod", blank=True, null=True, on_delete=models.SET_NULL)    

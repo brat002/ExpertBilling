@@ -136,14 +136,6 @@ def add_addonservice(account_id, service_id, subaccount_id=None, ignore_locks = 
 
 
 
-    res = False
-    for timeperiod in service.timeperiod.time_period_nodes.all():
-        if res==True or in_period(timeperiod.time_start, timeperiod.length, timeperiod.repeat_after):
-            res=True
-
-    if res == False and ignore_locks==False:
-        return "NOT_IN_PERIOD"
-
     if service.change_speed and ignore_locks==False:
 
 

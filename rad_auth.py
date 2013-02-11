@@ -385,24 +385,32 @@ class HandleSAuth(HandleSBase):
         defaults = self.caches.defspeed_cache.by_id.get(tarif_id)
         speeds   = self.caches.speed_cache.by_id.get(tarif_id, [])
         correction = self.caches.speedlimit_cache.by_account_id.get(account_id)
-
+        now=datetime.datetime.now()
         addonservicespeed=[]  
+        br = False
         if subacc_id:
             accservices = self.caches.accountaddonservice_cache.by_subaccount.get(subacc_id, [])    
             for accservice in accservices:                                 
-                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                if not accservice.deactivated  and service.change_speed:                                                                        
-                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                    break   
+                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)     
+                for pnode in self.caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):                                       
+                    if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, now)[3]:                                                                        
+                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                        br = True
+                        break   
+                if br: break
+        br = False
         if not addonservicespeed: 
             accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])    
             for accservice in accservices:                                 
-                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                if not accservice.deactivated  and service.change_speed:                                                                        
-                    addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                    break    
+                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)           
+                for pnode in self.caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):                     
+                    if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, now)[3]:                                                                        
+                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                        br = True
+                        break    
+                if br: break
                 
-        now=datetime.datetime.now()
+        
         speed = create_speed(defaults, speeds,  correction, addonservicespeed, speed, now, fMem)
         
         self.session_speed = newspeed = ''.join([unicode(spi) for spi in speed]) 
