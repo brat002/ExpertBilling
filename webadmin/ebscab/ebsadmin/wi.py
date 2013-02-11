@@ -578,7 +578,7 @@ def ballancehistoryreport(request):
                 res = res.filter(datetime__gte=start_date)
             if end_date:
                 res = res.filter(datetime__lte=end_date)
-            res = res.values('id', 'account', 'account__username', 'balance', 'datetime')
+            res = res.values('id', 'account', 'account__username', 'balance', 'summ',  'datetime')
             table = BallanceHistoryTable(res)
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
