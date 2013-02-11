@@ -285,29 +285,28 @@
                     <div class="tab-pane active" id="tab-first">
                         <fieldset>
                             <legend>Карточка клиента{% objectlog account %}</legend>
-                            {% if account %}
-                            <div class="control-group">
-	                            <div class="control-row">
-	                                <label class="control-label">ID аккаунта</label>
-	                                <div class="controls">
-	                                    <label class="checkbox">{{account.id}}</label>
-	                                </div>
-	                            </div>
-	                            <div class="control-row">
-	                                <label class="control-label" id="modal-accounttariff-dialog"><a href="#">Тариф</a></label>
-	                                <div class="controls">
-	                                    <small class="checkbox inline inline-text  thumbnail">{{account.get_account_tariff.name}}</small>
-	                                    
-	                                </div>
-	                            </div>
-                            </div>
-                            {% endif %}
+
 
     
 
                             <div class="control-group">
                             <div class="control-row">
-                                <label class="control-label">{{form.contract.label}}</label>
+                                <label class="control-label" for="input-username"><strong>{{form.username.label}}</strong></label>
+                                <div class="controls">
+                                    {{ form.username }}
+                                    {% if form.username.errors %}
+                                    <span class="help-inline">{% for error in form.username.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if form.username.help_text%}
+                                    <p class="help-block">
+                                        {{ form.username.help_text|safe }}
+                                    </p>
+                                    {% endif %}
+                                    <input type="button" id="generate_username" class="btn" value='#'>
+                                </div>
+                            </div>
+                            <div class="control-row">
+                                <label class="control-label"><strong>{{form.contract.label}}</strong></label>
                                 <div class="controls">
                                     <span>{{ form.contract }}<a id="modal-templateselect-dialog" class="btn btn-info btn-mini" ><i class="icon-print icon-white"></i></a></span>
                                     {% if form.contract.errors %}
@@ -321,20 +320,7 @@
                                   
                                 </div>
                              </div>
-                            <div class="control-row">
-                                <label class="control-label" for="input-account-status">{{form.status.label}}</label>
-                                <div class="controls">
-                                            {{ form.status }}
-                                            {% if form.status.errors %}
-                                                <span class="help-inline">{% for error in form.status.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.status.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.status.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                </div>
-                            </div>
+
                             </div>
                             
                             {% if not account.contract %}
@@ -354,17 +340,52 @@
                                 </div>
                             </div>
                             {% endif %}
+                            <div class="control-group">
+                            <div class="control-row">
+                                <label class="control-label" for="input-password"><strong>{{form.password.label}}</strong></label>
+                                <div class="controls">
+                                    {{ form.password }}
+                                    {% if form.password.errors %}
+                                    <span class="help-inline">{% for error in form.password.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if form.password.help_text%}
+                                    <p class="help-block">
+                                        {{ form.password.help_text|safe }}
+                                    </p>
+                                    {% endif %}
+                                    <input type='button' id='generate_password' class="btn" value="#">
+                                </div>
+                            </div>
+                            <div class="control-row">
+                                <label class="control-label" for="input-account-status"><strong>{{form.status.label}}</strong></label>
+                                <div class="controls">
+                                            {{ form.status }}
+                                            {% if form.status.errors %}
+                                                <span class="help-inline">{% for error in form.status.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.status.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.status.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                </div>
+                            </div>
+                            </div>
+                            <hr />
                             {% if account %}
                             <div class="control-group">
                             <div class="control-row">
-                                <label class="control-label">Баланс:</label>
+                                <label class="control-label" for="input-credit"><strong>{{form.credit.label}}</strong></label>
                                 <div class="controls">
-                                    <label class="checkbox inline inline-text">{{account.ballance|floatformat:2}}{{CURRENCY}}</label>
-
-                                    <div class="btn-group">
-                                        <a href=""  class="btn btn-small btn-success" id="modal-transaction-dialog" ><i class="icon-plus icon-white "></i></a>
-
-                                    </div>
+                                        {{ form.credit }}
+                                        {% if form.credit.errors %}
+                                            <span class="help-inline">{% for error in form.credit.errors %}{{ error }}<br/> {% endfor %}</span>
+                                        {% endif %}
+                                        {% if form.credit.help_text%}
+                                            <p class="help-block">
+                                                {{ form.credit.help_text|safe }}
+                                            </p>
+                                        {% endif %}
                                 </div>
                                 </div>
                             <div class="control-row">
@@ -385,20 +406,23 @@
                             </div>
                             {% endif %}
                             <div class="control-group">
-                            <div class="control-row">
-                                <label class="control-label" for="input-credit">{{form.credit.label}}</label>
-                                <div class="controls">
-                                        {{ form.credit }}
-                                        {% if form.credit.errors %}
-                                            <span class="help-inline">{% for error in form.credit.errors %}{{ error }}<br/> {% endfor %}</span>
-                                        {% endif %}
-                                        {% if form.credit.help_text%}
-                                            <p class="help-block">
-                                                {{ form.credit.help_text|safe }}
-                                            </p>
-                                        {% endif %}
-                                </div>
-                                </div>
+                                    <label class="control-label" for="input-created"><strong>Дата создания</strong></label>
+                                    <div class="controls">
+                                    {{ form.created }}
+                                    {% if form.created.errors %}
+                                    <span class="help-inline">{% for error in form.created.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if form.created.help_text%}
+                                    <p class="help-block">
+                                        {{ form.created.help_text|safe }}
+                                    </p>
+                                    {% endif %}
+
+                                    </div>
+
+                            </div>
+
+
                             <div class="control-row">
                                 <label class="control-label" for="input-account-status">{{form.systemuser.label}}</label>
                                 <div class="controls">
@@ -413,61 +437,6 @@
                                             {% endif %}
                                 </div>
                             </div>
-                            </div>
-                            <div class="control-group">
-                                <label class="control-label" for="input-username">{{form.username.label}}</label>
-                                <div class="controls">
-                                    {{ form.username }}
-                                    {% if form.username.errors %}
-                                    <span class="help-inline">{% for error in form.username.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.username.help_text%}
-                                    <p class="help-block">
-                                        {{ form.username.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-                                    <input type="button" id="generate_username" class="btn" value='#'>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                            <div class="control-row">
-                                <label class="control-label" for="input-password">{{form.password.label}}</label>
-                                <div class="controls">
-                                    {{ form.password }}
-                                    {% if form.password.errors %}
-                                    <span class="help-inline">{% for error in form.password.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.password.help_text%}
-                                    <p class="help-block">
-                                        {{ form.password.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-                                    <input type='button' id='generate_password' class="btn" value="#">
-                                </div>
-                            </div>
-
-                            </div>
-
-                            <div class="control-group">
-
-                                    <label class="control-label" for="input-created">Дата создания</label>
-                                    <div class="controls">
-                                    {{ form.created }}
-                                    {% if form.created.errors %}
-                                    <span class="help-inline">{% for error in form.created.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.created.help_text%}
-                                    <p class="help-block">
-                                        {{ form.created.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-
-                                    </div>
-
-
-                            </div>
-                            
                             <div class="control-group">
 
                                 <label class="control-label" for="input-comment">{{form.comment.label}}</label>
@@ -1248,6 +1217,26 @@
         </div>
         {% if account %}
         <div class="span3">
+          <div class="well sidebar-nav">
+            <ul class="nav nav-list">
+              <li class="nav-header">Баланс</li>
+              <strong><h2>{{account.ballance|floatformat:2}} {{currency}}</h2></strong>
+                <li>                                    <div class="btn-group">
+                                        <a href="#"  class="btn btn-large btn-success" id="modal-transaction-dialog" ><i class="icon-plus icon-white "></i>Пополнить</a>
+
+                                    </div></li>
+            </ul>
+          </div>
+          <div class="well sidebar-nav alert-success">
+            <ul class="nav nav-list">
+              <li class="nav-header">Тариф</li>
+              <strong><h4>{{account.get_account_tariff.name}}</h4></strong>
+                <li>                                    <div class="btn-group">
+                                        <a href="#"  class="btn btn-large btn-info" id="modal-accounttariff-dialog" ><i class="icon-pencil icon-white "></i>Изменить</a>
+
+                                    </div></li>
+            </ul>
+          </div>
           <div class="well sidebar-nav">
             <ul class="nav nav-list">
               <li class="nav-header">Отчёты</li>
