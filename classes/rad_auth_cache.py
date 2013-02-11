@@ -11,6 +11,7 @@ from rad_class.SpeedlimitData import SpeedlimitData
 from rad_class.RadiusAttrsData import RadiusAttrsData
 from rad_class.SubAccountsData import SubAccountsData
 from core_cache import TimePeriodAccessCache as PeriodCache
+from core_class.TimePeriodNodeData import TimePeriodNodeData
 from rad_class.IpPoolData import IpPoolData
 from common.AddonServiceData import AddonServiceData
 #from common.AddonServiceTarifData import AddonServiceTarifData
@@ -19,7 +20,7 @@ from common.AccountAddonServiceData import AccountAddonServiceData
 from core_cache import AddonServiceCache, AddonServiceTarifCache, AccessParametersCache
 
 class RadAuthCaches(CacheCollection):
-    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache', 'subaccount_cache','ippool_cache', 'switch_cache')
+    __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache', 'subaccount_cache','ippool_cache', 'switch_cache', 'timeperiodnode_cache')
     
     def __init__(self, date, fMem):
         super(RadAuthCaches, self).__init__(date)
@@ -35,7 +36,8 @@ class RadAuthCaches(CacheCollection):
         self.subaccount_cache = SubAccountsCache()
         self.ippool_cache = IpPoolCache()
         self.switch_cache = SwitchCache()
-        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache, self.subaccount_cache, self.ippool_cache, self.switch_cache]
+        self.timeperiodnode_cache = TimePeriodNodeCache()
+        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache, self.subaccount_cache, self.ippool_cache, self.switch_cache, self.timeperiodnode_cache]
 
 
 class AccountCache(CacheItem):
@@ -232,4 +234,11 @@ class SubAccountsCache(CacheItem):
                 self.by_switch_port[(item.switch_id,item.switch_port)]=item
                 
             
+    
+class TimePeriodNodeCache(SimpleDefDictCache):
+    '''By timeperiod_id'''
+    __slots__ = ()
+    datatype = TimePeriodNodeData
+    sql = core_sql['timepnode']
+    num = 5
     

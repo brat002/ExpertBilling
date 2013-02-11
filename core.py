@@ -177,20 +177,29 @@ class check_vpn_access(Thread):
                             
                             accservices = []
                             addonservicespeed=[]  
+                            br = False
                             if subacc:
                                 accservices = caches.accountaddonservice_cache.by_subaccount.get(subacc.id, [])    
                                 for accservice in accservices:                                 
-                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                                    if not accservice.deactivated  and service.change_speed:                                                                        
-                                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                                        break   
+                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)           
+                                    for pnode in caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):                     
+                                        if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, now)[3]:                                                                        
+                                            addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                                            br = True
+                                            break   
+                                    if br: break
+                                    
+                            br = False
                             if not addonservicespeed: 
                                 accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])    
                                 for accservice in accservices:                                 
-                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                                    if not accservice.deactivated  and service.change_speed:                                                                        
-                                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                                        break    
+                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)          
+                                    for pnode in caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):
+                                        if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, now)[3]:                                                                        
+                                            addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                                            br = True
+                                            break    
+                                        if br: break
 
                             speed = create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, subacc.vpn_speed, dateAT, fMem)                            
 
@@ -336,7 +345,7 @@ class periodical_service_bill(Thread):
                         
                         logger.debug('%s: Periodical Service: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))                            
                     elif pss_type == ADDON:
-                        cash_summ = Decimal(cash_summ) * susp_per_mlt
+                        cash_summ = Decimal(str(cash_summ)) * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
                         logger.debug('%s: Addon Service Checkout thread: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
                     cur.connection.commit()
@@ -410,7 +419,7 @@ class periodical_service_bill(Thread):
                     if vars.USE_COEFF_FOR_PS==True and first_time and ((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)<delta_ast:
                         logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
                         delta_coef=float((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)/float(delta_ast)        
-                        cash_summ=Decimal(cash_summ)*Decimal(str(delta_coef))
+                        cash_summ=Decimal(str(cash_summ))*Decimal(str(delta_coef))
 
                                 
 
@@ -421,7 +430,7 @@ class periodical_service_bill(Thread):
                         logger.debug('%s: Periodical Service: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
                         pass
                     elif pss_type == ADDON:
-                        cash_summ = Decimal(cash_summ) * susp_per_mlt
+                        cash_summ = Decimal(str(cash_summ)) * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
                         logger.debug('%s: Addon Service Checkout thread: AT START checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))                        
                     cur.connection.commit()
@@ -467,7 +476,7 @@ class periodical_service_bill(Thread):
                     if vars.USE_COEFF_FOR_PS==True and ((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)<delta_ast:
                         logger.debug('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
                         delta_coef=float((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)/float(delta_ast)        
-                        cash_summ=Decimal(cash_summ)*Decimal(str(delta_coef))
+                        cash_summ=Decimal(str(cash_summ))*Decimal(str(delta_coef))
                         
                     if first_time:
                         first_time = False
@@ -500,7 +509,7 @@ class periodical_service_bill(Thread):
                             #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                             logger.debug('%s: Periodical Service: AT END iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, new_summ))
                         elif pss_type == ADDON:
-                            cash_summ = Decimal(cash_summ) * susp_per_mlt
+                            cash_summ = Decimal(str(cash_summ)) * susp_per_mlt
                             tr_date = chk_date
                             if ps.deactivated and ps.deactivated < chk_date:
                                 #сделать расчёт остатка - сейчас эта штука компенсируется штрафами за досрочное отключение
@@ -1173,7 +1182,13 @@ class addon_service(Thread):
                         if not nas:
                             logger.info("Addon Service: %s: nas not set for account/subaccount/service %s/%s/%s", (self.getName(), repr(acc), repr(subacc), repr(service),))
                             continue
-                        if (not accountaddonservice.deactivated and not deactivated) and \
+                        
+                        allow = False
+                        for pnode in caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):                     
+                            if fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:   
+                                allow = True
+                                break
+                        if allow and (not accountaddonservice.deactivated and not deactivated) and \
                         (service.action and not accountaddonservice.action_status) and \
                         not accountaddonservice.temporary_blocked and \
                          ((service.deactivate_service_for_blocked_account==False) or (service.deactivate_service_for_blocked_account==True and ((acc.ballance or 0+acc.credit or 0)>0 and acc.disabled_by_limit==False and acc.balance_blocked==False and acc.account_status==1 ))):
@@ -1181,7 +1196,7 @@ class addon_service(Thread):
                             sended = cred.delay(acc._asdict(), subacc._asdict(), 'ipn', nas._asdict(), addonservice=service._asdict(), format_string=service.service_activation_action, cb=tasks.adds_enable_state.s(accountaddonservice.id))
                             #if sended is True: cur.execute()
                         
-                        if (accountaddonservice.deactivated or accountaddonservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance or 0 +acc.credit or 0)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accountaddonservice.action_status==True:
+                        if allow==False or ((accountaddonservice.deactivated or accountaddonservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance or 0 +acc.credit or 0)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accountaddonservice.action_status==True):
                             #выполняем service_deactivation_action
                             sended = cred.delay(acc, subacc, 'ipn', nas, addonservice=service._asdict(), format_string=service.service_deactivation_action, cb=tasks.adds_disable_state.s(accountaddonservice.id))
 
@@ -1550,21 +1565,29 @@ class ipn_service(Thread):
                             #TODO: caches.defspeed_cache.by_id - нужно же брать по tarif_id!! Это верно?? 
                             #Получаем подключаемые услуги абонента
                             accservices = []
-                            addonservicespeed=[]  
+                            addonservicespeed=[]
+                            br = False  
                             if subacc:
                                 accservices = caches.accountaddonservice_cache.by_subaccount.get(subacc.id, [])    
                                 for accservice in accservices:                                 
-                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                                    if not accservice.deactivated  and service.change_speed:                                                                        
-                                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                                        break   
+                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)           
+                                    for pnode in caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):                     
+                                        if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:                                                                        
+                                            addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)
+                                            br = True                                    
+                                            break
+                                    if br: break
+                            br = False
                             if not addonservicespeed: 
                                 accservices = caches.accountaddonservice_cache.by_account.get(acc.account_id, [])    
                                 for accservice in accservices:                                 
-                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)                                
-                                    if not accservice.deactivated  and service.change_speed:                                                                        
-                                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
-                                        break    
+                                    service = caches.addonservice_cache.by_id.get(accservice.service_id)           
+                                    for pnode in caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):                     
+                                        if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, dateAT)[3]:                                                                        
+                                            addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                                            br = True
+                                            break
+                                    if br: break    
                             #Получаем параметры скорости                         
                             speed = create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, subacc.ipn_speed, dateAT, fMem)                            
                     
