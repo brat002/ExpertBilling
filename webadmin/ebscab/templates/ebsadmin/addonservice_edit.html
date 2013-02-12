@@ -57,9 +57,9 @@
 <form method="POST" action="{% url addonservice_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>Параметры подключаемой услуги{% objectlog item %}</legend>
              <fieldset>
-                  <div class="control-group">
+                  <div class="control-group {% if form.name.errors %}error{% endif %}">
                       <label class="control-label">{{form.name.label}}</label>
-                      <div class="controls {% if form.name.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.name }}
                       {% if form.name.errors %}
                           <span class="help-inline">{% for error in form.name.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -71,9 +71,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.comment.errors %}error{% endif %}">
                       <label class="control-label">{{form.comment.label}}</label>
-                      <div class="controls {% if form.comment.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.comment }}
                       {% if form.comment.errors %}
                           <span class="help-inline">{% for error in form.comment.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -89,9 +89,9 @@
                 
                 <legend>Правила активации</legend>
                 <fieldset>
-                  <div class="control-group">
+                  <div class="control-group {% if form.allow_activation.errors %}error{% endif %}">
                       <label class="control-label">{{form.allow_activation.label}}</label>
-                      <div class="controls {% if form.allow_activation.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.allow_activation }}
                       {% if form.allow_activation.errors %}
                           <span class="help-inline">{% for error in form.allow_activation.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -103,9 +103,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.timeperiod.errors %}error{% endif %}">
                       <label class="control-label">{{form.timeperiod.label}}</label>
-                      <div class="controls {% if form.timeperiod.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.timeperiod }}
                       {% if form.timeperiod.errors %}
                           <span class="help-inline">{% for error in form.timeperiod.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -120,9 +120,9 @@
                 </fieldset>
                 <legend>Правила тарификации</legend>
                 <fieldset>
-                  <div class="control-group">
+                  <div class="control-group {% if form.service_type.errors %}error{% endif %}">
                       <label class="control-label">{{form.service_type.label}}</label>
-                      <div class="controls {% if form.service_type.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.service_type }}
                       {% if form.service_type.errors %}
                           <span class="help-inline">{% for error in form.service_type.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -134,9 +134,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.sp_type.errors %}error{% endif %}">
                       <label class="control-label">{{form.sp_type.label}}</label>
-                      <div class="controls {% if form.sp_type.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.sp_type }}
                       {% if form.sp_type.errors %}
                           <span class="help-inline">{% for error in form.sp_type.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -148,9 +148,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.sp_period.errors %}error{% endif %}">
                       <label class="control-label">{{form.sp_period.label}}</label>
-                      <div class="controls {% if form.sp_period.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.sp_period }}
                       {% if form.sp_period.errors %}
                           <span class="help-inline">{% for error in form.sp_period.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -162,9 +162,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.cost.errors %}error{% endif %}">
                       <label class="control-label">{{form.cost.label}}</label>
-                      <div class="controls {% if form.cost.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.cost }}
                       {% if form.cost.errors %}
                           <span class="help-inline">{% for error in form.cost.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -179,9 +179,9 @@
                 </fieldset>
                 <legend>Досрочное отключение</legend>
                 <fieldset>
-                  <div class="control-group">
+                  <div class="control-group {% if form.cancel_subscription.errors %}error{% endif %}">
                       <label class="control-label">{{form.cancel_subscription.label}}</label>
-                      <div class="controls {% if form.cancel_subscription.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.cancel_subscription }}
                       {% if form.cancel_subscription.errors %}
                           <span class="help-inline">{% for error in form.cancel_subscription.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -193,9 +193,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.wyte_period.errors %}error{% endif %}">
                       <label class="control-label">{{form.wyte_period.label}}</label>
-                      <div class="controls {% if form.wyte_period.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.wyte_period }}
                       {% if form.wyte_period.errors %}
                           <span class="help-inline">{% for error in form.wyte_period.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -207,9 +207,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.wyte_cost.errors %}error{% endif %}">
                       <label class="control-label">{{form.wyte_cost.label}}</label>
-                      <div class="controls {% if form.wyte_cost.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.wyte_cost }}
                       {% if form.wyte_cost.errors %}
                           <span class="help-inline">{% for error in form.wyte_cost.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -224,9 +224,9 @@
                 </fieldset>
                 <legend>Выполнить действие</legend>
                 <fieldset>
-                  <div class="control-group">
+                  <div class="control-group {% if form.action.errors %}error{% endif %}">
                       <label class="control-label">{{form.action.label}}</label>
-                      <div class="controls {% if form.action.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.action }}
                       {% if form.action.errors %}
                           <span class="help-inline">{% for error in form.action.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -238,9 +238,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.nas.errors %}error{% endif %}">
                       <label class="control-label">{{form.nas.label}}</label>
-                      <div class="controls {% if form.nas.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.nas }}
                       {% if form.nas.errors %}
                           <span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -252,9 +252,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.service_activation_action.errors %}error{% endif %}">
                       <label class="control-label">{{form.service_activation_action.label}}</label>
-                      <div class="controls {% if form.service_activation_action.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.service_activation_action }}
                       {% if form.service_activation_action.errors %}
                           <span class="help-inline">{% for error in form.service_activation_action.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -266,9 +266,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.service_deactivation_action.errors %}error{% endif %}">
                       <label class="control-label">{{form.service_deactivation_action.label}}</label>
-                      <div class="controls {% if form.service_deactivation_action.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.service_deactivation_action }}
                       {% if form.service_deactivation_action.errors %}
                           <span class="help-inline">{% for error in form.service_deactivation_action.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -280,9 +280,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.deactivate_service_for_blocked_account.errors %}error{% endif %}">
                       <label class="control-label">{{form.deactivate_service_for_blocked_account.label}}</label>
-                      <div class="controls {% if form.deactivate_service_for_blocked_account.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.deactivate_service_for_blocked_account }}
                       {% if form.deactivate_service_for_blocked_account.errors %}
                           <span class="help-inline">{% for error in form.deactivate_service_for_blocked_account.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -298,9 +298,9 @@
                 </fieldset>
                 <legend>Изменить настройки скорости</legend>
                 <fieldset>
-                  <div class="control-group">
+                  <div class="control-group {% if form.change_speed.errors %}error{% endif %}">
                       <label class="control-label">{{form.change_speed.label}}</label>
-                      <div class="controls {% if form.change_speed.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.change_speed }}
                       {% if form.change_speed.errors %}
                           <span class="help-inline">{% for error in form.change_speed.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -312,9 +312,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.change_speed_type.errors %}error{% endif %}">
                       <label class="control-label">{{form.change_speed_type.label}}</label>
-                      <div class="controls {% if form.change_speed_type.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.change_speed_type }}
                       {% if form.change_speed_type.errors %}
                           <span class="help-inline">{% for error in form.change_speed_type.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -326,9 +326,9 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.speed_units.errors %}error{% endif %}">
                       <label class="control-label">{{form.speed_units.label}}</label>
-                      <div class="controls {% if form.speed_units.errors %}error{% endif %}">
+                      <div class="controls">
                       {{ form.speed_units }}
                       {% if form.speed_units.errors %}
                           <span class="help-inline">{% for error in form.speed_units.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -341,9 +341,9 @@
                       </div>
                   </div>
                   <div class="control-group">
-	                  <div class="control-row">
+	                  <div class="control-row {% if form.max_tx.errors %}error{% endif %}">
 	                      <label class="control-label">{{form.max_tx.label}}</label>
-	                      <div class="controls {% if form.max_tx.errors %}error{% endif %}">
+	                      <div class="controls">
 	                      {{ form.max_tx }}
 	                      {% if form.max_tx.errors %}
 	                          <span class="help-inline">{% for error in form.max_tx.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -355,9 +355,9 @@
 	                      {% endif %}
 	                      </div>
                       </div>
-                      <div class="control-row">
+                      <div class="control-row {% if form.max_rx.errors %}error{% endif %}">
                           <label class="control-label">{{form.max_rx.label}}</label>
-                          <div class="controls {% if form.max_rx.errors %}error{% endif %}">
+                          <div class="controls">
                           {{ form.max_rx }}
                           {% if form.max_rx.errors %}
                               <span class="help-inline">{% for error in form.max_rx.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -371,9 +371,9 @@
                       </div>
                   </div>
                   <div class="control-group">
-                      <div class="control-row">
+                      <div class="control-row {% if form.burst_tx.errors %}error{% endif %}">
                           <label class="control-label">{{form.burst_tx.label}}</label>
-                          <div class="controls {% if form.burst_tx.errors %}error{% endif %}">
+                          <div class="controls">
                           {{ form.burst_tx }}
                           {% if form.burst_tx.errors %}
                               <span class="help-inline">{% for error in form.burst_tx.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -385,9 +385,9 @@
                           {% endif %}
                           </div>
                       </div>
-                      <div class="control-row">
+                      <div class="control-row {% if form.burst_rx.errors %}error{% endif %}">
                           <label class="control-label">{{form.burst_rx.label}}</label>
-                          <div class="controls {% if form.burst_rx.errors %}error{% endif %}">
+                          <div class="controls">
                           {{ form.burst_rx }}
                           {% if form.burst_rx.errors %}
                               <span class="help-inline">{% for error in form.burst_rx.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -401,9 +401,9 @@
                       </div>
                   </div>
                   <div class="control-group">
-                      <div class="control-row">
+                      <div class="control-row {% if form.burst_treshold_tx.errors %}error{% endif %}">
                           <label class="control-label">{{form.burst_treshold_tx.label}}</label>
-                          <div class="controls {% if form.burst_treshold_tx.errors %}error{% endif %}">
+                          <div class="controls">
                           {{ form.burst_treshold_tx }}
                           {% if form.burst_treshold_tx.errors %}
                               <span class="help-inline">{% for error in form.burst_treshold_tx.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -415,9 +415,9 @@
                           {% endif %}
                           </div>
                       </div>
-                      <div class="control-row">
+                      <div class="control-row {% if form.burst_treshold_rx.errors %}error{% endif %}">
                           <label class="control-label">{{form.burst_treshold_rx.label}}</label>
-                          <div class="controls {% if form.burst_treshold_rx.errors %}error{% endif %}">
+                          <div class="controls">
                           {{ form.burst_treshold_rx }}
                           {% if form.burst_treshold_tx.errors %}
                               <span class="help-inline">{% for error in form.burst_treshold_rx.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -431,9 +431,9 @@
                       </div>
                   </div>
                   <div class="control-group">
-                      <div class="control-row">
+                      <div class="control-row {% if form.burst_time_tx.errors %}error{% endif %}">
                           <label class="control-label">{{form.burst_time_tx.label}}</label>
-                          <div class="controls {% if form.burst_time_tx.errors %}error{% endif %}">
+                          <div class="controls">
                           {{ form.burst_time_tx }}
                           {% if form.burst_time_tx.errors %}
                               <span class="help-inline">{% for error in form.burst_time_tx.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -445,9 +445,9 @@
                           {% endif %}
                           </div>
                       </div>
-                      <div class="control-row">
+                      <div class="control-row {% if form.burst_time_rx.errors %}error{% endif %}">
                           <label class="control-label">{{form.burst_time_rx.label}}</label>
-                          <div class="controls {% if form.burst_time_rx.errors %}error{% endif %}">
+                          <div class="controls">
                           {{ form.burst_time_rx }}
                           {% if form.burst_time_rx.errors %}
                               <span class="help-inline">{% for error in form.burst_time_rx.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -461,9 +461,9 @@
                       </div>
                   </div>
                   <div class="control-group">
-                      <div class="control-row">
+                      <div class="control-row {% if form.min_tx.errors %}error{% endif %}">
                           <label class="control-label">{{form.min_tx.label}}</label>
-                          <div class="controls {% if form.min_tx.errors %}error{% endif %}">
+                          <div class="controls">
                           {{ form.min_tx }}
                           {% if form.min_tx.errors %}
                               <span class="help-inline">{% for error in form.min_tx.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -475,9 +475,9 @@
                           {% endif %}
                           </div>
                       </div>
-                      <div class="control-row">
+                      <div class="control-row {% if form.min_rx.errors %}error{% endif %}">
                           <label class="control-label">{{form.min_rx.label}}</label>
-                          <div class="controls {% if form.min_rx.errors %}error{% endif %}">
+                          <div class="controls">
                           {{ form.min_rx }}
                           {% if form.min_rx.errors %}
                               <span class="help-inline">{% for error in form.min_rx.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -490,10 +490,10 @@
                           </div>
                       </div>
                   </div>
-                  <div class="control-group">
+                  <div class="control-group {% if form.priority.errors %}error{% endif %}">
                       
                           <label class="control-label">{{form.priority.label}}</label>
-                          <div class="controls {% if form.priority.errors %}error{% endif %}">
+                          <div class="controls">
                           {{ form.priority }}
                           {% if form.priority.errors %}
                               <span class="help-inline">{% for error in form.priority.errors %}{{ error }}<br/> {% endfor %}</span>

@@ -1,6 +1,9 @@
 #-*-coding=utf-8-*-
 
 from __future__ import with_statement
+import sys
+import cdecimal
+sys.modules["decimal"] = cdecimal
 import site
 site.addsitedir('/opt/ebs/venv/lib/python2.6/site-packages')
 site.addsitedir('/opt/ebs/venv/lib/python2.7/site-packages')
