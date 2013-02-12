@@ -27,14 +27,13 @@
             }
     
         })
-        $('#id_time_start_0').datepicker({
-            dateFormat: 'yy-mm-dd',
-            buttonImage: "/media/icons/16/calendar.png",
-            buttonImageOnly: true,
-            showOn: "button",
-            changeMonth: true,
-            changeYear: true
-        });
+        $('.datepicker').datepicker({
+            months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
+            weekStart: 0,
+            noDefault: true,
+            format: 'yyyy-mm-dd hh:ii:ss',
+            days: ["пн","вт","ср","чт","пт","сб","вс"],});
+        
             if ($("#id_length_in").val()=='' || $("#id_length_in").val()=='DONT_REPEAT')
                 $("#id_length").attr("disabled", false)
             else
