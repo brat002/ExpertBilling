@@ -354,7 +354,7 @@ class BatchAccountTariffForm(forms.Form):
 
 
 class SettlementPeriodForm(ModelForm):
-    time_start = forms.DateTimeField(label=u'Начало периода', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    time_start = forms.DateTimeField(label=u'Начало периода', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     class Meta:
         model = SettlementPeriod
   
@@ -690,8 +690,8 @@ class TimePeriodNodeForm(ModelForm):
                                 ]
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     time_period = forms.ModelChoiceField(queryset=TimePeriod.objects.all(), required=True, widget = forms.HiddenInput)
-    time_start = forms.DateTimeField(label=u'Начало периода', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
-    time_end = forms.DateTimeField(label=u'Конец периода', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    time_start = forms.DateTimeField(label=u'Начало периода', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    time_end = forms.DateTimeField(label=u'Конец периода', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     length = forms.IntegerField(required=False, widget = forms.HiddenInput)
     
     def clean(self):
@@ -817,8 +817,8 @@ class CardGenerationForm(forms.Form):
     #template = forms.ModelChoiceField(queryset=Template.objects.filter(type__id=7), label=u"Шаблон печати")
     nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
     ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
-    date_start = forms.DateTimeField(label=u'Активировать с', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
-    date_end = forms.DateTimeField(label=u'Активировать по', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
+    date_start = forms.DateTimeField(label=u'Активировать с', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=u'Активировать по', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
 class CardSearchForm(forms.Form):
     id = forms.IntegerField(required=False)

@@ -19,27 +19,13 @@
 	 $('#id_login_length_to').spinit({min: 0, height:20, max: 255, initValue:{{form.login_length_to.value}} });
      $('#id_pin_length_from').spinit({min: 0, height:20, max: 255, initValue:{{form.pin_length_from.value}}});
      $('#id_pin_length_to').spinit({min: 0, height:20, max: 255, initValue:{{form.pin_length_to.value}} });
-     $('#id_date_start_0').datepicker({
-         dateFormat: 'yy-mm-dd',
-         buttonImage: "/media/icons/16/calendar.png",
-         buttonImageOnly: true,
-         showOn: "button",
-         changeMonth: true,
-         changeYear: true
-     });
-     $('#id_date_end_0').datepicker({
-         dateFormat: 'yy-mm-dd',
-         buttonImage: "/media/icons/16/calendar.png",
-         buttonImageOnly: true,
-         showOn: "button",
-         changeMonth: true,
-         changeYear: true
-     });
-     $("#id_date_start_0").mask("9999-99-99");
-     $("#id_date_start_1").mask("99:99:99");
-     //$("#id_date_start_1").attr("class", "input-xsmall");
-     $("#id_date_end_0").mask("9999-99-99");
-     $("#id_date_end_1").mask("99:99:99");
+     $('.datepicker').datepicker({
+         months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
+         weekStart: 0,
+         noDefault: true,
+         format: 'yyyy-mm-dd hh:ii:ss',
+         days: ["пн","вт","ср","чт","пт","сб","вс"],});
+
      $('#id_series').popover({title:'Изменить серию', content: 'Укажите новую серию, чтобы переопределить значения в выбранных картах.'});
  });
  </script>
