@@ -1,8 +1,18 @@
+class Payment(object):
+    def __init__(self):
+        self.systems = []
+        
+        
+    def register(self, obj):
+        self.systems.append(obj)
+
 class PaymentSystem(object):
     
     
     def __init__(self):
-        pass
+        self.slug = ''
+        self.name = ''
+        self.ps_type = ''
     
     def parse_response(self):
         pass
@@ -18,3 +28,13 @@ class PaymentSystem(object):
     
     def pay(self):
         pass
+    
+class QuickPayPaymentSystem(PaymentSystem):
+    
+    def __init__(self):
+        self.slug = 'quickpay'
+        self.name = 'QuickPay'
+        
+p = Payment()
+
+p.register(QuickPayPaymentSystem)
