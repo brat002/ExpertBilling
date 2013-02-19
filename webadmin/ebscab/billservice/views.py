@@ -1275,3 +1275,15 @@ def userblock_action(request):
                 'message':message, 'result':result,
                 }
 
+
+from django.views.generic.detail import DetailView
+from getpaid.forms import PaymentMethodForm
+
+class OrderView(DetailView):
+    model=Transaction
+
+    def get_context_data(self, **kwargs):
+        context = super(OrderView, self).get_context_data(**kwargs)
+        context['payment_form'] = PaymentMethodForm('USD', initial={'order': self.object})
+        return context
+    

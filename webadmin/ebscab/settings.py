@@ -123,7 +123,9 @@ INSTALLED_APPS = (
     'ajax_select',
     'ebsadmin',
     'django_tables2_reports',
+#    'getpaid',
 )
+
 
 AJAX_LOOKUP_CHANNELS = {
     #   pass a dict with the model and the field to search against
@@ -186,6 +188,30 @@ EMAIL_HOST_PASSWORD = 'userpassword'
 
 
 CURRENCY = u' руб'
+
+GETPAID_BACKENDS = ('getpaid.backends.dummy',
+                    'getpaid.backends.payu',
+                    'getpaid.backends.transferuj',
+                    )
+
+GETPAID_BACKENDS_SETTINGS = {
+    # Please provide your settings for backends
+    'getpaid.backends.payu' : {
+        'pos_id' : 123456789,
+        'key1' : 'xxx',
+        'key2' : 'xxx',
+        'pos_auth_key': 'xxx',
+        'signing' : True,
+        #        'testing' : True,
+    },
+
+    'getpaid.backends.transferuj' : {
+        'id' : 1234,
+        'key' : 'AAAAAAAA',
+
+    }
+
+}
 
 TEST_RUNNER = 'testcases.test_runner.run_tests'
 PERSONAL_AREA_STAFF_MENU = [
