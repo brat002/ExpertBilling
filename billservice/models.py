@@ -981,7 +981,7 @@ class Transaction(models.Model):
     def __unicode__(self):
         return u"%s, %s, %s" % (self.account, self.summ, self.created)
 
-getpaid.register_to_payment(Transaction, unique=False, blank=True, nul=True, related_name='payments')
+getpaid.register_to_payment(Transaction, unique=False, blank=True, null=True, related_name='payments')
 
 class AccountTarif(models.Model):
     account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, related_name='related_accounttarif')
