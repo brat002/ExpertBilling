@@ -712,7 +712,7 @@ class NetFlowRoutine(Thread):
                         logger.info("Account for packet not found: %s ",(repr(flow)))
                         continue
                     if 0: assert isinstance(acc, AccountData)
-                    stream_date = datetime.datetime.fromtimestamp(float(flow.datetime))
+                    stream_date = datetime.datetime.fromtimestamp(float(str(flow.datetime)))
 
                     #if no line in cache, or the collection date is younger then accounttarif creation date
                     #get an acct record from teh database
