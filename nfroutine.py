@@ -712,9 +712,7 @@ class NetFlowRoutine(Thread):
                         logger.info("Account for packet not found: %s ",(repr(flow)))
                         continue
                     if 0: assert isinstance(acc, AccountData)
-                    if not flow.datetime: 
-                        logger.info("Datetime unknown: %s ",(repr(flow)))
-                        continue
+
                     
                     stream_date = datetime.datetime.fromtimestamp(flow.datetime)
 
