@@ -302,7 +302,7 @@ class NfFilterVars(Vars):
         if config.has_option(name, 'skip_index_check'): self.SKIP_INDEX_CHECK = config.getboolean(name, 'skip_index_check')
         if config.has_option(name, 'queue_in'):       self.QUEUE_IN = config.get(name, 'queue_in')
         if config.has_option(name, 'queue_out'):       self.QUEUE_OUT = config.get(name, 'queue_out')
-        if config.has_option(name, 'skip_groups_processing'):       self.SKIP_GROUPS_PROCESSING = config.get(name, 'skip_groups_processing')
+        if config.has_option(name, 'skip_groups_processing'):       self.SKIP_GROUPS_PROCESSING = config.getboolean(name, 'skip_groups_processing')
         
         
         flow_opts = ['%bWRITE_FLOW', 'FLOW_DIR', '%iFLOW_TIME', '%iFLOW_COUNT', 'FLOW_MAIL_WARNING', \
