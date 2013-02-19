@@ -13,6 +13,8 @@ connection.features.can_return_id_from_insert = False
 # choiCe
 import IPy
 from lib.fields import IPNetworkField
+import getpaid
+
 PROTOCOLS = {'0':'-all-',
            '37':'ddp',
            '98':'encap', 
@@ -974,9 +976,12 @@ class Transaction(models.Model):
             )
         
     def human_sum(self):
-        return self.summ*(-1)
+        return self.summ
+    
     def __unicode__(self):
         return u"%s, %s, %s" % (self.account, self.summ, self.created)
+
+getpaid.register_to_payment(Transaction, unique=False, blank=True, nul=True, related_name='payments')
 
 class AccountTarif(models.Model):
     account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, related_name='related_accounttarif')
