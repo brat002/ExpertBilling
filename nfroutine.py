@@ -32,7 +32,7 @@ from db import traffictransaction, TraftransTableException, GpstTableException
 from bisect import bisect_left
 
 
-from cdecimal import Decimal
+
 from classes.nfroutine_cache import *
 from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
@@ -712,7 +712,11 @@ class NetFlowRoutine(Thread):
                         logger.info("Account for packet not found: %s ",(repr(flow)))
                         continue
                     if 0: assert isinstance(acc, AccountData)
-                    stream_date = datetime.datetime.fromtimestamp(float(str(flow.datetime)))
+                    if not flow.datetime: 
+                        logger.info("Datetime unknown: %s ",(repr(flow)))
+                        continue
+                    
+                    stream_date = datetime.datetime.fromtimestamp(flow.datetime)
 
                     #if no line in cache, or the collection date is younger then accounttarif creation date
                     #get an acct record from teh database
