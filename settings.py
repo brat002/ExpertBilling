@@ -123,7 +123,7 @@ INSTALLED_APPS = (
     'ajax_select',
     'ebsadmin',
     'django_tables2_reports',
-    'getpaid',
+#    'getpaid',
 )
 
 
