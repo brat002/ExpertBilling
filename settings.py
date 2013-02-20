@@ -123,7 +123,7 @@ INSTALLED_APPS = (
     'ajax_select',
     'ebsadmin',
     'django_tables2_reports',
-#    'getpaid',
+    'getpaid',
 )
 
 
@@ -189,9 +189,7 @@ EMAIL_HOST_PASSWORD = 'userpassword'
 
 CURRENCY = u' руб'
 
-GETPAID_BACKENDS = ('getpaid.backends.dummy',
-                    'getpaid.backends.payu',
-                    'getpaid.backends.transferuj',
+GETPAID_BACKENDS = ('getpaid.backends.easypay',
                     )
 
 GETPAID_BACKENDS_SETTINGS = {
@@ -205,8 +203,8 @@ GETPAID_BACKENDS_SETTINGS = {
         #        'testing' : True,
     },
 
-    'getpaid.backends.transferuj' : {
-        'id' : 1234,
+    'getpaid.backends.easypay' : {
+        'DEFAULT_CURRENCY' : 'UAH',
         'key' : 'AAAAAAAA',
 
     }
