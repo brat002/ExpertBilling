@@ -1277,6 +1277,7 @@ def userblock_action(request):
 
 
 from django.views.generic.detail import DetailView
+from django.views.generic import TemplateView
 from getpaid.forms import PaymentMethodForm
 
 class OrderView(DetailView):
@@ -1284,6 +1285,14 @@ class OrderView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(OrderView, self).get_context_data(**kwargs)
-        context['payment_form'] = PaymentMethodForm('USD', initial={'order': self.object})
+        context['payment_form'] = PaymentMethodForm(initial={'order': self.object})
+        return context
+    
+class PaymentView(TemplateView):
+    template_name = 'billservice/transaction_detail.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super(PaymentView, self).get_context_data(**kwargs)
+        context['payment_form'] = PaymentMethodForm()
         return context
     

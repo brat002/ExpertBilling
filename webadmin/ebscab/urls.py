@@ -8,7 +8,7 @@ DatabaseFeatures.can_return_id_from_insert = False
 
 from ajax_select import urls as ajax_select_urls
 
-from billservice.views import OrderView
+from billservice.views import OrderView, PaymentView
 
 admin.autodiscover()
 
@@ -29,7 +29,8 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
     (r'^admin_media/jsi18n', 'django.views.i18n.javascript_catalog'),
     url(r'', include('getpaid.urls')),
-     url(r'^webcab/pay/(?P<pk>\d+)/$', OrderView.as_view(), name='my-view'),
+    url(r'^webcab/pay/(?P<pk>\d+)/$', OrderView.as_view(), name='order-payment-view'),
+    url(r'^webcab/pay/$', PaymentView.as_view(), name='payment-view'),
     
 
 )
