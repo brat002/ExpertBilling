@@ -143,10 +143,10 @@ def deploy(tarfile):
     
     db_install()
     db_upgrade()
-    
+    postconf()
     setup_webcab()
     init_scripts()
-    postconf()
+    
     restart()
     congratulations()
     
