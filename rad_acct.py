@@ -236,7 +236,10 @@ class HandleSAcct(HandleSBase):
     def __init__(self, packetobject, dbCur, transport, addrport):
         super(HandleSAcct, self).__init__()
         self.packetobject=packetobject
-        self.nasip=packetobject['NAS-IP-Address'][0]
+        nas_ip = str(packetobject.get('NAS-IP-Address', [''])[0])
+        if not nas_ip:
+            nas_ip = addrport[0]
+        self.nasip=nas_ip
         self.replypacket=packetobject.CreateReply()
         self.access_type=get_accesstype(packetobject)
         #print self.access_type
@@ -382,7 +385,7 @@ class HandleSAcct(HandleSBase):
                                 """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
                                        self.packetobject.get('Calling-Station-Id', [''])[0],
                                        self.packetobject.get('Called-Station-Id',[''])[0], \
-                                       self.packetobject['NAS-IP-Address'][0], self.access_type,))
+                                       self.nasip, self.access_type,))
 
             allow_write = self.cur.fetchone() is None
 
@@ -396,7 +399,7 @@ class HandleSAcct(HandleSBase):
                                         self.packetobject.get('Calling-Station-Id', [''])[0], 
                                         self.packetobject.get('Called-Station-Id',[''])[0], 
                                         self.packetobject.get('Framed-IP-Address',[''])[0],
-                                        self.packetobject['NAS-IP-Address'][0], self.access_type, nas_int_id, session_speed, self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
+                                        self.nasip, self.access_type, nas_int_id, session_speed, self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
                 if ipinuse_id:
                     self.cur.execute("UPDATE billservice_ipinuse SET ack=True where id=%s", (ipinuse_id,))
         elif self.packetobject['Acct-Status-Type']==['Alive']:
@@ -412,7 +415,7 @@ class HandleSAcct(HandleSBase):
                 self.cur.execute("""UPDATE radius_activesession
                              SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, framed_ip_address=%s, session_status='ACTIVE'
                              WHERE session_status!='ACK' and sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;
-                             """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject.get('Framed-IP-Address',[''])[0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0], acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None))
+                             """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject.get('Framed-IP-Address',[''])[0], self.packetobject['Acct-Session-Id'][0], self.nasip, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None))
 
 
         elif self.packetobject['Acct-Status-Type']==['Stop']:
@@ -426,7 +429,7 @@ class HandleSAcct(HandleSBase):
             else:
                 self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK', acct_terminate_cause=%s
                              WHERE session_status!='ACK' and sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;;
-                             """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], self.packetobject['NAS-IP-Address'][0], acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None,))
+                             """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], self.nasip, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None,))
             if ipinuse_id:
                 self.cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s", (ipinuse_id,))
         self.cur.connection.commit()

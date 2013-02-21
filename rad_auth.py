@@ -163,7 +163,9 @@ class AuthHandler(Thread):
 
                 auth_time = time.time()
                 returndata = ''
-                nas_ip = str(packetobject['NAS-IP-Address'][0])
+                nas_ip = str(packetobject.get('NAS-IP-Address', [''])[0])
+                if not nas_ip:
+                    nas_ip = addrport[0]
                 access_type = get_accesstype(packetobject)
                 logger.debug("%s: Access type: %s, packet: %s", (self.getName(), access_type, packetobject.code))
                 user_name = ''
