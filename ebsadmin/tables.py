@@ -168,7 +168,7 @@ class CashierReportTable(TableReport):
         
 
 class AccountsReportTable(TableReport):
-    row_number = django_tables.Column(verbose_name=u'#', empty_values=())
+    row_number = django_tables.Column(verbose_name=u'#', empty_values=(), orderable=False)
     #id = FormatBlankColumn()
     username = django_tables.LinkColumn('account_edit', verbose_name=u'Имя', get_params={'id':A('pk')})
     contract = FormatBlankColumn(verbose_name=u'Договор')
@@ -198,7 +198,7 @@ class AccountsReportTable(TableReport):
         
 class AccountsCashierReportTable(TableReport):
     d = RadioColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
-    row_number = django_tables.Column(verbose_name=u'#', empty_values=())
+    row_number = django_tables.Column(verbose_name=u'#', empty_values=(), orderable=False)
     #id = FormatBlankColumn()
     username = django_tables.Column(verbose_name=u'Имя')
     contract = FormatBlankColumn(verbose_name=u'Договор')
@@ -226,7 +226,7 @@ class AccountsCashierReportTable(TableReport):
         attrs = {'class': 'table table-bordered table-condensed'}
         
 class ActiveSessionTable(TableReport):
-    row_number = django_tables.Column(verbose_name=u'#', empty_values=())
+    row_number = django_tables.Column(verbose_name=u'#', empty_values=(), orderable=False)
     session_status = django_tables.TemplateColumn("<span class='label {% if record.session_status == 'ACK' %}info{% endif %}'>{{ record.session_status }}</span>")
     date_start = FormatDateTimeColumn()
     #interrim_update = FormatDateTimeColumn()
@@ -394,7 +394,7 @@ class TrafficClassTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class TrafficNodeTable(TableReport):
-    row_number = django_tables.Column(verbose_name="#", empty_values=())
+    row_number = django_tables.Column(verbose_name="#", empty_values=(), orderable=False)
     #control = django_tables.TemplateColumn("<a class='edit'><i class='icon-edit'></i></a>", verbose_name=' ', orderable=False)
     id = django_tables.LinkColumn('trafficnode', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     
@@ -416,7 +416,7 @@ class TrafficNodeTable(TableReport):
 
 
 class UploadTrafficNodeTable(TableReport):
-    row_number = django_tables.Column(verbose_name="#", empty_values=())
+    row_number = django_tables.Column(verbose_name="#", empty_values=(), orderable=False)
     src_net = django_tables.Column(verbose_name="Src Net")
     dst_net = django_tables.Column(verbose_name="Dst Net")
     direction = django_tables.Column(verbose_name="Direction")
@@ -497,7 +497,7 @@ class SwitchTable(TableReport):
         
         
 class CardTable(TableReport):
-    row_number = django_tables.Column(verbose_name="#", empty_values=())
+    row_number = django_tables.Column(verbose_name="#", empty_values=(), orderable=False)
     start_date = FormatDateTimeColumn()
     end_date = FormatDateTimeColumn()
     created = FormatDateTimeColumn()
@@ -527,7 +527,7 @@ class CardTable(TableReport):
         exclude = ('ipinuse', 'disabled', )
 
 class SaleCardsTable(TableReport):
-    row_number = django_tables.Column(verbose_name="#", empty_values=())
+    row_number = django_tables.Column(verbose_name="#", empty_values=(), orderable=False)
     start_date = FormatDateTimeColumn()
     end_date = FormatDateTimeColumn()
     created = FormatDateTimeColumn()
