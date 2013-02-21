@@ -882,6 +882,7 @@ class Account(models.Model):
         tariff_info = Tariff.objects.extra(where=['id=get_tarif(%s)'], params=[self.id])[:1]
         for tariff in tariff_info:
             return [tariff.id, tariff.name,]
+        return '',''
 
     @property
     def tariff(self):
@@ -981,7 +982,7 @@ class Transaction(models.Model):
     def __unicode__(self):
         return u"%s, %s, %s" % (self.account, self.summ, self.created)
 
-#getpaid.register_to_payment(Transaction, unique=False, blank=True, null=True, related_name='payments')
+getpaid.register_to_payment(Transaction, unique=False, blank=True, null=True, related_name='payments')
 
 class AccountTarif(models.Model):
     account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, related_name='related_accounttarif')
