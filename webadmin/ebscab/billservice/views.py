@@ -1278,7 +1278,7 @@ def userblock_action(request):
 
 from django.views.generic.detail import DetailView
 from django.views.generic import TemplateView
-#from getpaid.forms import PaymentMethodForm
+from getpaid.forms import PaymentMethodForm
 
 class OrderView(DetailView):
     model=Transaction
