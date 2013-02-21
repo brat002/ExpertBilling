@@ -123,7 +123,7 @@ INSTALLED_APPS = (
     'ajax_select',
     'ebsadmin',
     'django_tables2_reports',
-#    'getpaid',
+    'getpaid',
 )
 
 
@@ -189,8 +189,8 @@ EMAIL_HOST_PASSWORD = 'userpassword'
 
 CURRENCY = u' руб'
 
-GETPAID_BACKENDS = ('getpaid.backends.easypay',
-                    )
+#GETPAID_BACKENDS = ('getpaid.backends.easypay',
+#                    )
 
 GETPAID_BACKENDS_SETTINGS = {
     # Please provide your settings for backends
