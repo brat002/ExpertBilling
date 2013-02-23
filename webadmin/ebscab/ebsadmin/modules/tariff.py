@@ -629,12 +629,13 @@ def tariff_timespeed_edit(request):
         if  not (request.user.account.has_perm('billservice.view_tariff')):
             return {'status':False}
         id = request.GET.get("id")
-        access_parameters = request.GET.get("access_parameters")
-        ap = AccessParameters.objects.get(id=access_parameters)
+
         if id:
             item = TimeSpeed.objects.get(id=id)
             form = TimeSpeedForm(instance=item)
         else:
+            access_parameters = request.GET.get("access_parameters")
+            ap = AccessParameters.objects.get(id=access_parameters)
             form = TimeSpeedForm({"access_parameters":ap})
    
     return { 'formset':None, 'form':form} 
