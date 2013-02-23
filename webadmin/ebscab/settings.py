@@ -123,7 +123,6 @@ INSTALLED_APPS = (
     'ajax_select',
     'ebsadmin',
     'django_tables2_reports',
-    'getpaid',
 )
 
 
@@ -228,7 +227,7 @@ PERSONAL_AREA_STAFF_MENU = [
 # load local_settings
 try:
     from settings_local import *
-except:
+except Exception, ex:
     pass
 
 

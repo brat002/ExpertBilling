@@ -22,7 +22,7 @@ class OnlineView(View):
                 'id' : request.POST['id'],
                 'status' : request.POST['status'],
                 'control' : request.POST['control'],
-                't_id': request.POST['t_id'],
+                't_id': request.POST['t_i6d'],
                 'amount' : request.POST['amount'],
                 'email' : request.POST['email'],
 
