@@ -210,7 +210,9 @@ GETPAID_BACKENDS_SETTINGS = {
 
 }
 
-TEST_RUNNER = 'testcases.test_runner.run_tests'
+TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
+#TEST_RUNNER = 'testrunner.NoDbTestRunner'
+
 PERSONAL_AREA_STAFF_MENU = [
     ('helpdesk_dashboard', u"Сводка"),
     ('helpdesk_list', u"Заявки"),
@@ -228,7 +230,7 @@ PERSONAL_AREA_STAFF_MENU = [
 try:
     from settings_local import *
 except Exception, ex:
-    pass
+    print ex
 
 
 # define logging

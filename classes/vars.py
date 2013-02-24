@@ -226,7 +226,7 @@ class NfFilterVars(Vars):
                  'FLOW_MAIL_WARNING_TEMPLATE', 'FLOW_PREFIX', 'FLOW_INTERVAL', 'FLOW_WHEN', 'SKIP_INDEX_CHECK', 'QUEUE_IN', 'QUEUE_OUT', 'SKIP_GROUPS_PROCESSING')
     def __init__(self):
         super(NfFilterVars, self).__init__()
-        self.name = 'nf'
+        self.name = 'nffilter'
         self.NFR_HOST = '127.0.0.1'
         self.NFR_PORT = 36577
         self.NFR_ADDR = (self.NFR_HOST, self.NFR_PORT)
