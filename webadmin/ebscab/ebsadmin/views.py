@@ -207,8 +207,7 @@ def get_mac_for_ip(request):
         #rosExecute(apiros, command)
         mac = rosExecute(apiros, command).get('mac-address', '')
         apiros.close()
-        del apiros
-        del rosExecute
+
     except Exception, e:
         return {'success':False, 'message':str(e)}
     
