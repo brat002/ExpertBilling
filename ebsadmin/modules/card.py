@@ -166,7 +166,7 @@ def card_edit(request):
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return HttpResponseRedirect(reverse("card")) 
         else:
-
+            messages.error(request, form.errors['__all__'], extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
@@ -362,7 +362,7 @@ def card_generate(request):
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return {'form':form,  'status': True} 
         else:
-
+            messages.error(request, form.errors['__all__'], extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         now = datetime.datetime.now()
@@ -474,7 +474,7 @@ def card_update(request):
                 log('EDIT', request.user, model)
             return {'form':form,  'status': True} 
         else:
-
+            messages.error(request, form.errors['__all__'], extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
 
