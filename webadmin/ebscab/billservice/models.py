@@ -1484,6 +1484,8 @@ class RadiusAttrs(models.Model):
     vendor = models.IntegerField(blank=True, default=0)
     attrid = models.IntegerField()
     value = models.CharField(max_length = 255)
+    
+    account_status = models.IntegerField(choices=((0, u'Всегда'), (1, u'Активен'), (2, u'Не активен'),), default=0, verbose_name=u'Статус аккаунта', help_text=u'Добавлять атрибут в Access Accept, если срабатывает условие')
 
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('radiusattr_delete'), self.id)

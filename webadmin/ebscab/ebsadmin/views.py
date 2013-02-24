@@ -1077,6 +1077,50 @@ def session_reset(request):
     return {"message": u"Данная функция временно не реализована", 'status':False}
 
 
+@ajax_request
+@systemuser_required
+def session_hardreset(request):
+    if  not (request.user.is_staff==True and request.user.has_perm('activesessions.session_reset')):
+        return {'status':False, 'message':u'У вас нет прав на сброс сессии'}
+    
+    id = request.POST.get('id',None)
+    res = False
+    if id and id!='None':
+        session = ActiveSession.objects.get(id=id)
+        if not session:
+            return {'status':False, 'message': 'Session item with id=%s not found' % (id, )}
+       
+
+        n = session.nas_int
+        nas = instance_dict(n)
+
+        acc = instance_dict(session.account)
+
+        subacc = instance_dict(session.subaccount)
+        
+        """
+        res = PoD(dict=vars.DICT, 
+                  account=account, 
+                  subacc=subaccount, 
+                  nas=nas,
+                  access_type=session.framed_protocol, 
+                  session_id=session.sessionid,
+                  vpn_ip_address=session.framed_ip_address,
+                  caller_id=session.caller_id,
+                  format_string=nas.reset_action)
+        """
+        res = PoD.delay(acc, subacc, nas, access_type=session.framed_protocol, session_id=str(session.sessionid), vpn_ip_address=session.framed_ip_address, caller_id=str(session.caller_id), format_string=str(n.reset_action))
+        session.session_status='ACK'
+        session.save()
+        if session.ipinuse:
+            ipin = session.ipinuse
+            ipin.disabled=datetime.datetime.now()
+            ipin.save()
+            
+        return {'status':True, 'message': u'Сессия поставлена в очередь на сброс, IP адрес освобождён'}
+    
+    return {"message": u"Данная функция временно не реализована", 'status':False}
+
 
 #===============================================================================
 # @systemuser_required

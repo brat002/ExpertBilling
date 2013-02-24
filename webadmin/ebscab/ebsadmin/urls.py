@@ -511,6 +511,7 @@ urlpatterns += patterns('ebsadmin.views',
 #     
 #     url(r'^sessions/$', 'sessions'),
      url(r'^sessions/reset/$', 'session_reset', name="session_reset"),
+     url(r'^sessions/hardreset/$', 'session_hardreset', name="session_hardreset"),
 #===============================================================================
      
 #     url(r'^cities/set/$', 'cities_set'),

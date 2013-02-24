@@ -239,7 +239,7 @@ class ActiveSessionTable(TableReport):
     bytes = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}/{{record.bytes_out|filesizeformat}}", verbose_name=u'Байт')
     #account = django_tables.LinkColumn('account_edit', get_params={'id':A('account.id')})
     subaccount__username = django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount')}, verbose_name=u'Субаккаунт')
-    action = django_tables.TemplateColumn("<button data='{{record.id}}' class='btn btn-success btn-mini sreset'>Reset</button>", verbose_name=u'Action')
+    action = django_tables.TemplateColumn("<button data='{{record.id}}' class='btn btn-success btn-mini sreset' title='Soft reset'>R</button>&nbsp;<button data='{{record.id}}' class='btn btn-danger btn-mini hreset' title='Hard reset'>H</button>", verbose_name=u'Action')
     
     def __init__(self, *args, **kwargs):
         super(ActiveSessionTable, self).__init__(*args, **kwargs)
@@ -796,8 +796,8 @@ class AccountPrepaysTraficTable(TableReport):
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
     id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     account_tarif = django_tables.Column(u'Аккаунт/Тариф')
-    prepaid_traffic = django_tables.TemplateColumn("{{record.prepaid_traffic.size|filesizeformat}}", verbose_name=u'Начислено')
-    size = django_tables.TemplateColumn("{{record.size|filesizeformat}}", verbose_name=u'Остаток')
+    prepaid_traffic = django_tables.TemplateColumn("{{record.prepaid_traffic.size|filesizeformat}}({{record.prepaid_traffic.size}})", verbose_name=u'Начислено')
+    size = django_tables.TemplateColumn("{{record.size|filesizeformat}}({{record.size}})", verbose_name=u'Остаток')
     progress = django_tables.TemplateColumn("""    <div class="progress progress-success">
           <div class="bar" style="width: {{record.in_percents}}%"></div>
         </div>""", verbose_name=u'Осталось')
@@ -819,7 +819,7 @@ class AccountPrepaysRadiusTraficTable(TableReport):
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
     id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     account_tarif = django_tables.Column(u'Аккаунт/Тариф')
-    size = django_tables.TemplateColumn("{{record.size|filesizeformat}}", verbose_name=u'Остаток')
+    size = django_tables.TemplateColumn("{{record.size|filesizeformat}}({{record.size}})", verbose_name=u'Остаток')
     datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
     progress = django_tables.TemplateColumn("""    <div class="progress progress-success">
           <div class="bar" style="width: {{record.in_percents}}%"></div>

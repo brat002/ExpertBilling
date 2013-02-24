@@ -192,7 +192,7 @@ rad_sql = \
                         speedlimit.min_tx, speedlimit.min_rx, speedlimit.speed_units, speedlimit.change_speed_type
                         FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                         WHERE accountspeedlimit.speedlimit_id=speedlimit.id;""",
-         'attrs'    :"""SELECT vendor, attrid, value, tarif_id, nas_id FROM billservice_radiusattrs;""",
+         'attrs'    :"""SELECT vendor, attrid, value, account_status, tarif_id, nas_id FROM billservice_radiusattrs;""",
          'ippool'    :"""SELECT id, next_ippool_id FROM billservice_ippool;""",
          'switch'    :"""SELECT id, identify, option82, option82_auth_type, option82_template, remote_id FROM billservice_switch;""",
          'subaccounts'    :"""SELECT id, account_id, username, password, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, vpn_speed, ipn_speed, vlan, vpn_ipv6_ip_address, ipv4_vpn_pool_id, sessionscount FROM billservice_subaccount;""",
