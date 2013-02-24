@@ -343,9 +343,10 @@ class HandleSAuth(HandleSBase):
         return authobject, self.packetobject.CreateReply()
 
         
-    def add_values(self, tarif_id, nas_id):
+    def add_values(self, tarif_id, nas_id, account_status):
         attrs = self.caches.radattrs_cache.by_tarif_id.get(tarif_id, [])
         for attr in attrs:
+            if attr.account_status != 0 and attr.account_status!=account_status: continue
             if 0: assert isinstance(attr, RadiusAttrsData)
             if attr.vendor:
                 self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
@@ -354,6 +355,7 @@ class HandleSAuth(HandleSBase):
     
         attrs = self.caches.radattrs_cache.by_nas_id.get(nas_id, [])
         for attr in attrs:
+            if attr.account_status != 0 and attr.account_status!=account_status: continue
             if 0: assert isinstance(attr, RadiusAttrsData)
             if attr.vendor:
                 self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
@@ -669,7 +671,7 @@ class HandleSAuth(HandleSBase):
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
             if self.session_speed:
                 self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc.id,ipinuse_id,nas.id,str(self.session_speed))))
-            self.add_values(acc.tarif_id, nas.id)
+            self.add_values(acc.tarif_id, nas.id, acstatus)
             #print "Setting Speed For User" , self.speed
             if vars.SQLLOG_SUCCESS:
                 sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
@@ -812,7 +814,7 @@ class HandlelISGAuth(HandleSAuth):
                 self.replypacket.AddAttribute('Class', str("%s,0,%s,%s" % (subacc.id,nas_id,str(self.session_speed))))
 
 
-            self.add_values(acc.tarif_id, nas.id)
+            self.add_values(acc.tarif_id, nas.id, acstatus)
             if vars.SQLLOG_SUCCESS:
                 sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
             return authobject, self.replypacket
@@ -1021,7 +1023,7 @@ class HandleHotSpotAuth(HandleSAuth):
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             self.create_speed(nas, None, acc.tarif_id, acc.account_id, speed='')
             self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc_id,ipinuse_id,nas.id, str(self.session_speed))))
-            self.add_values(acc.tarif_id, nas.id)
+            self.add_values(acc.tarif_id, nas.id, acstatus)
             if vars.SQLLOG_SUCCESS:
                 sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.account_id,  type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)            
             return authobject, self.replypacket
@@ -1186,7 +1188,7 @@ class HandleSDHCP(HandleSAuth):
             #self.replypacket.AddAttribute('Framed-IP-Netmask', "255.255.255.0")
             self.replypacket.AddAttribute('Session-Timeout',   vars.SESSION_TIMEOUT)
             if acc.access_type in ['DHCP', 'Wireless']:
-                self.add_values(acc.tarif_id, nas.id)
+                self.add_values(acc.tarif_id, nas.id, acstatus)
                 self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.ipn_speed)
             if vars.SQLLOG_SUCCESS:
                 sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="%s_AUTH_OK" % self.access_type, service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)

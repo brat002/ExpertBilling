@@ -109,7 +109,7 @@ class groupDequeThread(Thread):
                     cost = node.traffic_cost
         return cost
 
-    def get_prepaid_octets(self, octets_in, prepInf, queues, force_db=False):
+    def get_prepaid_octets(self, octets_in, prepInf, queues, force_db=True):
         octets = octets_in
         prepaid_left = False
         if prepInf:
@@ -125,7 +125,9 @@ class groupDequeThread(Thread):
                     prep_octets, octets = prepaid, octets-prepaid
                     
                 self.cur.execute("""UPDATE billservice_accountprepaystrafic SET size=size-(%s) WHERE id=%s""", (prep_octets, prepaid_id,))
+                logger.debug("get_prepaid_octets prepinf=%s current_octets=%s force_db=%s", (prepInf, prep_octets, force_db))
                 #self.connection.commit()
+                self.cur.connection.commit()
                 if force_db==False:
                     with queues.prepaidLock:
                         prepInf[1] -= prep_octets

@@ -810,8 +810,8 @@ class CardGenerationForm(forms.Form):
     login_letters = forms.BooleanField(required=False, label="a-Z", widget = forms.CheckboxInput)
     pin_length_from = forms.IntegerField(widget=forms.widgets.Input(attrs={'class':'input-small'}))
     pin_length_to = forms.IntegerField(widget=forms.widgets.Input(attrs={'class':'input-small'}))
-    pin_numbers = forms.BooleanField(label="0-9", widget = forms.CheckboxInput)
-    pin_letters = forms.BooleanField(label="a-Z", widget = forms.CheckboxInput)
+    pin_numbers = forms.BooleanField(label="0-9", required=False, widget = forms.CheckboxInput)
+    pin_letters = forms.BooleanField(label="a-Z", required=False, widget = forms.CheckboxInput)
     nominal = forms.FloatField(label=u"Номинал",widget=forms.widgets.Input(attrs={'class':'input-small'}))
     tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=u"Тариф", required=False)
     #template = forms.ModelChoiceField(queryset=Template.objects.filter(type__id=7), label=u"Шаблон печати")
@@ -819,6 +819,15 @@ class CardGenerationForm(forms.Form):
     ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
     date_start = forms.DateTimeField(label=u'Активировать с', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     date_end = forms.DateTimeField(label=u'Активировать по', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    
+    def clean(self):
+        cleaned_data = super(CardGenerationForm, self).clean()
+        if cleaned_data.get("card_type") in [1,2,3] and not (cleaned_data.get("login_numbers") or cleaned_data.get("login_letters")):
+            raise forms.ValidationError(u'Вы должны выбрать состав логина')
+        if not (cleaned_data.get("pin_numbers") or cleaned_data.get("pin_letters")):
+            raise forms.ValidationError(u'Вы должны выбрать состав пина')
+
+        return cleaned_data
     
 class CardSearchForm(forms.Form):
     id = forms.IntegerField(required=False)

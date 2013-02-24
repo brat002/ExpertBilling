@@ -67,7 +67,21 @@
                       {% endif %}
                       </div>
                   </div>
-                
+                  <div class="control-group">
+
+                      <label class="control-label">{{form.account_status.label}}:</label>
+                      <div class="controls">
+                      {{ form.account_status }}
+                      {% if form.account_status.errors %}
+                          <span class="help-inline">{% for error in form.account_status.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.account_status.help_text%}
+                          <p class="help-block">
+                              {{ form.account_status.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
                 </fieldset>
                 <div class="form-actions">
                     <input type='submit' class="btn btn-primary" value="Save Changes">
