@@ -312,6 +312,7 @@ def accountsreport(request):
             deleted = form.cleaned_data.get('deleted')
             ipn_status = form.cleaned_data.get('ipn_status')
             organization = form.cleaned_data.get('organization')
+            phone = form.cleaned_data.get('phone')
 
             credit = form.cleaned_data.get('credit')
             #credit_exp = form.cleaned_data.get('credit_exp')
@@ -371,6 +372,9 @@ def accountsreport(request):
                 
             if elevator_direction:
                 res = res.filter(elevator_direction=elevator_direction)
+            
+            if phone:
+                res = res.filter(Q(phone_h_contains=phone)| Q(phone_m_contains=phone))
                 
             if status:
                 res = res.filter(status=status)
