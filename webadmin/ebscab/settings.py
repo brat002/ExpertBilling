@@ -42,8 +42,11 @@ SITE_ID = 1
 
 USE_I18N = True
 
+USE_l10N = True
+
 MEDIA_URL = '/media/'
 
+DATETIME_FORMAT = "d.m.Y H:i:s"
 
 STATIC_URL = '/static/'
 

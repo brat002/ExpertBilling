@@ -184,6 +184,10 @@ urlpatterns += patterns('ebsadmin.modules.groupstat',
     
 )
 
+urlpatterns += patterns('ebsadmin.modules.globalstat',
+    url(r'^globalstat/$', 'globalstat', name='globalstat'),
+    
+)
 
 urlpatterns += patterns('ebsadmin.modules.manufacturer',
     url(r'^manufacturer/edit/$', 'manufacturer_edit', name='manufacturer_edit'),
