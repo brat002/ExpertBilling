@@ -393,7 +393,7 @@ def accountsreport(request):
             if organization:
                 res = res.filter(Q(organization__in=organization))
 
-            if ipn_status:
+            if ipn_status and 'undefined' not in ipn_status:
                 res = res.filter(subaccounts__ipn_added='added' in ipn_status, subaccounts__ipn_enabled='enabled')
                 
             if type(ballance)==tuple:
