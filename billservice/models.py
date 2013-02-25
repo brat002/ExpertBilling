@@ -1364,6 +1364,14 @@ class GroupStat(models.Model):
     account = models.ForeignKey(Account)
     bytes = models.IntegerField()
     datetime = models.DateTimeField()
+    
+    
+class GlobalStat(models.Model):
+    account = models.ForeignKey(Account)
+    bytes_in = models.BigIntegerField()
+    bytes_out = models.BigIntegerField()
+    datetime = models.DateTimeField()
+    
     #trafficclass = models.ForeignKey(TrafficClass, blank=True, null=True)
     
     

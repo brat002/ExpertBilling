@@ -283,9 +283,10 @@ def accountsreport(request):
         if not data:
             form = SearchAccountForm()
             return { 'form':form}   
-            
+        
         form = SearchAccountForm(data)
         if form.is_valid():
+            
             date_start, date_end = None, None
             account = form.cleaned_data.get('account')+form.cleaned_data.get('fullname')+form.cleaned_data.get('contactperson')+form.cleaned_data.get('username')+form.cleaned_data.get('contract') # - concatenate tuples
             account_text = request.GET.get('account_text')
@@ -392,7 +393,7 @@ def accountsreport(request):
             if organization:
                 res = res.filter(Q(organization__in=organization))
 
-            if 'undefined' not in ipn_status:
+            if ipn_status:
                 res = res.filter(subaccounts__ipn_added='added' in ipn_status, subaccounts__ipn_enabled='enabled')
                 
             if type(ballance)==tuple:
@@ -414,6 +415,7 @@ def accountsreport(request):
                 res = res.filter(credit=credit)
                     
             res = res.distinct()
+            print res.query
             table = AccountsReportTable(res)
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
@@ -425,6 +427,7 @@ def accountsreport(request):
             return {"table": table,  'form':form, 'resultTab':True}   
     
         else:
+            print form._errors
             return {'status':False, 'form':form}
     else:
         form = SearchAccountForm()

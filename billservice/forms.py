@@ -246,8 +246,9 @@ class TransactionReportForm(forms.Form):
     
 class ActionLogFilterForm(forms.Form):
     systemuser = forms.ModelChoiceField(queryset=SystemUser.objects.all(), required=False)
-    start_date = forms.DateTimeField(required=True)
-    end_date = forms.DateTimeField(required=True)
+    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+
     
 class SearchAuthLogForm(forms.Form):
     start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
@@ -271,8 +272,8 @@ class AccountTariffBathForm(forms.Form):
     date = forms.DateTimeField(required=True)
     
 class AccountAddonServiceModelForm(ModelForm):
-    account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.TextInput(attrs={'readonly':'readonly'}))
-    subaccount = forms.ModelChoiceField(queryset=SubAccount.objects.all(), required=False, widget = forms.TextInput(attrs={'readonly':'readonly'}))
+    account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.widgets.HiddenInput)
+    subaccount = forms.ModelChoiceField(queryset=SubAccount.objects.all(), required=False, widget = forms.widgets.HiddenInput)
     
     
     
@@ -334,7 +335,7 @@ class TransactionModelForm(ModelForm):
         exclude = ('systemuser', 'accounttarif', 'approved', 'tarif', 'promise_expired')
         
 class AccountTariffForm(ModelForm):
-    account = forms.ModelChoiceField(label=u'Аккаунт', queryset=Account.objects.all(), widget = forms.TextInput(attrs={'readonly':'readonly'}))
+    account = forms.ModelChoiceField(label=u'Аккаунт', queryset=Account.objects.all(), widget = forms.HiddenInput)
     
     def __init__(self, *args, **kwargs):
         super(AccountTariffForm, self).__init__(*args, **kwargs)
@@ -606,7 +607,7 @@ class AccountPrepaysRadiusTraficForm(ModelForm):
         self.fields['prepaid_traffic'].widget = forms.HiddenInput()
         self.fields['current'].widget = forms.HiddenInput()
         self.fields['reseted'].widget = forms.HiddenInput()
-        
+
     class Meta:
         model = AccountPrepaysRadiusTrafic     
 
@@ -1034,6 +1035,14 @@ class GroupStatSearchForm(forms.Form):
     accounts = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
     groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=u'Группы трафика', required=False)
     daterange = DateRangeField(label=u'Диапазон', required=False )
+    
+class GlobalStatSearchForm(forms.Form):
+
+    accounts = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
+    #groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=u'Группы трафика', required=False)
+    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+
     
 class AccountPrepaysTraficSearchForm(forms.Form):
     account = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
