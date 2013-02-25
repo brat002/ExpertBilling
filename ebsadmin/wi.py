@@ -415,7 +415,6 @@ def accountsreport(request):
                 res = res.filter(credit=credit)
                     
             res = res.distinct()
-            print res.query
             table = AccountsReportTable(res)
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
