@@ -37,7 +37,7 @@ def shedulelog(request):
                 res = res.filter(accounttarif__account__id__in=account)
 
             table = SheduleLogTable(res)
-            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
             
