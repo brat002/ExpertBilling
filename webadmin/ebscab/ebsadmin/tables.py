@@ -150,7 +150,7 @@ class TotalTransactionReportTable(TableReport):
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed"'}
-        
+        configurable = True
         available_fields = ("id", "account__username",  "type__name", "summ", "bill", "description", "end_promise",  "service__name", "created", 'd')
         #model = TotalTransactionReport
         #exclude = ( 'table','tariff__name', "tariff", "systemuser")
@@ -790,6 +790,21 @@ class GroupStatTable(TableReport):
         configurable = True
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
       
+class GlobalStatTable(TableReport):
+
+    account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
+    #group = django_tables.Column(u'Группа', accessor=A('group__name'))
+    bytes_in = django_tables.Column(u'ВХ')
+    bytes_out = django_tables.Column(u'ИСХ')
+    #min = django_tables.Column(u'С даты')
+    max = django_tables.Column(u'Последние данные')
+    
+    
+    class Meta:
+        available_fields = (u'account', 'group', u'bytes')
+        configurable = False
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
 class AccountPrepaysTraficTable(TableReport):
 
     #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))

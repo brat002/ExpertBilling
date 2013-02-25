@@ -8,9 +8,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 <link href="/media/bootstrap/css/cus-icons.css" rel="stylesheet">
-
+<link href="/media/bootstrap/css/todc-bootstrap.css" rel="stylesheet"></head>
 <link href="/media/datetimepicker/datepicker.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" media="all" href="/media/daterangepicker/daterangepicker.css" />
+
 
 
 <script src="/media/jquery/js/jquery-1.8.2.js"></script>
@@ -64,7 +65,7 @@ $(document).ready(function() {
 
   <style type="text/css">
 .table td {
-    padding: 2px; 
+    padding: 1px; 
     
 }
 html,body
@@ -151,7 +152,7 @@ padding-top:20px;
 {% load render_table from django_tables2 %}
 {% load charts_menu from ebsadmin_tags %}
 
-<div class="navbar  navbar-fixed-top navbar-inverse">
+<div class="navbar  navbar-googlenav navbar-fixed-top">
   <div class="navbar-inner">
   <div class="container">
 <a class="brand" href="#">
@@ -216,23 +217,36 @@ padding-top:20px;
 		  </li>
          
          <li><a href="{% url transactionreport2 %}"><i class="cus-report"></i> Операции с л/c</a></li>
-         <li><a href="{% url ipinuse_list %}">Занятые IP адреса</a></li>
-         <li><a href="{% url authlog_list %}">История авторизаций</a></li>
-         <li><a href="{% url ballancehistoryreport %}">История изменения баланса</a></li>
+         <li><a href="{% url ipinuse_list %}"><i class="cus-report"></i>&nbsp;Занятые IP адреса</a></li>
+         <li><a href="{% url authlog_list %}"><i class="cus-report"></i>&nbsp;История авторизаций</a></li>
+         <li><a href="{% url ballancehistoryreport %}"><i class="cus-report"></i>&nbsp;История изменения баланса</a></li>
          
-         <li><a href="{% url groupstat %}">Тарифицированный трафик</a></li>
+         <li><a href="{% url groupstat %}"><i class="cus-report"></i>&nbsp;Тарифицированный трафик</a></li>
          <li class="dropdown-submenu">
-            <a tabindex="-1" href="#">Предоплаченные единицы</a>
+            <a tabindex="-1" href="#"><i class="cus-report-go"></i>&nbsp;Предоплаченные единицы</a>
             <ul class="dropdown-menu">
-              <li><a href="{% url accountprepaystraffic %}">Предоплаченный трафик (NetFlow)</a></li>
-              <li><a href="{% url accountprepaysradiustraffic %}">Предоплаченный трафик (RADIUS)</a></li>
-              <li><a href="{% url accountprepaystime %}">Предоплаченное время (RADIUS)</a></li>
+              <li><a href="{% url accountprepaystraffic %}"><i class="cus-report"></i>&nbsp;Предоплаченный трафик (NetFlow)</a></li>
+              <li><a href="{% url accountprepaysradiustraffic %}"><i class="cus-report"></i>&nbsp;Предоплаченный трафик (RADIUS)</a></li>
+              <li><a href="{% url accountprepaystime %}"><i class="cus-report"></i>&nbsp;Предоплаченное время (RADIUS)</a></li>
             </ul>
           </li>
        </ul>
      </li>
    </ul>
-<li><a href="{% url activesessionreport %}">Монитор сессий</a></li>
+   <ul class="nav">
+     <li class="dropdown">
+       <a href="#"
+             class="dropdown-toggle"
+             data-toggle="dropdown">
+             Монитор
+             <b class="caret"></b>
+       </a>
+       <ul class="dropdown-menu">
+         <li><a href="{% url activesessionreport %}"><i class="cus-connect"></i>&nbsp;Монитор сессий</a></li>
+         <li><a href="{% url globalstat %}"><i class="cus-eye"></i>&nbsp;Монитор трафика</a></li>
+       </ul>
+     </li>
+   </ul>
    <ul class="nav">
      <li class="dropdown">
        <a href="#"
@@ -291,11 +305,11 @@ padding-top:20px;
          
          <li><a href="{% url logview %}"><i class="icon-tasks"></i>&nbsp;Просмотр логов</a></li>
          <li><a href="{% url actionlog %}"><i class="icon-list-alt"></i>&nbsp;История действий пользователей</a></li>
-         <li><a href="{% url periodicalservicelog %}">Последние списания период. услуг</a></li>
-         <li><a href="{% url shedulelog %}">Последние сервисные процедуры</a></li>
-         <li><a href="{% url operator_edit %}">Информация о провайдере</a></li>
-         <li><a href="{% url cashier_index %}">Интерфейс кассира</a></li>
-         <li><a href="{% url helpdesk_dashboard %}">Хелпдеск</a></li>
+         <li><a href="{% url periodicalservicelog %}"><i class="cus-table-row-insert"></i>&nbsp;Последние списания период. услуг</a></li>
+         <li><a href="{% url shedulelog %}"><i class="cus-table-row-insert"></i>&nbsp;Последние сервисные процедуры</a></li>
+         <li><a href="{% url operator_edit %}"><i class="cus-information"></i>&nbsp;Информация о провайдере</a></li>
+         <li><a href="{% url cashier_index %}"><i class="cus-world-go"></i>&nbsp;Интерфейс кассира</a></li>
+         <li><a href="{% url helpdesk_dashboard %}"><i class="cus-world-go"></i>&nbsp;Хелпдеск</a></li>
          <li><a href="/accounts/logout/"><i class="icon-off"></i>&nbsp;Выйти ({{request.user.account}})</a></li>
          
          

@@ -307,8 +307,8 @@
                             </div>
                             <div class="control-row">
                                 <label class="control-label"><strong>{{form.contract.label}}</strong></label>
-                                <div class="controls">
-                                    <span>{{ form.contract }}<a id="modal-templateselect-dialog" class="btn btn-info btn-mini" ><i class="icon-print icon-white"></i></a></span>
+                                <div class="controls ">
+                                    <div class="input-append">{{ form.contract }}<a id="modal-templateselect-dialog" class="btn btn-info btn-mini add-on" ><i class="icon-print icon-white"></i></a></div>
                                     {% if form.contract.errors %}
                                         <span class="help-inline">{% for error in form.contract.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}
@@ -327,7 +327,7 @@
                             <div class="control-group">
                                 <label class="control-label">Выберите шаблон номера:</label>
                                 <div class="controls">
-	                                
+	                                   
 	                                    {{ form.contract_num }}
 	                                    {% if form.contract_num.errors %}
 	                                        <span class="help-inline">{% for error in form.contract_num.errors %}{{ error }}<br/> {% endfor %}</span>
