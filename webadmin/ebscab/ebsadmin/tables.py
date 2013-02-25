@@ -296,7 +296,7 @@ class LogTable(TableReport):
 class NasTable(TableReport):
     #row_number = django_tables.Column(verbose_name="#")
     name = django_tables.LinkColumn('nas_edit', verbose_name=u"Имя", get_params={'id':A('pk')})
-    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?nas={{record.id}}' >Дополнительные RADIUS атрибуты</a>", verbose_name=u'Дополнительные RADIUS атрибуты', orderable=False)
+    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?nas={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=u'RADIUS атрибуты', orderable=False)
     id = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
@@ -577,7 +577,7 @@ class DealerTable(TableReport):
         
 class TariffTable(TableReport):
     name = django_tables.LinkColumn('tariff_edit', get_params={'id':A('pk')})
-    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?tarif_id={{record.id}}' >Дополнительные RADIUS атрибуты</a>", verbose_name=u'Дополнительные RADIUS атрибуты', orderable=False)
+    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?tarif={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=u'RADIUS атрибуты', orderable=False)
     access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
     class Meta:
