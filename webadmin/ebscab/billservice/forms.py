@@ -930,6 +930,7 @@ class SubAccountForm(ModelForm):
     ipv4_ipn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=1), required=False)
     ipn_status = forms.MultipleChoiceField(required=False, choices = (('added', u"Добавлен", ), ('enabled', u'Активен'), ('suspended', u'Не менять состояние'),), widget=MyMultipleCheckBoxInput, initial = ["undefined", ])
     
+            
     class Meta:
         model = SubAccount
         #exclude = ('ipn_ipinuse','vpn_ipinuse',)
