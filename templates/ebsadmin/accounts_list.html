@@ -765,6 +765,7 @@
   </div>
   <div class="tab-pane {% if table %}active{% endif %}" id="result">
           <div class="navbar navbar-googlenav">
+                <div class="navbar-inner">
                 <div class="btn-group">
                 <a class="btn dropdown-toggle btn-info " data-toggle="dropdown" href="#">
 				    <i class="icon-pause icon-white"></i> Изменить статус
@@ -777,9 +778,6 @@
 				  </div>
 				<div class="btn-group">
                     <a href="{% url account_management_accounttariff %}" id="modal-accounttariff-dialog-table" class=" btn btn-success"><i class=' icon-share icon-white'></i> Изменить ТП</a>
-                </div>
-                <div class="btn-group">
-                <button class=" btn btn-primary"><i class=' icon-print icon-white'></i> Отчёт</button>
                 </div>
                 <div class="btn-group">
                 <a class=" btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> В архив</a>
@@ -800,11 +798,12 @@
                     <li><a href="#">Отключить на NAS</a></li>
                   </ul>
                   </div>
-                  <hr />
+                  
 
                 
                 
 
+        </div>
         </div>
   {% if table %}{% render_table table %}{% endif %}
   <br />

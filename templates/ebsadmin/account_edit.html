@@ -268,10 +268,16 @@
 {% endblock %}
  {% load render_table from django_tables2 %}
 {% block body %}
+
 <div class="row-fluid">
 
 <div class="span9">
-            <form class="well form-horizontal  form-condensed" method="POST" action="{% url account_edit %}{% if account %}?id={{account.id}}{% endif %}">
+<ul class="breadcrumb">
+  <li>
+    <a href='{% url account_list %}?data=data'>Все аккаунты</a> / <a href="{% url account_edit%}?id={{account.id}}">{{account.username}}</a> 
+  </li>
+</ul>
+            <form class=" well form-horizontal  form-condensed" method="POST" action="{% url account_edit %}{% if account %}?id={{account.id}}{% endif %}">
                 <ul class="nav nav-tabs" id="tab-control">
                     <li class="active"><a href="#tab-first" data-toggle="tab">Карточка</a></li>
                     <li class=""><a href="#tab-address" data-toggle="tab">Персональные данные</a></li>

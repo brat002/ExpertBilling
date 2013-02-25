@@ -14,6 +14,7 @@ urlpatterns += patterns('ebsadmin.modules.account',
     url(r'^account_management_delete/', 'account_management_delete', name='account_management_delete'),
     url(r'^accounttariff/edit/', 'accounttarif_edit', name='accounttariff_edit'),
     url(r'^account_management_suspendedperiod/', 'account_management_suspendedperiod', name='account_management_suspendedperiod'),
+    url(r'^tools/ping/', 'tools_ping', name='tools_ping'),
     
 
 )

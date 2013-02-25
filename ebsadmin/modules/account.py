@@ -16,7 +16,7 @@ from billservice.models import Account, AccountTarif, SuspendedPeriod
 log = LogItem.objects.log_action
 from django.contrib import messages
 from billservice.helpers import systemuser_required
-
+import subprocess
 
 
 @ajax_request
@@ -194,4 +194,29 @@ def account_management_delete(request):
         return {"status": False, "message": "Account not found"} 
     
     
+@systemuser_required
+@render_to('ebsadmin/ping_check.html')
+def tools_ping(request):
+    
+
+    if request.GET: 
+
+        if  not (request.user.account.has_perm('billservice.view_account')):
+            messages.error(request, u'У вас нет прав на просмотр данных аккаунта', extra_tags='alert-danger')
+            return {}
+        
+        ip = request.GET.get('ip')
+        if ip:
+            cmd = ['ping', '-c', '3', ip]
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+            output = ''
+            for line in p.stdout:
+                output+= line
+            p.wait()
+            print p.returncode
+            return {'output':output,  'status': True} 
+
+
+    return {'status': False} 
+
     

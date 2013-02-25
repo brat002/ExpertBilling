@@ -5,16 +5,7 @@
         <script type="text/javascript"> 
         $(document).ready(function() {
         	
-        	var infotext="Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] <br /> \
-            Примеры:  <br /> \
-            128k  - rx-rate=128000, tx-rate=128000 (no bursts)  <br /> \
-            64k/128M - rx-rate=64000, tx-rate=128000000  <br /> \
-            64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s  <br /> \
-            64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br />";
-            
-            
-        	$('#id_vpn_speed').popover({title: 'Формат', content:infotext, html:true, trigger: 'hover', placement: 'right'})
-        	$('#id_ipn_speed').popover({title: 'Формат', content:infotext, html:true, trigger: 'hover', placement: 'right'})
+
         $("#generate_username").click(function() {
             $.getJSON('{% url generate_credentials %}',{action:'login'},function(data,status){
                 if( status=='success' ){
@@ -145,6 +136,22 @@
             deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
             onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
         });
+        $("#modal-ipn-ping-dialog").click(function(event) {
+            $('<div />').dialog2({
+                title: "Ping", 
+                content: "{% url tools_ping %}?ip="+ $('#id_ipn_ip_address').val()
+            });
+
+            event.preventDefault();
+        });
+        $("#modal-vpn-ping-dialog").click(function(event) {
+            $('<div />').dialog2({
+                title: "Ping", 
+                content: "{% url tools_ping %}?ip="+ $('#id_vpn_ip_address').val()
+            });
+
+            event.preventDefault();
+        });
         $('#id_ipn_ip_address').click(function(){$('#id_ipn_ip_address').autocomplete('search')});
         $('#id_assign_ipn_ip_address').click(function(){
             if ($('#id_ipn_ip_address').val()=='' || $('#id_ipn_ip_address').val()=='0.0.0.0/32'){
@@ -232,12 +239,37 @@
 {% if message %}<div class="alert alert-error">{{message}}<a class="close" data-dismiss="alert" href="#">&times;</a></div>{% endif %}
 <ul class="breadcrumb">
   <li>
-    Аккаунты: <a href="{% url account_edit%}?id={{subaccount.account.id}}">{{subaccount.account.username}}</a> <span class="divider">/</span>Субаккаунт: {{subaccount.username}} id:{{subaccount.id}}
+    <a href='{% url account_list %}?data=data'>Все аккаунты</a> / <a href="{% url account_edit%}?id={{subaccount.account.id}}">{{subaccount.account.username}}</a> <span class="divider">/</span>Субаккаунт: {{subaccount.username}} id:{{subaccount.id}}
   </li>
 </ul>
-
-
+<div>
+<div class="navbar navbar-googlenav">
+  <div class="navbar-inner">
+    <div class="btn-toolbar">
+      <div class="btn-group">
+        <a href="#" class="btn btn-warning" id='modal-ipn-ping-dialog'>Ping IPN IP</a>
+        
+      </div>
+      <div class="btn-group">
+        <a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>Ping VPN IP</a>
+      </div>
+ 
+ 
+        </ul>
+      </div>
+ 
+  </div>
+</div>
+</div>
 <form method="POST" action="{% url subaccount %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal form-condensed">
+                <ul class="nav nav-tabs" id="tab-control">
+                    <li class="active"><a href="#tab-first" data-toggle="tab">Карточка</a></li>
+                    <li class=""><a href="#tab-addonservice" data-toggle="tab">Подключаемые услуги</a></li>
+                </ul>
+                
+                <div class="tab-content">
+                    <div class="tab-pane active" id="tab-first">
+                    
                 <fieldset>
                     <legend>Профиль субаккаунта{% objectlog subaccount %}</legend>
 
@@ -277,20 +309,7 @@
                                     {% endif %}<input type='button' id='generate_username' class="btn" value='Создать'>
                             </div>
                         </div>
-                    <div class="control-row">
-                    <label class="control-label" for="input-server-access">Сервер доступа</label>
-                         <div class="controls">
-                                {{ form.nas }}
-                                    {% if form.nas.errors %}
-                                        <span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.nas.help_text%}
-                                        <p class="help-block">
-                                            {{ form.nas.help_text|safe }}
-                                        </p>
-                                    {% endif %}
-                        </div>
-                    </div>
+
                     </div>
 
                     <div class="control-group">
@@ -308,27 +327,30 @@
                                     {% endif %} <input type='button' id='generate_password' class="btn" value='Создать'>
                             </div>
                         </div>
-                        <div class="control-row">
-                            <label class="control-label" for="input-password">IPN статус</label>
-                                <div class="controls">
-                                {{ form.ipn_added }} {{form.ipn_added.label}}
-                                </div>
-                                 <div class="controls">
-                                {{ form.ipn_enabled }} {{form.ipn_enabled.label}}
-                                </div>
-                                 <div class="controls">
-                                {{ form.ipn_sleep }} {{form.ipn_sleep.label}}
-                                </div>
-                            
-                        </div>
+
 
                     </div>
-
+                    <hr />
+                    <div class="control-group">
+                    <label class="control-label" for="input-server-access">Сервер доступа</label>
+                         <div class="controls">
+                                {{ form.nas }}
+                                    {% if form.nas.errors %}
+                                        <span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if form.nas.help_text%}
+                                        <p class="help-block">
+                                            {{ form.nas.help_text|safe }}
+                                        </p>
+                                    {% endif %}
+                        </div>
+                    </div>
+                    
                     <div class="control-group">
 
                             <label class="control-label" for="input-vpn-ip">VPN IP</label>
                             <div class="controls">
-                            {{ form.ipv4_vpn_pool }}{{ form.vpn_ip_address }}<input type="button" id="id_assign_vpn_ip_address" value="Выдать">
+                            {{ form.ipv4_vpn_pool }}{{ form.vpn_ip_address }}<input type="button" id="id_assign_vpn_ip_address" class="btn btn-success" value="Выдать">
                             
                                 {% if form.vpn_ip_address.errors %}
                                     <span class="help-inline">{% for error in form.vpn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -346,7 +368,7 @@
 
                             <label class="control-label" for="input-ipn-ip">{{form.ipn_ip_address.label}}</label>
                             <div class="controls">
-                                {{ form.ipv4_ipn_pool }}{{ form.ipn_ip_address }}<input type="button" id="id_assign_ipn_ip_address" value="Выдать">
+                                {{ form.ipv4_ipn_pool }}{{ form.ipn_ip_address }}<input type="button" id="id_assign_ipn_ip_address" class="btn btn-success"  value="Выдать">
                                     {% if form.ipn_ip_address.errors %}
                                         <span class="help-inline">{% for error in form.ipn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}
@@ -407,7 +429,7 @@
                             </div>
                         </div>
                     </div>
-
+                    <hr />
                     <div class="control-group">
                         <div class="control-row">
                             <label class="control-label" for="input-switch">{{form.switch.label}}</label>
@@ -462,6 +484,24 @@
                             </div>
                         </div>
                     </div>
+                    <hr />
+                        <div class="control-group">
+                            <label class="control-label" for="input-password">IPN статус</label>
+                                <div class="controls">
+                                {{ form.ipn_added }} {{form.ipn_added.label}}
+                                </div>
+                                 <div class="controls">
+                                {{ form.ipn_enabled }} {{form.ipn_enabled.label}}
+                                </div>
+                                 <div class="controls">
+                                {{ form.ipn_sleep }} {{form.ipn_sleep.label}}
+                                </div>
+                                <br />
+                                <div class="controls alert alert-info">
+                                   Текущие IPN статусы отображены выше. Для их изменения - отметьте соответствующие пункты и сохраните субаккаунт. Изменения применятся в течении нескольких минут. 
+                               </div>
+                        </div>
+                        <hr />
                     <div class="control-group">
                         <label class="control-label" for="input-vpn-speed">{{form.sessionscount.label}}</label>
                         <div class="controls">
@@ -476,7 +516,7 @@
                            {% endif %}
                         </div>
                     </div>
-
+                <hr />
                     <div class="control-group">
                         <label class="control-label" for="input-vpn-speed">{{form.vpn_speed.label}}</label>
                         <div class="controls">
@@ -490,6 +530,14 @@
                                </p>
                            {% endif %}
                         </div>
+                               <div class="controls alert alert-info">
+                                   <small>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] <br /> 
+            Примеры:  <br /> 
+            128k  - rx-rate=128000, tx-rate=128000 (no bursts)  <br /> 
+            64k/128M - rx-rate=64000, tx-rate=128000000  <br /> 
+            64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s  <br /> 
+            64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br /></small> 
+                               </div>
                     </div>
 
                     <div class="control-group">
@@ -505,8 +553,16 @@
                                </p>
                            {% endif %}
                         </div>
+                               <div class="controls alert alert-info">
+                                   <small>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] <br /> 
+            Примеры:  <br /> 
+            128k  - rx-rate=128000, tx-rate=128000 (no bursts)  <br /> 
+            64k/128M - rx-rate=64000, tx-rate=128000000  <br /> 
+            64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s  <br /> 
+            64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br /></small> 
+                               </div>
                     </div>
-
+                    <hr />
                     <div class="control-group">
                         <label class="control-label">Опции</label>
                         <div class="controls docs-input-sizes">
@@ -668,6 +724,14 @@
                             </label>
                     </div>
                 </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <input type="submit" class="btn btn-primary" value="Сохранить">
+                    </div>
+                </fieldset>
+                </div>
+                
+                <div class="tab-pane" id="tab-addonservice">
                 {% if subaccount %}
                 <fieldset>
                     <legend>Активированные подключаемые услуги</legend>
@@ -676,11 +740,9 @@
                     <a href="#" class="btn align-right btn-success" id="modal-accountaddonservice-dialog" >Добавить</a>
                 </fieldset>
                 {% endif %}
-                <fieldset>
-                    <div class="form-actions form-actions-center">
-                        <input type="submit" class="btn btn-primary" value="Сохранить">
-                    </div>
-                </fieldset>
+                </div>
+                </div>
+
             </form>
             </div>
 
