@@ -126,6 +126,7 @@ INSTALLED_APPS = (
     'ajax_select',
     'ebsadmin',
     'django_tables2_reports',
+    'getpaid'
 )
 
 
@@ -233,6 +234,8 @@ PERSONAL_AREA_STAFF_MENU = [
 # load local_settings
 try:
     from settings_local import *
+    import settings_local
+    INSTALLED_APPS += settings_local.GETPAID_BACKENDS if 'GETPAID_BACKENDS' in settings_local.__dict__  else ()
 except Exception, ex:
     print ex
 
