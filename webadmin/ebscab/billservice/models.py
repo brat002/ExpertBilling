@@ -976,11 +976,22 @@ class Transaction(models.Model):
            ("transaction_view", u"Просмотр"),
             )
         
+    @staticmethod
+    def create_payment(account_id, summ, created, bill, trtype):
+        tr = Transaction()
+        tr.account = Account.objects.get(id=account_id)
+        tr.bill=bill
+        tr.summ = summ
+        tr.created = created
+        tr.type = TransactionType.objects.get(internal_name = trtype)
+        tr.save()
+        
     def human_sum(self):
         return self.summ
     
     def __unicode__(self):
         return u"%s, %s, %s" % (self.account, self.summ, self.created)
+
 
 getpaid.register_to_payment(Transaction, unique=False, blank=True, null=True, related_name='payments')
 

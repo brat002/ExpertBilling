@@ -30,7 +30,6 @@
                 }
             })
             });
-        $(function() {
             $("#modal-accountaddonservice-dialog").click(function(event) {
                 $('<div />').dialog2({
                     title: "Прикрепить подключаемую услугу", 
@@ -40,7 +39,9 @@
 
                 event.preventDefault();
             });
-        });
+            $("#modal-form-dialog").click(function(event) {
+                $('#id_form').submit();
+            });
         $(function() {
             $(".open-custom-dialog").click(function(event) {
                 $('<div />').dialog2({
@@ -247,12 +248,16 @@
   <div class="navbar-inner">
     <div class="btn-toolbar">
       <div class="btn-group">
-        <a href="#" class="btn btn-warning" id='modal-ipn-ping-dialog'>Ping IPN IP</a>
-        
+        <a href="#" class="btn btn-danger" id='modal-form-dialog'>Сохранить</a>
       </div>
       <div class="btn-group">
         <a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>Ping VPN IP</a>
       </div>
+      <div class="btn-group">
+        <a href="#" class="btn btn-warning" id='modal-ipn-ping-dialog'>Ping IPN IP</a>
+        
+      </div>
+
  
  
         </ul>
@@ -261,7 +266,7 @@
   </div>
 </div>
 </div>
-<form method="POST" action="{% url subaccount %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal form-condensed">
+<form method="POST"  id ='id_form' action="{% url subaccount %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal form-condensed">
                 <ul class="nav nav-tabs" id="tab-control">
                     <li class="active"><a href="#tab-first" data-toggle="tab">Карточка</a></li>
                     <li class=""><a href="#tab-addonservice" data-toggle="tab">Подключаемые услуги</a></li>

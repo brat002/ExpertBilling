@@ -205,9 +205,10 @@ GETPAID_BACKENDS_SETTINGS = {
         #        'testing' : True,
     },
 
-    'getpaid.backends.easypay' : {
+    'payments.easypay' : {
         'DEFAULT_CURRENCY' : 'UAH',
-        'key' : 'AAAAAAAA',
+        'SERVICE_ID' : '1',
+        'allowed_ip': ('93.183.196.28', '93.183.196.26'),
 
     }
 
