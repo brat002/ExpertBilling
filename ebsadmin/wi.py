@@ -147,7 +147,7 @@ def transactionreport2(request):
                 date_start = datetime.datetime(1990,1,1)
             systemusers = form.cleaned_data.get('systemuser')
             promise = form.cleaned_data.get('promise')
-            promise_expired = form.cleaned_data.get('promise_expired')
+            
 
             cur = connection.cursor()
             trtypes = data.getlist('tree')

@@ -7,12 +7,14 @@ from abstract_mixin import AbstractMixin
 import signals
 from utils import import_backend_modules, get_backend_settings
 
+
 PAYMENT_STATUS_CHOICES = (
         ('new', _("new")),
         ('in_progress', _("in progress")),
         ('partially_paid', _("partially paid")),
         ('paid', _("paid")),
         ('failed', _("failed")),
+        ('canceled', _("canceled")),
         )
 
 class PaymentManager(models.Manager):
@@ -25,6 +27,9 @@ class PaymentFactory(models.Model, AbstractMixin):
     This is an abstract class that defines a structure of Payment model that will be
     generated dynamically with one additional field: ``order``
     """
+    ORDER_MODEL = None
+    
+    account_id = models.IntegerField()
     amount = models.DecimalField(_("amount"), decimal_places=4, max_digits=20)
     currency = models.CharField(_("currency"), max_length=3)
     status = models.CharField(_("status"), max_length=20, choices=PAYMENT_STATUS_CHOICES, default='new', db_index=True)
@@ -34,6 +39,7 @@ class PaymentFactory(models.Model, AbstractMixin):
     amount_paid = models.DecimalField(_("amount paid"), decimal_places=4, max_digits=20, default=0)
     external_id = models.CharField(_("external id"), max_length=64, blank=True, null=True)
     description = models.CharField(_("description"), max_length=128, blank=True, null=True)
+    
 
     class Meta:
         abstract = True
@@ -47,17 +53,20 @@ class PaymentFactory(models.Model, AbstractMixin):
 
 
     @classmethod
-    def create(cls, order, backend, amount=0):
+    def create(cls, account_id, order, backend, amount=0, external_id=None):
         """
             Builds Payment object based on given Order instance
         """
         payment = Payment()
+        payment.account_id = account_id
         payment.order = order
         payment.backend = backend
         payment.amount = amount
+        payment.external_id = external_id
         
         sett = get_backend_settings(backend)
         payment.currency = sett.get('DEFAULT_CURRENCY')
+        print 'backend', backend, "payment.currency", payment.currency, 'payment.amount', payment.amount
         signals.new_payment_query.send(sender=None, order=order, payment=payment)
         if payment.currency is None or payment.amount is None:
             raise NotImplementedError('Please provide a listener for getpaid.signals.new_payment_query')
@@ -128,6 +137,7 @@ def register_to_payment(order_class, **kwargs):
     global Payment
     global Order
     class Payment(PaymentFactory.construct(order=order_class, **kwargs)):
+        ORDER_MODEL = order_class
         objects = PaymentManager()
         class Meta:
             ordering = ('-created_on',)

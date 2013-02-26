@@ -312,7 +312,6 @@ class SuspendedPeriodBatchForm(forms.Form):
 class TransactionModelForm(ModelForm):
     #created = forms.DateTimeField(required=True)
     account = forms.ModelChoiceField(queryset=Account.objects.all(), widget = forms.HiddenInput)
-    promise_never_expire = forms.CharField(widget = forms.widgets.CheckboxInput)
     type = forms.ModelChoiceField(queryset=TransactionType.objects.all(), widget = forms.widgets.Select(attrs={'class': 'input-xlarge'}) )
 
     def __init__(self, *args, **kwargs):
