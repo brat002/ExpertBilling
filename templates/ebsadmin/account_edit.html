@@ -496,7 +496,12 @@
                                     </div>
                                 </div>
                             </div>
-
+                                <div class="control-row">
+                                    <label class="control-label">{{form.phone_h.label}}:</label>
+                                    <div class="controls">
+                                        <label class="checkbox">{{form.phone_h.value}}</label>
+                                    </div>
+                                </div>
                             <div class="control-group">
                                 <label class="control-label">{{form.contactperson_phone.label}}:</label>
                                 <div class="controls">
@@ -582,6 +587,22 @@
                                 </div>
                                 
                                 <div class="control-row">
+                                    <label class="control-label" for="input-home-phone">{{form.birthday.label}}:</label>
+                                    <div class="controls">
+                                            {{ form.birthday }}
+                                            {% if form.birthday.errors %}
+                                                <span class="help-inline">{% for error in form.birthday.errors %}{{ error }}<br/> {% endfor %}</span>
+                                            {% endif %}
+                                            {% if form.birthday.help_text%}
+                                                <p class="help-block">
+                                                    {{ form.birthday.help_text|safe }}
+                                                </p>
+                                            {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                                <div class="control-group">
                                     <label class="control-label" for="input-home-phone">{{form.phone_h.label}}:</label>
                                     <div class="controls">
                                             {{ form.phone_h }}
@@ -595,8 +616,7 @@
                                             {% endif %}
                                     </div>
                                 </div>
-                            </div>
-
+                                
                             <div class="control-group">
                                 <label class="control-label" for="input-cperson-phone">{{form.contactperson_phone.label}}:</label>
                                 <div class="controls">

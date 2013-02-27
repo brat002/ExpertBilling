@@ -788,6 +788,8 @@ class Account(models.Model):
     systemuser = models.ForeignKey('SystemUser',verbose_name=u'Менеджер', blank=True,null=True, on_delete = models.SET_NULL)
     entrance_code = models.CharField(verbose_name=u'Код домофона', blank=True, max_length=256)
     private_passport_number = models.CharField(verbose_name=u'Идент. номер', blank=True, max_length=128)
+    
+    birthday = models.DateField(verbose_name=u'День рождения', blank=True, null=True)
     #allow_ipn_with_null = models.BooleanField()
     #allow_ipn_with_minus = models.BooleanField()
     #allow_ipn_with_block = models.BooleanField()
@@ -1927,6 +1929,7 @@ class TotalTransactionReport(models.Model):
 
     class Meta:
         managed = False
+        abstract = True
         ordering = ['-created']
         
 class PeriodicalServiceLog(models.Model):
