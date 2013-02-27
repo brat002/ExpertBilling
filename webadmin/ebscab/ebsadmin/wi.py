@@ -324,7 +324,7 @@ def accountsreport(request):
             systemuser = form.cleaned_data.get('systemuser')
 
             if deleted:
-                res = Account.objects.all_with_deleted()
+                res = Account.objects.deleted_set()
             else:
                 res = Account.objects.all()
                 
@@ -851,31 +851,20 @@ def subaccountedit(request):
     
     
             if ipn_mac_address:    
-                if not id:
-                    subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_mac_address = ipn_mac_address).count()
-                else:
-                    subaccs = SubAccount.objects.exclude(id = id, account__id = account_id).filter(ipn_mac_address = ipn_mac_address).count()
+                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_mac_address = ipn_mac_address).count()
     
                 if subaccs>0:
                     return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form, 'message':u'Выбранный мак-адрес используется в другом аккаунте'}
     
             if str(vpn_ip_address) not in ('','0.0.0.0', '0.0.0.0/32'):    
-                if not id:
-                    subaccs = SubAccount.objects.exclude(account__id = account_id).filter(vpn_ip_address = vpn_ip_address).count()
-                else:
-                    subaccs = SubAccount.objects.exclude(account__id = account_id).filter(vpn_ip_address = vpn_ip_address).count()
+                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(vpn_ip_address = vpn_ip_address).count()
     
                 if subaccs>0:
                     return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный vpn_ip_address используется в другом аккаунте'}
     
             if str(ipn_ip_address) not in ('', '0.0.0.0', '0.0.0.0/32'):    
     
-                if not id:
-    
-                    subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_ip_address = ipn_ip_address ).count()
-                else:
-    
-                    subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_ip_address = ipn_ip_address).count()
+                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_ip_address = ipn_ip_address).count()
     
                 if subaccs>0:
 
@@ -1240,7 +1229,7 @@ def activesessionreport(request):
 
             if form.cleaned_data.get("nas"):
                 res = res.filter(nas_int__in=form.cleaned_data.get("nas"))
-            res = res.values('subaccount__username', 'subaccount', 'framed_ip_address', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
+            res = res.values('subaccount__username', 'subaccount', 'framed_ip_address', 'interrim_update', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
             table = ActiveSessionTable(res)
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
@@ -1254,7 +1243,7 @@ def activesessionreport(request):
     else:
         table = None
         res = ActiveSession.objects.filter(session_status='ACTIVE').prefetch_related()
-        res = res.values('id', 'subaccount__username', 'subaccount', 'framed_ip_address', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
+        res = res.values('id', 'subaccount__username', 'subaccount', 'framed_ip_address',  'interrim_update', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
         table = ActiveSessionTable(res)
         table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
         if table_to_report:

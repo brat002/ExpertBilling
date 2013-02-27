@@ -197,16 +197,18 @@ CURRENCY = u' руб'
 
 GETPAID_BACKENDS_SETTINGS = {
     # Please provide your settings for backends
-    'getpaid.backends.payu' : {
-        'pos_id' : 123456789,
-        'key1' : 'xxx',
-        'key2' : 'xxx',
-        'pos_auth_key': 'xxx',
-        'signing' : True,
-        #        'testing' : True,
+    'payments.liqpay' : {
+         'TYPE': 'frontend', 
+        'DEFAULT_CURRENCY' : 'UAH',
+        'MERCHANT_ID': '123',
+        'MERCHANT_SIGNATURE': '123123123123',
+        'PAY_WAY': ('card', 'liqpay', 'delayed'),
+        'EXPIRE_TIME': 36, 
+
     },
 
     'payments.easypay' : {
+                          'TYPE': 'backend', 
         'DEFAULT_CURRENCY' : 'UAH',
         'SERVICE_ID' : '1',
         'allowed_ip': ('93.183.196.28', '93.183.196.26'),

@@ -401,6 +401,7 @@ class AccountForm(ModelForm):
         self.fields['comment'].widget.attrs['class'] = 'input-xlarge span10'
         self.fields['comment'].widget.attrs['cols'] =10
         self.fields['created'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['birthday'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
     
     class Meta:
         model = Account
@@ -1064,6 +1065,6 @@ class AccountPrepaysTimeSearchForm(forms.Form):
     current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
     
 class AccountManagementForm(forms.Form):
-    accounts = forms.ModelMultipleChoiceField(queryset = Account.objects.all())
+    accounts = forms.ModelMultipleChoiceField(queryset = Account.objects.all_with_deleted())
 
     
