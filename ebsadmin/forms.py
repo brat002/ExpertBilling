@@ -84,6 +84,6 @@ class TrafficNodesUploadForm(forms.Form):
 
 class TableColumnsForm(forms.Form):
     table_name = forms.CharField(widget = forms.widgets.HiddenInput)
-    columns = forms.MultipleChoiceField(choices=(), widget = forms.widgets.SelectMultiple(attrs={'class': 'columns'}))
+    columns = forms.MultipleChoiceField(choices=(), widget = forms.widgets.SelectMultiple(attrs={'class': 'columns', 'size': 10}))
     
     
