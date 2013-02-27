@@ -150,7 +150,7 @@
                     arr.push(data); 
                   
                 });
-                $.fn.dialog2.helpers.confirm("Поместить в архив? Выбранный аккаунт(-ы) будет помещён в архив и не будут отображаться.", {
+                $.fn.dialog2.helpers.confirm("Требуется подтверждение. Выполнить действие?", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),arr,function(data,status){
                             if( status=='success' ){
@@ -737,7 +737,7 @@
                         <div class="control-row">
                                     
                                     <div class="controls">
-                                   {{ form.deleted }}{{form.deleted.label}}
+                                   {{ form.deleted }} Поиск по архиву
                                    {% if form.deleted.errors %}
                                        <span class="help-inline">{% for error in form.deleted.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
@@ -779,9 +779,21 @@
 				<div class="btn-group">
                     <a href="{% url account_management_accounttariff %}" id="modal-accounttariff-dialog-table" class=" btn btn-success"><i class=' icon-share icon-white'></i> Изменить ТП</a>
                 </div>
+                
+                {% if form.deleted.value %}
                 <div class="btn-group">
-                <a class=" btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> В архив</a>
+                    <a class=" btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> Удалить из системы</a>
                 </div>
+                <div class="btn-group">
+                    <a class=" btn btn-success show-confirm" href="{% url account_management_restore %}"><i class='icon-share-alt icon-white'></i> Восстановить из архива</a>
+                </div>
+                {% else %}
+                <div class="btn-group">
+                    <a class=" btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> В архив</a>
+                </div>
+                {% endif %}
+                
+                
                 <div class="btn-group">
                 <a href="{% url account_management_suspendedperiod %}"  id="modal-suspendedperiod-dialog-table" class="btn btn-danger"><i class=' icon-calendar icon-white'></i> Период без ПУ</a>
                 </div>

@@ -193,6 +193,22 @@ def account_management_delete(request):
     else:
         return {"status": False, "message": "Account not found"} 
     
+@systemuser_required
+@ajax_request
+def account_management_restore(request):
+    if  not (request.user.account.has_perm('billservice.edit_account')):
+        return {'status':False, 'message': u'У вас нет прав редактирование аккаунтов'}
+    id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
+    m_form = AccountManagementForm(request.GET) 
+
+    if m_form.is_valid():
+        for acc in m_form.cleaned_data.get('accounts'):
+            acc.deleted=None
+            acc.save()
+            log('EDIT', request.user, acc)
+        return {"status": True}
+    else:
+        return {"status": False, "message": "Account not found"} 
     
 @systemuser_required
 @render_to('ebsadmin/ping_check.html')

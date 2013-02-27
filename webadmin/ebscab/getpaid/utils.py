@@ -28,7 +28,10 @@ def get_backend_choices(currency=None):
     choices = []
     backends_names = getattr(settings, 'GETPAID_BACKENDS', [])
 
+    backends_settings = getattr(settings, 'GETPAID_BACKENDS_SETTINGS', {})
     for backend_name in backends_names:
+        
+        if backends_settings.get(backend_name, {}).get('TYPE')=='backend': continue
         backend = import_name(backend_name)
         if currency:
             if currency in backend.PaymentProcessor.BACKEND_ACCEPTED_CURRENCY:

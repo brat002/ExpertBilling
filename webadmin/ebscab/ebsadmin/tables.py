@@ -229,7 +229,7 @@ class ActiveSessionTable(TableReport):
     row_number = django_tables.Column(verbose_name=u'#', empty_values=(), orderable=False)
     session_status = django_tables.TemplateColumn("<span class='label {% if record.session_status == 'ACK' %}info{% endif %}'>{{ record.session_status }}</span>")
     date_start = FormatDateTimeColumn()
-    #interrim_update = FormatDateTimeColumn()
+    interrim_update = FormatDateTimeColumn(verbose_name=u'Последнее обновление')
     caller_id = django_tables.Column(verbose_name=u'Caller ID', empty_values=())
     framed_ip_address = django_tables.Column(verbose_name=u'IP', empty_values=())
     framed_protocol = django_tables.Column(verbose_name=u'Протокол', empty_values=())
@@ -252,7 +252,7 @@ class ActiveSessionTable(TableReport):
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         model = ActiveSession
         configurable=True
-        available_fields = ('row_number', 'subaccount__username', 'date_start', 'date_end',  'nas_int', 'caller_id', 'framed_ip_address', 'framed_protocol', 'session_time','bytes', 'session_status', 'action')
+        available_fields = ('row_number', 'subaccount__username', 'date_start', 'interrim_update', 'date_end',  'nas_int', 'caller_id', 'framed_ip_address', 'framed_protocol', 'session_time','bytes', 'session_status', 'action')
         #exclude = ("id", "speed_string", 'called_id', 'nas_id', 'bytes_in', 'bytes_out', 'ipinuse', 'interrim_update', 'account', 'sessionid', 'acct_terminate_cause')
         attrs = {'class': 'table table-bordered table-condensed'}
 
