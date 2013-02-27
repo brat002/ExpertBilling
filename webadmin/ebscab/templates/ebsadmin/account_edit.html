@@ -230,7 +230,9 @@
                   $.cookie('account_last_tab', $(e.target).attr('href'));
                 });
 
-
+                $("#id_account-save").click(function(event) {
+                    $('#id_form').submit();
+                });
 
         });
         </script>
@@ -277,6 +279,50 @@
     <a href='{% url account_list %}?data=data'>Все аккаунты</a> / <a href="{% url account_edit%}?id={{account.id}}">{{account.username}}</a> 
   </li>
 </ul>
+<div >
+<div class="navbar navbar-googlenav">
+  <div class="navbar-inner">
+    <div class="btn-toolbar">
+      <div class="btn-group">
+        <a href="#" class="btn btn-danger" id='id_account-save'>Сохранить</a>
+      </div>
+      {% if account %}
+      <div class="btn-group">
+        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+          Radius отчёты <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+              <li><a href="{% url authlog_list %}?account={{account.id}}"><i class="icon-info-sign"></i>RADIUS авторизации</a></li>
+              <li><a href="{% url activesessionreport %}?account={{account.id}}"><i class="icon-info-sign"></i>RADIUS сессии</a></li>
+              <li><a href="{% url ipinuse_list %}?account={{account.id}}"><i class="icon-info-sign"></i>Использованные IP-адреса</a></li>
+        </ul>
+      </div>
+       <div class="btn-group">
+        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+          Предоплаченные остатки <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+              <li><a href="{% url accountprepaystraffic %}?account={{account.id}}"> NetFlow трафик</a></li>
+              <li><a href="{% url accountprepaysradiustraffic %}?account={{account.id}}">RADIUS трафик</a></li>
+              <li><a href="{% url accountprepaystime %}?account={{account.id}}">Время</a></li>
+        </ul>
+      </div>
+       <div class="btn-group">
+        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+          Финансовые логи <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+               <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_payments=True">Пополнения баланса</a></li>
+              <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_credits=True">Списания</a></li>
+              <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">История изменения баланса</a></li>
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+</div>
+</div>
+</div>
+
             <form class=" well form-horizontal  form-condensed" method="POST" action="{% url account_edit %}{% if account %}?id={{account.id}}{% endif %}">
                 <ul class="nav nav-tabs" id="tab-control">
                     <li class="active"><a href="#tab-first" data-toggle="tab">Карточка</a></li>
@@ -1263,22 +1309,7 @@
                                     </div></li>
             </ul>
           </div>
-          <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">Отчёты</li>
-              <li><a href="{% url authlog_list %}?account={{account.id}}"><i class="icon-info-sign"></i>RADIUS авторизации</a></li>
-              <li><a href="{% url activesessionreport %}?account={{account.id}}"><i class="icon-info-sign"></i>RADIUS сессии</a></li>
-              <li><a href="{% url ipinuse_list %}?account={{account.id}}"><i class="icon-info-sign"></i>Использованные IP-адреса</a></li>
-              <li class="nav-header">Финансы</li>
-              <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_payments=True">Пополнения баланса</a></li>
-              <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_credits=True">Списания</a></li>
-              <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">История изменения баланса</a></li>
-              <li class="nav-header">Остатки</li>
-              <li><a href="{% url accountprepaystraffic %}?account={{account.id}}"> NetFlow трафик</a></li>
-              <li><a href="{% url accountprepaysradiustraffic %}?account={{account.id}}">RADIUS трафик</a></li>
-              <li><a href="{% url accountprepaystime %}?account={{account.id}}">Время</a></li>
-            </ul>
-          </div>
+
         </div>
         {% endif %}
     </div>

@@ -42,9 +42,9 @@
         })
 </script>
 <div>
-
+{% if table.columns_form %}<div><form method="POST" action="">Настроить таблицу: {{table.columns_form.columns}}&nbsp;{{table.columns_form.table_name}}<input type="button"  class="columns_submit btn btn-small btn-primary" name="save_columns" value="Сохранить"></form></div>{% endif %}
 {% block table %}
-{% if table.columns_form %}<div class="pull-left"><form method="POST" action="">Настроить таблицу: {{table.columns_form.columns}}&nbsp;{{table.columns_form.table_name}}<input type="button"  class="columns_submit btn btn-small btn-primary" name="save_columns" value="Сохранить"></form></div>{% endif %}
+
 <table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %} id="id_main_table">
     {% block table.thead %}
     <thead>
