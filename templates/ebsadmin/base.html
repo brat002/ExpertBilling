@@ -216,12 +216,13 @@ padding-top:20px;
 		      {% charts_menu %}
 		    </ul>
 		  </li>
-         
-         <li><a href="{% url transactionreport2 %}"><i class="cus-report"></i> Операции с л/c</a></li>
-         <li><a href="{% url ipinuse_list %}"><i class="cus-report"></i>&nbsp;Занятые IP адреса</a></li>
-         <li><a href="{% url authlog_list %}"><i class="cus-report"></i>&nbsp;История авторизаций</a></li>
+         <li class="divider"></li>
+         <li><a href="{% url transactionreport2 %}"><i class="cus-folder-table"></i> Операции с л/c</a></li>
          <li><a href="{% url ballancehistoryreport %}"><i class="cus-report"></i>&nbsp;История изменения баланса</a></li>
-         
+         <li class="divider"></li>
+         <li><a href="{% url ipinuse_list %}"><i class="cus-report"></i>&nbsp;Занятые IP адреса</a></li>
+         <li><a href="{% url authlog_list %}"><i class="cus-report"></i>&nbsp;История RADIUS авторизаций</a></li>
+         <li class="divider"></li>
          <li><a href="{% url groupstat %}"><i class="cus-report"></i>&nbsp;Тарифицированный трафик</a></li>
          <li class="dropdown-submenu">
             <a tabindex="-1" href="#"><i class="cus-report-go"></i>&nbsp;Предоплаченные единицы</a>

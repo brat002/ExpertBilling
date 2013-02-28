@@ -4,228 +4,137 @@ from django.utils.translation import ugettext_lazy as _
 from getpaid.backends import PaymentProcessorBase
 import hashlib
 import datetime
-
+from django.contrib.sites.models import RequestSite
+from django.contrib.sites.models import Site
 from billservice.models import Account
-
+from base64 import b64encode, b64decode
+from BeautifulSoup import BeautifulSoup
      
 class TransactionStatus:
-    OK = 0
-    ERROR = 1
+    OK = 'success'
+    ERROR = 'failure'
 
 
-ERROR_TEMPLATE="""<Response>
-<StatusCode>%(STATUS)s</StatusCode>
-<StatusDetail>%(STATUS_DETAIL)s</StatusDetail>
-<DateTime>%(DATETIME)s</DateTime>
-<Sign>%(SIGN)s</Sign>
-</Response>"""    
 
-PAYMENT_TEMPLATE= """”<request>      
-      <version>1.2</version>
-      <merchant_id>%(MERCHANT_ID)s</merchant_id>
-      <result_url>%(RESULT_URL)s</result_url>
-      <server_url>%(SERVER_URL)s</server_url>
-      <order_id>%(ORDER_ID)s</order_id>
-      <amount>%(AMOUNT)s</amount>
-      <currency>%(CURRENCY)s</currency>
-      <description>%(COMMENT)s</description>
-      <default_phone>%(DEFAULT_PHONE)s</default_phone>
-      <pay_way>%(PAY_WAY)s</pay_way>
-      <goods_id>%(GOODS_ID)s</goods_id>
-      <exp_time>%(EXP_TIME)s</exp_time>
-</request>”
-"""
+PAYMENT_TEMPLATE= u"""<request>      
+<version>1.2</version>
+<merchant_id>%(MERCHANT_ID)s</merchant_id>
+<result_url>%(RESULT_URL)s</result_url>
+<server_url>%(SERVER_URL)s</server_url>
+<order_id>%(ORDER_ID)s</order_id>
+<amount>%(AMOUNT)s</amount>
+<currency>%(CURRENCY)s</currency>
+<description>%(COMMENT)s</description>
+<default_phone>%(DEFAULT_PHONE)s</default_phone>
+<pay_way>%(PAY_WAY)s</pay_way>
+<exp_time>%(EXP_TIME)s</exp_time>
+</request>"""
 
 
 class PaymentProcessor(PaymentProcessorBase):
     BACKEND = 'payments.liqpay'
     BACKEND_NAME = _('Liqpay backend')
     BACKEND_ACCEPTED_CURRENCY = ('UAH', )
+    PAY_WAY = ('card', 'liqpay', 'delayed')
 
     GATEWAY_URL = 'https://www.liqpay.com/?do=clickNbuy'
     
     _ALLOWED_IP = ('93.183.196.28', '93.183.196.26')
+    EXPIRE_TIME = 240
     
-    @staticmethod
-    def check_allowed_ip(ip, body):
-        allowed_ip = PaymentProcessor.get_backend_setting('allowed_ip', PaymentProcessor._ALLOWED_IP)
-
-        if len(allowed_ip) != 0 and ip not in allowed_ip:
-            dt = datetime.datetime.now()
-            return PaymentProcessor.error(body, u'Unknown IP')
-        return 'OK'
 
     def get_gateway_url(self, request):
+
+        if Site._meta.installed:
+            site = Site.objects.get_current()
+        else:
+            site = RequestSite(request)
+            
+        from getpaid.models import Payment
         
-        operation_xml = ''
-        signature = ''
+        amount = float(request.POST.get('summ'))
+        
+        payment = Payment.create(request.user.account.id, None,   PaymentProcessor.BACKEND, amount = amount)
+        
+        xml = PAYMENT_TEMPLATE % {
+               'MERCHANT_ID': PaymentProcessor.get_backend_setting('MERCHANT_ID'),
+               'RESULT_URL': "%s%s" % (site, reverse('payment-result')),
+               'SERVER_URL': "%s%s" % (site, reverse('getpaid-liqpay-pay')),
+               'ORDER_ID': payment.id,
+               'AMOUNT': amount,
+               'CURRENCY': PaymentProcessor.get_backend_setting('DEFAULT_CURRENCY', PaymentProcessor.BACKEND_ACCEPTED_CURRENCY[0]),
+               'COMMENT': u'Internet payment',
+               'DEFAULT_PHONE': u'+3202938475',
+               'PAY_WAY': ','.join(PaymentProcessor.get_backend_setting('PAY_WAY', PaymentProcessor.PAY_WAY)),
+               'EXP_TIME': PaymentProcessor.get_backend_setting('EXPIRE_TIME', PaymentProcessor.EXPIRE_TIME),
+               }
+
+        operation_xml = b64encode(xml)
+        signature = b64encode(hashlib.sha1(PaymentProcessor.get_backend_setting('MERCHANT_SIGNATURE')+xml+PaymentProcessor.get_backend_setting('MERCHANT_SIGNATURE')).digest())
+
         return self.GATEWAY_URL, "POST", {'operation_xml': operation_xml, 'signature': signature}
     
     @staticmethod
     def error(body, text):
-        dt = datetime.datetime.now()
-        
-        return  ERROR_TEMPLATE % {
-                                  'STATUS': TransactionStatus.ERROR,
-                                  'STATUS_DETAIL': text,
-                                  'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                  'SIGN': PaymentProcessor.compute_sig(body),
-                                  
-                                  }
+        return  text
     
     @staticmethod
-    def compute_sig(body):
-        return ''
+    def compute_sig(operation_xml):
+        return b64encode(hashlib.sha1(PaymentProcessor.get_backend_setting('MERCHANT_SIGNATURE')+operation_xml+PaymentProcessor.get_backend_setting('MERCHANT_SIGNATURE')).digest())
+        
     
+
     @staticmethod    
-    def check_service_id(body, service_id):
-        if service_id!=int(PaymentProcessor.get_backend_setting('SERVICE_ID')):
-            return PaymentProcessor.error(body, u'Неизвестный Service ID')
-            
-    
-    @staticmethod
-    def check(request, body):
-        acc = body.request.check.account.text
-        print "acc==", acc
-        try:
-            account = Account.objects.get(contract = acc)
-        except Account.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Аккаунт не найден')
-        
-        service_id = body.request.check.serviceId
-        PaymentProcessor.check_service_id(body, service_id)
-        dt = datetime.datetime.now()
-        ret = SUCCESS_CHECK_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Аккаунт найден',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'FULLNAME': account.fullname,
-                                         'SIGN': ''
-                                         
-                                         }
-        SIGN = PaymentProcessor.compute_sig(ret)
-        ret = SUCCESS_CHECK_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Аккаунт найден',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'FULLNAME': account.fullname,
-                                         'SIGN': SIGN
-                                         
-                                         }
-        return ret
-        
+    def check_merchant_id(body, merchant_id):
+        if merchant_id!=int(PaymentProcessor.get_backend_setting('MERCHANT_ID')):
+            return PaymentProcessor.error(body, u'Unknown merchant ID')
 
     @staticmethod
-    def pay(request, body):
-        acc = body.request.payment.account.text
-        amount = float(body.request.payment.amount.text)
-        orderid = body.request.payment.orderid.text
-        service_id = body.request.payment.serviceId
-        PaymentProcessor.check_service_id(body, service_id)
+    def online(request):
+        operation_xml = request.POST.get('operation_xml')
+        signature = request.POST.get('signature')
         
-        try:
-            account = Account.objects.get(contract = acc)
-        except Account.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Аккаунт не найден')
+        if PaymentProcessor.compute_sig(operation_xml)!=signature:
+            return "SIGNATURE CHECK ERROR"
+        
+        xml = b64decode(operation_xml)
+        
+        xml = BeautifulSoup(xml)
+        
+        merchant_id = xml.response.merchant_id.text
+        order_id = xml.response.order_id.text
+        amount = float(xml.response.amount.text)
+        currency = xml.response.currency.text
+        description = xml.response.description.text
+        status = xml.response.status.text
+        code = xml.response.code.text
+        transaction_id = xml.response.transaction_id.text
+        pay_way = xml.response.pay_way.text
+        sender_phone = xml.response.sender_phone.text
         
         
-        if amount>0:
-            from getpaid.models import Payment
-    
-            print "amount=", amount
-            payment = Payment.create(account.id, None,   PaymentProcessor.BACKEND, amount = amount, external_id=orderid)
-        dt = datetime.datetime.now()
-        ret = SUCCESS_PAY_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж создан. Требуется подтверждение',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'PAYMENT_ID': payment.id,
-                                         'SIGN': ''
-                                         
-                                         }
-        SIGN = PaymentProcessor.compute_sig(ret)
-        ret = SUCCESS_PAY_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж создан. Требуется подтверждение',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'PAYMENT_ID': payment.id,
-                                         'SIGN': SIGN
-                                         
-                                         }
-        return ret
-    
-    @staticmethod
-    def confirm(request, body):
-        paymentid = body.request.confirm.paymentid.text
-        serviceid = body.request.confirm.serviceid
-        service_id = body.request.confirm.serviceId
-        PaymentProcessor.check_service_id(body, service_id)
+        PaymentProcessor.check_merchant_id(xml, merchant_id)
         from getpaid.models import Payment
         try:
-            payment = Payment.objects.get(id = paymentid)
+            payment = Payment.objects.get(id = order_id)
         except Payment.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Платёж не найден')
+            return PaymentProcessor.error(xml, u'UNKNOWN PAYMENT')
         
         dt = datetime.datetime.now()
-        payment.paid_on = dt
-        payment.amount_paid = payment.amount
-        payment.save()
-        payment.change_status('paid')
+        if TransactionStatus.OK=='success':
+            payment.paid_on = dt
+            payment.external_id = transaction_id
+            payment.amount_paid = amount
+            payment.save()
+            payment.change_status('paid')
+            return 'OK'
+        elif TransactionStatus.ERROR == 'failure':
+            payment.change_status('failed')
+            return 'FAIL'
         
-        ret = SUCCESS_CONFIRM_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж подтверждён',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'ORDER_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'SIGN': ''
-                                         
-                                         }
-        SIGN = PaymentProcessor.compute_sig(ret)
-        ret = SUCCESS_CONFIRM_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж подтверждён',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'ORDER_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'SIGN': SIGN
-                                         
-                                         }
-        return ret
-    
-    @staticmethod
-    def cancel(request, body):
-        paymentid = body.request.cancel.paymentid.text
-        service_id = body.request.cancel.serviceid
-        
-        PaymentProcessor.check_service_id(body, service_id)
-        
-        from getpaid.models import Payment
-        try:
-            payment = Payment.objects.get(id = paymentid)
-        except Payment.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Платёж не найден')
-        
-        payment.change_status('canceled')
-        
-        payment.save()
 
-        dt = datetime.datetime.now()
-        ret = SUCCESS_CANCEL_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж отменён',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'CANCEL_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'SIGN': ''
-                                         
-                                         }
-        SIGN = PaymentProcessor.compute_sig(ret)
-        ret = SUCCESS_CANCEL_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж отменён',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'CANCEL_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'SIGN': SIGN
-                                         
-                                         }
-        return ret
+        return 'UNKNOWS'
+    
+ 
     
 import listeners

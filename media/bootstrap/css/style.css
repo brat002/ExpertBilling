@@ -214,3 +214,30 @@ footer
     font-size: 12px;
 }
 
+.table tbody tr.inactive:hover td {
+  background-color: #aaaabb;
+}
+
+.table tbody tr.inactive td {
+  background-color: #aaaabb;
+}
+
+.table tbody tr.inactive-light:hover td {
+  background-color: #aacccc;
+}
+
+.table tbody tr.inactive-light td {
+  background-color: #aacccc;
+}
+
+.table-hover tbody tr.success:hover td {
+  background-color: #dff0d8;
+}
+
+.table tbody tr.success td {
+  background-color: #dff0d8;
+}
+
+
+
+
