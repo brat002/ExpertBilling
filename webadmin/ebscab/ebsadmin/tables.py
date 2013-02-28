@@ -84,7 +84,7 @@ class SubAccountsTable(django_tables.Table):
         configurable=True
         available_fields = ('id', 'username', 'password', 'nas', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'd')
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-disable-hover table-bordered table-condensed'}
 
 
 class AccountHardwareTable(django_tables.Table):

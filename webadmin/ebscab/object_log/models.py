@@ -31,7 +31,7 @@ def default(obj):
 def compare(old, new):
     r = []
     for key in new:
-        if new[key]!=old.get(key):
+        if new[key]!=old.get(key) and not (new[key]  in [None, ''] and old.get(key)  in [None, '']):
             r.append({'%s_old' % key: old.get(key), '%s_new' % key:new.get(key)})
     return r
 

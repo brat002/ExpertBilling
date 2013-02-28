@@ -258,6 +258,8 @@ def index(request):
 @render_to('accounts/get_promise.html')
 @login_required
 def get_promise(request):
+    if  isinstance(request.user.account, SystemUser): 
+        return HttpResponseRedirect('/')
     tarif=request.user.account.get_account_tariff()
 
     if settings.ALLOW_PROMISE==False and tarif.allow_ballance_transfer==False:

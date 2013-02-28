@@ -15,24 +15,10 @@ class PayView(View):
 
 
         try:
-            body = BeautifulSoup(request.body)      
-            ip=request.META['REMOTE_ADDR']
-            
-            if settings.DEBUG==False:
-                status = PaymentProcessor.check_allowed_ip(request, body)
-                if status!='OK':
-                    HttpResponse(status)
-            
-            if body.request.find('check'):
-                status = PaymentProcessor.check(request, body)
-            elif body.request.find('payment'):
-                status = PaymentProcessor.pay(request, body)
-            elif body.request.find('confirm'):
-                status = PaymentProcessor.confirm(request, body)
-            elif body.request.find('cancel'):
-                status = PaymentProcessor.cancel(request, body)
+            status = PaymentProcessor.online(request)
                 
-        except KeyError:
+                
+        except Exception, e:
             logger.warning('Got malformed POST request: %s' % str(request.POST))
             return HttpResponse('MALFORMED')
 

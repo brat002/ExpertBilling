@@ -43,20 +43,17 @@ BODY_ERR=u"""<?xml version="1.0" encoding="utf-8"?>
 </params>
 </request>"""
 
-CHECK_BODY_SUCCESS=u"""
-<err_code>%(ERR_CODE)s</err_code>   
+CHECK_BODY_SUCCESS=u"""<err_code>%(ERR_CODE)s</err_code>   
 <err_text>%(ERR_TEXT)s</err_text>
 <account>%(ACCOUNT)s</account>
 <client_name>%(CLIENT_NAME)s</client_name>
 <balance>%(BALLANCE)s</balance>"""
 
-CHECK_BODY_ERROR=u"""
-<err_code>%(ERR_CODE)s</err_code>   
+CHECK_BODY_ERROR=u"""<err_code>%(ERR_CODE)s</err_code>   
 <err_text>%(ERR_TEXT)s</err_text>
 """
 
-PAYMENT_BODY=u"""
-<err_code>%(ERR_CODE)s</err_code>   
+PAYMENT_BODY=u"""<err_code>%(ERR_CODE)s</err_code>   
 <err_text>%(ERR_TEXT)s</err_text>
 <account>%(ACCOUNT)s</account>
 <reg_id>%(REG_ID)s</reg_id>

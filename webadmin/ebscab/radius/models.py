@@ -37,6 +37,7 @@ STATUS_CLASS={
               "NACK": 'error',
               "ACK": '',
               }
+
 # Create your models here.
 class ActiveSession(models.Model):
     account=models.ForeignKey(Account, verbose_name=u'Аккаунт')
@@ -107,7 +108,7 @@ class AuthLog(models.Model):
         
     def get_row_class(self):
         if self.type not in ['AUTH_OK','DHCP_AUTH_OK']:
-            return 'error'
+            return 'inactive'
         elif self.type in ['AUTH_OK','DHCP_AUTH_OK']:
             return 'success'
         return ''
