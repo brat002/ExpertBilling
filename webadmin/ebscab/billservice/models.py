@@ -104,8 +104,8 @@ AUTH_TYPES=(
 
 STATUS_CLASS={
               1:'',
-              2:'error',
-              3:'error',
+              2:'inactive-light',
+              3:'inactive',
               4:'info',
               }
     

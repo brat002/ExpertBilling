@@ -200,10 +200,10 @@ GETPAID_BACKENDS_SETTINGS = {
     'payments.liqpay' : {
          'TYPE': 'frontend', 
         'DEFAULT_CURRENCY' : 'UAH',
-        'MERCHANT_ID': '123',
-        'MERCHANT_SIGNATURE': '123123123123',
+        'MERCHANT_ID': 'i7444123444',
+        'MERCHANT_SIGNATURE': 'LMoTlGet9IVubuNbBvKIZ0wNDdsluOLsIvdzd',
         'PAY_WAY': ('card', 'liqpay', 'delayed'),
-        'EXPIRE_TIME': 36, 
+        'EXPIRE_TIME': 36,
 
     },
 
