@@ -14,10 +14,10 @@
              id: "timeaccessnode-modal"
          });
 
-         event.preventDefault();
+         event.preventDefault(event);
      });
      
-     $(".show-confirm").click(function() {
+     $(".show-confirm").click(function(event) {
          a=$(this);
          $.fn.dialog2.helpers.confirm("Удалить правило тарификации времени?.", {
              confirm: function() {
@@ -39,7 +39,7 @@
              decline: function() {  }
          });
 
-         event.preventDefault();
+         event.preventDefault(event);
      });
      
      $("#modal-timeaccessnode-dialog").click(function(event) {
@@ -49,7 +49,7 @@
              id: "timeaccessnode-modal"
          });
 
-         event.preventDefault();
+         event.preventDefault(event);
      });
  });
  </script>

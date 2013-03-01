@@ -101,7 +101,7 @@
             });
 
 
-             $("#id_button_delete").click(function() {
+             $("#id_button_delete").click(function(event) {
              	var node = $("#tree").dynatree("getActiveNode");
                  $.fn.dialog2.helpers.confirm("Вы уверены, что хотите удалить запись?", {
                      confirm: function() { 
@@ -120,7 +120,7 @@
                      }, 
                  });
 
-                 event.preventDefault();
+                 event.preventDefault(event);
              });
 
                 

@@ -30,4 +30,5 @@ django-tables2-reports==0.0.3
 SQLAlchemy
 django-jsonfield==0.8.12
 cdecimal
-django-getpaid
+django-pgcrypto
+

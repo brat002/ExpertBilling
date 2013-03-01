@@ -11,9 +11,9 @@
                     id: "hardware-modal"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
-            $(".show-confirm").click(function() {
+            $(".show-confirm").click(function(event) {
                 a=$(this);
                 $.fn.dialog2.helpers.confirm("Удалить? Удаление устройства вызовет удаление всех связаных с ним объектов в системе.", {
                     confirm: function() {
@@ -35,7 +35,7 @@
                     decline: function() {  }
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
         });
         </script>

@@ -37,7 +37,7 @@
 <script  type="text/javascript" >
 $(document).ready(function() {
     $('#tab-control a').click(function (e) {
-          e.preventDefault();
+          e.preventDefault(e);
           $(this).tab('show');
         });
             $(document).on("selectedTemplate", documentPrintHandler);

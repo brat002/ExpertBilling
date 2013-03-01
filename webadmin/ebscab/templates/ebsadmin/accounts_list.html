@@ -6,7 +6,7 @@
 
         <script type="text/javascript"> 
         $(document).ready(function() {
-            $("#id_main_table th input[type=checkbox]").click(function(event) {
+            $("#id_main_table tr th input[type=checkbox]").click(function(event) {
                 $("#id_main_table td input[type=checkbox]").attr("checked", this.checked);
 
 
@@ -99,7 +99,7 @@
                                 alert('Произошла ошибка в обработке запросов сервером');
                             }
                         });
-                event.preventDefault();
+                event.preventDefault(event);
                         
                 }
                 
@@ -120,7 +120,7 @@
                     id: "server-notice"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
             
             $("#modal-suspendedperiod-dialog-table").click(function(event) {
@@ -138,10 +138,12 @@
                     id: "server-notice"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
             
-            $(".show-confirm").click(function() {
+            $(".show-confirm").live('click', function(event) {
+            	
+            	
                 a=$(this);
                 var arr = new Array();
 
@@ -150,6 +152,7 @@
                     arr.push(data); 
                   
                 });
+                
                 $.fn.dialog2.helpers.confirm("Требуется подтверждение. Выполнить действие?", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),arr,function(data,status){
@@ -167,10 +170,13 @@
 
                         })                      
                         }, 
-                    decline: function() {  }
+                    decline: function() {  },
+                    id: 'confirm-dialog'
+                    
                 });
 
-                event.preventDefault();
+                //event.preventDefault();
+                event.preventDefault(event);
             });
             
             $('#tab-control a[href="#filter"]').tab('show');
@@ -789,7 +795,7 @@
                 </div>
                 {% else %}
                 <div class="btn-group">
-                    <a class=" btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> В архив</a>
+                    <a class="btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> В архив</a>
                 </div>
                 {% endif %}
                 
