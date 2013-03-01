@@ -14,9 +14,9 @@
              id: "timespeed-modal"
          });
 
-         event.preventDefault();
+         event.preventDefault(event);
      });
-     $(".show-confirm").click(function() {
+     $(".show-confirm").click(function(event) {
          a=$(this);
          $.fn.dialog2.helpers.confirm("Удалить? Вы уверены, что хотите удалить строку?", {
              confirm: function() {
@@ -38,7 +38,7 @@
              decline: function() {  }
          });
 
-         event.preventDefault();
+         event.preventDefault(event);
      });
      $("#modal-timespeed-dialog").click(function(event) {
          $('<div />').dialog2({
@@ -47,7 +47,7 @@
              id: "traffictransmitnode-modal"
          });
 
-         event.preventDefault();
+         event.preventDefault(event);
      });
  });
  </script>
