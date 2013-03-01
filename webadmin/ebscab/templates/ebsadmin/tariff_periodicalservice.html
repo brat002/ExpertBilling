@@ -13,9 +13,9 @@
              id: "periodicalservice-modal"
          });
 
-         event.preventDefault();
+         event.preventDefault(event);
      });
-     $(".show-confirm").click(function() {
+     $(".show-confirm").click(function(event) {
          a=$(this);
          $.fn.dialog2.helpers.confirm("Удалить? Удаление периодической услуги вызовет обнуление информации о списаниях по ней. Вместо этого рекомемендуется воспользоваться отключением услуги.", {
              confirm: function() {
@@ -37,7 +37,7 @@
              decline: function() {  }
          });
 
-         event.preventDefault();
+         event.preventDefault(event);
      });
      $("#modal-periodicalservice-dialog").click(function(event) {
          $('<div />').dialog2({
@@ -46,7 +46,7 @@
              id: "ps-modal"
          });
 
-         event.preventDefault();
+         event.preventDefault(event);
      });
  });
  </script>

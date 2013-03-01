@@ -11,7 +11,7 @@
                     id: "server-notice"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
             $(".open-custom-dialog").click(function(event) {
                 $('<div />').dialog2({
@@ -20,7 +20,7 @@
                     id: "model-modal"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
             $(".show-confirm").click(function() {
                 a=$(this);
@@ -44,7 +44,7 @@
                     decline: function() {  }
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
         });
         </script>

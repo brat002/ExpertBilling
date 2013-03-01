@@ -12,9 +12,9 @@
                     content: this.href
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
-            $(".show-confirm").click(function() {
+            $(".show-confirm").click(function(event) {
                 a=$(this);
                 $.fn.dialog2.helpers.confirm("Удалить предоплаченное время? Вместо удаления рекомендуем воспользоваться редактированием. Удаление процедура не безопасная и мы не советуем к ней прибегать, если вы точно не уверены в том, что делаете.", {
                     confirm: function() {
@@ -36,7 +36,7 @@
                     decline: function() {  }
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
             {% if table %}
             $('#tab-control a[href="#result"]').tab('show');

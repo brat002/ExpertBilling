@@ -37,7 +37,7 @@
                     id: "accountaddonservicer-modal"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
             $("#modal-form-dialog").click(function(event) {
                 $('#id_form').submit();
@@ -50,7 +50,7 @@
                     id: "accountaddonservicer-modal"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
         });
         $('#id_assign_vpn_ip_address').popover({title:'Подбор IP адреса', content: 'Выдать следующий IP из пула или показать доcтупные', trigger: 'hover'});
@@ -143,7 +143,7 @@
                 content: "{% url tools_ping %}?ip="+ $('#id_ipn_ip_address').val()
             });
 
-            event.preventDefault();
+            event.preventDefault(event);
         });
         $("#modal-vpn-ping-dialog").click(function(event) {
             $('<div />').dialog2({
@@ -151,7 +151,7 @@
                 content: "{% url tools_ping %}?ip="+ $('#id_vpn_ip_address').val()
             });
 
-            event.preventDefault();
+            event.preventDefault(event);
         });
         $('#id_ipn_ip_address').click(function(){$('#id_ipn_ip_address').autocomplete('search')});
         $('#id_assign_ipn_ip_address').click(function(){

@@ -29,7 +29,7 @@
             })
             });
         $('[data-toggle="modal"]').click(function(e) {
-            e.preventDefault();
+            e.preventDefault(e);
             var href = $(this).attr('href');
             if (href.indexOf('#') == 0) {
                 $(href).modal('open');

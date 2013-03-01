@@ -13,7 +13,7 @@
                     id: "accountaddonservicer-modal"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
 
             /*$('#id_main_table').inplacerowedit({
@@ -42,14 +42,14 @@
                     id: "accountaddonservicer-modal"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
             $("#id_main_table th input[type=checkbox]").click(function(event) {
             	$("#id_main_table td input[type=checkbox]").attr("checked", this.checked);
 
 
             });
-            $("#id_btn_delete").click(function() {
+            $("#id_btn_delete").click(function(event) {
                 a=$(this);
                 $.fn.dialog2.helpers.confirm("Вы действительно хотите удалить?", {
                     confirm: function() {
@@ -73,7 +73,7 @@
                     decline: function() {  }
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
         });
         </script>
