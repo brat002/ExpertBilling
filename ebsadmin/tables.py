@@ -239,7 +239,7 @@ class ActiveSessionTable(TableReport):
     bytes = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}/{{record.bytes_out|filesizeformat}}", verbose_name=u'Байт')
     #account = django_tables.LinkColumn('account_edit', get_params={'id':A('account.id')})
     subaccount__username = django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount')}, verbose_name=u'Субаккаунт')
-    action = django_tables.TemplateColumn("<button data='{{record.id}}' class='btn btn-success btn-mini sreset' title='Soft reset'>R</button>&nbsp;<button data='{{record.id}}' class='btn btn-danger btn-mini hreset' title='Hard reset'>H</button>", verbose_name=u'Action')
+    action = django_tables.TemplateColumn("<button data='{{record.id}}' class='btn btn-success btn-mini sreset' title='Soft reset'>R</button>&nbsp;<button data='{{record.id}}' class='btn btn-danger btn-mini hreset' title='Hard reset'>H</button>&nbsp;<button class='btn btn-info btn-mini ping' title='Ping' data='{{record.framed_ip_address}}'>P</button>", verbose_name=u'Action')
     
     def __init__(self, *args, **kwargs):
         super(ActiveSessionTable, self).__init__(*args, **kwargs)

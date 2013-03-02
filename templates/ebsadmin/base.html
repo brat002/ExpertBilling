@@ -55,6 +55,7 @@ $(document).ready(function() {
                 $form.submit();
                 {% endif %}
             }
+            $(".hide-alert").fadeOut(3000 );
     });
 
 </script>
@@ -332,17 +333,18 @@ padding-top:20px;
 <div class="container">
 
 {% if messages %}
-
+<div>
     {% for message in messages %}
 
-<div class="alert fade in {{ message.tags }}">
+<div class="alert hide-alert fade in {{ message.tags }}">
             <button type="button" class="close" data-dismiss="alert">×</button>
             {{ message }}
           </div>
 
       {% endfor %}
-
+</div>
 {% endif %}
+
 {% block body %} {% endblock %}
 
 </div>
