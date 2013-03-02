@@ -39,7 +39,7 @@ class Vars(object):
         self.queues_port=5432
         self.queues_name='ebs_queues'
         self.kombu_dsn='amqp://guest:guest@localhost:5672//'
-        self.CRYPT_KEY = ''
+        self.CRYPT_KEY = 'ebscryptkeytest'
 
         
     def get_dynamic(self, **kwargs):
