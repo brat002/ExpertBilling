@@ -48,9 +48,9 @@ def actionlog(request):
                 res = res.filter(user__in=user)
                 
             if start_date:
-                res = res.filter(start_date__gte=start_date)
+                res = res.filter(timestamp__gte=start_date)
             if end_date:
-                res = res.filter(end_date__lte=end_date)
+                res = res.filter(timestamp__lte=end_date)
                 
             res = res.order_by('-id').select_related('user')
             table = ActionLogTable(res)
