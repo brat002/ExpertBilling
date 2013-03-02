@@ -12,7 +12,7 @@ def install_logger(lgr):
     logger = lgr
     
 class Vars(object):
-    __slots__ = ('RECOVER', 'CACHE_TIME', 'name', 'piddir', 'db_errors', 'db_dsn', 'db_session', 'log_type', 'log_ident', 'log_level', 'log_file', 'log_format', 'log_filemode', 'log_maxsize', 'log_rotate', 'types', 'queues_host', 'queues_username', 'queues_password', 'queues_port', 'queues_name', 'queues_dsn', 'kombu_dsn')
+    __slots__ = ('RECOVER', 'CACHE_TIME', 'name', 'piddir', 'db_errors', 'db_dsn', 'db_session', 'log_type', 'log_ident', 'log_level', 'log_file', 'log_format', 'log_filemode', 'log_maxsize', 'log_rotate', 'types', 'queues_host', 'queues_username', 'queues_password', 'queues_port', 'queues_name', 'queues_dsn', 'kombu_dsn', 'CRYPT_KEY')
     _parse_funs = {'s': lambda x: x, 'i' : int, 'b': lambda x: False if x.lower() in ('false', '0') else True}
     def __init__(self):
         pass
@@ -39,6 +39,7 @@ class Vars(object):
         self.queues_port=5432
         self.queues_name='ebs_queues'
         self.kombu_dsn='amqp://guest:guest@localhost:5672//'
+        self.CRYPT_KEY = ''
 
         
     def get_dynamic(self, **kwargs):
@@ -67,6 +68,7 @@ class Vars(object):
         if config.has_option('queues_db', 'port'): self.queues_port = config.getint('queues_db', 'port')
         if config.has_option('queues_db', 'name'): self.queues_name = config.get('queues_db', 'name')
         if config.has_option(db_name, 'kombu_dsn'):       self.kombu_dsn = config.get(db_name, 'kombu_dsn')
+        if config.has_option(db_name, 'crypt_key'):       self.CRYPT_KEY = config.get(db_name, 'crypt_key')
 
         self.queues_dsn = "dbname='%s' user='%s' host='%s' port='%s' password='%s'" % (self.queues_name, self.queues_username,
                                                                          self.queues_host, self.queues_port, self.queues_password)

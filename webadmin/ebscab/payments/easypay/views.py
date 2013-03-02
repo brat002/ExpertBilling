@@ -17,7 +17,6 @@ class EasyPayView(View):
         try:
             body = BeautifulSoup(request.body)      
             ip=request.META['REMOTE_ADDR']
-            
             if settings.DEBUG==False:
                 status = PaymentProcessor.check_allowed_ip(request, body)
                 if status!='OK':

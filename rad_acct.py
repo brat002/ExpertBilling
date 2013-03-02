@@ -197,7 +197,7 @@ class PacketSender(Thread):
             try:
                 d = acct_output_queue.get(timeout=0.1)
                 if not d:
-                    time.sleep(0.05)
+                    time.sleep(0.5)
                     continue
                 data,addrport, transport = d
                 transport.write(data, addrport)
@@ -458,7 +458,7 @@ class CacheRoutine(Thread):
                     run_time = time.time()                    
                     cur = self.connection.cursor()
                     #renewCaches(cur)
-                    renewCaches(cur, cacheMaster, RadAcctCaches, 41)
+                    renewCaches(cur, cacheMaster, RadAcctCaches, 41, (vars.CRYPT_KEY, ))
                     #cur.connection.commit()
                     cur.close()            
                     counter += 1

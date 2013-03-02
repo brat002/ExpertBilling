@@ -30,9 +30,9 @@ from core_class.SubAccountData import SubAccountData
 class CoreCaches(CacheCollection):
     __slots__ = () + ('account_cache','traffictransmitservice_cache','settlementperiod_cache','nas_cache','defspeed_cache','speed_cache','periodicaltarif_cache','periodicalsettlement_cache','timeaccessnode_cache','timeperiodnode_cache','trafficlimit_cache','shedulelog_cache','timeaccessservice_cache','onetimeservice_cache','accessparameters_cache','ipnspeed_cache','onetimehistory_cache','suspended_cache','timeperiodaccess_cache', 'speedlimit_cache',  'addonservice_cache', 'addontarifservice_cache', 'accountaddonservice_cache', 'addonperiodical_cache', 'subaccount_cache', 'radius_traffic_transmit_service_cache', 'radius_traffic_node_cache')
     
-    def __init__(self, date, fMem):
+    def __init__(self, date, fMem, crypt_key=''):
         super(CoreCaches, self).__init__(date)
-        self.account_cache = AccountCache(date)
+        self.account_cache = AccountCache(date, crypt_key)
         self.traffictransmitservice_cache = TrafficTransmitServiceCache()
         self.settlementperiod_cache = SettlementPeriodCache()
         self.nas_cache = NasCache()
@@ -56,21 +56,22 @@ class CoreCaches(CacheCollection):
         self.addontarifservice_cache = AddonServiceTarifCache()
         self.accountaddonservice_cache = AccountAddonServiceCache()
         self.addonperiodical_cache = AddonPeriodicalCache()
-        self.subaccount_cache = SubAccountsCache()
+        self.subaccount_cache = SubAccountsCache(crypt_key)
         self.radius_traffic_transmit_service_cache = RadiusTrafficTransmitServiceCache()
         self.radius_traffic_node_cache = RadiusTrafficNodeCache()
         self.caches = [self.account_cache, self.traffictransmitservice_cache, self.settlementperiod_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.periodicaltarif_cache, self.periodicalsettlement_cache, self.timeaccessnode_cache, self.timeperiodnode_cache, self.trafficlimit_cache, self.shedulelog_cache, self.timeaccessservice_cache, self.onetimeservice_cache, self.accessparameters_cache, self.ipnspeed_cache, self.onetimehistory_cache, self.suspended_cache, self.timeperiodaccess_cache, self.speedlimit_cache,  self.addonservice_cache, self.addontarifservice_cache, self.accountaddonservice_cache, self.addonperiodical_cache, self.subaccount_cache, self.radius_traffic_transmit_service_cache, self.radius_traffic_node_cache]
         
         
 class AccountCache(CacheItem):
-    __slots__ = ('by_account', 'by_tarif', 'by_acctf')
+    __slots__ = ('by_account', 'by_tarif', 'by_acctf', 'crypt_key')
     
     datatype = AccountData
     sql = core_sql['accounts']
     
-    def __init__(self, date):
+    def __init__(self, date, crypt_key):
         super(AccountCache, self).__init__()
-        self.vars = (date,)
+        self.vars = (crypt_key, date,)
+        
         self.by_account = {}
         #index on accounttarif.id
         self.by_acctf = {}
@@ -349,8 +350,10 @@ class SubAccountsCache(CacheItem):
     datatype = SubAccountData
     sql = core_sql['subaccounts']
     
-    def __init__(self):
+    def __init__(self, crypt_key):
+        
         super(SubAccountsCache, self).__init__()
+        self.vars = (crypt_key,)
         
     def reindex(self):
         self.by_account_id = {}

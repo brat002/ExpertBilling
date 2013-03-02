@@ -2,7 +2,7 @@ import logging
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import View
-from payments.easypay import PaymentProcessor
+from payments.liqpay import PaymentProcessor
 from getpaid.models import Payment
 from django.conf import settings
 from BeautifulSoup import BeautifulSoup
@@ -12,7 +12,6 @@ logger = logging.getLogger('payments.liqpay')
 
 class PayView(View):
     def post(self, request, *args, **kwargs):
-
 
         try:
             status = PaymentProcessor.online(request)

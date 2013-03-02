@@ -22,7 +22,7 @@ from core_cache import AddonServiceCache, AddonServiceTarifCache, AccessParamete
 class RadAuthCaches(CacheCollection):
     __slots__ = ('account_cache', 'period_cache', 'nas_cache', 'defspeed_cache', 'speed_cache', 'speedlimit_cache', 'radattrs_cache', 'addonservice_cache', 'accountaddonservice_cache', 'subaccount_cache','ippool_cache', 'switch_cache', 'timeperiodnode_cache')
     
-    def __init__(self, date, fMem):
+    def __init__(self, date, fMem, crypt_key):
         super(RadAuthCaches, self).__init__(date)
         self.account_cache = AccountCache(date)
         self.period_cache  = PeriodCache(date, fMem)
@@ -33,7 +33,7 @@ class RadAuthCaches(CacheCollection):
         self.radattrs_cache = RadiusAttrsCache()
         self.addonservice_cache = AddonServiceCache()
         self.accountaddonservice_cache = AccountAddonServiceCache()
-        self.subaccount_cache = SubAccountsCache()
+        self.subaccount_cache = SubAccountsCache(crypt_key)
         self.ippool_cache = IpPoolCache()
         self.switch_cache = SwitchCache()
         self.timeperiodnode_cache = TimePeriodNodeCache()
@@ -48,7 +48,7 @@ class AccountCache(CacheItem):
     
     def __init__(self, date):
         super(AccountCache, self).__init__()
-        self.vars = (date,)
+        self.vars = (date, )
         
     def reindex(self):
         self.by_username = {}
@@ -199,8 +199,9 @@ class SubAccountsCache(CacheItem):
     datatype = SubAccountsData
     sql = rad_sql['subaccounts']
     
-    def __init__(self):
+    def __init__(self, crypt_key):
         super(SubAccountsCache, self).__init__()
+        self.vars = (crypt_key, )
         
     def reindex(self):
         self.by_id = {}
