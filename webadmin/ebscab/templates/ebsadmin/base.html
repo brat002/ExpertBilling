@@ -65,7 +65,10 @@ $(document).ready(function() {
 
   <style type="text/css">
 .table td {
-    padding: 1px; 
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 2px; 
+    padding-right: 2px;
     
 }
 html,body
@@ -155,15 +158,12 @@ padding-top:20px;
 <div class="navbar  navbar-googlenav navbar-fixed-top">
   <div class="navbar-inner">
   <div class="container">
-<a class="brand" href="#">
+<a class="brand" href="{% url admin_dashboard %}">
   ExpertBiling Admin
 </a>  
     
   
 <ul class="nav">
-  <li>
-    <a href="{% url admin_dashboard %}">Dashboard</a>
-  </li>
    <ul class="nav">
      <li class="dropdown">
        <a href="#"
@@ -263,8 +263,9 @@ padding-top:20px;
          <li><a href="{% url nas %}"><i class="cus-disconnect"></i> Сервера доступа</a></li>
          <li><a href="{% url switch %}"><i class="cus-cog-edit"></i>&nbsp;Коммутаторы</a></li>
          <li><a href="{% url ippool %}"><i class="cus-page-white-dvd"></i>&nbsp;IP пулы</a></li>
-         <li><a href="{% url group %}"><i class="cus-link-go"></i> Группы трафика</a></li>
+         
          <li><a href="{% url trafficclass %}"><i class="cus-table-refresh"></i>&nbsp;Классы трафика</a></li>
+         <li><a href="{% url group %}"><i class="cus-link-go"></i> Группы трафика</a></li>
          <li class="divider"></li>
 
          <li><a href="{% url settlementperiod %}"><i class="icon-calendar"></i>&nbsp;Расчётные периоды</a></li>

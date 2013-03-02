@@ -78,8 +78,8 @@ class LogViewer(forms.Form):
 
 class TrafficNodesUploadForm(forms.Form):
     traffic_class = forms.ModelChoiceField(queryset = TrafficClass.objects.all())
-    nodes_file = forms.FileField(label=u"Файл с сетями", help_text=u"Сети должны располагаться построчно.")
-    networks = forms.CharField(label=u"Наши сети(построчно)", help_text=u'Пример:<br/> 192.168.11.0/24<br/>172.168.0.0/16<br />127.0.0.0/8', required=True, widget=forms.widgets.Textarea)
+    nodes_file = forms.FileField(label=u"Файл с сетями", help_text=u'Пример:<br/> 192.168.11.0/24<br/>172.168.0.0/16<br />127.0.0.0/8')
+
 
 
 class TableColumnsForm(forms.Form):

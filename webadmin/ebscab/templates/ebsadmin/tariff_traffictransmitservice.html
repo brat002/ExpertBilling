@@ -21,7 +21,7 @@
      });
      $(".show-confirm").click(function(event) {
          a=$(this);
-         $.fn.dialog2.helpers.confirm("Удалить? Вы уверены, что хотите удалить услугу тарификации трафика?", {
+         $.fn.dialog2.helpers.confirm("Удалить? Вы уверены, что хотите удалить запись?", {
              confirm: function() {
                  $.getJSON(a.attr('href'),{},function(data,status){
                      if( status=='success' ){
