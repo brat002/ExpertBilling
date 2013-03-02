@@ -34,9 +34,9 @@ class BooleanColumn(Column):
 
     def render(self, value):
         value = bool(value)
-        text = self.yesno[int(not value)]
+        text = '' #self.yesno[int(not value)]
         html = '<span %s>%s</span>'
-        attrs = {"class": unicode(value).lower()}
+        attrs = {"class": unicode('cus-tick' if value else 'cus-cross').lower()}
         attrs.update(self.attrs.get("span", {}))
         return mark_safe(html % (AttributeDict(attrs).as_html(), escape(text)))
 

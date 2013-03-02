@@ -49,24 +49,17 @@ def trafficclass_upload(request):
             res = []
             bulk = []
             for line in nodes_file:
-                for network in networks.split('\n'):
-                    line = line.strip()
-                    network = network.strip()
-                    try:
-                        IP(line)
-                        IP(network)
-                    except Exception, e:
-                        print e
-                        continue
-                    res.append({'src_net': line, 'dst_net': network, 'direction': 'INPUT'})
-                    res.append({'dst_net': line, 'src_net': network, 'direction': 'OUTPUT'})
-                    bulk.append(TrafficNode(traffic_class=traffic_class, src_ip=line, dst_ip=network, direction='INPUT'))
-                    bulk.append(TrafficNode(traffic_class=traffic_class, src_ip=network, dst_ip=line, direction='OUTPUT'))
+                line = line.strip()
+                try:
+                    IP(line)
+
+                except Exception, e:
+                    print e
+                    continue
+                res.append({'dst_net': line})
+                bulk.append(TrafficNode(traffic_class=traffic_class,  dst_ip=line))
             TrafficNode.objects.bulk_create(bulk)
-            table = UploadTrafficNodeTable(res)
-            table_to_report = RequestConfig(request, paginate=False).configure(table)
-            if table_to_report:
-                return create_report_http_response(table_to_report, request)
+            return HttpResponseRedirect("%s?id=%s" % (reverse('trafficnode_list'), traffic_class.id))
         else:
             print form._errors
     else:

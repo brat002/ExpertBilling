@@ -35,7 +35,7 @@ $(document).ready(function() {
         
         series: [
                  {
-                        name: 'Потребление трафика в день',
+                        name: '{{report_name}}',
                    data: [
                    {% for datetime, count in res %}
                    [Date.UTC({{datetime.year}},  {{datetime.month}}-1, {{datetime.day}},{{datetime.hour}},{{datetime.minute}}),  {{count}}   ],

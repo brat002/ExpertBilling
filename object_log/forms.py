@@ -12,8 +12,8 @@ class LogItemFilterForm(forms.Form):
     ct = forms.ModelChoiceField(label=u'Тип объекта', queryset=ContentType.objects.all(),  required=False)
     action = forms.ModelMultipleChoiceField(queryset=LogAction.objects.all(), label=u'Действие', required=False)
     user = forms.ModelMultipleChoiceField(queryset=User.objects.filter(username__in=[x.get('username') for x in SystemUser.objects.all().values('username')]), label=u'Администратор', required=False)
-    start_date = forms.DateTimeField(label=u'С даты', required=False, widget=SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
-    end_date = forms.DateTimeField(label=u'По дату', required=False, widget=SplitDateTimeWidget(date_attrs={'class':'input-small datepicker'}, time_attrs={'class':'input-small timepicker'}))
+    start_date = forms.DateTimeField(label=u'С даты', required=False, widget=forms.widgets.DateTimeInput(attrs={'class':'input-small datepicker'}))
+    end_date = forms.DateTimeField(label=u'По дату', required=False, widget=forms.widgets.DateTimeInput(attrs={'class':'input-small datepicker'}))
     
     
     def __init__(self, *args, **kwargs):

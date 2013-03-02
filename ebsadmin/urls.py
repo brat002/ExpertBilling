@@ -248,6 +248,7 @@ urlpatterns += patterns('ebsadmin.modules.tariff',
     url(r'^tariff/edit/$', 'tariff_edit', name='tariff_edit'),
     url(r'^tariff/periodicalservice/edit/$', 'tariff_periodicalservice_edit', name='tariff_periodicalservice_edit'),
     url(r'^tariff/prepaidtraffic/edit/$', 'tariff_prepaidtraffic_edit', name='tariff_prepaidtraffic_edit'),
+    url(r'^tariff/prepaidtraffic/delete/$', 'prepaidtraffic_delete', name='prepaidtraffic_delete'),
     
     url(r'^tariff/accessparameters/$', 'tariff_accessparameters', name='tariff_accessparameters'),
     url(r'^tariff/timespeed/edit/$', 'tariff_timespeed_edit', name='tariff_timespeed_edit'),
