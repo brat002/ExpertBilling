@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.test.client import Client
 from billservice.models import Account, Transaction, TransactionType
 import datetime
-from Beautifulsoup import Beautifulsoup
+from BeautifulSoup import BeautifulSoup
 
 class SimpleTest(TestCase):
     def test_check(self):
@@ -72,7 +72,7 @@ class SimpleTest(TestCase):
 </Payment>
 </Request>""", content_type='text/xml')
         print response.content
-        bs = Beautifulsoup(response.content)
+        bs = BeautifulSoup(response.content)
         response = c.post(reverse('getpaid-easypay-pay'), """<Request>
 <DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
 <Sign></Sign>
@@ -108,7 +108,7 @@ class SimpleTest(TestCase):
 </Payment>
 </Request>""", content_type='text/xml')
         print response.content
-        bs = Beautifulsoup(response.content)
+        bs = BeautifulSoup(response.content)
         response = c.post(reverse('getpaid-easypay-pay'), """<Request>
 <DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
 <Sign></Sign>

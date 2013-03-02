@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from getpaid.backends import PaymentProcessorBase
 import hashlib
 import datetime
-
+import listeners
 from billservice.models import Account
 
      
@@ -16,16 +16,17 @@ class TransactionStatus:
 BODY=u"""<?xml version="1.0" encoding="utf-8"?>  
 <request>
 <params>
-%s
+%(BODY)s
 </params>
-<sign>%s</sign>
+<sign>%(SIGN)s</sign>
 </request>"""
 
 BODY_ERR=u"""<?xml version="1.0" encoding="utf-8"?>  
 <request>
 <params>
-%s
+%(BODY)s
 </params>
+<sign>%(SIGN)s</sign>
 </request>"""
 
 CHECK_BODY_SUCCESS=u"""<err_code>%(ERR_CODE)s</err_code>   
@@ -35,8 +36,7 @@ CHECK_BODY_SUCCESS=u"""<err_code>%(ERR_CODE)s</err_code>
 <balance>%(BALLANCE)s</balance>"""
 
 CHECK_BODY_ERROR=u"""<err_code>%(ERR_CODE)s</err_code>   
-<err_text>%(ERR_TEXT)s</err_text>
-"""
+<err_text>%(ERR_TEXT)s</err_text>"""
 
 PAYMENT_BODY=u"""<err_code>%(ERR_CODE)s</err_code>   
 <err_text>%(ERR_TEXT)s</err_text>
@@ -63,190 +63,121 @@ ERRCODES={
             }
 class PaymentProcessor(PaymentProcessorBase):
     BACKEND = 'payments.ru_sberbank'
-    BACKEND_NAME = _('Sberbank backend')
+    BACKEND_NAME = _('sberbank backend')
     BACKEND_ACCEPTED_CURRENCY = ('RUB', )
 
     
     
-    _ALLOWED_IP = ('93.183.196.28', '93.183.196.26')
     
-    @staticmethod
-    def check_allowed_ip(ip, body):
-        allowed_ip = PaymentProcessor.get_backend_setting('allowed_ip', PaymentProcessor._ALLOWED_IP)
-
-        if len(allowed_ip) != 0 and ip not in allowed_ip:
-            dt = datetime.datetime.now()
-            return PaymentProcessor.error(body, u'Unknown IP')
-        return 'OK'
-
+    
     def get_gateway_url(self, request):
         return self.GATEWAY_URL, "GET", {}
     
     @staticmethod
-    def error(body, text):
-        dt = datetime.datetime.now()
+    def error(body, code):
+        body_error = CHECK_BODY_ERROR.encode('utf-8') % {
+                                         'ERR_CODE' : code,
+                                         'ERR_TEXT' : ERRCODES.get(str(code)).encode('utf-8'),
+                                         }
         
-        return  ERROR_TEMPLATE % {
-                                  'STATUS': TransactionStatus.ERROR,
-                                  'STATUS_DETAIL': text,
-                                  'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                  'SIGN': PaymentProcessor.compute_sig(body),
-                                  
-                                  }
+        return BODY_ERR.encode('utf-8') % {
+                           'BODY': body_error,
+                           'SIGN': PaymentProcessor.compute_sig(body, body_error)
+                           }
+        
+        
     
     @staticmethod
-    def compute_sig(body):
-        return ''
-    
-    @staticmethod    
-    def check_service_id(body, service_id):
-        if service_id!=int(PaymentProcessor.get_backend_setting('SERVICE_ID')):
-            return PaymentProcessor.error(body, u'Неизвестный Service ID')
+    def compute_sig(body, text):
+        req_sign = body.request.sign.text.encode('utf-8')
+        
+        s = text+req_sign + PaymentProcessor.get_backend_setting('PASSWORD','').encode('utf-8')
+        sign = hashlib.md5(s).hexdigest()
+        
+        return sign
             
+    @staticmethod
+    def check_sig(body):
+        req_sign = body.request.sign.text.encode('utf-8')
+        text = body.request.params.text.encode('utf-8')
+        
+        s = text+ PaymentProcessor.get_backend_setting('PASSWORD','').encode('utf-8')
+        sign = hashlib.md5(s).hexdigest()
+        
+        return req_sign.lower()==sign.lower()
     
     @staticmethod
     def check(request, body):
         acc = body.request.params.account.text
-        print "acc==", acc
         try:
             account = Account.objects.get(contract = acc)
         except Account.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Аккаунт не найден')
+            return PaymentProcessor.error(body, 20)
         
-        service_id = body.request.check.serviceId
-        PaymentProcessor.check_service_id(body, service_id)
+        pay_amount = body.request.params.pay_amount.text
+        
         dt = datetime.datetime.now()
-        ret = SUCCESS_CHECK_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Аккаунт найден',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'FULLNAME': account.fullname,
-                                         'SIGN': ''
-                                         
+        
+
+        body_error = CHECK_BODY_SUCCESS % {
+                                         'ERR_CODE' : 0,
+                                         'ERR_TEXT' : ERRCODES.get('0'),
+                                         'ACCOUNT': account.contract,
+                                         'CLIENT_NAME': unicode(account.fullname),
+                                         'BALLANCE': '%.2f' % float(account.ballance),
                                          }
-        SIGN = PaymentProcessor.compute_sig(ret)
-        ret = SUCCESS_CHECK_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Аккаунт найден',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'FULLNAME': account.fullname,
-                                         'SIGN': SIGN
-                                         
-                                         }
+        
+        body_error = unicode(body_error).encode('utf-8')
+        
+        ret = BODY.encode('utf-8') % {
+                           'BODY': body_error,
+                           'SIGN': str(PaymentProcessor.compute_sig(body, body_error).encode('utf-8'))
+                           }
         return ret
         
 
     @staticmethod
     def pay(request, body):
-        acc = body.request.payment.account.text
-        amount = float(body.request.payment.amount.text)
-        orderid = body.request.payment.orderid.text
-        service_id = body.request.payment.serviceId
-        PaymentProcessor.check_service_id(body, service_id)
+        from getpaid.models import Payment
+        acc = body.request.params.account.text
+        amount = float(body.request.params.pay_amount.text)
+        paymentid = body.request.params.pay_id.text
         
         try:
             account = Account.objects.get(contract = acc)
         except Account.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Аккаунт не найден')
-        
-        
-        if amount>0:
-            from getpaid.models import Payment
-    
-            print "amount=", amount
-            payment = Payment.create(account.id, None,   PaymentProcessor.BACKEND, amount = amount, external_id=orderid)
-        dt = datetime.datetime.now()
-        ret = SUCCESS_PAY_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж создан. Требуется подтверждение',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'PAYMENT_ID': payment.id,
-                                         'SIGN': ''
-                                         
-                                         }
-        SIGN = PaymentProcessor.compute_sig(ret)
-        ret = SUCCESS_PAY_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж создан. Требуется подтверждение',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'PAYMENT_ID': payment.id,
-                                         'SIGN': SIGN
-                                         
-                                         }
-        return ret
-    
-    @staticmethod
-    def confirm(request, body):
-        paymentid = body.request.confirm.paymentid.text
-        serviceid = body.request.confirm.serviceid
-        service_id = body.request.confirm.serviceId
-        PaymentProcessor.check_service_id(body, service_id)
-        from getpaid.models import Payment
+            return PaymentProcessor.error(body, 20)
+        payment = None
         try:
-            payment = Payment.objects.get(id = paymentid)
-        except Payment.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Платёж не найден')
+            payment = Payment.objects.get(id=paymentid)
+            if payment.account != account.contract or payment.amount != amount:
+                return PaymentProcessor.error(body, 30)
+        except:
+            pass
         
-        dt = datetime.datetime.now()
-        payment.paid_on = dt
-        payment.amount_paid = payment.amount
-        payment.save()
-        payment.change_status('paid')
-        
-        ret = SUCCESS_CONFIRM_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж подтверждён',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'ORDER_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'SIGN': ''
-                                         
-                                         }
-        SIGN = PaymentProcessor.compute_sig(ret)
-        ret = SUCCESS_CONFIRM_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж подтверждён',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'ORDER_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'SIGN': SIGN
-                                         
-                                         }
-        return ret
-    
-    @staticmethod
-    def cancel(request, body):
-        paymentid = body.request.cancel.paymentid.text
-        service_id = body.request.cancel.serviceid
-        
-        PaymentProcessor.check_service_id(body, service_id)
-        
-        from getpaid.models import Payment
-        try:
-            payment = Payment.objects.get(id = paymentid)
-        except Payment.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Платёж не найден')
-        
-        payment.change_status('canceled')
-        
-        payment.save()
+        if not payment:
+            
+            payment = Payment.create(account.id, None,   PaymentProcessor.BACKEND, amount = amount, external_id=paymentid)
 
-        dt = datetime.datetime.now()
-        ret = SUCCESS_CANCEL_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж отменён',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'CANCEL_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'SIGN': ''
-                                         
+        
+        reply_body = PAYMENT_BODY.encode('utf-8') % {
+                                         'ERR_CODE' : 0,
+                                         'ERR_TEXT' : ERRCODES.get('0'),
+                                         'REG_ID': payment.id,
+                                         'ACCOUNT': account.contract,
+                                         'REG_DATE': payment.created_on.strftime('%Y-%m-%dT%H:%M:%S'),
+                                         'BALLANCE': '%.2f' % float(account.ballance or 0),
                                          }
-        SIGN = PaymentProcessor.compute_sig(ret)
-        ret = SUCCESS_CANCEL_TEMPLATE % {
-                                         'STATUS': TransactionStatus.OK,
-                                         'STATUS_DETAIL': u'Платёж отменён',
-                                         'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'CANCEL_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
-                                         'SIGN': SIGN
-                                         
-                                         }
+        reply_body = reply_body.encode('utf-8')
+        ret = BODY.encode('utf-8') % {
+                   'BODY': reply_body,
+                   'SIGN': PaymentProcessor.compute_sig(body, reply_body)
+                   }
+        
+        if payment.status!='paid': 
+            payment.change_status('paid')
         return ret
     
-import listeners
+
+    
+

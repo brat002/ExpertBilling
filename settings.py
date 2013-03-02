@@ -216,8 +216,14 @@ GETPAID_BACKENDS_SETTINGS = {
         'SERVICE_ID' : '1',
         'allowed_ip': ('93.183.196.28', '93.183.196.26'),
 
-    }
+    },
+    'payments.ru_sberbank' : {
+                          'TYPE': 'backend', 
+        'DEFAULT_CURRENCY' : 'RUB',
+        'PASSWORD' : '12345',
+        'allowed_ip': ('93.183.196.28', '93.183.196.26'),
 
+    }
 }
 
 TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
