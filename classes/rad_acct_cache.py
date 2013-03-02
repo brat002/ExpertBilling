@@ -11,11 +11,11 @@ from rad_class.SubAccountsData import SubAccountsData
 class RadAcctCaches(CacheCollection):
     __slots__ = ('account_cache', 'nas_cache',  'subaccount_cache')
     
-    def __init__(self, date):
+    def __init__(self, date, crypt_key):
         super(RadAcctCaches, self).__init__(date)
         self.account_cache = AccountCache(date)
         self.nas_cache = NasCache()
-        self.subaccount_cache = SubAccountsCache()
+        self.subaccount_cache = SubAccountsCache(crypt_key)
         self.caches = [self.account_cache, self.nas_cache,self.subaccount_cache]
 
 
@@ -72,8 +72,9 @@ class SubAccountsCache(CacheItem):
     datatype = SubAccountsData
     sql = rad_sql['subaccounts']
     
-    def __init__(self):
+    def __init__(self, crypt_key):
         super(SubAccountsCache, self).__init__()
+        self.vars = (crypt_key, )
         
     def reindex(self):
         self.by_id = {}

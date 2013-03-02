@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, url
-from payments.easypay.views import EasyPayView
+from views import PayView
 
 urlpatterns = patterns('',
-    url(r'^payment/$', EasyPayView.as_view(), name='getpaid-easypay-pay'),
+    url(r'^/ru-sberbank/payment/$', PayView.as_view(), name='getpaid-rusberbank-pay'),
 )

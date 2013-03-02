@@ -66,7 +66,7 @@ class PaymentFactory(models.Model, AbstractMixin):
         
         sett = get_backend_settings(backend)
         payment.currency = sett.get('DEFAULT_CURRENCY')
-        print 'backend', backend, "payment.currency", payment.currency, 'payment.amount', payment.amount
+        
         signals.new_payment_query.send(sender=None, order=order, payment=payment)
         if payment.currency is None or payment.amount is None:
             raise NotImplementedError('Please provide a listener for getpaid.signals.new_payment_query')

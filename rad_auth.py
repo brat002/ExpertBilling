@@ -1215,7 +1215,7 @@ class CacheRoutine(Thread):
                     run_time = time.time()                    
                     cur = self.connection.cursor()
                     #renewCaches(cur)
-                    renewCaches(cur, cacheMaster, RadAuthCaches, 41, (fMem,))
+                    renewCaches(cur, cacheMaster, RadAuthCaches, 41, (fMem, vars.CRYPT_KEY))
                     #cur.connection.commit()
                     cur.close()
                     if counter == 0:

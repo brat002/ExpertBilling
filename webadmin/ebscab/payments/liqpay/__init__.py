@@ -9,7 +9,9 @@ from django.contrib.sites.models import Site
 from billservice.models import Account
 from base64 import b64encode, b64decode
 from BeautifulSoup import BeautifulSoup
-     
+
+import listeners
+
 class TransactionStatus:
     OK = 'success'
     ERROR = 'failure'
@@ -25,7 +27,6 @@ PAYMENT_TEMPLATE= u"""<request>
 <amount>%(AMOUNT)s</amount>
 <currency>%(CURRENCY)s</currency>
 <description>%(COMMENT)s</description>
-<default_phone>%(DEFAULT_PHONE)s</default_phone>
 <pay_way>%(PAY_WAY)s</pay_way>
 <exp_time>%(EXP_TIME)s</exp_time>
 </request>"""
@@ -64,7 +65,6 @@ class PaymentProcessor(PaymentProcessorBase):
                'AMOUNT': amount,
                'CURRENCY': PaymentProcessor.get_backend_setting('DEFAULT_CURRENCY', PaymentProcessor.BACKEND_ACCEPTED_CURRENCY[0]),
                'COMMENT': u'Internet payment',
-               'DEFAULT_PHONE': u'+3202938475',
                'PAY_WAY': ','.join(PaymentProcessor.get_backend_setting('PAY_WAY', PaymentProcessor.PAY_WAY)),
                'EXP_TIME': PaymentProcessor.get_backend_setting('EXPIRE_TIME', PaymentProcessor.EXPIRE_TIME),
                }
@@ -137,4 +137,4 @@ class PaymentProcessor(PaymentProcessorBase):
     
  
     
-import listeners
+

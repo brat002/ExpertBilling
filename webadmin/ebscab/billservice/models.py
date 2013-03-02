@@ -12,7 +12,7 @@ connection.features.can_return_id_from_insert = False
 # Create your models here.
 # choiCe
 import IPy
-from lib.fields import IPNetworkField
+from lib.fields import IPNetworkField, EncryptedTextField
 import getpaid
 
 PROTOCOLS = {'0':'-all-',
@@ -743,7 +743,7 @@ class Account(models.Model):
     """
     #user = models.ForeignKey(User,verbose_name=u'Системный пользователь', related_name='user_account2')
     username = models.CharField(verbose_name=u'Имя пользователя',max_length=200,unique=True)
-    password = models.CharField(verbose_name=u'Пароль',max_length=200, blank=True, default='')
+    password = EncryptedTextField(verbose_name=u'Пароль', blank=True, default='')
     fullname = models.CharField(verbose_name=u'ФИО', blank=True, default='', max_length=200)
     email = models.CharField(verbose_name=u'E-mail', blank=True, default='',max_length=200)
 
@@ -1654,8 +1654,8 @@ class AccountViewedNews(models.Model):
        
 class SubAccount(models.Model):
     account = models.ForeignKey(Account, related_name='subaccounts')
-    username = models.CharField(max_length=512, blank=True)
-    password = models.CharField(max_length=512, blank=True)
+    username = models.CharField(verbose_name=u'Имя пользователя', max_length=512, blank=True)
+    password = EncryptedTextField(verbose_name=u'Пароль', blank=True, default='')
     ipn_ip_address = IPNetworkField(blank=True,null=True, default='0.0.0.0')
     ipn_mac_address = models.CharField(blank=True, max_length=17, default='')
     vpn_ip_address = models.IPAddressField(blank=True,null=True,  default='0.0.0.0')

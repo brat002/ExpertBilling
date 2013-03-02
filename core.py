@@ -1706,7 +1706,7 @@ class AccountServiceThread(Thread):
                     run_time = time.time()                    
                     cur = self.connection.cursor()
                     #renewCaches(cur)
-                    renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem,), False)
+                    renewCaches(cur, cacheMaster, CoreCaches, 31, (fMem, vars.CRYPT_KEY), False)
                     cur.close()
                     if counter == 0:
                         aUC(AU, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
