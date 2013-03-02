@@ -40,20 +40,6 @@
                   </div>
                   <div class="control-group">
                     <div class="control-row">
-                      <label class="control-label"><strong>{{form.direction.label}}: </strong></label>
-                      <div class="controls">
-                      {{ form.direction }}
-                      {% if form.direction.errors %}
-                          <span class="help-inline">{% for error in form.direction.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.direction.help_text%}
-                          <p class="help-block">
-                              {{ form.direction.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                    </div>
-                    <div class="control-row">
                       <label class="control-label">{{form.protocol.label}}: </label>
                       <div class="controls">
                       {{ form.protocol }}
@@ -70,20 +56,6 @@
                   </div>             
 
                   <div class="control-group">
-                  <div class="control-row">
-                      <label class="control-label"><strong>{{form.src_ip.label}}</strong></label>
-                      <div class="controls">
-                      {{ form.src_ip }}
-                      {% if form.src_ip.errors %}
-                          <span class="help-inline">{% for error in form.src_ip.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.src_ip.help_text%}
-                          <p class="help-block">
-                              {{ form.src_ip.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
                   <div class="control-row">
                       <label class="control-label"><strong>{{form.dst_ip.label}}</strong></label>
                       <div class="controls">

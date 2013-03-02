@@ -493,7 +493,9 @@ class PrepaidTraffic(models.Model):
         ordering = ['traffic_class']
         list_display = ('size',)
 
-
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('prepaidtraffic_delete'), self.id)
+    
     class Meta:
         verbose_name = u"Предоплаченный трафик"
         verbose_name_plural = u"Предоплаченный трафик"
@@ -553,7 +555,7 @@ class AccountPrepaysTrafic(models.Model):
     В начале каждого расчётного периода пользователю должен заново начисляться трафик
     """
     account_tarif = models.ForeignKey(to="AccountTarif", on_delete = models.CASCADE)
-    prepaid_traffic = models.ForeignKey(to=PrepaidTraffic, null=True, on_delete = models.SET_NULL)
+    prepaid_traffic = models.ForeignKey(to=PrepaidTraffic, null=True, on_delete = models.CASCADE)
     size = models.FloatField(blank=True, default=0, verbose_name=u'Остаток')
     datetime = models.DateTimeField(auto_now_add=True, default='', verbose_name=u'Начислен')
     current=models.BooleanField(default=False, verbose_name=u'Текущий')
@@ -1345,7 +1347,7 @@ class Group(models.Model):
     name = models.CharField(verbose_name=u'Название', max_length=255)
     trafficclass = models.ManyToManyField(TrafficClass, verbose_name=u'Классы трафика')
     #1 - in, 2-out, 3 - sum, 4-max
-    direction = models.IntegerField(verbose_name=u'Направление', choices=((0, u"Входящий"), (1, u"Исходящий"), (2, u"Вх.+Исх."), (3, u"Большее направление")))
+    direction = models.IntegerField(verbose_name=u'Направление', choices=((0, u"Входящий"), (1, u"Исходящий"), (2, u"Вх.+Исх."),))
     # 1 -sum, 2-max
     type = models.IntegerField(verbose_name=u'Тип', choices=((1, u"Сумма классов"), (2, u"Максимальный класс")))
     

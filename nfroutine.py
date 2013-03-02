@@ -309,7 +309,7 @@ class groupDequeThread(Thread):
                 #get data
                 accounttarif_id, kgroup_id, gtime = gkey 
                 dkey = (int(gtime / 667) + accounttarif_id) % vars.GROUP_DICTS
-                #получить account_id Для вставки!!!
+                # получить account_id Для вставки!!!
                 aggrgDict = queues.groupAggrDicts[dkey]
                 aggrgLock = queues.groupAggrLocks[dkey]
                 with aggrgLock:
@@ -320,7 +320,9 @@ class groupDequeThread(Thread):
                     continue
                 
                 accsdata = self.caches.accounttariff_traf_service_cache.by_accounttariff.get(accounttarif_id)
-                if not accsdata: continue
+                if not accsdata: 
+                    logger.info('%s: no accsdata found %s', (self.getName(), accsdata))
+                    continue
                 account_id = accsdata.account_id
                 groupItems, groupInfo = groupData[0:2]
                 #get needed method
@@ -334,42 +336,43 @@ class groupDequeThread(Thread):
                 
                 #second type groups
                 #if group_type == 2:
-                if True:             
-                    """
-                    Место, где определяется максимальный класс
-                    """           
-                    if group_type==2:
-                        max_oct = 0
-                        #get class octets, calculate with direction method, find maxes
-                        for class_, gdict in groupItems.iteritems():                            
-                            octs = gop(gdict)
-                            classes.append(class_)
-                            octlist.append(octs)
-                            if octs >= max_oct:
-                                max_oct = octs
-                                max_class = class_                            
-                            
-                        octets = max_oct                        
-                        if not max_class: continue
-                    elif group_type == 1:
-                        for class_, gdict in groupItems.iteritems():
-                            octs = gop(gdict)
-                            octets += octs
-                            classes.append(class_)
-                            octlist.append(octs)
-                                      
-                    transaction_id = self.tarificate(accsdata.account_id, accsdata.id, None, accsdata.tariff_id, accsdata.traffic_transmit_service_id, group_id, octets, gdate, force_db=True)
-                    try:
-                        self.cur.execute("""INSERT INTO gpst%s""" % gdate.strftime("%Y%m01")+""" (group_id, account_id, bytes, datetime, classes, classbytes, max_class, accounttarif_id, transaction_id) 
-                        VALUES (%s, %s, %s, %s, %s, %s , %s, %s, %s);""", (group_id, account_id, octets, gdate, classes, octlist, max_class, accsdata.id, transaction_id))
-                    except psycopg2.ProgrammingError, e:
-                        if e.pgcode=='42P01':
-                            raise GpstTableException()
+    
+                """
+                Место, где определяется максимальный класс
+                """           
+                logger.debug("Group type %s octets %s", (accsdata.account_id, octets, ))
+                if group_type==2:
+                    max_oct = 0
+                    #get class octets, calculate with direction method, find maxes
+                    for class_, gdict in groupItems.iteritems():                            
+                        octs = gop(gdict)
+                        classes.append(class_)
+                        octlist.append(octs)
+                        if octs >= max_oct:
+                            max_oct = octs
+                            max_class = class_                            
+                        
+                    octets = max_oct                        
+                    if not max_class: continue
+                elif group_type == 1:
+                    for class_, gdict in groupItems.iteritems():
+                        octs = gop(gdict)
+                        octets += octs
+                        classes.append(class_)
+                        octlist.append(octs)
+                logger.debug("Account %s octets %s", (accsdata.account_id, octets, ))
+                transaction_id = self.tarificate(accsdata.account_id, accsdata.id, None, accsdata.tariff_id, accsdata.traffic_transmit_service_id, group_id, octets, gdate, force_db=True)
+                try:
+                    self.cur.execute("""INSERT INTO gpst%s""" % gdate.strftime("%Y%m01")+""" (group_id, account_id, bytes, datetime, classes, classbytes, max_class, accounttarif_id, transaction_id) 
+                    VALUES (%s, %s, %s, %s, %s, %s , %s, %s, %s);""", (group_id, account_id, octets, gdate, classes, octlist, max_class, accsdata.id, transaction_id))
+                except psycopg2.ProgrammingError, e:
+                    if e.pgcode=='42P01':
+                        raise GpstTableException()
 
-                        else:
-                            self.connection.rollback()
-                            raise e
-                    self.connection.commit()
+                    else:
+                        self.connection.rollback()
+                        raise e
+                self.connection.commit()
 
                 
                 #write profiling infos

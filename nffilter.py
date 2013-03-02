@@ -315,7 +315,7 @@ def nfPacketHandle(data, addr, flowCache):
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
             flow.padding = local
             flow.account_id = acc_acct_tf
-            flow.node_direction = None
+            flow.node_direction = 'INPUT' if acc_data_dst else 'OUTPUT'
             
             flowCache.addflow5(flow)         
                 
@@ -396,14 +396,14 @@ class FlowDequeThread(Thread):
             ptime = ptime - (ptime % vars.NF_TIME_MOD)
         if 0: assert isinstance(flow, Flow5Data); assert isinstance(nnode, ClassData)
         flow.datetime = ptime; flow.class_id = tuple(classLst)
-        flow.node_direction = nnode.direction; flow.class_store = nnode.store
+        
         flow.class_passthrough = nnode.passthrough; flow.acctf_id = acctf_id
         flow.groups = None; flow.has_groups = has_groups
         #add groups, check if any
         if has_groups:
             dr = 0
-            if   nnode.direction == 'INPUT' : dr = 2
-            elif nnode.direction == 'OUTPUT': dr = 1
+            if   flow.node_direction == 'INPUT' : dr = 2
+            elif flow.node_direction == 'OUTPUT': dr = 1
             groupLst = []
             fcset = set(classLst)
             for tgrp in tarifGroups:
@@ -475,8 +475,11 @@ class FlowDequeThread(Thread):
                         for nclass, nnodes in cacheMaster.cache.class_cache.classes:                    
                             for nnode in nnodes:
                                 if 0: assert isinstance(nnode, ClassData)
-                                if (flow.src_addr & nnode.src_mask) != nnode.src_ip:continue
-                                if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:continue
+                                if flow.node_direction == 'INPUT':
+                                    
+                                    if (flow.src_addr & nnode.dst_mask) != nnode.dst_ip:continue
+                                else:
+                                    if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:continue
                                 if ((flow.protocol != nnode.protocol) and nnode.protocol): continue
                                 if ((flow.src_port != nnode.src_port) and nnode.src_port):continue
                                 if ((flow.dst_port != nnode.dst_port) and nnode.dst_port):continue
@@ -486,11 +489,9 @@ class FlowDequeThread(Thread):
                                 if ((flow.src_as != nnode.src_as) and nnode.src_as):continue
                                 if ((flow.dst_as != nnode.dst_as) and nnode.dst_as):continue
                                     
-                                if not classLst and (not direction or (nnode.direction == direction)):
+                                if not classLst:
                                     fnode = nnode
                                 elif not fnode:
-                                    continue
-                                elif nnode.direction != fnode.direction:
                                     continue
                                 classLst.append(nclass)
                                 if not nnode.passthrough:
@@ -498,15 +499,14 @@ class FlowDequeThread(Thread):
                                 break
                             #found passthrough=false
                             if not passthr:
-                                if not vars.SKIP_GROUPS_PROCESSING:
-                                    self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
+
+                                self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                 nfwrite_list.append(flow)
                                 break                   
                         #traversed all the nodes
                         else:
                             if classLst:
-                                if not vars.SKIP_GROUPS_PROCESSING:
-                                    self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
+                                self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                 nfwrite_list.append(flow)
                             else: 
                                 nfwrite_list.append(flow)
@@ -974,15 +974,15 @@ def SIGUSR1_handler(signum, frame):
     
 def graceful_save():
     global cacheThr, threads, suicideCondition, vars
-    print 1
+
     suicideCondition[cacheThr.tname] = True
     for thr in threads:
         suicideCondition[thr.tname] = True
-    print 2
+
     logger.lprint("About to stop gracefully.")
     #pool.close()
     #time.sleep(1)
-    print 3
+
     db_lock = queues.databaseQueue.LOCK
     file_lock = queues.databaseQueue.file_lock
     queues.databaseQueue.LOCK = None
@@ -993,7 +993,7 @@ def graceful_save():
     db_lock.acquire()
     queues.fqueueLock.acquire()
     queues.nfqLock.acquire()
-    print 4
+
     graceful_saver([['nfFlowCache'], ['flowQueue', 'dcaches'], ['databaseQueue'], ['nfQueue']],
                    queues, vars.PREFIX, vars.SAVE_DIR)
     queues.nfqLock.release()
@@ -1005,7 +1005,6 @@ def graceful_save():
     rempid(vars.piddir, vars.name)
     logger.lprint(vars.name + " stopping gracefully.")
     print vars.name + " stopping gracefully."
-    print 5
     sys.exit()
         
 def graceful_recover():

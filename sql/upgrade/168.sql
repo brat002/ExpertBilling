@@ -1,3 +1,5 @@
+create extension pgcrypto;
+
 ALTER TABLE billservice_account
    ALTER COLUMN password TYPE text;
 

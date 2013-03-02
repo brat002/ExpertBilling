@@ -1196,3 +1196,22 @@ def addonservicetariff_delete(request):
         messages.error(request, u'При удалении подклчюаемой услуги из тарифного плана произошла ошибка.', extra_tags='alert-danger')
         return {"status": False, "message": "AddonServiceTarif not found"} 
     
+@ajax_request
+@systemuser_required
+def prepaidtraffic_delete(request):
+    if  not (request.user.account.has_perm('billservice.change_tariff')):
+        return {'status':False, 'message': u'У вас нет прав на редактирование тарифного плана'} 
+    id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
+    if id:
+        try:
+            item = PrepaidTraffic.objects.get(id=id)
+        except Exception, e:
+            return {"status": False, "message": u"Указанная запись не найдена %s" % str(e)}
+        log('DELETE', request.user, item)
+        item.delete()
+        messages.success(request, u'Предоплаченный трафик удалён.', extra_tags='alert-success')
+        return {"status": True}
+    else:
+        messages.error(request, u'При удалении предоплаченного трафика произошла ошибка.', extra_tags='alert-danger')
+        return {"status": False, "message": "AddonServiceTarif not found"} 
+

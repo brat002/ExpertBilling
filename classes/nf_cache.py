@@ -149,12 +149,9 @@ class ClassCache(CacheItem):
             nlist = list(nnode)
             n_hp = parseAddress(nlist.pop())[0]
             d_ip = IPint(nlist.pop())
-            s_ip = IPint(nlist.pop())
             nlist.append(n_hp)
             nlist.append(d_ip.netmask())
             nlist.append(d_ip.int())
-            nlist.append(s_ip.netmask())
-            nlist.append(s_ip.int())
             nlist.reverse()
             nclTmp[1].append(self.datatype._make(nlist))
             

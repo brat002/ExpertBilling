@@ -178,7 +178,7 @@ class AccountsReportTable(TableReport):
     row = django_tables.Column(verbose_name=u'Этаж')
     ballance = FormatFloatColumn()
     tariff  = FormatBlankColumn(verbose_name=u"Тариф", orderable=False)
-    ips  = FormatBlankColumn(verbose_name=u"IP")
+    ips  = FormatBlankColumn(verbose_name=u"IP", orderable=False)
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
     #credit = FormatFloatColumn()
     #created = FormatDateTimeColumn()
@@ -358,8 +358,8 @@ class IPPoolTable(TableReport):
     id = django_tables.LinkColumn('ippool_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('ippool_edit', get_params={'id':A('pk')})
     next_ippool = FormatBlankColumn()
-    pool_size = django_tables.Column(verbose_name=u'IP в пуле', accessor=A('get_pool_size'))
-    used_ip =  django_tables.Column(verbose_name=u'Используется', accessor=A('get_used_ip_count'))
+    pool_size = django_tables.Column(verbose_name=u'IP в пуле', accessor=A('get_pool_size'), orderable=False)
+    used_ip =  django_tables.Column(verbose_name=u'Используется', accessor=A('get_used_ip_count'), orderable=False)
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     class Meta:
@@ -382,14 +382,14 @@ class TransactionTypeTable(TableReport):
 class TrafficClassTable(TableReport):
     id = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    directions = django_tables.TemplateColumn(u"<a href='{% url trafficnode_list %}?id={{record.id}}' >Список направлений</a>", verbose_name=u'Направления', orderable=False)
+    directions = django_tables.TemplateColumn(u"<a href='{% url trafficnode_list %}?id={{record.id}}' class='btn btn-primary btn-mini'>Список направлений</a>", verbose_name=u'Направления', orderable=False)
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a><input type='hidden' name='id' value='{{record.id}}'>", verbose_name=' ', orderable=False)
     
     class Meta:
         model = TrafficClass
         configurable = True
         #exclude = ("weight", )
-        available_fields = ('id', 'name', 'directions', 'passthrough',  'd')
+        available_fields = ('id', 'name', 'passthrough', 'directions',   'd')
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
@@ -412,7 +412,7 @@ class TrafficNodeTable(TableReport):
         configurable = True
         exclude = ("traffic_class", )
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        available_fields = ('row_number', 'id', 'name', 'direction', 'protocol', 'src_ip', 'src_port', 'in_index', 'dst_ip', 'dst_port', 'out_index', 'src_as', 'dst_as', 'next_hop', 'd')
+        available_fields = ('row_number', 'id', 'name',  'protocol', 'src_port', 'in_index', 'dst_ip', 'dst_port', 'out_index', 'src_as', 'dst_as', 'next_hop', 'd')
 
 
 class UploadTrafficNodeTable(TableReport):
@@ -622,12 +622,13 @@ class TrafficTransmitNodesTable(TableReport):
 class PrepaidTrafficTable(TableReport):
     id = django_tables.LinkColumn('tariff_prepaidtraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
     class Meta:
         model = PrepaidTraffic
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        fields = ("id", 'group', 'size')
+        fields = ("id", 'group', 'size', 'd')
 
 class TimeSpeedTable(TableReport):
     id = django_tables.LinkColumn('tariff_timespeed_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
