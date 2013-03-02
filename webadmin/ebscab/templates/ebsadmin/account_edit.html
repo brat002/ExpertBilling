@@ -1302,7 +1302,7 @@
           <div class="well sidebar-nav alert-success">
             <ul class="nav nav-list">
               <li class="nav-header">Тариф</li>
-              <strong><h4>{{account.get_account_tariff.name}}</h4></strong>
+              <strong><h4><a href="{% url tariff_edit %}?id={{account.get_account_tariff.id}}">{{account.get_account_tariff.name}}</a></h4></strong>
                 <li>                                    <div class="btn-group">
                                         <a href="#"  class="btn btn-large btn-info" id="modal-accounttariff-dialog" ><i class="icon-pencil icon-white "></i>Изменить</a>
 

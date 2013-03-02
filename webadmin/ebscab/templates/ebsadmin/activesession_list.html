@@ -6,6 +6,14 @@
         <script type="text/javascript"> 
         $(document).ready(function() {
 
+            $(".ping").live('click', function(event) {
+                $('<div />').dialog2({
+                    title: "Ping", 
+                    content: "{% url tools_ping %}?ip="+ $(this).attr('data')
+                });
+
+                event.preventDefault(event);
+            });
             $("#id_main_table tbody .sreset").live("click", function(){
                 var a=$(this);
                 $(this).text('Waiting');
