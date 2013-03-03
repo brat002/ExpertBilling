@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="/media/django_tables2/themes/paleblue/css/screen.css" />
 <link href="/media/bootstrap/css/bootstrap.css" rel="stylesheet">
 <link href="/media/bootstrap/css/style.css" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 <link href="/media/bootstrap/css/cus-icons.css" rel="stylesheet">
-
+<link href="/media/bootstrap/css/todc-bootstrap.css" rel="stylesheet"></head>
 <link href="/media/datepicker/css/datepicker.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" media="all" href="/media/daterangepicker/daterangepicker.css" />
 
@@ -25,9 +24,7 @@
 <script type="text/javascript" src="/media/jquery/js/jquery.controls.js"></script>
 <script type="text/javascript" src="/media/jquery/js/jquery.form.js"></script>
 <script src="/media/datepicker/js/bootstrap-datepicker.js"></script>
-<script src="/media/jquery/js/jquery.maskedinput-1.3.min.js" type="text/javascript"></script>
 
-       
 
 <link type="text/css" rel="stylesheet" href="/media/jdialogs/css/jquery-dialog2/jquery.dialog2.css">
 <link rel="stylesheet" href="/media/jquery/css/jquery-ui-1.9.1.custom.min.css" type="text/css" title="ui-theme" />
@@ -57,7 +54,7 @@ height:100%;
     });
     $(document).ready(function() {
         $('.datepicker').datepicker({'format': 'yyyy-mm-dd'});
-        $(".timepicker").mask("99:99:99");
+        
         
         $(".daterange").daterangepicker({format:'yyyy-MM-dd'});
     });
@@ -102,19 +99,35 @@ height:100%;
 
 
 
-<div class="navbar  navbar-fixed-top navbar-inverse">
+<div class="navbar  navbar-googlenav navbar-fixed-top">
   <div class="navbar-inner">
-<a class="brand" href="#">
-  ExpertBiling Cashier
+  <div class="container">
+<a class="brand" href="{% url admin_dashboard %}">
+  ExpertBiling кассир
 </a>  
-    <div class="container">
+    
   
 <ul class="nav">
-  <li>
-    <a href="{% url cashier_index %}">Главная</a>
-  </li>
+
+     <li >
+       <a href="{% url cashier_index %}">
+             
+             Главная
+             
+       </a>
+
+     </li>
 
 </ul>
+     <ul class="nav pull-right">
+     <li>
+       <a href="/accounts/logout/" class='pull-right'>
+             
+             Выйти ({{request.user.account}})
+             
+       </a>
+       </li>
+       </ul>
     </div>
   </div>
 </div>
