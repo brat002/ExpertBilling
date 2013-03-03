@@ -23,7 +23,7 @@
     /**
      * Dialog html markup
      */
-    var __DIALOG_HTML = "<div class='modal'>" + 
+    var __DIALOG_HTML = "<div class='modal' style=\"display: none;\">" + 
         "<div class='modal-header loading'>" +
         "<a href='#' class='close'></a>" + 
         "<span class='loader'></span><h3></h3>" + 
@@ -117,8 +117,7 @@
             var handle;
 
             if (!selection.is(".modal-body")) {
-                //var overlay = $('<div class="modal-backdrop"></div>').hide();
-            	var overlay = $('<div></div>').hide();
+                var overlay = $('<div></div>').hide();
                 var parentHtml = $(__DIALOG_HTML);
                 
                 if (options.modalClass) {
@@ -167,8 +166,6 @@
             this.__overlay = handle.parent().prev(".modal-backdrop");
             
             this.__addFocusCatchers(parentHtml);
-            
-
         }, 
         
         __addFocusCatchers: function(parentHandle) {
@@ -193,7 +190,7 @@
 			
 			// Instead of hiding .form-actions we remove it from view to fix an issue with ENTER not submitting forms 
 			// when the submit button is not displayed
-            var actions = $(".form-actions", e).css({ position: "absolute", left: "-9999px",  width: "1px", height: "1px" });
+            var actions = $(".form-actions", e).css({ position: "absolute", left: "-9999px", height: "1px" });
 			
             var buttons = actions.find("input[type=submit], input[type=button], input[type=reset], button, .btn");
 
@@ -202,17 +199,19 @@
 
                 buttons.each(function() {
                     var button = $(this);
-                    var name = button.is("input") ? button.val() || button.attr("type") : button.text();
+                    var name = button.is("input") ? button.val() || button.attr("type") : button.html();
 
                     options.buttons[name] = {
                         primary: button.is("input[type=submit] .btn-primary"),
                         type: button.attr("class"), 
                         click: function(event) {
+                            if (button.is("a")) { window.location = button[0].href }
                             // simulate click on the original button
                             // to not destroy any event handlers
                             button.click();
 
                             if (button.is(".close-dialog")) {
+                            	event.preventDefault();
                                 dialog.close();
                             }
                         }
@@ -223,7 +222,7 @@
             // set title if content contains a h1 element
             var titleElement = e.find("h1").hide();
             if (titleElement.length > 0) {
-                options.title = titleElement.text();
+                options.title = titleElement.html();
             }
 
             // apply options on dialog
@@ -288,7 +287,8 @@
             
             // Focus first focusable element in dialog
             var focusable = dialog
-                              .find("a, input:not(*[type=hidden]), .btn, select, textarea, button")
+                              .find("a, input:not([type=hidden]), .btn, select, textarea, button")
+                              .not("[tabindex='0']")
                               .filter(function() {
                                   return $(this).parents(".form-actions").length == 0;
                               }).eq(0);
@@ -349,10 +349,8 @@
                         .show()
                         .end()
                     .trigger("dialog2.opened");
-                
                     
                 this.__focus();
-                
             }
         }, 
         
@@ -370,7 +368,7 @@
             var footer = handle.siblings(".modal-footer");
 
             var button = $("<a href='#' class='btn'></a>")
-                                .text(name)
+                                .html(name)
                                 .click(function(event) {
                                     callback.apply(handle, [event]);
                                     event.preventDefault();
@@ -409,7 +407,7 @@
          * 
          * @param url to be loaded via GET
          */
-        load: function(url,data) {
+        load: function(url) {
             var handle = this.__handle;
             
             if (handle.is(":empty")) {
@@ -420,7 +418,7 @@
 			handle
 				.trigger("dialog2.ajax-start");
 			
-			dialogLoad.call(handle, url, data, this.__ajaxCompleteTrigger, this.__ajaxBeforeSend);
+			dialogLoad.call(handle, url, this.__ajaxCompleteTrigger, this.__ajaxBeforeSend);
 			
 			return this;
         },
@@ -454,7 +452,7 @@
             var parentHtml = handle.parent();
             
             if (options.title) {
-                $(".modal-header h3", parentHtml).text(options.title);
+                $(".modal-header h3", parentHtml).html(options.title);
             }
             
             if (buttons) {
@@ -497,9 +495,7 @@
             }
             
             if (options.content) {
-
-          		this.load(options.content, options.data);
-
+                this.load(options.content);
             }
             
             delete options.buttons;
@@ -743,7 +739,7 @@
 	 * copied from jQuery.fn.load but with beforeSendCallback support
      ***********************************************************************/
     
-	function dialogLoad(url, data, completeCallback, beforeSendCallback) {
+	function dialogLoad(url, completeCallback, beforeSendCallback) {
 		// Don't do a request if no elements are being requested
 		if ( !this.length ) {
 			return this;
@@ -761,7 +757,7 @@
 		// Request the remote document
 		jQuery.ajax({
 			url: url,
-			data: data,
+
 			// if "type" variable is undefined, then "GET" method will be used
 			type: type,
 			dataType: "html",
