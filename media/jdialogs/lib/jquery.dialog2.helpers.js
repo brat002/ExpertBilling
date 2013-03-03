@@ -112,9 +112,8 @@
             var labels = $.extend({}, $.fn.dialog2.helpers.defaults.prompt, options);
             
             var inputId = 'dialog2.helpers.prompt.input.id';
-            var input = $("<input type='text' class='span5' />")
+            var input = $("<input type='text' class='span6' />")
                                 .attr("id", inputId)
-                                .text(message)
                                 .val(options.defaultValue || "");
                                 
             var html = $("<form class='form-stacked'></form>");

@@ -125,7 +125,7 @@ def account_management_accounttariff(request):
             return {}
 
         m_form = AccountManagementForm(request.GET) 
-
+        form = None
         if m_form.is_valid():
             form = BatchAccountTariffForm(initial={'accounts': m_form.cleaned_data.get('accounts', []), 'datetime': datetime.datetime.now()}) # An unbound form
 

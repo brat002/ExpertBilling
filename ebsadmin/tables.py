@@ -597,7 +597,7 @@ class PeriodicalServiceTable(TableReport):
     class Meta:
         model = PeriodicalService
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        fields = ("id", 'name', 'settlement_period', 'cost', 'cash_method', 'condition', 'created', 'deactivated' )
+        fields = ("id", 'name', 'settlement_period', 'cost', 'cash_method', 'ps_condition', 'condition_summ', 'created', 'deactivated' )
         
 class GroupTable(TableReport):
     id = django_tables.LinkColumn('group_edit', get_params={'id':A('pk')})
