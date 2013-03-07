@@ -253,13 +253,13 @@ def db_backup():
 def data_backup():
     print(green('/opt/ebs/data folder backup'))
     with lcd(BILLING_PATH):
-        local('tar -cvzf %s .' % os.path.join(BACKUP_DIR, 'data_%s.gz' % curdate))
+        local('tar -cvzf %s .' % os.path.join(BACKUP_DIR, 'data_%s.tar.gz' % curdate))
         
 
 def webcab_backup():
     print(green('Webcab backup'))
     with lcd(BILLING_ROOT_PATH):
-        local('tar -cvzf %s web' % os.path.join(BACKUP_DIR, 'web_%s.gz' % curdate))
+        local('tar -cvzf %s web' % os.path.join(BACKUP_DIR, 'web_%s.tar.gz' % curdate))
         
 def db_install():
     print(green('Installing initial databaes scheme'))

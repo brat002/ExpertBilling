@@ -665,6 +665,7 @@ class MyTimedRotatingFileHandler(BaseRotatingHandler):
     files are kept - the oldest ones are deleted.
     """
     def __init__(self, filename, when='h', interval=1, backupCount=0, encoding=None):
+        global vars
         self.when = string.upper(when)
         self.backupCount = backupCount
         
@@ -714,8 +715,14 @@ class MyTimedRotatingFileHandler(BaseRotatingHandler):
                     self.rolloverAt = self.rolloverAt + (daysToWait * (60 * 60 * 24))
         t = self.rolloverAt - self.interval
         timeTuple = time.localtime(t)
-        open_fname = filename + "." + time.strftime(self.suffix, timeTuple)         
+        folder = os.path.abspath(os.path.join(vars.FLOW_DIR,time.strftime('%Y-%m-%d', timeTuple)))
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+            
+        open_fname = os.path.join(folder, filename + "." + time.strftime(self.suffix, timeTuple))      
+           
         BaseRotatingHandler.__init__(self, open_fname, 'a', encoding)
+
         self.baseFilename = os.path.abspath(filename)
         
 
@@ -835,7 +842,7 @@ class FlowLoggerThread(Thread):
             #flHdlr = TimedRotatingFileHandler('/'.join((fVars.FLOW_DIR, fVars.FLOW_PREFIX)), when = fVars.FLOW_WHEN, interval = fVars.FLOW_INTERVAL)
             #currentTime = int(time.time())
             #flHdlr.rolloverAt = currentTime - (currentTime % flHdlr.interval) + flHdlr.interval
-            flHdlr = fHandler('/'.join((fVars.FLOW_DIR, fVars.FLOW_PREFIX)), when = fVars.FLOW_WHEN, interval = fVars.FLOW_INTERVAL)
+            flHdlr = fHandler(fVars.FLOW_PREFIX, when = fVars.FLOW_WHEN, interval = fVars.FLOW_INTERVAL)
             flHdlr.setFormatter(logging.Formatter("%(message)s"))
             self.fileLogger.addHandler(flHdlr)
         except Exception, ex:

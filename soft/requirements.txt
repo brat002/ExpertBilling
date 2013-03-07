@@ -8,12 +8,12 @@ Twisted==12.2.0
 amqplib==1.0.2
 anyjson==0.3.3
 argparse==1.2.1
-billiard==2.7.3.18
-celery==3.0.12
+billiard
+celery
 distribute==0.6.24
 django-crispy-forms==1.2.0
 ipaddr==2.1.10
-kombu==2.4.10
+kombu
 paramiko==1.9.0
 psycopg2==2.4.5
 pyExcelerator==0.6.4.1

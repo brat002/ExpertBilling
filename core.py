@@ -7,8 +7,8 @@ import site
 site.addsitedir('/opt/ebs/venv/lib/python2.6/site-packages')
 site.addsitedir('/opt/ebs/venv/lib/python2.7/site-packages')
 import sys
-import cdecimal
-sys.modules["decimal"] = cdecimal
+
+
 sys.path.insert(0, "modules")
 sys.path.append("cmodules")
 """DON'T REMOVE, NEEDED FOR PROPER FREEZING!!!"""
@@ -32,7 +32,7 @@ import utilites
 import itertools
 import db
 
-from cdecimal import Decimal
+from decimal import Decimal
 from copy import copy, deepcopy
 from threading import Thread, Lock
 from collections import defaultdict
@@ -326,20 +326,23 @@ class periodical_service_bill(Thread):
                 nums,ost = divmod(last_checkout_seconds,self.PER_DAY)                                        
                 chk_date = last_checkout + self.PER_DAY_DELTA
 
-                  
-                if next_date and pss_type == PERIOD and chk_date>=next_date:
-                    logger.debug('%s: Periodical Service: GRADUAL last billed is True for account: %s service:%s type:%s', (self.getName(), acc.account_id, ps.ps_id, pss_type))  
-                    cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
-                    cur.connection.commit()
-                    return
+  
+                    
+                        
 
                 #Добавить проверку на окончание периода
                 #Смотрим на какую сумму должны были снять денег и снимаем её
                 while chk_date <= dateAT:    
+                    delta_coef = Decimal('1.00')
+                    if vars.USE_COEFF_FOR_PS==True and next_date and chk_date+self.PER_DAY_DELTA>next_date:# если следующая проверка будет в новом расчётном периоде - считаем дельту
+                        
+                        delta_coef=Decimal(str(float((next_date-chk_date).days*86400+(next_date-chk_date).seconds)/float(self.PER_DAY)))
+                        logger.debug('%s: Periodical Service: %s Use coeff %s for ps account: %s', (self.getName(), ps.ps_id, delta_coef, acc.account_id))      
+                        
                     logger.debug('%s: Periodical Service: GRADUAL  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
                     period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)     
                     mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0                                       
-                    cash_summ = mult*((self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY))
+                    cash_summ = delta_coef*(mult*((self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)))
                     if pss_type == PERIOD:
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-")
 

@@ -270,7 +270,7 @@ def get_promise(request):
     allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance)
     LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = user.promise_days or settings.LEFT_PROMISE_DAYS)
     if settings.ALLOW_PROMISE==True and Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT'), promise_expired=False).count() >= 1:
-        last_promises = Transaction.objects.filter(account=user, promise_expired=False, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
+        last_promises = Transaction.objects.filter(account=user,  type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
         error_message = u"У вас есть незакрытые обещанные платежи"
         return {'error_message': error_message, 'MAX_PROMISE_SUM': user.promise_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     if settings.ALLOW_PROMISE==True and user.ballance<user.promise_min_ballance:

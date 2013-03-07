@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import forms
-from django.forms.fields import ChoiceField, CharField, FloatField
+from django.forms import widgets
+from django.forms.fields import ChoiceField, CharField, FloatField,\
+    MultipleChoiceField
 from django.forms.models import ModelChoiceField
 from django.forms.widgets import HiddenInput, RadioSelect, RadioFieldRenderer, RadioInput
 from django.utils.encoding import force_unicode
@@ -62,4 +64,7 @@ class PaymentHiddenInputsPostForm(forms.Form):
         super(PaymentHiddenInputsPostForm, self).__init__(*args, **kwargs)
 
         for key in items:
-            self.fields[key] = CharField(initial=items[key], widget=HiddenInput)
+            if type(items[key]) in [list, tuple]:
+                self.fields[key] = MultipleChoiceField(initial=items[key], widget=widgets.MultipleHiddenInput)
+            else:
+                self.fields[key] = CharField(initial=items[key], widget=HiddenInput)

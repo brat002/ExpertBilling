@@ -59,8 +59,8 @@ class PaymentProcessor(PaymentProcessorBase):
         
         xml = PAYMENT_TEMPLATE % {
                'MERCHANT_ID': PaymentProcessor.get_backend_setting('MERCHANT_ID'),
-               'RESULT_URL': "%s%s" % (site, reverse('payment-result')),
-               'SERVER_URL': "%s%s" % (site, reverse('getpaid-liqpay-pay')),
+               'RESULT_URL': "http://%s%s" % (site, reverse('payment-result')),
+               'SERVER_URL': "http://%s%s" % (site, reverse('getpaid-liqpay-pay')),
                'ORDER_ID': payment.id,
                'AMOUNT': amount,
                'CURRENCY': PaymentProcessor.get_backend_setting('DEFAULT_CURRENCY', PaymentProcessor.BACKEND_ACCEPTED_CURRENCY[0]),

@@ -313,10 +313,14 @@
         </a>
         <ul class="dropdown-menu">
                <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_payments=True">Пополнения баланса</a></li>
-              <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_credits=True">Списания</a></li>
+              <li><a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">Обещанные платежи</a></li>
               <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">История изменения баланса</a></li>
         </ul>
       </div>
+      <div class="btn-group">
+        <a href='{% url news_edit %}?accounts={{account.id}}&private=True' class="btn" id='id_account-toolbar-save'><i class='cus-newspaper'></i> Сообшение</a>
+      </div>
+      
     {% endif %}
   </div>
 </div>
@@ -458,6 +462,7 @@
                             </div>
                             {% endif %}
                             <div class="control-group">
+                            <div class="control-row">
                                     <label class="control-label" for="input-created"><strong>Дата создания</strong></label>
                                     <div class="controls">
                                     {{ form.created }}
@@ -471,10 +476,7 @@
                                     {% endif %}
 
                                     </div>
-
                             </div>
-
-
                             <div class="control-row">
                                 <label class="control-label" for="input-account-status">{{form.systemuser.label}}</label>
                                 <div class="controls">
@@ -489,6 +491,11 @@
                                             {% endif %}
                                 </div>
                             </div>
+                            
+                            </div>
+
+
+
                             <div class="control-group">
 
                                 <label class="control-label" for="input-comment">{{form.comment.label}}</label>
@@ -1293,6 +1300,7 @@
             <ul class="nav nav-list">
               <li class="nav-header">Баланс</li>
               <strong><h2>{{account.ballance|floatformat:2}} {{currency}}</h2></strong>
+              <strong>Обещанные платежи: <a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">{{account.get_last_promises_count}}</a></strong>
                 <li>                                    <div class="btn-group">
                                         <a href="#"  class="btn btn-large btn-success" id="modal-transaction-dialog" ><i class="icon-plus icon-white "></i>Пополнить</a>
 
