@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.urlresolvers import reverse
 from django.db import connection
+from annoying.fields import JSONField
 connection.features.can_return_id_from_insert = False
 # Create your models here.
 # choiCe
@@ -827,6 +828,10 @@ class Account(models.Model):
         else: 
             return False    
     
+    def get_last_promises_count(self):
+        return Transaction.objects.filter(account=self, promise_expired=False, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).count()
+    
+    
     class Admin:
         ordering = ['user']
         #list_display = ('user', 'vpn_ip_address', 'ipn_ip_address', 'username', 'status', 'credit', 'ballance', 'firstname', 'lastname', 'created')
@@ -1629,7 +1634,7 @@ class AddonServiceTransaction(models.Model):
     
 class News(models.Model):
     body = models.TextField(verbose_name=u'Заголовок новости')
-    age = models.DateTimeField(verbose_name=u'Актуальна до', blank=True, null=True)
+    age = models.DateTimeField(verbose_name=u'Актуальна до', help_text = u'Не указывайте ничего, если новость должна отображаться всегда', blank=True, null=True)
     public = models.BooleanField(verbose_name=u'Публичная', help_text=u'Отображать в публичной части веб-кабинета', default=False)
     private = models.BooleanField(verbose_name=u'Приватная', help_text=u'Отображать в приватной части веб-кабинета', default=False)
     agent = models.BooleanField(verbose_name=u'Показать через агент', default=False)
@@ -2016,3 +2021,10 @@ class PermissionGroup(models.Model):
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('permissiongroup_delete'), self.id)
     
+#===============================================================================
+# class Message(models.Model):
+#    type = models.CharField(max_length=32, choices=(('email', 'email'),('sms', 'sms'),), default='email')
+#    message = models.TextField()
+#    accounts = JSONField()
+#    
+#===============================================================================

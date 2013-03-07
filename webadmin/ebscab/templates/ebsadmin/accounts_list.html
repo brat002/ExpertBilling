@@ -179,6 +179,20 @@
                 event.preventDefault(event);
             });
             
+            $('#id-modal-add-news').click(function(event){
+            	
+                var arr = new Array();
+
+                $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                    data.name='accounts';
+                    arr.push(data); 
+                  
+                });
+                window.location='{% url news_edit %}?'+$.param(arr);
+            	event.preventDefault(event);
+            	
+            }
+            )
             $('#tab-control a[href="#filter"]').tab('show');
             {% if table %}
             $('#tab-control a[href="#result"]').tab('show');
@@ -802,6 +816,9 @@
                 
                 <div class="btn-group">
                 <a href="{% url account_management_suspendedperiod %}"  id="modal-suspendedperiod-dialog-table" class="btn btn-danger"><i class=' icon-calendar icon-white'></i> Период без ПУ</a>
+                </div>
+                <div class="btn-group">
+                <a href="#"  id="id-modal-add-news" class="btn"><i class='cus-newspaper'></i> Сообщение</a>
                 </div>
                 <div class="btn-group">
 

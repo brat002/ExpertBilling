@@ -35,7 +35,7 @@
              <fieldset>
                   {{ form.id }}
                   <div class="control-group">
-                  <div class="control-row">
+
                       <label class="control-label">{{form.created.label}}: </label>
                       <div class="controls">
                       {{ form.created }}
@@ -48,7 +48,18 @@
                           </p>
                       {% endif %}
                       </div>
-                  </div>
+
+                  </div>  
+                  <div class="control-group">
+
+                      <label class="control-label">{{form.age.label}}: </label>
+                      <div class="controls">
+                      {{ form.age }} {{ form.age.help_text|safe }}
+                      {% if form.age.errors %} 
+                          <span class="help-inline">{% for error in form.age.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      </div>
+
                   </div>  
                   <div class="control-group">
 
@@ -83,7 +94,7 @@
 
                   </div>  
                   <div class="control-group">
-                  <div class="control-row">
+
                       <label class="control-label">{{form.public.label}}: </label>
                       <div class="controls">
                       {{ form.public }}
@@ -96,10 +107,10 @@
                           </p>
                       {% endif %}
                       </div>
-                  </div>
+
                   </div>  
                   <div class="control-group">
-                  <div class="control-row">
+
                       <label class="control-label">{{form.private.label}}: </label>
                       <div class="controls">
                       {{ form.private }}
@@ -112,10 +123,10 @@
                           </p>
                       {% endif %}
                       </div>
-                  </div>
+
                   </div>  
                   <div class="control-group">
-                  <div class="control-row">
+
                       <label class="control-label">{{form.agent.label}}: </label>
                       <div class="controls">
                       {{ form.agent }}
@@ -127,25 +138,9 @@
                               {{ form.agent.help_text|safe }}
                           </p>
                       {% endif %}
-                      </div>
-                  </div>
+
                   </div>  
-                  <div class="control-group">
-                  <div class="control-row">
-                      <label class="control-label">{{form.age.label}}: </label>
-                      <div class="controls">
-                      {{ form.age }}
-                      {% if form.age.errors %}
-                          <span class="help-inline">{% for error in form.age.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.age.help_text%}
-                          <p class="help-block">
-                              {{ form.age.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  </div>  
+
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
