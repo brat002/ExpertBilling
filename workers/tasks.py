@@ -2,6 +2,7 @@
 
 from celery.task import task
 import os, sys
+import decimal
 import commands
 from pyrad import dictionary
 import re
@@ -9,6 +10,7 @@ import socket
 from pyrad import packet
 import paramiko
 import psycopg2
+import datetime
 from hashlib import md5
 import binascii
 import ConfigParser
