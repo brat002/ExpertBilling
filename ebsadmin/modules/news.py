@@ -15,7 +15,7 @@ from billservice.models import News, AccountViewedNews, Account
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+import datetime
 
 @systemuser_required
 @render_to('ebsadmin/news_list.html')
@@ -81,11 +81,12 @@ def news_edit(request):
             item = News.objects.get(id=id)
             accounts = [x.get("account__id") for x in AccountViewedNews.objects.filter(news=item).values('account__id')]
             print accounts
-            form = NewsForm(instance=item, initial={'accounts': accounts})
+            form = NewsForm(instance=item, initial={'accounts': accounts, 'created': datetime.datetime.now()})
         else:
-            accounts = request.GET.get('accounts', '')
+            accounts = request.GET.getlist('accounts', '')
+            private = request.GET.get('private', '')
             if accounts:
-                form = NewsForm(initial={'accounts': accounts.split(",")})
+                form = NewsForm(initial={'accounts': accounts, 'private': private, 'created': datetime.datetime.now()})
             else:
                 form = NewsForm()
 
