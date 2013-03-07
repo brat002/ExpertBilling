@@ -31,4 +31,4 @@ SQLAlchemy
 django-jsonfield==0.8.12
 cdecimal
 django-pgcrypto
-
+django-annoying
