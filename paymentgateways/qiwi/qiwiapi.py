@@ -55,6 +55,7 @@ params={'get_balance':u"""<?xml version="1.0" encoding="utf-8"?>
     <extra name="ACCEPT_CALL">%s</extra>
     <extra name="ltime">%%s</extra>
     <extra name="comment">%%s</extra>
+    <extra name="create-agt">1</extra>
 </request>
 """ % (term_password, term_id, ALARM_SMS, ALARM_CALL,),
 'get_invoices_status':u"""<?xml version="1.0" encoding="utf-8"?>

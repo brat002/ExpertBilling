@@ -9,7 +9,7 @@ from django.contrib.sites.models import Site
 from billservice.models import Account
 from base64 import b64encode, b64decode
 from BeautifulSoup import BeautifulSoup
-
+from forms import AdditionalFieldsForm
 import listeners
 
 class TransactionStatus:
@@ -43,19 +43,21 @@ class PaymentProcessor(PaymentProcessorBase):
     _ALLOWED_IP = ('93.183.196.28', '93.183.196.26')
     EXPIRE_TIME = 240
     
-
-    def get_gateway_url(self, request):
+    @staticmethod
+    def form():
+        return AdditionalFieldsForm
+    
+    def get_gateway_url(self, request, payment):
 
         if Site._meta.installed:
             site = Site.objects.get_current()
         else:
             site = RequestSite(request)
             
-        from getpaid.models import Payment
         
         amount = float(request.POST.get('summ'))
         
-        payment = Payment.create(request.user.account.id, None,   PaymentProcessor.BACKEND, amount = amount)
+
         
         xml = PAYMENT_TEMPLATE % {
                'MERCHANT_ID': PaymentProcessor.get_backend_setting('MERCHANT_ID'),
