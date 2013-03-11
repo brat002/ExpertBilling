@@ -75,8 +75,16 @@ class PaymentProcessorBase(object):
         Generates a form only containg hidden input fields.
         """
         from getpaid.forms import PaymentHiddenInputsPostForm
-        return PaymentHiddenInputsPostForm(items=post_data)
-
+        return PaymentHiddenInputsPostForm(items=post_data) 
+    
+    @staticmethod
+    def form():
+        """
+        Form with custom fields for payment
+        """
+        from getpaid.forms import GenericForm
+        return GenericForm
+    
     @classmethod
     def get_backend_setting(cls, name, default=None):
         """

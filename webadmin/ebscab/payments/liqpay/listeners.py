@@ -5,6 +5,7 @@ def payment_status_changed_listener(sender, instance, old_status, new_status, **
     Here we will actually do something, when payment is accepted.
     E.g. lets change an order status.
     """
+    if instance.backend!='payments.liqpay': return
     if old_status != 'paid' and new_status == 'paid':
         # Ensures that we process order only one
         if not instance.order:
