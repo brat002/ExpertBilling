@@ -778,7 +778,7 @@ def accountedit(request):
             bank_form = BankDataForm(prefix='org')
             form = AccountForm(instance=account)
     else:
-        form = AccountForm(initial={'created': datetime.datetime.now()})
+        form = AccountForm(initial={'credit': 0, 'ballance':0, 'created': datetime.datetime.now()})
         org_form = OrganizationForm(prefix='org')
         bank_form = BankDataForm(prefix='org')
     return { 'form':form, 'org_form':org_form, 'bank_form': bank_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 

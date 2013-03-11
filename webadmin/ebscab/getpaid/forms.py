@@ -57,6 +57,23 @@ class PaymentMethodForm(forms.Form):
     order = ModelChoiceField(widget=HiddenInput, required=False, queryset=Order.objects.all())
     summ = FloatField(label=_("Amount"), initial=0, required=True)
 
+class SelectPaymentMethodForm(forms.Form):
+    """
+    Displays all available payments backends as choice list.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(SelectPaymentMethodForm, self).__init__(*args, **kwargs)
+        backends = get_backend_choices()
+        self.fields['backend'] = ChoiceField(
+            choices = backends,
+            initial= backends[0][0] if len(backends) else '',
+            label = _("Payment method"),
+            widget = PaymentRadioSelect,
+        )
+
+    order = ModelChoiceField(widget=HiddenInput, required=False, queryset=Order.objects.all())
+
 
 
 class PaymentHiddenInputsPostForm(forms.Form):
@@ -68,3 +85,18 @@ class PaymentHiddenInputsPostForm(forms.Form):
                 self.fields[key] = MultipleChoiceField(initial=items[key], widget=widgets.MultipleHiddenInput)
             else:
                 self.fields[key] = CharField(initial=items[key], widget=HiddenInput)
+
+
+class GenericForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(GenericForm, self).__init__(*args, **kwargs)
+        backends = get_backend_choices()
+        self.fields['backend'] = ChoiceField(
+            choices = backends,
+            initial= backends[0][0] if len(backends) else '',
+            widget = widgets.HiddenInput,
+        )
+    summ = FloatField()
+    order = ModelChoiceField(widget=HiddenInput, required=False, queryset=Order.objects.all())
+
+    

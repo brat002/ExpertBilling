@@ -70,7 +70,7 @@ class PaymentProcessor(PaymentProcessorBase):
     
     
     
-    def get_gateway_url(self, request):
+    def get_gateway_url(self, request, payment):
         return self.GATEWAY_URL, "GET", {}
     
     @staticmethod
