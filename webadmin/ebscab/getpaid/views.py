@@ -55,7 +55,7 @@ class NewPaymentView(FormView):
     def form_valid(self, form):
         from getpaid.models import Payment
 
-        payment = Payment.create(self.request.user.account.id, form.cleaned_data['order'], form.cleaned_data['backend'], amount = form.cleaned_data['summ'])
+        payment = Payment.create(self.request.user.account, form.cleaned_data['order'], form.cleaned_data['backend'], amount = form.cleaned_data['summ'])
         processor = payment.get_processor()(payment)
         gateway_url_tuple = processor.get_gateway_url(self.request, payment)
         payment.change_status('in_progress')

@@ -141,6 +141,24 @@
                 event.preventDefault(event);
             });
             
+            $("#modal-sendsms-dialog-table").click(function(event) {
+                var arr = new Array();
+
+                $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                    data.name='accounts';
+                    arr.push(data); 
+                  
+                });
+
+                $('<div/>').dialog2({
+                    title: "Отправить SMS", 
+                    content: this.href+'?'+$.param(arr), 
+                    id: "server-notice"
+                });
+
+                event.preventDefault(event);
+            });
+            
             $(".show-confirm").live('click', function(event) {
             	
             	
@@ -819,6 +837,9 @@
                 </div>
                 <div class="btn-group">
                 <a href="#"  id="id-modal-add-news" class="btn"><i class='cus-newspaper'></i> Сообщение</a>
+                </div>
+                <div class="btn-group">
+                <a href="{% url sendsms %}"  id="modal-sendsms-dialog-table" class="btn">SMS</a>
                 </div>
                 <div class="btn-group">
 
