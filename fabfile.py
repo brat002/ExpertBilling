@@ -45,6 +45,7 @@ def configure_rabbit():
     
 def requirements():
     with prefix('. /opt/ebs/venv/bin/activate'):
+        local("for line in `cat /opt/ebs/data/soft/del_requirements.txt`; do pip uninstall -y -q $line; done")
         local('pip install -U -r /opt/ebs/data/soft/requirements.txt')
     
 def virtualenv():
