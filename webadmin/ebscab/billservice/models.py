@@ -14,7 +14,7 @@ connection.features.can_return_id_from_insert = False
 # choiCe
 import IPy
 from lib.fields import IPNetworkField, EncryptedTextField
-import getpaid
+
 
 PROTOCOLS = {'0':'-all-',
            '37':'ddp',
@@ -1002,7 +1002,7 @@ class Transaction(models.Model):
         return u"%s, %s, %s" % (self.account, self.summ, self.created)
 
 
-getpaid.register_to_payment(Transaction, unique=False, blank=True, null=True, related_name='payments')
+
 
 class AccountTarif(models.Model):
     account   = models.ForeignKey(verbose_name=u'Пользователь', to=Account, related_name='related_accounttarif')

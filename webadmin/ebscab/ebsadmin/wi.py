@@ -626,23 +626,8 @@ def accountedit(request):
 
         account = Account.objects.get(id=account_id)
         
-        try:
-            prepaidradiustraffic = AccountPrepaysRadiusTrafic.objects.get(account_tarif = account.get_accounttariff,  current=True).values('size')['size']
-        except Exception, e:
-            print e
-            prepaidradiustraffic = 0
             
-        try:
-            prepaidradiustime = AccountPrepaysTime.objects.get(account_tarif = account.get_accounttariff,  current=True).values('size')['size']
-        except Exception, e:
-            print e
-            prepaidradiustime = 0
-        try:
-            prepaidtraffic = AccountPrepaysTrafic.objects.filter(account_tarif = account.get_accounttariff,  current=True).values_list('prepaid_traffic__group__name', 'size')
-        except Exception, e:
-            print e
-            prepaidtraffic = []
-        
+
         res = SubAccount.objects.filter(account=account)
         subaccounts_table = SubAccountsTable(res)
         DTRequestConfig(request, paginate = False).configure(subaccounts_table)
@@ -781,7 +766,7 @@ def accountedit(request):
         form = AccountForm(initial={'credit': 0, 'ballance':0, 'created': datetime.datetime.now()})
         org_form = OrganizationForm(prefix='org')
         bank_form = BankDataForm(prefix='org')
-    return { 'form':form, 'org_form':org_form, 'bank_form': bank_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 
+    return { 'form':form, 'org_form':org_form, 'bank_form': bank_form,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 
             'ticket_table': ticket_table} 
 
 @systemuser_required

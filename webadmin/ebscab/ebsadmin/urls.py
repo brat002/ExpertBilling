@@ -10,6 +10,7 @@ urlpatterns += patterns('ebsadmin.charts',
                        )
 urlpatterns += patterns('ebsadmin.modules.account',
     url(r'^account_management_status/', 'account_management_status', name='account_management_status'),
+    url(r'^sendsms/', 'sendsms', name='sendsms'),
     url(r'^account_management_accounttariff/', 'account_management_accounttariff', name='account_management_accounttariff'),
     url(r'^account_management_delete/', 'account_management_delete', name='account_management_delete'),
     url(r'^account_management_restore/', 'account_management_restore', name='account_management_restore'),
@@ -185,6 +186,14 @@ urlpatterns += patterns('ebsadmin.modules.groupstat',
     url(r'^groupstat/$', 'groupstat', name='groupstat'),
     
 )
+
+urlpatterns += patterns('ebsadmin.modules.payment',
+    url(r'^payment/edit/$', 'payment_edit', name='payment_edit'),
+    url(r'^payment/delete/$', 'payment_delete', name='payment_delete'),
+    url(r'^payment/$', 'payment', name='payment'),
+    
+)
+
 
 urlpatterns += patterns('ebsadmin.modules.globalstat',
     url(r'^globalstat/$', 'globalstat', name='globalstat'),

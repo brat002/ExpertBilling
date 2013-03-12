@@ -26,7 +26,7 @@
 		this.select = $(select);
 		this.container = $(this.options.container)
 				.append('<button style="width:' + this.options.width + '" class="dropdown-toggle ' + this.options.button + '" data-toggle="dropdown">' + this.options.text($('option:selected', select)) + ' <b class="caret"></b></button>')
-				.append('<ul class="dropdown-menu"></ul>');
+				.append('<ul class="dropdown-menu" style="width: 400px; height: 300px; overflow-y: scroll;overflow-x: hidden;"></ul>');
 		
 		// Manually add the multiple attribute, if its not already set.
 		if (!this.select.attr('multiple')) {
@@ -100,10 +100,10 @@
 			// If more than 3 options are selected, the number of selected options is printed.
 			text: function(options) {
 				if (options.length == 0) {
-					return 'None selected';
+					return 'Не выбраны столбцы';
 				}
 				else if (options.length > 3) {
-					return options.length + ' selected';
+					return options.length + ' выбрано';
 				}
 				else {
 					var selected = '';

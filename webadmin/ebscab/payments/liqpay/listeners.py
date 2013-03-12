@@ -10,7 +10,7 @@ def payment_status_changed_listener(sender, instance, old_status, new_status, **
         # Ensures that we process order only one
         if not instance.order:
             cls = instance.ORDER_MODEL
-            cls.create_payment(account_id=instance.account_id, summ=instance.amount_paid, created=instance.paid_on, bill=instance.external_id, trtype=instance.backend)
+            cls.create_payment(account=instance.account, summ=instance.amount_paid, created=instance.paid_on, bill=instance.external_id, trtype=instance.backend)
             
     if old_status == 'paid' and new_status == 'canceled':
         # Ensures that we process order only one
