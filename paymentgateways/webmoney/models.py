@@ -14,7 +14,7 @@ PAYMENT_MODE_CHOICES = (
 )
 
 class Payment(models.Model):
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, related_name='webmoney_account_set')
     created = models.DateTimeField(auto_now_add=True, editable=False)
 
     purse = models.CharField(max_length=32)

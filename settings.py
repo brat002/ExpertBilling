@@ -47,6 +47,7 @@ USE_l10N = True
 MEDIA_URL = '/media/'
 
 DATETIME_FORMAT = "d.m.Y H:i:s"
+SHORT_DATETIME_FORMAT = "d.m.Y H:i:s"
 
 STATIC_URL = '/static/'
 
@@ -226,6 +227,10 @@ GETPAID_BACKENDS_SETTINGS = {
     }
 }
 
+SENDSMS_BACKENDS = (
+                    ('sendsms.backends.smspubli.SmsBackend', 'SMS Publi'),
+                    ('sendsms.backends.dummy.SmsBackend', 'Dummy'),
+                    )
 TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
 #TEST_RUNNER = 'testrunner.NoDbTestRunner'
 

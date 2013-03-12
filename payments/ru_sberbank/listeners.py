@@ -13,7 +13,7 @@ def payment_status_changed_listener(sender, instance, old_status, new_status, **
             instance.paid_on = instance.created_on
             instance.save()
             cls = instance.ORDER_MODEL
-            cls.create_payment(account_id=instance.account_id, summ=instance.amount_paid, created=instance.paid_on, bill=instance.external_id, trtype=instance.backend)
+            cls.create_payment(account=instance.account, summ=instance.amount_paid, created=instance.paid_on, bill=instance.external_id, trtype=instance.backend)
             
 
             

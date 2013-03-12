@@ -10,14 +10,15 @@ from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 
 import datetime
-from billservice.forms import AccountManagementForm, AccountTariffForm, BatchAccountTariffForm, SuspendedPeriodBatchForm
+from billservice.forms import AccountManagementForm, AccountTariffForm, BatchAccountTariffForm, SuspendedPeriodBatchForm, SendSmsForm
 from billservice.models import Account, AccountTarif, SuspendedPeriod
+from sendsms.models import Message
 
 log = LogItem.objects.log_action
 from django.contrib import messages
 from billservice.helpers import systemuser_required
 import subprocess
-
+from sendsms.models import Message
 
 @ajax_request
 @systemuser_required
@@ -175,6 +176,52 @@ def account_management_suspendedperiod(request):
 
     return { 'form':form, 'status': False} 
 
+
+@systemuser_required
+@render_to('ebsadmin/sendsms_batch_edit.html')
+def sendsms(request):
+    
+
+    if request.method == 'POST': 
+        print request.POST
+        form = SendSmsForm(request.POST) 
+
+        if  not (request.user.account.has_perm('billservice.add_news')):
+            messages.error(request, u'У вас нет прав на создание новостей', extra_tags='alert-danger')
+            return {}
+        
+        
+        if form.is_valid(): 
+            accounts = form.cleaned_data.get('accounts')
+            publish_date = form.cleaned_data.get('publish_date')
+            body = form.cleaned_data.get('body')
+            backend = form.cleaned_data.get('backend')
+
+            for acc in accounts:
+                if not acc.phone_m: continue 
+                item = Message()
+                item.to = acc.phone_m
+                item.body = body
+                item.publish_date = publish_date
+                item.save() 
+                log('CREATE', request.user, item)
+            return {'form':form,  'status': True} 
+        else:
+
+            return {'form':form,  'status': False} 
+    else:
+
+        if  not (request.user.account.has_perm('billservice.add_news')):
+            messages.error(request, u'У вас нет прав на создание новостей', extra_tags='alert-danger')
+            return {}
+
+        m_form = AccountManagementForm(request.GET) 
+        form = None
+        if m_form.is_valid():
+            form = SendSmsForm(initial={'accounts': m_form.cleaned_data.get('accounts', [])}) # An unbound form
+
+
+    return { 'form':form, 'status': False} 
 
 @systemuser_required
 @ajax_request

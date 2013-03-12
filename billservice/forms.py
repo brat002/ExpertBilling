@@ -10,6 +10,7 @@ from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, Acco
 from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware,AccountGroup,AccountPrepaysTime
 
 from nas.models import Nas
+from getpaid.models import Payment, PAYMENT_STATUS_CHOICES
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, Reset,  HTML, Button, Row, Field, Fieldset
@@ -1067,4 +1068,35 @@ class AccountPrepaysTimeSearchForm(forms.Form):
 class AccountManagementForm(forms.Form):
     accounts = forms.ModelMultipleChoiceField(queryset = Account.objects.all_with_deleted())
 
+class PaymentSearchForm(forms.Form):
+    accounts = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
+    payment = forms.CharField(initial='', label=u'Номер платежа', required=False)
+    date_start = forms.DateTimeField(label=u'Создан с', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=u'Создан по', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    paid_start = forms.DateTimeField(label=u'Оплачен с', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    paid_end = forms.DateTimeField(label=u'Оплачен по', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    status = forms.ChoiceField(choices=[('', '---')]+PAYMENT_STATUS_CHOICES, required=False, initial='')
+    
+class PaymentForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(PaymentForm, self).__init__(*args, **kwargs)
+        self.fields['account'].widget = forms.widgets.HiddenInput()
+        self.fields['order'].widget = forms.widgets.HiddenInput()
+        #self.fields['created_on'].widget =forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['paid_on'].widget =forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        
+
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+
+    class Meta:
+        model = Payment
+        
+        
+class SendSmsForm(forms.Form):
+    from sendsms.utils import get_backend_choices
+    bc = get_backend_choices()
+    accounts = forms.ModelMultipleChoiceField(queryset=Account.objects.filter(phone_m__isnull=False), widget = forms.widgets.MultipleHiddenInput)
+    backend = forms.ChoiceField(label=u'Оператор', choices = bc, initial = bc[0][0] if bc else '', widget = forms.widgets.Select(attrs={'rows':4, 'class': 'input-large span5'}))
+    body = forms.CharField(label=u'Сообщение', widget = forms.widgets.Textarea(attrs={'rows':4, 'class': 'input-large span5'}), help_text=u"Можно использовать {{account.ballance}}, {{account.fullname}}, {{account.username}}, {{account.contract}}")
+    publish_date = forms.DateTimeField(label=u'Опубликовать', help_text = u'Не указывайте, если сообщения должны быть отправлены сразу', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     

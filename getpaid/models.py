@@ -6,16 +6,16 @@ import sys
 from abstract_mixin import AbstractMixin
 import signals
 from utils import import_backend_modules, get_backend_settings
-
-
-PAYMENT_STATUS_CHOICES = (
+from billservice.models import Account, Transaction 
+from django.core.urlresolvers import reverse
+PAYMENT_STATUS_CHOICES = [
         ('new', _("new")),
         ('in_progress', _("in progress")),
         ('partially_paid', _("partially paid")),
         ('paid', _("paid")),
         ('failed', _("failed")),
         ('canceled', _("canceled")),
-        )
+        ]
 
 class PaymentManager(models.Manager):
     def get_query_set(self):
@@ -27,9 +27,10 @@ class PaymentFactory(models.Model, AbstractMixin):
     This is an abstract class that defines a structure of Payment model that will be
     generated dynamically with one additional field: ``order``
     """
+    
     ORDER_MODEL = None
     
-    account_id = models.IntegerField()
+    account = models.ForeignKey(Account)
     amount = models.DecimalField(_("amount"), decimal_places=4, max_digits=20)
     currency = models.CharField(_("currency"), max_length=3)
     status = models.CharField(_("status"), max_length=20, choices=PAYMENT_STATUS_CHOICES, default='new', db_index=True)
@@ -53,12 +54,12 @@ class PaymentFactory(models.Model, AbstractMixin):
 
 
     @classmethod
-    def create(cls, account_id, order, backend, amount=0, external_id=None):
+    def create(cls, account, order, backend, amount=0, external_id=None):
         """
             Builds Payment object based on given Order instance
         """
         payment = Payment()
-        payment.account_id = account_id
+        payment.account = account
         payment.order = order
         payment.backend = backend
         payment.amount = amount
@@ -122,7 +123,9 @@ class PaymentFactory(models.Model, AbstractMixin):
         """
         self.change_status('failed')
 
-
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('payment_delete'), self.id)
+    
 from django.db.models.loading import cache as app_cache, register_models
 #from utils import import_backend_modules
 
@@ -154,3 +157,4 @@ def register_to_payment(order_class, **kwargs):
     return Payment
 
 
+register_to_payment(Transaction, unique=False, blank=True, null=True, related_name='payments')

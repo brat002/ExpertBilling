@@ -148,7 +148,7 @@ class PaymentProcessor(PaymentProcessorBase):
             from getpaid.models import Payment
     
             print "amount=", amount
-            payment = Payment.create(account.id, None,   PaymentProcessor.BACKEND, amount = amount, external_id=orderid)
+            payment = Payment.create(account, None,   PaymentProcessor.BACKEND, amount = amount, external_id=orderid)
         dt = datetime.datetime.now()
         ret = SUCCESS_PAY_TEMPLATE % {
                                          'STATUS': TransactionStatus.OK,

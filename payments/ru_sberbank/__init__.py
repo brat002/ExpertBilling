@@ -157,7 +157,7 @@ class PaymentProcessor(PaymentProcessorBase):
         
         if not payment:
             
-            payment = Payment.create(account.id, None,   PaymentProcessor.BACKEND, amount = amount, external_id=paymentid)
+            payment = Payment.create(account, None,   PaymentProcessor.BACKEND, amount = amount, external_id=paymentid)
 
         
         reply_body = PAYMENT_BODY.encode('utf-8') % {

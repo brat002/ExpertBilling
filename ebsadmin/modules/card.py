@@ -29,8 +29,9 @@ def card(request):
         messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
+    res = Card.objects.all()
     if request.GET: 
-        res = Card.objects.all()
+        
         form = CardSearchForm(request.GET)
         date_start, date_end = None, None
         ac_date_start, ac_date_end = None, None
@@ -133,7 +134,10 @@ def card(request):
             
     else:
         form = CardSearchForm()
-        table = CardTable([])
+        table = CardTable(res)
+        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+        if table_to_report:
+            return create_report_http_response(table_to_report, request)
     
     return {"table": table, 'form':form} 
     
