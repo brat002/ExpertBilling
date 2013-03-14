@@ -35,3 +35,15 @@ def get_backend_choices(currency=None):
     backends_names = getattr(settings, 'SENDSMS_BACKENDS', [])
 
     return backends_names
+
+
+def get_backend_settings(backend):
+    """
+    Returns backend settings. If it does not exist it fails back to empty dict().
+    """
+    backends_settings = getattr(settings, 'SENDSMS_BACKENDS_SETTINGS', {})
+    try:
+        return backends_settings[backend]
+    except KeyError:
+        return {}
+    
