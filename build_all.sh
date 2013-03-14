@@ -106,6 +106,7 @@ cp soft/billing builds/$1/data/soft/
 cp soft/backup_and_ftp_netflow.sh builds/$1/data/soft/
 svn export soft/hotspot/ builds/$1/data/soft/hotspot/
 cp soft/requirements.txt builds/$1/data/soft/
+cp soft/del_requirements.txt builds/$1/data/soft/
 #cp -r ebscab/ builds/$1/ebscab/
 mkdir builds/$1/data/sql
 cp sql/ebs_dump.sql builds/$1/data/sql/
