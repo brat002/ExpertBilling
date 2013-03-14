@@ -216,11 +216,15 @@ def index(request):
         ballance = u'%.2f' % user.ballance
     except:
         ballance = 0
-    traffic = TrafficLimit.objects.filter(tarif=tariff_id)
+    
     subaccounts = SubAccount.objects.filter(account=user)
-    #account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.datetime.now()).order_by('id')[:1]
-    account_tariff = AccountTarif.objects.filter(account=user, datetime__lte=datetime.datetime.now()).order_by('-datetime')[0]
-    account_prepays_traffic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff, current=True)
+    traffic = None
+    account_tariff = None
+    account_prepays_traffic = None
+    if tariff_id:
+        traffic = TrafficLimit.objects.filter(tarif=tariff_id)
+        account_tariff = AccountTarif.objects.filter(account=user, datetime__lte=datetime.datetime.now()).order_by('-datetime')[0]
+        account_prepays_traffic = AccountPrepaysTrafic.objects.filter(account_tarif=account_tariff, current=True)
 
     prepaydtime = None
     try:
@@ -238,7 +242,7 @@ def index(request):
     except:
         next_tariff = None
     return {
-            'account_tariff':account_tariff,
+            'account_tariff':account_tariff or '',
             'ballance':ballance,
             'tariff':tariff_name,
             'tariffs':tariffs,
