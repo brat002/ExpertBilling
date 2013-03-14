@@ -56,8 +56,9 @@ def group_edit(request):
         if form.is_valid():
  
             model = form.save(commit=False)
-            form.save_m2m()
+            
             model.save()
+            form.save_m2m()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Группа трафика успешно сохранена.', extra_tags='alert-success')
             return HttpResponseRedirect(reverse("group"))
