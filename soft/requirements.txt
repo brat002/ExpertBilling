@@ -26,7 +26,6 @@ simplejson==2.6.2
 six==1.2.0
 wsgiref==0.1.2
 zope.interface==4.0.2
-django-tables2-reports==0.0.3
 SQLAlchemy
 django-jsonfield==0.8.12
 cdecimal
