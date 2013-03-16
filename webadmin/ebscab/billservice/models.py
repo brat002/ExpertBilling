@@ -986,9 +986,9 @@ class Transaction(models.Model):
             )
         
     @staticmethod
-    def create_payment(account_id, summ, created, bill, trtype):
+    def create_payment(account, summ, created, bill, trtype):
         tr = Transaction()
-        tr.account = Account.objects.get(id=account_id)
+        tr.account = account
         tr.bill=bill
         tr.summ = summ
         tr.created = created
