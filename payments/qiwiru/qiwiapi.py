@@ -150,7 +150,19 @@ def payment_code(obj):
         return int(obj.status), payment_codes[obj.status]
     return int(obj.status), payment_codes[obj.status]
 
-
+def get_balance(phone=None, password=None):
+    if not (phone and password):
+        xml = make_request(params['get_balance']  % (term_password, term_id))
+    if phone and password:
+        xml = make_request(params['get_balance']  % (password, phone))
+    if not xml: return None
+    o=xml2obj(xml)
+    status = status_code(o)
+    if status[0]==0:
+        if o.extra[0]['name']=='BALANCE':
+            return o.extra[0].data, status[1]
+    else:
+        return 0, status[1]
 
 def create_invoice(phone_number,transaction_id, summ=0, comment='', lifetime=48):
     xml = make_request(params['create_invoice'] % (phone_number, summ, transaction_id, lifetime, comment,))
@@ -181,21 +193,6 @@ def accept_invoice_id(phone, password, transaction_id, date):
         o=xml2obj(xml)
         return status_code(o)
     return -1, result_codes['-1']
-    
-    
-def get_balance(phone=None, password=None):
-    if not (phone and password):
-        xml = make_request(params['get_balance']  % (term_password, term_id))
-    if phone and password:
-        xml = make_request(params['get_balance']  % (password, phone))
-    if not xml: return None
-    o=xml2obj(xml)
-    status = status_code(o)
-    if status[0]==0:
-        if o.extra[0]['name']=='BALANCE':
-            return o.extra[0].data, status[1]
-    else:
-        return 0, status[1]
     
 def process_invoices():
     sys.path.append('/opt/ebs/web/')
