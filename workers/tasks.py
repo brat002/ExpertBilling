@@ -14,6 +14,7 @@ import datetime
 from hashlib import md5
 import binascii
 import ConfigParser
+import urllib, urllib2
 config = ConfigParser.ConfigParser()
 BILLING_PATH = '/opt/ebs/data/'
 config.read(os.path.join(BILLING_PATH, "ebs_config.ini"))
@@ -21,6 +22,8 @@ SSH_BACKEND = config.get("core", "ssh_backend") if config.has_option("core", "ss
 db_name = "db"
 DICT = dictionary.Dictionary(os.path.join(BILLING_PATH, "dicts/dictionary"),os.path.join(BILLING_PATH, "dicts/dictionary.microsoft"), os.path.join(BILLING_PATH, 'dicts/dictionary.mikrotik') , os.path.join(BILLING_PATH, 'dicts/dictionary.cisco'))
 import logging
+
+
 DSN = "dbname='%s' user='%s' host='%s' port='%s' password='%s'" % (config.get(db_name, "name"), config.get(db_name, "username"), \
                                                                          config.get(db_name, "host"), config.get(db_name, "port"), config.get(db_name, "password"))
 
@@ -665,3 +668,34 @@ def make_dict(res):
         if len(r)<2: continue
         d[r[1]]=r[2]
     return d
+
+class HttpBot(object):
+    """an HttpBot represents one browser session, with cookies."""
+    def __init__(self):
+        cookie_handler= urllib2.HTTPCookieProcessor()
+        redirect_handler= urllib2.HTTPRedirectHandler()
+        self._opener = urllib2.build_opener(redirect_handler, cookie_handler)
+
+    def GET(self, url):
+        logging.basicConfig(filename='log/workers_http_bot.log', level=logging.INFO)
+        logger = logging
+        logger.debug(url)
+        return self._opener.open(url).read()
+    
+    def POST(self, url, parameters={}):
+        logging.basicConfig(filename='log/workers_http_bot.log', level=logging.INFO)
+        logger = logging
+        logger.debug("%s %s" % (url, parameters))
+        try:
+            return self._opener.open(url, urllib.urlencode(parameters)).read()
+        except urllib2.HTTPError, e:
+            logger.error(e)
+        except urllib2.URLError, e:
+            logger.error(e)
+@task
+def http_get(url):
+    return HttpBot().GET(url)
+
+@task
+def http_post(url, parameters):
+    return HttpBot().POST(url, parameters)

@@ -33,7 +33,7 @@ class PaymentProcessor(PaymentProcessorBase):
     BACKEND_NAME = _(u'Единая касса')
     BACKEND_ACCEPTED_CURRENCY = ('RUB', 'USD', 'EUR', 'UAH')
     GATEWAY_URL = 'https://merchant.w1.ru/checkout/default.aspx'
-    EXPIRE_HOURS = 240
+    EXPIRE_DAYS = 31
     
     
     
@@ -55,7 +55,7 @@ class PaymentProcessor(PaymentProcessorBase):
         'WMI_DESCRIPTION': "BASE64:%s" % b64encode('Internet'.encode('utf-8')), 
         'WMI_SUCCESS_URL': "http://%s%s" % (site, reverse('getpaid-w1ru-success')),
         'WMI_FAIL_URL': "http://%s%s" % (site, reverse('getpaid-w1ru-failure')),
-        'WMI_EXPIRED_DATE': (payment.created_on.replace(tzinfo=utc)+datetime.timedelta(hours=PaymentProcessor.get_backend_setting('EXPIRE_HOURS', PaymentProcessor.get_backend_setting('EXPIRE_HOURS', 240)))).strftime('%Y-%m-%dT%H:%M:%S'),
+        'WMI_EXPIRED_DATE': (payment.created_on.replace(tzinfo=utc)+datetime.timedelta(days=PaymentProcessor.get_backend_setting('EXPIRE_DAYS', PaymentProcessor.EXPIRE_DAYS))).strftime('%Y-%m-%dT%H:%M:%S'),
         }
         
         if PaymentProcessor.get_backend_setting('PTENABLED',[]):
@@ -127,7 +127,6 @@ class PaymentProcessor(PaymentProcessorBase):
             WMI_ORDER_STATE = forms.CharField()
             WMI_SIGNATURE = forms.CharField()
             
-            
         form = PostBackForm(request.POST)
         
         if form.is_valid():
@@ -144,7 +143,8 @@ class PaymentProcessor(PaymentProcessorBase):
         payment.external_id = data['WMI_ORDER_ID']
         payment.description = u'Оплачено с %s' % data['WMI_TO_USER_ID']
         
-        if data['WMI_ORDER_STATE']=='Accepted' and  payment.on_success(amount=data['WMI_PAYMENT_AMOUNT']):
+        if data['WMI_ORDER_STATE']=='Accepted':
+            payment.on_success(amount=data['WMI_PAYMENT_AMOUNT'])
             payment.save()
             return 'WMI_RESULT=OK'
         else:
