@@ -34,7 +34,7 @@ PAYMENT_TEMPLATE= u"""<request>
 
 class PaymentProcessor(PaymentProcessorBase):
     BACKEND = 'payments.liqpay'
-    BACKEND_NAME = _('Liqpay backend')
+    BACKEND_NAME = _(u'Liqpay Украина')
     BACKEND_ACCEPTED_CURRENCY = ('UAH', )
     PAY_WAY = ('card', 'liqpay', 'delayed')
 

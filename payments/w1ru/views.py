@@ -31,14 +31,26 @@ class PayView(View):
 
 class SuccessView(TemplateView):
 
-    template_name = "account/payment_success.html"
+    template_name = "accounts/payment_success.html"
 
     def get_context_data(self, **kwargs):
         return {}
+
+    def get(self, request, **kwargs):
+        return self.render_to_response({})
+
+    def post(self, request, **kwargs):
+        return self.render_to_response({})
+
+        
     
 class FailureView(TemplateView):
 
-    template_name = "account/payment_failure.html"
+    template_name = "accounts/payment_failure.html"
 
-    def get_context_data(self, **kwargs):
-        return {}
+    def get(self, request, **kwargs):
+        return self.render_to_response({})
+
+    def post(self, request, **kwargs):
+        return self.render_to_response({})
+    

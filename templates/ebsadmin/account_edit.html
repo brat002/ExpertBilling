@@ -2,6 +2,7 @@
 {% load billservice_tags %}
 {% load ebsadmin_tags %}
 {% load custom_filters %}
+{% load crispy_forms_tags %}
 {% block extra_head %}
 
         <script type="text/javascript"> 
@@ -331,6 +332,7 @@
                 <ul class="nav nav-tabs" id="tab-control">
                     <li class="active"><a href="#tab-first" data-toggle="tab">Карточка</a></li>
                     <li class=""><a href="#tab-address" data-toggle="tab">Персональные данные</a></li>
+                    <li class=""><a href="#tab-extra" data-toggle="tab">Дополнительные поля</a></li>
                     <li class=""><a href="#tab-second" data-toggle="tab">Юр. лицо</a></li>
                     <li class=""><a href="#tab-third" data-toggle="tab">Прочее</a></li>
                     <li class=""><a href="#tab-helpdesk" data-toggle="tab">HelpDesk</a></li>
@@ -345,11 +347,13 @@
 
     
 
-                            <div class="control-group">
+                            <div class="control-group  {% if form.username.errors %} clearfix error{% endif %}">
                             <div class="control-row">
                                 <label class="control-label" for="input-username"><strong>{{form.username.label}}</strong></label>
                                 <div class="controls">
-                                    {{ form.username }}
+                                    <div class="input-append">{{ form.username }}
+                                    <a  id="generate_username" class="btn  add-on">#</a>
+                                    </div>
                                     {% if form.username.errors %}
                                     <span class="help-inline">{% for error in form.username.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}
@@ -358,7 +362,7 @@
                                         {{ form.username.help_text|safe }}
                                     </p>
                                     {% endif %}
-                                    <input type="button" id="generate_username" class="btn" value='#'>
+                                    
                                 </div>
                             </div>
                             <div class="control-row">
@@ -397,10 +401,10 @@
                             </div>
                             {% endif %}
                             <div class="control-group">
-                            <div class="control-row">
+                            <div class="control-row {% if form.password.errors %}error{% endif %}">
                                 <label class="control-label" for="input-password"><strong>{{form.password.label}}</strong></label>
                                 <div class="controls">
-                                    {{ form.password }}
+                                    <div class="input-append">{{ form.password }}<a id="generate_password" class="btn  add-on">#</a></div>
                                     {% if form.password.errors %}
                                     <span class="help-inline">{% for error in form.password.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}
@@ -409,7 +413,7 @@
                                         {{ form.password.help_text|safe }}
                                     </p>
                                     {% endif %}
-                                    <input type='button' id='generate_password' class="btn" value="#">
+
                                 </div>
                             </div>
                             <div class="control-row">
@@ -428,9 +432,9 @@
                             </div>
                             </div>
                             <hr />
-                            {% if account %}
+
                             <div class="control-group">
-                            <div class="control-row">
+                            <div class="control-row {% if form.credit.errors %}error{% endif %}">
                                 <label class="control-label" for="input-credit"><strong>{{form.credit.label}}</strong></label>
                                 <div class="controls">
                                         {{ form.credit }}
@@ -460,9 +464,9 @@
                                 </div>
                             </div>
                             </div>
-                            {% endif %}
+
                             <div class="control-group">
-                            <div class="control-row">
+                            <div class="control-row {% if form.created.errors %}error{% endif %}">
                                     <label class="control-label" for="input-created"><strong>Дата создания</strong></label>
                                     <div class="controls">
                                     {{ form.created }}
@@ -571,7 +575,9 @@
                         </fieldset>
                         {% endif %}
                         {% endcomment %}
+                        
                         {% if account %}
+                        
                         <fieldset>
                             <legend>Субаккаунты</legend>
 
@@ -937,6 +943,11 @@
                         </fieldset>
                     </div>
 
+                      
+                      <div class="tab-pane" id="tab-extra">
+                      {{extra_form|crispy}}
+                      <div class='alert alert-info'>Дополнительные поля вы можете настроить на странице <a href="{% url dynamicschemafield %}">Дополнительные атрибуты аккаунта</a></div>
+                      </div>
                     <div class="tab-pane" id="tab-second">
                         {{form.organization}} {{form.organization.label}}
                         <fieldset id='organization-fieldset'>

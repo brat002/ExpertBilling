@@ -17,7 +17,7 @@ from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 from django_tables2 import RequestConfig as DTRequestConfig
-from billservice.forms import SearchAccountForm
+from billservice.forms import SearchAccountForm, AccountExtraForm
 
 from ebsadmin.transactionreport import TRANSACTION_MODELS
 
@@ -419,6 +419,7 @@ def accountsreport(request):
                 res = res.filter(credit=credit)
                     
             res = res.distinct()
+            
             table = AccountsReportTable(res)
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
@@ -514,10 +515,10 @@ def ipinusereport(request):
             
             res = IPInUse.objects.select_related().all()
             if account:
-                print account
+                #print account
                 subaccs = SubAccount.objects.filter(account__id__in=account)
                 t = [x.vpn_ipinuse_id for x in subaccs]+ [x.ipn_ipinuse_id for x in subaccs]
-                print t
+                #print t
                 for subacc in subaccs:
                     res = res.filter(Q(activesession__ipinuse__isnull=False) | Q(activesession__subaccount=subacc))
                 res = res.filter(id__in=t)
@@ -619,6 +620,7 @@ def accountedit(request):
     prepaidradiustime = 0
     ticket_table = None
     prepaidtraffic = []
+    extra_form = None
     if account_id:
         if  not (request.user.account.has_perm('billservice.change_account')):
             messages.error(request, u'У вас нет прав на редактирование аккаунтов', extra_tags='alert-danger')
@@ -675,7 +677,7 @@ def accountedit(request):
                     bank_form = BankDataForm(request.POST, prefix='bankdata')
 
             else:
-                print request.POST
+                #print request.POST
                 org_form = OrganizationForm(request.POST, prefix='org')
                 
                 bank_form = BankDataForm(request.POST, prefix='bankdata')
@@ -688,12 +690,13 @@ def accountedit(request):
         
         
 
-            
+        extra_form = AccountExtraForm(request.POST, instance=account)
+        
         if form.is_valid():
 
             if not org_form.is_valid():
 
-                return {'org_form':org_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime, 'bank_form': bank_form, "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
+                return {'extra_form': extra_form, 'org_form':org_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime, 'bank_form': bank_form, "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
             
 
             model =form.save(commit=False)
@@ -744,7 +747,8 @@ def accountedit(request):
             return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"), model.id))
         else:
             messages.error(request, u'Ошибка при сохранении.', extra_tags='alert-danger')
-            return {'ticket_table': ticket_table, 'org_form':org_form, 'bank_form': bank_form,  'prepaidtraffic':prepaidtraffic, 'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
+            
+            return {'extra_form': extra_form, 'ticket_table': ticket_table, 'org_form':org_form, 'bank_form': bank_form,  'prepaidtraffic':prepaidtraffic, 'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
     if account:
         
         
@@ -762,11 +766,13 @@ def accountedit(request):
             org_form = OrganizationForm(initial={'account': account}, prefix='org')
             bank_form = BankDataForm(prefix='org')
             form = AccountForm(instance=account)
+            extra_form = AccountExtraForm(instance=account)
     else:
         form = AccountForm(initial={'credit': 0, 'ballance':0, 'created': datetime.datetime.now()})
+        extra_form = AccountExtraForm()
         org_form = OrganizationForm(prefix='org')
         bank_form = BankDataForm(prefix='org')
-    return { 'form':form, 'org_form':org_form, 'bank_form': bank_form,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 
+    return { 'form':form, 'extra_form': extra_form, 'org_form':org_form, 'bank_form': bank_form,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 
             'ticket_table': ticket_table} 
 
 @systemuser_required
@@ -830,7 +836,7 @@ def subaccountedit(request):
                     subaccs = SubAccount.objects.filter(username = username).exclude(account = account).count()
                 else:
                     subaccs = SubAccount.objects.filter(account__id = account_id, username = username).count()
-                print 'subaccs', subaccs
+                #print 'subaccs', subaccs
                 if subaccs>0:
                     return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form, 'message':u'Выбранное имя пользователя используется в другом аккаунте'}
     
@@ -855,25 +861,25 @@ def subaccountedit(request):
 
                     return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный ipn_ip_address используется в другом аккаунте'}
     
-            print 111
+            #print 111
 
             #print '1111111', subaccount, vpn_ipinuse, ipn_ipinuse, subaccount.ipv4_vpn_pool
             if subaccount and vpn_ipinuse:
     
                 #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
-                print 222
+                #print 222
                 if  str(vpn_ip_address) not in ['0.0.0.0', '0.0.0.0/32','',None]:
                     if ipv4_vpn_pool:
                         if not IPy.IP(ipv4_vpn_pool.start_ip).int()<=IPy.IP(vpn_ip_address).int()<=IPy.IP(ipv4_vpn_pool.end_ip).int():
 
                             return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form, 'message':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
                         
-                        print 333
+                        #print 333
                         if vpn_ipinuse.ip!=vpn_ip_address:
                             obj = IPInUse.objects.get(id=vpn_ipinuse.id)
                             obj.disabled=datetime.datetime.now()
                             obj.save()
-                            print 444
+                            #print 444
                             log('EDIT', request.user, obj)
                             vpn_ipinuse = IPInUse.objects.create(pool=ipv4_vpn_pool,ip=vpn_ip_address,datetime=datetime.datetime.now())
                             log('EDIT', request.user, vpn_ipinuse)
@@ -887,14 +893,14 @@ def subaccountedit(request):
                         
                     
                 elif str(vpn_ip_address) in ['','0.0.0.0', '0.0.0.0/32','',None]:
-                    print 666
+                    #print 666
                     obj = vpn_ipinuse
                     obj.disabled=datetime.datetime.now()
                     obj.save()
                     log('EDIT', request.user, obj)
                     vpn_ipinuse=None
             elif str(vpn_ip_address) not in ['','0.0.0.0', '0.0.0.0/32','',None] and ipv4_vpn_pool:
-                print 777
+                #print 777
                 if not IPy.IP(ipv4_vpn_pool.start_ip).int()<=IPy.IP(vpn_ip_address).int()<=IPy.IP(ipv4_vpn_pool.end_ip).int():
 
                     return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
@@ -903,7 +909,7 @@ def subaccountedit(request):
                 ip.save()
                 log('CREATE', request.user, ip)
                 vpn_ipinuse = ip 
-                print 888
+                #print 888
                 
             if subaccount and ipn_ipinuse:
     

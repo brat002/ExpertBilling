@@ -2,10 +2,10 @@
 {% block content %}
 
 
-<h2>Укажите сумму платежа:</h2>
+<h2>Укажите параметры платежа:</h2>
 <form action="{% url getpaid-select-payment %}" method="POST">
     {% csrf_token %}
-    {{ payment_form.as_p }}
+    {{ payment_form.as_table }}
     <input type="submit" value="Continue">
 </form>
 
