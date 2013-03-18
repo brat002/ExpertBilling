@@ -23,10 +23,12 @@ def default(obj):
         return float(obj)
     if isinstance(obj, datetime.datetime):
         return obj.strftime('%Y-%m-%d %H:%M:%S')
+    if isinstance(obj, datetime.date):
+        return obj.strftime('%Y-%m-%d')
     else:
         if type(obj)==ipaddr.IPv4Network or  type(obj)==ipaddr.IPAddress:
             return str(obj)
-        return simplejson.JSONEncoder.default(self, obj)
+        return simplejson.JSONEncoder().default(obj)
         
 def compare(old, new):
     r = []

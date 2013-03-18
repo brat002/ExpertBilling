@@ -361,10 +361,13 @@ class Table(StrAndUnicode):
                  exclude=None, attrs=None, sequence=None, prefix=None,
                  order_by_field=None, page_field=None, per_page_field=None,
                  template=None, sortable=None, default=None, request=None):
+        
         super(Table, self).__init__()
+        
         self.exclude = exclude or ()
         self.sequence = sequence
         self.data = self.TableDataClass(data=data, table=self)
+        
         if default is None:
             default = self._meta.default
         self.default = default

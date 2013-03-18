@@ -13,7 +13,7 @@ from django.contrib.sites.models import Site
 from django.utils.timezone import utc
 from base64 import b64encode
 
-
+import urllib
 
 CURRENCIES = {
 'RUB': 643,
@@ -52,7 +52,7 @@ class PaymentProcessor(PaymentProcessorBase):
         'WMI_PAYMENT_AMOUNT': "%.2f" % amount,
         'WMI_CURRENCY_ID': CURRENCIES.get(PaymentProcessor.get_backend_setting('DEFAULT_CURRENCY', PaymentProcessor.get_backend_setting('BACKEND_ACCEPTED_CURRENCY', ['RUB'])[0])),
         'WMI_PAYMENT_NO': payment.id,
-        'WMI_DESCRIPTION': "BASE64:%s" % b64encode('Internet'.encode('utf-8')), 
+        'WMI_DESCRIPTION': "BASE64:%s" % b64encode((u'Internet payment %s' % payment.account.contract).encode('utf-8')), 
         'WMI_SUCCESS_URL': "http://%s%s" % (site, reverse('getpaid-w1ru-success')),
         'WMI_FAIL_URL': "http://%s%s" % (site, reverse('getpaid-w1ru-failure')),
         'WMI_EXPIRED_DATE': (payment.created_on.replace(tzinfo=utc)+datetime.timedelta(days=PaymentProcessor.get_backend_setting('EXPIRE_DAYS', PaymentProcessor.EXPIRE_DAYS))).strftime('%Y-%m-%dT%H:%M:%S'),
@@ -131,24 +131,24 @@ class PaymentProcessor(PaymentProcessorBase):
         
         if form.is_valid():
             data = form.cleaned_data
-            if PaymentProcessor.compute_sig(data)!=data['WMI_SIGNATURE']:
-                return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=Неверная цифровая подпись'
+            if PaymentProcessor.compute_sig(request.POST)!=data['WMI_SIGNATURE']:
+                return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Неверная цифровая подпись')
             try:
                 payment = Payment.objects.get(id=data['WMI_PAYMENT_NO'])
             except:
-                return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=Платёж в ID %s не найден' % data['WMI_PAYMENT_NO']
+                return (u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Платёж c ID %s не найден' % data['WMI_PAYMENT_NO'])).encode('utf-8')
         else:
             print form._errors
-            return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=Не все поля заполнены или заполнены неверно'
+            return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Не все поля заполнены или заполнены неверно')
         payment.external_id = data['WMI_ORDER_ID']
         payment.description = u'Оплачено с %s' % data['WMI_TO_USER_ID']
         
         if data['WMI_ORDER_STATE']=='Accepted':
             payment.on_success(amount=data['WMI_PAYMENT_AMOUNT'])
             payment.save()
-            return 'WMI_RESULT=OK'
+            return 'WMI_RESULT=OK&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Order successfully processed')
         else:
-            return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=Ошибка обработки платежа'
+            return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Ошибка обработки платежа')
     
 
     

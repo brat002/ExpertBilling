@@ -109,6 +109,12 @@ padding-top:20px;
         	noDefault: true,
         	format: 'yyyy-mm-dd hh:ii:ss',
             days: ["пн","вт","ср","чт","пт","сб","вс"],});
+        $('.dateinput').datepicker({
+            months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
+            weekStart: 0,
+            noDefault: true,
+            format: 'yyyy-mm-dd',
+            days: ["пн","вт","ср","чт","пт","сб","вс"],});
         $(".timepicker").mask("99:99:99");
         
         $(".daterange").daterangepicker({format:'yyyy-MM-dd'});
@@ -294,6 +300,8 @@ padding-top:20px;
          <li><a href="{% url systemuser %}"><i class="icon-user"></i>&nbsp;Системные пользователи</a></li>
          <li><a href="{% url permissiongroup %}"><i class="cus-group"></i>&nbsp;Группы доступа</a></li>
          <li><a href="{% url accountgroup %}"><i class="cus-group-gear"></i>&nbsp;Группы абонентов</a></li>
+         <li><a href="{% url dynamicschemafield %}"><i class="cus-user-edit"></i>&nbsp;Дополнительные атрибуты аккаунта</a></li>
+         
          
        </ul>
      </li>
