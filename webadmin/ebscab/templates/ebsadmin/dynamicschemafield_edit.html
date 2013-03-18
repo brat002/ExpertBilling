@@ -18,7 +18,7 @@
 
       {% endfor %}
 {% if form %}
-                <form action='{% url manufacturer_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
+                <form action='{% url dynamicschemafield_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
                 <fieldset>
                 {{form|crispy}}             
                 </fieldset>

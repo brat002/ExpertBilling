@@ -206,6 +206,12 @@ urlpatterns += patterns('ebsadmin.modules.manufacturer',
     url(r'^manufacturer/delete/$', "manufacturer_delete", name="manufacturer_delete"),
 )
 
+urlpatterns += patterns('ebsadmin.modules.dynamicfields',
+    url(r'^dynamicschemafield/edit/$', 'dynamicschemafield_edit', name='dynamicschemafield_edit'),
+    url(r'^dynamicschemafield/$', 'dynamicschemafield', name='dynamicschemafield'),
+    url(r'^dynamicschemafield/delete/$', "dynamicschemafield_delete", name="dynamicschemafield_delete"),
+)
+
 urlpatterns += patterns('ebsadmin.modules.hardwaretype',
     url(r'^hardwaretype/edit/$', 'hardwaretype_edit', name='hardwaretype_edit'),
     url(r'^hardwaretype/$', 'hardwaretype', name='hardwaretype'),

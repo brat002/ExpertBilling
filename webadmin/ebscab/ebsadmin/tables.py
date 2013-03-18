@@ -10,6 +10,8 @@ from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, Tran
 from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, PermissionGroup
 from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode, SubAccount
 from billservice.models import News, TPChangeRule, Switch, AccountGroup, GroupStat, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, AccountPrepaysTime
+from dynamicmodel.models import DynamicSchemaField
+
 import django_tables2 as django_tables
 from django_tables2.utils import A
 from radius.models import ActiveSession, AuthLog
@@ -923,3 +925,16 @@ class PaymentTable(TableReport):
         model = Payment
         #fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
+        
+class DynamicSchemaFieldTable(TableReport):
+    id = django_tables.LinkColumn('dynamicschemafield_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = DynamicSchemaField
+        #fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}   
+

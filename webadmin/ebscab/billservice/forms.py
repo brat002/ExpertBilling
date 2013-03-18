@@ -9,6 +9,8 @@ from billservice.models import Organization, BalanceHistory, PrepaidTraffic, Tra
 from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
 from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware,AccountGroup,AccountPrepaysTime
 
+from dynamicmodel.models import DynamicSchemaField
+from dynamicmodel.models import DynamicForm, DynamicExtraForm
 from nas.models import Nas
 from getpaid.models import Payment, PAYMENT_STATUS_CHOICES
 
@@ -373,7 +375,7 @@ class BankDataForm(ModelForm):
     class Meta:
         model = BankData
               
-class AccountForm(ModelForm):
+class AccountForm(DynamicForm):
     username = forms.CharField(label =u"Имя пользователя", required=True, widget = forms.TextInput(attrs={'class': 'input-medium'}))
     password = forms.CharField(label =u"Пароль", required=True, widget = forms.TextInput(attrs={'class': 'input-medium'}))
     city = forms.ModelChoiceField(label=u"Город",queryset=City.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
@@ -396,8 +398,8 @@ class AccountForm(ModelForm):
         self.fields['systemuser'].widget.attrs['class'] = 'input-xlarge'
         self.fields['account_group'].widget.attrs['class'] = 'input-xlarge'
         self.fields['contract'].widget.attrs['class'] = 'input-medium'
-        self.fields['username'].widget.attrs['class'] = 'input-small'
-        self.fields['password'].widget.attrs['class'] = 'input-small'
+        #self.fields['username'].widget.attrs['class'] = 'input-small'
+        #self.fields['password'].widget.attrs['class'] = 'input-small'
         self.fields['credit'].widget.attrs['class'] = 'input-small'
         self.fields['comment'].widget.attrs['class'] = 'input-xlarge span10'
         self.fields['comment'].widget.attrs['cols'] =10
@@ -422,6 +424,11 @@ class AccountForm(ModelForm):
             raise forms.ValidationError(u"Нельзя создать пользователя с именем существующего администратора.")
         else:
             return self.cleaned_data['username']
+        
+class AccountExtraForm(DynamicExtraForm):
+    
+    class Meta:
+        model = Account
         
 class AccessParametersForm(ModelForm):
     class Meta:
@@ -1100,3 +1107,10 @@ class SendSmsForm(forms.Form):
     body = forms.CharField(label=u'Сообщение', widget = forms.widgets.Textarea(attrs={'rows':4, 'class': 'input-large span5'}), help_text=u"Можно использовать {{account.ballance}}, {{account.fullname}}, {{account.username}}, {{account.contract}}")
     publish_date = forms.DateTimeField(label=u'Опубликовать', help_text = u'Не указывайте, если сообщения должны быть отправлены сразу', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
+    
+class DynamicSchemaFieldForm(forms.ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    
+    class Meta:
+        model = DynamicSchemaField
+        

@@ -14,7 +14,7 @@ connection.features.can_return_id_from_insert = False
 # choiCe
 import IPy
 from lib.fields import IPNetworkField, EncryptedTextField
-
+from dynamicmodel.models import DynamicModel, DynamicSchema
 
 PROTOCOLS = {'0':'-all-',
            '37':'ddp',
@@ -108,6 +108,7 @@ STATUS_CLASS={
               2:'inactive-light',
               3:'inactive',
               4:'info',
+              False: 'inactive',
               }
     
 class SoftDeleteManager(models.Manager):
@@ -410,8 +411,8 @@ class AccessParameters(models.Model):
     burst_rx = models.CharField(verbose_name=u"rx (kbps)", max_length=64, blank=True, default="")
     burst_treshold_tx = models.CharField(verbose_name=u"Burst treshold tx (kbps)", max_length=64, blank=True, default="")
     burst_treshold_rx = models.CharField(verbose_name=u"rx (kbps)", max_length=64, blank=True, default="")
-    burst_time_tx = models.CharField(verbose_name=u"Burst time tx (kbps)", max_length=64, blank=True, default="")
-    burst_time_rx = models.CharField(verbose_name=u"rx (kbps)", max_length=64, blank=True, default="")
+    burst_time_tx = models.CharField(verbose_name=u"Burst time tx (s)", max_length=64, blank=True, default="")
+    burst_time_rx = models.CharField(verbose_name=u"rx (s)", max_length=64, blank=True, default="")
     min_tx = models.CharField(verbose_name=u"Min tx (kbps)", max_length=64, blank=True, default="")
     min_rx = models.CharField(verbose_name=u"rx (kbps)", max_length=64, blank=True, default="")
 
@@ -457,7 +458,7 @@ class TimeSpeed(models.Model):
     burst_rx = models.CharField(verbose_name=u"rx", max_length=64, blank=True, default="")
     burst_treshold_tx = models.CharField(verbose_name=u"Burst treshold tx (kbps)", max_length=64, blank=True, default="")
     burst_treshold_rx = models.CharField(verbose_name=u"rx", max_length=64, blank=True, default="")
-    burst_time_tx = models.CharField(verbose_name=u"Burst time tx (kbps)", max_length=64, blank=True, default="")
+    burst_time_tx = models.CharField(verbose_name=u"Burst time tx (s)", max_length=64, blank=True, default="")
     burst_time_rx = models.CharField(verbose_name=u"rx", max_length=64, blank=True, default="")
     min_tx = models.CharField(verbose_name=u"Min tx (kbps)", max_length=64, blank=True, default="")
     min_rx = models.CharField(verbose_name=u"tx", max_length=64, blank=True, default="")
@@ -713,6 +714,10 @@ class Tariff(models.Model):
             return
         super(Tariff, self).delete()
         
+
+    def get_row_class(self):
+        return STATUS_CLASS.get(self.active)
+    
 ACTIVE = 1
 NOT_ACTIVE_NOT_WRITING_OFF  = 2
 NOT_ACTIVE_WRITING_OFF = 3 
@@ -738,7 +743,7 @@ class AccountGroup(models.Model):
            ("accountgroup_view", u"Просмотр"),
             )
         
-class Account(models.Model):
+class Account(DynamicModel):
     """
     Если стоят галочки assign_vpn_ip_from_dhcp или assign_ipn_ip_from_dhcp,
     значит каждый раз при RADIUS запросе будет провереряться есть ли аренда и не истекла ли она.
@@ -770,7 +775,7 @@ class Account(models.Model):
     created=models.DateTimeField(verbose_name=u'Создан', help_text=u'Начало оказания услуг', default='')
     #NOTE: baLance
     ballance=models.DecimalField(u'Баланс', blank=True, default=0,decimal_places=10,max_digits=20)
-    credit = models.DecimalField(verbose_name=u'Размер кредита', decimal_places=2,max_digits=20, blank=True, default=0)
+    credit = models.DecimalField(verbose_name=u'Размер кредита', decimal_places=2,max_digits=20, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
     balance_blocked = models.BooleanField(blank=True, default=False)
 
@@ -1096,6 +1101,8 @@ class SystemUser(models.Model):
     permissiongroup = models.ForeignKey("PermissionGroup", blank=True, null=True, verbose_name=u"Группа доступа")
     is_superuser = models.BooleanField(verbose_name=u"Суперадминистратор")
     
+    permcache = {}
+    
     def __str__(self):
         return '%s' % self.username
     
@@ -1113,8 +1120,12 @@ class SystemUser(models.Model):
         
     def has_perm(self, perm):
         app, internal_name = perm.split('.')
+        #if perm in self.permcache:
+        #    return self.permcache[perm]
         #print app, internal_name, self.permissiongroup.permissions.filter(app=app, internal_name=internal_name) if self.permissiongroup else ''
-        return self.status and (self.is_superuser or (self.permissiongroup.permissions.filter(app=app, internal_name=internal_name).exists() if self.permissiongroup else False))
+        r= self.status and (self.is_superuser or (self.permissiongroup.permissions.filter(app=app, internal_name=internal_name).exists() if self.permissiongroup else False))
+        #self.permcache[perm]=r
+        return r
     
     def delete(self):
         return
@@ -2028,3 +2039,4 @@ class PermissionGroup(models.Model):
 #    accounts = JSONField()
 #    
 #===============================================================================
+
