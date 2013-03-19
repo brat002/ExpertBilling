@@ -353,7 +353,7 @@ class NfQueues(object):
 class NfrVars(Vars):
     __slots__ = ('NFR_SESSION', 'HOST', 'PORT', 'ADDR', 'sendFlag', 'SAVE_DIR', 'GROUP_AGGR_TIME', 'STAT_AGGR_TIME',\
                  'STAT_DICTS', 'GROUP_DICTS', 'SOCK_TYPE', 'STORE_NA_TARIF', 'STORE_NA_ACCOUNT', 'MAX_DATAGRAM_LEN',\
-                 'PICKER_AGGR_TIME', 'ROUTINE_THREADS', 'GROUPSTAT_THREADS', 'GLOBALSTAT_THREADS', 'BILL_THREADS',\
+                 'PICKER_AGGR_TIME',  'GROUPSTAT_THREADS', 'GLOBALSTAT_THREADS', 'BILL_THREADS',\
                  'ALLOWED_NF_IP_LIST', 'NFR_DELIMITER', 'USE_COEFF_FOR_PREPAID')
     
     def __init__(self):
@@ -373,7 +373,7 @@ class NfrVars(Vars):
         self.STORE_NA_ACCOUNT = False
         self.MAX_DATAGRAM_LEN = 32687
         self.PICKER_AGGR_TIME = 300.0
-        self.ROUTINE_THREADS = 4
+        #self.ROUTINE_THREADS = 4
         self.GROUPSTAT_THREADS  = 1
         self.GLOBALSTAT_THREADS = 1
         self.BILL_THREADS = 1
@@ -409,7 +409,7 @@ class NfrVars(Vars):
         if config.has_option(name, 'store_na_account'):
             self.STORE_NA_ACCOUNT = False if config.get(name, 'store_na_account').lower() in ('false', '0') else True
         if config.has_option(name, 'max_datagram_len'): self.MAX_DATAGRAM_LEN = config.getint(name, 'max_datagram_len')
-        if config.has_option(name, 'routine_threads'):    self.ROUTINE_THREADS = config.getint(name, 'routine_threads')
+        #if config.has_option(name, 'routine_threads'):    self.ROUTINE_THREADS = config.getint(name, 'routine_threads')
         if config.has_option(name, 'groupstat_threads'):  self.GROUPSTAT_THREADS = config.getint(name, 'groupstat_threads')
         if config.has_option(name, 'globalstat_threads'): self.GLOBALSTAT_THREADS = config.getint(name, 'globalstat_threads')
         if config.has_option(name, 'bill_threads'):       self.BILL_THREADS = config.getint(name, 'bill_threads')

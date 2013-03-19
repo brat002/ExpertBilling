@@ -83,15 +83,31 @@
                         </div>
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-agreement-no">{{form.daterange.label}}</label>
+                            <label class="control-label" for="input-agreement-no">{{form.start_date.label}}</label>
                             <div class="controls">
-                             {{ form.daterange }}
-                            {% if form.daterange.errors %}
-                                <span class="help-inline">{% for error in form.daterange.errors %}{{ error }}<br/> {% endfor %}</span>
+                             {{ form.start_date }}
+                            {% if form.start_date.errors %}
+                                <span class="help-inline">{% for error in form.start_date.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.daterange.help_text%}
+                            {% if form.start_date.help_text%}
                                 <p class="help-block">
-                                    {{ form.daterange.help_text|safe }}
+                                    {{ form.start_date.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
+                        </div>
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">{{form.end_date.label}}</label>
+                            <div class="controls">
+                             {{ form.end_date }}
+                            {% if form.end_date.errors %}
+                                <span class="help-inline">{% for error in form.end_date.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.end_date.help_text%}
+                                <p class="help-block">
+                                    {{ form.end_date.help_text|safe }}
                                 </p>
                             {% endif %}
                             </div>
