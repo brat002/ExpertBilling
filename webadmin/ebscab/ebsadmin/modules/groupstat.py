@@ -34,15 +34,10 @@ def groupstat(request):
             
             accounts = form.cleaned_data.get('accounts')
             groups = form.cleaned_data.get('groups')
-            daterange = form.cleaned_data.get('daterange') or []
+            date_start = form.cleaned_data.get('date_start')
+            date_end = form.cleaned_data.get('date_end')
 
-            start_date, end_date =None, None
-            if len(daterange)==2:
-                start_date, end_date = daterange
-
-
-            
-            
+           
             
             res = GroupStat.objects.all().select_related().values('account__username', 'group__name').annotate(summ_bytes=Sum('bytes'))
             if accounts:
@@ -50,11 +45,11 @@ def groupstat(request):
             if groups:
                 res = res.filter(group__in=groups)
   
-            if start_date:
-                res = res.filter(datetime__gte=start_date)
+            if date_start:
+                res = res.filter(datetime__gte=date_start)
 
-            if end_date:
-                res = res.filter(datetime__lte=end_date)
+            if date_end:
+                res = res.filter(datetime__lte=date_end)
                 
             table = GroupStatTable(res)
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)

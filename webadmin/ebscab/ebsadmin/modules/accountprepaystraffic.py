@@ -35,14 +35,9 @@ def accountprepaystraffic(request):
             group = form.cleaned_data.get('group')
             current = form.cleaned_data.get('current')
             tariff = form.cleaned_data.get('tariff')
-            daterange = form.cleaned_data.get('daterange') or []
-            start_date, end_date = None, None
-            if daterange:
-                start_date = daterange[0]
-                end_date = daterange[1]
-            
-            
-            
+            date_start = form.cleaned_data.get('date_start')
+            date_end = form.cleaned_data.get('date_end')
+
             res = AccountPrepaysTrafic.objects.all().order_by('account_tarif__account', 'current')
             if account:
                 res = res.filter(account_tarif__account__id__in=account)
@@ -56,10 +51,10 @@ def accountprepaystraffic(request):
             if current:
                 res = res.filter(current=current)
                 
-            if start_date:
-                res = res.filter(datetime__gte=start_date)
-            if end_date:
-                res = res.filter(datetime__lte=end_date)
+            if date_start:
+                res = res.filter(datetime__gte=date_start)
+            if date_end:
+                res = res.filter(datetime__lte=date_end)
                 
             table = AccountPrepaysTraficTable(res)
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)

@@ -784,13 +784,14 @@ class GroupStatTable(TableReport):
 
     account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
     group = django_tables.Column(u'Группа', accessor=A('group__name'))
-    bytes = django_tables.Column(u'Сумма', accessor=A('summ_bytes'))
+    bytes = django_tables.TemplateColumn("{{record.summ_bytes|filesizeformat}}({{record.summ_bytes}})", verbose_name=u'Сумма', accessor=A('summ_bytes'))
+    #django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}({{record.bytes_in}})", verbose_name=u'ВХ')
     
-    def render_bytes(self, value, record):
-        return value
+    #def render_bytes(self, value, record):
+    #    return value
     
     class Meta:
-        available_fields = (u'account', 'group', u'bytes')
+        available_fields = (u'account', 'group', 'bytes')
         configurable = True
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
       

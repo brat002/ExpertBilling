@@ -318,7 +318,7 @@ class groupDequeThread(Thread):
                 if not groupData:
                     logger.info('%s: no groupdata for key: %s', (self.getName(), gkey))
                     continue
-                
+                #print groupData
                 accsdata = self.caches.accounttariff_traf_service_cache.by_accounttariff.get(accounttarif_id)
                 if not accsdata: 
                     logger.info('%s: no accsdata found %s', (self.getName(), accsdata))
@@ -326,10 +326,10 @@ class groupDequeThread(Thread):
                 account_id = accsdata.account_id
                 groupItems, groupInfo = groupData[0:2]
                 #get needed method
-                group_id, group_dir, group_type = groupInfo
+                group_id, group_dir, group_type = groupInfo # 1 0 1 
                 gdate = datetime.datetime.fromtimestamp(gtime)
                 #gop = gops[group_dir]
-                gop = gops[group_dir - 1]
+                gop = gops[group_dir]
                 octlist, classes = [], []             
                 max_class = None
                 octets = 0               
@@ -659,6 +659,7 @@ class NetFlowRoutine(Thread):
         self.cur = self.connection.cursor()
         icount, timecount = 0, 0
         totaltime = time.clock()
+
         while True:
             try:   
                 if suicideCondition[self.tname]:
@@ -708,9 +709,13 @@ class NetFlowRoutine(Thread):
                     continue
                 #flows = fpacket
                 #iterate through them
+                
                 for pflow in flows:
                     flow = Flow5Data(False, *pflow)
                     logger.debug("Packet for processing: %s ; ",(repr(flow),))
+                    #print flow.octets, len(flow.octets), len(str(flow.octets).strip())
+                    #aa+=flow.octets
+                    #print "%s|" % aa
                     #get account id and get a record from cache based on it
                     acc = caches.account_cache.by_account.get(flow.account_id)
                     if not acc: 
@@ -1086,10 +1091,10 @@ def main():
         grdqTh.setName('GDT:#%i: groupDequeThread' %1)
         threads.append(grdqTh)
     else:
-        for i in xrange(vars.ROUTINE_THREADS):
-            newNfr = NetFlowRoutine()
-            newNfr.setName('NFR:#%i: NetFlowRoutine' % i)
-            threads.append(newNfr)
+        
+        newNfr = NetFlowRoutine()
+        newNfr.setName('NFR: NetFlowRoutine')
+        threads.append(newNfr)
         for i in xrange(vars.GROUPSTAT_THREADS):
             grdqTh = groupDequeThread()
             grdqTh.setName('GDT:#%i: groupDequeThread' % i)
@@ -1165,7 +1170,7 @@ if __name__ == "__main__":
         import psyco
         psyco.full(memory=100)
     except:
-        print "psyco not available. programm will run slowly" 
+        pass 
     try:
         #psyco.log()
         

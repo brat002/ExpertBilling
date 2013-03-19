@@ -400,16 +400,20 @@ class FlowDequeThread(Thread):
         flow.class_passthrough = nnode.passthrough; flow.acctf_id = acctf_id
         flow.groups = None; flow.has_groups = has_groups
         #add groups, check if any
+        #print tarifGroups
         if has_groups:
             dr = 0
-            if   flow.node_direction == 'INPUT' : dr = 2
+            if   flow.node_direction == 'INPUT' : dr = 0
             elif flow.node_direction == 'OUTPUT': dr = 1
             groupLst = []
             fcset = set(classLst)
             for tgrp in tarifGroups:
                 if 0: assert isinstance(tgrp, GroupsData)
-                if (not tgrp.trafficclass) or (tgrp.direction == dr):
-                    # Если у группы нет классров или направление группы равно
+                #print tgrp.direction, dr
+                if (not tgrp.trafficclass) or (int(tgrp.direction) != int(dr) and tgrp.direction!=2):
+                #if (not tgrp.trafficclass):
+                    # Если у группы нет классров или направление группы равно направлению трафика
+                    #print "skip", tgrp, dr
                     continue
                 group_cls = fcset.intersection(tgrp.trafficclass) # ищем пересечение классов
                 if group_cls:
@@ -478,8 +482,13 @@ class FlowDequeThread(Thread):
                                 if flow.node_direction == 'INPUT':
                                     
                                     if (flow.src_addr & nnode.dst_mask) != nnode.dst_ip:continue
+                                    
                                 else:
-                                    if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:continue
+                                    
+                                    if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:
+                                        continue
+                                    
+                                    
                                 if ((flow.protocol != nnode.protocol) and nnode.protocol): continue
                                 if ((flow.src_port != nnode.src_port) and nnode.src_port):continue
                                 if ((flow.dst_port != nnode.dst_port) and nnode.dst_port):continue
@@ -488,7 +497,7 @@ class FlowDequeThread(Thread):
                                 if ((flow.next_hop != nnode.next_hop) and (nnode.next_hop and nnode.next_hop!='0.0.0.0')):continue
                                 if ((flow.src_as != nnode.src_as) and nnode.src_as):continue
                                 if ((flow.dst_as != nnode.dst_as) and nnode.dst_as):continue
-                                    
+                                
                                 if not classLst:
                                     fnode = nnode
                                 elif not fnode:
@@ -513,7 +522,8 @@ class FlowDequeThread(Thread):
                                 continue
                             
                         #construct a list
-                        flst.append(tuple(flow)); fcnt += 1                    
+                        flst.append(tuple(flow)); fcnt += 1            
+       
                         #append to databaseQueue
                         if fcnt == vars.PACKET_PACK:
                             flpack = marshal.dumps(flst)

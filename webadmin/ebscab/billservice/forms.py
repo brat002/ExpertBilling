@@ -240,12 +240,15 @@ class DocumentRenderForm(forms.Form):
 
 class TransactionReportForm(forms.Form):
 
+    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+
+
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
 
     systemuser = forms.ModelMultipleChoiceField(label=u"Администратор",queryset=SystemUser.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
     #start_date = forms.DateTimeField(label=u"Начало",required=False)
     #end_date = forms.DateTimeField(label=u"Конец",required=False)
-    daterange = DateRangeField(label=u'Диапазон дат', required=False )
     
 class ActionLogFilterForm(forms.Form):
     systemuser = forms.ModelChoiceField(queryset=SystemUser.objects.all(), required=False)
@@ -260,7 +263,9 @@ class SearchAuthLogForm(forms.Form):
     nas = forms.ModelMultipleChoiceField(label=u"Сервер доступа", queryset=Nas.objects.all(), required=False)
 
 class IpInUseLogForm(forms.Form):
-    daterange = DateRangeField(label=u'Диапазон', required=False )    
+    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
     subaccount = AutoCompleteSelectMultipleField( 'subaccount_fts', required = False)
     ippool = forms.ModelMultipleChoiceField(label=u"Пул", queryset=IPPool.objects.all(), required=False)
@@ -918,7 +923,8 @@ class OperatorForm(ModelForm):
 
 class BallanceHistoryForm(forms.Form):
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
-    daterange = DateRangeField(label=u'Диапазон дат', required=False )
+    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
 
 class PeriodicalServiceLogSearchForm(forms.Form):
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
@@ -1043,7 +1049,8 @@ class GroupStatSearchForm(forms.Form):
 
     accounts = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
     groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=u'Группы трафика', required=False)
-    daterange = DateRangeField(label=u'Диапазон', required=False )
+    date_start = forms.DateTimeField(label=u'С', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=u'По', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
 class GlobalStatSearchForm(forms.Form):
 
@@ -1054,22 +1061,27 @@ class GlobalStatSearchForm(forms.Form):
 
     
 class AccountPrepaysTraficSearchForm(forms.Form):
+    date_start = forms.DateTimeField(label=u'С', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=u'По', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     account = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
     group = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=u'Группы трафика', required=False)
     tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=u'Тарифный план')
-    daterange = DateRangeField(label=u'Диапазон', required=False )
+
     current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
     
 class AccountPrepaysRadiusTraficSearchForm(forms.Form):
+    date_start = forms.DateTimeField(label=u'С', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=u'По', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     account = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
     tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=u'Тарифный план')
-    daterange = DateRangeField(label=u'Диапазон', required=False )
     current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
     
 class AccountPrepaysTimeSearchForm(forms.Form):
+    date_start = forms.DateTimeField(label=u'С', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=u'По', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     account = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
     tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=u'Тарифный план')
-    daterange = DateRangeField(label=u'Диапазон', required=False )
+    
     current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
     
 class AccountManagementForm(forms.Form):

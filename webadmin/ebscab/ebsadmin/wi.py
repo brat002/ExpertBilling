@@ -138,13 +138,10 @@ def transactionreport2(request):
             pageitems = per_page
             sort = request.GET.get("sortpaginate=True if not request.GET.get('paginate')=='False' else False", '-created')
             account = form.cleaned_data.get('account')
-            date_start = form.cleaned_data.get('start_date')
-            date_end = form.cleaned_data.get('end_date')
+            start_date = form.cleaned_data.get('start_date')
+            end_date = form.cleaned_data.get('end_date')
             
-            if not date_end:
-                date_end = datetime.datetime(2020,1,1)
-            if not date_start:
-                date_start = datetime.datetime(1990,1,1)
+
             systemusers = form.cleaned_data.get('systemuser')
             promise = form.cleaned_data.get('promise')
             
@@ -191,11 +188,11 @@ def transactionreport2(request):
                         items = items.filter(summ__lte=0)
                     if account:
                         items = items.filter(account__id__in=account)
-                    if date_start:
-                        items = items.filter(created__gte=date_start)
-                    if date_end:
+                    if start_date:
+                        items = items.filter(created__gte=start_date)
+                    if end_date:
 
-                        items = items.filter(created__lte=date_end)
+                        items = items.filter(created__lte=end_date)
                     total_summ += float(items.aggregate(Sum("summ"))['summ__sum'] or 0)
                     res += items.values('id',  'account',  'account__username', 'summ', 'created', 'type__name', 'service__name')
 
@@ -205,11 +202,11 @@ def transactionreport2(request):
                         items = items.filter(summ__lte=0)
                     if account:
                         items = items.filter(account__id__in=account)
-                    if date_start:
-                        items = items.filter(created__gte=date_start)
-                    if date_end:
+                    if start_date:
+                        items = items.filter(created__gte=start_date)
+                    if end_date:
 
-                        items = items.filter(created__lte=date_end)
+                        items = items.filter(created__lte=end_date)
                     total_summ += float(items.aggregate(Sum("summ"))['summ__sum'] or 0)
                     res += items.values('id',  'account', 'account__username', 'summ', 'created', 'type__name', 'service__name')
 
@@ -219,11 +216,11 @@ def transactionreport2(request):
                         items = items.filter(summ__lte=0)
                     if account:
                         items = items.filter(account__id__in=account)
-                    if date_start:
-                        items = items.filter(created__gte=date_start)
-                    if date_end:
+                    if start_date:
+                        items = items.filter(created__gte=start_date)
+                    if end_date:
 
-                        items = items.filter(created__lte=date_end)
+                        items = items.filter(created__lte=end_date)
                     total_summ += float(items.aggregate(Sum("summ"))['summ__sum'] or 0)
                     res += items.values('id',  'account', 'account__username', 'summ', 'created')
                     
@@ -237,12 +234,12 @@ def transactionreport2(request):
                     if account:
 
                         items = items.filter(account__id__in=account)
-                    if date_start:
+                    if start_date:
 
-                        items = items.filter(created__gte=date_start)
-                    if date_end:
+                        items = items.filter(created__gte=start_date)
+                    if end_date:
 
-                        items = items.filter(created__lte=date_end)
+                        items = items.filter(created__lte=end_date)
                     if systemusers:
                         items = items.filter(systemuser__in=systemusers)
                     total_summ += float(items.aggregate(Sum("summ"))['summ__sum'] or 0)
@@ -506,13 +503,9 @@ def ipinusereport(request):
             ip = form.cleaned_data.get('ip')
             ippool = form.cleaned_data.get('ippool')
 
-            daterange = form.cleaned_data.get('daterange') or []
-            start_date, end_date = None, None
-            if daterange:
-                start_date = daterange[0]
-                end_date = daterange[1]
-            
-            
+            start_date = form.cleaned_data.get('start_date')
+            end_date = form.cleaned_data.get('end_date')
+
             res = IPInUse.objects.select_related().all()
             if account:
                 #print account
@@ -569,11 +562,9 @@ def ballancehistoryreport(request):
         if form.is_valid():
             
             account = form.cleaned_data.get('account')
-            daterange = form.cleaned_data.get('daterange') or []
-            start_date, end_date = None, None
-            if daterange:
-                start_date = daterange[0]
-                end_date = daterange[1]
+            start_date = form.cleaned_data.get('start_date')
+            end_date = form.cleaned_data.get('end_date')
+
             
             res = BalanceHistory.objects.all()
             if account:
