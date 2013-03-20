@@ -750,7 +750,7 @@ class Account(DynamicModel):
     Если аренды нет или она истекла, то создаётся новая и пользователю назначается новый IP адрес.
     """
     #user = models.ForeignKey(User,verbose_name=u'Системный пользователь', related_name='user_account2')
-    username = models.CharField(verbose_name=u'Имя пользователя',max_length=200,unique=True)
+    username = models.CharField(verbose_name=u'Имя пользователя',max_length=200, unique=True)
     password = EncryptedTextField(verbose_name=u'Пароль', blank=True, default='')
     fullname = models.CharField(verbose_name=u'ФИО', blank=True, default='', max_length=200)
     email = models.CharField(verbose_name=u'E-mail', blank=True, default='',max_length=200)

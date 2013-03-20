@@ -200,6 +200,12 @@ urlpatterns += patterns('ebsadmin.modules.globalstat',
     
 )
 
+urlpatterns += patterns('ebsadmin.modules.sms',
+    url(r'^sms/$', 'sms', name='sms'),
+    url(r'^sms/delete/$', 'sms_delete', name='sms_delete'),
+    
+)
+
 urlpatterns += patterns('ebsadmin.modules.manufacturer',
     url(r'^manufacturer/edit/$', 'manufacturer_edit', name='manufacturer_edit'),
     url(r'^manufacturer/$', 'manufacturer', name='manufacturer'),

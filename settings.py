@@ -127,7 +127,8 @@ INSTALLED_APPS = (
     'ajax_select',
     'ebsadmin',
     'django_tables2_reports',
-    'getpaid'
+    'getpaid',
+    'sendsms',
 )
 
 
@@ -228,9 +229,30 @@ GETPAID_BACKENDS_SETTINGS = {
 }
 
 SENDSMS_BACKENDS = (
-                    ('sendsms.backends.smspubli.SmsBackend', 'SMS Publi'),
-                    ('sendsms.backends.dummy.SmsBackend', 'Dummy'),
+                    ('sendsms.backends.websms.SmsBackend', 'websms.ru'),
+                    ('sendsms.backends.smsru.SmsBackend', 'sms.ru'),
                     )
+
+SENDSMS_BACKENDS_SETTINGS = {
+                             'sendsms.backends.websms': {
+                                                         'FROM_NAME': '', # http://websms.ru/FromName.asp
+                                                         'USERNAME': '',
+                                                         'PASSWORD': '',
+                                                         },
+                             'sendsms.backends.smsru': {
+                                                         'FROM_NAME': '', # http://websms.ru/FromName.asp
+                                                         'API_ID': '',
+                                                         'TRANSLIT': '1',
+                                                         'TEST': '0',
+                                                         'PARTNER_ID': '',
+                                                         }
+                             }
+
+SENDSMS_IF_BALLANCE_AMOUNT = 0
+SENDSMS_DEFAULT_BACKEND = 'sendsms.backends.websms.SmsBackend'
+
+SENDSMS_DEFAULT_FROM_PHONE = '+11111111111'
+
 TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
 #TEST_RUNNER = 'testrunner.NoDbTestRunner'
 
