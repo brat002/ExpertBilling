@@ -12,5 +12,5 @@ BROKER_URL = config.get("db", "kombu_dsn")
 CELERY_RESULT_BACKEND = "database"
 CELERY_RESULT_DBURI = "postgresql://%s:%s@%s/%s" % (config.get("db", "username"),config.get("db", "password"),config.get("db", "host"),config.get("db", "name"),)
 
-CELERY_IMPORTS = ("tasks",)
+CELERY_IMPORTS = ("tasks", )
 CELERY_RESULT_PERSISTENT = True

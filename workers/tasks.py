@@ -15,6 +15,7 @@ from hashlib import md5
 import binascii
 import ConfigParser
 import urllib, urllib2
+import BeautifulSoup
 config = ConfigParser.ConfigParser()
 BILLING_PATH = '/opt/ebs/data/'
 config.read(os.path.join(BILLING_PATH, "ebs_config.ini"))
@@ -687,7 +688,10 @@ class HttpBot(object):
         logger = logging
         logger.debug("%s %s" % (url, parameters))
         try:
-            return self._opener.open(url, urllib.urlencode(parameters)).read()
+            if type(parameters)==dict:
+                return self._opener.open(url, urllib.urlencode(parameters)).read()
+            else:
+                return self._opener.open(url, parameters).read()
         except urllib2.HTTPError, e:
             logger.error(e)
         except urllib2.URLError, e:
@@ -698,4 +702,38 @@ def http_get(url):
 
 @task
 def http_post(url, parameters):
-    return HttpBot().POST(url, parameters)
+    st = HttpBot().POST(url, parameters)
+
+    return st
+
+@task
+def sendsms_post(url, parameters, id=None):
+    response = HttpBot().POST(url, parameters)
+    logging.basicConfig(filename='log/workers_sendsms.log', level=logging.INFO)
+    logger = logging
+    response = BeautifulSoup.BeautifulSoup(response)
+
+    status = response.state.text
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE sendsms_message SET sended=now(), response=%s WHERE id=%s",  (status, id))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+@task
+def sendsmsru_post(url, parameters, id=None):
+    response = HttpBot().POST(url, parameters)
+    logging.basicConfig(filename='log/workers_sendsms.log', level=logging.INFO)
+    logger = logging
+    print response
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE sendsms_message SET sended=now(), response=%s WHERE id=%s",  (response, id))
+    conn.commit()
+    cur.close()
+    conn.close()
+    

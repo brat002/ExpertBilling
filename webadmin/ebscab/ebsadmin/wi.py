@@ -980,7 +980,7 @@ def accounthardware(request):
     account = None
     account_id = request.POST.get("account_id")
     id = request.POST.get("id")
-    
+    item = None
     if request.method == 'POST': 
 
         form = AccountHardwareForm(request.POST) 
@@ -999,7 +999,8 @@ def accounthardware(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"), model.account.id))
+            messages.success(request, u'Оборудование успешно добавлено.', extra_tags='alert-success')
+            return {'form':form,  'status': True} 
         else:
 
             return {'form':form,  'status': False} 
@@ -1011,14 +1012,14 @@ def accounthardware(request):
             return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"),account_id))
         
         if id:
-            accounttariff = AccountHardware.objects.get(id=id)
-            form = AccountHardwareForm(instance=accounttariff)
+            item = AccountHardware.objects.get(id=id)
+            form = AccountHardwareForm(instance=item)
         elif account_id:
             
             account= Account.objects.get(id=account_id)
             form = AccountHardwareForm(initial={'account': account, 'datetime': datetime.datetime.now()}) # An unbound form
 
-    return { 'form':form, 'status': False, 'account':account} 
+    return { 'form':form, 'status': False, 'account':account, 'item': item} 
 
 @systemuser_required
 @render_to('ebsadmin/suspendedperiod_edit.html')
