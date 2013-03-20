@@ -96,6 +96,7 @@ class AccountHardwareTable(django_tables.Table):
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     class Meta:
         model = AccountHardware
+        fields = ('id', 'hardware','datetime', 'returned', 'comment')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
 class AccountAddonServiceTable(django_tables.Table):
