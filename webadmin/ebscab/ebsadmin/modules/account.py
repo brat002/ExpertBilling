@@ -198,8 +198,11 @@ def sendsms(request):
             backend = form.cleaned_data.get('backend')
 
             for acc in accounts:
-                if not acc.phone_m: continue 
+                if not acc.phone_m: continue
+                acc.ballance = '%.2f' % acc.ballance 
                 item = Message()
+                item.account = acc
+                item.backend = backend
                 item.to = acc.phone_m
                 item.body = body
                 item.publish_date = publish_date

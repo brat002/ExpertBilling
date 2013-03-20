@@ -732,6 +732,8 @@ class AccountHardwareForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.widgets.HiddenInput)
     hardware = AutoCompleteSelectField( 'hardware_fts', label = u"Устройство", required = True, widget = forms.TextInput(attrs={'class': 'input-xlarge'}), help_text=u"Поиск устройства по всем полям")
+    
+    comment = forms.CharField(label=u'Комментарий', required=False, widget=forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span6'}))
     class Meta:
         model = AccountHardware
      
@@ -1110,7 +1112,16 @@ class PaymentForm(ModelForm):
     class Meta:
         model = Payment
         
-        
+class SearchSmsForm(forms.Form):
+    from sendsms.utils import get_backend_choices
+    bc = get_backend_choices()
+    accounts = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
+    phone = forms.CharField(label=u'Телефон', required = False, widget = forms.TextInput)
+    backend = forms.ChoiceField(label=u'Оператор', choices = bc, initial = bc[0][0] if bc else '', required=False)
+    publish_date = forms.DateTimeField(label=u'Опубликовать', help_text = u'Когда должно быть отослано сообщение', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    sended_from = forms.DateTimeField(label=u'Отправлено с', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    sended_to = forms.DateTimeField(label=u'Отправлено по', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    
 class SendSmsForm(forms.Form):
     from sendsms.utils import get_backend_choices
     bc = get_backend_choices()
@@ -1125,4 +1136,4 @@ class DynamicSchemaFieldForm(forms.ModelForm):
     
     class Meta:
         model = DynamicSchemaField
-        
+

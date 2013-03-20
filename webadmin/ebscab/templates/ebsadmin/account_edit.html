@@ -24,6 +24,18 @@
         	})
         	});
         
+        $("#modal-sendsms-dialog-table").click(function(event) {
+
+
+            $('<div/>').dialog2({
+                title: "Отправить SMS", 
+                content: this.href+'?accounts={{account.id}}', 
+                id: "server-notice"
+            });
+
+            event.preventDefault(event);
+        });
+        
         //$('#generate_password').popover({title:'Действие над аккаунтом', content: 'Сгенерировать пароль'});
         $('#id_organization').click(function() {
         	if ($('#id_organization').is(':checked')){
@@ -321,7 +333,17 @@
       <div class="btn-group">
         <a href='{% url news_edit %}?accounts={{account.id}}&private=True' class="btn" id='id_account-toolbar-save'><i class='cus-newspaper'></i> Сообшение</a>
       </div>
-      
+       <div class="btn-group">
+        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+          SMS <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+               <li><a href="{% url sendsms %}"  id="modal-sendsms-dialog-table">Отправить SMS</a></li>
+              <li><a href="{% url sms %}?accounts={{account.id}}">Отправленные SMS</a></li>
+
+        </ul>
+      </div>
+
     {% endif %}
   </div>
 </div>
