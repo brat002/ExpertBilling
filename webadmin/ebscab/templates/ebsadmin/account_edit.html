@@ -112,8 +112,17 @@
                 event.preventDefault();
             });
 
-            
+            $("#modal-accounthardware-dialog-table").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Прикрепить подключаемую услугу", 
+                    content: "{% url accounthardware %}?account_id={{account.id}}", 
+                    id: "accounthardware-modal"
+                });
 
+                event.preventDefault();
+            });
+
+            		
             $("#modal-accountaddonservice-dialog").click(function(event) {
                 $('<div />').dialog2({
                     title: "Прикрепить подключаемую услугу", 
@@ -138,7 +147,7 @@
             $(function() {
                 $(".open-custom-dialog").click(function(event) {
                     $('<div />').dialog2({
-                        title: "Прикрепить подключаемую услугу", 
+                        title: "Добавить", 
                         content: this.href, 
                         id: "accountaddonservicer-modal"
                     });
@@ -1187,7 +1196,7 @@
                         <fieldset>
                             <legend>Взятое в аренду оборудование</legend>
                             {% if accounthardware_table %}{% render_table accounthardware_table %}{% endif %}
-                            <a href="{% url accounthardware %}?account_id={{account.id}}" id="modal-accounthardware-dialog-table" class="btn btn-success  align-right">Добавить</a>
+                            <input type="button"  id="modal-accounthardware-dialog-table" class="btn btn-success  align-right" value="Добавить">
                         </fieldset>
 
                         <fieldset>
