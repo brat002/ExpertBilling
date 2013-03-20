@@ -22,6 +22,7 @@ from django.utils.safestring import mark_safe
 from django.utils.html import escape
 from ebsadmin.models import TableSettings
 from getpaid.models import Payment
+from sendsms.models import Message
 
 from helpdesk.models import Ticket
 import itertools
@@ -938,4 +939,17 @@ class DynamicSchemaFieldTable(TableReport):
         model = DynamicSchemaField
         #fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}   
+
+class MessageTable(TableReport):
+    #id = django_tables.LinkColumn('sessage_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
+    account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    class Meta:
+        model = Message
+        #fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
 
