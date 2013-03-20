@@ -1,83 +1,33 @@
-{% extends "ebsadmin/base.html" %}
 {% load ebsadmin_tags %}
+{% load crispy_forms_tags %}
 {% block extra_head %}
-
  <script type="text/javascript"> 
  $(document).ready(function() {
-
  });
  </script>
+ 
+<script src="/media/jquery/js/jquery-1.8.2.js"></script>
+<script type="text/javascript" src="/media/jquery/js/jquery-ui-1.9.1.custom.min.js"></script>
 {% endblock %}
 {% block body %}
 {% if not status %}
-{{message}}
-                <form action='{% url accounthardware %}?_id={{item.id}}' method="POST" class="well form-horizontal  form-condensed  ajax">
-                {{ form.account }}
-                <fieldset>
-                  <div class="control-group">
-                      <label class="control-label">{{form.hardware.label}}: </label>
-                      <div class="controls">
-                      {{ form.hardware }}
-                      {% if form.hardware.errors %}
-                          <span class="help-inline">{% for error in form.hardware.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.hardware.help_text%}
-                          <p class="help-block">
-                              {{ form.hardware.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  <div class="control-group">
+    {% for message in messages %}
 
-                      <label class="control-label">{{form.datetime.label}}:</label>
-                      <div class="controls">
-                      {{ form.datetime }}
-                      {% if form.datetime.errors %}
-                          <span class="help-inline">{% for error in form.datetime.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.datetime.help_text%}
-                          <p class="help-block">
-                              {{ form.datetime.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  <div class="control-group">
-                      <label class="control-label">{{form.returned.label}}:</label>
-                      <div class="controls">
-                      {{ form.returned }}
-                      {% if form.returned.errors %}
-                          <span class="help-inline">{% for error in form.returned.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.returned.help_text%}
-                          <p class="help-block">
-                              {{ form.returned.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
 
-                  <div class="control-group">
-                      <label class="control-label">{{form.comment.label}}: </label>
-                      <div class="controls">
-                      {{ form.comment }}
-                      {% if form.comment.errors %}
-                          <span class="help-inline">{% for error in form.comment.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.comment.help_text%}
-                          <p class="help-block">
-                              {{ form.comment.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                </fieldset>
+      {% endfor %}
+{% if form %}
+                <form action='{% url accounthardware %}?id={{item.id}}&account_id={{account.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
+                {{form|crispy}}
                 <div class="form-actions">
-				    <input type='submit' class="btn btn-primary" value="Save Changes">
-				    <a class="btn close-dialog" href="#">Close</a>
-				</div>
+                    <input type='submit' class="btn btn-primary" value="Save Changes">
+                    <a class="btn close-dialog" href="#">Close</a>
+                </div>
                 </form>
+{% endif %}
 {% else %}
 Операция произведена успешно.
  <script type="text/javascript"> 

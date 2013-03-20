@@ -92,7 +92,7 @@ class SubAccountsTable(django_tables.Table):
 
 
 class AccountHardwareTable(django_tables.Table):
-
+    id = django_tables.LinkColumn('accounthardware', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     class Meta:
         model = AccountHardware

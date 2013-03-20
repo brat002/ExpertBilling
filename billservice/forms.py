@@ -733,7 +733,7 @@ class AccountHardwareForm(ModelForm):
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.widgets.HiddenInput)
     hardware = AutoCompleteSelectField( 'hardware_fts', label = u"Устройство", required = True, widget = forms.TextInput(attrs={'class': 'input-xlarge'}), help_text=u"Поиск устройства по всем полям")
     
-    comment = forms.CharField(label=u'Комментарий', required=False, widget=forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span6'}))
+    comment = forms.CharField(label=u'Комментарий', required=False, widget=forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span5'}))
     class Meta:
         model = AccountHardware
      
