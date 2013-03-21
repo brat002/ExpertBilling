@@ -65,7 +65,7 @@ class PaymentProcessor(PaymentProcessorBase):
     _ALLOWED_IP = ('93.183.196.28', '93.183.196.26')
     
     @staticmethod
-    def check_allowed_ip(ip, body):
+    def check_allowed_ip(ip, request, body):
         allowed_ip = PaymentProcessor.get_backend_setting('allowed_ip', PaymentProcessor._ALLOWED_IP)
 
         if len(allowed_ip) != 0 and ip not in allowed_ip:
@@ -108,7 +108,9 @@ class PaymentProcessor(PaymentProcessorBase):
             return PaymentProcessor.error(body, u'Аккаунт не найден')
         
         service_id = body.request.check.serviceId
-        PaymentProcessor.check_service_id(body, service_id)
+        res = PaymentProcessor.check_service_id(body, service_id)
+        if res is not None:
+            return res
         dt = datetime.datetime.now()
         ret = SUCCESS_CHECK_TEMPLATE % {
                                          'STATUS': TransactionStatus.OK,
@@ -136,7 +138,9 @@ class PaymentProcessor(PaymentProcessorBase):
         amount = float(body.request.payment.amount.text)
         orderid = body.request.payment.orderid.text
         service_id = body.request.payment.serviceId
-        PaymentProcessor.check_service_id(body, service_id)
+        res = PaymentProcessor.check_service_id(body, service_id)
+        if res is not None:
+            return res
         
         try:
             account = Account.objects.get(contract = acc)
