@@ -20,6 +20,8 @@ import binascii
 from copy import deepcopy
 import urllib2
 from xml_helper import xml2obj
+import IPy
+import time
 
 params={
 'create_invoice':u"""<?xml version="1.0" encoding="utf-8"?>
@@ -36,8 +38,7 @@ params={
     <extra name="ltime">%(LIFETIME)s</extra>
     <extra name="comment">%(COMMENT)s</extra>
     <extra name="create-agt">1</extra>
-</request>
-""",
+</request>""",
 'get_invoices_status':u"""<?xml version="1.0" encoding="utf-8"?>
 <request>
     <protocol-version>4.00</protocol-version>
@@ -47,8 +48,7 @@ params={
     <bills-list>
     %(BILLS)s
     </bills-list>
-</request>
-""",
+</request>""",
 'get_invoices':u"""<?xml version="1.0" encoding="utf-8"?>
 <request>
     <protocol-version>4.00</protocol-version>
@@ -58,8 +58,23 @@ params={
     <extra name="dir">0</extra>
     <extra name="from">%s 00:00:00</extra>
     <extra name="to">%s 23:59:59</extra>
-</request>
-"""
+</request>""",
+
+'response': u"""<?xml version="1.0" encoding="UTF-8"?>
+<response>
+<osmp_txn_id>%(TXN_ID)s</osmp_txn_id>
+<prv_txn>%(PRV_TXN)s</prv_txn>
+<sum>%(SUM)s</sum>
+<result>%(RESULT)s</result>
+<comment>%(COMMENT)s</comment>
+</response>""",
+
+'response_error': u"""<?xml version="1.0" encoding="UTF-8"?>
+<response>
+<osmp_txn_id>%(TXN_ID)s</osmp_txn_id>
+<result>%(RESULT)s</result>
+<comment>%(COMMENT)s</comment>
+</response>"""
 }
 
 result_codes={'-1':u'Произошла ошибка. Проверьте номер телефона и пароль',
@@ -92,7 +107,18 @@ payment_codes={
 '161':u'Отменен (Истекло время)',
 }
 
-        
+term_codes = {
+0: u'ОК',
+1: u'Временная ошибка. Повторите запрос позже',
+4: u'Неверный формат идентификатора Клиента',
+5: u'Идентификатор Клиента не найден (Ошиблись номером)',
+7: u'Прием Платежа запрещен Поставщиком',
+90: u'Проведение Платежа не окончено',
+241: u'Сумма слишком мала',
+242: u'Сумма слишком велика',
+300: u'Другая ошибка Поставщика',
+}
+   
 def status_code(obj):
     if obj.result_code.data=='0':
         return int(obj.result_code.data), result_codes[obj.result_code.data]
@@ -116,8 +142,18 @@ class PaymentProcessor(PaymentProcessorBase):
     LIFETIME = 48
     ALARM_SMS = 0
     ACCEPT_CALL = 0
-
+    MIN_SUM=0
+    _ALLOWED_IP = '79.142.16.0/20', 
     
+    
+    @staticmethod
+    def check_allowed_ip(ip, request, body):
+        allowed_ip = PaymentProcessor.get_backend_setting('allowed_ip', PaymentProcessor._ALLOWED_IP)
+
+        if len(allowed_ip) != 0 and IPy.IP(ip) not in IPy.IP(allowed_ip):
+
+            return  u'Unknown IP'
+        return 'OK'
     
     @staticmethod
     def form():
@@ -169,7 +205,16 @@ class PaymentProcessor(PaymentProcessorBase):
         
         return payment_url, "GET", {}
     
+    @staticmethod
+    def error(txn_id, code):
         
+        
+        dt = datetime.datetime.now()
+        return  params['response_error'] % {
+                                  'TXN_ID': txn_id,
+                                  'RESULT': code,
+                                  'COMMENT': term_codes[code]
+                                  }
     
     @staticmethod
     def compute_sig(params):
@@ -250,5 +295,71 @@ class PaymentProcessor(PaymentProcessorBase):
             return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=Ошибка обработки платежа'
     
 
-    
 
+    
+    @staticmethod
+    def check(request):
+        txn_id = request.GET.get('txn_id')
+        amount = float(request.GET.get('sum'))
+        #txn_date = datetime.datetime(*time.strptime(request.GET.get('txn_date'), "%Y%m%d%H%M%S")[0:5])
+        acc = request.GET.get('account')
+
+
+        from getpaid.models import Payment
+        try:
+            account = Account.objects.get(contract = acc)
+        except Account.DoesNotExist, ex:
+            return PaymentProcessor.error(txn_id, 5)
+        
+        dt = datetime.datetime.now()
+        if amount<PaymentProcessor.get_backend_setting('MIN_SUM', PaymentProcessor.MIN_SUM):
+            return PaymentProcessor.error(txn_id, 241)
+
+
+        return params['response_error'] %  {
+                                         'TXN_ID': txn_id,
+                                         'RESULT': 0,
+                                         'COMMENT': term_codes[0],
+                                         }
+        return ret
+
+
+    @staticmethod
+    def pay(request):
+        txn_id = request.GET.get('txn_id')
+        amount = float(request.GET.get('sum'))
+        txn_date = datetime.datetime(*time.strptime(request.GET.get('txn_date'), "%Y%m%d%H%M%S")[0:5])
+        acc = request.GET.get('account')
+
+
+        from getpaid.models import Payment
+        try:
+            account = Account.objects.get(contract = acc)
+        except Account.DoesNotExist, ex:
+            return PaymentProcessor.error(txn_id, 5)
+        
+        dt = datetime.datetime.now()
+        if amount<PaymentProcessor.get_backend_setting('MIN_SUM', PaymentProcessor.MIN_SUM):
+            return PaymentProcessor.error(txn_id, 241)
+
+
+        
+        try:
+            payment = Payment.objects.get(backend=PaymentProcessor.BACKEND, external_id = txn_id )
+        except:
+            payment = Payment.create(account, None,   PaymentProcessor.BACKEND, amount = amount, external_id=txn_id)
+        
+        
+        payment.on_success(amount=amount)
+        payment.paid_on = txn_date
+        payment.save()
+            
+        return params['response'] %  {
+                                         'TXN_ID': txn_id,
+                                         'PRV_TXN': payment.id,
+                                         'SUM': '%.2f' % payment.amount,
+                                         'RESULT': 0,
+                                         'COMMENT': term_codes[0],
+                                         }
+
+    
