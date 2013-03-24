@@ -1,11 +1,4 @@
-"""
-Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
-
-(c) Copyright 2008 Jutda. All Rights Reserved. See LICENSE for details.
-
-models.py - Model (and hence database) definitions. This is the core of the
-            helpdesk structure.
-"""
+# -*- coding=utf-8 -*-
 
 from datetime import datetime
 
@@ -272,7 +265,7 @@ class Ticket(models.Model):
     owner = models.ForeignKey(User, related_name='submitted_by', null=False, blank=False, \
                                   verbose_name=_(u'Owner'))
     notify_owner = models.BooleanField(blank=True, default=True,verbose_name=_(u'Notify owner'),help_text=_('Notify owner of ticket for changes'))
-    assigned_to = models.ForeignKey(User,related_name='assigned_to',blank=True,null=True)
+    assigned_to = models.ForeignKey(User, verbose_name=u'Назначено на', related_name='assigned_to',blank=True,null=True)
     created = models.DateTimeField(_(u'Created'), blank=True, \
                                    help_text=_('Date this ticket was first created'),)
     modified = models.DateTimeField(_(u'Modified'), blank=True, \

@@ -27,9 +27,13 @@ from helpdesk.lib import send_templated_mail, line_chart, bar_chart, query_to_di
 from helpdesk.models import Ticket, Queue, FollowUp, TicketChange, PreSetReply, Attachment, SavedSearch, IgnoreEmail, TicketCC
 from helpdesk.settings import HAS_TAG_SUPPORT
   
+from django_tables2_reports.config import RequestConfigReport as RequestConfig
+from django_tables2_reports.utils import create_report_http_response
+
 if HAS_TAG_SUPPORT:
     from tagging.models import Tag, TaggedItem
 
+from helpdesk.tables import TicketTable, UnassignedTicketTable
 staff_member_required = user_passes_test(lambda u: u.is_authenticated() and u.is_active and u.is_staff)
 superuser_required = user_passes_test(lambda u: u.is_authenticated() and u.is_active and u.is_superuser)
 
@@ -48,12 +52,22 @@ def dashboard(request):
             status=Ticket.CLOSED_STATUS,
         )
 
+    ticket_table = TicketTable(tickets)
+    table_to_report = RequestConfig(request, paginate=False ).configure(ticket_table)
+    if table_to_report:
+        return create_report_http_response(table_to_report, request)
+            
     unassigned_tickets = Ticket.objects.filter(
             assigned_to__isnull=True,
         ).exclude(
             status=Ticket.CLOSED_STATUS,
         )
 
+    
+    unassigned_ticket_table = UnassignedTicketTable(tickets)
+    table_to_report = RequestConfig(request, paginate=False ).configure(unassigned_ticket_table)
+    if table_to_report:
+        return create_report_http_response(table_to_report, request)
     # The following query builds a grid of queues & ticket statuses,
     # to be displayed to the user. EG:
     #          Open  Resolved
@@ -79,6 +93,8 @@ def dashboard(request):
             'user_tickets': tickets,
             'unassigned_tickets': unassigned_tickets,
             'dash_tickets': dash_tickets,
+            'ticket_table': ticket_table,
+            'unassigned_ticket_table': unassigned_ticket_table
         }))
 dashboard = staff_member_required(dashboard)
 
@@ -638,6 +654,8 @@ def create_ticket(request):
         form.fields['queue'].choices = [('', '--------')] + [[q.id, q.title] for q in Queue.objects.all()]
         form.fields['assigned_to'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
         form.fields['owner'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
+        
+        
         if form.is_valid():
             ticket = form.save(user=request.user)
             return HttpResponseRedirect(ticket.get_absolute_url())
@@ -650,7 +668,9 @@ def create_ticket(request):
         form.fields['queue'].choices = [('', '--------')] + [[q.id, q.title] for q in Queue.objects.all()]
         form.fields['assigned_to'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
         form.fields['owner'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
-
+        form.fields['assigned_to'].initial = request.user
+        form.fields['owner'].initial = request.user
+        
     return render_to_response('helpdesk/create_ticket.html',
         RequestContext(request, {
             'form': form,

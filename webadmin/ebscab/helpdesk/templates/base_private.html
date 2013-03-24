@@ -1,7 +1,9 @@
-{% extends 'helpdesk_base.html' %}
+{% extends 'ebsadmin/base.html' %}
 {% load account_menu %}
 
 
+
+{% block base %}
 {% block login %}
     {% if request.user.is_staff %}
         {% staff_menu %}
@@ -9,7 +11,6 @@
         {% account_menu %}
     {% endif %}
 {% endblock %}
-{% block base %}
 {{ block.super }}
     <div id="main">
 

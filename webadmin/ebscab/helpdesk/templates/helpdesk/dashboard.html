@@ -1,12 +1,13 @@
 {% extends "helpdesk/base.html" %}{% load i18n %}
+ {% load render_table from django_tables2 %}
 {% block helpdesk_title %}{% trans "Helpdesk Dashboard" %}{% endblock %}
 {% block helpdesk_head %}
 
 {% endblock %}
 {% load billservice_tags %}
 {% block helpdesk_body %}
-<table width='40%'  class="statistic_table extra_table">
-<tr  class="white bold s-11 blue_caption"><td colspan='4'><div class="f-left statistics_title">{% trans "Helpdesk Summary" %}</div></td></tr>
+<legend>{% trans "Helpdesk Summary" %}</legend>
+<table width='40%'  class="table table-striped table-bordered table-condensed">
 <tr><th>{% trans "Queue" %}</th><th>{% trans "Open" %}</th><th>{% trans "Resolved" %}</th></tr>
 {% for queue in dash_tickets %}
 <tr>
@@ -17,45 +18,23 @@
 {% endfor %}
 </table>
 
-<table class="wide statistic_table extra_table">
-<tr class="white bold s-11 blue_caption"><td colspan='7'><div class="f-left statistics_title">{% trans "Your Tickets" %}</div></td></tr>
-<tr ><th>#</th><th>{% trans "Pr" %}</th><th>{% trans "Title" %}</th><th>{% trans "Queue" %}</th><th>{% trans "Owner" %}</th><th>{% trans "Status" %}</th><th>{% trans "Last update" %}</th></tr>
-{% for ticket in user_tickets %}
-<tr class='row_{% cycle odd,even %} row_hover'>
-<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.ticket }}</a></th>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.get_priority_span }}</td>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.title }}</a></th>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.queue }}</td>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.owner }}</td>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.get_status }}</td>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><span title='{{ ticket.modified|date:"r" }}'>{{ ticket.modified|date:"d.m.Y H:i" }}</span></td>
-</tr>
-{% endfor %}
-{% if not user_tickets %}
-<tr class='row_odd'><td colspan='5'>{% trans "You have no tickets assigned to you." %}</td></tr>
+{% if ticket_table %}
+<legend>{% trans "Your Tickets" %}</legend>
+{% render_table ticket_table %}
 {% endif %}
-</table>
 
-<table class="wide statistic_table extra_table">
-<tr class="white bold s-11 blue_caption"><td colspan='7'><div class="f-left statistics_title">{% trans "Unassigned Tickets" %}</td></tr>
-<tr><th>#</th><th>{% trans "Pr" %}</th><th>{% trans "Title" %}</th><th>{% trans "Queue" %}</th><th>{% trans "Owner" %}</th><th>{% trans "Created" %}</th><th>&nbsp;</th></tr>
-{% for ticket in unassigned_tickets %}
-<tr class='row_{% cycle odd,even %} row_hover'>
-<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.ticket }}</a></th>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.get_priority_span }}</td>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.title }}</a></th>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.queue }}</td>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.owner }}</td>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><span title='{{ ticket.created|date:"r" }}'>{{ ticket.created|date:"d.m.Y H:i" }}</span></td>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a class="accept_link" href='{{ ticket.get_absolute_url }}?take'>
-      {% trans "Take" %}</a> <br /> 
-    <a class="delete_link" href='{% url helpdesk_delete ticket.id %}'>
-      {% trans "Delete" %}</a></td>
-</tr>
-{% endfor %}
-{% if not unassigned_tickets %}
-<tr class='row_odd'><td colspan='6'>{% trans "There are no unassigned tickets." %}</td></tr>
+{% if not ticket_table %}
+<h3>{% trans "You have no tickets assigned to you." %}</h3>
 {% endif %}
-</table>
+
+{% if unassigned_ticket_table %}
+<legend>{% trans "Unassigned Tickets" %}</legend>
+{% render_table unassigned_ticket_table %}
+{% endif %}
+
+{% if not unassigned_ticket_table %}
+<h3>{% trans "There are no unassigned tickets." %}</h3>
+{% endif %}
+
 
 {% endblock %}

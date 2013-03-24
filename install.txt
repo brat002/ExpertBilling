@@ -29,8 +29,30 @@ $exit
 При апгрейде  нужно выполнить
 #fab upgrade:demo.tar.gz
 
-При апгрейде с версии 1.4.1 нужно выполнить
+1. Установить postgresql-9.1 postgresql-contrib-9.1. 
+2. Выполнить дамп базы данных с биллингом с помощью pg_dump
+
+#su postgres
+#pg_dump ebs >/tmp/ebs.dump
+#exit
+#cp /tmp/ebs.dump /opt/ebs.dump
+
+3. Удалить postgresql-8.4.
+#apt-get remove postgresql-8.4
+
+4. Настроить postgresql-9.1 на запуск на порту 5432 (/etc/postgres/9.1/main/postgresql.conf). 
+5. Перезапустить postgresql, 
+6. Создать БД ebs с пользователем ebs
+#createuser -s -P ebs
+#createdb -O ebs ebs
+
+7. Импортировать в созданную базу дамп:
+#su postgres
+#psql ebs -f /opt/ebs.dump
+
+8. Запустить апгрейд:
 #fab upgrade_14:demo.tar.gz
+
 
 
 После установки откройте файл /opt/ebs/web/ebscab/settings_local.py и переопределите в нём значения из файла /opt/ebs/web/ebscab/settings.py. Этот файл не будет перезатираться при обновлениях.

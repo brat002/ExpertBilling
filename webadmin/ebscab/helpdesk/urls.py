@@ -161,24 +161,24 @@ urlpatterns += patterns('helpdesk.views.kb',
         'vote', name='helpdesk_kb_vote'),
 )
 
-urlpatterns += patterns('',
-    url(r'^api/$',
-        'django.views.generic.simple.direct_to_template',
-        {'template': 'helpdesk/help_api.html',},
-        name='helpdesk_api_help'),
+#urlpatterns += patterns('',
+#    url(r'^api/$',
+#        'django.views.generic.simple.direct_to_template',
+#        {'template': 'helpdesk/help_api.html',},
+#        name='helpdesk_api_help'),
     
-    url(r'^help/context/$',
-        'django.views.generic.simple.direct_to_template',
-        {'template': 'helpdesk/help_context.html',},
-        name='helpdesk_help_context'),
-    
-    url(r'^system_settings/$',
-        'django.views.generic.simple.direct_to_template',
-        {
-            'template': 'helpdesk/system_settings.html',
-            'extra_context': {
-                'ADMIN_URL': getattr(settings, 'ADMIN_URL', '/admin/'),
-            },
-        },
-        name='helpdesk_system_settings'),
-)
+#    url(r'^help/context/$',
+#        'django.views.generic.simple.direct_to_template',
+#        {'template': 'helpdesk/help_context.html',},
+#        name='helpdesk_help_context'),
+#    
+#    url(r'^system_settings/$',
+#        'django.views.generic.simple.direct_to_template',
+#        {
+#            'template': 'helpdesk/system_settings.html',
+#            'extra_context': {
+#                'ADMIN_URL': getattr(settings, 'ADMIN_URL', '/admin/'),
+#            },
+#        },
+#        name='helpdesk_system_settings'),
+#)

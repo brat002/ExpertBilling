@@ -1,5 +1,12 @@
 {% extends "helpdesk/base.html" %}{% load i18n %}
-{% block extrahead %}
+{% load django_select2_tags %}
+{% load crispy_forms_tags %}
+{% block extra_head %}
+<link href="/media/select2/css/select2.css" type="text/css" media="screen" rel="stylesheet">
+<link href="/media/select2/css/extra.css" type="text/css" media="screen" rel="stylesheet">
+<script type="text/javascript" src="/media/select2/js/select2.js"></script>
+<script type="text/javascript" src="/media/select2/js/heavy_data.js"></script>
+
     {{ block.super }}
     <style>
         #id_title, #id_tags, textarea {
@@ -13,21 +20,22 @@
 {% blocktrans %}<h2>Submit a Ticket</h2>
 
 <p>Unless otherwise stated, all fields are required. Please provide as descriptive a title and description as possible.</p>{% endblocktrans %}
-<form method='post' action='./' enctype='multipart/form-data'>
-<fieldset>
-    <dl>
-        {% for field in form %}
-            {% if field.is_hidden %}
-                {{ field }}
-            {% else %}
-                <dt><label for='id_{{ field.name }}'>{{ field.label }}</label>{% if not field.field.required %} <span class='form_optional'>{% trans "(Optional)" %}</span>{% endif %}</dt>
-                <dd>{{ field }}</dd>
-                {% if field.errors %}<dd class='error'>{{ field.errors }}</dd>{% endif %}
-                {% if field.help_text %}<dd class='help'>{{ field.help_text }}</dd>{% endif %}</label>
-            {% endif %}
-        {% endfor %}
-    </dl>
+<div class="navbar navbar-googlenav">
+  <div class="navbar-inner">
+    <div class="btn-toolbar">
+      <div class="btn-group">
+        <a href="#" class="btn btn-danger" id='id_account-toolbar-save'>Сохранить</a>
+      </div>
 
+      </div>
+
+
+  </div>
+</div>
+</div>
+<form method='post' action='./' enctype='multipart/form-data' class="well form-horizontal  form-condensed">
+{{form|crispy}}
+<fieldset>
     <div class='buttons'>
         <input type='submit' value='{% trans "Submit Ticket" %}' />
     </div>
