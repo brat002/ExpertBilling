@@ -129,6 +129,7 @@ INSTALLED_APPS = (
     'django_tables2_reports',
     'getpaid',
     'sendsms',
+    'django_select2',
 )
 
 
