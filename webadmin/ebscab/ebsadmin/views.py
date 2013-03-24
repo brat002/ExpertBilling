@@ -4710,9 +4710,10 @@ def getipfrompool(request):
         if x not in ipinuse_list and x!=default_ip:
             if not term or term and str(IPy.IP(x, ipversion = ipversion)).rfind(term)!=-1:
                 res.append(str(IPy.IP(x, ipversion = ipversion)))
+            if len(res)==limit: break
             i+=1
         x+=1
-    return {'totalCount':str(len(res)),'records':res[start:start+limit], 'status':True}
+    return {'totalCount':str(len(res)),'records':res, 'status':True}
 
 @ajax_request
 @systemuser_required

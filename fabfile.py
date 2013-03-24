@@ -55,7 +55,7 @@ def virtualenv():
         
 def congratulations():
     print("*"*80)
-    print(green("CONGRATULATIONS!!! Your ExpertBilling 1.5 was sucefully installed!"))
+    print(green("CONGRATULATIONS!!! Your ExpertBilling 1.5 was succesfully installed!"))
     print(" Now you ExpertBilling include next new daemons in your system:")
     print(""" * core (/etc/init.d/ebs_core) - ExpertBilling core
  * nf (/etc/init.d/ebs_nf) - NetFlow collector
