@@ -96,7 +96,7 @@ def activate_pay_card(account_id, serial, card_id, pin):
                 transaction.type = TransactionType.objects.get(internal_name='PAY_CARD')
                 
                 transaction.approved = True
-                transaction.summ=card.nomina
+                transaction.summ=card.nominal
                 transaction.created=now
                 transaction.save()            
                 
