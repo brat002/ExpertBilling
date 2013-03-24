@@ -1,19 +1,9 @@
-<div id="top-menu">
-    {% for item in menu %}
-        <div class="attention top-menu-item{% if item.is_current %} selected{% endif %}{% if forloop.last %} last{% endif %}">
-        {% comment %}
-        {% if item.is_current %}
-            <div class="wrapper1">
-                <div class="wrapper2">
-        {% endif %}
-        {% endcomment %}
-                    <a href="{{ item.url }}">{{ item.verbose_name|safe }}</a>
-        {% comment %}
-        {% if item.is_current %}
-                </div>
-            </div>
-        {% endif %}
-        {% endcomment %}
-        </div>
-    {% endfor %}
+<div style='height:40px;'>
+<ul class="nav nav-tabs nav-tabs-google">
+{% for item in menu %}
+  <li {% if item.is_current %} class="active"{% endif %}>
+    <a href="{{ item.url }}">{{ item.verbose_name|safe }}</a>
+  </li>
+{% endfor %}
+</ul>
 </div>

@@ -4676,7 +4676,7 @@ def getipfrompool(request):
     #pool = IPPool.objects.all()[0]
     ipinuse = IPInUse.objects.filter(pool=pool, disabled__isnull=True)
     
-    accounts_ip = SubAccount.objects.values_list('ipn_ip_address', 'vpn_ip_address')
+    accounts_ip = SubAccount.objects.values_list('ipn_ip_address', 'vpn_ip_address', 'vpn_ipv6_ip_address')
     if term:
         ipinuse = ipinuse.filter(ip__contains=term)
     #accounts_ip = connection.sql("SELECT ipn_ip_address, vpn_ip_address FROM billservice_subaccount")
@@ -4688,6 +4688,9 @@ def getipfrompool(request):
             accounts_used_ip.append(IPy.IP(accip[0]).int())
         if accip[1]:
             accounts_used_ip.append(IPy.IP(accip[1]).int())
+        if accip[2]:
+            accounts_used_ip.append(IPy.IP(accip[2]).int())
+
 
 
     start_pool_ip = IPy.IP(pool.start_ip).int()

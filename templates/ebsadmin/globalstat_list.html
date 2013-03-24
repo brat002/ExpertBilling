@@ -16,7 +16,7 @@
         </script>
 
 {% endblock %}
-{% block body %}
+{% block base %}
 <legend>Монитор активности(NetFlow) {% if form.start_date.value %}{{form.start_date.value}}{% else %}{% endif %}-{% if form.end_date.value %}{{form.end_date.value}}{% else %}по текущий момент{% endif %}</legend>
 <ul class="nav nav-tabs" id="tab-control">
   <li ><a href="#filter">Фильтр</a></li>

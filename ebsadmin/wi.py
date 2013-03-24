@@ -525,7 +525,7 @@ def ipinusereport(request):
                 elif 'dynamic' in types:
                     res = res.filter(dynamic=True)
 
-            
+
             if start_date:
                 res = res.filter(datetime__gte=start_date)
             if end_date:
@@ -538,8 +538,7 @@ def ipinusereport(request):
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
-            
-            
+
             return {"table": table,  'form':form, 'resultTab':True}   
     
         else:
@@ -565,7 +564,6 @@ def ballancehistoryreport(request):
             start_date = form.cleaned_data.get('start_date')
             end_date = form.cleaned_data.get('end_date')
 
-            
             res = BalanceHistory.objects.all()
             if account:
                 res = res.filter(account__in=account)
@@ -814,6 +812,7 @@ def subaccountedit(request):
             form = SubAccountForm(request.POST)
         
         vpn_ipinuse=subaccount.vpn_ipinuse if subaccount else None
+        vpn_ipv6_ipinuse=subaccount.vpn_ipv6_ipinuse if subaccount else None
         ipn_ipinuse=subaccount.ipn_ipinuse if subaccount else None
         if form.is_valid():
             username = form.cleaned_data.get("username")
@@ -822,6 +821,9 @@ def subaccountedit(request):
             ipn_ip_address = form.cleaned_data.get("ipn_ip_address")
             ipv4_vpn_pool = form.cleaned_data.get("ipv4_vpn_pool")
             ipv4_ipn_pool = form.cleaned_data.get("ipv4_ipn_pool")
+            ipv6_vpn_pool = form.cleaned_data.get("ipv6_vpn_pool")
+            vpn_ipv6_ip_address = form.cleaned_data.get("vpn_ipv6_ip_address")
+            
             if username:
                 if id:
                     subaccs = SubAccount.objects.filter(username = username).exclude(account = account).count()
@@ -852,6 +854,13 @@ def subaccountedit(request):
 
                     return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный ipn_ip_address используется в другом аккаунте'}
     
+    
+            if str(vpn_ipv6_ip_address) not in ('','::', ':::'):    
+                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(vpn_ipv6_ip_address = vpn_ipv6_ip_address).count()
+    
+                if subaccs>0:
+                    return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный ipv6 vpn_ip_address используется в другом аккаунте'}
+    
             #print 111
 
             #print '1111111', subaccount, vpn_ipinuse, ipn_ipinuse, subaccount.ipv4_vpn_pool
@@ -875,7 +884,6 @@ def subaccountedit(request):
                             vpn_ipinuse = IPInUse.objects.create(pool=ipv4_vpn_pool,ip=vpn_ip_address,datetime=datetime.datetime.now())
                             log('EDIT', request.user, vpn_ipinuse)
                     else:
-                        print 555
                         obj = IPInUse.objects.get(id=vpn_ipinuse.id)
                         obj.disabled=datetime.datetime.now()
                         obj.save()
@@ -902,6 +910,52 @@ def subaccountedit(request):
                 vpn_ipinuse = ip 
                 #print 888
                 
+            #print '1111111', subaccount, vpn_ipinuse, ipn_ipinuse, subaccount.ipv4_vpn_pool
+            if subaccount and vpn_ipv6_ipinuse:
+    
+                #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
+                #print 222
+                if  str(vpn_ipv6_ip_address) not in ['', '::',':::',None]:
+                    if ipv6_vpn_pool:
+                        if not IPy.IP(ipv6_vpn_pool.start_ip).int()<=IPy.IP(vpn_ipv6_ip_address).int()<=IPy.IP(ipv6_vpn_pool.end_ip).int():
+
+                            return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form, 'message':u'Выбранный IPV6 VPN IP адрес не принадлежит указанному VPN пулу'}
+                        
+                        #print 333
+                        if vpn_ipv6_ipinuse.ip!=vpn_ipv6_ip_address:
+                            obj = IPInUse.objects.get(id=vpn_ipv6_ipinuse.id)
+                            obj.disabled=datetime.datetime.now()
+                            obj.save()
+                            #print 444
+                            log('EDIT', request.user, obj)
+                            vpn_ipv6_ipinuse = IPInUse.objects.create(pool=ipv6_vpn_pool,ip=vpn_ipv6_ip_address, datetime=datetime.datetime.now())
+                            log('EDIT', request.user, vpn_ipv6_ipinuse)
+                    else:
+                        obj = IPInUse.objects.get(id=vpn_ipv6_ipinuse.id)
+                        obj.disabled=datetime.datetime.now()
+                        obj.save()
+                        vpn_ipv6_ipinuse = None
+                    
+                        
+                    
+                elif str(vpn_ipv6_ip_address) in ['','::', ':::', None]:
+                    #print 666
+                    obj = vpn_ipv6_ipinuse
+                    obj.disabled=datetime.datetime.now()
+                    obj.save()
+                    log('EDIT', request.user, obj)
+                    vpn_ipv6_ipinuse=None
+            elif str(vpn_ipv6_ip_address) not in ['','::', ':::', None] and ipv6_vpn_pool:
+                #print 777
+                if not IPy.IP(ipv6_vpn_pool.start_ip).int()<=IPy.IP(vpn_ipv6_ip_address).int()<=IPy.IP(ipv6_vpn_pool.end_ip).int():
+
+                    return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный IPV6 VPN IP адрес не принадлежит указанному VPN пулу'}
+    
+                ip=IPInUse(pool=ipv6_vpn_pool, ip=vpn_ipv6_ip_address, datetime=datetime.datetime.now())
+                ip.save()
+                log('CREATE', request.user, ip)
+                vpn_ipv6_ipinuse = ip 
+            
             if subaccount and ipn_ipinuse:
     
     
@@ -952,6 +1006,7 @@ def subaccountedit(request):
             model.ipn_ipinuse = ipn_ipinuse
             model.ipn_ip_address = ipn_ip_address or '0.0.0.0'
             model.vpn_ip_address = vpn_ip_address or '0.0.0.0'
+            model.vpn_ipv6_ipinuse = vpn_ipv6_ipinuse
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, u'Субаккаунт сохранён.', extra_tags='alert-success')

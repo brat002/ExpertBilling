@@ -1,11 +1,4 @@
-"""
-Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
-
-(c) Copyright 2008 Jutda. All Rights Reserved. See LICENSE for details.
-
-forms.py - Definitions of newforms-based forms for creating and maintaining
-           tickets.
-"""
+# -*- coding=utf-8 -*-
 
 from datetime import datetime
 
@@ -17,7 +10,14 @@ from django.utils.translation import ugettext as _
 from helpdesk.lib import send_templated_mail
 from helpdesk.models import Ticket, Queue, FollowUp, Attachment, IgnoreEmail, TicketCC
 from helpdesk.settings import HAS_TAG_SUPPORT
+from django_select2 import *
+from django.contrib.auth.models import User
 
+class UserChoices(AutoModelSelect2Field):
+    queryset = User.objects
+    search_fields = ['username__icontains', ]
+
+    
 class EditTicketForm(forms.ModelForm):
     assigned_to = forms.ModelChoiceField(
         queryset=User.objects.filter(is_staff=True).order_by('username'),
@@ -57,20 +57,31 @@ class TicketForm(forms.Form):
         required=True,
         )
 
-    assigned_to = forms.ChoiceField(
-        choices=(),
+    assigned_to = UserChoices(
         required=False,
-        label=_('Assigned to'),
+        label=_(u'Назначена на'),
         help_text=_('If you assign ticket yourself, they\'ll be '
             'e-mailed details of this ticket immediately.'),
+        widget=AutoHeavySelect2Widget(
+            select2_options={
+                'width': '40%',
+                'placeholder': u"Назначено на"
+            }
+        )
         )
 
-    owner = forms.ChoiceField(
+    owner = UserChoices(
         choices=(),
         required=False,
         label=_('Case owner'),
         help_text=_('If you select an owner other than yourself, they\'ll be '
             'e-mailed details of this ticket immediately.'),
+        widget=AutoHeavySelect2Widget(
+            select2_options={
+                'width': '40%',
+                'placeholder': u"Поиск владельца"
+            }
+        )
         )
     
     priority = forms.ChoiceField(
