@@ -17,7 +17,7 @@ def activate_card(login, pin):
 
         return_status = 0
         
-        card = Card.objects.filter(type=2, login=login, pin=pin, sold__isnull=False, disabled=False)
+        card = Card.objects.filter(type=2, login=login, pin=pin, salecard__isnull=False, disabled=False)
         if not card: 
             return  status_bad_userpassword      
         if len(card)>1:
@@ -81,7 +81,7 @@ def activate_pay_card(account_id, serial, card_id, pin):
         card = Card.objects.filter(type=0, id=card_id, pin=pin, series=serial, disabled=False)
         if card:
             card = card[0]            
-            if card.sold is None: 
+            if not card.salecard: 
                 return_value = "CARD_NOT_SOLD"                
             elif card.activated: 
                 return_value = "CARD_ALREADY_ACTIVATED"                

@@ -1236,7 +1236,7 @@ class Card(models.Model):
     ipinuse = models.ForeignKey("IPInUse", blank=True, null=True)
     ippool = models.ForeignKey("IPPool", verbose_name=u"Пул", blank=True, null=True)
     ext_id = models.CharField(max_length=512,  blank=True, null=True)
-    salecard = models.ForeignKey("SaleCard", verbose_name=u"Продана", blank=True, null=True)
+    salecard = models.ForeignKey("SaleCard", verbose_name=u"Продана", blank=True, null=True, on_delete=models.SET_NULL)
     
     def get_row_class(self):
         return 'error' if self.disabled else ''
