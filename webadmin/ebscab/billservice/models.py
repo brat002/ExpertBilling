@@ -827,12 +827,26 @@ class Account(DynamicModel):
             return
         super(Account, self).delete()
         
+    
     def account_status(self):
         if self.status==1:
             return True
         else: 
             return False    
     
+    def save(self, *args, **kwargs):
+        try:
+            user = User.objects.get(username=self.username)
+        except:
+            user = User()
+            user.username=self.username
+            user.set_password(self.password)
+        user.is_staff=False
+        user.is_active=self.deleted is not None
+        user.first_name = self.fullname
+        user.save()
+        super(Account, self).save(*args, **kwargs)
+        
     def get_last_promises_count(self):
         return Transaction.objects.filter(account=self, promise_expired=False, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).count()
     
@@ -1115,6 +1129,20 @@ class SystemUser(models.Model):
         return True
 
 
+    def save(self, *args, **kwargs):
+        try:
+            user = User.objects.get(username=self.username)
+        except:
+            user = User()
+            user.username=self.username
+            user.set_password(self.text_password)
+        user.is_staff=True
+        user.is_active=self.status
+        user.first_name = self.fullname
+        user.is_superuser = self.is_superuser
+        user.save()
+        super(SystemUser, self).save(*args, **kwargs)
+        
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('systemuser_delete'), self.id)
         
@@ -1438,8 +1466,8 @@ class IPPool(models.Model):
     name = models.CharField(verbose_name=u'Название', max_length=255)
     #0 - VPN, 1-IPN
     type = models.IntegerField(verbose_name=u'Тип', choices=((0, u"IPv4 VPN"),(1, u"IPv4 IPN"),(2, u"IPv6 VPN"),(3, u"IPv6 IPN"),))
-    start_ip = models.IPAddressField(verbose_name=u'C IP')
-    end_ip = models.IPAddressField(verbose_name=u'По IP')
+    start_ip = models.GenericIPAddressField(verbose_name=u'C IP')
+    end_ip = models.GenericIPAddressField(verbose_name=u'По IP')
     next_ippool = models.ForeignKey("IPPool", verbose_name=u'Следующий пул', blank=True, null=True)
     
     class Meta:
@@ -1703,13 +1731,14 @@ class SubAccount(models.Model):
     allow_addonservice = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешить самостоятельную активацию подключаемых услуг на этот субаккаунт")  
     vpn_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_vpn_ipinuse_set', on_delete=models.SET_NULL)
     ipn_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_ipn_ipinuse_set', on_delete=models.SET_NULL)
-    vpn_ipv6_ip_address = models.CharField(blank=True, null=True, max_length=128, default='::')
+    vpn_ipv6_ip_address = models.GenericIPAddressField(blank=True, null=True)
     vpn_ipv6_ipinuse = models.ForeignKey(IPInUse, blank=True, null=True, related_name='subaccount_vpn_ipv6_ipinuse_set', on_delete=models.SET_NULL)
     #ipn_ipv6_ip_address = models.TextField(blank=True, null=True)
     vlan = models.IntegerField(blank=True, null=True)
     allow_mac_update = models.BooleanField(blank=True, default=False, verbose_name=u"Разрешить самостоятельно обновлять MAC адрес через веб-кабинет")  
     ipv4_ipn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_ipn_ippool_set', on_delete=models.SET_NULL)
     ipv4_vpn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_vpn_ippool_set', on_delete=models.SET_NULL)
+    ipv6_vpn_pool = models.ForeignKey(IPPool, blank=True, default=None, null=True, related_name='subaccount_ipv6_vpn_ippool_set', on_delete=models.SET_NULL)
     sessionscount = models.IntegerField(verbose_name=u"Одноверменных RADIUS сессий на субаккаунт", blank=True, default=0)
     
     def __unicode__(self):

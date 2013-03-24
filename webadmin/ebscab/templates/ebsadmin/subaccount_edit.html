@@ -154,8 +154,64 @@
             event.preventDefault(event);
         });
         $('#id_ipn_ip_address').click(function(){$('#id_ipn_ip_address').autocomplete('search')});
+        $('#id_ipv6_vpn_ip_address').click(function(){$('#id_ipv6_vpn_ip_address').autocomplete('search')});
+        $('#id_vpn_ipv6_ip_address').autocomplete({
+            source: function( request, response )
+            {                      
+                $.ajax(
+                { 
+                    url: "{% url getipfrompool %}",
+                    data: {
+                            term: request.term, 
+                            pool_id: $('#id_ipv6_vpn_pool').val(),    //Pass the selected country to php
+                          },        
+                    type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                    dataType: "json",   //return data in json format                                                                                                                                       
+                    success: function( data ) 
+                    {
+                        response( $.map( data.records, function( item ) 
+                        {
+                            return item
+                        }));
+                    }
+                });                
+            },
+            minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
+            maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
+            width: 300, // Ширина списка
+            zIndex: 9999, // z-index списка
+            deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
+            onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
+        });
+        $('#id_assign_ipv6_vpn_ip_address').click(function(){
+            if ($('#id_vpn_ipv6_ip_address').val()=='' || $('#id_vpn_ipv6_ip_address').val()==':::'){
+                $('#id_vpn_ipv6_ip_address').val('')
+            }
+            if ($('#id_vpn_ipv6_ip_address').val()){
+                $('#id_vpn_ipv6_ip_address').autocomplete('search')
+                return
+            }
+                $.ajax(
+                { 
+                    url: "{% url getipfrompool %}",
+                    data: {
+                            term: $('#id_vpn_ipv6_ip_address').val(), 
+                            pool_id: $('#id_ipv6_vpn_pool').val(),    //Pass the selected country to php
+                            limit:1
+                          },        
+                    type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                    dataType: "json",   //return data in json format                                                                                                                                       
+                    success: function( data ) 
+                    {
+
+                        $('#id_vpn_ipv6_ip_address').val(data.records);
+                    }
+                });   
+        });
+        
+        
         $('#id_assign_ipn_ip_address').click(function(){
-            if ($('#id_ipn_ip_address').val()=='' || $('#id_ipn_ip_address').val()=='0.0.0.0/32'){
+            if ($('#id_ipn_ip_address').val()=='' || $('#id_ipn_ip_address').val()=='0.0.0.0'){
                 $('#id_ipn_ip_address').val('')
             }
             if ($('#id_ipn_ip_address').val()){
@@ -235,7 +291,7 @@
     </style>
 {% endblock %}
  {% load render_table from django_tables2 %}
-{% block body %}
+{% block base %}
 <div class="row-fluid">
 {% if message %}<div class="alert alert-error">{{message}}<a class="close" data-dismiss="alert" href="#">&times;</a></div>{% endif %}
 <ul class="breadcrumb">
@@ -404,35 +460,22 @@
                     </div>
 
                     <div class="control-group">
-                        <div class="control-row">
-                            <label class="control-label" for="input-ipn-ipv6">{{form.vpn_ipv6_ip_address.label}}</label>
-                            <div class="controls">
-                                {{ form.vpn_ipv6_ip_address }}
-                           {% if form.vpn_ipv6_ip_address.errors %}
-                               <span class="help-inline">{% for error in form.vpn_ipv6_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
-                           {% endif %}
-                           {% if form.vpn_ipv6_ip_address.help_text%}
-                               <p class="help-block">
-                                   {{ form.vpn_ipv6_ip_address.help_text|safe }}
-                               </p>
-                           {% endif %}
-                            </div>
-                        </div>
 
-                        <div class="control-row">
-                            <label class="control-label" for="input-ipn-ipv6-select">{{form.ipn_ipv6_ip_address.label}}</label>
+                            <label class="control-label" for="input-ipn-ip">{{form.vpn_ipv6_ip_address.label}}</label>
                             <div class="controls">
-                                {{ form.ipn_ipv6_ip_address }}
-                           {% if form.ipn_ipv6_ip_address.errors %}
-                               <span class="help-inline">{% for error in form.ipn_ipv6_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
-                           {% endif %}
-                           {% if form.ipn_ipv6_ip_address.help_text%}
-                               <p class="help-block">
-                                   {{ form.ipn_ipv6_ip_address.help_text|safe }}
-                               </p>
-                           {% endif %}
+                                {{ form.ipv6_vpn_pool }}{{ form.vpn_ipv6_ip_address }}<input type="button" id="id_assign_ipv6_vpn_ip_address" class="btn btn-success"  value="Выдать">
+                                    {% if form.vpn_ipv6_ip_address.errors %}
+                                        <span class="help-inline">{% for error in form.vpn_ipv6_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if form.vpn_ipv6_ip_address.help_text%}
+                                        <p class="help-block">
+                                            {{ form.vpn_ipv6_ip_address.help_text|safe }}
+                                        </p>
+                                    {% endif %}
                             </div>
-                        </div>
+
+
+
                     </div>
                     <hr />
                     <div class="control-group">

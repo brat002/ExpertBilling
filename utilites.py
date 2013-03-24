@@ -869,9 +869,15 @@ def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):
             caches.post_reindex()
     except Exception, ex:
         if isinstance(ex, psycopg2.DatabaseError):
-            log_error_('#30%s0001 renewCaches attempt failed due to database error: %s' % (code, repr(ex)))
+            try:
+                log_error_('#30%s0001 renewCaches attempt failed due to database error: %s' % (code, repr(ex).decode('utf-8')))
+            except:
+                log_error_('#31%s0001 renewCaches attempt failed due to database error: %s' % (code, repr(ex)))
         else: 
-            log_error_('#30%s0002 renewCaches attempt failed due to error: %s \n %s' % (code, repr(ex), traceback.format_exc()))
+            try:
+                log_error_('#30%s0002 renewCaches attempt failed due to error: %s \n %s' % (code, repr(ex).decode('utf-8'), traceback.format_exc()))
+            except:
+                log_error_('#32%s0002 renewCaches attempt failed due to error: %s \n %s' % (code, repr(ex), traceback.format_exc()))
     else:
         cacheMaster.read = True
             

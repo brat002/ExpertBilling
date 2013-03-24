@@ -943,6 +943,7 @@ class SubAccountForm(ModelForm):
     ipn_speed = forms.CharField(label=u'IPN скорость', help_text=u"Не менять указанные настройки скорости", required = False, widget = forms.TextInput(attrs={'class': 'span6'}))
     vpn_speed = forms.CharField(label=u'VPN скорость', help_text=u"Не менять указанные настройки скорости", required = False, widget = forms.TextInput(attrs={'class': 'span6'}))
     ipv4_vpn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=0), required=False)
+    ipv6_vpn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=2), required=False)
     ipv4_ipn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=1), required=False)
     ipn_status = forms.MultipleChoiceField(required=False, choices = (('added', u"Добавлен", ), ('enabled', u'Активен'), ('suspended', u'Не менять состояние'),), widget=MyMultipleCheckBoxInput, initial = ["undefined", ])
     
@@ -1130,6 +1131,7 @@ class SendSmsForm(forms.Form):
     body = forms.CharField(label=u'Сообщение', widget = forms.widgets.Textarea(attrs={'rows':4, 'class': 'input-large span5'}), help_text=u"Можно использовать {{account.ballance}}, {{account.fullname}}, {{account.username}}, {{account.contract}}")
     publish_date = forms.DateTimeField(label=u'Опубликовать', help_text = u'Не указывайте, если сообщения должны быть отправлены сразу', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
+
     
 class DynamicSchemaFieldForm(forms.ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)

@@ -1,5 +1,6 @@
 {% extends "helpdesk/base.html" %}{% load i18n %}
 {% load billservice_tags %}
+{% load crispy_forms_tags %}
 {% block helpdesk_title %}{% trans "View Ticket Details" %}{% endblock %}
 {% block helpdesk_head %}
 <script type="text/javascript">
@@ -162,7 +163,7 @@
 <hr />
 <h3>{% trans "Respond to this ticket" %}</h3>
 
-<form method='post' action='update/' enctype='multipart/form-data'>
+<form method='post' action='update/' enctype='multipart/form-data' class="well form-horizontal  form-condensed">
 
 <fieldset>
     <dl>
