@@ -594,7 +594,7 @@ class HandleSAuth(HandleSBase):
                 self.create_cursor()
                 try:
                     self.cursor.execute("""SELECT count(*) from radius_activesession WHERE account_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (acc.account_id, nas.acct_interim_interval))
-                    #self.cursor.connection.commit()
+                    self.cursor.connection.commit()
                     cnt = self.cursor.fetchone()
                     if cnt:
                         if cnt[0]>=sc:
