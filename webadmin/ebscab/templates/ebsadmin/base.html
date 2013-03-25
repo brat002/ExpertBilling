@@ -105,16 +105,16 @@ padding-top:20px;
     $(document).ready(function() {
         $('.datepicker').datepicker({
         	months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
-        	weekStart: 0,
+        	weekStart: 1,
         	noDefault: true,
         	format: 'yyyy-mm-dd hh:ii:ss',
-            days: ["пн","вт","ср","чт","пт","сб","вс"],});
+            days: ["вс", "пн","вт","ср","чт","пт","сб"],});
         $('.dateinput').datepicker({
             months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
-            weekStart: 0,
+            weekStart: 1,
             noDefault: true,
             format: 'yyyy-mm-dd',
-            days: ["пн","вт","ср","чт","пт","сб","вс"],});
+            days: ["вс", "пн","вт","ср","чт","пт","сб"],});
         $(".timepicker").mask("99:99:99");
         
         $(".daterange").daterangepicker({format:'yyyy-MM-dd'});
