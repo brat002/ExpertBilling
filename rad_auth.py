@@ -622,7 +622,7 @@ class HandleSAuth(HandleSBase):
                             pool_id=acc.vpn_guest_ippool_id
                             logger.debug("Searching free ip for subaccount %s in vpn guest pool with id %s ", (str(user_name), acc.vpn_guest_ippool_id))
                             self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
-                       
+                            self.cursor.connection.commit()
                             vpn_ip_address = self.cursor.fetchone()[0]
                         else:
                             pool_id, vpn_ip_address = self.find_free_ip(pool_id)
@@ -636,6 +636,7 @@ class HandleSAuth(HandleSBase):
                        
                         self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id, ip, datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
                         ipinuse_id=self.cursor.fetchone()[0]
+                        self.cursor.connection.commit()
                     except Exception, ex:
                         logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id, repr(ex)))
                         sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
@@ -649,7 +650,7 @@ class HandleSAuth(HandleSBase):
                     try:
                         self.create_cursor()
                         self.cursor.execute("UPDATE billservice_subaccount SET ipn_mac_address=%s WHERE id=%s", (station_id, subacc.id,))
-                        #self.cursor.connection.commit()
+                        self.cursor.connection.commit()
                         logger.debug("Update subaccount %s with id %s ipn mac address to: %s was succefull", (str(user_name), subacc.id, station_id))
                     except Exception, ex:
                         logger.error("Error update subaccount %s with id %s ipn mac address to: %s %s", (str(user_name), subacc.id, station_id, repr(ex)))
