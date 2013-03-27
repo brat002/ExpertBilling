@@ -661,11 +661,11 @@ class HandleSAuth(HandleSBase):
             self.replypacket.password = str(password) #Нельзя юникод
             self.replypacket.AddAttribute('Service-Type', 2)
             self.replypacket.AddAttribute('Framed-Protocol', 1)
-            if vpn_ip_address not in ['0.0.0.0', '', None]:
+            if vpn_ip_address not in ['0.0.0.0', '', None] and vpn_ip_address.rfind(':')==-1:
                 self.replypacket.AddAttribute('Framed-IP-Address', vpn_ip_address)
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             #self.replypacket.AddAttribute('Framed-Compression', 0)
-            if subacc.vpn_ipv6_ip_address and subacc.vpn_ipv6_ip_address!='::':
+            if (subacc.vpn_ipv6_ip_address and subacc.vpn_ipv6_ip_address!='::') or vpn_ip_address.rfind(':')!=-1:
                 #self.replypacket.AddAttribute('Framed-Interface-Id', str(subacc.vpn_ipv6_ip_address))
                 self.replypacket.AddAttribute('Framed-IPv6-Prefix', str(subacc.vpn_ipv6_ip_address))
             #account_speed_limit_cache
