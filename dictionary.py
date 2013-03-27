@@ -39,9 +39,11 @@ ipaddr    IPv4 address
 integer   32 bits signed number
 date      32 bits UNIX timestamp
 octets    arbitrary binary data
+ipv6addr ipv6addr
+ipv6prefix ipv6preffix
 =======   ======================
 
-These datatypes are parsed but not supported:
+These datatypes are parsed but not supported
 
 +------------+----------------------------------------------+
 | type       | description                                  |
@@ -69,7 +71,7 @@ from copy import copy
 
 DATATYPES = frozenset(['string', 'ipaddr', 'integer', 'date',
                        'octets', 'abinary', 'ipv6addr',
-                       'ipv6prefix', 'ifid', 'ether'])
+                       'ipv6prefix', 'ifid', 'ether', 'ipv6addr', 'ipv6prefix'])
 
 
 class ParseError(Exception):

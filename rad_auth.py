@@ -666,8 +666,8 @@ class HandleSAuth(HandleSBase):
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
             #self.replypacket.AddAttribute('Framed-Compression', 0)
             if subacc.vpn_ipv6_ip_address and subacc.vpn_ipv6_ip_address!='::':
-                self.replypacket.AddAttribute('Framed-Interface-Id', str(subacc.vpn_ipv6_ip_address))
-                self.replypacket.AddAttribute('Framed-IPv6-Prefix', '::/128')
+                #self.replypacket.AddAttribute('Framed-Interface-Id', str(subacc.vpn_ipv6_ip_address))
+                self.replypacket.AddAttribute('Framed-IPv6-Prefix', str(subacc.vpn_ipv6_ip_address))
             #account_speed_limit_cache
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
             if self.session_speed:
