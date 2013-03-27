@@ -66,7 +66,7 @@
             $("#id_btn_enable").click(function(event) {
                 a=$(this);
 
-                        values = jQuery("#id_main_table tbase input[type=checkbox]:checked").serializeArray();
+                        values = jQuery("#id_main_table tbody input[type=checkbox]:checked").serializeArray();
 
                         $.getJSON('{% url card_manage %}?action=enable',values,function(data,status){
                             if( status=='success' ){
@@ -151,7 +151,7 @@
             
 
             function documentPrintHandler(e) {
-            	values = jQuery("#id_main_table tbase input[type=checkbox]:checked");
+            	values = jQuery("#id_main_table tbody input[type=checkbox]:checked");
                 var data = {template:e.message, cards: values};
 
                 var $form = $('<form target="_blank" method="POST" action="{% url documentrender %}">');
@@ -170,7 +170,7 @@
         });
         </script>
 <style type="text/css">
-.table tbase tr:hover td, .table tbase tr:hover th {
+.table tbody tr:hover td, .table tbody tr:hover th {
     background-color: transparent;
 }
 .disabled-row {
