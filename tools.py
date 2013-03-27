@@ -69,6 +69,9 @@ def DecodeInteger(num):
 def DecodeDate(num):
     return (struct.unpack('!I', num))[0]
 
+def DecodeIPv6Prefix(addr):
+    return str(addr)
+
 
 def EncodeAttr(datatype, value):
     if datatype == 'string':
