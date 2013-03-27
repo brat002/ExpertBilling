@@ -33,9 +33,10 @@ def EncodeIPv6Address(addr):
     return socket.inet_pton(socket.AF_INET6, addr)
 
 def EncodeIPv6Prefix(addr):
-    addr = str(IPy.IP(addr).make_net(127).net())
+    addr = str(IPy.IP(addr).make_net(64).net())
     address = socket.inet_pton(socket.AF_INET6, addr)
-    return struct.pack('!BB16s', 0,127, address)
+    return struct.pack('!BB16s', 0,64, address)
+
 
 def EncodeInteger(num):
     if not isinstance(num, six.integer_types):
