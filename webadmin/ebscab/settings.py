@@ -232,6 +232,7 @@ GETPAID_BACKENDS_SETTINGS = {
 SENDSMS_BACKENDS = (
                     ('sendsms.backends.websms.SmsBackend', 'websms.ru'),
                     ('sendsms.backends.smsru.SmsBackend', 'sms.ru'),
+                    ('sendsms.backends.smspilotru.SmsBackend', 'smspilot.ru'),
                     )
 
 SENDSMS_BACKENDS_SETTINGS = {
@@ -241,11 +242,15 @@ SENDSMS_BACKENDS_SETTINGS = {
                                                          'PASSWORD': '',
                                                          },
                              'sendsms.backends.smsru': {
-                                                         'FROM_NAME': '', # http://websms.ru/FromName.asp
+                                                         'FROM_NAME': '', 
                                                          'API_ID': '',
                                                          'TRANSLIT': '1',
                                                          'TEST': '0',
                                                          'PARTNER_ID': '',
+                                                         },
+                             'sendsms.backends.smspilotru': {
+                                                         'FROM_NAME': '', 
+                                                         'API_ID': '',
                                                          }
                              }
 

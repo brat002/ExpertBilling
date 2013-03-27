@@ -21,6 +21,7 @@ GETPAID_BACKENDS = ('payments.easypay',
 SENDSMS_BACKENDS = (
                     ('sendsms.backends.websms.SmsBackend', 'websms.ru'),
                     ('sendsms.backends.smsru.SmsBackend', 'sms.ru'),
+                    ('sendsms.backends.smspilotru.SmsBackend', 'smspilot.ru'),
                     )
                     
 SENDSMS_BACKENDS_SETTINGS = {
@@ -35,6 +36,10 @@ SENDSMS_BACKENDS_SETTINGS = {
                                                          'TRANSLIT': '1',
                                                          'TEST': '0',
                                                          'PARTNER_ID': '',
+                                                         },
+                             'sendsms.backends.smspilotru': {
+                                                         'FROM_NAME': '', 
+                                                         'API_ID': '',
                                                          }
                              }
 

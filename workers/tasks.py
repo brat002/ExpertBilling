@@ -16,6 +16,7 @@ import binascii
 import ConfigParser
 import urllib, urllib2
 import BeautifulSoup
+import simplejson
 config = ConfigParser.ConfigParser()
 BILLING_PATH = '/opt/ebs/data/'
 config.read(os.path.join(BILLING_PATH, "ebs_config.ini"))
@@ -737,3 +738,22 @@ def sendsmsru_post(url, parameters, id=None):
     cur.close()
     conn.close()
     
+@task
+def sendsmspilotru_post(url, parameters, id=None):
+    headers = {
+        'Content-type': 'application/json',
+        'Accept': 'text/plain'
+    }
+    js = simplejson.dumps(parameters, ensure_ascii=False)
+    
+    req = urllib2.Request(url, js.encode('utf-8'), headers)
+    response = urllib2.urlopen(req).read()
+
+    print response
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE sendsms_message SET sended=now(), response=%s WHERE id=%s",  (response, id))
+    conn.commit()
+    cur.close()
+    conn.close()

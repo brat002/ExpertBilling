@@ -72,7 +72,7 @@
             $('.management').live('click', function(event){
             	var arr = new Array();
 
-            	$.map( $("#id_main_table tbase input[type=checkbox]:checked").serializeArray(), function(data, item) {
+            	$.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
             		data.name='accounts';
             		arr.push(data); 
             	  
@@ -108,7 +108,7 @@
             $("#modal-accounttariff-dialog-table").click(function(event) {
                 var arr = new Array();
 
-                $.map( $("#id_main_table tbase input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
                     data.name='accounts';
                     arr.push(data); 
                   
@@ -126,7 +126,7 @@
             $("#modal-suspendedperiod-dialog-table").click(function(event) {
                 var arr = new Array();
 
-                $.map( $("#id_main_table tbase input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
                     data.name='accounts';
                     arr.push(data); 
                   
@@ -144,12 +144,12 @@
             $("#modal-sendsms-dialog-table").click(function(event) {
                 var arr = new Array();
 
-                $.map( $("#id_main_table tbase input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
                     data.name='accounts';
                     arr.push(data); 
                   
                 });
-
+                //alert($("#id_main_table tbody input[type=checkbox]:checked").serialize());
                 $('<div/>').dialog2({
                     title: "Отправить SMS", 
                     content: this.href+'?'+$.param(arr), 
@@ -165,7 +165,7 @@
                 a=$(this);
                 var arr = new Array();
 
-                $.map( $("#id_main_table tbase input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
                     data.name='accounts';
                     arr.push(data); 
                   
@@ -201,7 +201,7 @@
             	
                 var arr = new Array();
 
-                $.map( $("#id_main_table tbase input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
                     data.name='accounts';
                     arr.push(data); 
                   
