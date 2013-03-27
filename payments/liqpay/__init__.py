@@ -93,13 +93,13 @@ class PaymentProcessor(PaymentProcessorBase):
 
     @staticmethod
     def online(request):
-        operation_xml = request.POST.get('operation_xml')
+        operation_xml = b64decode(request.POST.get('operation_xml'))
         signature = request.POST.get('signature')
         
         if PaymentProcessor.compute_sig(operation_xml)!=signature:
             return "SIGNATURE CHECK ERROR"
         
-        xml = b64decode(operation_xml)
+        xml = operation_xml
         
         xml = BeautifulSoup(xml)
         
@@ -121,21 +121,14 @@ class PaymentProcessor(PaymentProcessorBase):
             payment = Payment.objects.get(id = order_id)
         except Payment.DoesNotExist, ex:
             return PaymentProcessor.error(xml, u'UNKNOWN PAYMENT')
-        
-        dt = datetime.datetime.now()
-        if TransactionStatus.OK=='success':
-            payment.paid_on = dt
+        if status=='success':
+            payment.on_success(amount= amount)
             payment.external_id = transaction_id
-            payment.amount_paid = amount
             payment.save()
-            payment.change_status('paid')
-            return 'OK'
-        elif TransactionStatus.ERROR == 'failure':
-            payment.change_status('failed')
-            return 'FAIL'
+
         
 
-        return 'UNKNOWS'
+        return 'OK'
     
  
     
