@@ -3,6 +3,8 @@
 # Utility functions
 import struct
 import six
+import socket
+import IPy
 
 
 def EncodeString(str):
@@ -27,6 +29,13 @@ def EncodeAddress(addr):
     return struct.pack('BBBB', a, b, c, d)
 
 
+def EncodeIPv6Address(addr):
+    return socket.inet_pton(socket.AF_INET6, addr)
+
+def EncodeIPv6Prefix(addr):
+    address = socket.inet_pton(socket.AF_INET6, addr)
+    return struct.pack('!II16s', 0,128, address)
+
 def EncodeInteger(num):
     if not isinstance(num, six.integer_types):
         raise TypeError('Can not encode non-integer as integer')
@@ -50,6 +59,8 @@ def DecodeOctets(str):
 def DecodeAddress(addr):
     return '.'.join(map(str, struct.unpack('BBBB', addr)))
 
+def DecodeIPv6Address(addr):
+    return socket.inet_ntop(socket.AF_INET6, addr)
 
 def DecodeInteger(num):
     return (struct.unpack('!I', num))[0]
@@ -66,6 +77,10 @@ def EncodeAttr(datatype, value):
         return EncodeOctets(value)
     elif datatype == 'ipaddr':
         return EncodeAddress(value)
+    elif datatype == 'ipv6addr':
+        return EncodeIPv6Address(value)
+    elif datatype == 'ipv6prefix':
+        return EncodeIPv6Prefix(value)
     elif datatype == 'integer':
         return EncodeInteger(value)
     elif datatype == 'date':
@@ -81,6 +96,10 @@ def DecodeAttr(datatype, value):
         return DecodeOctets(value)
     elif datatype == 'ipaddr':
         return DecodeAddress(value)
+    elif datatype == 'ipv6addr':
+        return DecodeIPv6Address(value)
+    elif datatype == 'ipv6prefix':
+        return DecodeIPv6Prefix(value)
     elif datatype == 'integer':
         return DecodeInteger(value)
     elif datatype == 'date':

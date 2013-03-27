@@ -56,6 +56,6 @@ CREATE INDEX dynamicmodel_dynamicschemafield_schema_id
   
 INSERT INTO dynamicmodel_dynamicschema(model_id, type_value) VALUES((SELECT id FROM django_content_type WHERE app_label='billservice' and model='account'), '');
 ALTER TABLE billservice_account ADD COLUMN extra_fields text;
-ALTER TABLE billservice_account ALTER COLUMN extra_fields SET DEFAULT {}::text;
+ALTER TABLE billservice_account ALTER COLUMN extra_fields SET DEFAULT '{}'::text;
 update billservice_account set extra_fields='{}';
 
