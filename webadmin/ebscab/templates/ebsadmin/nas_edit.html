@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% block extra_head %}
 
@@ -13,7 +14,7 @@
         	$('#id_form').submit();
             });
         $("#id_btn_test").click(function() {
-        	$("#id_btn_test").text('Подождите');
+        	$("#id_btn_test").text('{% blocktrans %}Подождите{% endblocktrans %}');
 
         	$.ajax({
         		   type: "POST",
@@ -22,22 +23,22 @@
         		   async: false,
         		   success: function(msg){
         			   if (msg.status==true){
-        				   alert( "Тест прошёл успешно");
+        				   alert( "{% blocktrans %}Тест прошёл успешно{% endblocktrans %}");
         			   }
         			   else{
-        				   alert( "Ошибка: " + msg.message );
+        				   alert( "{% blocktrans %}Ошибка{% endblocktrans %}: " + msg.message );
         			   }
-        			   $("#id_btn_test").text('Проверить');
+        			   $("#id_btn_test").text('{% blocktrans %}Проверить{% endblocktrans %}');
         		   },
         		   error: function(msg){
-        		          alert("Ошибка соединения");
-        		          $("#id_btn_test").text('Проверить');
+        		          alert("{% blocktrans %}Ошибка соединения{% endblocktrans %}");
+        		          $("#id_btn_test").text('{% blocktrans %}Проверить{% endblocktrans %}');
         		       }
         		 });
             });
 
         
-        $('#id_btn_fill').popover({trigger:'hover', 'title':'Заполнить значениями?', content: 'Заполнить значениями по-умолчанию для выбранного типа сервера доступа? Текущие настройки будут возвращены в первоначальное состояние'});
+        $('#id_btn_fill').popover({trigger:'hover', 'title':'{% blocktrans %}Заполнить значениями?{% endblocktrans %}', content: '{% blocktrans %}Заполнить значениями по-умолчанию для выбранного типа сервера доступа? Текущие настройки будут возвращены в первоначальное состояние{% endblocktrans %}'});
         //activate latest tab, if it exists:
         var lastTab = $.cookie('last_tab');
         if (lastTab) {
@@ -68,18 +69,18 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url nas %}">Серверы доступа</a> <span class="divider">/</span>{{item.name}}
+    <a href="{% url nas %}">{% blocktrans %}Серверы доступа{% endblocktrans %}</a> <span class="divider">/</span>{{item.name}}
   </li>
 </ul>
 <ul class="nav nav-tabs" id="tab-panel">
-  <li><a href="#general" data-toggle="tab">Общее</a></li>
-  <li><a href="#commands" data-toggle="tab">Команды</a></li>
+  <li><a href="#general" data-toggle="tab">{% blocktrans %}Общее{% endblocktrans %}</a></li>
+  <li><a href="#commands" data-toggle="tab">{% blocktrans %}Команды{% endblocktrans %}</a></li>
 </ul>
 <form id="id_form" method="POST" action="{% url nas_edit %}?id={{item.id}}" class="well form-horizontal form-condensed ">
 {{ form.id }}
 <div class="tab-content">
   <div class="tab-pane active" id="general">
-            <legend>Параметры сервера доступа{% objectlog item %}</legend>
+            <legend>{% blocktrans %}Параметры сервера доступа{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>
                    <div class="control-group">
                     <div class="control-row">
@@ -101,7 +102,7 @@
                     <div class="control-row">
                       <label class="control-label"><strong>{{form.type.label}}: </strong></label>
                       <div class="controls inline">
-                      {{ form.type }}<button class="btn btn-success" type="button" id="id_btn_fill">Заполнить</button>
+                      {{ form.type }}<button class="btn btn-success" type="button" id="id_btn_fill">&nbsp;{% blocktrans %}Значения для выбранного типа{% endblocktrans %}</button>
                       {% if form.type.errors %}
                           <span class="help-inline">{% for error in form.type.errors %}{{ error }}<br/> {% endfor %}</span>
                       {% endif %}
@@ -146,7 +147,7 @@
                     </div>
                   </div> 
                 </fieldset>
-            <legend>RADIUS параметры</legend>
+            <legend>{% blocktrans %}RADIUS параметры{% endblocktrans %}</legend>
              <fieldset>
                    <div class="control-group">
                     <div class="control-row">
@@ -198,7 +199,7 @@
                   </div> 
                   
              </fieldset>
-            <legend>Атрибуты установки скорости через RADIUS</legend>
+            <legend>{% blocktrans %}Атрибуты установки скорости через RADIUS{% endblocktrans %}</legend>
              <fieldset>
                    <div class="control-group">
                    <label class="control-label">Vendor/Attribute/Value</label>
@@ -214,7 +215,7 @@
                   </div>   
 
              </fieldset>
-            <legend>Параметры SSH</legend>
+            <legend>{% blocktrans %}Параметры SSH{% endblocktrans %}</legend>
              <fieldset>
                    <div class="control-group">
                     <div class="control-row">
@@ -250,9 +251,9 @@
                   </div>  
                    <div class="control-group">
                     <div class="control-row">
-                      <label class="control-label">Проверить подключение</label>
+                      <label class="control-label">{% blocktrans %}Проверить SSH подключение{% endblocktrans %}</label>
                       <div class="controls">
-                      <button class="btn btn-success" type="button" id="id_btn_test">Проверить</button>
+                      <button class="btn btn-success" type="button" id="id_btn_test">{% blocktrans %}Проверить{% endblocktrans %}</button>
                       </div>
                     </div>
                   </div>  
@@ -371,7 +372,7 @@
 
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

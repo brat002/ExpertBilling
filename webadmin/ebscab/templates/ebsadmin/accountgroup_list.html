@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% if status != False %}
 {% load ebsadmin_tags %}
  {% load render_table from django_tables2 %}
@@ -7,7 +8,7 @@
         $(document).ready(function() {
             $("#id_btn_add").click(function(event) {
                 $('<div/>').dialog2({
-                    title: "Добавление группы абонентов", 
+                    title: "{% blocktrans %}Добавление группы абонентов{% endblocktrans %}", 
                     content: "{% url accountgroup_edit %}", 
                     id: "server-notice"
                 });
@@ -16,7 +17,7 @@
             });
             $(".open-custom-dialog").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Изменить тип", 
+                    title: "{% blocktrans %}Изменить тип{% endblocktrans %}", 
                     content: this.href, 
                     id: "hardwaretype-modal"
                 });
@@ -25,7 +26,7 @@
             });
             $(".show-confirm").click(function(event) {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить?", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить?{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -37,7 +38,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                             }
 
                         })                      
@@ -61,11 +62,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url accountgroup %}">Группы абонентов</a> <span class="divider">/</span>
+    <a href="{% url accountgroup %}">{% blocktrans %}Группы абонентов{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="{% url accountgroup_edit %}" id="id_btn_add" class="btn btn-success">Добавить</a></div>
+<div class="btn-toolbar pull-right"><a href="{% url accountgroup_edit %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
 <div>
   {% render_table table %}
 </div>

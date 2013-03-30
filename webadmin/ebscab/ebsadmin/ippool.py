@@ -15,13 +15,13 @@ from billservice.models import IPPool
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/ippool_list.html')
 def ippool(request):
     if  not (request.user.account.has_perm('billservice.view_ippool')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     res = IPPool.objects.all()
@@ -45,12 +45,12 @@ def ippool_edit(request):
             form = IPPoolForm(request.POST)
         if id:
             if  not (request.user.account.has_perm('billservice.change_ippool')):
-                messages.error(request, u'У вас нет прав на редактирование IP пулов', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование IP пулов'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             
             if  not (request.user.account.has_perm('billservice.add_ippool')):
-                messages.error(request, u'У вас нет прав на создание IP пулов', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание IP пулов'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
 
@@ -60,15 +60,15 @@ def ippool_edit(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'IP пул сохранён.', extra_tags='alert-success')
+            messages.success(request, _(u'IP пул сохранён.'), extra_tags='alert-success')
             return HttpResponseRedirect(reverse("ippool"))
         else:
-            messages.error(request, u'Ошибка при сохранении IP пула.', extra_tags='alert-danger')
+            messages.error(request, _(u'Ошибка при сохранении IP пула.'), extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_ippool')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if id:
             item = IPPool.objects.get(id=id)
@@ -82,18 +82,18 @@ def ippool_edit(request):
 @systemuser_required
 def ippool_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_ippool')):
-        return {'status':False, 'message': u'У вас нет прав на удаление IP пулов'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление IP пулов')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = IPPool.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанный пул не найден %s" % str(e)}
+            return {"status": False, "message": _(u"Указанный пул не найден %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
-        messages.success(request, u'IP пул успешно удалён.', extra_tags='alert-success')
+        messages.success(request, _(u'IP пул успешно удалён.'), extra_tags='alert-success')
         return {"status": True}
     else:
-        messages.error(request, u'Ошибка при удалении IP пула.', extra_tags='alert-danger')
+        messages.error(request, _(u'Ошибка при удалении IP пула.'), extra_tags='alert-danger')
         return {"status": False, "message": "IPPool not found"} 
     

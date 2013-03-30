@@ -1,4 +1,4 @@
-#-*-coding:utf-8-*-
+#-*- coding:utf-8 -*-
 from billservice.forms import TransactionReportForm
 from ebscab.lib.decorators import render_to, ajax_request
 from billservice.helpers import systemuser_required

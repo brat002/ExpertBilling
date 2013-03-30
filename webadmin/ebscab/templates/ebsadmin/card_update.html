@@ -1,4 +1,5 @@
 {% load ebsadmin_tags %}
+{% load i18n %}
 {% if not status %}
 {{message}}
     {% for message in messages %}
@@ -17,13 +18,13 @@
 	 //$("#id_login_length_from").spinbox();
 
      $('.datepicker').datepicker({
-         months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
-         weekStart: 0,
+         months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
+         weekStart: 1,
          noDefault: true,
          format: 'yyyy-mm-dd hh:ii:ss',
-         days: ["пн","вт","ср","чт","пт","сб","вс"],});
+         days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
 
-     $('#id_series').popover({title:'Изменить серию', content: 'Укажите новую серию, чтобы переопределить значения в выбранных картах.'});
+     $('#id_series').popover({title:'{% blocktrans %}Изменить серию{% endblocktrans %}', content: '{% blocktrans %}Укажите новую серию, чтобы переопределить значения в выбранных картах.{% endblocktrans %}'});
  });
  </script>
 
@@ -177,13 +178,13 @@
                 </fieldset>
                 
                 <div class="form-actions">
-                    <input type='submit' class="btn btn-primary" value="Сгенерировать">
-                    <a class="btn close-dialog" href="#">Закрыть</a>
+                    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Сгенерировать{% endblocktrans %}">
+                    <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
                 </div>
             </form>
 {% endif %}
 {% else %}
-Операция произведена успешно.
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
  <script type="text/javascript"> 
  $(document).ready(function() {
      location.reload();

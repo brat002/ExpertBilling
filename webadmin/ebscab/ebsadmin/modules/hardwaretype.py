@@ -14,13 +14,13 @@ from billservice.models import HardwareType
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/hardwaretype_list.html')
 def hardwaretype(request):
     if  not (request.user.account.has_perm('billservice.view_hardwaretype')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     res = HardwareType.objects.all()
@@ -44,12 +44,12 @@ def hardwaretype_edit(request):
             model = HardwareType.objects.get(id=id)
             form = HardwareTypeForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_hardwaretype')):
-                messages.error(request, u'У вас нет прав на редактирование типов оборудования', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование типов оборудования'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             form = HardwareTypeForm(request.POST) 
             if  not (request.user.account.has_perm('billservice.add_hardwaretype')):
-                messages.error(request, u'У вас нет прав на создание типов оборудования', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание типов оборудования'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
 
@@ -65,7 +65,7 @@ def hardwaretype_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_hardwaretype')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {}
         if id:
 
@@ -82,13 +82,13 @@ def hardwaretype_edit(request):
 @systemuser_required
 def hardwaretype_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_hardwaretype')):
-        return {'status':False, 'message': u'У вас нет прав на удаление типов оборудования пулов'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление типов оборудования пулов')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = HardwareType.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанный тип оборудования не найден %s" % str(e)}
+            return {"status": False, "message": _(u"Указанный тип оборудования не найден %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

@@ -1,3 +1,4 @@
+{% load i18n %}
 {% if form %}
 <script>
 	function activate_car() {
@@ -44,7 +45,7 @@
 <table class="pass_table wide" cellpadding="0" cellspacing="0">
 	<tr>
 		<th class="blue_caption white s-11 bold main_table_left_border right_border">
-			АКТИВАЦИЯ КАРТОЧЕК
+			{% blocktrans %}АКТИВАЦИЯ КАРТОЧЕК{% endblocktrans %}
 			
 		</th>
 	</tr>
@@ -67,10 +68,10 @@
 					<tr>
 						<td colspan="2">
 							<div class="card_text f-left">
-								<span>Для активации карточек необходимо выполнить следующие действия:</span>
+								<span>{% blocktrans %}Для активации карточек необходимо выполнить следующие действия:{% endblocktrans %}</span>
 								<ol type="1">
-									<li>Ввести в поля «пин», «серия», «номер карты» пин, серию и номер, которые указаны на Вашей карточке;</li>
-									<li>Если карточка еще не была активирована, то Ваш баланс пополняется автоматически на указанную сумму;</li>
+									<li>{% blocktrans %}Ввести в поля «пин», «серия», «номер карты» пин, серию и номер, которые указаны на Вашей карточке;{% endblocktrans %}</li>
+									<li>{% blocktrans %}Если карточка еще не была активирована, то Ваш баланс пополняется автоматически на указанную сумму;{% endblocktrans %}</li>
 								</ol>
 							</div>
 						</td>

@@ -16,13 +16,13 @@ from django.contrib import messages
 
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/dynamicschemafield_list.html')
 def dynamicschemafield(request):
     if  not (request.user.account.has_perm('dynamicmodel.change_dynamicschemafield')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     res = DynamicSchemaField.objects.all()
@@ -47,12 +47,12 @@ def dynamicschemafield_edit(request):
             model = DynamicSchemaField.objects.get(id=id)
             form = DynamicSchemaFieldForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('dynamicmodel.change_dynamicschemafield')):
-                messages.error(request, u'У вас нет прав на редактирование дополнительного поля', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование дополнительного поля'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             form = DynamicSchemaFieldForm(request.POST) 
             if  not (request.user.account.has_perm('dynamicmodel.change_dynamicschemafield')):
-                messages.error(request, u'У вас нет прав на создание дополнительного поля', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание дополнительного поля'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
 
@@ -62,16 +62,16 @@ def dynamicschemafield_edit(request):
             model.save()
 
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'Дополнительное поле успешно сохранёно.', extra_tags='alert-success')
+            messages.success(request, _(u'Дополнительное поле успешно сохранёно.'), extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-            messages.error(request, u'При сохранении поля возникли ошибки.', extra_tags='alert-danger')
+            messages.error(request, _(u'При сохранении поля возникли ошибки.'), extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
 
         if  not (request.user.account.has_perm('dynamicmodel.change_dynamicschemafield')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {}
         if id:
 
@@ -87,18 +87,18 @@ def dynamicschemafield_edit(request):
 @systemuser_required
 def dynamicschemafield_delete(request):
     if  not (request.user.account.has_perm('dynamicmodel.change_dynamicschemafield')):
-        return {'status':False, 'message': u'У вас нет прав на удаление дополнительных полей'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление дополнительных полей')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = DynamicSchemaField.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанное поле не найдено %s" % str(e)}
+            return {"status": False, "message": _(u"Указанное поле не найдено %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
-        messages.success(request, u'Поле успешно удалёно.', extra_tags='alert-success')
+        messages.success(request, _(u'Поле успешно удалёно.'), extra_tags='alert-success')
         return {"status": True}
     else:
-        messages.error(request, u'При удалении поля возникли ошибки.', extra_tags='alert-danger')
+        messages.error(request, _(u'При удалении поля возникли ошибки.'), extra_tags='alert-danger')
         return {"status": False, "message": "dynamic field not found"} 
     

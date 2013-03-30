@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load billservice_tags %}
 {% load ebsadmin_tags %}
 {% load custom_filters %}
@@ -19,7 +20,7 @@
         	        else
         	        	alert(data.generated)
         	    }else{
-        	        alert('В процессе отправки произошла ошибка.')
+        	        alert('{% blocktrans %}В процессе отправки произошла ошибка.{% endblocktrans %}')
         	    }
         	})
         	});
@@ -28,7 +29,7 @@
 
 
             $('<div/>').dialog2({
-                title: "Отправить SMS", 
+                title: "{% blocktrans %}Отправить SMS{% endblocktrans %}", 
                 content: this.href+'?accounts={{account.id}}', 
                 id: "server-notice"
             });
@@ -59,7 +60,7 @@
                     else
                         alert(data.generated)
                 }else{
-                    alert('В процессе отправки произошла ошибка :(')
+                    alert('{% blocktrans %}В процессе отправки произошла ошибка :({% endblocktrans %}')
                 }
             })
             });
@@ -69,23 +70,23 @@
 
              $("#modal-accounttariff-dialog").click(function(event) {
                  $('<div/>').dialog2({
-                     title: "Изменение тарифного плана", 
+                     title: "{% blocktrans %}Изменение тарифного плана{% endblocktrans %}", 
                      content: "/ebsadmin/accounttariff/edit/?account_id={{account.id}}", 
                      id: "server-notice"
                  });
 
-                 event.preventDefault();
+                 event.preventDefault(event);
              });
 
 
             $("#modal-accounttariff-dialog-table").click(function(event) {
                 $('<div/>').dialog2({
-                    title: "Изменение тарифного плана", 
+                    title: "{% blocktrans %}Изменение тарифного плана{% endblocktrans %}", 
                     content: "/ebsadmin/accounttariff/edit/?account_id={{account.id}}", 
                     id: "server-notice"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
 
 
@@ -93,71 +94,71 @@
 
             $("#modal-suspendedperiod-dialog-table").click(function(event) {
                 $('<div/>').dialog2({
-                    title: "Добавить период без списаний услуг", 
+                    title: "{% blocktrans %}Добавить период без списаний услуг{% endblocktrans %}", 
                     content: "{% url suspendedperiod %}?account_id={{account.id}}", 
                     id: "server-notice"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
 
 
             $("#modal-transaction-dialog").click(function(event) {
                 $('<div/>').dialog2({
-                    title: "Внести платёж", 
+                    title: "{% blocktrans %}Внести платёж{% endblocktrans %}", 
                     content: "{% url transaction_edit %}?account_id={{account.id}}", 
                     id: "server-notice"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
 
             $("#modal-accounthardware-dialog-table").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Прикрепить подключаемую услугу", 
+                    title: "{% blocktrans %}Прикрепить подключаемую услугу{% endblocktrans %}", 
                     content: "{% url accounthardware %}?account_id={{account.id}}", 
                     id: "accounthardware-modal"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
 
             		
             $("#modal-accountaddonservice-dialog").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Прикрепить подключаемую услугу", 
+                    title: "{% blocktrans %}Прикрепить подключаемую услугу{% endblocktrans %}", 
                     content: "{% url accountaddonservice %}?account_id={{account.id}}", 
                     id: "accountaddonservicer-modal"
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
 
 
             $("#modal-templateselect-dialog").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Выберите шаблон документа", 
+                    title: "{% blocktrans %}Выберите шаблон документа{% endblocktrans %}", 
                     content: "{% url templateselect %}?account_id={{account.id}}&type=1&type=2", 
                     id: "templateselect-modal",
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
 
             $(function() {
                 $(".open-custom-dialog").click(function(event) {
                     $('<div />').dialog2({
-                        title: "Добавить", 
+                        title: "{% blocktrans %}Добавить{% endblocktrans %}", 
                         content: this.href, 
                         id: "accountaddonservicer-modal"
                     });
 
-                    event.preventDefault();
+                    event.preventDefault(event);
                 });
             });
             $(".show-confirm").click(function() {
             	a=$(this);
-                $.fn.dialog2.helpers.confirm("Вы действительно хотите удалить?", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы действительно хотите удалить?{% endblocktrans %}", {
                     confirm: function() {
                     	$.getJSON(a.attr('href'),{},function(data,status){
                     	    if( status=='success' ){
@@ -169,7 +170,7 @@
                     	    		}
                     	    	
                     	    }else{
-                    	        alert('Произошла непредвиденная ошибка')
+                    	        alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                     	    }
 
                     	})                    	
@@ -177,7 +178,7 @@
                     decline: function() {  }
                 });
 
-                event.preventDefault();
+                event.preventDefault(event);
             });
             $('#id_house').autocomplete({
                 source: function( request, response )
@@ -298,7 +299,7 @@
 <div class="span9">
 <ul class="breadcrumb">
   <li>
-    <a href='{% url account_list %}?data=data'>Все аккаунты</a> / <a href="{% url account_edit%}?id={{account.id}}">{{account.username}}</a> 
+    <a href='{% url account_list %}?data=data'>{% blocktrans %}Все аккаунты{% endblocktrans %}</a> / <a href="{% url account_edit%}?id={{account.id}}">{{account.username}}</a> 
   </li>
 </ul>
 <div >
@@ -306,49 +307,49 @@
   <div class="navbar-inner">
     <div class="btn-toolbar">
       <div class="btn-group">
-        <a href="#" class="btn btn-danger" id='id_account-toolbar-save'>Сохранить</a>
+        <a href="#" class="btn btn-danger" id='id_account-toolbar-save'>{% blocktrans %}Сохранить{% endblocktrans %}</a>
       </div>
       {% if account %}
       <div class="btn-group">
         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          Radius отчёты <span class="caret"></span>
+          {% blocktrans %}Radius отчёты{% endblocktrans %} <span class="caret"></span>
         </a>
         <ul class="dropdown-menu">
-              <li><a href="{% url authlog_list %}?account={{account.id}}"><i class="icon-info-sign"></i>RADIUS авторизации</a></li>
-              <li><a href="{% url activesessionreport %}?account={{account.id}}"><i class="icon-info-sign"></i>RADIUS сессии</a></li>
-              <li><a href="{% url ipinuse_list %}?account={{account.id}}"><i class="icon-info-sign"></i>Использованные IP-адреса</a></li>
+              <li><a href="{% url authlog_list %}?account={{account.id}}"><i class="icon-info-sign"></i>{% blocktrans %}RADIUS авторизации{% endblocktrans %}</a></li>
+              <li><a href="{% url activesessionreport %}?account={{account.id}}"><i class="icon-info-sign"></i>{% blocktrans %}RADIUS сессии{% endblocktrans %}</a></li>
+              <li><a href="{% url ipinuse_list %}?account={{account.id}}"><i class="icon-info-sign"></i>{% blocktrans %}Использованные IP-адреса{% endblocktrans %}</a></li>
         </ul>
       </div>
        <div class="btn-group">
         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          Предоплаченные остатки <span class="caret"></span>
+          {% blocktrans %}Предоплаченные остатки{% endblocktrans %} <span class="caret"></span>
         </a>
         <ul class="dropdown-menu">
-              <li><a href="{% url accountprepaystraffic %}?account={{account.id}}"> NetFlow трафик</a></li>
-              <li><a href="{% url accountprepaysradiustraffic %}?account={{account.id}}">RADIUS трафик</a></li>
-              <li><a href="{% url accountprepaystime %}?account={{account.id}}">Время</a></li>
+              <li><a href="{% url accountprepaystraffic %}?account={{account.id}}"> {% blocktrans %}NetFlow трафик{% endblocktrans %}</a></li>
+              <li><a href="{% url accountprepaysradiustraffic %}?account={{account.id}}">{% blocktrans %}RADIUS трафик{% endblocktrans %}</a></li>
+              <li><a href="{% url accountprepaystime %}?account={{account.id}}">{% blocktrans %}Время{% endblocktrans %}</a></li>
         </ul>
       </div>
        <div class="btn-group">
         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          Финансовые логи <span class="caret"></span>
+          {% blocktrans %}Финансовые логи{% endblocktrans %} <span class="caret"></span>
         </a>
         <ul class="dropdown-menu">
-               <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_payments=True">Пополнения баланса</a></li>
-              <li><a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">Обещанные платежи</a></li>
-              <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">История изменения баланса</a></li>
+               <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_payments=True">{% blocktrans %}Пополнения баланса{% endblocktrans %}</a></li>
+              <li><a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">{% blocktrans %}Обещанные платежи{% endblocktrans %}</a></li>
+              <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">{% blocktrans %}История изменения баланса{% endblocktrans %}</a></li>
         </ul>
       </div>
       <div class="btn-group">
-        <a href='{% url news_edit %}?accounts={{account.id}}&private=True' class="btn" id='id_account-toolbar-save'><i class='cus-newspaper'></i> Сообшение</a>
+        <a href='{% url news_edit %}?accounts={{account.id}}&private=True' class="btn" id='id_account-toolbar-save'><i class='cus-newspaper'></i> {% blocktrans %}Сообшение{% endblocktrans %}</a>
       </div>
        <div class="btn-group">
         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          SMS <span class="caret"></span>
+          {% blocktrans %}SMS{% endblocktrans %} <span class="caret"></span>
         </a>
         <ul class="dropdown-menu">
-               <li><a href="{% url sendsms %}"  id="modal-sendsms-dialog-table">Отправить SMS</a></li>
-              <li><a href="{% url sms %}?accounts={{account.id}}">Отправленные SMS</a></li>
+               <li><a href="{% url sendsms %}"  id="modal-sendsms-dialog-table">{% blocktrans %}Отправить SMS{% endblocktrans %}</a></li>
+              <li><a href="{% url sms %}?accounts={{account.id}}">{% blocktrans %}Отправленные SMS{% endblocktrans %}</a></li>
 
         </ul>
       </div>
@@ -361,19 +362,19 @@
 
             <form class=" well form-horizontal  form-condensed" method="POST" id="id_form" action="{% url account_edit %}{% if account %}?id={{account.id}}{% endif %}">
                 <ul class="nav nav-tabs" id="tab-control">
-                    <li class="active"><a href="#tab-first" data-toggle="tab">Карточка</a></li>
-                    <li class=""><a href="#tab-address" data-toggle="tab">Персональные данные</a></li>
-                    <li class=""><a href="#tab-extra" data-toggle="tab">Дополнительные поля</a></li>
-                    <li class=""><a href="#tab-second" data-toggle="tab">Юр. лицо</a></li>
-                    <li class=""><a href="#tab-third" data-toggle="tab">Прочее</a></li>
-                    <li class=""><a href="#tab-helpdesk" data-toggle="tab">HelpDesk</a></li>
+                    <li class="active"><a href="#tab-first" data-toggle="tab">{% blocktrans %}Карточка{% endblocktrans %}</a></li>
+                    <li class=""><a href="#tab-address" data-toggle="tab">{% blocktrans %}Персональные данные{% endblocktrans %}</a></li>
+                    <li class=""><a href="#tab-extra" data-toggle="tab">{% blocktrans %}Дополнительные поля{% endblocktrans %}</a></li>
+                    <li class=""><a href="#tab-second" data-toggle="tab">{% blocktrans %}Юр. лицо{% endblocktrans %}</a></li>
+                    <li class=""><a href="#tab-third" data-toggle="tab">{% blocktrans %}Прочее{% endblocktrans %}</a></li>
+                    <li class=""><a href="#tab-helpdesk" data-toggle="tab">{% blocktrans %}HelpDesk{% endblocktrans %}</a></li>
 
                 </ul>
 
                 <div class="tab-content">
                     <div class="tab-pane active" id="tab-first">
                         <fieldset>
-                            <legend>Карточка клиента{% objectlog account %}</legend>
+                            <legend>{% blocktrans %}Карточка клиента{% endblocktrans %}{% objectlog account %}</legend>
 
 
     
@@ -1189,23 +1190,23 @@
                         </fieldset>
                         {% comment %}
                         <fieldset>
-                            <legend>Документы<button href="#" class="btn align-right">Добавить</button></legend>
+                            <legend>{% blocktrans %}Документы{% endblocktrans %}<button href="#" class="btn align-right">{% blocktrans %}Добавить{% endblocktrans %}</button></legend>
 
                         </fieldset>
                         {% endcomment %}
                         <fieldset>
-                            <legend>Взятое в аренду оборудование</legend>
+                            <legend>{% blocktrans %}Взятое в аренду оборудование{% endblocktrans %}</legend>
                             {% if accounthardware_table %}{% render_table accounthardware_table %}{% endif %}
-                            <input type="button"  id="modal-accounthardware-dialog-table" class="btn btn-success  align-right" value="Добавить">
+                            <input type="button"  id="modal-accounthardware-dialog-table" class="btn btn-success  align-right" value="{% blocktrans %}Добавить{% endblocktrans %}">
                         </fieldset>
 
                         <fieldset>
                             <legend>Периоды без списаний</legend>
                             {% if suspendedperiod_table %}{% render_table suspendedperiod_table  %}{% endif %}
-                            <input type="button" id="modal-suspendedperiod-dialog-table" class="btn btn-success  align-right" value="Добавить">
+                            <input type="button" id="modal-suspendedperiod-dialog-table" class="btn btn-success  align-right" value="{% blocktrans %}Добавить{% endblocktrans %}">
                         </fieldset>
                         <fieldset>
-                            <legend>Прочее</legend>
+                            <legend>{% blocktrans %}Прочее{% endblocktrans %}</legend>
                             <div class="control-group">
 
                                 
@@ -1285,7 +1286,7 @@
                                 </div>
                             </div>
                             <div class="control-group">
-                                <label class="control-label" for="input-max">Опции</label>
+                                <label class="control-label" for="input-max">{% blocktrans %}Опции{% endblocktrans %}</label>
                                 <div class="controls docs-input-sizes">
                                     <label class="checkbox">
                                    {{ form.allow_webcab }}{{form.allow_webcab.label}}
@@ -1320,7 +1321,7 @@
 
                     <div class="tab-pane" id="tab-helpdesk">
                         <fieldset>
-                            <legend>Запросы в HelpDesk</legend>
+                            <legend>{% blocktrans %}Запросы в HelpDesk{% endblocktrans %}</legend>
                                {% if ticket_table %} {% render_table ticket_table %} {% endif %}
                            
 
@@ -1328,7 +1329,7 @@
                     </div>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <input class="btn btn-primary" type="submit" value="Сохранить">
+                        <input class="btn btn-primary" type="submit" value="{% blocktrans %}Сохранить{% endblocktrans %}">
                     </div>
                 </fieldset>
                 </div>
@@ -1340,21 +1341,21 @@
         <div class="span3">
           <div class="well sidebar-nav">
             <ul class="nav nav-list">
-              <li class="nav-header">Баланс</li>
+              <li class="nav-header">{% blocktrans %}Баланс{% endblocktrans %}</li>
               <strong><h2>{{account.ballance|floatformat:2}} {{currency}}</h2></strong>
-              <strong>Обещанные платежи: <a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">{{account.get_last_promises_count}}</a></strong>
+              <strong>{% blocktrans %}Обещанные платежи:{% endblocktrans %} <a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">{{account.get_last_promises_count}}</a></strong>
                 <li>                                    <div class="btn-group">
-                                        <a href="#"  class="btn btn-large btn-success" id="modal-transaction-dialog" ><i class="icon-plus icon-white "></i>Пополнить</a>
+                                        <a href="#"  class="btn btn-large btn-success" id="modal-transaction-dialog" ><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
 
                                     </div></li>
             </ul>
           </div>
           <div class="well sidebar-nav alert-success">
             <ul class="nav nav-list">
-              <li class="nav-header">Тариф</li>
+              <li class="nav-header">{% blocktrans %}Тариф{% endblocktrans %}</li>
               <strong><h4><a href="{% url tariff_edit %}?id={{account.get_account_tariff.id}}">{{account.get_account_tariff.name}}</a></h4></strong>
                 <li>                                    <div class="btn-group">
-                                        <a href="#"  class="btn btn-large btn-info" id="modal-accounttariff-dialog" ><i class="icon-pencil icon-white "></i>Изменить</a>
+                                        <a href="#"  class="btn btn-large btn-info" id="modal-accounttariff-dialog" ><i class="icon-pencil icon-white "></i>{% blocktrans %}Изменить{% endblocktrans %}</a>
 
                                     </div></li>
             </ul>

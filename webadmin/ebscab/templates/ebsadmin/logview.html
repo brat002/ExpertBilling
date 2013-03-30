@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% block extra_head %}
         <script type="text/javascript"> 
@@ -11,13 +12,13 @@
 {% block base %}
 <div class="span12">
 <div class="row-fluid">
-<legend>Просмотр логов</legend>
+<legend>{% blocktrans %}Просмотр логов{% endblocktrans %}</legend>
 <form method="GET" action="{% url logview %}?id={{item.id}}" class="form-condensed " >
 <div class="navbar navbar-googlenav">
   <div class="navbar-inner">
     <div class="btn-toolbar">
       <div class="btn-group">
-      <label>Лог: </label>
+      <label>{% blocktrans %}Лог{% endblocktrans %}: </label>
         {{form.log}}
       </div>
       <div class="btn-group">
@@ -31,7 +32,7 @@
       </div>
  
       <div class="btn-group pull-right">
-        <button class="btn btn-primary" type="submit">Показать</button>
+        <button class="btn btn-primary" type="submit">{% blocktrans %}Показать{% endblocktrans %}</button>
       </div>
  
   </div>

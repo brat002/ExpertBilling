@@ -14,14 +14,14 @@ from billservice.models import GroupStat
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/groupstat_list.html')
 def groupstat(request):
         
     if  not (request.user.account.has_perm('billservice.view_groupstat')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
 

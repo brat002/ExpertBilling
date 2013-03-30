@@ -13,7 +13,7 @@ from billservice.models import AccountPrepaysTrafic
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
@@ -21,7 +21,7 @@ from billservice.helpers import systemuser_required
 def accountprepaystraffic(request):
         
     if  not (request.user.account.has_perm('billservice.view_accountprepaystraffic')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     if request.method=='GET' and request.GET: 
@@ -82,12 +82,12 @@ def accountprepaystraffic_edit(request):
             model = AccountPrepaysTrafic.objects.get(id=id)
             form = AccountPrepaysTraficForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountprepaystraffic')):
-                messages.error(request, u'У вас нет прав на редактирование предоплаченного трафика', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование предоплаченного трафика'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             form = AccountPrepaysTraficForm(request.POST) 
             if  not (request.user.account.has_perm('billservice.add_accountprepaystraffic')):
-                messages.error(request, u'У вас нет прав на добавление предоплаченного трафика', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на добавление предоплаченного трафика'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
 
@@ -106,7 +106,7 @@ def accountprepaystraffic_edit(request):
 
         if id:
             if  not (request.user.account.has_perm('billservice.view_accountprepaystraffic')):
-                messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
                 return {}
 
             item = AccountPrepaysTrafic.objects.get(id=id)
@@ -121,13 +121,13 @@ def accountprepaystraffic_edit(request):
 @systemuser_required
 def accountprepaystraffic_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_accountprepaystrafic')):
-        return {'status':False, 'message': u'У вас нет прав на удаление предоплаченного NetFlow трафика'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление предоплаченного NetFlow трафика')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = AccountPrepaysTrafic.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанная запись не найдена %s" % str(e)}
+            return {"status": False, "message": _(u"Указанная запись не найдена %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

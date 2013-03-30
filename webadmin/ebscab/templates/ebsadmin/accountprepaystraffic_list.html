@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
@@ -8,7 +9,7 @@
         	$("#id_daterange").daterangepicker({format:'yyyy-MM-dd'});
             $(".open-custom-dialog").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Изменить значения", 
+                    title: "{% blocktrans %}Изменить значения{% endblocktrans %}", 
                     content: this.href
                 });
 
@@ -16,7 +17,7 @@
             });
             $(".show-confirm").click(function(event) {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить предоплаченный трафик? Вместо удаления рекомендуем воспользоваться редактированием. Удаление процедура не безопасная и мы не советуем к ней прибегать, если вы точно не уверены в том, что делаете.", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить предоплаченный трафик? Вместо удаления рекомендуем воспользоваться редактированием. Удаление процедура не безопасная и мы не советуем к ней прибегать, если вы точно не уверены в том, что делаете.{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -28,7 +29,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибк{% endblocktrans %}')
                             }
 
                         })                      
@@ -48,10 +49,10 @@
 
 {% endblock %}
 {% block base %}
-<legend>Остатки предоплаченного трафика(NetFlow тарификация)</legend>
+<legend>{% blocktrans %}Остатки предоплаченного трафика(NetFlow тарификация){% endblocktrans %}</legend>
 <ul class="nav nav-tabs" id="tab-control">
-  <li ><a href="#filter">Фильтр</a></li>
-  <li><a href="#result">Отчёт</a></li>  
+  <li ><a href="#filter">{% blocktrans %}Фильтр{% endblocktrans %}</a></li>
+  <li><a href="#result">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>  
 </ul>
 
  {% load render_table from django_tables2 %}
@@ -63,12 +64,12 @@
             <form action="{{form.action}}" method="GET" class="well form-horizontal form-condensed ">
             {{ form.non_field_errors }}
                 <fieldset>
-                    <legend>Поиск по остаткам трафика</legend>
+                    <legend>{% blocktrans %}Поиск по остаткам трафика{% endblocktrans %}</legend>
                     {{form|crispy}}
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Подобрать результаты</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

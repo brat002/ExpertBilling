@@ -17,14 +17,14 @@ from nas.models import TrafficClass, TrafficNode
 from django.contrib import messages
 from IPy import IP
 log = LogItem.objects.log_action
-
+from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
 @render_to('ebsadmin/trafficclass_list.html')
 def trafficclass(request):
     if  not (request.user.account.has_perm('nas.view_trafficclass')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     res = TrafficClass.objects.all()
@@ -77,7 +77,7 @@ def trafficclass_upload(request):
 @systemuser_required
 def trafficclass_weight(request):
     if  not (request.user.account.has_perm('nas.change_trafficclass')):
-        return {'status':False, 'message': u'У вас нет прав на изменение классов'}
+        return {'status':False, 'message': _(u'У вас нет прав на изменение классов')}
     ids = request.POST.getlist("id")
     k=1
     if ids:
@@ -94,7 +94,7 @@ def trafficclass_weight(request):
 @render_to('ebsadmin/trafficnode_list.html')
 def trafficnode_list(request):
     if  not (request.user.account.has_perm('nas.view_trafficnode')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     id = request.GET.get("id")
     res = TrafficNode.objects.filter(traffic_class__id=id)
@@ -117,12 +117,12 @@ def trafficclass_edit(request):
             model = TrafficClass.objects.get(id=id)
             form = TrafficClassForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('nas.change_trafficclass')):
-                messages.error(request, u'У вас нет прав на редактирование классов трафика', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование классов трафика'), extra_tags='alert-danger')
                 return {}
         else:
             form = TrafficClassForm(request.POST) 
             if  not (request.user.account.has_perm('nas.add_trafficclass')):
-                messages.error(request, u'У вас нет прав на создание классов трафика', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание классов трафика'), extra_tags='alert-danger')
                 return {}
 
             
@@ -138,7 +138,7 @@ def trafficclass_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('nas.view_trafficclass')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {}
         
         if id:
@@ -165,12 +165,12 @@ def trafficnode(request):
             model = TrafficNode.objects.get(id=id)
             form = TrafficNodeForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('nas.change_trafficnode')):
-                messages.error(request, u'У вас нет прав на изменение составляющих класса трафика', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на изменение составляющих класса трафика'), extra_tags='alert-danger')
                 return {}
         else:
             form = TrafficNodeForm(request.POST) 
             if  not (request.user.account.has_perm('nas.add_trafficnode')):
-                messages.error(request, u'У вас нет прав на создание составляющих класса трафика', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание составляющих класса трафика'), extra_tags='alert-danger')
                 return {}
 
 
@@ -189,7 +189,7 @@ def trafficnode(request):
         traffic_class_id = request.GET.get("traffic_class")
 
         if  not (request.user.account.has_perm('nas.view_trafficnode')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {}
     
         if id:
@@ -207,13 +207,13 @@ def trafficnode(request):
 @systemuser_required
 def trafficnode_delete(request):
     if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_trafficnode')):
-        return {'status':False, 'message': u'У вас нет прав на удаление направлений'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление направлений')}
     id = request.GET.getlist('d')
     if id:
         try:
             items = TrafficNode.objects.filter(id__in=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанное направление не найдено %s" % str(e)}
+            return {"status": False, "message": _(u"Указанное направление не найдено %s") % str(e)}
         for item in items:
             log('DELETE', request.user, item)
             item.delete()
@@ -225,13 +225,13 @@ def trafficnode_delete(request):
 @systemuser_required
 def trafficclass_delete(request):
     if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_trafficclass')):
-        return {'status':False, 'message': u'У вас нет прав на удаление классов трафика'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление классов трафика')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = TrafficClass.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанный класс не найден %s" % str(e)}
+            return {"status": False, "message": _(u"Указанный класс не найден %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

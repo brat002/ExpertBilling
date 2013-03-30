@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% load render_table from django_tables2 %}
 {% block extra_head %}
@@ -6,7 +7,7 @@
         $(document).ready(function() {
             $(".open-custom-dialog").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Изменить устройство", 
+                    title: "{% blocktrans %}Изменить устройство{% endblocktrans %}", 
                     content: this.href, 
                     id: "hardware-modal"
                 });
@@ -15,7 +16,7 @@
             });
             $(".show-confirm").click(function(event) {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить? Удаление устройства вызовет удаление всех связаных с ним объектов в системе.", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? Удаление устройства вызовет удаление всех связаных с ним объектов в системе.{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -27,7 +28,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                             }
 
                         })                      
@@ -51,11 +52,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url hardware %}">Устройства</a> <span class="divider">/</span>
+    <a href="{% url hardware %}">{% blocktrans %}Устройства{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="{% url hardware_edit %}" id="id_btn_add" class="btn btn-success">Добавить</a>&nbsp;</div>
+<div class="btn-toolbar pull-right"><a href="{% url hardware_edit %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
 <div>
   {% render_table table %}
 </div>

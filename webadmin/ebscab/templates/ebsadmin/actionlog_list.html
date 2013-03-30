@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
@@ -20,8 +21,8 @@
 {% block base %}
 
 <ul class="nav nav-tabs" id="tab-control">
-  <li ><a href="#filter">Фильтр</a></li>
-  <li><a href="#result">Отчёт</a></li>  
+  <li ><a href="#filter">{% blocktrans %}Фильтр{% endblocktrans %}</a></li>
+  <li><a href="#result">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>  
 </ul>
 
  {% load render_table from django_tables2 %}
@@ -33,7 +34,7 @@
             <form action="{% url actionlog %}" method="GET" class="well form-horizontal form-condensed ">
             {{ form.non_field_errors }}
                 <fieldset>
-                    <legend>Поиск по логу действий</legend>
+                    <legend>{% blocktrans %}Поиск по логу действий{% endblocktrans %}</legend>
                    <div class="control-group">
                     <div class="control-row">
                       <label class="control-label">{{form.start_date.label}}: </label>
@@ -133,7 +134,7 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Подобрать результаты</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

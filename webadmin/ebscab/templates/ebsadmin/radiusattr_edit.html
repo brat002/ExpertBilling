@@ -1,4 +1,6 @@
 {% load ebsadmin_tags %}
+{% load i18n %}
+{% load crispy_forms_tags %}
 {% block extra_head %}
  <script type="text/javascript"> 
  $(document).ready(function() {
@@ -18,71 +20,7 @@
       {% endfor %}
 {% if form %}
                 <form action='{% url radiusattr_edit %}?nas={{nas.id}}&tarif={{tariff.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
-                <fieldset>
-                  {{ form.id }}
-                  {{ form.nas }}
-                  {{ form.tarif }}
-                  <div class="control-group">
-                  <div class="control-row">
-                      <label class="control-label">Vendor: </label>
-                      <div class="controls">
-                      {{ form.vendor }}
-                      {% if form.vendor.errors %}
-                          <span class="help-inline">{% for error in form.vendor.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.vendor.help_text%}
-                          <p class="help-block">
-                              {{ form.vendor.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  </div>
-                  <div class="control-group">
-                      <label class="control-label">{{form.attrid.label}}: </label>
-                      <div class="controls">
-                      {{ form.attrid }}
-                      {% if form.attrid.errors %}
-                          <span class="help-inline">{% for error in form.attrid.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.attrid.help_text%}
-                          <p class="help-block">
-                              {{ form.attrid.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  <div class="control-group">
-
-                      <label class="control-label">{{form.value.label}}:</label>
-                      <div class="controls">
-                      {{ form.value }}
-                      {% if form.value.errors %}
-                          <span class="help-inline">{% for error in form.value.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.value.help_text%}
-                          <p class="help-block">
-                              {{ form.value.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  <div class="control-group">
-
-                      <label class="control-label">{{form.account_status.label}}:</label>
-                      <div class="controls">
-                      {{ form.account_status }}
-                      {% if form.account_status.errors %}
-                          <span class="help-inline">{% for error in form.account_status.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.account_status.help_text%}
-                          <p class="help-block">
-                              {{ form.account_status.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                </fieldset>
+                {{form|crispy}}
                 <div class="form-actions">
                     <input type='submit' class="btn btn-primary" value="Save Changes">
                     <a class="btn close-dialog" href="#">Close</a>

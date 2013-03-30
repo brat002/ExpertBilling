@@ -14,13 +14,13 @@ from billservice.models import SheduleLog
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/shedulelog_list.html')
 def shedulelog(request):
     if  not (request.user.account.has_perm('billservice.view_shedulelog')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET' and request.GET: 

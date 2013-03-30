@@ -1,4 +1,5 @@
 {% extends 'base_extended.html' %}
+{% load i18n %}
 {% load custom_filters %}
 {% load billservice_tags %}
 
@@ -116,38 +117,38 @@
 						<div class="range">
 							<ul>
 								<li>
-									<label>с даты:</label> <input type="text" name="date_from" id="transactions_date_from" />
+									<label>{% blocktrans %}с даты:{% endblocktrans %}</label> <input type="text" name="date_from" id="transactions_date_from" />
 								</li>
 								<li>
-									<label>по дату:</label> <input type="text" name="date_to" id="transactions_date_to" />
+									<label>{% blocktrans %}по дату:{% endblocktrans %}</label> <input type="text" name="date_to" id="transactions_date_to" />
 								</li>
 							</ul>
 						</div>
 					</form>
 					<a id="transactions_data_a" class="close" href="javascript:return 0;" onclick="runEffect('transactions_data')">&nbsp;</a>
-					<a href="#" onclick="document.getElementById('transactions').submit(); return false;">Фильтровать</a>
-					<a href="/transaction/">Архив</a>
+					<a href="#" onclick="document.getElementById('transactions').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
+					<a href="/transaction/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
-				<div class="f-left statistics_title">ИСТОРИЯ ПОПОЛНЕНИЙ</div>
+				<div class="f-left statistics_title">{% blocktrans %}ИСТОРИЯ ПОПОЛНЕНИЙ{% endblocktrans %}</div>
 			</th>
 		</tr>
 		<tr>
 			<td id="transactions_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th>Дата</th>
-						<th>Сумма</th>
-						<th>Обещенный платеж</th>
-						<th>Погасить до</th>
-						<th>Описание</th>
-						<th>Документ</th>
-						<th>Комментарий</th>
+						<th>{% blocktrans %}Дата{% endblocktrans %}</th>
+						<th>{% blocktrans %}Сумма{% endblocktrans %}</th>
+						<th>{% blocktrans %}Обещенный платеж{% endblocktrans %}</th>
+						<th>{% blocktrans %}Погасить до{% endblocktrans %}</th>
+						<th>{% blocktrans %}Описание{% endblocktrans %}</th>
+						<th>{% blocktrans %}Документ{% endblocktrans %}</th>
+						<th>{% blocktrans %}Комментарий{% endblocktrans %}</th>
 					</tr>
 					{% for transaction in transactions %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.created|date:"d.m.Y H:i" }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.summ|format_sum }}&nbsp;{{ CURRENCY }}</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{% if transaction.promise %}да{% else %}нет{% endif %}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}" align="center">{% if transaction.promise %}{% blocktrans %}да{% endblocktrans %}{% else %}{% blocktrans %}нет{% endblocktrans %}{% endif %}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.end_promise|date:"d.m.Y"  }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% ifequal transaction.description None %}&nbsp;{% else %} {{ transaction.description }} &nbsp;{% endifequal %}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ transaction.type.name }}&nbsp;</td>
@@ -170,30 +171,30 @@
 						<div class="range">
 							<ul>
 								<li>
-									<label>с даты:</label> <input type="text" name="date_from" id="active_session_date_from" />
+									<label>{% blocktrans %}с даты:{% endblocktrans %}</label> <input type="text" name="date_from" id="active_session_date_from" />
 								</li>
 								<li>
-									<label>по дату:</label> <input type="text" name="date_to" id="active_session_date_to" />
+									<label>{% blocktrans %}по дату:{% endblocktrans %}</label> <input type="text" name="date_to" id="active_session_date_to" />
 								</li>
 							</ul>
 						</div>
 					</form>
 					<a id="active_session_data_a" class="close" href="javascript:return 0;" onclick="runEffect('active_session_data')">&nbsp;</a>
-					<a href="#" onclick="document.getElementById('active_session').submit(); return false;">Фильтровать</a>
-					<a href="/session/info/">Архив</a>
+					<a href="#" onclick="document.getElementById('active_session').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
+					<a href="/session/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
-				<div class="f-left statistics_title">СЕССИИ</div>
+				<div class="f-left statistics_title">{% blocktrans %}СЕССИИ{% endblocktrans %}</div>
 			</th>
 		</tr>
 		<tr>
 			<td id="active_session_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th>Начало</th>
-						<th>Окончание</th>
-						<th>IP-адрес</th>
-						<th>Передано / Принято / Всего</th>
-						<th>Время</th>
+						<th>{% blocktrans %}Начало{% endblocktrans %}</th>
+						<th>{% blocktrans %}Окончание{% endblocktrans %}</th>
+						<th>{% blocktrans %}IP-адрес{% endblocktrans %}</th>
+						<th>{% blocktrans %}Передано / Принято / Всего{% endblocktrans %}</th>
+						<th>{% blocktrans %}Время{% endblocktrans %}</th>
 					</tr>
 					{% for session in active_session %}
 						<tr>
@@ -224,29 +225,29 @@
 						<div class="range">
 							<ul>
 								<li>
-									<label>с даты:</label> <input type="text" name="date_from" id="periodical_service_history_date_from" />
+									<label>{% blocktrans %}с даты:{% endblocktrans %}</label> <input type="text" name="date_from" id="periodical_service_history_date_from" />
 								</li>
 								<li>
-									<label>по дату:</label> <input type="text" name="date_to" id="periodical_service_history_date_to" />
+									<label>{% blocktrans %}по дату:{% endblocktrans %}</label> <input type="text" name="date_to" id="periodical_service_history_date_to" />
 								</li>
 							</ul>
 						</div>
 					</form>
 					<a id="periodical_service_history_data_a" class="close" href="javascript:return 0;" onclick="runEffect('periodical_service_history_data')">&nbsp;</a>
-					<a href="#" onclick="document.getElementById('periodical_service_history').submit(); return false;">Фильтровать</a>
-					<a href="/service/history/info/">Архив</a>
+					<a href="#" onclick="document.getElementById('periodical_service_history').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
+					<a href="/service/history/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
-				<div class="f-left statistics_title">ПЕРИОДИЧЕСКИЕ УСЛУГИ</div>
+				<div class="f-left statistics_title">{% blocktrans %}ПЕРИОДИЧЕСКИЕ УСЛУГИ{% endblocktrans %}</div>
 			</th>
 		</tr>
 		<tr>
 			<td id="periodical_service_history_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th>Услуга</th>
-						<th>Дата</th>
-						<th>Сумма</th>
-						<th>Тип услуги</th>
+						<th>{% blocktrans %}Услуга{% endblocktrans %}</th>
+						<th>{% blocktrans %}Дата{% endblocktrans %}</th>
+						<th>{% blocktrans %}Сумма{% endblocktrans %}</th>
+						<th>{% blocktrans %}Тип услуги{% endblocktrans %}</th>
 					</tr>
 					{% for service in periodical_service_history %}
 						<tr>
@@ -273,28 +274,28 @@
 						<div class="range">
 							<ul>
 								<li>
-									<label>с даты:</label> <input type="text" name="date_from" id="one_time_history_date_from" />
+									<label>{% blocktrans %}с даты:{% endblocktrans %}</label> <input type="text" name="date_from" id="one_time_history_date_from" />
 								</li>
 								<li>
-									<label>по дату:</label> <input type="text" name="date_to" id="one_time_history_date_to" />
+									<label>{% blocktrans %}по дату:{% endblocktrans %}</label> <input type="text" name="date_to" id="one_time_history_date_to" />
 								</li>
 							</ul>
 						</div>
 					</form>
 					<a id="one_time_history_data_a" class="close" href="javascript:return 0;" onclick="runEffect('one_time_history_data')">&nbsp;</a>
-					<a href="#" onclick="document.getElementById('one_time_history').submit(); return false;">Фильтровать</a>
-					<a href="/one/time/history/info/">Архив</a>
+					<a href="#" onclick="document.getElementById('one_time_history').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
+					<a href="/one/time/history/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
-				<div class="f-left statistics_title">РАЗОВЫЕ УСЛУГИ</div>
+				<div class="f-left statistics_title">{% blocktrans %}РАЗОВЫЕ УСЛУГИ{% endblocktrans %}</div>
 			</th>
 		</tr>
 		<tr>
 			<td id="one_time_history_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th>Услуга</th>
-						<th>Сумма</th>
-						<th>Дата</th>
+						<th>{% blocktrans %}Услуга{% endblocktrans %}</th>
+						<th>{% blocktrans %}Сумма{% endblocktrans %}</th>
+						<th>{% blocktrans %}Дата{% endblocktrans %}</th>
 					</tr>
 					{% for one_time in one_time_history %}
 						<tr>
@@ -319,29 +320,29 @@
 						<div class="range">
 							<ul>
 								<li>
-									<label>с даты:</label> <input type="text" name="date_from" id="addon_service_transaction_date_from" />
+									<label>{% blocktrans %}с даты:{% endblocktrans %}</label> <input type="text" name="date_from" id="addon_service_transaction_date_from" />
 								</li>
 								<li>
-									<label>по дату:</label> <input type="text" name="date_to" id="addon_service_transaction_date_to" />
+									<label>{% blocktrans %}по дату:{% endblocktrans %}</label> <input type="text" name="date_to" id="addon_service_transaction_date_to" />
 								</li>
 							</ul>
 						</div>
 					</form>
 					<a id="addon_service_transaction_data_a" class="close" href="javascript:return 0;" onclick="runEffect('addon_service_transaction_data')">&nbsp;</a>
-					<a href="#" onclick="document.getElementById('addon_service_transaction').submit(); return false;">Фильтровать</a>
-					<a href="/addon/services/transaction/info/">Архив</a>
+					<a href="#" onclick="document.getElementById('addon_service_transaction').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
+					<a href="/addon/services/transaction/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
-				<div class="f-left statistics_title">ПОДКЛЮЧАЕМЫЕ УСЛУГИ</div>
+				<div class="f-left statistics_title">{% blocktrans %}ПОДКЛЮЧАЕМЫЕ УСЛУГИ{% endblocktrans %}</div>
 			</th>
 		</tr>
 		<tr>
 			<td id="addon_service_transaction_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th>Услуга</th>
-						<th>Тип услуги</th>
-						<th>Сумма</th>
-						<th>Дата</th>
+						<th>{% blocktrans %}Услуга{% endblocktrans %}</th>
+						<th>{% blocktrans %}Тип услуги{% endblocktrans %}</th>
+						<th>{% blocktrans %}Сумма{% endblocktrans %}</th>
+						<th>{% blocktrans %}Дата{% endblocktrans %}</th>
 					</tr>
 					{% for transaction in addon_service_transaction %}
 						<tr>
@@ -367,27 +368,27 @@
 						<div class="range">
 							<ul>
 								<li>
-									<label>с даты:</label> <input type="text" name="date_from" id="traffic_transaction_date_from" />
+									<label>{% blocktrans %}с даты:{% endblocktrans %}</label> <input type="text" name="date_from" id="traffic_transaction_date_from" />
 								</li>
 								<li>
-									<label>по дату:</label> <input type="text" name="date_to" id="traffic_transaction_date_to" />
+									<label>{% blocktrans %}по дату:{% endblocktrans %}</label> <input type="text" name="date_to" id="traffic_transaction_date_to" />
 								</li>
 							</ul>
 						</div>
 					</form>
 					<a id="traffic_transaction_data_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic_transaction_data')">&nbsp;</a>
-					<a href="#" onclick="document.getElementById('traffic_transaction').submit(); return false;">Фильтровать</a>
-					<a href="/traffic/transaction/info/">Архив</a>
+					<a href="#" onclick="document.getElementById('traffic_transaction').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
+					<a href="/traffic/transaction/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
-				<div class="f-left statistics_title">СПИСАНИЯ ЗА ТРАФИК</div>
+				<div class="f-left statistics_title">{% blocktrans %}СПИСАНИЯ ЗА ТРАФИК{% endblocktrans %}</div>
 			</th>
 		</tr>
 		<tr>
 			<td id="traffic_transaction_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th>Дата</th>
-						<th>Сумма</th>
+						<th>{% blocktrans %}Дата{% endblocktrans %}</th>
+						<th>{% blocktrans %}Сумма{% endblocktrans %}</th>
 					</tr>
 					{% for transaction in traffic_transaction %}
 						<tr>
@@ -410,30 +411,30 @@
 						<div class="range">
 							<ul>
 								<li>
-									<label>с даты:</label> <input type="text" name="date_from" id="traffic_volume_date_from" />
+									<label>{% blocktrans %}с даты:{% endblocktrans %}</label> <input type="text" name="date_from" id="traffic_volume_date_from" />
 								</li>
 								<li>
-									<label>по дату:</label> <input type="text" name="date_to" id="traffic_volume_date_to" />
+									<label>{% blocktrans %}по дату:{% endblocktrans %}</label> <input type="text" name="date_to" id="traffic_volume_date_to" />
 								</li>
 							</ul>
 						</div>
 					</form>
 					<a id="traffic_volume_data_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic_volume_data')">&nbsp;</a>
-					<a href="#" onclick="document.getElementById('traffic_volume').submit(); return false;">Фильтровать</a>
-					<a href="/traffic/volume/info/">Архив</a>
+					<a href="#" onclick="document.getElementById('traffic_volume').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
+					<a href="/traffic/volume/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
-				<div class="f-left statistics_title">Объём трафика</div>
+				<div class="f-left statistics_title">{% blocktrans %}Объём трафика{% endblocktrans %}</div>
 			</th>
 		</tr>
 		<tr>
 			<td id="traffic_volume_data">
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th>Направление</th>
-						<th>Год</th>
-						<th>Месяц</th>
-						<th>День</th>
-						<th>Объём</th>
+						<th>{% blocktrans %}Направление{% endblocktrans %}</th>
+						<th>{% blocktrans %}Год{% endblocktrans %}</th>
+						<th>{% blocktrans %}Месяц{% endblocktrans %}</th>
+						<th>{% blocktrans %}День{% endblocktrans %}</th>
+						<th>{% blocktrans %}Объём{% endblocktrans %}</th>
 					</tr>
 					{% for gpst in group_stat %}
 						<tr>
@@ -456,6 +457,6 @@
 		
 	</table>
 {% else %}
-	<h2 align="center">Информации нет</h2>
+	<h2 align="center">{% blocktrans %}Информации нет{% endblocktrans %}</h2>
 {% endif %}
 {% endblock %}

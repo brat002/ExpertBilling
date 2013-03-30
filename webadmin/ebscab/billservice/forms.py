@@ -24,6 +24,7 @@ from django.core.urlresolvers import reverse
 from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSelectMultipleWidget, AutoCompleteSelectField
 from itertools import chain
 from widgets import SplitDateTimeWidget, CheckboxSelectMultipleWithSelectAll
+from django.utils.translation import ugettext as _
 
 class DateRangeField(forms.DateField):
     def __init__(self, *args, **kwargs):
@@ -113,34 +114,34 @@ class MyMultipleCheckBoxInput(forms.widgets.CheckboxSelectMultiple):
        
                 
 class LoginForm(forms.Form):
-    username = forms.CharField(label=u"Имя пользователя", required = True, error_messages={'required':u'Вы не ввели имя пользователя!'})
-    user = forms.CharField(label=u"User", required = False)
-    password = forms.CharField(label=u"Пароль", widget=forms.PasswordInput, required = False)
-    pin = forms.CharField(label=u"Пин", widget=forms.PasswordInput(attrs={'class': 'unset'}), required = False)
+    username = forms.CharField(label=_(u"Имя пользователя"), required = True, error_messages={'required':_(u'Вы не ввели имя пользователя!')})
+    user = forms.CharField(label=_(u"User"), required = False)
+    password = forms.CharField(label=_(u"Пароль"), widget=forms.PasswordInput, required = False)
+    pin = forms.CharField(label=_(u"Пин"), widget=forms.PasswordInput(attrs={'class': 'unset'}), required = False)
     
 class PromiseForm(forms.Form):
-    sum = forms.FloatField(label=u"Сумма", required = True, error_messages={'required':u'Вы не указали размер платежа!'})
+    sum = forms.FloatField(label=_(u"Сумма"), required = True, error_messages={'required':_(u'Вы не указали размер платежа!')})
     
 class EmailForm(forms.Form):
-    new_email = forms.EmailField(label=u"Новый e-mail", required = False,  error_messages={'required':u'Обязательное поле!'} )
-    repeat_email = forms.EmailField(label=u"Повторите e-mail", required = False, error_messages={'required':u'Обязательное поле!'} )
+    new_email = forms.EmailField(label=_(u"Новый e-mail"), required = False,  error_messages={'required':_(u'Обязательное поле!')} )
+    repeat_email = forms.EmailField(label=_(u"Повторите e-mail"), required = False, error_messages={'required':_(u'Обязательное поле!')} )
     
     
 class PasswordForm(forms.Form):
-    old_password = forms.CharField(label=u"Старый пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
-    new_password = forms.CharField(label=u"Новый пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
-    repeat_password = forms.CharField(label=u"Повторите пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
+    old_password = forms.CharField(label=_(u"Старый пароль"), required = True, widget=forms.PasswordInput, error_messages={'required':_(u'Обязательное поле!')} )
+    new_password = forms.CharField(label=_(u"Новый пароль"), required = True, widget=forms.PasswordInput, error_messages={'required':_(u'Обязательное поле!')} )
+    repeat_password = forms.CharField(label=_(u"Повторите пароль"), required = True, widget=forms.PasswordInput, error_messages={'required':_(u'Обязательное поле!')} )
 
 
 
 class SimplePasswordForm(forms.Form):
-    new_password = forms.CharField(label=u"Новый пароль", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
-    repeat_password = forms.CharField(label=u"Повторите", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'} )
+    new_password = forms.CharField(label=_(u"Новый пароль"), required = True, widget=forms.PasswordInput, error_messages={'required':_(u'Обязательное поле!')} )
+    repeat_password = forms.CharField(label=_(u"Повторите"), required = True, widget=forms.PasswordInput, error_messages={'required':_(u'Обязательное поле!')} )
     
 class ActivationCardForm(forms.Form):
-    series = forms.IntegerField(label=u"Введите серию", required = True, error_messages={'required':u'Обязательное поле!'})
-    card_id = forms.IntegerField(label=u"Введите ID карты", required = True, error_messages={'required':u'Обязательное поле!'})
-    pin = forms.CharField(label=u"ПИН", required = True, widget=forms.PasswordInput, error_messages={'required':u'Обязательное поле!'})
+    series = forms.IntegerField(label=_(u"Введите серию"), required = True, error_messages={'required':_(u'Обязательное поле!')})
+    card_id = forms.IntegerField(label=_(u"Введите ID карты"), required = True, error_messages={'required':_(u'Обязательное поле!')})
+    pin = forms.CharField(label=_(u"ПИН"), required = True, widget=forms.PasswordInput, error_messages={'required':_(u'Обязательное поле!')})
     
 class ChangeTariffForm(forms.Form):
     #tariff_id = forms.ChoiceField(choices=[('','----')]+[(x.id, x.name) for x in Tariff.objects.all().order_by('name')], label=u"Выберите тарифный план", widget=forms.Select(attrs={'size': 1, 'onchange':'set_cost()'}))
@@ -166,56 +167,56 @@ class SearchAccountForm(forms.Form):
         
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
 
-    contract = AutoCompleteSelectMultipleField( 'account_contract', label=u'Договор', required = False)
-    organization = AutoCompleteSelectMultipleField( 'organization_name', label = u"Организация", required = False, widget = forms.TextInput(attrs={'class': 'input-small'}))
-    username = AutoCompleteSelectMultipleField( 'account_username', required = False, label=u"Имя аккаунта")
-    fullname = AutoCompleteSelectMultipleField( 'account_fullname', required = False, label=u"ФИО")
-    contactperson = AutoCompleteSelectMultipleField( 'account_contactperson', required = False, label =u"Контактное лицо")
-    city = forms.ModelChoiceField(queryset=City.objects.all(), required=False,  label= u"Город")
-    street = forms.CharField(label =u"Улица", required=False, widget = forms.TextInput(attrs={'class': 'input-large', 'placeholder': u'Улица'}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
-    house = forms.CharField(label =u"Дом", required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
-    house_bulk = forms.CharField(label =u"Подъезд", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
-    room = forms.CharField(label =u"Квартира", required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Кв'}))
-    status = forms.ChoiceField(required=False, choices = (('0', u"--Любой--", ), ('1', u'Активен'), ('2', u'Не активен, списывать периодические услуги'),('3', u'Не активен, не списывать периодические услуги'),('4', u'Пользовательская блокировка'),))
+    contract = AutoCompleteSelectMultipleField( 'account_contract', label=_(u'Договор'), required = False)
+    organization = AutoCompleteSelectMultipleField( 'organization_name', label = _(u"Организация"), required = False, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    username = AutoCompleteSelectMultipleField( 'account_username', required = False, label=_(u"Имя аккаунта"))
+    fullname = AutoCompleteSelectMultipleField( 'account_fullname', required = False, label=_(u"ФИО"))
+    contactperson = AutoCompleteSelectMultipleField( 'account_contactperson', required = False, label =_(u"Контактное лицо"))
+    city = forms.ModelChoiceField(queryset=City.objects.all(), required=False,  label= _(u"Город"))
+    street = forms.CharField(label =_(u"Улица"), required=False, widget = forms.TextInput(attrs={'class': 'input-large', 'placeholder': u'Улица'}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
+    house = forms.CharField(label =_(u"Дом"), required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
+    house_bulk = forms.CharField(label =_(u"Подъезд"), required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
+    room = forms.CharField(label =_(u"Квартира"), required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Кв'}))
+    status = forms.ChoiceField(required=False, choices = (('0', _(u"--Любой--"), ), ('1', _(u'Активен')), ('2', _(u'Не активен, списывать периодические услуги')),('3', _(u'Не активен, не списывать периодические услуги')),('4', _(u'Пользовательская блокировка')),))
     id = forms.IntegerField(required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
     #ballance_exp = forms.ChoiceField(required=False, choices = (('>', u"Больше", ), ('<', u'Меньше'), ('', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
-    ballance = FloatConditionField(label =u"Баланс", required=False, help_text=u"Используйте знаки >меньше и <больше", widget = forms.TextInput(attrs={'class': 'input-small'}))
+    ballance = FloatConditionField(label =_(u"Баланс"), required=False, help_text=u"Используйте знаки >меньше и <больше", widget = forms.TextInput(attrs={'class': 'input-small'}))
     #credit_exp = forms.ChoiceField(required=False, choices = (('>', u"Больше", ), ('<', u'Меньше'), ('', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
-    credit = FloatConditionField(label =u"Кредит", required=False, help_text=u"Используйте знаки >меньше и <больше", widget = forms.TextInput(attrs={'class': 'input-small'}))
+    credit = FloatConditionField(label =_(u"Кредит"), required=False, help_text=u"Используйте знаки >меньше и <больше", widget = forms.TextInput(attrs={'class': 'input-small'}))
     
-    vpn_ip_address = forms.CharField(label=u"VPN IP адрес", required = False)
-    ipn_ip_address = forms.CharField(label=u"IPN IP адрес", required = False)
-    ipn_mac_address = forms.CharField(label=u"MAC адрес", required = False)
+    vpn_ip_address = forms.CharField(label=_(u"VPN IP адрес"), required = False)
+    ipn_ip_address = forms.CharField(label=_(u"IPN IP адрес"), required = False)
+    ipn_mac_address = forms.CharField(label=_(u"MAC адрес"), required = False)
     
-    ipn_status = forms.MultipleChoiceField(required=False, choices = (('added', u"Добавлен", ), ('enabled', u'Активен'), ('undefined', u'Не важно'),), widget=MyMultipleCheckBoxInput, initial = ["undefined", ])
+    ipn_status = forms.MultipleChoiceField(required=False, choices = (('added', _(u"Добавлен"), ), ('enabled', _(u'Активен')), ('undefined', _(u'Не важно')),), widget=MyMultipleCheckBoxInput, initial = ["undefined", ])
     
     
-    phone = forms.CharField(label=u"Телефон", required = False)
-    passport = forms.CharField(label=u"№ паспорта", required = False)
-    row = forms.CharField(label=u"Этаж", required = False, widget = forms.TextInput(attrs={'class': 'input-small',}))
+    phone = forms.CharField(label=_(u"Телефон"), required = False)
+    passport = forms.CharField(label=_(u"№ паспорта"), required = False)
+    row = forms.CharField(label=_(u"Этаж"), required = False, widget = forms.TextInput(attrs={'class': 'input-small',}))
     
     tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False)
     group_filter = forms.MultipleChoiceField(required=False)
-    ballance_blocked = forms.ChoiceField(label=u'Блокировка по балансу', required=False, choices = (('yes', u"Да", ), ('no', u'Нет'), ('undefined', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
-    limit_blocked = forms.ChoiceField(label=u'Блокировка по лимитам', required=False, choices = (('yes', u"Да", ), ('no', u'Нет'), ('undefined', u'Не важно'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
-    nas = forms.ModelMultipleChoiceField(label=u"Сервер доступа субаккаунта", queryset=Nas.objects.all(), required=False)
-    deleted = forms.BooleanField(label=u"В архиве", widget = forms.widgets.CheckboxInput, required=False)
-    systemuser = forms.ModelChoiceField(queryset=SystemUser.objects.all(),label=u'Менеджер',  required=False)
-    elevator_direction = forms.CharField(required=False, label=u'Направление от лифта')
-    created = DateRangeField(required=False, label=u"Создан")
+    ballance_blocked = forms.ChoiceField(label=_(u'Блокировка по балансу'), required=False, choices = (('yes', _(u"Да"), ), ('no', _(u'Нет')), ('undefined', _(u'Не важно')),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
+    limit_blocked = forms.ChoiceField(label=_(u'Блокировка по лимитам'), required=False, choices = (('yes', _(u"Да"), ), ('no', _(u'Нет')), ('undefined', _(u'Не важно')),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
+    nas = forms.ModelMultipleChoiceField(label=_(u"Сервер доступа субаккаунта"), queryset=Nas.objects.all(), required=False)
+    deleted = forms.BooleanField(label=_(u"В архиве"), widget = forms.widgets.CheckboxInput, required=False)
+    systemuser = forms.ModelChoiceField(queryset=SystemUser.objects.all(),label=_(u'Менеджер'),  required=False)
+    elevator_direction = forms.CharField(required=False, label=_(u'Направление от лифта'))
+    created = DateRangeField(required=False, label=_(u"Создан"))
 
 class CashierAccountForm(forms.Form):
 
-    contract = forms.CharField(label=u'Договор', required = False)
-    username = forms.CharField(required = False, label=u"Имя аккаунта")
-    fullname = forms.CharField(required = False, label=u"ФИО")
+    contract = forms.CharField(label=_(u'Договор'), required = False)
+    username = forms.CharField(required = False, label=_(u"Имя аккаунта"))
+    fullname = forms.CharField(required = False, label=_(u"ФИО"))
 
-    city = forms.ModelChoiceField(queryset=City.objects.all(), required=False,  label= u"Город")
-    street = forms.CharField(label =u"Улица", required=False, widget = forms.TextInput(attrs={'class': 'input-large', 'placeholder': u'Улица'}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
-    house = forms.CharField(label =u"Дом", required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
+    city = forms.ModelChoiceField(queryset=City.objects.all(), required=False,  label= _(u"Город"))
+    street = forms.CharField(label =_(u"Улица"), required=False, widget = forms.TextInput(attrs={'class': 'input-large', 'placeholder': u'Улица'}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
+    house = forms.CharField(label =_(u"Дом"), required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
     #house_bulk = forms.CharField(label =u"Подъезд", required=False, widget = forms.TextInput(attrs={'class': 'input-small'}))
-    room = forms.CharField(label =u"Квартира", required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Кв'}))
-    phone = forms.CharField(label=u"Телефон", required = False)
+    room = forms.CharField(label =_(u"Квартира"), required=False, widget = forms.TextInput(attrs={'class': 'input-medium', 'placeholder': u'Кв'}))
+    phone = forms.CharField(label=_(u"Телефон"), required = False)
 
     
     def __init__(self, *args, **kwargs):
@@ -234,43 +235,43 @@ class AccountAddonForm(forms.Form):
 class DocumentRenderForm(forms.Form):
     account = forms.IntegerField(required=False)
     transaction = forms.IntegerField(required=False)
-    template = forms.IntegerField(label=u'Шаблон', required=True)
+    template = forms.IntegerField(label=_(u'Шаблон'), required=True)
     cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all(), required=False)
 
 
 class TransactionReportForm(forms.Form):
 
-    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    start_date = forms.DateTimeField(required=False, label=_(u'С'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=_(u'По'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
 
 
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
 
-    systemuser = forms.ModelMultipleChoiceField(label=u"Администратор",queryset=SystemUser.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
+    systemuser = forms.ModelMultipleChoiceField(label=_(u"Администратор"),queryset=SystemUser.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
     #start_date = forms.DateTimeField(label=u"Начало",required=False)
     #end_date = forms.DateTimeField(label=u"Конец",required=False)
     
 class ActionLogFilterForm(forms.Form):
     systemuser = forms.ModelChoiceField(queryset=SystemUser.objects.all(), required=False)
-    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    start_date = forms.DateTimeField(required=False, label=_(u'С'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=_(u'По'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
 
     
 class SearchAuthLogForm(forms.Form):
-    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    account = AutoCompleteSelectMultipleField( 'account_fts', label=u'Аккаунт', required = False)
-    nas = forms.ModelMultipleChoiceField(label=u"Сервер доступа", queryset=Nas.objects.all(), required=False)
+    start_date = forms.DateTimeField(required=False, label=_(u'С'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=_(u'По'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    account = AutoCompleteSelectMultipleField( 'account_fts', label=_(u'Аккаунт'), required = False)
+    nas = forms.ModelMultipleChoiceField(label=_(u"Сервер доступа"), queryset=Nas.objects.all(), required=False)
 
 class IpInUseLogForm(forms.Form):
-    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    start_date = forms.DateTimeField(required=False, label=_(u'С'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=_(u'По'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
     subaccount = AutoCompleteSelectMultipleField( 'subaccount_fts', required = False)
-    ippool = forms.ModelMultipleChoiceField(label=u"Пул", queryset=IPPool.objects.all(), required=False)
+    ippool = forms.ModelMultipleChoiceField(label=_(u"Пул"), queryset=IPPool.objects.all(), required=False)
     ip = forms.IPAddressField(required=False)
-    types = forms.ChoiceField(required=False, choices = (('dynamic', u"Динамические", ), ('static', u'Статические'), ('', u'Любые'),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
+    types = forms.ChoiceField(required=False, choices = (('dynamic', _(u"Динамические"), ), ('static', _(u'Статические')), ('', _(u'Любые')),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
     
 
 
@@ -335,14 +336,14 @@ class TransactionModelForm(ModelForm):
     def clean_summ(self):
         summ = self.cleaned_data.get('summ',0)
         if summ==0:
-            raise forms.ValidationError(u'Укажите сумму')
+            raise forms.ValidationError(_(u'Укажите сумму'))
         return summ
     class Meta:
         model = Transaction
         exclude = ('systemuser', 'accounttarif', 'approved', 'tarif', 'promise_expired')
         
 class AccountTariffForm(ModelForm):
-    account = forms.ModelChoiceField(label=u'Аккаунт', queryset=Account.objects.all(), widget = forms.HiddenInput)
+    account = forms.ModelChoiceField(label=_(u'Аккаунт'), queryset=Account.objects.all(), widget = forms.HiddenInput)
     
     def __init__(self, *args, **kwargs):
         super(AccountTariffForm, self).__init__(*args, **kwargs)
@@ -354,15 +355,15 @@ class AccountTariffForm(ModelForm):
     
 class BatchAccountTariffForm(forms.Form):
     accounts = forms.ModelMultipleChoiceField(queryset=Account.objects.all(), widget = forms.widgets.MultipleHiddenInput)
-    tariff = forms.ModelChoiceField(label=u'Тариф', queryset=Tariff.objects.all())
-    datetime = forms.DateTimeField(label=u'С даты', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    tariff = forms.ModelChoiceField(label=_(u'Тариф'), queryset=Tariff.objects.all())
+    datetime = forms.DateTimeField(label=_(u'С даты'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
 
         
 
 
 class SettlementPeriodForm(ModelForm):
-    time_start = forms.DateTimeField(label=u'Начало периода', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    time_start = forms.DateTimeField(label=_(u'Начало периода'), required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     class Meta:
         model = SettlementPeriod
   
@@ -381,15 +382,15 @@ class BankDataForm(ModelForm):
         model = BankData
               
 class AccountForm(DynamicForm):
-    username = forms.CharField(label =u"Имя пользователя", required=True, widget = forms.TextInput(attrs={'class': 'input-medium'}))
-    password = forms.CharField(label =u"Пароль", required=True, widget = forms.TextInput(attrs={'class': 'input-medium'}))
-    city = forms.ModelChoiceField(label=u"Город",queryset=City.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
+    username = forms.CharField(label =_(u"Имя пользователя"), required=True, widget = forms.TextInput(attrs={'class': 'input-medium'}))
+    password = forms.CharField(label =_(u"Пароль"), required=True, widget = forms.TextInput(attrs={'class': 'input-medium'}))
+    city = forms.ModelChoiceField(label=_(u"Город"),queryset=City.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
     
-    street = forms.CharField(label=u"Улица",  required=False, widget = forms.widgets.TextInput(attrs={'class': 'input-large',}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
-    house = forms.CharField(label=u"Дом", required=False, widget = forms.widgets.TextInput(attrs={'class': 'input-small', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
-    contract = forms.CharField(label=u'Номер договора', required = False)
-    contract_num = forms.ModelChoiceField(label=u"Номер договора", queryset=ContractTemplate.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
-    organization = forms.BooleanField(label=u"Юр.лицо", required=False, widget = forms.widgets.CheckboxInput)
+    street = forms.CharField(label=_(u"Улица"),  required=False, widget = forms.widgets.TextInput(attrs={'class': 'input-large',}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
+    house = forms.CharField(label=_(u"Дом"), required=False, widget = forms.widgets.TextInput(attrs={'class': 'input-small', 'placeholder': u'Дом'}))#AutoCompleteSelectMultipleField( 'house_name', required = False, label =u"Дом", placeholder='№ дома', attrs={'class': 'input-small input-street-no'})
+    contract = forms.CharField(label=_(u'Номер договора'), required = False)
+    contract_num = forms.ModelChoiceField(label=_(u"Номер договора"), queryset=ContractTemplate.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
+    organization = forms.BooleanField(label=_(u"Юр.лицо"), required=False, widget = forms.widgets.CheckboxInput)
     #created = forms.DateTimeField(label=u'Создан', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
     #credit = forms.CharField(label =u"Кредит", required=True, widget = forms.TextInput(attrs={'class': 'input-small'}))
     #--Organization fields
@@ -426,7 +427,7 @@ class AccountForm(DynamicForm):
         """
         existing = SystemUser.objects.filter(username__iexact=self.cleaned_data['username'])
         if existing.exists():
-            raise forms.ValidationError(u"Нельзя создать пользователя с именем существующего администратора.")
+            raise forms.ValidationError(_(u"Нельзя создать пользователя с именем существующего администратора."))
         else:
             return self.cleaned_data['username']
         
@@ -487,6 +488,7 @@ class PeriodicalServiceForm(ModelForm):
     #activation_type = forms.BooleanField(required=False, label=u'Начать списание с начала расчётного периода', widget=forms.widgets.CheckboxInput)
     
     class Meta:
+        exclude = ('deleted',)
         model = PeriodicalService
 
 class OneTimeServiceForm(ModelForm):
@@ -674,11 +676,11 @@ class HouseForm(ModelForm):
         model = House     
    
 class SystemUserForm(ModelForm):
-    last_ip = forms.CharField(label="Последний логин с IP", widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
-    last_login = forms.CharField(label="Последний логин", widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
-    created = forms.CharField(label="Создан", widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
-    authgroup = forms.ModelMultipleChoiceField(queryset = AuthGroup.objects.all(), required=False)
-    is_superuser = forms.BooleanField(label=u"Суперадминистратор",widget=forms.CheckboxInput, required=False)
+    last_ip = forms.CharField(label=_(u"Последний логин с IP"), widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
+    last_login = forms.CharField(label=_(u"Последний логин"), widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
+    created = forms.CharField(label=_(u"Создан"), widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
+    authgroup = forms.ModelMultipleChoiceField(label=_(u"Группа доступа"), queryset = AuthGroup.objects.all(), required=False)
+    is_superuser = forms.BooleanField(label=_(u"Суперадминистратор"),widget=forms.CheckboxInput, required=False)
     
     class Meta:
         model = SystemUser
@@ -704,8 +706,8 @@ class TimePeriodNodeForm(ModelForm):
                                 ]
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     time_period = forms.ModelChoiceField(queryset=TimePeriod.objects.all(), required=True, widget = forms.HiddenInput)
-    time_start = forms.DateTimeField(label=u'Начало периода', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    time_end = forms.DateTimeField(label=u'Конец периода', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    time_start = forms.DateTimeField(label=_(u'Начало периода'), required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    time_end = forms.DateTimeField(label=_(u'Конец периода'), required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     length = forms.IntegerField(required=False, widget = forms.HiddenInput)
     
     def clean(self):
@@ -724,28 +726,28 @@ class IPPoolForm(ModelForm):
         
 class ManufacturerForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
-    name = forms.CharField(required=True, label=u"Название")
+    name = forms.CharField(required=True, label=_(u"Название"))
     class Meta:
         model = Manufacturer
 
 class AccountHardwareForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.widgets.HiddenInput)
-    hardware = AutoCompleteSelectField( 'hardware_fts', label = u"Устройство", required = True, widget = forms.TextInput(attrs={'class': 'input-xlarge'}), help_text=u"Поиск устройства по всем полям")
+    hardware = AutoCompleteSelectField( 'hardware_fts', label = _(u"Устройство"), required = True, widget = forms.TextInput(attrs={'class': 'input-xlarge'}), help_text=u"Поиск устройства по всем полям")
     
-    comment = forms.CharField(label=u'Комментарий', required=False, widget=forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span5'}))
+    comment = forms.CharField(label=_(u'Комментарий'), required=False, widget=forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span5'}))
     class Meta:
         model = AccountHardware
      
 class ModelHardwareForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
-    name = forms.CharField(required=True, label=u"Название")
+    name = forms.CharField(required=True, label=_(u"Название"))
     class Meta:
         model = Model
            
 class HardwareTypeForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
-    name = forms.CharField(required=True, label=u"Название")
+    name = forms.CharField(required=True, label=_(u"Название"))
     class Meta:
         model = HardwareType
         
@@ -757,13 +759,13 @@ class HardwareForm(ModelForm):
 
 class AccountGroupForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
-    name = forms.CharField(required=True, label=u"Название")
+    name = forms.CharField(required=True, label=_(u"Название"))
     class Meta:
         model = AccountGroup
         
 class PermissionGroupForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
-    permissions = forms.ModelMultipleChoiceField(label=u'Права', queryset = Permission.objects.all(), widget = CheckboxSelectMultipleWithSelectAll)
+    permissions = forms.ModelMultipleChoiceField(label=_(u'Права'), queryset = Permission.objects.all(), widget = CheckboxSelectMultipleWithSelectAll)
     class Meta:
         exclude = ('deletable',)
         model = PermissionGroup
@@ -782,14 +784,14 @@ class TPChangeRuleForm(ModelForm):
         
 class TPChangeMultipleRuleForm(forms.Form):
     from_tariff = forms.ModelChoiceField(queryset=Tariff.objects.all())
-    to_tariffs = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), label=u'Тарифные планы', required=False, widget=forms.widgets.SelectMultiple)
-    disabled = forms.BooleanField(label=u'Временно запретить', initial=False, required=False)
-    cost = forms.FloatField(label=u'Стоимость перехода', initial=0)
-    ballance_min = forms.FloatField(label=u'Минимальный баланс', initial=0)
-    on_next_sp = forms.BooleanField(label=u'Со следующего расчётного периода', required=False)
-    settlement_period = forms.ModelChoiceField(queryset=SettlementPeriod.objects.all(), label=u'Расчётный период', required=False)
+    to_tariffs = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), label=_(u'Тарифные планы'), required=False, widget=forms.widgets.SelectMultiple)
+    disabled = forms.BooleanField(label=_(u'Временно запретить'), initial=False, required=False)
+    cost = forms.FloatField(label=_(u'Стоимость перехода'), initial=0)
+    ballance_min = forms.FloatField(label=_(u'Минимальный баланс'), initial=0)
+    on_next_sp = forms.BooleanField(label=_(u'Со следующего расчётного периода'), required=False)
+    settlement_period = forms.ModelChoiceField(queryset=SettlementPeriod.objects.all(), label=_(u'Расчётный период'), required=False)
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
-    mirror = forms.BooleanField(label='Создать зеркальное правило',required=False)
+    mirror = forms.BooleanField(label=_(u'Создать зеркальное правило'),required=False)
     
     def __init__(self, *args, **kwargs):
         super(TPChangeMultipleRuleForm, self).__init__(*args, **kwargs)
@@ -807,7 +809,7 @@ class NewsForm(ModelForm):
         self.fields['age'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
 
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
-    accounts = AutoCompleteSelectMultipleField( 'account_fts', label=u'Аккаунты', required = False)
+    accounts = AutoCompleteSelectMultipleField( 'account_fts', label=_(u'Аккаунты'), required = False)
     class Meta:
         model = News
 
@@ -817,7 +819,7 @@ class CardForm(ModelForm):
     
 class CardGenerationForm(forms.Form):
 
-    card_type = forms.ChoiceField(required=True, choices = ((0, u"Экспресс-оплаты", ), (1, u'Хотспот'), (2, u'VPN доступ'), (3, u'Телефония'),), widget = forms.HiddenInput)
+    card_type = forms.ChoiceField(required=True, choices = ((0, _(u"Экспресс-оплаты"), ), (1, _(u'Хотспот')), (2, _(u'VPN доступ')), (3, _(u'Телефония')),), widget = forms.HiddenInput)
     series = forms.CharField(label=u"Серия", widget=forms.widgets.Input(attrs={'class':'input-small'}))
     count = forms.IntegerField(label=u"Количество", widget=forms.widgets.Input(attrs={'class':'input-small'}))
     login_length_from = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
@@ -828,66 +830,66 @@ class CardGenerationForm(forms.Form):
     pin_length_to = forms.IntegerField(widget=forms.widgets.Input(attrs={'class':'input-small'}))
     pin_numbers = forms.BooleanField(label="0-9", required=False, widget = forms.CheckboxInput)
     pin_letters = forms.BooleanField(label="a-Z", required=False, widget = forms.CheckboxInput)
-    nominal = forms.FloatField(label=u"Номинал",widget=forms.widgets.Input(attrs={'class':'input-small'}))
-    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=u"Тариф", required=False)
+    nominal = forms.FloatField(label=_(u"Номинал"),widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=_(u"Тариф"), required=False)
     #template = forms.ModelChoiceField(queryset=Template.objects.filter(type__id=7), label=u"Шаблон печати")
-    nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
+    nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=_(u"Сервер доступа"), required=False)
     ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
-    date_start = forms.DateTimeField(label=u'Активировать с', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    date_end = forms.DateTimeField(label=u'Активировать по', required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_start = forms.DateTimeField(label=_(u'Активировать с'), required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=_(u'Активировать по'), required = True, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
     def clean(self):
         cleaned_data = super(CardGenerationForm, self).clean()
         if cleaned_data.get("card_type") in [1,2,3] and not (cleaned_data.get("login_numbers") or cleaned_data.get("login_letters")):
-            raise forms.ValidationError(u'Вы должны выбрать состав логина')
+            raise forms.ValidationError(_(u'Вы должны выбрать состав логина'))
         if not (cleaned_data.get("pin_numbers") or cleaned_data.get("pin_letters")):
-            raise forms.ValidationError(u'Вы должны выбрать состав пина')
+            raise forms.ValidationError(_(u'Вы должны выбрать состав пина'))
 
         return cleaned_data
     
 class CardSearchForm(forms.Form):
     id = forms.IntegerField(required=False)
-    card_type = forms.ChoiceField(required=False, choices = (('', u"", ), (0, u"Экспресс-оплаты", ), (1, u'Хотспот'), (2, u'VPN доступ'), (3, u'Телефония'),))
-    dealer = forms.ModelChoiceField(queryset = Dealer.objects.all(), required=False, label=u"Дилер")
-    series = forms.CharField(required=False, label=u"Серия")
+    card_type = forms.ChoiceField(required=False, choices = (('', u"", ), (0, _(u"Экспресс-оплаты"), ), (1, _(u'Хотспот')), (2, _(u'VPN доступ')), (3, _(u'Телефония')),))
+    dealer = forms.ModelChoiceField(queryset = Dealer.objects.all(), required=False, label=_(u"Дилер"))
+    series = forms.CharField(required=False, label=_(u"Серия"))
     login = forms.CharField(required=False)
     pin = forms.CharField(required=False)
     ext_id = forms.CharField(required=False)
-    nominal = FloatConditionField(required=False, label=u"Номинал")
-    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=u"Тариф", required=False)
+    nominal = FloatConditionField(required=False, label=_(u"Номинал"))
+    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=_(u"Тариф"), required=False)
     #template = forms.ModelChoiceField(required=False, queryset=Template.objects.all(), label=u"Шаблон печати")
-    nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
-    ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
-    sold = DateRangeField(required=False, label=u"Проданы")
-    not_sold = forms.BooleanField(required=False, label=u"Не проданные")
-    activated = DateRangeField(label=u'Активированы', required=False)
-    activated_by = AutoCompleteSelectMultipleField( 'account_username', label=u'Активатор', required = False)
-    created = DateRangeField(label=u'Созданы', required=False )
+    nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=_(u"Сервер доступа"), required=False)
+    ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=_(u"IP пул"), required=False)
+    sold = DateRangeField(required=False, label=_(u"Проданы"))
+    not_sold = forms.BooleanField(required=False, label=_(u"Не проданные"))
+    activated = DateRangeField(label=_(u'Активированы'), required=False)
+    activated_by = AutoCompleteSelectMultipleField( 'account_username', label=_(u'Активатор'), required = False)
+    created = DateRangeField(label=_(u'Созданы'), required=False )
     
 class CardBatchChangeForm(forms.Form):
     cards = forms.CharField(required=True, widget = forms.widgets.HiddenInput)
-    card_type = forms.ChoiceField(required=False, choices = ((-1, u"Не менять"), (0, u"Экспресс-оплаты", ), (1, u'Хотспот'), (2, u'VPN доступ'), (3, u'Телефония'),))
+    card_type = forms.ChoiceField(required=False, choices = ((-1, _(u"Не менять")), (0, _(u"Экспресс-оплаты"), ), (1, _(u'Хотспот')), (2, _(u'VPN доступ')), (3, _(u'Телефония')),))
     #change_series = forms.BooleanField(label=u"Изменить серию", widget=forms.widgets.CheckboxInput)
-    series = forms.CharField(required=False, label=u"Серия", widget=forms.widgets.TextInput(attrs={'class':'span5'}))
-    change_login = forms.BooleanField(required=False, label=u"Изменить логин")
+    series = forms.CharField(required=False, label=_(u"Серия"), widget=forms.widgets.TextInput(attrs={'class':'span5'}))
+    change_login = forms.BooleanField(required=False, label=_(u"Изменить логин"))
     login_length_from = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
     login_length_to = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
     login_numbers = forms.BooleanField(required=False, label="0-9", widget = forms.CheckboxInput)
     login_letters = forms.BooleanField(required=False, label="a-Z", widget = forms.CheckboxInput)
-    change_pin = forms.BooleanField(required=False, label=u"Изменить пин")
+    change_pin = forms.BooleanField(required=False, label=_(u"Изменить пин"))
     pin_length_from = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
     pin_length_to = forms.IntegerField(required=False, widget=forms.widgets.Input(attrs={'class':'input-small'}))
     pin_numbers = forms.BooleanField(required=False, label="0-9", widget = forms.CheckboxInput)
     pin_letters = forms.BooleanField(required=False, label="a-Z", widget = forms.CheckboxInput)
-    change_nominal = forms.BooleanField(required=False, label=u"Изменить номинал")
-    nominal = forms.FloatField(required=False, label=u"Номинал",widget=forms.widgets.Input(attrs={'class':'input-small'}))
-    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=u"Тариф", required=False)
+    change_nominal = forms.BooleanField(required=False, label=_(u"Изменить номинал"))
+    nominal = forms.FloatField(required=False, label=_(u"Номинал"),widget=forms.widgets.Input(attrs={'class':'input-small'}))
+    tariff = forms.ModelChoiceField(queryset=Tariff.objects.all(), label=_(u"Тариф"), required=False)
     #template = forms.ModelChoiceField(required=False, queryset=Template.objects.filter(type__id=7), label=u"Шаблон печати")
-    nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=u"Сервер доступа", required=False)
-    ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=u"IP пул", required=False)
+    nas = forms.ModelChoiceField(queryset=Nas.objects.all(), label=_(u"Сервер доступа"), required=False)
+    ippool = forms.ModelChoiceField(queryset=IPPool.objects.all(), label=_(u"IP пул"), required=False)
     
-    date_start = forms.DateTimeField(label=u'Активировать с', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    date_end = forms.DateTimeField(label=u'Активировать по', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_start = forms.DateTimeField(label=_(u'Активировать с'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=_(u'Активировать по'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
 
 class DealerForm(ModelForm):
@@ -900,10 +902,10 @@ class SaleCardForm(ModelForm):
         super(SaleCardForm, self).__init__(*args, **kwargs)
         self.fields['cards'].widget = forms.widgets.MultipleHiddenInput()
     
-    cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all(), required=True, label=u"Карты", widget=forms.widgets.MultipleHiddenInput)
-    dealer = forms.ModelChoiceField(queryset=Dealer.objects.all(), required=True, label=u"Дилер", widget=forms.widgets.HiddenInput)
+    cards = forms.ModelMultipleChoiceField(queryset=Card.objects.all(), required=True, label=_(u"Карты"), widget=forms.widgets.MultipleHiddenInput)
+    dealer = forms.ModelChoiceField(queryset=Dealer.objects.all(), required=True, label=_(u"Дилер"), widget=forms.widgets.HiddenInput)
 
-    prepayment_sum = forms.FloatField(label=u"Внесено предоплаты", required=False)
+    prepayment_sum = forms.FloatField(label=_(u"Внесено предоплаты"), required=False)
     
     class Meta:
         model = SaleCard    
@@ -925,8 +927,8 @@ class OperatorForm(ModelForm):
 
 class BallanceHistoryForm(forms.Form):
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
-    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    start_date = forms.DateTimeField(required=False, label=_(u'С'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=_(u'По'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
 
 class PeriodicalServiceLogSearchForm(forms.Form):
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
@@ -940,12 +942,12 @@ class SheduleLogSearchForm(forms.Form):
 #TO-DO: добавить exclude в periodicalservice
 class SubAccountForm(ModelForm):
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.HiddenInput)
-    ipn_speed = forms.CharField(label=u'IPN скорость', help_text=u"Не менять указанные настройки скорости", required = False, widget = forms.TextInput(attrs={'class': 'span6'}))
-    vpn_speed = forms.CharField(label=u'VPN скорость', help_text=u"Не менять указанные настройки скорости", required = False, widget = forms.TextInput(attrs={'class': 'span6'}))
+    ipn_speed = forms.CharField(label=_(u'IPN скорость'), help_text=_(u"Не менять указанные настройки скорости"), required = False, widget = forms.TextInput(attrs={'class': 'span6'}))
+    vpn_speed = forms.CharField(label=_(u'VPN скорость'), help_text=_(u"Не менять указанные настройки скорости"), required = False, widget = forms.TextInput(attrs={'class': 'span6'}))
     ipv4_vpn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=0), required=False)
     ipv6_vpn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=2), required=False)
     ipv4_ipn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=1), required=False)
-    ipn_status = forms.MultipleChoiceField(required=False, choices = (('added', u"Добавлен", ), ('enabled', u'Активен'), ('suspended', u'Не менять состояние'),), widget=MyMultipleCheckBoxInput, initial = ["undefined", ])
+    ipn_status = forms.MultipleChoiceField(required=False, choices = (('added', _(u"Добавлен"), ), ('enabled', _(u'Активен')), ('suspended', _(u'Не менять состояние')),), widget=MyMultipleCheckBoxInput, initial = ["undefined", ])
     
             
     class Meta:
@@ -976,34 +978,34 @@ class SwitchForm(ModelForm):
         self.helper.form_action = reverse("switch_edit")
         self.helper.layout = Layout(
             Fieldset(
-                u'Общее',
+                _(u'Общее'),
                  'id',
                 'name',
                 'comment',
 
             ),    
             Fieldset(
-                u'Данные техпаспорта',
+                _(u'Данные техпаспорта'),
                 'manufacturer',
                 'model',
                 'sn',
             ),    
             Fieldset(
-                u'Место установки',
+                _(u'Место установки'),
                 'city',
                 'street',
                 'house',
                 'place'
             ),    
             Fieldset(
-                u'SNMP',
+                _(u'SNMP'),
                 'snmp_support',
                 'snmp_version',
                 'snmp_community',
             ),                  
             Fieldset(
-                u'Управление портами',
-                HTML(u'Обратите внимание, что в текущей версии управление портами не реализовано'),
+                _(u'Управление портами'),
+                HTML(_(u'Обратите внимание, что в текущей версии управление портами не реализовано')),
                 'management_method',
                 'username',
                 'password',
@@ -1011,13 +1013,13 @@ class SwitchForm(ModelForm):
                 'disable_port',
             ),       
             Fieldset(
-                u'Сетевая идентификация',
+                _(u'Сетевая идентификация'),
                 'ports_count',
                 'ipaddress',
                 'macaddress',
             ),
             Fieldset(
-                u'Option82',
+                _(u'Option82'),
                 'option82',
                 'option82_auth_type',
                 'option82_template',
@@ -1026,7 +1028,7 @@ class SwitchForm(ModelForm):
                 'remote_id'
             ),
             FormActions(
-                Submit('save', u'Сохранить', css_class="btn-primary")
+                Submit('save', _(u'Сохранить'), css_class="btn-primary")
             )
                
         )
@@ -1050,53 +1052,53 @@ class SwitchForm(ModelForm):
         
 class GroupStatSearchForm(forms.Form):
 
-    accounts = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
-    groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=u'Группы трафика', required=False)
-    date_start = forms.DateTimeField(label=u'С', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    date_end = forms.DateTimeField(label=u'По', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    accounts = AutoCompleteSelectMultipleField( 'account_username', label=_(u'Аккаунты'), required = False)
+    groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=_(u'Группы трафика'), required=False)
+    date_start = forms.DateTimeField(label=_(u'С'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=_(u'По'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
 class GlobalStatSearchForm(forms.Form):
 
-    accounts = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
+    accounts = AutoCompleteSelectMultipleField( 'account_username', label=_(u'Аккаунты'), required = False)
     #groups = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=u'Группы трафика', required=False)
-    start_date = forms.DateTimeField(required=False, label=u'С', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    end_date = forms.DateTimeField(required=False, label=u'По', widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    start_date = forms.DateTimeField(required=False, label=_(u'С'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    end_date = forms.DateTimeField(required=False, label=_(u'По'), widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
 
     
 class AccountPrepaysTraficSearchForm(forms.Form):
-    date_start = forms.DateTimeField(label=u'С', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    date_end = forms.DateTimeField(label=u'По', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    account = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
-    group = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=u'Группы трафика', required=False)
-    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=u'Тарифный план')
+    date_start = forms.DateTimeField(label=_(u'С'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=_(u'По'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    account = AutoCompleteSelectMultipleField( 'account_username', label=_(u'Аккаунты'), required = False)
+    group = forms.ModelMultipleChoiceField(queryset=Group.objects.all(), label=_(u'Группы трафика'), required=False)
+    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=_(u'Тарифный план'))
 
-    current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
+    current  = forms.BooleanField(label=_(u'Только текущие значения'), help_text=_(u'Иначе будет показана информация и за прошлые периоды'), required=False, initial=True)
     
 class AccountPrepaysRadiusTraficSearchForm(forms.Form):
-    date_start = forms.DateTimeField(label=u'С', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    date_end = forms.DateTimeField(label=u'По', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    account = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
-    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=u'Тарифный план')
-    current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
+    date_start = forms.DateTimeField(label=_(u'С'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=_(u'По'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    account = AutoCompleteSelectMultipleField( 'account_username', label=_(u'Аккаунты'), required = False)
+    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=_(u'Тарифный план'))
+    current  = forms.BooleanField(label=u'Только текущие значения', help_text=_(u'Иначе будет показана информация и за прошлые периоды'), required=False, initial=True)
     
 class AccountPrepaysTimeSearchForm(forms.Form):
-    date_start = forms.DateTimeField(label=u'С', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    date_end = forms.DateTimeField(label=u'По', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    account = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
-    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=u'Тарифный план')
+    date_start = forms.DateTimeField(label=_(u'С'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=_(u'По'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    account = AutoCompleteSelectMultipleField( 'account_username', label=_(u'Аккаунты'), required = False)
+    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, label=_(u'Тарифный план'))
     
-    current  = forms.BooleanField(label=u'Только текущие значения', help_text=u'Иначе будет показана информация и за прошлые периоды', required=False, initial=True)
+    current  = forms.BooleanField(label=_(u'Только текущие значения'), help_text=_(u'Иначе будет показана информация и за прошлые периоды'), required=False, initial=True)
     
 class AccountManagementForm(forms.Form):
     accounts = forms.ModelMultipleChoiceField(queryset = Account.objects.all_with_deleted())
 
 class PaymentSearchForm(forms.Form):
-    accounts = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
-    payment = forms.CharField(initial='', label=u'Номер платежа', required=False)
-    date_start = forms.DateTimeField(label=u'Создан с', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    date_end = forms.DateTimeField(label=u'Создан по', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    paid_start = forms.DateTimeField(label=u'Оплачен с', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    paid_end = forms.DateTimeField(label=u'Оплачен по', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    accounts = AutoCompleteSelectMultipleField( 'account_username', label=_(u'Аккаунты'), required = False)
+    payment = forms.CharField(initial='', label=_(u'Номер платежа'), required=False)
+    date_start = forms.DateTimeField(label=_(u'Создан с'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    date_end = forms.DateTimeField(label=_(u'Создан по'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    paid_start = forms.DateTimeField(label=_(u'Оплачен с'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    paid_end = forms.DateTimeField(label=_(u'Оплачен по'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     status = forms.ChoiceField(choices=[('', '---')]+PAYMENT_STATUS_CHOICES, required=False, initial='')
     
 class PaymentForm(ModelForm):
@@ -1116,20 +1118,20 @@ class PaymentForm(ModelForm):
 class SearchSmsForm(forms.Form):
     from sendsms.utils import get_backend_choices
     bc = get_backend_choices()
-    accounts = AutoCompleteSelectMultipleField( 'account_username', label=u'Аккаунты', required = False)
-    phone = forms.CharField(label=u'Телефон', required = False, widget = forms.TextInput)
-    backend = forms.ChoiceField(label=u'Оператор', choices = bc, initial = bc[0][0] if bc else '', required=False)
-    publish_date = forms.DateTimeField(label=u'Опубликовать', help_text = u'Когда должно быть отослано сообщение', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    sended_from = forms.DateTimeField(label=u'Отправлено с', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
-    sended_to = forms.DateTimeField(label=u'Отправлено по', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    accounts = AutoCompleteSelectMultipleField( 'account_username', label=_(u'Аккаунты'), required = False)
+    phone = forms.CharField(label=_(u'Телефон'), required = False, widget = forms.TextInput)
+    backend = forms.ChoiceField(label=_(u'Оператор'), choices = bc, initial = bc[0][0] if bc else '', required=False)
+    publish_date = forms.DateTimeField(label=_(u'Опубликовать'), help_text = _(u'Когда должно быть отослано сообщение'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    sended_from = forms.DateTimeField(label=_(u'Отправлено с'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    sended_to = forms.DateTimeField(label=_(u'Отправлено по'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
 class SendSmsForm(forms.Form):
     from sendsms.utils import get_backend_choices
     bc = get_backend_choices()
     accounts = forms.ModelMultipleChoiceField(queryset=Account.objects.filter(phone_m__isnull=False), widget = forms.widgets.MultipleHiddenInput)
-    backend = forms.ChoiceField(label=u'Оператор', choices = bc, initial = bc[0][0] if bc else '', widget = forms.widgets.Select(attrs={'rows':4, 'class': 'input-large span5'}))
-    body = forms.CharField(label=u'Сообщение', widget = forms.widgets.Textarea(attrs={'rows':4, 'class': 'input-large span5'}), help_text=u"Можно использовать {{account.ballance}}, {{account.fullname}}, {{account.username}}, {{account.contract}}")
-    publish_date = forms.DateTimeField(label=u'Опубликовать', help_text = u'Не указывайте, если сообщения должны быть отправлены сразу', required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
+    backend = forms.ChoiceField(label=_(u'Оператор'), choices = bc, initial = bc[0][0] if bc else '', widget = forms.widgets.Select(attrs={'rows':4, 'class': 'input-large span5'}))
+    body = forms.CharField(label=_(u'Сообщение'), widget = forms.widgets.Textarea(attrs={'rows':4, 'class': 'input-large span5'}), help_text=_(u"Можно использовать {{account.ballance}}, {{account.fullname}}, {{account.username}}, {{account.contract}}"))
+    publish_date = forms.DateTimeField(label=_(u'Опубликовать'), help_text = _(u'Не указывайте, если сообщения должны быть отправлены сразу'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     
 
     

@@ -16,11 +16,13 @@ log = LogItem.objects.log_action
 from django.contrib import messages
 from billservice.helpers import systemuser_required
 
+from django.utils.translation import ugettext_lazy as _
+ 
 @systemuser_required
 @render_to('ebsadmin/address_list.html')
 def address(request):
     if  not (request.user.account.has_perm('billservice.view_address')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
     res = []
@@ -48,12 +50,12 @@ def city_edit(request):
         prefix, id = v
     if id:
         if  not (request.user.account.has_perm('billservice.change_city')):
-            return {'status':False, 'message':u'У вас нет прав на изменение городов'}
+            return {'status':False, 'message': _(u'У вас нет прав на изменение городов')}
         item = City.objects.get(id=id)
         form = CityForm({"name":value}, instance=item)
     else:
         if  not (request.user.account.has_perm('billservice.add_city')):
-            return {'status':False, 'message':u'У вас нет прав на добавление городов'}
+            return {'status':False, 'message': _(u'У вас нет прав на добавление городов')}
         form = CityForm({'name': value})
         
     if form.is_valid():
@@ -87,12 +89,12 @@ def street_edit(request):
         
     if id:
         if  not (request.user.account.has_perm('billservice.change_street')):
-            return {'status':False, 'message':u'У вас нет прав на изменение улиц'}
+            return {'status':False, 'message': _(u'У вас нет прав на изменение улиц')}
         item = Street.objects.get(id=id)
         form = StreetForm({"name":value, "city": item.city.id}, instance=item)
     else:
         if  not (request.user.account.has_perm('billservice.add_street')):
-            return {'status':False, 'message':u'У вас нет прав на добавление улиц'}
+            return {'status':False, 'message': _(u'У вас нет прав на добавление улиц')}
         form = StreetForm({'city':parent_id, 'name': value})
     
     if form.is_valid():
@@ -127,12 +129,12 @@ def house_edit(request):
         
     if id:
         if  not (request.user.account.has_perm('billservice.change_house')):
-            return {'status':False, 'message':u'У вас нет прав на изменение Домов'}
+            return {'status':False, 'message': _(u'У вас нет прав на изменение домов')}
         item = House.objects.get(id=id)
         form = HouseForm({"name":value, 'street':item.street.id}, instance=item)
     else:
         if  not (request.user.account.has_perm('billservice.add_house')):
-            return {'status':False, 'message':u'У вас нет прав на добавление Домов'}
+            return {'status':False, 'message': _(u'У вас нет прав на добавление домов')}
         form = HouseForm({'street':parent_id, 'name': value})
     
     if form.is_valid():
@@ -162,7 +164,7 @@ def address_delete(request):
     
     if prefix=='CITY':
         if  not (request.user.account.has_perm('billservice.delete_city')):
-            return {'status':False, 'message':u'У вас нет прав на удаление городов'}
+            return {'status':False, 'message': _(u'У вас нет прав на удаление городов')}
     
         model = City.objects.get(id=id)
         log('DELETE', request.user, model)
@@ -171,7 +173,7 @@ def address_delete(request):
 
     if prefix=='STREET':
         if  not (request.user.account.has_perm('billservice.delete_street')):
-            return {'status':False, 'message':u'У вас нет прав на удаление улиц'}
+            return {'status':False, 'message': _(u'У вас нет прав на удаление улиц')}
     
         model = Street.objects.get(id=id)
         log('DELETE', request.user, model)
@@ -180,7 +182,7 @@ def address_delete(request):
 
     if prefix=='HOUSE':
         if  not (request.user.account.has_perm('billservice.delete_house')):
-            return {'status':False, 'message':u'У вас нет прав на удаление домов'}
+            return {'status':False, 'message': _(u'У вас нет прав на удаление домов')}
     
         model = House.objects.get(id=id)
         log('DELETE', request.user, model)

@@ -52,7 +52,7 @@ def activate_card(login, pin):
 
         transaction = Transaction()
           
-        transaction.bill = u'Активация карты доступа'
+        transaction.bill = _(u'Активация карты доступа')
         transaction.account=account
         transaction.accounttarif=ac
         transaction.type =  TransactionType.objects.get(internal_name= 'ACCESS_CARD')
@@ -91,7 +91,7 @@ def activate_pay_card(account_id, serial, card_id, pin):
     
                 transaction = Transaction()
                   
-                transaction.bill = u'Активация карты оплаты'
+                transaction.bill = _(u'Активация карты оплаты')
                 transaction.account=account
                 transaction.type = TransactionType.objects.get(internal_name='PAY_CARD')
                 

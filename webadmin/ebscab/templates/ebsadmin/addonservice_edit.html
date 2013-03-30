@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load crispy_forms_tags %}
 {% load ebsadmin_tags %}
 {% block extra_head %}
@@ -12,7 +13,7 @@
                     else
                         alert(data.generated)
                 }else{
-                    alert('В процессе отправки произошла ошибка :(')
+                    alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                 }
             })
             });
@@ -24,7 +25,7 @@
                     else
                         alert(data.generated)
                 }else{
-                    alert('В процессе отправки произошла ошибка :(')
+                    alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                 }
             })
             });
@@ -49,13 +50,13 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url addonservice %}">Подключаемые услуги</a> <span class="divider">/</span>
+    <a href="{% url addonservice %}">{% blocktrans %}Подключаемые услуги{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
 <form method="POST" action="{% url addonservice_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
-            <legend>Параметры подключаемой услуги{% objectlog item %}</legend>
+            <legend>{% blocktrans %}Параметры подключаемой услуги{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>
                   <div class="control-group {% if form.name.errors %}error{% endif %}">
                       <label class="control-label">{{form.name.label}}</label>
@@ -87,7 +88,7 @@
                   </div>
                 </fieldset>
                 
-                <legend>Правила активации</legend>
+                <legend>{% blocktrans %}Правила активации{% endblocktrans %}</legend>
                 <fieldset>
                   <div class="control-group {% if form.allow_activation.errors %}error{% endif %}">
                       <label class="control-label">{{form.allow_activation.label}}</label>
@@ -118,7 +119,7 @@
                       </div>
                   </div>
                 </fieldset>
-                <legend>Правила тарификации</legend>
+                <legend>{% blocktrans %}Правила тарификации{% endblocktrans %}</legend>
                 <fieldset>
                   <div class="control-group {% if form.service_type.errors %}error{% endif %}">
                       <label class="control-label">{{form.service_type.label}}</label>
@@ -177,7 +178,7 @@
                       </div>
                   </div>
                 </fieldset>
-                <legend>Досрочное отключение</legend>
+                <legend>{% blocktrans %}Досрочное отключение{% endblocktrans %}</legend>
                 <fieldset>
                   <div class="control-group {% if form.cancel_subscription.errors %}error{% endif %}">
                       <label class="control-label">{{form.cancel_subscription.label}}</label>
@@ -222,7 +223,7 @@
                       </div>
                   </div>
                 </fieldset>
-                <legend>Выполнить действие</legend>
+                <legend>{% blocktrans %}Выполнить действие{% endblocktrans %}</legend>
                 <fieldset>
                   <div class="control-group {% if form.action.errors %}error{% endif %}">
                       <label class="control-label">{{form.action.label}}</label>
@@ -296,7 +297,7 @@
                   </div>
                   
                 </fieldset>
-                <legend>Изменить настройки скорости</legend>
+                <legend>{% blocktrans %}Изменить настройки скорости{% endblocktrans %}</legend>
                 <fieldset>
                   <div class="control-group {% if form.change_speed.errors %}error{% endif %}">
                       <label class="control-label">{{form.change_speed.label}}</label>
@@ -508,7 +509,7 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

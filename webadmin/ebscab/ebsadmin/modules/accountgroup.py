@@ -16,13 +16,13 @@ from billservice.models import AccountGroup
 from billservice.helpers import systemuser_required
 log = LogItem.objects.log_action
 from django.contrib import messages
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/accountgroup_list.html')
 def accountgroup(request):
     if not request.user.account.has_perm('billservice.view_accountgroup'):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     res = AccountGroup.objects.all()
     table = AccountGroupTable(res)
@@ -45,12 +45,12 @@ def accountgroup_edit(request):
             model = AccountGroup.objects.get(id=id)
             form = AccountGroupForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountgroup')):
-                messages.error(request, u'Ошибка при сохранении группы.', extra_tags='alert-danger')
+                messages.error(request, _(u'Ошибка при сохранении группы.'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             form = AccountGroupForm(request.POST) 
             if  not (request.user.account.has_perm('billservice.add_accountgroup')):
-                messages.error(request, u'У вас нет прав на добавление групп абонентов', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на добавление групп абонентов'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
 
@@ -59,16 +59,16 @@ def accountgroup_edit(request):
             model.save()
 
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'Группа успешно сохранена.', extra_tags='alert-success')
+            messages.success(request, _(u'Группа успешно сохранена.'), extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-            messages.error(request, u'Ошибка при сохранении группы.', extra_tags='alert-danger')
+            messages.error(request, _(u'Ошибка при сохранении группы.'), extra_tags='alert-danger')
             return {'form':form,  'status': False, 'item': model} 
     else:
         id = request.GET.get("id")
         
         if not request.user.account.has_perm('billservice.view_accountgroup'):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {'status': False}
         
         if id:
@@ -84,18 +84,18 @@ def accountgroup_edit(request):
 @systemuser_required
 def accountgroup_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_accountgroup')):
-        return {'status':False, 'message': u'У вас нет прав на удаление групп пользователей'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление групп пользователей')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = AccountGroup.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанная группа не найдена %s" % str(e)}
+            return {"status": False, "message": _(u"Указанная группа не найдена %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
-        messages.success(request, u'Группа аккаунтов успешно удалена.', extra_tags='alert-success')
+        messages.success(request, _(u'Группа аккаунтов успешно удалена.'), extra_tags='alert-success')
         return {"status": True}
     else:
-        messages.error(request, u'Ошибка при удалении группы.', extra_tags='alert-danger')
+        messages.error(request, _(u'Ошибка при удалении группы.'), extra_tags='alert-danger')
         return {"status": False, "message": "AccountGroup not found"} 
     

@@ -1,5 +1,6 @@
+{% load i18n %}
 {% if news %}
-	<h2 class="last_news_caption">Новости</h2>
+	<h2 class="last_news_caption">{% blocktrans %} Новости {% endblocktrans %}</h2>
 	<div class="last-news">
 		{% for article in news %}
             <p class="date">{{ article.created|date:"d.m.Y  H:i" }}</p>

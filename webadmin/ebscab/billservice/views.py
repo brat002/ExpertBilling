@@ -47,6 +47,7 @@ import math
 #client_networking.install_logger(logger)
 from ebsadmin.cardlib import add_addonservice, del_addonservice, activate_pay_card
 from ebsadmin.cardlib import activate_card
+from django.utils.translation import ugettext_lazy as _
 
 def addon_queryset(request, id_begin, field='datetime', field_to=None):
     if field_to == None:
@@ -91,12 +92,14 @@ def login(request):
                 message_type = activate_card(user, pin)
                 ok_message = False
                 if message_type == 1:
-                    message = u'Карточка успешно активирована. <br>  Ваш логин %s <br> ваш пароль %s' % (user, pin)
+                    message = _(u'Карточка успешно активирована. <br>  Ваш логин %(USERNAME)s <br> ваш пароль %(PASSWORD)s') % {
+                                                                                                                                'USERNAME': user, 
+                                                                                                                                'PASSWORD': pin}
                     ok_message = True
                 if message_type == 2:
-                    message = u'Неверно введен логин или пин'
+                    message = _(u'Неверно введен логин или пин')
                 if message_type == 3:
-                    message = u'Карточка уже была активирована'
+                    message = _(u'Карточка уже была активирована')
             form = LoginForm()
             return {
                     'form':form,
@@ -110,7 +113,7 @@ def login(request):
                                 password=form.cleaned_data['password'])
             if user and isinstance(user.account, Account) and not user.account.allow_webcab:
                 form = LoginForm()
-                error_message = u'У вас нет прав на вход в веб-кабинет'
+                error_message = _(u'У вас нет прав на вход в веб-кабинет')
                 return {
                         'error_message':error_message,
                         'form':form,
@@ -130,7 +133,7 @@ def login(request):
                 return HttpResponseRedirect('/')
             else:
                 form = LoginForm(initial={'username': form.cleaned_data['username']})
-                error_message = u'Проверьте введенные данные'
+                error_message = _(u'Проверьте введенные данные')
                 return {
                         'error_message':error_message,
                         'form':form,
@@ -138,7 +141,7 @@ def login(request):
 
         else:
             form = LoginForm(initial={'username': request.POST.get('username', None)})
-            error_message = u'Проверьте введенные данные'
+            error_message = _(u'Проверьте введенные данные')
             return {
                     'error_message':error_message,
                     'form':form,
@@ -269,17 +272,17 @@ def get_promise(request):
     if settings.ALLOW_PROMISE==False and tarif.allow_ballance_transfer==False:
         return HttpResponseRedirect('/')
     if not tarif:
-        return {'error_message': u'Вам не назначен тарифный план', 'disable_promise': True}
+        return {'error_message': _(u'Вам не назначен тарифный план'), 'disable_promise': True}
     user = request.user.account
     allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance)
     LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = user.promise_days or settings.LEFT_PROMISE_DAYS)
     if settings.ALLOW_PROMISE==True and Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT'), promise_expired=False).count() >= 1:
         last_promises = Transaction.objects.filter(account=user,  type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
-        error_message = u"У вас есть незакрытые обещанные платежи"
+        error_message = _(u"У вас есть незакрытые обещанные платежи")
         return {'error_message': error_message, 'MAX_PROMISE_SUM': user.promise_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     if settings.ALLOW_PROMISE==True and user.ballance<user.promise_min_ballance:
         last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
-        error_message = u"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный баланс: %s %s" % (user.promise_min_ballance, settings.CURRENCY)
+        error_message = _(u"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный баланс: %(MIN_BALLANCE)s %(CURRENCY)s") % {'MIN_BALLANCE': user.promise_min_ballance, 'CURRENCY': settings.CURRENCY}
         return {'error_message': error_message, 'MAX_PROMISE_SUM': user.promise_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     
     
@@ -289,16 +292,16 @@ def get_promise(request):
             rf = PromiseForm(request.POST)
             if not rf.is_valid():
                 last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
-                error_message = u"Проверьте введённые в поля данные"
+                error_message = _(u"Проверьте введённые в поля данные")
                 return {'MAX_PROMISE_SUM': user.promise_summ, 'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
             sum=rf.cleaned_data.get("sum", 0)
             if sum>settings.MAX_PROMISE_SUM:
                 last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
-                error_message = u"Вы превысили максимальный размер обещанного платежа"
+                error_message = _(u"Вы превысили максимальный размер обещанного платежа")
                 return {'MAX_PROMISE_SUM': user.promise_summ,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
             if sum<=0:
                 last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
-                error_message = u"Сумма обещанного платежа должна быть положительной"
+                error_message = _(u"Сумма обещанного платежа должна быть положительной")
                 return {'MAX_PROMISE_SUM': user.promise_summ,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
             cursor = connection.cursor()
             cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, end_promise, promise_expired)
@@ -308,11 +311,11 @@ def get_promise(request):
     
             last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
     
-            return {'error_message': u'Обещанный платёж выполнен успешно. Обращаем ваше внимание на то, что повторно воспользоваться услугой обещанного платежа вы сможете после погашения суммы платежа или истечения даты созданного платежа.', 'disable_promise': True, 'last_promises': last_promises, 'active_class':'promise-img',}
+            return {'error_message': _(u'Обещанный платёж выполнен успешно. Обращаем ваше внимание на то, что повторно воспользоваться услугой обещанного платежа вы сможете после погашения суммы платежа или истечения даты созданного платежа.'), 'disable_promise': True, 'last_promises': last_promises, 'active_class':'promise-img',}
         elif operation=='moneytransfer':
             last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
             if tarif.allow_ballance_transfer==False:
-                return {'error_message': u'Вам запрещено пользоваться сервисом перевода баланса.','MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
+                return {'error_message': _(u'Вам запрещено пользоваться сервисом перевода баланса.'),'MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
                 
             sum = request.POST.get("sum", 0)
             username = request.POST.get("username", '')
@@ -320,18 +323,18 @@ def get_promise(request):
                 try:
                     to_user=Account.objects.get(username=username)
                 except:
-                    return {'error_message': u'Абонент с указанным логином не найден','MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
+                    return {'error_message': _(u'Абонент с указанным логином не найден'),'MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
                     
             else:
-                return {'error_message': u'Логин абонента, которому вы хотите перевести средства, не указан.','MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
+                return {'error_message': _(u'Логин абонента, которому вы хотите перевести средства, не указан.'),'MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
             
             try:
                 float(sum)
             except:
-                return {'error_message': u'Указанная сумма не является числом. Разрешено вводить цифры 0-9 и точку, как разделитель разрядов.','MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
+                return {'error_message': _(u'Указанная сумма не является числом. Разрешено вводить цифры 0-9 и точку, как разделитель разрядов.'),'MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
             
             if sum>allow_transfer_summ:
-                return {'error_message': u'Указанная сумма слишком велика.','MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}    
+                return {'error_message': _(u'Указанная сумма слишком велика.'),'MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}    
             from decimal import Decimal
             cursor=connection.cursor()
             cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, description, type_id, approved, tarif_id, summ, created, promise)
@@ -341,7 +344,7 @@ def get_promise(request):
 
             cursor.connection.commit()
             allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance-Decimal(sum))
-            return {'error_message': u'Перевод средств успешно выполнен.', 'disable_promise': False, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer,  'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
+            return {'error_message': _(u'Перевод средств успешно выполнен.'), 'disable_promise': False, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer,  'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     else:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
         return {'MAX_PROMISE_SUM': user.promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
@@ -372,22 +375,22 @@ def make_payment(request):
 @ajax_request
 @login_required
 def qiwi_payment(request):
-    if request.method != 'POST': return {'status_message':u"Неправильный вызов функции"}
+    if request.method != 'POST': return {'status_message':_(u"Неправильный вызов функции")}
     form = QiwiPaymentRequestForm(request.POST)
-    if not form.is_valid():return {'status_message':u"Ошибка в заполнении полей"}
+    if not form.is_valid():return {'status_message':_(u"Ошибка в заполнении полей")}
     summ = form.cleaned_data.get('summ', 0)
     phone = form.cleaned_data.get('phone', '')
     password = form.cleaned_data.get('password', '')
     autoaccept = form.cleaned_data.get("autoaccept", False)
 
-    if autoaccept==True and not (password): return {'status_message':u"Для автоматического зачисления необходимо указать пароль"}
-    if summ<settings.QIWI_MIN_SUMM: return {'status_message':u"Минимальная сумма платежа %s" % settings.QIWI_MIN_SUMM}
+    if autoaccept==True and not (password): return {'status_message':_(u"Для автоматического зачисления необходимо указать пароль")}
+    if summ<settings.QIWI_MIN_SUMM: return {'status_message':_(u"Минимальная сумма платежа %s") % settings.QIWI_MIN_SUMM}
 
     if summ>=1 and len(phone)==10:
         from paymentgateways.qiwi.qiwiapi import create_invoice, accept_invoice_id, lifetime, get_balance
         #if autoaccept:
         #    balance, message = get_balance(phone=phone, password=password)
-        #    if float(balance)<summ: return {'status_message':u"Сбой автозачисления: баланс вашего кошелька меньше суммы оплаты или включено sms подтверждение действий."}
+        #    if float(balance)<summ: return {'status_message':_(u"Сбой автозачисления: баланс вашего кошелька меньше суммы оплаты или включено sms подтверждение действий."}
         invoice = QiwiInvoice()
         invoice.account = request.user.account
         invoice.phone = phone
@@ -396,24 +399,24 @@ def qiwi_payment(request):
         invoice.autoaccept=autoaccept
         invoice.lifetime = lifetime
         invoice.save()
-        comment = u"Пополнение счёта %s" % request.user.account.username
+        comment = _(u"Пополнение счёта %s") % request.user.account.username
         status, message=create_invoice(phone_number=phone,transaction_id=invoice.id, summ=invoice.summ, comment=comment)
         #print 'status', type(status)
         payed=False
         if status!=0:
             #invoice.delete()
-            return {'status_message':u'Произошла ошибка выставления счёта. %s' % message}
+            return {'status_message':_(u'Произошла ошибка выставления счёта. %s') % message}
         payment_url=''
         if not invoice.autoaccept:
             from paymentgateways.qiwi.qiwiapi import term_id
             if status==0:
                 payment_url="https://w.qiwi.ru/externalorder.action?shop=%s&transaction=%s" % (term_id,invoice.id)
-                message = u'Счёт удачно создан. Пройдите по ссылке для его оплаты.'
+                message = _(u'Счёт удачно создан. Пройдите по ссылке для его оплаты.')
                 payed=True
         else:
             status, message = accept_invoice_id(phone=phone, password=password, transaction_id=invoice.id, date=invoice.created)
             if status==0:
-                message=u"Платёж успешно выполнен."
+                message=_(u"Платёж успешно выполнен.")
                 invoice.accepted=True
                 invoice.date_accepted=datetime.datetime.now()
                 invoice.save()
@@ -422,12 +425,12 @@ def qiwi_payment(request):
 
         return {'status_message':message, 'payment_url':payment_url,'payed':payed, 'invoice_id':invoice.id, 'invoice_summ':float(invoice.summ), 'invoice_date':"%s-%s-%s %s:%s:%s" % (invoice.created.day, invoice.created.month, invoice.created.year,invoice.created.hour, invoice.created.minute, invoice.created.second)}
     else:
-        return {'status_message':u'Сумма<1 или неправильный формат телефонного номера.'}
+        return {'status_message':_(u'Сумма<1 или неправильный формат телефонного номера.')}
 
 @ajax_request
 @login_required
 def qiwi_balance(request):
-    if request.method != 'POST': return {'balance':0, 'status_message':u"Неправильный вызов функции"}
+    if request.method != 'POST': return {'balance':0, 'status_message':_(u"Неправильный вызов функции")}
     phone = request.POST.get('phone', None)
     password = request.POST.get('password', None)
     if phone and password:
@@ -436,7 +439,7 @@ def qiwi_balance(request):
         #print balance, message
         return {'balance':balance, 'status_message':message}
     else:
-        message = u"Не указан телефон или пароль"
+        message = _(u"Не указан телефон или пароль")
         return {'balance':0, 'status_message':message}
 
 
@@ -619,11 +622,11 @@ def subaccount_change_password(request):
                     except Exception, e:
                         #print e
                         return {
-                                'error_message': u'Обнаружена попытка взлома.',
+                                'error_message': _(u'Обнаружена попытка взлома.'),
                                 }
                 else:
                     return {
-                            'error_message': u'Обнаружена попытка взлома.',
+                            'error_message': _(u'Обнаружена попытка взлома.'),
                             }
 
 
@@ -632,23 +635,23 @@ def subaccount_change_password(request):
                     subaccount.password = form.cleaned_data['new_password']
                     subaccount.save()
                     return {
-                            'error_message': u'Пароль успешно изменен',
+                            'error_message': _(u'Пароль успешно изменен'),
                             }
                 else:
                     return {
-                            'error_message': u'Пароли не совпадают',
+                            'error_message': _(u'Пароли не совпадают'),
                             }
             except Exception, e:
                 return {
-                        'error_message': u'Возникла ошибка. Обратитесь к администратору.',
+                        'error_message': _(u'Возникла ошибка. Обратитесь к администратору.'),
                         }
         else:
             return {
-                    'error_message': u'Одно из полей не заполнено',
+                    'error_message': _(u'Одно из полей не заполнено'),
                     }
     else:
         return {
-                'error_message': u'Не предвиденная ошибка',
+                'error_message': _(u'Не предвиденная ошибка'),
                 }
 
 
@@ -666,23 +669,23 @@ def change_password(request):
                     user.password = form.cleaned_data['new_password']
                     user.save()
                     return {
-                            'error_message': u'Пароль успешно изменен',
+                            'error_message': _(u'Пароль успешно изменен'),
                             }
                 else:
                     return {
-                            'error_message': u'Проверьте пароль. ',
+                            'error_message': _(u'Проверьте пароль. '),
                             }
             except Exception, e:
                 return {
-                        'error_message': u'Возникла ошибка. Обратитесь к администратору.',
+                        'error_message': _(u'Возникла ошибка. Обратитесь к администратору.'),
                         }
         else:
             return {
-                    'error_message': u'Проверьте введенные данные',
+                    'error_message': _(u'Проверьте введенные данные'),
                     }
     else:
         return {
-                'error_message': u'Не предвиденная ошибка',
+                'error_message': _(u'Не предвиденная ошибка'),
                 }
 
 
@@ -697,17 +700,17 @@ def change_email(request):
                 user.email=form.cleaned_data['new_email']
                 user.save()
                 return {
-                        'error_message': u'E-mail успешно изменен',
+                        'error_message': _(u'E-mail успешно изменен'),
                         'ok':'ok',
                         }
             else:
                 return {
-                        'error_message': u'Введённые e-mail не совпадают',
+                        'error_message': _(u'Введённые e-mail не совпадают'),
                         }
 
         else:
             return {
-                    'error_message': u'Проверьте введенные данные',
+                    'error_message': _(u'Проверьте введенные данные'),
                     }
 
 
@@ -773,7 +776,7 @@ def change_tariff(request):
                 delta = (datetime.now() - account_tariff.datetime).seconds+(datetime.now() - account_tariff.datetime).days*86400 - td[2]
                 if delta < 0:
                     return {
-                            'error_message':u'Вы не можете перейти на выбранный тариф. Для перехода вам необходимо отработать на старом тарифе ещё не менее %s дней' % (delta/86400*(-1), ),
+                            'error_message':_(u'Вы не можете перейти на выбранный тариф. Для перехода вам необходимо отработать на старом тарифе ещё не менее %s дней') % (delta/86400*(-1), ),
                             }
             if rule.on_next_sp:
                 sp = current_tariff.settlement_period
@@ -787,12 +790,12 @@ def change_tariff(request):
                     data_start_active = True
             if not rule.id in rules_id:
                 return {
-                        'error_message':u'Вы не можете перейти на выбранный тарифный план.',
+                        'error_message':_(u'Вы не можете перейти на выбранный тарифный план.'),
                         }
             
             if float(rule.ballance_min)>float(user.ballance+user.credit):
                 return {
-                        'error_message':u'Вы не можете перейти на выбранный тарифный план. Ваш баланс меньше разрешённого для такого перехода.',
+                        'error_message':_(u'Вы не можете перейти на выбранный тарифный план. Ваш баланс меньше разрешённого для такого перехода.'),
                         }
                 
             tariff = AccountTarif.objects.create(
@@ -814,21 +817,21 @@ def change_tariff(request):
                                   VALUES(%s, 'Списание средств за переход на тарифный план %s', 'TP_CHANGE', True, get_tarif(%s), %s, now(), False)""" % (user.id, tariff.tarif.name, user.id, rule.cost))
                 cursor.connection.commit()
             if data_start_active:
-                ok_str = u'Вы успешно сменили тариф, тарифный план будет изменён в следующем расчётном периоде c %s.<br> За переход на данный тарифный план с пользователя будет взыскано %s средств.' %(td[1], rule.cost)
+                ok_str = _(u'Вы успешно сменили тариф, тарифный план будет изменён в следующем расчётном периоде c %(TP)s.<br> За переход на данный тарифный план с пользователя будет взыскано %(SUMM)s средств.') %{'TP': td[1], 'SUMM': rule.cost}
                 return {
                          'ok_message':ok_str,
                         }
             else:
                 return {
-                        'ok_message':u'Вы успешно сменили тариф. <br> За переход на данный тарифный план с пользователя будет взыскано %s средств.' %rule.cost,
+                        'ok_message':_(u'Вы успешно сменили тариф. <br> За переход на данный тарифный план с пользователя будет взыскано %s средств.') % rule.cost,
                         }
         else:
             return {
-                    'error_message':u'Системная ошибка.',
+                    'error_message':_(u'Системная ошибка.'),
                     }
     else:
         return {
-                'error_message':u'Попытка взлома',
+                'error_message':_(u'Попытка взлома'),
                 }
 
 
@@ -846,7 +849,7 @@ def card_acvation(request):
     user = request.user.account
     if not user.allow_expresscards:
         return {
-                'error_message': u'Вам не доступна услуга активации карт экспресс оплаты.',
+                'error_message': _(u'Вам не доступна услуга активации карт экспресс оплаты.'),
                 }
 
 
@@ -858,17 +861,17 @@ def card_acvation(request):
             res = activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
             #print res
             if res == 'CARD_NOT_FOUND':
-                error_message = u'Ошибка активации. Карта не найдена.'
+                error_message = _(u'Ошибка активации. Карта не найдена.')
             elif res == 'CARD_NOT_SOLD':
-                error_message = u'Ошибка активации. Карта не была продана.'
+                error_message = _(u'Ошибка активации. Карта не была продана.')
             elif res == 'CARD_ALREADY_ACTIVATED':
-                error_message = u'Ошибка активации. Карта была активирована раньше.'
+                error_message = _(u'Ошибка активации. Карта была активирована раньше.')
             elif res == 'CARD_EXPIRED':
-                error_message = u'Ошибка активации. Срок действия карты истёк.'
+                error_message = _(u'Ошибка активации. Срок действия карты истёк.')
             elif res == 'CARD_ACTIVATED':
-                error_message = u'Карта успешно активирована.'
+                error_message = _(u'Карта успешно активирована.')
             elif res == 'CARD_ACTIVATION_ERROR':
-                error_message = u'Ошибка активации карты.'
+                error_message = _(u'Ошибка активации карты.')
 
             #if int(cache_user['count']) <= settings.ACTIVATION_COUNT:
             #    cache.delete(user.id)
@@ -885,13 +888,13 @@ def card_acvation(request):
             #    cache.delete(user.id)
             #    cache.add(user.id, {'count':count+1,'last_date':cache_user['last_date'],'blocked':False,})
             return {
-                    'error_message': u"Проверьте заполнение формы",
+                    'error_message': _(u"Проверьте заполнение формы"),
                     #'form': form,
                     }
     else:
         #form = CardForm()
         return {
-                'error_message': u"Ошибка активации карточки",
+                'error_message': _(u"Ошибка активации карточки"),
                 #'form':form,
                 }
 
@@ -1040,62 +1043,62 @@ def service_action(request, action, id):
         try:
             account_addon_service = AddonService.objects.get(id=id)
         except:
-            request.session['service_message'] = u'Вы не можете подключить данную услугу'
+            request.session['service_message'] = _(u'Вы не можете подключить данную услугу')
             return HttpResponseRedirect('/services/')
         
         result = add_addonservice(account_id=user.id, service_id=id)
         if result == True:
-            request.session['service_message'] = u'Услуга подключена'
+            request.session['service_message'] = _(u'Услуга подключена')
             return HttpResponseRedirect('/services/')
         elif result == 'ACCOUNT_DOES_NOT_EXIST':
-            request.session['service_message'] = u'Указанный пользователь не найден'
+            request.session['service_message'] = _(u'Указанный пользователь не найден')
             return HttpResponseRedirect('/services/')
         elif result == 'ADDON_SERVICE_DOES_NOT_EXIST':
-            request.session['service_message'] = u'Указанныя подключаемая услуга не найдена'
+            request.session['service_message'] = _(u'Указанныя подключаемая услуга не найдена')
             return HttpResponseRedirect('/services/')
         elif result == 'NOT_IN_PERIOD':
-            request.session['service_message'] = u'Активация выбранной услуги в данный момент не доступна'
+            request.session['service_message'] = _(u'Активация выбранной услуги в данный момент не доступна')
             return HttpResponseRedirect('/services/')
         elif result == 'ALERADY_HAVE_SPEED_SERVICE':
-            request.session['service_message'] = u'У вас уже подключенны изменяющие скорость услуги'
+            request.session['service_message'] = _(u'У вас уже подключенны изменяющие скорость услуги')
             return HttpResponseRedirect('/services/')
         elif result == 'ACCOUNT_BLOCKED':
-            request.session['service_message'] = u'Услуга не может быть подключена. Проверьте Ваш баланс или обратитесь в службу поддержки'
+            request.session['service_message'] = _(u'Услуга не может быть подключена. Проверьте Ваш баланс или обратитесь в службу поддержки')
             return HttpResponseRedirect('/services/')
         elif result == 'ADDONSERVICE_TARIF_DOES_NOT_ALLOWED':
-            request.session['service_message'] = u'На вашем тарифном плане активация выбранной услуги невозможна'
+            request.session['service_message'] = _(u'На вашем тарифном плане активация выбранной услуги невозможна')
             return HttpResponseRedirect('/services/')
         elif result == 'TOO_MUCH_ACTIVATIONS':
-            request.session['service_message'] = u'Превышенно допустимое количество активаций. Обратитесь в службу поддержки'
+            request.session['service_message'] = _(u'Превышенно допустимое количество активаций. Обратитесь в службу поддержки')
             return HttpResponseRedirect('/services/')
         elif result == 'SERVICE_ARE_ALREADY_ACTIVATED':
-            request.session['service_message'] = u'Указанная услуга уже подключена и не может быть активирована дважды.'
+            request.session['service_message'] = _(u'Указанная услуга уже подключена и не может быть активирована дважды.')
             return HttpResponseRedirect('/services/')
         else:
-            request.session['service_message'] = u'Услугу не возможно подключить'
+            request.session['service_message'] = _(u'Услугу не возможно подключить')
             return HttpResponseRedirect('/services/')
     elif action == u'del':
         result = del_addonservice(user.id, id)
         if result == True:
-            request.session['service_message'] = u'Услуга отключена'
+            request.session['service_message'] = _(u'Услуга отключена')
             return HttpResponseRedirect('/services/')
         elif result == 'ACCOUNT_DOES_NOT_EXIST':
-            request.session['service_message'] = u'Указанный пользователь не найден'
+            request.session['service_message'] = _(u'Указанный пользователь не найден')
             return HttpResponseRedirect('/services/')
         elif result == 'ADDON_SERVICE_DOES_NOT_EXIST':
-            request.session['service_message'] = u'Указанныя подключаемая услуга не найдена'
+            request.session['service_message'] = _(u'Указанныя подключаемая услуга не найдена')
             return HttpResponseRedirect('/services/')
         elif result == 'ACCOUNT_ADDON_SERVICE_DOES_NOT_EXIST':
-            request.session['service_message'] = u'Вы не можите отключить выбранную услугу'
+            request.session['service_message'] = _(u'Вы не можите отключить выбранную услугу')
             return HttpResponseRedirect('/services/')
         elif result == 'NO_CANCEL_SUBSCRIPTION':
-            request.session['service_message'] = u'Даннная услуга не может быть отключена. Обратитесь в службу поддержки'
+            request.session['service_message'] = _(u'Даннная услуга не может быть отключена. Обратитесь в службу поддержки')
             return HttpResponseRedirect('/services/')
         else:
-            request.session['service_message'] = u'Услугу не возможно отключить'
+            request.session['service_message'] = _(u'Услугу не возможно отключить')
             return HttpResponseRedirect('/services/')
     else:
-        request.session['service_message'] = u'Невозможно совершить действие'
+        request.session['service_message'] = _(u'Невозможно совершить действие')
         return HttpResponseRedirect('/services/')
 
 @render_to('accounts/periodical_service_history.html')
@@ -1211,7 +1214,7 @@ def one_time_history(request):
 @ajax_request
 @login_required
 def news_delete(request):
-    message = u'Невозможно удалить новость, попробуйте позже'
+    message = _(u'Невозможно удалить новость, попробуйте позже')
     if request.method == 'POST':
         from billservice.models import AccountViewedNews
         news_id = request.POST.get('news_id', '')
@@ -1224,7 +1227,7 @@ def news_delete(request):
         news.viewed = True
         news.save()
         return {
-                'message':u'Новость успешно удалена',
+                'message':_(u'Новость успешно удалена'),
                 }
 
 @render_to('accounts/popup_userblock.html')
@@ -1243,7 +1246,7 @@ def user_block(request):
 @ajax_request
 @login_required
 def userblock_action(request):
-    message = u'Невозможно заблокировать учётную записть'
+    message = _(u'Невозможно заблокировать учётную записть')
     if request.method == 'POST':
         account=request.user.account
         if account.status==4:
@@ -1251,7 +1254,7 @@ def userblock_action(request):
             account.status=1
             account.save()
             result=True
-            message=u'Аккаунт успешно активирован'
+            message=_(u'Аккаунт успешно активирован')
         elif account.status==1:
             tarif=account.get_account_tariff()
             if tarif.allow_userblock:
@@ -1259,7 +1262,7 @@ def userblock_action(request):
                 if tarif.userblock_require_balance!=0 and tarif.userblock_require_balance>account.ballance+account.credit:
                     #print 1.5
                     result=False
-                    message=u'Аккаунт не может быть заблокирован. </br>Минимальный остаток на балансе должен составлять %s.' % tarif.userblock_require_balance
+                    message=_(u'Аккаунт не может быть заблокирован. </br>Минимальный остаток на балансе должен составлять %s.') % tarif.userblock_require_balance
                     return {
                             'message':message, 'result':result,
                             }
@@ -1273,13 +1276,13 @@ def userblock_action(request):
                                   VALUES(%s, 'Списание средств за пользовательскую блокировку', 'USERBLOCK_PAYMENT', True, get_tarif(%s), %s, now(), False)""" , (account.id, account.id, tarif.userblock_cost,))
                 cursor.connection.commit()
                 #print 4
-                message=u'Аккаунт успешно заблокирован'
+                message=_(u'Аккаунт успешно заблокирован')
                 result=True
             else:
-                message=u'Блокировка аккаунта запрещена'
+                message=_(u'Блокировка аккаунта запрещена')
                 result=False
         else:
-            message=u'Блокировка аккаунта невозможна. Обратитесь в служюу поддержки провайдера.'
+            message=_(u'Блокировка аккаунта невозможна. Обратитесь в служюу поддержки провайдера.')
             result=False
             
         return {

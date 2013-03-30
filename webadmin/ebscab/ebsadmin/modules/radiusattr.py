@@ -16,13 +16,13 @@ from ebscab.nas.models import Nas
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/radiusattr_list.html')
 def radiusattr(request):
     if  not (request.user.account.has_perm('billservice.view_radiusattrs')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     nas_id = request.GET.get("nas")
@@ -66,11 +66,11 @@ def radiusattr_edit(request):
             model = RadiusAttrs.objects.get(id=id)
             form = RadiusAttrsForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_radiusattrs')):
-                messages.error(request, u'У вас нет прав на редактирование радиус атрибутов', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование радиус атрибутов'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             if  not (request.user.account.has_perm('billservice.add_radiusattrs')):
-                messages.error(request, u'У вас нет прав на создание радиус атрибутов', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание радиус атрибутов'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
             
             form = RadiusAttrsForm(request.POST) 
@@ -87,7 +87,7 @@ def radiusattr_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_radiusattrs')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {}
         if id:
 
@@ -106,13 +106,13 @@ def radiusattr_edit(request):
 @systemuser_required
 def radiusattr_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_radiusattrs')):
-        return {'status':False, 'message': u'У вас нет прав на удаление радиус атрибутов'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление радиус атрибутов')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = RadiusAttrs.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанный атрибут найден %s" % str(e)}
+            return {"status": False, "message": _(u"Указанный атрибут найден %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

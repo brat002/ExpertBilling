@@ -15,13 +15,14 @@ from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
 from django.db.models.query import QuerySet
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/sms_list.html')
 def sms(request):
         
     if  not (request.user.account.has_perm('billservice.view_news')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
 
@@ -80,13 +81,13 @@ def sms(request):
 @systemuser_required
 def sms_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_news')):
-        return {'status':False, 'message': u'У вас нет прав на удаление новостей'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление новостей')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = Message.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанное сообщение не найдено %s" % str(e)}
+            return {"status": False, "message": _(u"Указанное сообщение не найдено %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}
