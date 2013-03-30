@@ -16,13 +16,13 @@ from django.contrib import messages
 
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/permissiongroup_list.html')
 def permissiongroup(request):
     if  not (request.user.account.has_perm('billservice.view_permissiongroup')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
     items = PermissionGroup.objects.all()
@@ -48,12 +48,12 @@ def permissiongroup_edit(request):
             model = PermissionGroup.objects.get(id=id)
             form = PermissionGroupForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_permissionrule')):
-                messages.error(request, u'У вас нет прав на редактирование групп доступа', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование групп доступа'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             
             if  not (request.user.account.has_perm('billservice.add_permissiongroup')):
-                messages.error(request, u'У вас нет прав на создание групп доступа', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание групп доступа'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
             
             form = PermissionGroupForm(request.POST) 
@@ -73,7 +73,7 @@ def permissiongroup_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_permissiongroup')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if id:
 
@@ -91,13 +91,13 @@ def permissiongroup_edit(request):
 @systemuser_required
 def permissiongroup_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_permissiongroup')):
-        return {'status':False, 'message': u'У вас нет прав на удаление групп доступа'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление групп доступа')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = PermissionGroup.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанная группа доступа не найдена %s" % str(e)}
+            return {"status": False, "message": _(u"Указанная группа доступа не найдена %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

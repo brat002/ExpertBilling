@@ -278,6 +278,8 @@ class Ticket(models.Model):
         help_text=_(u'If a ticket is on hold, it will not automatically be escalated.'))
     description = models.TextField(_('Description'), blank=True, null=True, \
         help_text=_('The content of the customers query.'))
+    hidden_comment = models.TextField(_(u'Скрытый комментарий.'), blank=True, null=True, \
+        help_text=_(u'Комментарий будут видеть только администраторы.'))
     resolution = models.TextField(_('Resolution'), blank=True, null=True, \
                                   help_text=_('The resolution provided to the customer by our staff.'))
     priority = models.IntegerField(_('Priority'), choices=PRIORITY_CHOICES, default=3, \

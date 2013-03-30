@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+#-*- coding=utf-8 -*-
 
 from billservice.forms import AccountForm
 from billservice.models import Account, SuspendedPeriod, AccountHardware, Transaction
@@ -26,6 +26,7 @@ from sendsms.models import Message
 
 from helpdesk.models import Ticket
 import itertools
+from django.utils.translation import ugettext_lazy as _
 
 class FormatBlankColumn(django_tables.Column):
     def render(self, value):
@@ -107,7 +108,7 @@ class AccountAddonServiceTable(django_tables.Table):
     #service = django_tables.LinkColumn('subaccount_detail', args=[A('pk')])
     activated = FormatDateTimeColumn()
     deactivated = FormatDateTimeColumn()
-    temporary_blocked = FormatDateTimeColumn(verbose_name=u'Отключена')
+    temporary_blocked = FormatDateTimeColumn(verbose_name=_(u'Отключена'))
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     
@@ -139,17 +140,17 @@ class AccountTarifTable(django_tables.Table):
             
             #-*-coding=utf-8-*-
 class TotalTransactionReportTable(TableReport):
-    tariff__name = FormatBlankColumn(verbose_name=u'Тариф')
+    tariff__name = FormatBlankColumn(verbose_name=_(u'Тариф'))
     id = FormatBlankColumn()
-    account__username = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account')})
-    bill = FormatBlankColumn(verbose_name=u'Платёжный документ')
-    description = FormatBlankColumn(verbose_name=u'Комментарий')
-    service__name = FormatBlankColumn(verbose_name=u'Услуга')
-    type__name = FormatBlankColumn(verbose_name=u'Тип')
+    account__username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')})
+    bill = FormatBlankColumn(verbose_name=_(u'Платёжный документ'))
+    description = FormatBlankColumn(verbose_name=_(u'Комментарий'))
+    service__name = FormatBlankColumn(verbose_name=_(u'Услуга'))
+    type__name = FormatBlankColumn(verbose_name=_(u'Тип'))
 
-    summ = FormatFloatColumn(verbose_name=u'Сумма')
-    created = FormatDateTimeColumn(verbose_name=u'Создана')
-    end_promise = FormatDateTimeColumn(verbose_name=u'Окончание о.п.')
+    summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
+    created = FormatDateTimeColumn(verbose_name=_(u'Создана'))
+    end_promise = FormatDateTimeColumn(verbose_name=_(u'Окончание о.п.'))
     #promise_expired = FormatDateTimeColumn()
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     class Meta:
@@ -163,8 +164,8 @@ class TotalTransactionReportTable(TableReport):
         
 class CashierReportTable(TableReport):
     
-    summ = FormatFloatColumn(verbose_name=u'Сумма')
-    created = FormatDateTimeColumn(verbose_name=u'Создан')
+    summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
+    created = FormatDateTimeColumn(verbose_name=_(u'Создан'))
     class Meta:
         model = Transaction
         fields = ('id', 'account', 'type', 'bill', 'description',  'summ', 'promise', 'promise_expired', 'created')
@@ -173,17 +174,17 @@ class CashierReportTable(TableReport):
         
 
 class AccountsReportTable(TableReport):
-    row_number = django_tables.Column(verbose_name=u'#', empty_values=(), orderable=False)
+    row_number = django_tables.Column(verbose_name='#', empty_values=(), orderable=False)
     #id = FormatBlankColumn()
-    username = django_tables.LinkColumn('account_edit', verbose_name=u'Имя', get_params={'id':A('pk')})
-    contract = FormatBlankColumn(verbose_name=u'Договор')
+    username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Имя'), get_params={'id':A('pk')})
+    contract = FormatBlankColumn(verbose_name=_(u'Договор'))
     fullname = FormatBlankColumn()
     address = django_tables.TemplateColumn(u"{{record.street|default:''}} {{record.house|default:''}}-{{record.room|default:''}}", orderable=False)
-    entrance = django_tables.Column(verbose_name=u'Подъезд')
-    row = django_tables.Column(verbose_name=u'Этаж')
+    entrance = django_tables.Column(verbose_name=_(u'Подъезд'))
+    row = django_tables.Column(verbose_name=_(u'Этаж'))
     ballance = FormatFloatColumn()
-    tariff  = FormatBlankColumn(verbose_name=u"Тариф", orderable=False)
-    ips  = FormatBlankColumn(verbose_name=u"IP", orderable=False)
+    tariff  = FormatBlankColumn(verbose_name=_(u"Тариф"), orderable=False)
+    ips  = FormatBlankColumn(verbose_name=_(u"IP"), orderable=False)
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
     #credit = FormatFloatColumn()
     #created = FormatDateTimeColumn()
@@ -205,13 +206,13 @@ class AccountsCashierReportTable(TableReport):
     d = RadioColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
     row_number = django_tables.Column(verbose_name=u'#', empty_values=(), orderable=False)
     #id = FormatBlankColumn()
-    username = django_tables.Column(verbose_name=u'Имя')
-    contract = FormatBlankColumn(verbose_name=u'Договор')
+    username = django_tables.Column(verbose_name=_(u'Имя'))
+    contract = FormatBlankColumn(verbose_name=_(u'Договор'))
     fullname = FormatBlankColumn()
     tariff  = FormatBlankColumn()
     address = django_tables.TemplateColumn(u"{{record.street|default:''}} {{record.house|default:''}}-{{record.room|default:''}}")
-    entrance = django_tables.Column(verbose_name=u'Подъезд')
-    row = django_tables.Column(verbose_name=u'Этаж')
+    entrance = django_tables.Column(verbose_name=_(u'Подъезд'))
+    row = django_tables.Column(verbose_name=_(u'Этаж'))
     ballance = FormatFloatColumn()
     
     
@@ -234,17 +235,17 @@ class ActiveSessionTable(TableReport):
     row_number = django_tables.Column(verbose_name=u'#', empty_values=(), orderable=False)
     session_status = django_tables.TemplateColumn("<span class='label {% if record.session_status == 'ACK' %}info{% endif %}'>{{ record.session_status }}</span>")
     date_start = FormatDateTimeColumn()
-    interrim_update = FormatDateTimeColumn(verbose_name=u'Последнее обновление')
-    caller_id = django_tables.Column(verbose_name=u'Caller ID', empty_values=())
-    framed_ip_address = django_tables.Column(verbose_name=u'IP', empty_values=())
-    framed_protocol = django_tables.Column(verbose_name=u'Протокол', empty_values=())
-    session_time = django_tables.Column(verbose_name=u'Онлайн', empty_values=())
+    interrim_update = FormatDateTimeColumn(verbose_name=_(u'Последнее обновление'))
+    caller_id = django_tables.Column(verbose_name=_(u'Caller ID'), empty_values=())
+    framed_ip_address = django_tables.Column(verbose_name=_(u'IP'), empty_values=())
+    framed_protocol = django_tables.Column(verbose_name=_(u'Протокол'), empty_values=())
+    session_time = django_tables.Column(verbose_name=_(u'Онлайн'), empty_values=())
     date_end = FormatDateTimeColumn()
-    nas_int = django_tables.Column(verbose_name=u'NAS', accessor=A('nas_int__name'))
-    bytes = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}/{{record.bytes_out|filesizeformat}}", verbose_name=u'Байт')
+    nas_int = django_tables.Column(verbose_name=_(u'NAS'), accessor=A('nas_int__name'))
+    bytes = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}/{{record.bytes_out|filesizeformat}}", verbose_name=_(u'Байт'))
     #account = django_tables.LinkColumn('account_edit', get_params={'id':A('account.id')})
-    subaccount__username = django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount')}, verbose_name=u'Субаккаунт')
-    action = django_tables.TemplateColumn("<button data='{{record.id}}' class='btn btn-success btn-mini sreset' title='Soft reset'>R</button>&nbsp;<button data='{{record.id}}' class='btn btn-danger btn-mini hreset' title='Hard reset'>H</button>&nbsp;<button class='btn btn-info btn-mini ping' title='Ping' data='{{record.framed_ip_address}}'>P</button>", verbose_name=u'Action')
+    subaccount__username = django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount')}, verbose_name=_(u'Субаккаунт'))
+    action = django_tables.TemplateColumn("<button data='{{record.id}}' class='btn btn-success btn-mini sreset' title='Soft reset'>R</button>&nbsp;<button data='{{record.id}}' class='btn btn-danger btn-mini hreset' title='Hard reset'>H</button>&nbsp;<button class='btn btn-info btn-mini ping' title='Ping' data='{{record.framed_ip_address}}'>P</button>", verbose_name=_(u'Action'))
     
     def __init__(self, *args, **kwargs):
         super(ActiveSessionTable, self).__init__(*args, **kwargs)
@@ -274,8 +275,8 @@ class AuthLogTable(TableReport):
         
 class BallanceHistoryTable(TableReport):
     account__username = django_tables.LinkColumn('account_edit', get_params={'id':A('account')})
-    balance = FormatBlankColumn(verbose_name=u'Новый баланс')
-    summ = FormatBlankColumn(verbose_name=u'Сумма')
+    balance = FormatBlankColumn(verbose_name=_(u'Новый баланс'))
+    summ = FormatBlankColumn(verbose_name=_(u'Сумма'))
     datetime = FormatDateTimeColumn()
     
     class Meta:
@@ -300,8 +301,8 @@ class LogTable(TableReport):
 
 class NasTable(TableReport):
     #row_number = django_tables.Column(verbose_name="#")
-    name = django_tables.LinkColumn('nas_edit', verbose_name=u"Имя", get_params={'id':A('pk')})
-    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?nas={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=u'RADIUS атрибуты', orderable=False)
+    name = django_tables.LinkColumn('nas_edit', verbose_name=_(u"Имя"), get_params={'id':A('pk')})
+    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?nas={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=_(u'RADIUS атрибуты'), orderable=False)
     id = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
@@ -363,8 +364,8 @@ class IPPoolTable(TableReport):
     id = django_tables.LinkColumn('ippool_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('ippool_edit', get_params={'id':A('pk')})
     next_ippool = FormatBlankColumn()
-    pool_size = django_tables.Column(verbose_name=u'IP в пуле', accessor=A('get_pool_size'), orderable=False)
-    used_ip =  django_tables.Column(verbose_name=u'Используется', accessor=A('get_used_ip_count'), orderable=False)
+    pool_size = django_tables.Column(verbose_name=_(u'IP в пуле'), accessor=A('get_pool_size'), orderable=False)
+    used_ip =  django_tables.Column(verbose_name=_(u'Используется'), accessor=A('get_used_ip_count'), orderable=False)
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     class Meta:
@@ -387,7 +388,7 @@ class TransactionTypeTable(TableReport):
 class TrafficClassTable(TableReport):
     id = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    directions = django_tables.TemplateColumn(u"<a href='{% url trafficnode_list %}?id={{record.id}}' class='btn btn-primary btn-mini'>Список направлений</a>", verbose_name=u'Направления', orderable=False)
+    directions = django_tables.TemplateColumn(u"<a href='{% url trafficnode_list %}?id={{record.id}}' class='btn btn-primary btn-mini'>Список направлений</a>", verbose_name=_(u'Направления'), orderable=False)
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a><input type='hidden' name='id' value='{{record.id}}'>", verbose_name=' ', orderable=False)
     
     class Meta:
@@ -506,7 +507,7 @@ class CardTable(TableReport):
     start_date = FormatDateTimeColumn()
     end_date = FormatDateTimeColumn()
     created = FormatDateTimeColumn()
-    salecard = FormatDateTimeColumn(verbose_name=u'Продана', accessor=A('salecard.created'))
+    salecard = FormatDateTimeColumn(verbose_name=_(u'Продана'), accessor=A('salecard.created'))
     activated = FormatDateTimeColumn()
     activated_by = FormatBlankColumn()
     tarif = FormatBlankColumn()
@@ -582,8 +583,8 @@ class DealerTable(TableReport):
         
 class TariffTable(TableReport):
     name = django_tables.LinkColumn('tariff_edit', get_params={'id':A('pk')})
-    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?tarif={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=u'RADIUS атрибуты', orderable=False)
-    access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?tarif={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=_(u'RADIUS атрибуты'), orderable=False)
+    access_type = FormatBlankColumn(verbose_name=_(u'Тип доступа'), accessor=A('access_parameters.access_type'))
     
     class Meta:
         model = Tariff
@@ -703,7 +704,7 @@ class PeriodicalServiceLogTable(TableReport):
 
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
-    datetime = FormatDateTimeColumn(verbose_name=u'Дата')
+    datetime = FormatDateTimeColumn(verbose_name=_(u'Дата'))
     
     class Meta:
         model = PeriodicalServiceLog
@@ -715,13 +716,13 @@ class SheduleLogTable(TableReport):
 
     d = django_tables.TemplateColumn("  ", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
-    accounttarif = FormatBlankColumn(verbose_name=u'Тариф аккаунта')
-    ballance_checkout = FormatDateTimeColumn(verbose_name=u'Доснятие до стоимости')
-    prepaid_traffic_reset = FormatDateTimeColumn(verbose_name=u'Обнуление предоплаченного трафика')
-    prepaid_traffic_accrued = FormatDateTimeColumn(verbose_name=u'Начисление предоплаченного трафика')
-    prepaid_time_reset = FormatDateTimeColumn(verbose_name=u'Обнуление предоплаченного времени')
-    prepaid_time_accrued = FormatDateTimeColumn(verbose_name=u'Начисление предоплаченного врeмени')
-    balance_blocked = FormatDateTimeColumn(verbose_name=u'Блокировка баланса')
+    accounttarif = FormatBlankColumn(verbose_name=_(u'Тариф аккаунта'))
+    ballance_checkout = FormatDateTimeColumn(verbose_name=_(u'Доснятие до стоимости'))
+    prepaid_traffic_reset = FormatDateTimeColumn(verbose_name=_(u'Обнуление предоплаченного трафика'))
+    prepaid_traffic_accrued = FormatDateTimeColumn(verbose_name=_(u'Начисление предоплаченного трафика'))
+    prepaid_time_reset = FormatDateTimeColumn(verbose_name=_(u'Обнуление предоплаченного времени'))
+    prepaid_time_accrued = FormatDateTimeColumn(verbose_name=_(u'Начисление предоплаченного врeмени'))
+    balance_blocked = FormatDateTimeColumn(verbose_name=_(u'Блокировка баланса'))
     
     class Meta:
         model = SheduleLog
@@ -733,8 +734,8 @@ class NewsTable(TableReport):
 
     id = django_tables.LinkColumn('news_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
-    created = FormatDateTimeColumn(verbose_name=u'Активна с')
-    age = FormatDateTimeColumn(verbose_name=u'Активна по')
+    created = FormatDateTimeColumn(verbose_name=_(u'Активна с'))
+    age = FormatDateTimeColumn(verbose_name=_(u'Активна по'))
 
     
     class Meta:
@@ -748,7 +749,7 @@ class TPChangeRuleTable(TableReport):
 
     id = django_tables.LinkColumn('tpchangerule_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
-    settlement_period = FormatBlankColumn(verbose_name=u'Расчётный период')
+    settlement_period = FormatBlankColumn(verbose_name=_(u'Расчётный период'))
     on_next_sp = django_tables.TemplateColumn("<img src='/media/img/icons/{% if record.on_next_sp %}accept.png{% else %}icon_error.gif{% endif %}'>")
     row_class = django_tables.Column(visible=False)
 
@@ -765,7 +766,7 @@ class AccountGroupTable(TableReport):
 
     id = django_tables.LinkColumn('accountgroup_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('accountgroup_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    cnt = django_tables.TemplateColumn('{{record.account_set.count}}', verbose_name = u'Количество')
+    cnt = django_tables.TemplateColumn('{{record.account_set.count}}', verbose_name = _(u'Количество'))
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     class Meta:
@@ -773,7 +774,7 @@ class AccountGroupTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class ActionLogTable(TableReport):
-    object1 = django_tables.Column(verbose_name=u'Объект', accessor=A('object1'))
+    object1 = django_tables.Column(verbose_name=_(u'Объект'), accessor=A('object1'))
     
     
     class Meta:
@@ -784,31 +785,31 @@ class ActionLogTable(TableReport):
 
 class GroupStatTable(TableReport):
 
-    account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
-    group = django_tables.Column(u'Группа', accessor=A('group__name'))
-    bytes = django_tables.TemplateColumn("{{record.summ_bytes|filesizeformat}}({{record.summ_bytes}})", verbose_name=u'Сумма', accessor=A('summ_bytes'))
-    #django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}({{record.bytes_in}})", verbose_name=u'ВХ')
+    account = django_tables.Column(_(u'Аккаунт'), accessor=A('account__username'))
+    group = django_tables.Column(_(u'Группа'), accessor=A('group__name'))
+    bytes = django_tables.TemplateColumn("{{record.summ_bytes|filesizeformat}}({{record.summ_bytes}})", verbose_name=_(u'Сумма'), accessor=A('summ_bytes'))
+    #django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}({{record.bytes_in}})", verbose_name=_(u'ВХ')
     
     #def render_bytes(self, value, record):
     #    return value
     
     class Meta:
-        available_fields = (u'account', 'group', 'bytes')
+        available_fields = ('account', 'group', 'bytes')
         configurable = True
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
       
 class GlobalStatTable(TableReport):
 
-    account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
+    account = django_tables.Column(_(u'Аккаунт'), accessor=A('account__username'))
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
-    bytes_in = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}({{record.bytes_in}})", verbose_name=u'ВХ')
-    bytes_out = django_tables.TemplateColumn("{{record.bytes_out|filesizeformat}}({{record.bytes_out}})", verbose_name=u'ИСХ')
+    bytes_in = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}({{record.bytes_in}})", verbose_name=_(u'ВХ'))
+    bytes_out = django_tables.TemplateColumn("{{record.bytes_out|filesizeformat}}({{record.bytes_out}})", verbose_name=_(u'ИСХ'))
     #min = django_tables.Column(u'С даты')
-    max = django_tables.Column(u'Последние данные')
+    max = django_tables.Column(_(u'Последние данные'))
     
     
     class Meta:
-        available_fields = (u'account', 'group', u'bytes')
+        available_fields = ('account', 'group', 'bytes')
         configurable = False
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
@@ -817,14 +818,14 @@ class AccountPrepaysTraficTable(TableReport):
     #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
     id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    account_tarif = django_tables.Column(u'Аккаунт/Тариф')
-    prepaid_traffic = django_tables.TemplateColumn("{{record.prepaid_traffic.size|filesizeformat}}({{record.prepaid_traffic.size}})", verbose_name=u'Начислено')
-    size = django_tables.TemplateColumn("{{record.size|filesizeformat}}({{record.size}})", verbose_name=u'Остаток')
+    account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
+    prepaid_traffic = django_tables.TemplateColumn("{{record.prepaid_traffic.size|filesizeformat}}({{record.prepaid_traffic.size}})", verbose_name=_(u'Начислено'))
+    size = django_tables.TemplateColumn("{{record.size|filesizeformat}}({{record.size}})", verbose_name=_(u'Остаток'))
     progress = django_tables.TemplateColumn("""    <div class="progress progress-success">
           <div class="bar" style="width: {{record.in_percents}}%"></div>
-        </div>""", verbose_name=u'Осталось')
+        </div>""", verbose_name=_(u'Осталось'))
 
-    datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
+    datetime = FormatDateTimeColumn(verbose_name=_(u'Начислен'))
     
     def render_bytes(self, value, record):
         return value
@@ -840,12 +841,12 @@ class AccountPrepaysRadiusTraficTable(TableReport):
     #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
     id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    account_tarif = django_tables.Column(u'Аккаунт/Тариф')
-    size = django_tables.TemplateColumn("{{record.size|filesizeformat}}({{record.size}})", verbose_name=u'Остаток')
-    datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
+    account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
+    size = django_tables.TemplateColumn("{{record.size|filesizeformat}}({{record.size}})", verbose_name=_(u'Остаток'))
+    datetime = FormatDateTimeColumn(verbose_name=_(u'Начислен'))
     progress = django_tables.TemplateColumn("""    <div class="progress progress-success">
           <div class="bar" style="width: {{record.in_percents}}%"></div>
-        </div>""", verbose_name=u'Расходовано')
+        </div>""", verbose_name=_(u'Расходовано'))
     
     def render_bytes(self, value, record):
         return value
@@ -861,12 +862,12 @@ class AccountPrepaysTimeTable(TableReport):
     #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
     id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    account_tarif = django_tables.Column(u'Аккаунт/Тариф')
+    account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
     
-    datetime = FormatDateTimeColumn(verbose_name=u'Начислен')
+    datetime = FormatDateTimeColumn(verbose_name=_(u'Начислен'))
     progress = django_tables.TemplateColumn("""    <div class="progress progress-success">
           <div class="bar" style="width: {{record.in_percents}}%"></div>
-        </div>""", verbose_name=u'Расходовано')
+        </div>""", verbose_name=_(u'Расходовано'))
     
     def render_bytes(self, value, record):
         return value
@@ -878,12 +879,12 @@ class AccountPrepaysTimeTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}  
         
 class SwitchPortsTable(TableReport):
-    port = django_tables.TemplateColumn("<input type='hidden' name='port' value='{{record.port}}'>{{record.port}}", verbose_name=u'Порт')
-    broken_port = django_tables.TemplateColumn("<input type='checkbox' name='broken_port' {% if record.broken_port %} checked{% endif %}>", verbose_name=u'Битый')
-    uplink_port = django_tables.TemplateColumn("<input type='checkbox'  name='uplink_port' {% if record.uplink_port %} checked{% endif %}>", verbose_name=u'Аплинк')
-    protected_port = django_tables.TemplateColumn("<input type='checkbox'  name='protected_port' {% if record.protected_port %} checked{% endif %}>", verbose_name=u'Защита')
-    monitored_port = django_tables.TemplateColumn("<input type='checkbox'  name='monitored_port' {% if record.monitored_port %} checked{% endif %}>", verbose_name=u'Мониторинг')
-    disabled_port = django_tables.TemplateColumn("<input type='checkbox'  name='disabled_port' {% if record.disabled_port %} checked{% endif %}>", verbose_name=u'Отключён')
+    port = django_tables.TemplateColumn("<input type='hidden' name='port' value='{{record.port}}'>{{record.port}}", verbose_name=_(u'Порт'))
+    broken_port = django_tables.TemplateColumn("<input type='checkbox' name='broken_port' {% if record.broken_port %} checked{% endif %}>", verbose_name=_(u'Битый'))
+    uplink_port = django_tables.TemplateColumn("<input type='checkbox'  name='uplink_port' {% if record.uplink_port %} checked{% endif %}>", verbose_name=_(u'Аплинк'))
+    protected_port = django_tables.TemplateColumn("<input type='checkbox'  name='protected_port' {% if record.protected_port %} checked{% endif %}>", verbose_name=_(u'Защита'))
+    monitored_port = django_tables.TemplateColumn("<input type='checkbox'  name='monitored_port' {% if record.monitored_port %} checked{% endif %}>", verbose_name=_(u'Мониторинг'))
+    disabled_port = django_tables.TemplateColumn("<input type='checkbox'  name='disabled_port' {% if record.disabled_port %} checked{% endif %}>", verbose_name=_(u'Отключён'))
     
     class Meta:
         attrs = {'class': 'table table-bordered table-condensed'}  
@@ -892,8 +893,8 @@ class TicketTable(TableReport):
     
     id = django_tables.LinkColumn('helpdesk_view', args=[A('id')])
     title = django_tables.LinkColumn('helpdesk_view', args=[A('id')])
-    created = FormatDateTimeColumn(verbose_name=u'Создан')
-    status = django_tables.Column(verbose_name=u'Статус', accessor=A('_get_status'))
+    created = FormatDateTimeColumn(verbose_name=_(u'Создан'))
+    status = django_tables.Column(verbose_name=_(u'Статус'), accessor=A('_get_status'))
 
     
     
@@ -919,7 +920,7 @@ class PermissionGroupTable(TableReport):
         
 class PaymentTable(TableReport):
     id = django_tables.LinkColumn('payment_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account.id')})
+    account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account.id')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))

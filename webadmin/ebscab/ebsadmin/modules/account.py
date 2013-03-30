@@ -19,12 +19,12 @@ from django.contrib import messages
 from billservice.helpers import systemuser_required
 import subprocess
 from sendsms.models import Message
-
+from django.utils.translation import ugettext_lazy as _
 @ajax_request
 @systemuser_required
 def account_management_status(request):
     if  not (request.user.account.has_perm('billservice.change_account')):
-        return {'status':False, 'message': u'У вас нет прав на изменение аккаунтов'}
+        return {'status':False, 'message': _(u'У вас нет прав на изменение аккаунтов')}
     status = request.GET.get('status')
     if request.method == 'POST' and status: 
         form = AccountManagementForm(request.POST) 
@@ -34,10 +34,10 @@ def account_management_status(request):
             if accounts:
                 accounts.update(status=status)
  
-            messages.success(request, u'Статус успешно изменён.', extra_tags='alert-success')
+            messages.success(request, _(u'Статус успешно изменён.'), extra_tags='alert-success')
             return { 'status': True} 
 
-        messages.error(request, u'Ошибка при изменении статуса.', extra_tags='alert-danger')
+        messages.error(request, _(u'Ошибка при изменении статуса.'), extra_tags='alert-danger')
         return { 'status': False} 
     return {}
     
@@ -55,12 +55,12 @@ def accounttarif_edit(request):
         form = AccountTariffForm(request.POST) 
         if id:
             if  not (request.user.account.has_perm('billservice.change_accounttarif')):
-                messages.error(request, u'У вас нет прав на изменение тарифных планов у аккаунта', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на изменение тарифных планов у аккаунта'), extra_tags='alert-danger')
                 return {}
             
         else:
             if  not (request.user.account.has_perm('billservice.add_accounttarif')):
-                messages.error(request, u'У вас нет прав на создание тарифных планов у аккаунта', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание тарифных планов у аккаунта'), extra_tags='alert-danger')
                 return {}
         
         
@@ -75,7 +75,7 @@ def accounttarif_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.add_accounttarif')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {}
 
         if id:
@@ -102,7 +102,7 @@ def account_management_accounttariff(request):
         form = BatchAccountTariffForm(request.POST) 
 
         if  not (request.user.account.has_perm('billservice.add_accounttarif')):
-            messages.error(request, u'У вас нет прав на создание тарифных планов у аккаунта', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на создание тарифных планов у аккаунта'), extra_tags='alert-danger')
             return {}
 
         if form.is_valid(): 
@@ -122,7 +122,7 @@ def account_management_accounttariff(request):
     else:
 
         if  not (request.user.account.has_perm('billservice.add_accounttarif')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {}
 
         m_form = AccountManagementForm(request.GET) 
@@ -142,7 +142,7 @@ def account_management_suspendedperiod(request):
         form = SuspendedPeriodBatchForm(request.POST) 
 
         if  not (request.user.account.has_perm('billservice.add_suspendedperiod')):
-            messages.error(request, u'У вас нет прав на создание периодов без списаний', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на создание периодов без списаний'), extra_tags='alert-danger')
             return {}
         
         
@@ -165,7 +165,7 @@ def account_management_suspendedperiod(request):
     else:
 
         if  not (request.user.account.has_perm('billservice.add_suspendedperiod')):
-            messages.error(request, u'У вас нет прав на создание периодов без списаний', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на создание периодов без списаний'), extra_tags='alert-danger')
             return {}
 
         m_form = AccountManagementForm(request.GET) 
@@ -187,7 +187,7 @@ def sendsms(request):
         form = SendSmsForm(request.POST) 
 
         if  not (request.user.account.has_perm('billservice.add_news')):
-            messages.error(request, u'У вас нет прав на создание новостей', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на создание новостей'), extra_tags='alert-danger')
             return {}
         
         
@@ -215,7 +215,7 @@ def sendsms(request):
     else:
 
         if  not (request.user.account.has_perm('billservice.add_news')):
-            messages.error(request, u'У вас нет прав на создание новостей', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на создание новостей'), extra_tags='alert-danger')
             return {}
 
         m_form = AccountManagementForm(request.GET) 
@@ -230,7 +230,7 @@ def sendsms(request):
 @ajax_request
 def account_management_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_account')):
-        return {'status':False, 'message': u'У вас нет прав на удаление аккаунтов'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление аккаунтов')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     m_form = AccountManagementForm(request.GET) 
 
@@ -247,7 +247,7 @@ def account_management_delete(request):
 @ajax_request
 def account_management_restore(request):
     if  not (request.user.account.has_perm('billservice.edit_account')):
-        return {'status':False, 'message': u'У вас нет прав редактирование аккаунтов'}
+        return {'status':False, 'message': _(u'У вас нет прав редактирование аккаунтов')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     m_form = AccountManagementForm(request.GET) 
 
@@ -268,7 +268,7 @@ def tools_ping(request):
     if request.GET: 
 
         if  not (request.user.account.has_perm('billservice.view_account')):
-            messages.error(request, u'У вас нет прав на просмотр данных аккаунта', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на просмотр данных аккаунта'), extra_tags='alert-danger')
             return {}
         
         ip = request.GET.get('ip')

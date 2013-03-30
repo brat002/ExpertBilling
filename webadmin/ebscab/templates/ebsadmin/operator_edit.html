@@ -1,18 +1,19 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load crispy_forms_tags %}
 {% load ebsadmin_tags %}
 {% block base %}
 <div class="span12">
 <div class="row-fluid">
 <form method="POST" action="{% url operator_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
-            <legend>Информация о провайдере{% objectlog item %}</legend>
+            <legend>{% blocktrans %}Информация о провайдере{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>
              
                   {{form|crispy}}
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

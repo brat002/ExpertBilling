@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% if not status %}
 {{message}}
@@ -110,7 +111,7 @@
                 {% if form.card_type.value == '1' or form.card_type.value == '2' or form.card_type.value == '3' %}
                   <div class="control-group">
 
-                      <label class="control-label">Логин: </label>
+                      <label class="control-label">{% blocktrans %}Логин{% endblocktrans %}: </label>
                       <div class="controls inline">
                       c {{ form.login_length_from }} по  {{ form.login_length_to }} {{ form.login_letters }}{{ form.login_letters.label }} {{ form.login_numbers }}{{ form.login_numbers.label }}
                       {% if form.login_length_from.errors %}
@@ -124,7 +125,7 @@
                   {% endif %}
                   <div class="control-group">
 
-                      <label class="control-label">Пин: </label>
+                      <label class="control-label">{% blocktrans %}Пин{% endblocktrans %}: </label>
                       <div class="controls inline">
                       c {{ form.pin_length_from }} по  {{ form.pin_length_to }} {{ form.pin_letters }}{{ form.pin_letters.label }} {{ form.pin_numbers }}{{ form.pin_numbers.label }}
                       {% if form.pin_length_from.errors %}
@@ -192,13 +193,13 @@
                 </fieldset>
                 
                 <div class="form-actions">
-                    <input type='submit' class="btn btn-primary" value="Сгенерировать">
-                    <a class="btn close-dialog" href="#">Закрыть</a>
+                    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Сгенерировать{% endblocktrans %}">
+                    <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
                 </div>
             </form>
 {% endif %}
 {% else %}
-Операция произведена успешно.
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
  <script type="text/javascript"> 
  $(document).ready(function() {
      location.reload();

@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% load render_table from django_tables2 %}
 {% block extra_head %}
@@ -13,18 +14,18 @@
 
   <div class="span12">
   <div class="hero-unit">
-            <h1>Expert Billing 1.5 RC1</h1>
+            {% blocktrans %}<h1>Expert Billing 1.5 RC1</h1>
             <p>Добро пожаловать!</p> 
             <p>Вы попали в интерфейс администратора биллинг-системы ExpertBilling 1.5 RC1. 
             Обращаем ваше внимание, на то, что это technology preview версия, которая была выложена в целях ознакомления с будущим функционалом. 
-            Она содержит баги и проблемы, о которых мы можем не знать. Пожалуйста, отнеситесь к этому с пониманием и сообщайте о всех найденных проблемах на нашем форуме http://forum.expertbilling.ru/.
-            
+            Она может содержать баги и проблемы, о которых мы можем не знать. Пожалуйста, отнеситесь к этому с пониманием и сообщайте о всех найденных проблемах на нашем форуме http://forum.expertbilling.ru/.
             </p>
-            <p><a href="{% url account_list %}" class="btn btn-primary btn-large">Приступить »</a></p>
+            {% endblocktrans %}
+            <p><a href="{% url account_list %}" class="btn btn-primary btn-large">{% blocktrans %}Приступить »{% endblocktrans %}</a></p>
           </div>
           
-   <div class="alert alert-danger">В текущей версии механизм разделения доступа находится в стадии тестирования.</div>
-  <div>Количество аккаунтов: {{accounts_count}}</div>
+   <div class="alert alert-danger">{% blocktrans %}В текущей версии механизм разделения доступа находится в стадии тестирования.{% endblocktrans %}</div>
+  <div>{% blocktrans %}Количество аккаунтов:{% endblocktrans %} {{accounts_count}}</div>
   </div>
     </div>
   

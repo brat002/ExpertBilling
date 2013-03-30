@@ -18,6 +18,9 @@ class UserChoices(AutoModelSelect2Field):
     search_fields = ['username__icontains', ]
 
     
+class TicketTypeForm(forms.Form):
+    queue = forms.ModelChoiceField(queryset = Queue.objects.all())
+    
 class EditTicketForm(forms.ModelForm):
     assigned_to = forms.ModelChoiceField(
         queryset=User.objects.filter(is_staff=True).order_by('username'),
@@ -36,7 +39,19 @@ class TicketForm(forms.Form):
         required=True,
         choices=()
         )
-
+    owner = UserChoices(
+        choices=(),
+        required=False,
+        label=_('Case owner'),
+        help_text=_('If you select an owner other than yourself, they\'ll be '
+            'e-mailed details of this ticket immediately.'),
+        widget=AutoHeavySelect2Widget(
+            select2_options={
+                'width': '40%',
+                'placeholder': u"Поиск владельца"
+            }
+        )
+        )
     title = forms.CharField(
         max_length=100,
         required=True,
@@ -56,7 +71,9 @@ class TicketForm(forms.Form):
         label=_('Description of Issue'),
         required=True,
         )
+    
 
+    
     assigned_to = UserChoices(
         required=False,
         label=_(u'Назначена на'),
@@ -70,19 +87,7 @@ class TicketForm(forms.Form):
         )
         )
 
-    owner = UserChoices(
-        choices=(),
-        required=False,
-        label=_('Case owner'),
-        help_text=_('If you select an owner other than yourself, they\'ll be '
-            'e-mailed details of this ticket immediately.'),
-        widget=AutoHeavySelect2Widget(
-            select2_options={
-                'width': '40%',
-                'placeholder': u"Поиск владельца"
-            }
-        )
-        )
+
     
     priority = forms.ChoiceField(
         choices=Ticket.PRIORITY_CHOICES,

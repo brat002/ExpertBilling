@@ -14,7 +14,9 @@ from billservice.models import Operator
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-    
+from django.utils.translation import ugettext_lazy as _
+
+
 @systemuser_required
 @render_to('ebsadmin/operator_edit.html')
 def operator_edit(request):
@@ -29,12 +31,12 @@ def operator_edit(request):
             model = Operator.objects.get(id=id)
             form = OperatorForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_operator')):
-                messages.error(request, u'У вас нет прав на редактирование данных о провайдере', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование данных о провайдере'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             form = OperatorForm(request.POST) 
             if  not (request.user.account.has_perm('billservice.add_operator')):
-                messages.error(request, u'У вас нет прав на создание данных о провайдере', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание данных о провайдере'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
         if form.is_valid():
@@ -49,7 +51,7 @@ def operator_edit(request):
 
     else:
         if  not (request.user.account.has_perm('billservice.view_operator')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         
         items = Operator.objects.all()

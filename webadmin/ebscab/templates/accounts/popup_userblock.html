@@ -1,3 +1,4 @@
+{% load i18n %}
 <script>
 	function user_block() {
 
@@ -43,15 +44,15 @@
 <table class="pass_table wide" cellpadding="0" cellspacing="0">
 	<tr>
 		<th class="blue_caption white s-11 bold main_table_left_border right_border">
-			Пользовательская блокировка аккаунта
+			{% blocktrans %}Пользовательская блокировка аккаунта{% endblocktrans %}
 		</th>
 	</tr>
 	<tr>
 		<td>
-			Выша учётная запись {% if account_status == 1 %}<strong>не</strong> {% endif %}заблокирована{% if sp %}<br><strong> {{sp.start_date|date:"d.m.Y H:i"}}</strong>{% endif %}.<br>
+			{% blocktrans %}Выша учётная запись{% endblocktrans %} {% if account_status == 1 %}<strong>{% blocktrans %}не{% endblocktrans %}</strong> {% endif %}{% blocktrans %}заблокирована{% endblocktrans %}{% if sp %}<br><strong> {{sp.start_date|date:"d.m.Y H:i"}}</strong>{% endif %}.<br>
 			{% if tarif.allow_userblock %}
-			 {% if tarif.userblock_max_days %}Максимальный срок блокировки составляет {{ tarif.userblock_max_days }} дней.<br>{% endif %}
-			 {% if tarif.userblock_cost %}Стоимость блокировки составляет {{tarif.userblock_cost}}{{CURRENCY}}.{% endif %}
+			 {% if tarif.userblock_max_days %}{% blocktrans %}Максимальный срок блокировки составляет{% endblocktrans %} {{ tarif.userblock_max_days }} {% blocktrans %}дней{% endblocktrans %}.<br>{% endif %}
+			 {% if tarif.userblock_cost %}{% blocktrans %}Стоимость блокировки составляет {% endblocktrans %}{{tarif.userblock_cost}}{{CURRENCY}}.{% endif %}
 			{% endif %}
 		</td>
 	</tr>
@@ -62,9 +63,9 @@
 			<form method="post" onsubmit="return false;">
 			
 				{% if account_status == 1 %}
-				<input type="submit" id='userblock_button' class='pass_button_unsized button_margin f-right' value="Включить блокировку" onclick="user_block()"/>
+				<input type="submit" id='userblock_button' class='pass_button_unsized button_margin f-right' value="{% blocktrans %}Включить блокировку{% endblocktrans %}" onclick="user_block()"/>
 				{% else %}
-				<input type="submit" id='userblock_button' class='pass_button_unsized button_margin f-right' value="Отключить блокировку" onclick="user_block()"/>
+				<input type="submit" id='userblock_button' class='pass_button_unsized button_margin f-right' value="{% blocktrans %}Отключить блокировку{% endblocktrans %}" onclick="user_block()"/>
 				{% endif %}
 			
 			</form>

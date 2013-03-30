@@ -15,13 +15,13 @@ from billservice.models import Model
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/model_list.html')
 def model(request):
     if  not (request.user.account.has_perm('billservice.view_model')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     res = Model.objects.all()
     table = ModelTable(res)
@@ -44,12 +44,12 @@ def model_edit(request):
             model = Model.objects.get(id=id)
             form = ModelForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_model')):
-                messages.error(request, u'У вас нет прав на редактирование моделей оборудования', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование моделей оборудования'), extra_tags='alert-danger')
                 return {}
         else:
             form = ModelForm(request.POST) 
             if  not (request.user.account.has_perm('billservice.add_model')):
-                messages.error(request, u'У вас нет прав на создание моделей оборудования', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание моделей оборудования'), extra_tags='alert-danger')
                 return {}
 
 
@@ -65,7 +65,7 @@ def model_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_model')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {}
         if id:
 
@@ -81,14 +81,14 @@ def model_edit(request):
 @systemuser_required
 def model_delete(request):
     if  not ( request.user.account.has_perm('billservice.delete_model')):
-        return {'status':False, 'message': u'У вас нет прав на удаление моделей оборудования'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление моделей оборудования')}
     
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = Model.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанная модель оборудования не найдена %s" % str(e)}
+            return {"status": False, "message": _(u"Указанная модель оборудования не найдена %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

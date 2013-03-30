@@ -1,4 +1,4 @@
-
+{% load i18n %}
     {% for message in messages %}
 
 <div class="alert fade in {{ message.tags }}">
@@ -25,8 +25,8 @@
      </fieldset>
      
      <div class="form-actions">
-         <input id="id_btn_submit" type='submit' class="btn btn-primary" value="Выбрать">
-         <a class="btn close-dialog" href="#">Закрыть</a>
+         <input id="id_btn_submit" type='submit' class="btn btn-primary" value="{% blocktrans %}Выбрать{% endblocktrans %}">
+         <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
      </div>
 
 {% endif %}

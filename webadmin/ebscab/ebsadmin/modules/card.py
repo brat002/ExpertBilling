@@ -18,7 +18,7 @@ import datetime
 from django.contrib import messages
 from billservice.helpers import systemuser_required
 log = LogItem.objects.log_action
-
+from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
@@ -26,7 +26,7 @@ log = LogItem.objects.log_action
 def card(request):
     
     if  not (request.user.account.has_perm('billservice.view_card')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     res = Card.objects.all()
@@ -154,12 +154,12 @@ def card_edit(request):
             model = Card.objects.get(id=id)
             form = CardForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_card')):
-                messages.error(request, u'У вас нет прав на редактирование карт', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование карт'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             form = CardForm(request.POST) 
             if  not (request.user.account.has_perm('billservice.add_card')):
-                messages.error(request, u'У вас нет прав на создание карт', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание карт'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
 
@@ -175,7 +175,7 @@ def card_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_card')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {'status': False}
         if id:
             item = Card.objects.get(id=id)
@@ -202,12 +202,12 @@ def salecard_edit(request):
             model = SaleCard.objects.get(id=id)
             form = SaleCardForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_salecard')):
-                messages.error(request,u'У вас нет прав на редактирование накладных на карты', extra_tags='alert-danger')
+                messages.error(request,_(u'У вас нет прав на редактирование накладных на карты'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             form = SaleCardForm(request.POST) 
             if  not (request.user.account.has_perm('billservice.add_salecard')):
-                messages.error(request,u'У вас нет прав на создание накладных на карты', extra_tags='alert-danger')
+                messages.error(request,_(u'У вас нет прав на создание накладных на карты'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
         
@@ -233,7 +233,7 @@ def salecard_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_salecard')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {'status': False}
         if id:
             item = SaleCard.objects.get(id=id)
@@ -269,7 +269,7 @@ def card_generate(request):
     if request.method == 'POST': 
         form = CardGenerationForm(request.POST)
         if  not (request.user.account.has_perm('billservice.add_card')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {'status':False, 'form': form}
         
 
@@ -326,7 +326,7 @@ def card_generate(request):
             """
             while i<cards_count:
                 if bad>=100:
-                    return {'form':form,  'status': False, 'message': u"Было сгенерировано только %s карт.\nРасширьте условия генерации для уменьшения количества дублирующихся логинов." % i} 
+                    return {'form':form,  'status': False, 'message': _(u"Было сгенерировано только %s карт.\nРасширьте условия генерации для уменьшения количества дублирующихся логинов.") % i} 
                 model = Card()
     
                 model.series = series
@@ -385,7 +385,7 @@ def card_update(request):
     if request.method == 'POST': 
         form = CardBatchChangeForm(request.POST)
         if  not (request.user.account.has_perm('billservice.change_card')):
-            messages.error(request, u'У вас нет прав на изменение карт.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на изменение карт.'), extra_tags='alert-danger')
             return {'status':False, 'form': form}
         
         if form.is_valid():
@@ -495,13 +495,13 @@ def card_update(request):
 @systemuser_required
 def card_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_card')):
-        return {'status':False, 'message': u'У вас нет прав на удаление карточек'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление карточек')}
     id = request.GET.getlist('d')
     if id:
         try:
             items = Card.objects.filter(id__in=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанная карта не найдена %s" % str(e)}
+            return {"status": False, "message": _(u"Указанная карта не найдена %s") % str(e)}
         for item in items:
             log('DELETE', request.user, item)
             item.delete()
@@ -513,14 +513,14 @@ def card_delete(request):
 @systemuser_required
 def card_manage(request):
     if  not (request.user.account.has_perm('billservice.edit_card')):
-        return {'status':False, 'message': u'У вас нет прав на редактирование карточек'}
+        return {'status':False, 'message': _(u'У вас нет прав на редактирование карточек')}
     id = request.GET.getlist('d')
     action = request.GET.get('action')
     if id:
         try:
             items = Card.objects.filter(id__in=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанная карта не найдена %s" % str(e)}
+            return {"status": False, "message": _(u"Указанная карта не найдена %s") % str(e)}
         for item in items:
             if action == 'enable':
                 log('EDIT', request.user, item)
@@ -538,7 +538,7 @@ def card_manage(request):
 @render_to('ebsadmin/salecard_list.html')
 def salecard(request):
     if  not (request.user.account.has_perm('billservice.view_salecard')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     res = SaleCard.objects.all()

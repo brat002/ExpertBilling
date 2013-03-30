@@ -14,14 +14,14 @@ from billservice.models import Group
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/group_list.html')
 def group(request):
 
     if  not (request.user.account.has_perm('billservice.view_group')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     res = Group.objects.all()
     table = GroupTable(res)
@@ -44,13 +44,13 @@ def group_edit(request):
             model = Group.objects.get(id=id)
             form = GroupForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_group')):
-                messages.error(request, u'У вас нет прав на редактирование групп трафика', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование групп трафика'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
         else:
             form = GroupForm(request.POST) 
         if  not (request.user.account.has_perm('billservice.add_group')):
-                messages.error(request, u'У вас нет прав на создание групп трафика', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание групп трафика'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
         if form.is_valid():
@@ -60,16 +60,16 @@ def group_edit(request):
             model.save()
             form.save_m2m()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'Группа трафика успешно сохранена.', extra_tags='alert-success')
+            messages.success(request, _(u'Группа трафика успешно сохранена.'), extra_tags='alert-success')
             return HttpResponseRedirect(reverse("group"))
         else:
-            messages.error(request, u'При сохранении группы трафика возникли ошибки.', extra_tags='alert-danger')
+            messages.error(request, _(u'При сохранении группы трафика возникли ошибки.'), extra_tags='alert-danger')
             return {'form':form,  'status': False, 'item': model} 
 
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_group')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if id:
 
@@ -86,18 +86,18 @@ def group_edit(request):
 @systemuser_required
 def group_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_group')):
-        return {'status':False, 'message': u'У вас нет прав на удаление групп трафика'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление групп трафика')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = Group.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанная группа трафика не найдена %s" % str(e)}
+            return {"status": False, "message": _(u"Указанная группа трафика не найдена %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
-        messages.success(request, u'Группа трафика успешно удалёна.', extra_tags='alert-success')
+        messages.success(request, _(u'Группа трафика успешно удалёна.'), extra_tags='alert-success')
         return {"status": True}
     else:
-        messages.error(request, u'При удалении группы трафика возникли ошибки.', extra_tags='alert-danger')
+        messages.error(request, _(u'При удалении группы трафика возникли ошибки.'), extra_tags='alert-danger')
         return {"status": False, "message": "Group not found"} 
     

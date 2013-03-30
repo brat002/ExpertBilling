@@ -1,4 +1,4 @@
-#-*-coding=utf-8-*-
+#-*- coding=utf-8 -*-
 
 import django_tables2 as django_tables
 from django_tables2.utils import A

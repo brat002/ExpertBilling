@@ -1,4 +1,5 @@
 {% extends 'base_extended.html' %}
+{% load i18n %}
 {% load billservice_tags %}
 {% load custom_filters %}
 
@@ -6,19 +7,19 @@
 {% if net_flow_streams %}
 <table class="wide statistic_table" cellpadding="0" cellspacing="0">
 	<tr>
-		<th class="white bold s-11 blue_caption a-left">СЕТЕВАЯ СТАТИСТИКА</th>
+		<th class="white bold s-11 blue_caption a-left">{% blocktrans %}СЕТЕВАЯ СТАТИСТИКА{% endblocktrans %}</th>
 	</tr>
 	<tr>
 		<td>
 			<table class="wide extra_table" cellpadding="0" cellspacing="0">
     			<tr>
-	   				<th>Дата</th>
-	   				<th>IP источника</th>
-	   				<th>Порт источника</th>
-	   				<th>IP получателя</th>
-	   				<th>Порт получателя</th>
-	   				<th>Протокол</th>
-	   				<th>Передано</th>
+	   				<th>{% blocktrans %}Дата{% endblocktrans %}</th>
+	   				<th>{% blocktrans %}IP источника{% endblocktrans %}</th>
+	   				<th>{% blocktrans %}Порт источника{% endblocktrans %}</th>
+	   				<th>{% blocktrans %}IP получателя{% endblocktrans %}</th>
+	   				<th>{% blocktrans %}Порт получателя{% endblocktrans %}</th>
+	   				<th>{% blocktrans %}Протокол{% endblocktrans %}</th>
+	   				<th>{% blocktrans %}Передано{% endblocktrans %}</th>
 				</tr>
 				{% for net_flow_stream in net_flow_streams%}
 	   				<tr>
@@ -38,11 +39,11 @@
 </table>
 
 {% else %}
- <h2 align="center">Данных нет!</h2>
+ <h2 align="center">{% blocktrans %}Данных нет!{% endblocktrans %}</h2>
 {% endif %}
 {% endblock %}
 
 
 {% block title %}
-    Статистика по трафику
+    {% blocktrans %}Статистика по трафику{% endblocktrans %}
 {% endblock %}

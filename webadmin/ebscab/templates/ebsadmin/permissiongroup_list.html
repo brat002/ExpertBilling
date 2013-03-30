@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% load render_table from django_tables2 %}
 {% block extra_head %}
@@ -6,7 +7,7 @@
         $(document).ready(function() {
             $(".show-confirm").click(function(event) {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить?", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить?{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -18,7 +19,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                             }
 
                         })                      
@@ -38,11 +39,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url permissiongroup %}">Группы доступа</a> <span class="divider">/</span>
+    <a href="{% url permissiongroup %}">{% blocktrans %}Группы доступа{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="{% url permissiongroup_edit %}" class="btn btn-success align-right">Добавить</a> </div>
+<div class="btn-toolbar pull-right"><a href="{% url permissiongroup_edit %}" class="btn btn-success align-right">{% blocktrans %}Добавить{% endblocktrans %}</a> </div>
 <div>
   {% render_table table %}
 </div>

@@ -22,7 +22,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import loader, Context, RequestContext
 from django.utils.translation import ugettext as _
 
-from helpdesk.forms import TicketForm, UserSettingsForm, EmailIgnoreForm, EditTicketForm, TicketCCForm
+from helpdesk.forms import TicketForm, UserSettingsForm, EmailIgnoreForm, EditTicketForm, TicketCCForm, TicketTypeForm
 from helpdesk.lib import send_templated_mail, line_chart, bar_chart, query_to_dict, apply_query, safe_template_context
 from helpdesk.models import Ticket, Queue, FollowUp, TicketChange, PreSetReply, Attachment, SavedSearch, IgnoreEmail, TicketCC
 from helpdesk.settings import HAS_TAG_SUPPORT
@@ -36,8 +36,9 @@ if HAS_TAG_SUPPORT:
 from helpdesk.tables import TicketTable, UnassignedTicketTable
 staff_member_required = user_passes_test(lambda u: u.is_authenticated() and u.is_active and u.is_staff)
 superuser_required = user_passes_test(lambda u: u.is_authenticated() and u.is_active and u.is_superuser)
-
-
+from billservice.helpers import systemuser_required
+from ebscab.lib.decorators import render_to, ajax_request
+from django.contrib import messages
 
 def dashboard(request):
     """
@@ -1024,3 +1025,12 @@ def ticket_cc_del(request, ticket_id, cc_id):
             'cc': cc,
         }))
 ticket_cc_del = staff_member_required(ticket_cc_del)
+
+
+@systemuser_required
+@render_to('helpdesk/queueselect_window.html')
+def queueselect(request):
+
+    form = TicketTypeForm()
+    
+    return { 'form':form} 

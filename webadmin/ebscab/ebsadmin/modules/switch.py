@@ -15,13 +15,13 @@ from billservice.models import Switch
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/switch_list.html')
 def switch(request):
     if  not (request.user.account.has_perm('billservice.view_switch')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     res = Switch.objects.all()
@@ -45,12 +45,12 @@ def switch_edit(request):
             model = Switch.objects.get(id=id)
             form = SwitchForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_switch')):
-                messages.error(request, u'У вас нет прав на редактирование коммутатора', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование коммутатора'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             form = SwitchForm(request.POST) 
             if  not (request.user.account.has_perm('billservice.add_switch')):
-                messages.error(request, u'У вас нет прав на создание коммутатора', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание коммутатора'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
 
@@ -66,7 +66,7 @@ def switch_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_switch')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if id:
 
@@ -102,7 +102,7 @@ def switch_edit(request):
 @systemuser_required
 def switch_port_status(request):
     if  not (request.user.account.has_perm('billservice.change_switch')):
-        return {'status':False, 'message': u'У вас нет прав на редактирование коммутатора'}
+        return {'status':False, 'message': _(u'У вас нет прав на редактирование коммутатора')}
 
     switch_id = int(request.POST.get('switch_id',0))
     port = int(request.POST.get('port',0))
@@ -113,7 +113,7 @@ def switch_port_status(request):
         try:
             item = Switch.objects.get(id=switch_id)
         except Exception, e:
-            return {"status": False, "message": u"Указанный коммутатор не найден %s" % str(e)}
+            return {"status": False, "message": _(u"Указанный коммутатор не найден %s") % str(e)}
         
         if port_type=='broken_port':
             broken_ports = item.broken_ports.split(',')
@@ -170,13 +170,13 @@ def switch_port_status(request):
 @systemuser_required
 def switch_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_switch')):
-        return {'status':False, 'message': u'У вас нет прав на удаление коммутатора'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление коммутатора')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = Switch.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанный коммутатор не найден %s" % str(e)}
+            return {"status": False, "message": _(u"Указанный коммутатор не найден %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

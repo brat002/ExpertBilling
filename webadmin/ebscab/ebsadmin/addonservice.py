@@ -16,12 +16,13 @@ from billservice.models import AddonService
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
 from django.contrib import messages
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/addonservice_list.html')
 def addonservice(request):
     if  not (request.user.account.has_perm('billservice.view_addonservice')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     res = AddonService.objects.all()
     table = AddonServiceTable(res)
@@ -46,11 +47,11 @@ def addonservice_edit(request):
         
         if id:
             if  not (request.user.account.has_perm('billservice.change_addonservice')):
-                messages.error(request, u'У вас нет прав на редактирование подключаемых услуг', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование подключаемых услуг'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
             
         if  not (request.user.account.has_perm('billservice.add_addonservice')):
-                messages.error(request, u'У вас нет прав на создание подключаемых услуг', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание подключаемых услуг'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
         
@@ -59,15 +60,15 @@ def addonservice_edit(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'Подключаемая услуга сохранена.', extra_tags='alert-success')
+            messages.success(request, _(u'Подключаемая услуга сохранена.'), extra_tags='alert-success')
             return HttpResponseRedirect(reverse("addonservice"))
         else:
-            messages.error(request, u'Ошибка при сохранении подключаемой услуги.', extra_tags='alert-danger')
+            messages.error(request, _(u'Ошибка при сохранении подключаемой услуги.'), extra_tags='alert-danger')
             return {'form':form,  'item': item} 
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_addonservice')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if id:
             item = AddonService.objects.get(id=id)
@@ -80,18 +81,18 @@ def addonservice_edit(request):
 @systemuser_required
 def addonservice_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_addonservice')):
-        return {'status':False, 'message': u'У вас нет прав на удаление подключаемых услуг'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление подключаемых услуг')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = AddonService.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанная услуга не найдена %s" % str(e)}
+            return {"status": False, "message": _(u"Указанная услуга не найдена %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
-        messages.success(request, u'Подключаемая услуга удалена.', extra_tags='alert-success')
+        messages.success(request, _(u'Подключаемая услуга удалена.'), extra_tags='alert-success')
         return {"status": True}
     else:
-        messages.error(request, u'Ошибка при удалении подключаемой услуги.', extra_tags='alert-danger')
+        messages.error(request, _(u'Ошибка при удалении подключаемой услуги.'), extra_tags='alert-danger')
         return {"status": False, "message": "TransactionType not found"} 
     

@@ -18,6 +18,7 @@
 {% block helpdesk_title %}{% trans "Create Ticket" %}{% endblock %}
 
 {% block helpdesk_body %}
+{% if form %}
 {% blocktrans %}<h2>Submit a Ticket</h2>
 
 <p>Unless otherwise stated, all fields are required. Please provide as descriptive a title and description as possible.</p>{% endblocktrans %}
@@ -33,14 +34,17 @@
 
   </div>
 </div>
-</div>
+{% endif %}
 <form method='post' action='./' enctype='multipart/form-data' class="well form-horizontal  form-condensed">
+{% if form %}
 {{form|crispy}}
+
 <fieldset>
     <div class='buttons'>
         <input type='submit' value='{% trans "Submit Ticket" %}' />
     </div>
 </fieldset>
-
+{% else %}
+{% endif %}
 </form>
 {% endblock %}

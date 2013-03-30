@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
@@ -96,7 +97,7 @@
                             },
                             failure: function(data)
                             {
-                                alert('Произошла ошибка в обработке запросов сервером');
+                                alert('{% blocktrans %}Произошла ошибка в обработке запросов сервером{% endblocktrans %}');
                             }
                         });
                 event.preventDefault(event);
@@ -133,7 +134,7 @@
                 });
 
                 $('<div/>').dialog2({
-                    title: "Добавление периода без списаний периодических услуг", 
+                    title: "{% blocktrans %}Добавление периода без списаний периодических услуг{% endblocktrans %}", 
                     content: this.href+'?'+$.param(arr), 
                     id: "server-notice"
                 });
@@ -151,7 +152,7 @@
                 });
                 //alert($("#id_main_table tbody input[type=checkbox]:checked").serialize());
                 $('<div/>').dialog2({
-                    title: "Отправить SMS", 
+                    title: "{% blocktrans %}Отправить SMS{% endblocktrans %}", 
                     content: this.href+'?'+$.param(arr), 
                     id: "server-notice"
                 });
@@ -171,7 +172,7 @@
                   
                 });
                 
-                $.fn.dialog2.helpers.confirm("Требуется подтверждение. Выполнить действие?", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Требуется подтверждение. Выполнить действие?{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),arr,function(data,status){
                             if( status=='success' ){
@@ -183,7 +184,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                             }
 
                         })                      
@@ -222,8 +223,8 @@
 {% block base %}
 
 <ul class="nav nav-tabs" id="tab-control">
-  <li ><a href="#filter">Фильтр</a></li>
-  <li><a {% if table %}class="active" {% endif %} href="#result">Отчёт</a></li>  
+  <li ><a href="#filter">{% blocktrans %}Фильтр{% endblocktrans %}</a></li>
+  <li><a {% if table %}class="active" {% endif %} href="#result">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>  
 </ul>
 
  {% load render_table from django_tables2 %}
@@ -238,7 +239,7 @@
             {{ form.non_field_errors }}
             
                 <fieldset>
-                    <legend>Поиск аккаунта</legend>
+                    <legend>{% blocktrans %}Поиск аккаунта{% endblocktrans %}</legend>
                     
                     <div class="control-group">
                         <div class="control-row">
@@ -321,7 +322,7 @@
                     </div>
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-entrance">Дата создания</label>
+                            <label class="control-label" for="input-entrance">{{form.created.label}}</label>
                             <div class="controls">
                               
                             {{ form.created }}
@@ -338,7 +339,7 @@
                             
                         </div>
                                             <div class="control-row">
-                        <label class="control-label">Статус аккаунта</label>
+                        <label class="control-label">{{form.status.label}}</label>
                         <div class="controls">
                              {{ form.status }}
                             {% if form.status.errors %}
@@ -367,12 +368,12 @@
                         </div>
                     </div>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
                     </div>
            </fieldset>
                 <fieldset>
-                    <legend>Адрес</legend>
+                    <legend>{% blocktrans %}Адрес{% endblocktrans %}</legend>
 
                     <div class="control-group">
                         <div class="control-row">
@@ -489,22 +490,13 @@
                         </div>
                     </div>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
                     </div>
                 </fieldset>
 
-
-
-
-
-
-
-
-                </fieldset>
-
                 <fieldset>
-                    <legend>Персональные данные</legend>
+                    <legend>{% blocktrans %}Персональные данные{% endblocktrans %}</legend>
 
                     <div class="control-group">
                     <div class="control-row">
@@ -584,13 +576,13 @@
                             </div>
                         </div>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
                     </div>
                 </fieldset>
                 
            <fieldset>
-                    <legend>Сетевая идентификация</legend>
+                    <legend>{% blocktrans %}Сетевая идентификация{% endblocktrans %}</legend>
                     <div class="control-group">
                         <div class="control-row">
                             <label class="control-label" for="input-vpn-ip">{{form.vpn_ip_address.label}}</label>
@@ -663,7 +655,7 @@
                         </div>
                     </div>
                     <div class="control-row">
-                        <label class="control-label">IPN статус</label>
+                        <label class="control-label">{% blocktrans %}IPN статус{% endblocktrans %}</label>
                         <div class="controls">
                              {{ form.ipn_status }}
                             {% if form.ipn_status.errors %}
@@ -678,13 +670,13 @@
                     </div>
                     </div>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
                     </div>
                 </fieldset>
 
                 <fieldset>
-                    <legend>Блокировка</legend>
+                    <legend>{% blocktrans %}Блокировка{% endblocktrans %}</legend>
 
                     <div class="control-group">
                         <div class="control-row">
@@ -718,32 +710,32 @@
                         </div>
                     </div>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
                     </div>
                 </fieldset>
 
                 <fieldset>
-                    <legend>Юридическое лицо</legend>
+                    <legend>{% blocktrans %}Юридическое лицо{% endblocktrans %}</legend>
 
                     <div class="control-group">
-                        <label class="control-label">Юрлицо</label>
+                        <label class="control-label">{% blocktrans %}Юрлицо{% endblocktrans %}</label>
                         <div class="controls">
                             <label class="radio inline">
-                                <input type="radio" checked="" value="option1" id="" name="radios-block-jp"> Да
+                                <input type="radio" checked="" value="option1" id="" name="radios-block-jp"> {% blocktrans %}Да{% endblocktrans %}
                             </label>
                             <label class="radio inline">
-                                <input type="radio" checked="" value="option2" id="" name="radios-block-jp"> Нет
+                                <input type="radio" checked="" value="option2" id="" name="radios-block-jp"> {% blocktrans %}Нет{% endblocktrans %}
                             </label>
                             <label class="radio inline">
-                                <input type="radio" checked="" value="option3" id="" name="radios-block-jp"> Не важно
+                                <input type="radio" checked="" value="option3" id="" name="radios-block-jp"> {% blocktrans %}Не важно{% endblocktrans %}
                             </label>
                         </div>
                     </div>
 
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-company">Наименование</label>
+                            <label class="control-label" for="input-company">{% blocktrans %}Наименование{% endblocktrans %}</label>
                             <div class="controls">
                              {{ form.organization }}
                             {% if form.organization.errors %}
@@ -758,24 +750,24 @@
                         </div>
 
                         <div class="control-row">
-                            <label class="control-label" for="input-settlement-account">Расчетный счет</label>
+                            <label class="control-label" for="input-settlement-account">{% blocktrans %}Расчетный счет{% endblocktrans %}</label>
                             <div class="controls">
                                 <input type="text" class="input-xlarge" id="input-settlement-account">
                             </div>
                         </div>
                     </div>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
                     </div>
                 </fieldset>
                 <fieldset>
-                <legend>Прочее</legend>
+                <legend>{% blocktrans %}Прочее{% endblocktrans %}</legend>
                     <div class="control-group">
                         <div class="control-row">
                                     
                                     <div class="controls">
-                                   {{ form.deleted }} Поиск по архиву
+                                   {{ form.deleted }} {% blocktrans %}Поиск по архиву{% endblocktrans %}
                                    {% if form.deleted.errors %}
                                        <span class="help-inline">{% for error in form.deleted.errors %}{{ error }}<br/> {% endfor %}</span>
                                    {% endif %}
@@ -792,8 +784,8 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> Подобрать результаты</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> Очистить форму</button>
+                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
+                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>
@@ -806,54 +798,56 @@
                 <div class="navbar-inner">
                 <div class="btn-group">
                 <a class="btn dropdown-toggle btn-info " data-toggle="dropdown" href="#">
-				    <i class="icon-pause icon-white"></i> Изменить статус
+				    <i class="icon-pause icon-white"></i> {% blocktrans %}Изменить статус{% endblocktrans %}
 				    <span class="caret"></span>
 				  </a>
 				  <ul class="dropdown-menu">
-				    <li><a href="{% url account_management_status %}?status=1" class='management'>Активен</a></li>
-				    <li><a href="{% url account_management_status %}?status=3" class='management'>Не активен</a></li>
+				    <li><a href="{% url account_management_status %}?status=1" class='management'>{% blocktrans %}Активен{% endblocktrans %}</a></li>
+				    <li><a href="{% url account_management_status %}?status=3" class='management'>{% blocktrans %}Не активен{% endblocktrans %}</a></li>
 				  </ul>
 				  </div>
 				<div class="btn-group">
-                    <a href="{% url account_management_accounttariff %}" id="modal-accounttariff-dialog-table" class=" btn btn-success"><i class=' icon-share icon-white'></i> Изменить ТП</a>
+                    <a href="{% url account_management_accounttariff %}" id="modal-accounttariff-dialog-table" class=" btn btn-success"><i class=' icon-share icon-white'></i> {% blocktrans %}Изменить ТП{% endblocktrans %}</a>
                 </div>
                 
                 {% if form.deleted.value %}
                 <div class="btn-group">
-                    <a class=" btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> Удалить из системы</a>
+                    <a class=" btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> {% blocktrans %}Удалить из системы{% endblocktrans %}</a>
                 </div>
                 <div class="btn-group">
-                    <a class=" btn btn-success show-confirm" href="{% url account_management_restore %}"><i class='icon-share-alt icon-white'></i> Восстановить из архива</a>
+                    <a class=" btn btn-success show-confirm" href="{% url account_management_restore %}"><i class='icon-share-alt icon-white'></i> {% blocktrans %}Восстановить из архива{% endblocktrans %}</a>
                 </div>
                 {% else %}
                 <div class="btn-group">
-                    <a class="btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> В архив</a>
+                    <a class="btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> {% blocktrans %}В архив{% endblocktrans %}</a>
                 </div>
                 {% endif %}
                 
                 
                 <div class="btn-group">
-                <a href="{% url account_management_suspendedperiod %}"  id="modal-suspendedperiod-dialog-table" class="btn btn-danger"><i class=' icon-calendar icon-white'></i> Период без ПУ</a>
+                <a href="{% url account_management_suspendedperiod %}"  id="modal-suspendedperiod-dialog-table" class="btn btn-danger"><i class=' icon-calendar icon-white'></i> {% blocktrans %}Период без ПУ{% endblocktrans %}</a>
                 </div>
                 <div class="btn-group">
-                <a href="#"  id="id-modal-add-news" class="btn"><i class='cus-newspaper'></i> Сообщение</a>
+                <a href="#"  id="id-modal-add-news" class="btn"><i class='cus-newspaper'></i> {% blocktrans %}Сообщение{% endblocktrans %}</a>
                 </div>
                 <div class="btn-group">
-                <a href="{% url sendsms %}"  id="modal-sendsms-dialog-table" class="btn">SMS</a>
+                <a href="{% url sendsms %}"  id="modal-sendsms-dialog-table" class="btn">{% blocktrans %}SMS{% endblocktrans %}</a>
                 </div>
+                {% comment %}
                 <div class="btn-group">
 
                 <a class="btn dropdown-toggle btn-info " data-toggle="dropdown" href="#">
-                    <i class="icon-fire icon-white"></i> IPN
+                    <i class="icon-fire icon-white"></i> {% blocktrans %}IPN{% endblocktrans %}
                     <span class="caret"></span>
                   </a>
                   <ul class="dropdown-menu">
-                    <li><a href="#">Добавить на NAS</a></li>
-                    <li><a href="#">Удалить с NAS</a></li>
-                    <li><a href="#">Активировать на NAS</a></li>
-                    <li><a href="#">Отключить на NAS</a></li>
+                    <li><a href="#">{% blocktrans %}Добавить на NAS{% endblocktrans %}</a></li>
+                    <li><a href="#">{% blocktrans %}Удалить с NAS{% endblocktrans %}</a></li>
+                    <li><a href="#">{% blocktrans %}Активировать на NAS{% endblocktrans %}</a></li>
+                    <li><a href="#">{% blocktrans %}Отключить на NAS{% endblocktrans %}</a></li>
                   </ul>
                   </div>
+                  {% endcomment %}
                   
 
                 

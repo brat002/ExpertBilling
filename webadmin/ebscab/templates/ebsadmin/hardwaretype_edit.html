@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% block extra_head %}
  <script type="text/javascript"> 
@@ -38,8 +39,8 @@
                   </div>                
                 </fieldset>
                 <div class="form-actions">
-                    <input type='submit' class="btn btn-primary" value="Save Changes">
-                    <a class="btn close-dialog" href="#">Close</a>
+                    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+                    <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
                 </div>
                 </form>
 {% endif %}

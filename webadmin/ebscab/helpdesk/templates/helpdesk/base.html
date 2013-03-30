@@ -1,4 +1,20 @@
 {% extends 'base_private.html' %}
+
+{% block extra_head %}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+            $("#modal-queue-dialog").click(function(event) {
+                $('<div />').dialog2({
+                    title: "Выберите тип заявки", 
+                    content: "{% url queueselect %}", 
+                    id: "queueselect-modal",
+                });
+
+                event.preventDefault(event);
+            });
+        });
+        </script>
+{% endblock %}
 {% load i18n account_menu %}
 {% block meta_title %}
     {% block helpdesk_title %}Helpdesk{% endblock %}
