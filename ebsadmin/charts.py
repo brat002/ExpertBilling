@@ -54,7 +54,7 @@ from django.contrib import messages
 def charts(request):
 
     if  not (request.user.account.has_perm('billservice.view_charts')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     from django.db import connection
@@ -72,12 +72,10 @@ def charts(request):
     if request.method=='GET':
         form = ReportForm(request.GET)
         if form.is_valid():
-            print "valid"
-            daterange = form.cleaned_data.get("daterange") or []
+
+            start_date = form.cleaned_data.get("date_start")
+            end_date = form.cleaned_data.get("date_end")
             
-            start_date, end_date = None, None
-            if len(daterange)==2:
-                start_date, end_date = daterange
 
             accounts = form.cleaned_data.get("accounts")
             tariffs = form.cleaned_data.get("tariffs")

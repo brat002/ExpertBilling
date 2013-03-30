@@ -1,8 +1,9 @@
 {% extends 'base_extended.html' %}
+{% load i18n %}
 {% block content %}
 
 
-<h2>Укажите параметры платежа:</h2>
+<h2>{% blocktrans %}Укажите параметры платежа:{% endblocktrans %}</h2>
 <form action="{% url getpaid-new-payment %}?backend={{payment_form.backend.value}}" method="POST">
     {% csrf_token %}
     <table>

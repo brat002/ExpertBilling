@@ -1,4 +1,5 @@
 {% load ebsadmin_tags %}
+{% load i18n %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -104,17 +105,17 @@ padding-top:20px;
     });
     $(document).ready(function() {
         $('.datepicker').datepicker({
-        	months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
+        	months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
         	weekStart: 1,
         	noDefault: true,
         	format: 'yyyy-mm-dd hh:ii:ss',
-            days: ["вс", "пн","вт","ср","чт","пт","сб"],});
+            days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
         $('.dateinput').datepicker({
-            months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
+            months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
             weekStart: 1,
             noDefault: true,
-            format: 'yyyy-mm-dd',
-            days: ["вс", "пн","вт","ср","чт","пт","сб"],});
+            format: 'yyyy-mm-dd hh:ii:ss',
+            days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
         $(".timepicker").mask("99:99:99");
         
         $(".daterange").daterangepicker({format:'yyyy-MM-dd'});
@@ -176,31 +177,31 @@ padding-top:20px;
        <a href="#"
              class="dropdown-toggle"
              data-toggle="dropdown">
-             Аккаунты
+             {% blocktrans %}Аккаунты{% endblocktrans %}
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
-         <li><a href="{% url account_edit %}"><i class="cus-user-add"></i>&nbsp;Новый аккаунт</a></li>
-         <li><a href="{% url account_list %}"><i class="cus-find"></i>&nbsp;Поиск</a></li>
-         <li><a href="{% url account_list %}?data=data"><i class="cus-folder-user"></i>&nbsp;Все аккаунты</a></li>
+         <li><a href="{% url account_edit %}"><i class="cus-user-add"></i>&nbsp;{% blocktrans %}Новый аккаунт{% endblocktrans %}</a></li>
+         <li><a href="{% url account_list %}"><i class="cus-find"></i>&nbsp;{% blocktrans %}Поиск{% endblocktrans %}</a></li>
+         <li><a href="{% url account_list %}?data=data"><i class="cus-folder-user"></i>&nbsp;{% blocktrans %}Все аккаунты{% endblocktrans %}</a></li>
        </ul>
      </li>
    </ul>
-  <li><a href="{% url tariff %}">Тарифные планы</a></li>
+  <li><a href="{% url tariff %}">{% blocktrans %}Тарифные планы{% endblocktrans %}</a></li>
    <ul class="nav">
      <li class="dropdown">
        <a href="#"
              class="dropdown-toggle"
              data-toggle="dropdown">
-             Карты
+             {% blocktrans %}Карты{% endblocktrans %}
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
                          
                 
-         <li><a href="{% url card %}"><i class="cus-layers"></i>&nbsp;Пул карт</a></li>
-         <li><a href="{% url dealer %}"><i class="cus-group"></i>&nbsp;Дилеры</a></li>
-         <li><a href="{% url salecard %}"><i class="cus-book-open"></i>&nbsp;Накладные</a></li>
+         <li><a href="{% url card %}"><i class="cus-layers"></i>&nbsp;{% blocktrans %}Пул карт{% endblocktrans %}</a></li>
+         <li><a href="{% url dealer %}"><i class="cus-group"></i>&nbsp;{% blocktrans %}Дилеры{% endblocktrans %}</a></li>
+         <li><a href="{% url salecard %}"><i class="cus-book-open"></i>&nbsp;{% blocktrans %}Накладные{% endblocktrans %}</a></li>
 
          
          
@@ -213,32 +214,32 @@ padding-top:20px;
        <a href="#"
              class="dropdown-toggle"
              data-toggle="dropdown">
-             Отчёты
+             {% blocktrans %}Отчёты{% endblocktrans %}
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
            <li class="dropdown-submenu">
-		    <a tabindex="-1" href="#"><i class="cus-chart-line"></i> Отчёты</a>
+		    <a tabindex="-1" href="#"><i class="cus-chart-line"></i> {% blocktrans %}Отчёты{% endblocktrans %}</a>
 		    <ul class="dropdown-menu">
 		      {% charts_menu %}
 		    </ul>
 		  </li>
          <li class="divider"></li>
-         <li><a href="{% url transactionreport2 %}"><i class="cus-folder-table"></i> Операции с л/c</a></li>
-         <li><a href="{% url payment %}"><i class="cus-folder-table"></i> Платежи через платёжные системы</a></li>
-         <li><a href="{% url ballancehistoryreport %}"><i class="cus-report"></i>&nbsp;История изменения баланса</a></li>
+         <li><a href="{% url transactionreport2 %}"><i class="cus-folder-table"></i> {% blocktrans %}Операции с л/c{% endblocktrans %}</a></li>
+         <li><a href="{% url payment %}"><i class="cus-folder-table"></i> {% blocktrans %}Платежи через платёжные системы{% endblocktrans %}</a></li>
+         <li><a href="{% url ballancehistoryreport %}"><i class="cus-report"></i>&nbsp;{% blocktrans %}История изменения баланса{% endblocktrans %}</a></li>
          <li class="divider"></li>
-         <li><a href="{% url sms %}"><i class="cus-report"></i>&nbsp;SMS сообщения</a></li>
-         <li><a href="{% url ipinuse_list %}"><i class="cus-report"></i>&nbsp;Занятые IP адреса</a></li>
-         <li><a href="{% url authlog_list %}"><i class="cus-report"></i>&nbsp;История RADIUS авторизаций</a></li>
+         <li><a href="{% url sms %}"><i class="cus-report"></i>&nbsp;{% blocktrans %}SMS сообщения{% endblocktrans %}</a></li>
+         <li><a href="{% url ipinuse_list %}"><i class="cus-report"></i>&nbsp;{% blocktrans %}Занятые IP адреса{% endblocktrans %}</a></li>
+         <li><a href="{% url authlog_list %}"><i class="cus-report"></i>&nbsp;{% blocktrans %}История RADIUS авторизаций{% endblocktrans %}</a></li>
          <li class="divider"></li>
-         <li><a href="{% url groupstat %}"><i class="cus-report"></i>&nbsp;Тарифицированный трафик</a></li>
+         <li><a href="{% url groupstat %}"><i class="cus-report"></i>&nbsp;{% blocktrans %}Тарифицированный трафик{% endblocktrans %}</a></li>
          <li class="dropdown-submenu">
-            <a tabindex="-1" href="#"><i class="cus-report-go"></i>&nbsp;Предоплаченные единицы</a>
+            <a tabindex="-1" href="#"><i class="cus-report-go"></i>&nbsp;{% blocktrans %}Предоплаченные единицы{% endblocktrans %}</a>
             <ul class="dropdown-menu">
-              <li><a href="{% url accountprepaystraffic %}"><i class="cus-report"></i>&nbsp;Предоплаченный трафик (NetFlow)</a></li>
-              <li><a href="{% url accountprepaysradiustraffic %}"><i class="cus-report"></i>&nbsp;Предоплаченный трафик (RADIUS)</a></li>
-              <li><a href="{% url accountprepaystime %}"><i class="cus-report"></i>&nbsp;Предоплаченное время (RADIUS)</a></li>
+              <li><a href="{% url accountprepaystraffic %}"><i class="cus-report"></i>&nbsp;{% blocktrans %}Предоплаченный трафик (NetFlow){% endblocktrans %}</a></li>
+              <li><a href="{% url accountprepaysradiustraffic %}"><i class="cus-report"></i>&nbsp;{% blocktrans %}Предоплаченный трафик (RADIUS){% endblocktrans %}</a></li>
+              <li><a href="{% url accountprepaystime %}"><i class="cus-report"></i>&nbsp;{% blocktrans %}Предоплаченное время (RADIUS){% endblocktrans %}</a></li>
             </ul>
           </li>
        </ul>
@@ -249,12 +250,12 @@ padding-top:20px;
        <a href="#"
              class="dropdown-toggle"
              data-toggle="dropdown">
-             Монитор
+             {% blocktrans %}Монитор{% endblocktrans %}
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
-         <li><a href="{% url activesessionreport %}"><i class="cus-connect"></i>&nbsp;Монитор сессий</a></li>
-         <li><a href="{% url globalstat %}"><i class="cus-eye"></i>&nbsp;Монитор трафика</a></li>
+         <li><a href="{% url activesessionreport %}"><i class="cus-connect"></i>&nbsp;{% blocktrans %}Монитор сессий{% endblocktrans %}</a></li>
+         <li><a href="{% url globalstat %}"><i class="cus-eye"></i>&nbsp;{% blocktrans %}Монитор трафика{% endblocktrans %}</a></li>
        </ul>
      </li>
    </ul>
@@ -263,45 +264,45 @@ padding-top:20px;
        <a href="#"
              class="dropdown-toggle"
              data-toggle="dropdown">
-             Справочники
+             {% blocktrans %}Справочники{% endblocktrans %}
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
                          
          
-         <li><a href="{% url nas %}"><i class="cus-disconnect"></i> Сервера доступа</a></li>
-         <li><a href="{% url switch %}"><i class="cus-cog-edit"></i>&nbsp;Коммутаторы</a></li>
-         <li><a href="{% url ippool %}"><i class="cus-page-white-dvd"></i>&nbsp;IP пулы</a></li>
+         <li><a href="{% url nas %}"><i class="cus-disconnect"></i> {% blocktrans %}Серверы доступа{% endblocktrans %}</a></li>
+         <li><a href="{% url switch %}"><i class="cus-cog-edit"></i>&nbsp;{% blocktrans %}Коммутаторы{% endblocktrans %}</a></li>
+         <li><a href="{% url ippool %}"><i class="cus-page-white-dvd"></i>&nbsp;{% blocktrans %}IP пулы{% endblocktrans %}</a></li>
          
-         <li><a href="{% url trafficclass %}"><i class="cus-table-refresh"></i>&nbsp;Классы трафика</a></li>
-         <li><a href="{% url group %}"><i class="cus-link-go"></i> Группы трафика</a></li>
+         <li><a href="{% url trafficclass %}"><i class="cus-table-refresh"></i>&nbsp;{% blocktrans %}Классы трафика{% endblocktrans %}</a></li>
+         <li><a href="{% url group %}"><i class="cus-link-go"></i> {% blocktrans %}Группы трафика{% endblocktrans %}</a></li>
          <li class="divider"></li>
 
-         <li><a href="{% url settlementperiod %}"><i class="icon-calendar"></i>&nbsp;Расчётные периоды</a></li>
-         <li><a href="{% url timeperiod %}"><i class="cus-date-next"></i>&nbsp;Периоды тарификации</a></li>
-         <li><a href="{% url addonservice %}"><i class=" cus-cart-add"></i>&nbsp;Подключаемые услуги</a></li>
-         <li><a href="{% url transactiontype %}"><i class="cus-book-key"></i> Типы платежей</a></li>
-         <li><a href="{% url tpchangerule %}"><i class="cus-arrow-refresh"></i>&nbsp;Правила смены тарифных планов</a></li> 
-         <li><a href="{% url template %}"><i class="cus-report-edit"></i>&nbsp;Шаблоны документов</a></li> 
+         <li><a href="{% url settlementperiod %}"><i class="icon-calendar"></i>&nbsp;{% blocktrans %}Расчётные периоды{% endblocktrans %}</a></li>
+         <li><a href="{% url timeperiod %}"><i class="cus-date-next"></i>&nbsp;{% blocktrans %}Периоды тарификации{% endblocktrans %}</a></li>
+         <li><a href="{% url addonservice %}"><i class=" cus-cart-add"></i>&nbsp;{% blocktrans %}Подключаемые услуги{% endblocktrans %}</a></li>
+         <li><a href="{% url transactiontype %}"><i class="cus-book-key"></i> {% blocktrans %}Типы платежей{% endblocktrans %}</a></li>
+         <li><a href="{% url tpchangerule %}"><i class="cus-arrow-refresh"></i>&nbsp;{% blocktrans %}Правила смены тарифных планов{% endblocktrans %}</a></li> 
+         <li><a href="{% url template %}"><i class="cus-report-edit"></i>&nbsp;{% blocktrans %}Шаблоны документов{% endblocktrans %}</a></li> 
          <li class="divider"></li>
-         <li><a href="{% url address %}"><i class="cus-house-go"></i>&nbsp;Адреса</a></li> 
-         <li><a href="{% url news %}"><i class="cus-newspaper"></i>&nbsp;Модуль новостей</a></li>
+         <li><a href="{% url address %}"><i class="cus-house-go"></i>&nbsp;{% blocktrans %}Адреса{% endblocktrans %}</a></li> 
+         <li><a href="{% url news %}"><i class="cus-newspaper"></i>&nbsp;{% blocktrans %}Модуль новостей{% endblocktrans %}</a></li>
 
          
 		  <li class="dropdown-submenu">
-		    <a tabindex="-1" href="#"><i class="cus-wrench-orange"></i> Оборудование</a>
+		    <a tabindex="-1" href="#"><i class="cus-wrench-orange"></i> {% blocktrans %}Оборудование{% endblocktrans %}</a>
 		    <ul class="dropdown-menu">
-		     <li><a href="{% url hardware %}"><i class="cus-table-add"></i>&nbsp;Устройства</a></li>
-	         <li><a href="{% url manufacturer %}">Производители оборудования</a></li>
-	         <li><a href="{% url hardwaretype %}">Типы оборудования</a></li>
-	         <li><a href="{% url model %}">Модели оборудования</a></li>
+		     <li><a href="{% url hardware %}"><i class="cus-table-add"></i>&nbsp;{% blocktrans %}Устройства{% endblocktrans %}</a></li>
+	         <li><a href="{% url manufacturer %}">{% blocktrans %}Производители оборудования{% endblocktrans %}</a></li>
+	         <li><a href="{% url hardwaretype %}">{% blocktrans %}Типы оборудования{% endblocktrans %}</a></li>
+	         <li><a href="{% url model %}">{% blocktrans %}Модели оборудования{% endblocktrans %}</a></li>
 		    </ul>
 		  </li>
          <li class="divider"></li>
-         <li><a href="{% url systemuser %}"><i class="icon-user"></i>&nbsp;Системные пользователи</a></li>
-         <li><a href="{% url permissiongroup %}"><i class="cus-lock-edit"></i>&nbsp;Группы доступа</a></li>
-         <li><a href="{% url accountgroup %}"><i class="cus-group-gear"></i>&nbsp;Группы абонентов</a></li>
-         <li><a href="{% url dynamicschemafield %}"><i class="cus-cog-edit"></i>&nbsp;Дополнительные атрибуты аккаунта</a></li>
+         <li><a href="{% url systemuser %}"><i class="icon-user"></i>&nbsp;{% blocktrans %}Системные пользователи{% endblocktrans %}</a></li>
+         <li><a href="{% url permissiongroup %}"><i class="cus-lock-edit"></i>&nbsp;{% blocktrans %}Группы доступа{% endblocktrans %}</a></li>
+         <li><a href="{% url accountgroup %}"><i class="cus-group-gear"></i>&nbsp;{% blocktrans %}Группы абонентов{% endblocktrans %}</a></li>
+         <li><a href="{% url dynamicschemafield %}"><i class="cus-cog-edit"></i>&nbsp;{% blocktrans %}Дополнительные атрибуты аккаунта{% endblocktrans %}</a></li>
          
          
        </ul>
@@ -312,19 +313,19 @@ padding-top:20px;
        <a href="#"
              class="dropdown-toggle"
              data-toggle="dropdown">
-             Сервис
+             {% blocktrans %}Сервис{% endblocktrans %}
              <b class="caret"></b>
        </a>
        <ul class="dropdown-menu">
          
-         <li><a href="{% url logview %}"><i class="icon-tasks"></i>&nbsp;Просмотр логов</a></li>
-         <li><a href="{% url actionlog %}"><i class="icon-list-alt"></i>&nbsp;История действий пользователей</a></li>
-         <li><a href="{% url periodicalservicelog %}"><i class="cus-table-row-insert"></i>&nbsp;Последние списания период. услуг</a></li>
-         <li><a href="{% url shedulelog %}"><i class="cus-table-row-insert"></i>&nbsp;Последние сервисные процедуры</a></li>
-         <li><a href="{% url operator_edit %}"><i class="cus-information"></i>&nbsp;Информация о провайдере</a></li>
-         <li><a href="{% url cashier_index %}"><i class="cus-world-go"></i>&nbsp;Интерфейс кассира</a></li>
-         <li><a href="{% url helpdesk_dashboard %}"><i class="cus-world-go"></i>&nbsp;Хелпдеск</a></li>
-         <li><a href="/accounts/logout/"><i class="icon-off"></i>&nbsp;Выйти ({{request.user.account}})</a></li>
+         <li><a href="{% url logview %}"><i class="icon-tasks"></i>&nbsp;{% blocktrans %}Просмотр логов{% endblocktrans %}</a></li>
+         <li><a href="{% url actionlog %}"><i class="icon-list-alt"></i>&nbsp;{% blocktrans %}История действий пользователей{% endblocktrans %}</a></li>
+         <li><a href="{% url periodicalservicelog %}"><i class="cus-table-row-insert"></i>&nbsp;{% blocktrans %}Последние списания период. услуг{% endblocktrans %}</a></li>
+         <li><a href="{% url shedulelog %}"><i class="cus-table-row-insert"></i>&nbsp;{% blocktrans %}Последние сервисные процедуры{% endblocktrans %}</a></li>
+         <li><a href="{% url operator_edit %}"><i class="cus-information"></i>&nbsp;{% blocktrans %}Информация о провайдере{% endblocktrans %}</a></li>
+         <li><a href="{% url cashier_index %}"><i class="cus-world-go"></i>&nbsp;{% blocktrans %}Интерфейс кассира{% endblocktrans %}</a></li>
+         <li><a href="{% url helpdesk_dashboard %}"><i class="cus-world-go"></i>&nbsp;{% blocktrans %}Хелпдеск{% endblocktrans %}</a></li>
+         <li><a href="/accounts/logout/"><i class="icon-off"></i>&nbsp;{% blocktrans %}Выйти{% endblocktrans %} ({{request.user.account}})</a></li>
          
          
        </ul>

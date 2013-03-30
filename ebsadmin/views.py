@@ -56,7 +56,7 @@ except:
 import commands
 
 from django.contrib.auth.decorators import permission_required
-
+from django.utils.translation import ugettext_lazy as _
 
 
 class Object(object):
@@ -77,19 +77,19 @@ def simple_login(request):
                 if user.account.host!='0.0.0.0/0':
                     try:
                         if not (IPy.IP(request.META.get("REMOTE_ADDR")) in IPy.IP(user.account.host)):
-                            return {"status":False,"message":"Access for your IP address forbidden"}
+                            return {"status":False,"message": _(u"Access for your IP address forbidden")}
                     except Exception, e:
-                        return {"status":False,"message":"Login error. May be systemuser host syntax error"}
+                        return {"status":False,"message": _("Login error. May be systemuser host syntax error")}
                 log_in(request, user)
                 user.account.last_login = datetime.datetime.now()
                 user.account.last_ip = request.META.get("REMOTE_ADDR")
                 user.account.save()
-                return {"status":True,"message":"Login succeful"}
+                return {"status":True,"message": _("Login succeful")}
             else:
-                return {"status":False, "message":"Login forbidden to this action"}
+                return {"status":False, "message": _("Login forbidden to this action")}
                 
         except Exception, e:
-            return {"status":False, "message":"Login can`t be authenticated"}
+            return {"status":False, "message": _("Login can`t be authenticated")}
     return {"status":False,"message":"Login not found"}
 
 #===============================================================================
@@ -184,11 +184,11 @@ def generate_credentials(request):
 @systemuser_required
 def get_mac_for_ip(request):
     if  not (request.user.is_staff==True and request.user.has_perm('subaccount.getmacforip')):
-        return {'status':False, 'message':u'Недостаточно прав для выполнения операции'}
+        return {'status':False, 'message': _(u'Недостаточно прав для выполнения операции')}
     
     nas_id = request.POST.get('nas_id', None)
     if not nas_id:
-        return {'status':False, 'message':u'Сервер доступа не указан'}
+        return {'status':False, 'message': _(u'Сервер доступа не указан')}
     ipn_ip_address = request.POST.get('ipn_ip_address')
     try:
         nas = Nas.objects.get(id=nas_id)
@@ -1042,7 +1042,7 @@ def sql(request):
 @systemuser_required
 def session_reset(request):
     if  not (request.user.is_staff==True and request.user.has_perm('activesessions.session_reset')):
-        return {'status':False, 'message':u'У вас нет прав на сброс сессии'}
+        return {'status':False, 'message': _(u'У вас нет прав на сброс сессии')}
     
     id = request.POST.get('id',None)
     res = False
@@ -1071,16 +1071,16 @@ def session_reset(request):
                   format_string=nas.reset_action)
         """
         res = PoD.delay(acc, subacc, nas, access_type=session.framed_protocol, session_id=str(session.sessionid), vpn_ip_address=session.framed_ip_address, caller_id=str(session.caller_id), format_string=str(n.reset_action))
-        return {'status':True, 'message': u'Сессия поставлена в очередь на сброс.'}
+        return {'status':True, 'message': _(u'Сессия поставлена в очередь на сброс.')}
     
-    return {"message": u"Данная функция временно не реализована", 'status':False}
+    return {"message": _(u"Данная функция временно не реализована"), 'status':False}
 
 
 @ajax_request
 @systemuser_required
 def session_hardreset(request):
     if  not (request.user.is_staff==True and request.user.has_perm('activesessions.session_reset')):
-        return {'status':False, 'message':u'У вас нет прав на сброс сессии'}
+        return {'status':False, 'message': _(u'У вас нет прав на сброс сессии')}
     
     id = request.POST.get('id',None)
     res = False
@@ -1116,9 +1116,9 @@ def session_hardreset(request):
             ipin.disabled=datetime.datetime.now()
             ipin.save()
             
-        return {'status':True, 'message': u'Сессия поставлена в очередь на сброс, IP адрес освобождён'}
+        return {'status':True, 'message': _(u'Сессия поставлена в очередь на сброс, IP адрес освобождён')}
     
-    return {"message": u"Данная функция временно не реализована", 'status':False}
+    return {"message": _(u"Данная функция временно не реализована"), 'status':False}
 
 
 #===============================================================================
@@ -2463,12 +2463,12 @@ def templates_save(request):
     id = request.POST.get('id')
     if id:
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_template')):
-            return {'status':False, 'message': u"У вас нет прав на изменение шаблона"}
+            return {'status':False, 'message': _(u"У вас нет прав на изменение шаблона")}
         item = Template.objects.get(id=id)
         form = TemplateForm(request.POST, instance=item)
     else:
         if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_template')):
-            return {'status':False, 'message': u"У вас нет прав на добавление шаблона"}
+            return {'status':False, 'message': _(u"У вас нет прав на добавление шаблона")}
         form = TemplateForm(request.POST)
         
     if form.is_valid():
@@ -5183,7 +5183,7 @@ def documentrender(request):
 @systemuser_required 
 def templaterender(request):
     if  not (request.user.is_staff==True and request.user.has_perm('billservice.documentrender')):
-        return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
+        return {'status':False, 'message': _(u'У вас нет прав на рендеринг документов')}
     form = TemplateForm(request.POST)
     if form.is_valid():
         templatetype = form.cleaned_data.get('type')
@@ -5225,7 +5225,7 @@ def templaterender(request):
 @systemuser_required 
 def cheque_render(request):
     if  not (request.user.is_staff==True and request.user.has_perm('billservice.documentrender')):
-        return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
+        return {'status':False, 'message': _(u'У вас нет прав на рендеринг документов')}
     id = request.POST.get('id')#transaction_id
     transaction = Transaction.objects.get(id=id)
     template = Template.objects.get(type__id=5)
@@ -5258,7 +5258,7 @@ def cheque_render(request):
 @ajax_request
 def testCredentials(request):
     if  not (request.user.account.has_perm('billservice.testcredentials')):
-        return {'status':False, 'message': u'У вас нет на тестирование подключения'}
+        return {'status':False, 'message': _(u'У вас нет на тестирование подключения')}
     host, login, password = request.POST.get('host'),request.POST.get('login'),request.POST.get('password')
     try:
         print host, login, password
@@ -5272,7 +5272,7 @@ def testCredentials(request):
 @ajax_request
 def get_ports_status(request):
     if  not (request.user.account.has_perm('billservice.getportsstatus')):
-        return {'status':False, 'message': u'У вас нет прав на получение статуса портов'}
+        return {'status':False, 'message': _(u'У вас нет прав на получение статуса портов')}
     switch_id = request.POST.get('switch_id')
     if not switch_id: 
         return {'status':False}
@@ -5282,7 +5282,7 @@ def get_ports_status(request):
     #oper status .1.3.6.1.2.1.2.2.1.8.
     status, output = commands.getstatusoutput("snmpwalk -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.7" % (version, switch.snmp_community, switch.ipaddress))
     if status!=0:
-        return {'status':False, 'message': u'Невоззможно получить состояние портов'}
+        return {'status':False, 'message': _(u'Невоззможно получить состояние портов')}
     ports_status={}
     for line in output.split("\n"):
         #print 'line=',line
@@ -5297,7 +5297,7 @@ def get_ports_status(request):
         ports_status[id]=value
     status, output = commands.getstatusoutput("snmpwalk -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.5" % (version, switch.snmp_community, switch_ipaddress))
     if status!=0:
-        return {'status':False, 'message': u'Невоззможно получить состояние портов'}
+        return {'status':False, 'message': _(u'Невоззможно получить состояние портов')}
     ports_speed_status={}
     for line in output.split("\n"):
         #print 'line=',line
@@ -5315,9 +5315,9 @@ def get_ports_status(request):
 
 @systemuser_required 
 @ajax_request
-def set_ports_status(self, switch_id):
+def set_ports_status(request, switch_id):
     if  not (request.user.is_staff==True and request.user.has_perm('billservice.setportsstatus')):
-        return {'status':False, 'message': u'У вас нет на установку статуса портов'}
+        return {'status':False, 'message': _(u'У вас нет на установку статуса портов')}
     switch_id = request.POST.get('switch_id')
     if not switch_id: 
         return {'status':False}
@@ -5327,7 +5327,7 @@ def set_ports_status(self, switch_id):
     #получили статусы, чтобы было с чем сравнивать
     status, output = commands.getstatusoutput("snmpwalk -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.7" % (version, switch.snmp_community, switch_ipaddress))
     if status!=0:
-        return {'status':False, 'message': u'Невоззможно сохранить состояние портов'}
+        return {'status':False, 'message': _(u'Невоззможно сохранить состояние портов')}
     ports_status={}
     for line in output.split("\n"):
         #print 'line=',line
@@ -5347,7 +5347,7 @@ def set_ports_status(self, switch_id):
     
     status, output = commands.getstatusoutput("snmpwalk -v %s -Oeqsn -c %s %s .1.3.6.1.2.1.2.2.1.7" % (version, switch.snmp_community, switch_ipaddress))
     if status!=0:
-        return {'status':False, 'message': u'Невоззможно сохранить состояние портов'}
+        return {'status':False, 'message': _(u'Невоззможно сохранить состояние портов')}
     ports_status={}
     for line in output.split("\n"):
         #print 'line=',line

@@ -1,4 +1,5 @@
 ﻿{% extends 'base_extended.html' %}
+{% load i18n %}
 {% load custom_filters %}
 {% load billservice_tags %}
 
@@ -60,7 +61,7 @@
 <table class="wide main_table" cellpadding="0" cellspacing="0" >
 	<!--- Мои баланс --->
 	<tr>
-		<td class="blue_caption white s-11 bold">СТАТУС АККАУНТА <a id="user-info_a" class="close" href="javascript:return 0;" onclick="runEffect('user-info')">&nbsp;</a></td>
+		<td class="blue_caption white s-11 bold">{% blocktrans %}СТАТУС АККАУНТА{% endblocktrans %} <a id="user-info_a" class="close" href="javascript:return 0;" onclick="runEffect('user-info')">&nbsp;</a></td>
 	</tr>
 	<tr>
 		<td class="" id="user-info">
@@ -70,23 +71,23 @@
 				</div>
 				{% if not user.account_status %}
 				  {% if user.status == 4 %}
-					<div class="user_is_blocked f-right"><a href="/account/block/?height=250&width=450&modal=true" class="thickbox text">Включена пользовательская блокировка</a></div>
+					<div class="user_is_blocked f-right"><a href="/account/block/?height=250&width=450&modal=true" class="thickbox text">{% blocktrans %}Включена пользовательская блокировка{% endblocktrans %}</a></div>
 				  {% else %}
-				    <div class="user_is_blocked f-right">Ваша учётная запись заблокирована</div>
+				    <div class="user_is_blocked f-right">{% blocktrans %}Ваша учётная запись заблокирована{% endblocktrans %}</div>
 				  {% endif %}	
 					<div class="clear"></div>
 				{% endif %}
 		
 		        {% if user.balance_blocked or user.ballance_isnt_good %}
 			        <div class="no-money f-right">
-						Недостаточно средств на балансе
+						{% blocktrans %}Недостаточно средств на балансе{% endblocktrans %}
 			        </div>
 					<div class="clear"></div>
 		        {% endif %}
 		        
 		        {% if user.disabled_by_limit %}
 			        <div class="no-limit f-right">
-						Вы превысили лимит трафика
+						{% blocktrans %}Вы превысили лимит трафика{% endblocktrans %}
 			        </div>        
 					<div class="clear"></div>
 		        {%endif%}
@@ -94,17 +95,17 @@
 
 			</div>
 			<div class="user_ballance f-left">
-				<div><span>Баланс :</span> {{ ballance|floatformat:2 }}{{ CURRENCY }}</div>
-				<div><span>Размер кредита :</span> {{ user.credit|floatformat:2 }}{{ CURRENCY }}</div>
-				{% if user.contract %}<div><span>Номер договора :</span> {{ user.contract }}</div>{% endif %}
-				<div><span><a href="/account/block/?height=250&width=450&modal=true" class="thickbox text">Блокировка учётной записи</a></span></div>
+				<div><span>{% blocktrans %}Баланс :{% endblocktrans %}</span> {{ ballance|floatformat:2 }}{{ CURRENCY }}</div>
+				<div><span>{% blocktrans %}Размер кредита :{% endblocktrans %}</span> {{ user.credit|floatformat:2 }}{{ CURRENCY }}</div>
+				{% if user.contract %}<div><span>{% blocktrans %}Номер договора :{% endblocktrans %}</span> {{ user.contract }}</div>{% endif %}
+				<div><span><a href="/account/block/?height=250&width=450&modal=true" class="thickbox text">{% blocktrans %}Блокировка учётной записи{% endblocktrans %}</a></span></div>
 				
 			</div>
 		</td>
 	</tr>
 	<!--- Новости провайдера --->
 	<tr>
-		<td class="blue_caption white s-11 bold">НОВОСТИ ПРОВАЙДЕРА<a id="news-cell_a" class="close" href="javascript:return 0;" onclick="runEffect('news-cell')">&nbsp;</a></td>
+		<td class="blue_caption white s-11 bold">{% blocktrans %}НОВОСТИ ПРОВАЙДЕРА{% endblocktrans %}<a id="news-cell_a" class="close" href="javascript:return 0;" onclick="runEffect('news-cell')">&nbsp;</a></td>
 	</tr>
 	<tr>
 		<td class="news-cell" id="news-cell">
@@ -117,26 +118,26 @@
 	
 	
 	<tr>
-		<td style="width:50%" class="blue_caption white s-11 bold main_table_left_border">МОИ ДАННЫЕ<a id="account_information_a" class="close" href="javascript:return 0;" onclick="runEffect('account_information')">&nbsp;</a></td>
+		<td style="width:50%" class="blue_caption white s-11 bold main_table_left_border">{% blocktrans %}МОИ ДАННЫЕ{% endblocktrans %}<a id="account_information_a" class="close" href="javascript:return 0;" onclick="runEffect('account_information')">&nbsp;</a></td>
 	</tr>
 	<!--- Мои данные --->
 	<tr>
 		<td class="account_information main_table_left_border user_info" id="account_information">
 			<div class="user_block">
 				<div class="f-left">
-					<div><span class="bold">Тарифный план :</span> {{ tariff }}</div>
+					<div><span class="bold">{% blocktrans %}Тарифный план{% endblocktrans %} :</span> {{ tariff }}</div>
 					{% if next_tariff %}
-						<div><span class="bold">Следующий тарифный план :</span>{{ next_tariff.tarif.name }} c {{ next_tariff.datetime}}</div>
+						<div><span class="bold">{% blocktrans %}Следующий тарифный план{% endblocktrans %} :</span>{{ next_tariff.tarif.name }} c {{ next_tariff.datetime}}</div>
 					{% endif %}
-					<div><span class="bold">ФИО :</span> {{user.fullname}}</div>
+					<div><span class="bold">{% blocktrans %}ФИО{% endblocktrans %} :</span> {{user.fullname}}</div>
 					{% if user.city or user.postcode or user.region or user.street or user.house or user.house_bulk or user.entrance or user.room %}
-						<div><span class="bold">Ваш Адрес :</span> {{ user.postcode }} {%if user.city %} {{ user.city }}{% endif %} {% if user.street %}ул. {{ user.street }}{% endif %} {% if user.house %} {{ user.house }}{% endif %} {% if user.house_bulk %}корп. {{ user.house_bulk }}{% endif %} {% if user.room  %}кв. {{ user.room }}{% endif %}</div>
+						<div><span class="bold">{% blocktrans %}Ваш Адрес{% endblocktrans %} :</span> {{ user.postcode }} {%if user.city %} {{ user.city }}{% endif %} {% if user.street %}ул. {{ user.street }}{% endif %} {% if user.house %} {{ user.house }}{% endif %} {% if user.house_bulk %}корп. {{ user.house_bulk }}{% endif %} {% if user.room  %}-{{ user.room }}{% endif %}</div>
 					{% endif %}
 					{% if user.email %}
-						<div><span class="bold">E-mail : {{ user.email }}</div>
+						<div><span class="bold">{% blocktrans %}E-mail{% endblocktrans %} : {{ user.email }}</div>
 					{% endif %}
 					
-					<div><span class="bold">Дата подключения :</span> {{ user.created|date:"d.m.Y  H:i" }}</div>
+					<div><span class="bold">{% blocktrans %}Дата подключения{% endblocktrans %} :</span> {{ user.created|date:"d.m.Y  H:i" }}</div>
 				</div>
 				<div class="clear"></div>
 			</div>
@@ -145,7 +146,7 @@
 	
     <!--- Субаккаунты - загаловки --->
     <tr>
-        <td class="blue_caption white s-11 bold">ВАШИ СУБАККАУНТЫ<a id="subaccounts_a" class="close" href="javascript:return 0;" onclick="runEffect('subaccounts')">&nbsp;</a></td>
+        <td class="blue_caption white s-11 bold">{% blocktrans %}ВАШИ СУБАККАУНТЫ{% endblocktrans %}<a id="subaccounts_a" class="close" href="javascript:return 0;" onclick="runEffect('subaccounts')">&nbsp;</a></td>
     </tr>
     <!--- Субаккаунты - данные --->
     <tr>
@@ -154,11 +155,11 @@
                 {% if subaccounts %}
                     <table class="wide extra_table trafficlimit_margin" cellpadding="0" cellspacing="0">
                         <tr>
-                            <th class="first_row">Имя пользователя</th>
-                            <th>Пароль</th>
-                            <th>VPN IP</th>
-                            <th>IPN IP</th>
-                            <th>MAC-адрес</th>
+                            <th class="first_row">{% blocktrans %}Имя пользователя{% endblocktrans %}</th>
+                            <th>{% blocktrans %}Пароль{% endblocktrans %}</th>
+                            <th>{% blocktrans %}VPN IP{% endblocktrans %}</th>
+                            <th>{% blocktrans %}IPN IP{% endblocktrans %}</th>
+                            <th>{% blocktrans %}MAC-адрес{% endblocktrans %}</th>
                         </tr>
                         {% for subaccount in subaccounts %}
                             {% subaccounts_row subaccount forloop.counter forloop.last %}
@@ -178,7 +179,7 @@
 	
 	<!--- остаток трафика по лимитам - загаловки --->
 	<tr>
-		<td class="blue_caption white s-11 bold">ОСТАТКИ ТРАФИКА ПО ЛИМИТАМ<a id="traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic')">&nbsp;</a></td>
+		<td class="blue_caption white s-11 bold">{% blocktrans %}ОСТАТКИ ТРАФИКА ПО ЛИМИТАМ{% endblocktrans %}<a id="traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic')">&nbsp;</a></td>
 	</tr>
 	<!--- остаток трафика по лимитам - данные --->
 	<tr>
@@ -187,11 +188,11 @@
 				{% if trafficlimit %}
 					<table class="wide extra_table trafficlimit_margin" cellpadding="0" cellspacing="0">
     					<tr>
-	   						<th class="first_row">Название</th>
-	   						<th>Начало</th>
-	   						<th>Окончание</th>
-	   						<th>Потреблено</th>
-	   						<th>Лимит</th>
+	   						<th class="first_row">{% blocktrans %}Название{% endblocktrans %}</th>
+	   						<th>{% blocktrans %}Начало{% endblocktrans %}</th>
+	   						<th>{% blocktrans %}Окончание{% endblocktrans %}</th>
+	   						<th>{% blocktrans %}Потреблено{% endblocktrans %}</th>
+	   						<th>{% blocktrans %}Лимит{% endblocktrans %}</th>
 						</tr>
 						{% for traffic_limit in trafficlimit %}
 							{% traffic_limit_row traffic_limit user forloop.counter forloop.last %}
@@ -210,7 +211,7 @@
 	
 	<!--- Остаток предоплаченного трафика/остаток трафика по лимитам - загаловки --->
 	<tr>
-		<td class="blue_caption white s-11 bold">ПРЕДОПЛАЧЕННЫЕ ЕДИНИЦЫ<a id="prepaid_traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('prepaid_traffic')">&nbsp;</a></td>
+		<td class="blue_caption white s-11 bold">{% blocktrans %}ПРЕДОПЛАЧЕННЫЕ ЕДИНИЦЫ{% endblocktrans %}<a id="prepaid_traffic_a" class="close" href="javascript:return 0;" onclick="runEffect('prepaid_traffic')">&nbsp;</a></td>
 	</tr>
 	<!--- Остаток предоплаченного трафика --->
 	<tr>
@@ -219,8 +220,8 @@
 				{% if account_prepays_traffic%}
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th>Направление</th>
-						<th>Остаток</th>
+						<th>{% blocktrans %}Направление{% endblocktrans %}</th>
+						<th>{% blocktrans %}Остаток{% endblocktrans %}</th>
 					</tr>
 					{% for traffic in account_prepays_traffic %}
 							<tr>
@@ -237,18 +238,18 @@
 				{% if prepaydradiustraffic or prepaydtime %}
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th>Предоплаченное значение</th>
-						<th>Остаток</th>
-						<th>Время начисления</th>
+						<th>{% blocktrans %}Предоплаченное значение{% endblocktrans %}</th>
+						<th>{% blocktrans %}Остаток{% endblocktrans %}</th>
+						<th>{% blocktrans %}Время начисления{% endblocktrans %}</th>
 					</tr>
 
 						<tr>
-							<td class="coll_bg">Предоплаченное время</td>
-							<td class="left_border coll_bg">{{ prepaydtime.size }} сек.</td>
+							<td class="coll_bg">{% blocktrans %}Предоплаченное время{% endblocktrans %}</td>
+							<td class="left_border coll_bg">{{ prepaydtime.size }}{% blocktrans %} сек{% endblocktrans %}.</td>
 							<td class="left_border coll_bg">{{ prepaydtime.datetime }}</td>
 						</tr>
 						<tr>
-							<td class="no_border">Предоплаченный трафик<div class="prepaid_table_bottom_left"></div></td>
+							<td class="no_border">{% blocktrans %}Предоплаченный трафик{% endblocktrans %}<div class="prepaid_table_bottom_left"></div></td>
 							<td class="left_border no_border">{% traffic_format prepaydradiustraffic.size %}<div class="prepaid_table_bottom_right"></div></td>
 							<td class="left_border no_border">{{prepaydradiustraffic.datetime}}<div class="prepaid_table_bottom_right"></div></td>
 						</tr>
@@ -265,7 +266,7 @@
 	</tr>
 	<!--- Предыдущие тарифные планы/активация карточек - загаловки --->
 	<tr>
-		<td class="blue_caption white s-11 bold main_table_left_border">ВАШИ ТАРИФНЫЕ ПЛАНЫ<a id="tariffs_a" class="close" href="javascript:return 0;" onclick="runEffect('tariffs')">&nbsp;</a></td>
+		<td class="blue_caption white s-11 bold main_table_left_border">{% blocktrans %}ВАШИ ТАРИФНЫЕ ПЛАНЫ{% endblocktrans %}<a id="tariffs_a" class="close" href="javascript:return 0;" onclick="runEffect('tariffs')">&nbsp;</a></td>
 	</tr>
 	<!--- Предыдущие тарифные планы/активация карточек - данные --->
 	<tr>
@@ -273,8 +274,8 @@
 			{% if tariffs %}
 				<table class="wide extra_table" cellpadding="0" cellspacing="0">
 					<tr>
-						<th class="bold a-left">Название</th>
-						<th class="bold p-right" align="right">Начало действия</th>
+						<th class="bold a-left">{% blocktrans %}Название{% endblocktrans %}</th>
+						<th class="bold p-right" align="right">{% blocktrans %}Начало действия{% endblocktrans %}</th>
 					</tr>
 						{% for previous_tariff in tariffs %}
 

@@ -14,7 +14,7 @@ from billservice.models import Account, Transaction
 
 log = LogItem.objects.log_action
 
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('cassa/index.html')

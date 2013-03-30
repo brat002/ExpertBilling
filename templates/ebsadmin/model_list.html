@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% load render_table from django_tables2 %}
 {% block extra_head %}
@@ -6,7 +7,7 @@
         $(document).ready(function() {
             $("#id_btn_add").click(function(event) {
                 $('<div/>').dialog2({
-                    title: "Добавление модели оборудования", 
+                    title: "{% blocktrans %}Добавление модели оборудования{% endblocktrans %}", 
                     content: "{% url model_edit %}", 
                     id: "server-notice"
                 });
@@ -15,7 +16,7 @@
             });
             $(".open-custom-dialog").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Изменить модель", 
+                    title: "{% blocktrans %}Изменить модель{% endblocktrans %}", 
                     content: this.href, 
                     id: "model-modal"
                 });
@@ -24,7 +25,7 @@
             });
             $(".show-confirm").click(function() {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить? Удаление модели оборудования вызовет удаление всех связаных объектов в системе.", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? Удаление модели оборудования вызовет удаление всех связаных объектов в системе.{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -36,7 +37,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                             }
 
                         })                      
@@ -60,11 +61,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url model %}">Модели оборудования</a> <span class="divider">/</span>
+    <a href="{% url model %}">{% blocktrans %}Модели оборудования{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="{% url model_edit %}" id="id_btn_add" class="btn btn-success">Добавить</a>&nbsp;</div>
+<div class="btn-toolbar pull-right"><a href="{% url model_edit %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
 <div>
   {% render_table table %}
 </div>

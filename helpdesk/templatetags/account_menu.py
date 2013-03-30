@@ -40,7 +40,7 @@ def staff_menu(context):
     """
     from lib.menu import Menu
     menu = Menu(context['current_view_name']) 
-    for view_name, verbose_name in settings.PERSONAL_AREA_STAFF_MENU:
-        menu.add(view_name, verbose_name)
+    for view_name, verbose_name, id in settings.PERSONAL_AREA_STAFF_MENU:
+        menu.add(view_name, verbose_name, attrs={"id": id})
     
     return {'menu': menu}

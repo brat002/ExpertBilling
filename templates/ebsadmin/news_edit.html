@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% block extra_head %}
 
@@ -25,13 +26,13 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url news %}">Новости</a> <span class="divider">/</span>
+    <a href="{% url news %}">{% blocktrans %}Новости{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.id.value}}</li>
 </ul>
 <form method="POST" action="{% url news_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
-            <legend>Параметры новости{% objectlog item %}</legend>
+            <legend>{% blocktrans %}Параметры новости{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>
                   {{ form.id }}
                   <div class="control-group">
@@ -144,7 +145,7 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

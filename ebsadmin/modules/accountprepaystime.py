@@ -13,13 +13,13 @@ from billservice.models import AccountPrepaysTime
 from django.contrib import messages
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
-
+from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
 @render_to('ebsadmin/accountprepaystime_list.html')
 def accountprepaystime(request):
     if  not (request.user.account.has_perm('billservice.view_accountprepaystime')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
 
@@ -79,12 +79,12 @@ def accountprepaystime_edit(request):
             model = AccountPrepaysTime.objects.get(id=id)
             form = AccountPrepaysTimeForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountprepaystime')):
-                messages.error(request, u'У вас нет прав на редактирование предоплаченного времени', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование предоплаченного времени'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             form = AccountPrepaysTimeForm(request.POST) 
         if  not (request.user.account.has_perm('billservice.add_accountprepaystime')):
-            messages.error(request, u'У вас нет прав на добавление предоплаченного времени', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на добавление предоплаченного времени'), extra_tags='alert-danger')
             return HttpResponseRedirect(request.path)
 
 
@@ -100,7 +100,7 @@ def accountprepaystime_edit(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_accountprepaystime')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return {'status': False}
 
         if id:
@@ -117,13 +117,13 @@ def accountprepaystime_edit(request):
 @systemuser_required
 def accountprepaystime_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_accountprepaystime')):
-        return {'status':False, 'message': u'У вас нет прав на удаление предоплаченного времени'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление предоплаченного времени')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = AccountPrepaysTime.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанная запись не найдена %s" % str(e)}
+            return {"status": False, "message": _(u"Указанная запись не найдена %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

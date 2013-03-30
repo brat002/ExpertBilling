@@ -263,14 +263,14 @@ TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
 #TEST_RUNNER = 'testrunner.NoDbTestRunner'
 
 PERSONAL_AREA_STAFF_MENU = [
-    ('helpdesk_dashboard', u"Сводка"),
-    ('helpdesk_list', u"Заявки"),
-    ('helpdesk_submit', u"Создать заявку"),
-    ('helpdesk_kb_index', u"База знаний"),
-    ('helpdesk_report_index', u"Статистика"),
-    ('helpdesk_user_settings', u"Ваши настройки"),
-    ('/admin/', u"Конфигурация"),
-    ('account_logout', u'Выход'),
+    ('helpdesk_dashboard', u"Сводка", ''),
+    ('helpdesk_list', u"Заявки", ''),
+    ('helpdesk_submit', u"Создать заявку", 'modal-queue-dialog'),
+    ('helpdesk_kb_index', u"База знаний", ''),
+    ('helpdesk_report_index', u"Статистика", ''),
+    ('helpdesk_user_settings', u"Ваши настройки", ''),
+    ('/admin/', u"Конфигурация", ''),
+    ('account_logout', u'Выход', ''),
 ]
 
 

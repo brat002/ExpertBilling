@@ -1,4 +1,5 @@
 {% extends 'base_extended.html' %}
+{% load i18n %}
 {% load billservice_tags %}
 {% load custom_filters %}
 
@@ -6,16 +7,16 @@
 {% if periodical_service_history %}
 <table class="wide statistic_table" cellpadding="0" cellspacing="0">
 	<tr>
-		<th class="white bold s-11 blue_caption a-left">СПИСАНИЕ ПЕРИОДИЧЕСКИХ УСЛУГ</th>
+		<th class="white bold s-11 blue_caption a-left">{% blocktrans %}СПИСАНИЕ ПЕРИОДИЧЕСКИХ УСЛУГ{% endblocktrans %}</th>
 	</tr>
 	<tr>
 		<td class="">
 			<table class="wide extra_table" cellpadding="0" cellspacing="0">
 				<tr>
-					<th>Услуга</th>
-					<th>Дата</th>
-					<th>Сумма</th>
-					<th>Тип услуги</th>
+					<th>{% blocktrans %}Услуга{% endblocktrans %}</th>
+					<th>{% blocktrans %}Дата{% endblocktrans %}</th>
+					<th>{% blocktrans %}Сумма{% endblocktrans %}</th>
+					<th>{% blocktrans %}Тип услуги{% endblocktrans %}</th>
 				</tr>
 				{% for service in periodical_service_history %}
 					<tr>
@@ -27,7 +28,7 @@
 				{% endfor %}
 				{% if is_range %}
 					<tr>
-						<td colspan="2" align="right" class="bold {{ rec_count|coll_bg  }} no_border">Всего на странице:<br>Всего:</td>
+						<td colspan="2" align="right" class="bold {{ rec_count|coll_bg  }} no_border">{% blocktrans %}Всего на странице:{% endblocktrans %}<br>{% blocktrans %}Всего:{% endblocktrans %}</td>
 						<td colspan="2" class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ_on_page|floatformat:2 }}&nbsp;{{ CURRENCY }}<br>{{ summ|floatformat:2 }}&nbsp;{{ CURRENCY }}</td>
 					</tr>
 				{% endif %}
@@ -38,11 +39,11 @@
 </table>
 
 {% else %}
- <h2 align="center">Данных нет</h2>
+ <h2 align="center">{% blocktrans %}Данных нет{% endblocktrans %}</h2>
 {% endif %}
 {% endblock %}
 
 
 {% block title %}
-    Биллинговая информация
+    {% blocktrans %}Биллинговая информация{% endblocktrans %}
 {% endblock %}

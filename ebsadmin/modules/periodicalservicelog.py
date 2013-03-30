@@ -14,6 +14,7 @@ from django.contrib import messages
 
 log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
+from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
@@ -21,7 +22,7 @@ from billservice.helpers import systemuser_required
 def periodicalservicelog(request):
         
     if  not (request.user.account.has_perm('billservice.view_periodicalservicelog')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET' and request.GET: 
@@ -69,13 +70,13 @@ def periodicalservicelog(request):
 @systemuser_required
 def periodicalservicelog_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_periodicalservicelog')):
-        return {'status':False, 'message': u'У вас нет прав на удаление истории списаний по период. услугам'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление истории списаний по период. услугам')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = PeriodicalServiceLog.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанное списание не найдено %s" % str(e)}
+            return {"status": False, "message": _(u"Указанное списание не найдено %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

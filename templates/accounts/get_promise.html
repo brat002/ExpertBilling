@@ -1,4 +1,5 @@
 {% extends 'base_extended.html' %}
+{% load i18n %}
 {% load billservice_tags %}
 {% load custom_filters %}
 
@@ -12,15 +13,15 @@
     </tr>
     <tr>
         <td class="coll_bg caption">
-        	Сумма
+        	{% blocktrans %}Сумма{% endblocktrans %}
         </td>
         <td class="left_border ">
-        	<input type = "input" name = "sum">(макс {{allow_transfer_summ}} {{ CURRENCY }})
+        	<input type = "input" name = "sum">({% blocktrans %}макс {% endblocktrans %}{{allow_transfer_summ}} {{ CURRENCY }})
         </td>
     </tr>
     <tr>
         <td class="coll_bg caption">
-        	Логин адресата
+        	{% blocktrans %}Логин адресата{% endblocktrans %}
         </td>
         <td class="left_border ">
         	<input type = "input" name = "username">
@@ -40,27 +41,27 @@
 <form method = "POST" action="">
 <table class="wide extra_table promise_table" cellpadding="0" cellspacing="0">
     <tr>
-        <th class="white bold s-11 blue_caption a-left ie" colspan="2">Обещанынй платёж(пополнить баланс в долг)</th>
+        <th class="white bold s-11 blue_caption a-left ie" colspan="2">{% blocktrans %}Обещанный платёж(пополнить баланс в долг){% endblocktrans %}</th>
     </tr>
     <tr>
         <td class="coll_bg caption">
-        	Сумма
+        	{% blocktrans %}Сумма{% endblocktrans %}
         </td>
         <td class="left_border ">
-        	<input type = "input" name = "sum">(макс {{MAX_PROMISE_SUM}}{{ CURRENCY }})
+        	<input type = "input" name = "sum">({% blocktrans %}макс{% endblocktrans %} {{MAX_PROMISE_SUM}}{{ CURRENCY }})
         </td>
     </tr>
     <tr>
     <td class="coll_bg  caption">
-    Погасить до:
+    {% blocktrans %}Погасить до:{% endblocktrans %}
     </td>
     <td class="left_border ">
-    <span class="promise-date">{{LEFT_PROMISE_DATE|date:"d.m.Y H:i"}}</span> (в указанное время сумма обещанного платежа будет списана с вашего баланса)
+    <span class="promise-date">{{LEFT_PROMISE_DATE|date:"d.m.Y H:i"}}</span> {% blocktrans %}(в указанное время сумма обещанного платежа будет списана с вашего баланса){% endblocktrans %}
     </td>
     </tr>
     <tr>
     <td colspan="2" class="no_border">
-    <input value="Взять" type="submit" class="pass_button f-right promise_button">
+    <input value="{% blocktrans %}Взять{% endblocktrans %}" type="submit" class="pass_button f-right promise_button">
     </td>
     </tr>
 </table>
@@ -70,17 +71,17 @@
 {% if last_promises %}
 <table class="wide statistic_table" cellpadding="0" cellspacing="0">
 	<tr>
-		<th class="white bold s-11 blue_caption a-left">ИСТОРИЯ ОБЕЩАННЫХ ПЛАТЕЖЕЙ</th>
+		<th class="white bold s-11 blue_caption a-left">{% blocktrans %}ИСТОРИЯ ОБЕЩАННЫХ ПЛАТЕЖЕЙ{% endblocktrans %}</th>
 	</tr>
 	<tr>
 		<td>
 			<table class="wide extra_table" cellpadding="0" cellspacing="0">
 				<tr>
-					<th>Дата</th>
-					<th>Сумма</th>
-                    <th>Взята до</th>
-                    <th>Комментарий</th>
-					<th>Платёж закрыт</th>
+					<th>{% blocktrans %}Дата{% endblocktrans %}</th>
+					<th>{% blocktrans %}Сумма{% endblocktrans %}</th>
+                    <th>{% blocktrans %}Взята до{% endblocktrans %}</th>
+                    <th>{% blocktrans %}Комментарий{% endblocktrans %}</th>
+					<th>{% blocktrans %}Платёж закрыт{% endblocktrans %}</th>
 
 				</tr>
 				{% for promise in last_promises %}
@@ -104,5 +105,5 @@
 
 
 {% block title %}
-    ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ
+    {% blocktrans %}ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ{% endblocktrans %}
 {% endblock %}

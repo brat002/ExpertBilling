@@ -48,6 +48,8 @@ log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
 BAD_REQUEST = u"Ошибка передачи параметров"
 
+from django.utils.translation import ugettext_lazy as _
+
 def compare(old, new):
     r = {}
     for key in new:
@@ -114,7 +116,7 @@ def gettransactiontypes(current=[]):
 @render_to('ebsadmin/transactionreport_list.html')
 def transactionreport2(request):
     if  not (request.user.account.has_perm('billservice.view_transaction')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     if request.GET:
@@ -271,7 +273,7 @@ def transactionreport2(request):
 def accountsreport(request):
         
     if  not (request.user.account.has_perm('billservice.view_account')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET':
@@ -439,7 +441,7 @@ def accountsreport(request):
 def authlogreport(request):
         
     if  not (request.user.account.has_perm('radius.view_authlog')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET' and request.GET:
@@ -487,7 +489,7 @@ def authlogreport(request):
 def ipinusereport(request):
         
     if  not (request.user.account.has_perm('billservice.view_ipinuse')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
     if request.method=='GET' and request.GET:
@@ -552,7 +554,7 @@ def ipinusereport(request):
 def ballancehistoryreport(request):
         
     if  not (request.user.account.has_perm('billservice.view_balancehostory')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
 
@@ -612,7 +614,7 @@ def accountedit(request):
     extra_form = None
     if account_id:
         if  not (request.user.account.has_perm('billservice.change_account')):
-            messages.error(request, u'У вас нет прав на редактирование аккаунтов', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на редактирование аккаунтов'), extra_tags='alert-danger')
             return HttpResponseRedirect(request.path)
 
         account = Account.objects.get(id=account_id)
@@ -648,7 +650,7 @@ def accountedit(request):
 
     else:
         if  not (request.user.account.has_perm('billservice.add_account')):
-            messages.error(request, u'У вас нет прав на создание аккаунтов', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на создание аккаунтов'), extra_tags='alert-danger')
             return HttpResponseRedirect(request.path)
 
     if request.method=='POST':
@@ -735,7 +737,7 @@ def accountedit(request):
             messages.success(request, u'Аккаунт сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"), model.id))
         else:
-            messages.error(request, u'Ошибка при сохранении.', extra_tags='alert-danger')
+            messages.error(request, _(u'Ошибка при сохранении.'), extra_tags='alert-danger')
             
             return {'extra_form': extra_form, 'ticket_table': ticket_table, 'org_form':org_form, 'bank_form': bank_form,  'prepaidtraffic':prepaidtraffic, 'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
     if account:
@@ -778,7 +780,7 @@ def subaccountedit(request):
     action_log_table = None
     if id:
         if  not (request.user.account.has_perm('billservice.change_subaccount')):
-            messages.error(request, u'У вас нет прав на редактирование субаккаунтов', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на редактирование субаккаунтов'), extra_tags='alert-danger')
             return HttpResponseRedirect(request.path)
         subaccount = SubAccount.objects.get(id=id)
     
@@ -794,7 +796,7 @@ def subaccountedit(request):
         prev = None
     else:
         if  not (request.user.account.has_perm('billservice.add_subaccount')):
-            messages.error(request, u'У вас нет прав на создание аккаунтов', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на создание аккаунтов'), extra_tags='alert-danger')
             return HttpResponseRedirect(request.path)  
     if account_id:
         account = Account.objects.get(id=account_id)
@@ -1009,7 +1011,7 @@ def subaccountedit(request):
             model.vpn_ipv6_ipinuse = vpn_ipv6_ipinuse
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'Субаккаунт сохранён.', extra_tags='alert-success')
+            messages.success(request, _(u'Субаккаунт сохранён.'), extra_tags='alert-success')
             return HttpResponseRedirect("%s?id=%s" % (reverse("subaccount"), model.id))
     
         else:
@@ -1017,7 +1019,7 @@ def subaccountedit(request):
             return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, 'accountaddonservice_table':table,  'form':form}
     else:
         if  not (request.user.account.has_perm('billservice.view_subaccount')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if subaccount:
             
@@ -1041,11 +1043,11 @@ def accounthardware(request):
         form = AccountHardwareForm(request.POST) 
         if id:
             if  not (request.user.account.has_perm('billservice.change_accounthardware')):
-                messages.error(request, u'У вас нет прав на редактирование связок тарифных планов', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование связок тарифных планов'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             if  not (request.user.account.has_perm('billservice.add_accounthardware')):
-                messages.error(request, u'У вас нет прав на создание связок тарифных планов', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание связок тарифных планов'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
         
@@ -1054,7 +1056,7 @@ def accounthardware(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'Оборудование успешно добавлено.', extra_tags='alert-success')
+            messages.success(request, _(u'Оборудование успешно добавлено.'), extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
 
@@ -1063,7 +1065,7 @@ def accounthardware(request):
         id = request.GET.get("id")
         account_id = request.GET.get("account_id")
         if  not (request.user.account.has_perm('billservice.view_accounthardware')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"),account_id))
         
         if id:
@@ -1089,11 +1091,11 @@ def suspendedperiod(request):
         form = SuspendedPeriodModelForm(request.POST) 
         if id:
             if  not (request.user.account.has_perm('billservice.change_suspendedperiod')):
-                messages.error(request, u'У вас нет прав на редактирование периодов без списаний', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование периодов без списаний'), extra_tags='alert-danger')
                 return {}
         else:
             if  not (request.user.account.has_perm('billservice.add_suspendedperiod')):
-                messages.error(request, u'У вас нет прав на создание периодов без списаний', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание периодов без списаний'), extra_tags='alert-danger')
                 return {}
         
         
@@ -1108,7 +1110,7 @@ def suspendedperiod(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_accounthardware')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел'), extra_tags='alert-danger')
             return {}
         if id:
 
@@ -1136,11 +1138,11 @@ def transaction(request):
         form = TransactionModelForm(request.POST) 
         if id:
             if  not (request.user.account.has_perm('billservice.edit_transaction')):
-                messages.error(request, u'У вас нет прав на изменение платежей', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на изменение платежей'), extra_tags='alert-danger')
                 return {}
         else:
             if  not (request.user.account.has_perm('billservice.add_transaction')):
-                messages.error(request, u'У вас нет прав на создание платежей', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание платежей'), extra_tags='alert-danger')
                 return {}
         form.fields["type"].queryset = request.user.account.transactiontype_set
         
@@ -1149,15 +1151,15 @@ def transaction(request):
             model.systemuser = request.user.account
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'Операция выполнена.', extra_tags='alert-success')
+            messages.success(request, _(u'Операция выполнена.'), extra_tags='alert-success')
             return {'form':form,  'status': True, 'transaction': model} 
         else:
-            messages.success(request, u'Ошибка при выполнении операции.', extra_tags='alert-danger')
+            messages.success(request, _(u'Ошибка при выполнении операции.'), extra_tags='alert-danger')
             return {'form':form,  'status': False, 'promise_type': promise_type} 
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_transaction')):
-            messages.error(request, u'У вас нет прав на просмотр платежей', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на просмотр платежей'), extra_tags='alert-danger')
             return {}
         if id:
 
@@ -1188,13 +1190,13 @@ def accountaddonservice_edit(request):
             model = AccountAddonService.objects.get(id=id)
             form = AccountAddonServiceModelForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('billservice.change_accountaddonservice')):
-                messages.error(request, u'У вас нет прав на редактирование привязок подключаемых услуг', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование привязок подключаемых услуг'), extra_tags='alert-danger')
                 return {}
 
         else:
             form = AccountAddonServiceModelForm(request.POST) 
             if  not (request.user.account.has_perm('billservice.add_accountaddonservice')):
-                messages.error(request, u'У вас нет прав на создание привязок подключаемых услуг', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание привязок подключаемых услуг'), extra_tags='alert-danger')
                 return {}
 
 
@@ -1202,15 +1204,15 @@ def accountaddonservice_edit(request):
             model = form.save(commit=False)
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, u'Услуга добавлена.', extra_tags='alert-success')
+            messages.success(request, _(u'Услуга добавлена.'), extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-            messages.error(request, u'Услуга не добавлена.', extra_tags='alert-danger')
+            messages.error(request, _(u'Услуга не добавлена.'), extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_accountaddonservice')):
-            messages.error(request, u'У вас нет прав на просмотр привязок подключаемых услуг', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на просмотр привязок подключаемых услуг'), extra_tags='alert-danger')
             return {}
         if id:
 
@@ -1233,7 +1235,7 @@ def accountaddonservice_edit(request):
 @render_to('ebsadmin/templateselect_window.html')
 def templateselect(request):
     if  not (request.user.account.has_perm('billservice.view_template')):
-        messages.error(request, u'У вас нет прав на просмотр списка шаблонов', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на просмотр списка шаблонов'), extra_tags='alert-danger')
         return {}
     types = request.GET.getlist('type')
     form = TemplateSelectForm()
@@ -1247,7 +1249,7 @@ def templateselect(request):
 @render_to('ebsadmin/activesession_list.html')
 def activesessionreport(request):
     if  not (request.user.account.has_perm('radius.view_activesession')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     if request.GET:
         form = SessionFilterForm(request.GET)
@@ -1295,7 +1297,7 @@ def activesessionreport(request):
 @render_to('ebsadmin/template_list.html')
 def template(request):
     if  not (request.user.account.has_perm('billservice.view_template')):
-        messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+        messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
     res = Template.objects.all()
@@ -1324,12 +1326,12 @@ def template_edit(request):
             form = TemplateForm(request.POST)
         if id:
             if  not (request.user.account.has_perm('billservice.change_template')):
-                messages.error(request, u'У вас нет прав на редактирование iшаблонов документов', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на редактирование iшаблонов документов'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
             
         else:
             if  not (request.user.account.has_perm('billservice.add_template')):
-                messages.error(request, u'У вас нет прав на создание iшаблонов документов', extra_tags='alert-danger')
+                messages.error(request, _(u'У вас нет прав на создание iшаблонов документов'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
         
@@ -1344,7 +1346,7 @@ def template_edit(request):
             return { 'form':form, 'template': item} 
     else:
         if  not (request.user.account.has_perm('billservice.view_template')):
-            messages.error(request, u'У вас нет прав на доступ в этот раздел.', extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if item:
             form = TemplateForm(instance=item)
@@ -1358,7 +1360,7 @@ def template_edit(request):
 @systemuser_required
 def subaccount_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_subaccount')):
-        return {'status':True, 'message': u'У вас нет прав на удаление субаккаунта'}
+        return {'status':True, 'message': _(u'У вас нет прав на удаление субаккаунта')}
     id = request.POST.get('id') or request.GET.get('id')
     if id:
         #TODO: СДелать удаление субаккаунта с сервера доступа, если он там был
@@ -1377,7 +1379,7 @@ def subaccount_delete(request):
         
         log('DELETE', request.user, item)
         item.delete()
-        messages.success(request, u'Субаккаунт удалён.', extra_tags='alert-success')
+        messages.success(request, _(u'Субаккаунт удалён.'), extra_tags='alert-success')
         return {"status": True}
     else:
         return {"status": False, "message": "SubAccount not found"}
@@ -1386,28 +1388,28 @@ def subaccount_delete(request):
 @systemuser_required
 def accounttariff_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_accounttarif')):
-        return {'status':False, 'message': u'У вас нет прав на удаление связки тарифа'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление связки тарифа')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = AccountTarif.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанный тарифный план не найден тарифный план %s" % str(e)}
+            return {"status": False, "message": _(u"Указанный тарифный план не найден тарифный план %s") % str(e)}
         if item.datetime<datetime.datetime.now():
-            return {"status": False, "message": u"Невозможно удалить вступивший в силу тарифный план"}
+            return {"status": False, "message": _(u"Невозможно удалить вступивший в силу тарифный план")}
         log('DELETE', request.user, item)
         item.delete()
-        messages.success(request, u'Тарифный план применён.', extra_tags='alert-success')
+        messages.success(request,_( u'Тарифный план применён.'), extra_tags='alert-success')
         return {"status": True}
     else:
-        messages.error(request, u'Ошибка при изменении тарифного плана.', extra_tags='alert-danger')
+        messages.error(request, _(u'Ошибка при изменении тарифного плана.'), extra_tags='alert-danger')
         return {"status": False, "message": "AccountTarif not found"}
     
 @ajax_request
 @systemuser_required
 def accounthardware_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_accounthardware')):
-        return {'status':False, 'message':u'У вас нет прав на удаление оборудования аккаунта'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление оборудования аккаунта')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         model = AccountHardware.objects.get(id=id)
@@ -1421,13 +1423,13 @@ def accounthardware_delete(request):
 @systemuser_required
 def suspendedperiod_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_suspendedperiod')):
-        return {'status':False, 'message': u'У вас нет прав на удаление периода простоя'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление периода простоя')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = SuspendedPeriod.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанный период не найден %s" % str(e)}
+            return {"status": False, "message": _(u"Указанный период не найден %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}
@@ -1438,13 +1440,13 @@ def suspendedperiod_delete(request):
 @systemuser_required
 def template_delete(request):
     if  not (request.user.account.has_perm('billservice.delete_template')):
-        return {'status':False, 'message': u'У вас нет прав на удаление шаблонов'}
+        return {'status':False, 'message': _(u'У вас нет прав на удаление шаблонов')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
         try:
             item = Template.objects.get(id=id)
         except Exception, e:
-            return {"status": False, "message": u"Указанный шаблон не найден %s" % str(e)}
+            return {"status": False, "message": _(u"Указанный шаблон не найден %s") % str(e)}
         log('DELETE', request.user, item)
         item.delete()
         return {"status": True}

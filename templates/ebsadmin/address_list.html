@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
@@ -8,7 +9,7 @@
         $(document).ready(function() {
         	
         	$("#id_button_city").click(function(){
-                $.fn.dialog2.helpers.prompt("Название", {
+                $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
                     ok: function(event, value) {
                         $.getJSON('{% url city_edit %}',{value:value},function(data,status){
                             if( status=='success' ){
@@ -22,7 +23,7 @@
                                     alert(data.generated)
                                     return
                             }else{
-                                alert('В процессе отправки произошла ошибка :(')
+                                alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                             }
                             return
                         })
@@ -34,7 +35,7 @@
             $("#id_button_street").click(function(){
             	var node = $("#tree").dynatree("getActiveNode");
             	if (node.data.key.indexOf("CITY___")!=0){
-            		$.fn.dialog2.helpers.alert("Выберите город", {
+            		$.fn.dialog2.helpers.alert("{% blocktrans %}Выберите город{% endblocktrans %}", {
                     });
             		return
             	}
@@ -52,7 +53,7 @@
                                     alert(data.generated)
                                     return
                             }else{
-                                alert('В процессе отправки произошла ошибка :(')
+                                alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                             }
                             return
                         })
@@ -68,7 +69,7 @@
                 else if (node.data.key.indexOf("HOUSE___")==0)
                 	var parent = node.getParent();
                 else{
-                    $.fn.dialog2.helpers.alert("Выберите улицу", {
+                    $.fn.dialog2.helpers.alert("{% blocktrans %}Выберите улицу{% endblocktrans %}", {
                     });
 
                     return 
@@ -77,7 +78,7 @@
 
                     
                 
-                $.fn.dialog2.helpers.prompt("Название", {
+                $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
                     ok: function(event, value) {
                         $.getJSON('{% url house_edit %}',{parent:parent.data.key, value:value},function(data,status){
                             if( status=='success' ){
@@ -91,7 +92,7 @@
                                     alert(data.generated)
                                     return
                             }else{
-                                alert('В процессе отправки произошла ошибка :(')
+                                alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                             }
                             return
                         })
@@ -103,7 +104,7 @@
 
              $("#id_button_delete").click(function(event) {
              	var node = $("#tree").dynatree("getActiveNode");
-                 $.fn.dialog2.helpers.confirm("Вы уверены, что хотите удалить запись?", {
+                 $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы уверены, что хотите удалить запись?{% endblocktrans %}", {
                      confirm: function() { 
                          $.getJSON('{% url address_delete %}',{key:node.data.key},function(data,status){
                              if( status=='success' ){
@@ -113,7 +114,7 @@
                                      alert(data.message)
                                      return
                              }else{
-                                 alert('В процессе отправки произошла ошибка :(')
+                                 alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                              }
                              return
                          })
@@ -134,7 +135,7 @@
                 //$(".dynatree-title", node.span).html("<input id='editNode' value='" + prevTitle + "'>");
                 //$("#id_text_edit").val(prevTitle);
 
-                    $.fn.dialog2.helpers.prompt("Название", {
+                    $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
                     	defaultValue: prevTitle,
                         ok: function(event, value) {
                         	
@@ -147,7 +148,7 @@
                                         alert(data.message)
                                         return
                                 }else{
-                                    alert('В процессе отправки произошла ошибка :(')
+                                    alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                                 }
                                 return
                             })};
@@ -160,7 +161,7 @@
                                             alert(data.message)
                                             return
                                     }else{
-                                        alert('В процессе отправки произошла ошибка :(')
+                                        alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                                     }
                                     return
                                 })};
@@ -173,7 +174,7 @@
                                             alert(data.message)
                                             return
                                     }else{
-                                        alert('В процессе отправки произошла ошибка :(')
+                                        alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                                     }
                                     return
                                 })}
@@ -247,20 +248,20 @@
 {% endblock %}
 {% block base %}
 <div class="row-fluid">
-<p class="help-block">Двойной клик по элементу - редактировать</p>
+<p class="help-block">{% blocktrans %}Двойной клик по элементу - редактировать{% endblocktrans %}</p>
 <div class="span5" id="tree"></div>
 <div class="span5">
 <form method="POST" action="{% url ippool %}?id={{item.id}}"class="well form-horizontal form-condensed ">
 
 
                     <div class="form-actions form-actions-center">
-                        <button id="id_button_city" class="btn btn-primary" type="button">Добавить город</button>
-                        <button id="id_button_street" class="btn btn-primary" type="button">Добавить улицу</button>
-                        <button id="id_button_house" class="btn btn-primary" type="button">Добавить дом</button>
+                        <button id="id_button_city" class="btn btn-primary" type="button">{% blocktrans %}Добавить город{% endblocktrans %}</button>
+                        <button id="id_button_street" class="btn btn-primary" type="button">{% blocktrans %}Добавить улицу{% endblocktrans %}</button>
+                        <button id="id_button_house" class="btn btn-primary" type="button">{% blocktrans %}Добавить дом{% endblocktrans %}</button>
                     </div>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button id="id_button_delete" class="btn btn-danger" type="button">Удалить элемент</button>
+                        <button id="id_button_delete" class="btn btn-danger" type="button">{% blocktrans %}Удалить элемент{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>
