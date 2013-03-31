@@ -16,7 +16,7 @@ stop)
         echo "Stopping ebs processes"
 	/etc/init.d/ebs_nfroutine stop
 	/etc/init.d/ebs_nf stop
-	/etc/init.d/ebs_nffilter start
+	/etc/init.d/ebs_nffilter stop
 	/etc/init.d/ebs_rad_auth stop
 	/etc/init.d/ebs_rad_acct stop
 	/etc/init.d/ebs_core stop
