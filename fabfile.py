@@ -47,7 +47,9 @@ def requirements():
     with settings(warn_only=True):
         with prefix('. /opt/ebs/venv/bin/activate'):
             local("for line in `cat /opt/ebs/data/soft/del_requirements.txt`; do pip uninstall -y -q $line; done")
-            local('pip install -U -r /opt/ebs/data/soft/requirements.txt')
+            
+    with prefix('. /opt/ebs/venv/bin/activate'):
+        local('pip install -U -r /opt/ebs/data/soft/requirements.txt')
     
 def virtualenv():
     with lcd('/opt/ebs/'):
@@ -97,6 +99,9 @@ def layout():
 
 def unpack(tarfile):
     print(green('Unpack archive to /opt/ebs/ directory'))
+    if not os.path.exists(tarfile):
+        print('File %s not found. Enter correct expert billing archive path to argument. ' % tarfile)
+        sys.exit()
     local('tar -xvzf %s -C /opt/ebs/deploy/' % tarfile)
     with lcd('/opt/ebs/deploy'):
         local('tar -xvzf ebs.tar.gz -C %s' % BILLING_ROOT_PATH)
