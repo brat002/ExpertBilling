@@ -38,13 +38,13 @@
                 </fieldset>
                 
                 <div class="form-actions">
-                    <a class="btn btn-primary close-dialog" id='dialog-accept'>Выбрать</a>
-                    <a class="btn close-dialog" href="#">Закрыть</a>
+                    <a class="btn btn-primary close-dialog" id='dialog-accept'>{% blocktrans %}Выбрать{% endblocktrans %}</a>
+                    <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
                 </div>
             </form>
 {% endif %}
 {% else %}
-Операция произведена успешно.
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
  <script type="text/javascript"> 
  $(document).ready(function() {
      location.reload();

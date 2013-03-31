@@ -31,14 +31,14 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url tpchangerule %}">Правила смены тарифных планов</a> <span class="divider">/</span>
+    <a href="{% url tpchangerule %}">{% blocktrans %}Правила смены тарифных планов{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
 <form method="POST" action="{% url tpchangerule_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             {{form.id}}
-            <legend>Правило перехода на тарифный план{% objectlog item %}</legend>
+            <legend>{% blocktrans %}Правило перехода на тарифный план{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>
                   <div class="control-group">
 
@@ -167,7 +167,7 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

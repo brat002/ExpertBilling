@@ -21,13 +21,13 @@
             {{form|crispy}}
                 
                 <div class="form-actions">
-                    <input type='submit' class="btn btn-primary" value="Save Changes">
-                    <a class="btn close-dialog" href="#">Close</a>
+                    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+                    <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
                 </div>
             </form>
 {% endif %}
 {% else %}
-Операция произведена успешно.
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
  <script type="text/javascript"> 
  $(document).ready(function() {
      location.reload();

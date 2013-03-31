@@ -10,7 +10,7 @@
  $(document).ready(function() {
      $(".open-custom-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Правило тарификации времени", 
+             title: "{% blocktrans %}Правило тарификации времени{% endblocktrans %}", 
              content: this.href, 
              id: "timeaccessnode-modal"
          });
@@ -20,7 +20,7 @@
      
      $(".show-confirm").click(function(event) {
          a=$(this);
-         $.fn.dialog2.helpers.confirm("Удалить правило тарификации времени?.", {
+         $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить правило тарификации времени?{% endblocktrans %}", {
              confirm: function() {
                  $.getJSON(a.attr('href'),{},function(data,status){
                      if( status=='success' ){
@@ -32,7 +32,7 @@
                              }
                          
                      }else{
-                         alert('Произошла непредвиденная ошибка')
+                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                      }
 
                  })                      
@@ -45,7 +45,7 @@
      
      $("#modal-timeaccessnode-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Добавить параметры тарификации", 
+             title: "{% blocktrans %}Добавить параметры тарификации{% endblocktrans %}", 
              content: "{% url tariff_timeaccessnode_edit %}?time_access_service_id={{item.id}}&tariff_id={{tariff.id}}", 
              id: "timeaccessnode-modal"
          });
@@ -58,20 +58,20 @@
 {% block tariff_content %}
 <form method="POST" action="{% url tariff_timeaccessservice %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
 {{form.id}}
-<div class="btn-toolbar"><a href="{{item.get_remove_url}}" class="btn btn-danger align-right show-confirm">Удалить услугу</a></div>
-            <legend>Тарификация времени по RADIUS</legend>
+<div class="btn-toolbar"><a href="{{item.get_remove_url}}" class="btn btn-danger align-right show-confirm">{% blocktrans %}Удалить услугу{% endblocktrans %}</a></div>
+            <legend>{% blocktrans %}Тарификация времени по RADIUS{% endblocktrans %}</legend>
              <fieldset>
 {% if item %}
   {% render_table table %}
-  <div class="btn-toolbar"><a href="#" id="modal-timeaccessnode-dialog" class="btn btn-success">Добавить</a></div>
+  <div class="btn-toolbar"><a href="#" id="modal-timeaccessnode-dialog" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
 {% else %}
 <div class="alert">
-Добавьте услугу тарификации времени по RADIUS Accounting статистике, чтобы указать детальные параметры тарификации.
+{% blocktrans %}Добавьте услугу тарификации времени по RADIUS Accounting статистике, чтобы указать детальные параметры тарификации.{% endblocktrans %}
 </div>
 {% endif %}
   
                 </fieldset>
-            <legend>Параметры тарификации</legend>
+            <legend>{% blocktrans %}Параметры тарификации{% endblocktrans %}</legend>
              <fieldset>
                   <div class="control-group">
                   <div class="control-row">
@@ -141,13 +141,13 @@
                 {% if item %}
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
                 {% else %}
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Добавить RADIUS тарификацию времени</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Добавить RADIUS тарификацию времени{% endblocktrans %}</button>
                     </div>
                 </fieldset>
                 {% endif %}

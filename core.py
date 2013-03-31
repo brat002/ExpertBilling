@@ -314,7 +314,9 @@ class periodical_service_bill(Thread):
 
             logger.debug('%s: Periodical Service: GRADUAL last checkout %s for account: %s service:%s type:%s next date: %s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type, next_date))                                  
 
-            
+            self.PER_DAY = SECONDS_PER_DAY / (ps.tpd if ps.tpd else vars.TRANSACTIONS_PER_DAY)
+            self.PER_DAY_DELTA = datetime.timedelta(seconds=self.PER_DAY)
+                
             if (dateAT - last_checkout).seconds + (dateAT - last_checkout).days*SECONDS_PER_DAY >= self.PER_DAY:
                 #Проверяем наступил ли новый период
                 
@@ -569,8 +571,7 @@ class periodical_service_bill(Thread):
                 #n_delta = datetime.timedelta(seconds=n)
                 #now = dateAT
                 
-                self.PER_DAY = SECONDS_PER_DAY / vars.TRANSACTIONS_PER_DAY
-                self.PER_DAY_DELTA = datetime.timedelta(seconds=self.PER_DAY)
+
                 self.NOW = dateAT
                 #get a list of tarifs with periodical services & loop                
 

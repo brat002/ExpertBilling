@@ -9,7 +9,7 @@
         	
             $("#id_btn_add").click(function(event) {
                 $('<div/>').dialog2({
-                    title: "Добавление RADIUS атрибутов", 
+                    title: "{% blocktrans %}Добавление RADIUS атрибутов{% endblocktrans %}", 
                     content: "{% url radiusattr_edit %}?nas={{nas.id}}&tarif={{tariff.id}}", 
                     id: "server-notice"
                 });
@@ -18,7 +18,7 @@
             });
             $(".open-custom-dialog").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Изменить атрибут", 
+                    title: "{% blocktrans %}Изменить атрибут{% endblocktrans %}", 
                     content: this.href, 
                     id: "radiusattr-modal"
                 });
@@ -27,7 +27,7 @@
             });
             $(".show-confirm").click(function(event) {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить?", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить?{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -39,7 +39,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                             }
 
                         })                      
@@ -63,11 +63,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    Дополнительные RADIUS атрибуты<span class="divider">/</span>{{model_name}}: <a href="{% if nas %}{% url nas %}{% else %}{% url tariff %}{% endif %}">{{nas.name}}{{tariff.name}}</a>
+    {% blocktrans %}Дополнительные RADIUS атрибуты{% endblocktrans %}<span class="divider">/</span>{{model_name}}: <a href="{% if nas %}{% url nas %}{% else %}{% url tariff %}{% endif %}">{{nas.name}}{{tariff.name}}</a>
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="#" id="id_btn_add" class="btn btn-success align-right">Добавить</a> </div>
+<div class="btn-toolbar pull-right"><a href="#" id="id_btn_add" class="btn btn-success align-right">{% blocktrans %}Добавить{% endblocktrans %}</a> </div>
 <div>
   {% render_table table %}
 </div>

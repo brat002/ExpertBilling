@@ -13,11 +13,12 @@
  <script type="text/javascript"> 
  $(document).ready(function() {
      $('.datepicker').datepicker({
-         months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
-         weekStart: 0,
+         months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
+         weekStart: 1,
          noDefault: true,
          format: 'yyyy-mm-dd hh:ii:ss',
-         days: ["пн","вт","ср","чт","пт","сб","вс"],});
+         days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
+
          $("#id_body").bind('keyup', function(){
 
     	 n = $(this).val().length;
@@ -37,7 +38,7 @@
                 
                 <div class="clearfix control-group">
                   <label  class="control-label ">
-                  Символов
+                  {% blocktrans %}Символов{% endblocktrans %}
                   </label>
                   <div class="controls">
                     <span id="id_chars"></span>
@@ -45,15 +46,15 @@
                 </div>
                 </fieldset>
                 <div class="form-actions">
-				    <input type='submit' class="btn btn-primary" value="Save Changes">
-				    <a class="btn close-dialog" href="#">Close</a>
+				    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Change{% endblocktrans %}">
+				    <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
 				</div>
                 </form>
                 {% else %}
-                <div class='alert'>Сначала выберите получателей</div>
+                <div class='alert'>{% blocktrans %}Сначала выберите получателей{% endblocktrans %}</div>
 {% endif %}
 {% else %}
-Операция произведена успешно.
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
  <script type="text/javascript"> 
  $(document).ready(function() {
      location.reload();

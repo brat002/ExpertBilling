@@ -16,21 +16,21 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url transactiontype %}">Типы проводок</a> <span class="divider">/</span>
+    <a href="{% url transactiontype %}">{% blocktrans %}Типы проводок{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
 <form method="POST" action="{% url transactiontype_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
 {{form.id}}
-            <legend>Параметры{% objectlog item %}</legend>
+            <legend>{% blocktrans %}Параметры{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>
                   {{form|crispy}}
                   
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

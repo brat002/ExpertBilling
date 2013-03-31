@@ -10,15 +10,16 @@
         $(document).ready(function() {
 
             $('.datepicker').datepicker({
-                months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
-                weekStart: 0,
+                months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
+                weekStart: 1,
                 noDefault: true,
                 format: 'yyyy-mm-dd hh:ii:ss',
-                days: ["пн","вт","ср","чт","пт","сб","вс"],});
+                days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
+
 
             
             $("#id_button_tp").click(function(){
-                $.fn.dialog2.helpers.prompt("Название", {
+                $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
                     ok: function(event, value) {
                         $.getJSON('{% url timeperiod_edit %}',{value:value},function(data,status){
                             if( status=='success' ){
@@ -32,7 +33,7 @@
                                     alert(data.generated)
                                     return
                             }else{
-                                alert('В процессе отправки произошла ошибка :(')
+                                alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                             }
                             return
                         })
@@ -48,7 +49,7 @@
                 if (active_node.data.key.indexOf("TP___")!=0){
 
                 	if(active_node.getParent().data.key.indexOf("TP___")!=0){
-	                    $.fn.dialog2.helpers.alert("Выберите период", {
+	                    $.fn.dialog2.helpers.alert("{% blocktrans %}Выберите период{% endblocktrans %}", {
 	                    });
 	                    return
                 	}else{
@@ -83,7 +84,7 @@
                 var prevTitle = node.data.title,
                         tree = node.tree;
                
-                    $.fn.dialog2.helpers.prompt("Название", {
+                    $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
                         defaultValue: prevTitle,
                         ok: function(event, value) {
                             
@@ -96,7 +97,7 @@
                                         alert(data.message)
                                         return
                                 }else{
-                                    alert('В процессе отправки произошла ошибка :(')
+                                    alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                                 }
                                 return
                             })};
@@ -171,7 +172,7 @@
 
             $("#id_button_delete").click(function(event) {
                 var node = $("#tree").dynatree("getActiveNode");
-                 $.fn.dialog2.helpers.confirm("Вы уверены, что хотите удалить запись?", {
+                 $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы уверены, что хотите удалить запись?{% endblocktrans %}", {
                      confirm: function() { 
                          $.getJSON('{% url timeperiod_delete %}',{key:node.data.key},function(data,status){
                              if( status=='success' ){
@@ -181,7 +182,7 @@
                                      alert(data.message)
                                      return
                              }else{
-                                 alert('В процессе отправки произошла ошибка :(')
+                                 alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                              }
                              return
                          })
@@ -199,7 +200,7 @@
 
 <div class="row-fluid">
 
-<p class="help-block">Двойной клик по элементу - редактировать</p>
+<p class="help-block">{% blocktrans %}Двойной клик по элементу - редактировать{% endblocktrans %}</p>
 
 <div class="span5" id="tree"></div>
 <div class="span6">
@@ -210,13 +211,13 @@
 
                     <div class="form-actions form-actions-center">
                         
-                        <button id="id_button_node" class="btn btn-primary" type="button">Сохранить подпериод</button>
+                        <button id="id_button_node" class="btn btn-primary" type="button">{% blocktrans %}Сохранить подпериод{% endblocktrans %}</button>
                         
                     </div>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                    <button id="id_button_tp" class="btn btn-primary" type="button">Добавить период</button>
-                        <button id="id_button_delete" class="btn btn-danger" type="button">Удалить элемент</button>
+                    <button id="id_button_tp" class="btn btn-primary" type="button">{% blocktrans %}Добавить период{% endblocktrans %}</button>
+                        <button id="id_button_delete" class="btn btn-danger" type="button">{% blocktrans %}Удалить элемент{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

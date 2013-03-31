@@ -9,7 +9,7 @@
 
             $(".show-confirm").click(function(event) {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить?", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить?{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -21,7 +21,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                             }
 
                         })                      
@@ -45,11 +45,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url systemuser %}">Системные пользователи</a> <span class="divider">/</span>
+    <a href="{% url systemuser %}">{% blocktrans %}Системные пользователи{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="{% url systemuser_edit %}" class="btn btn-success align-right">Добавить</a> </div>
+<div class="btn-toolbar pull-right"><a href="{% url systemuser_edit %}" class="btn btn-success align-right">{% blocktrans %}Добавить{% endblocktrans %}</a> </div>
 <div>
   {% render_table table %}
 </div>
