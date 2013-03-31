@@ -344,6 +344,9 @@ class Nas(models.Model):
            ("nas_view", u"Просмотр"),
            )
         
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('nas_delete'), self.id)
+    
     def __unicode__(self):
         return u"%s" % self.name
 

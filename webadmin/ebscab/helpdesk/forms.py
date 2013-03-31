@@ -12,14 +12,26 @@ from helpdesk.models import Ticket, Queue, FollowUp, Attachment, IgnoreEmail, Ti
 from helpdesk.settings import HAS_TAG_SUPPORT
 from django_select2 import *
 from django.contrib.auth.models import User
+from django.utils.encoding import smart_unicode
 
 class UserChoices(AutoModelSelect2Field):
     queryset = User.objects
     search_fields = ['username__icontains', ]
+    def label_from_instance(self, obj):
+        """
+        Sub-classes should override this to generate custom label texts for values.
 
+        :param obj: The model object.
+        :type obj: :py:class:`django.model.Model`
+
+        :return: The label string.
+        :rtype: :py:obj:`unicode`
+        """
+        
+        return u'%s %s' % (smart_unicode(obj), smart_unicode(obj.get_full_name()))
     
 class TicketTypeForm(forms.Form):
-    queue = forms.ModelChoiceField(queryset = Queue.objects.all())
+    queue = forms.ModelChoiceField(label=_('Queue'), queryset = Queue.objects.all())
     
 class EditTicketForm(forms.ModelForm):
     assigned_to = forms.ModelChoiceField(
@@ -34,10 +46,10 @@ class EditTicketForm(forms.ModelForm):
         exclude = ('created', 'modified', 'status', 'on_hold', 'resolution', 'last_escalation')
 
 class TicketForm(forms.Form):
-    queue = forms.ChoiceField(
+    queue = forms.ModelChoiceField(
         label=_('Queue'),
         required=True,
-        choices=()
+        queryset=Queue.objects.all()
         )
     owner = UserChoices(
         choices=(),
@@ -47,10 +59,18 @@ class TicketForm(forms.Form):
             'e-mailed details of this ticket immediately.'),
         widget=AutoHeavySelect2Widget(
             select2_options={
-                'width': '40%',
+                'width': '50%',
                 'placeholder': u"Поиск владельца"
             }
         )
+        )
+    priority = forms.ChoiceField(
+        choices=Ticket.PRIORITY_CHOICES,
+        required=False,
+        initial='3',
+        label=_('Priority'),
+        help_text=_('Please select a priority carefully. If unsure, leave it '
+            'as \'3\'.'),
         )
     title = forms.CharField(
         max_length=100,
@@ -89,14 +109,7 @@ class TicketForm(forms.Form):
 
 
     
-    priority = forms.ChoiceField(
-        choices=Ticket.PRIORITY_CHOICES,
-        required=False,
-        initial='3',
-        label=_('Priority'),
-        help_text=_('Please select a priority carefully. If unsure, leave it '
-            'as \'3\'.'),
-        )
+
 
     attachment = forms.FileField(
         required=False,
