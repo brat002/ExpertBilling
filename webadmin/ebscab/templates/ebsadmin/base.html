@@ -1,17 +1,18 @@
 {% load ebsadmin_tags %}
 {% load i18n %}
 <!DOCTYPE html>
-<html>
+<html lang='ru'>
 <head>
-<link rel="stylesheet" type="text/css" href="/media/django_tables2/themes/paleblue/css/screen.css" />
-<link href="/media/bootstrap/css/bootstrap.css" rel="stylesheet">
 <link href="/media/bootstrap/css/style.css" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="/media/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+
 <link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 <link href="/media/bootstrap/css/cus-icons.css" rel="stylesheet">
-<link href="/media/bootstrap/css/todc-bootstrap.css" rel="stylesheet"></head>
+<link href="/media/bootstrap/css/todc-bootstrap.css" rel="stylesheet">
 <link href="/media/datetimepicker/datepicker.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" media="all" href="/media/daterangepicker/daterangepicker.css" />
+
 
 
 
@@ -56,6 +57,7 @@ $(document).ready(function() {
                 $form.submit();
                 {% endif %}
             }
+            
             $(".hide-alert").fadeOut(3000 );
     });
 
@@ -73,6 +75,7 @@ $(document).ready(function() {
     padding-right: 2px;
     
 }
+
 html,body
 {
 height:100%;
@@ -125,9 +128,7 @@ padding-top:20px;
 .table tbody tr:hover td, .table tbody tr:hover th {
     background-color: transparent;
 }
-.disabled-row {
-    background-color: lightgrey;
-}
+
 
 .modal {
   position: fixed;

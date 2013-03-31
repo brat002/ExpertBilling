@@ -76,16 +76,13 @@ input[type="search"],
 input[type="tel"],
 input[type="color"],
 .uneditable-input {
-  padding: 4px 8px;
+  /*padding: 4px 8px; */
   font-size: 13px;
   -webkit-border-radius: 1px;
   -moz-border-radius: 1px;
   border-radius: 1px;
 }
-input,
-textarea {
-  width: 210px;
-}
+
 textarea {
   padding-right: 4px;
 }

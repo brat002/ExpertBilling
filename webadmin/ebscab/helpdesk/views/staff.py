@@ -664,11 +664,12 @@ def create_ticket(request):
         initial_data = {}
         if request.user.usersettings.settings.get('use_email_as_submitter', False) and request.user.account.email:
             initial_data['submitter_email'] = request.user.account.email
-
+        q = request.GET.get('queue')
         form = TicketForm(initial=initial_data)
-        form.fields['queue'].choices = [('', '--------')] + [[q.id, q.title] for q in Queue.objects.all()]
-        form.fields['assigned_to'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
-        form.fields['owner'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
+        try:
+            form.fields['queue'].initial = Queue.objects.get(id=q)
+        except:
+            pass
         form.fields['assigned_to'].initial = request.user
         form.fields['owner'].initial = request.user
         

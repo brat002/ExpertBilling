@@ -169,7 +169,7 @@ class Queue(models.Model):
         )
 
     def __unicode__(self):
-        return u"%s" % self.title
+        return u"[%s] %s" % (self.slug, self.title)
 
     class Meta:
         ordering = ('title',)
