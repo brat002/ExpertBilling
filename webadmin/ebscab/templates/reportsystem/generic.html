@@ -1,4 +1,5 @@
 {% extends "ebsadmin/base.html" %}
+{% load i18n %}
 {% load crispy_forms_tags %}
  {% load render_table from django_tables2 %}
 {% block extra_head %}
@@ -22,7 +23,7 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сгенерировать</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сгенерировать{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

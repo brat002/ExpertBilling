@@ -163,6 +163,20 @@
                       {% endif %}
                       </div>
                   </div>
+                  <div class="control-group {% if form.tpd.errors %}error{% endif %}">
+                      <label class="control-label">{{form.tpd.label}}</label>
+                      <div class="controls">
+                      {{ form.tpd }}
+                      {% if form.tpd.errors %}
+                          <span class="help-inline">{% for error in form.tpd.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.tpd.help_text%}
+                          <p class="help-block">
+                              {{ form.tpd.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
                   <div class="control-group {% if form.cost.errors %}error{% endif %}">
                       <label class="control-label">{{form.cost.label}}</label>
                       <div class="controls">

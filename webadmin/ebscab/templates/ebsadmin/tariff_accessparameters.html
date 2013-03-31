@@ -10,7 +10,7 @@
  $(document).ready(function() {
      $(".open-custom-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Правило изменения скорости", 
+             title: "{% blocktrans %}Правило изменения скорости{% endblocktrans %}", 
              content: this.href, 
              id: "timespeed-modal"
          });
@@ -19,7 +19,7 @@
      });
      $(".show-confirm").click(function(event) {
          a=$(this);
-         $.fn.dialog2.helpers.confirm("Удалить? Вы уверены, что хотите удалить строку?", {
+         $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? Вы уверены, что хотите удалить строку?{% endblocktrans %}", {
              confirm: function() {
                  $.getJSON(a.attr('href'),{},function(data,status){
                      if( status=='success' ){
@@ -31,7 +31,7 @@
                              }
                          
                      }else{
-                         alert('Произошла непредвиденная ошибка')
+                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                      }
 
                  })                      
@@ -43,7 +43,7 @@
      });
      $("#modal-timespeed-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Добавить параметры изменения скорости", 
+             title: "{% blocktrans %}Добавить параметры изменения скорости{% endblocktrans %}", 
              content: "{% url tariff_timespeed_edit %}?tariff={{tariff.id}}&access_parameters={{item.id}}", 
              id: "traffictransmitnode-modal"
          });
@@ -291,12 +291,12 @@
                 </fieldset>
        <fieldset>
   {% render_table table %}
-  <div class="btn-toolbar"><a href="#" id="modal-timespeed-dialog" class="btn btn-success">Добавить</a></div>
+  <div class="btn-toolbar"><a href="#" id="modal-timespeed-dialog" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
                 </fieldset>
 
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

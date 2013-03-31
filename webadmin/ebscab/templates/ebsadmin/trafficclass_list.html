@@ -8,7 +8,7 @@
         $(document).ready(function() {
             $(".show-confirm").click(function(event) {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить?", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить?{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -20,7 +20,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                             }
 
                         })                      
@@ -32,7 +32,7 @@
             });
             $(".open-custom-dialog").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Изменить класс", 
+                    title: "{% blocktrans %}Изменить класс{% endblocktrans %}", 
                     content: this.href, 
                     id: "trafficclass-modal"
                 });
@@ -41,7 +41,7 @@
             });
             $("#id_btn_add").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Добавить класс", 
+                    title: "{% blocktrans %}Добавить класс{% endblocktrans %}", 
                     content: "{% url trafficclass_edit %}", 
                     id: "trafficclass-modal"
                 });
@@ -64,7 +64,7 @@
                                 }
                             
                         }else{
-                            alert('Произошла непредвиденная ошибка')
+                            alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                         }
                     }); 
             });
@@ -99,20 +99,20 @@
 
   <div class="row-fluid">
 <div class="alert alert-info">
-        <strong>Внимание!</strong> Просмотр классов происходит сверху-вниз. От меньшего веса к большему.
+        {% blocktrans %}<strong>Внимание!</strong> Просмотр классов происходит сверху-вниз. От меньшего веса к большему.{% endblocktrans %}
       </div>
 <div class="alert alert-error" id="id_show_warning">
-        <strong>Внимание!</strong> Сохраните изменения, нажав кнопку Сохранить.
+        {% blocktrans %}<strong>Внимание!</strong> Сохраните изменения, нажав кнопку Сохранить.{% endblocktrans %}
       </div>
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url trafficclass %}">Классы трафика</a> <span class="divider">/</span>
+    <a href="{% url trafficclass %}">{% blocktrans %}Классы трафика{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
 
-<div class="btn-toolbar pull-right"><a href="#" id="id_btn_add" class="btn btn-success">Добавить</a>&nbsp;<a href="#" id="id_btn_save" class="btn btn-warning">Сохранить</a></div>
+<div class="btn-toolbar pull-right"><a href="#" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;<a href="#" id="id_btn_save" class="btn btn-warning">{% blocktrans %}Сохранить{% endblocktrans %}</a></div>
 <div>
   {% render_table table %}
 </div>

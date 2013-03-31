@@ -229,9 +229,11 @@ class PeriodicalService(models.Model):
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=_(u'Период'), null=True, on_delete=models.SET_NULL)
     cost              = models.DecimalField(verbose_name=_(u'Стоимость'), default=0, blank=True, decimal_places=2, max_digits=30)
     cash_method       = models.CharField(verbose_name=_(u'Способ списания'), max_length=255, choices=CASH_METHODS, default='AT_START', blank=True)
+    tpd                 = models.SmallIntegerField(verbose_name=_(u'Кол-во списаний в сутки'), default=1, blank=True, null=True)
     #condition         = models.IntegerField(verbose_name=_(u"Условие", default = 0, choices=((0, _(u"Списывать при любом балансе"),(1, _(u"Списывать при полождительном балансе"),(2, _(u"Списывать при отрицательном балансе"),(2, _(u"Списывать при нулевом и положительном балансе"))) # 0 - Всегда. 1- Только при положительном балансе. 2 - только при орицательном балансе
     ps_condition         = models.IntegerField(verbose_name=_(u"Условие списания"), default = 0, choices=ps_condition)
     condition_summ              = models.DecimalField(verbose_name=_(u'Сумма для условия'), default=0, blank=True, decimal_places=2, max_digits=30) 
+    
     deactivated     = models.DateTimeField(verbose_name=_(u"Отключить"), blank=True, null=True)
     created     = models.DateTimeField(verbose_name=_(u"Активировать"), help_text=_(u'Не указывайте, если списания должны начаться с начала расчётного периода'), blank=True, null=True)
     deleted     = models.BooleanField(blank=True, default=False)
@@ -1553,6 +1555,7 @@ class AddonService(models.Model):
     allow_activation = models.BooleanField(blank=True, default = False, verbose_name=_(u"Разешить активацию"), help_text=_(u'Разрешить активацию при нулевом балансе и блокировках'))   
     service_type = models.CharField(verbose_name=_(u"Тип услуги"),max_length=32, choices=(("onetime", _(u"Разовая услуга")),("periodical", _(u"Периодическая услуга")),))    
     sp_type = models.CharField(verbose_name=_(u"Способ списания"),max_length=32, choices=(("AT_START",_(u"В начале расчётного периода")),("AT_END", _(u"В конце расчётного периода") ),("GRADUAL", _(u"На протяжении расчётного периода")),))    
+    tpd                 = models.SmallIntegerField(verbose_name=_(u'Кол-во списаний в сутки'), default=1, blank=True, null=True)
     sp_period = models.ForeignKey(SettlementPeriod, verbose_name=_(u"Расчётный период"), help_text=_(u"Период, в течении которого будет списываться стоимость услуги"), related_name="addonservice_spperiod", blank=True, null=True, on_delete=models.SET_NULL)    
     timeperiod = models.ForeignKey(TimePeriod, verbose_name=_(u"Время активации"), help_text=_(u"Время, когда услуга будет активирована"),null=True, on_delete=models.SET_NULL)    
     cost = models.DecimalField(verbose_name=_(u"Стоимость услуги"), decimal_places=2, max_digits=10, blank=True, default=0)    

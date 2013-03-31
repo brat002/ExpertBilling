@@ -7,7 +7,7 @@
         $(document).ready(function() {
             $(".show-confirm").click(function(event) {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить?", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить?{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -19,7 +19,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                             }
 
                         })                      
@@ -39,12 +39,12 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url settlementperiod %}">Расчётные периоды</a> <span class="divider">/</span>
+    <a href="{% url settlementperiod %}">{% blocktrans %}Расчётные периоды{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
 {% permission billservice.add_settlementperiod %}
-<div class="btn-toolbar pull-right"><a href="{% url settlementperiod_edit %}" class="btn btn-success align-right">Добавить</a> </div>
+<div class="btn-toolbar pull-right"><a href="{% url settlementperiod_edit %}" class="btn btn-success align-right">{% blocktrans %}Добавить{% endblocktrans %}</a> </div>
 {% endpermission %}
 {% permission billservice.view_settlementperiod %}
 <div>

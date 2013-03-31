@@ -82,7 +82,7 @@ core_sql = \
           'periodtf':"""SELECT id, settlement_period_id FROM billservice_tariff  as tarif
                         WHERE id in (SELECT tarif_id FROM billservice_periodicalservice WHERE deleted=False or deleted is Null) AND tarif.active=True and tarif.deleted is not True""",
           'periodset':"""SELECT b.id, b.name, b.cost, b.cash_method, c.name, date_trunc('second', c.time_start),
-                        c.length, c.length_in, c.autostart, b.tarif_id, b.ps_condition, b.condition_summ, date_trunc('second', b.created), b.deactivated, b.deleted
+                        c.length, c.length_in, c.autostart, b.tarif_id, b.ps_condition, b.condition_summ, date_trunc('second', b.created), b.deactivated, b.deleted, b.tpd
                         FROM billservice_periodicalservice as b 
                         JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
                         WHERE deactivated is Null or (deactivated>=%s) and (deleted=False or deleted is Null);""",
@@ -144,7 +144,7 @@ core_sql = \
                            ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.service_id)='onetime' and (accs.action_status=True or accs.last_checkout is Null))) or (accs.action_status=True and accs.deactivated is not Null and addons.action=True);""",
         'addon_periodical': """SELECT accas.id, ads.name, ads.cost, ads.sp_type, sp.name, date_trunc('second',sp.time_start),
                         sp.length, sp.length_in, sp.autostart,
-                        accas.account_id, accas.activated, accas.deactivated, accas.temporary_blocked, accas.last_checkout,ads.id, accas.subaccount_id
+                        accas.account_id, accas.activated, accas.deactivated, accas.temporary_blocked, accas.last_checkout,ads.id, accas.subaccount_id, ads.tpd
                         FROM billservice_addonservice AS ads 
                         JOIN billservice_settlementperiod AS sp ON ads.sp_period_id = sp.id 
                         JOIN billservice_accountaddonservice AS accas ON accas.service_id = ads.id 

@@ -13,7 +13,7 @@
  $(document).ready(function() {
      $(".open-custom-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Правило тарификации трафика", 
+             title: "{% blocktrans %}Правило тарификации трафика{% endblocktrans %}", 
              content: this.href, 
              id: "periodicalservice-modal"
          });
@@ -22,18 +22,10 @@
      });
      $(".show-confirm").click(function(event) {
          a=$(this);
-         $.fn.dialog2.helpers.confirm("Удалить? Вы уверены, что хотите удалить?", {
+         $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? Вы уверены, что хотите удалить?{% endblocktrans %}", {
              confirm: function() {
                  $.getJSON(a.attr('href'),{},function(data,status){
-                     if( status=='success' ){     $(".open-custom-dialog").click(function(event) {
-                         $('<div />').dialog2({
-                             title: "Лимит трафика", 
-                             content: this.href, 
-                             id: "trafficlimit-modal"
-                         });
-
-                         event.preventDefault(event);
-                     });
+                     if( status=='success' ){     
                          if(data.status==true)
                              {
                              location.reload();
@@ -42,7 +34,7 @@
                              }
                          
                      }else{
-                         alert('Произошла непредвиденная ошибка')
+                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                      }
 
                  })                      
@@ -54,7 +46,7 @@
      
      $("#modal-radiustrafficnode-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Добавить параметры тарификации", 
+             title: "{% blocktrans %}Добавить параметры тарификации{% endblocktrans %}", 
              content: "{% url tariff_radiustrafficnode_edit %}?radius_traffic_id={{item.id}}&tariff_id={{tariff.id}}", 
              id: "traffictransmitnode-modal"
          });
@@ -67,20 +59,20 @@
 {% block tariff_content %}
 <form method="POST" action="{% url tariff_radiustraffic %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
 {{form.id}}
-<div class="btn-toolbar"><a href="{{item.get_remove_url}}" class="btn btn-danger align-right show-confirm">Удалить услугу</a></div>
-            <legend>Тарификация трафика по RADIUS</legend>
+<div class="btn-toolbar"><a href="{{item.get_remove_url}}" class="btn btn-danger align-right show-confirm">{% blocktrans %}Удалить услугу{% endblocktrans %}</a></div>
+            <legend>{% blocktrans %}Тарификация трафика по RADIUS{% endblocktrans %}</legend>
              <fieldset>
 {% if item %}
   {% render_table table %}
-  <div class="btn-toolbar"><a href="#" id="modal-radiustrafficnode-dialog" class="btn btn-success">Добавить</a></div>
+  <div class="btn-toolbar"><a href="#" id="modal-radiustrafficnode-dialog" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
 {% else %}
 <div class="alert">
-Добавьте услугу тарификации RADIUS трафика, чтобы указать детальные параметры тарификации.
+{% blocktrans %}Добавьте услугу тарификации RADIUS трафика, чтобы указать детальные параметры тарификации.{% endblocktrans %}
 </div>
 {% endif %}
   
                 </fieldset>
-            <legend>Параметры тарификации</legend>
+            <legend>{% blocktrans %}Параметры тарификации{% endblocktrans %}</legend>
              <fieldset>
                   <div class="control-group">
                   <div class="control-row">
@@ -130,7 +122,7 @@
                   </div>
 
                 </fieldset>
-                <legend>Предоплаченный трафик</legend>
+                <legend>{% blocktrans %}Предоплаченный трафик{% endblocktrans %}</legend>
                   <div class="control-group">
                   <div class="control-row">
                       <label class="control-label">{{form.prepaid_direction.label}}: </label>
@@ -181,13 +173,13 @@
                 {% if item %}
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
                 {% else %}
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Добавить RADIUS тарификацию трафика</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Добавить RADIUS тарификацию трафика{% endblocktrans %}</button>
                     </div>
                 </fieldset>
                 {% endif %}

@@ -7,7 +7,7 @@
         $(document).ready(function() {
             $(".show-confirm").click(function(event) {
                 a=$(this);
-                $.fn.dialog2.helpers.confirm("Удалить?", {
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить?{% endblocktrans %}", {
                     confirm: function() {
                         $.getJSON(a.attr('href'),{},function(data,status){
                             if( status=='success' ){
@@ -19,7 +19,7 @@
                                     }
                                 
                             }else{
-                                alert('Произошла непредвиденная ошибка')
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                             }
 
                         })                      
@@ -39,13 +39,13 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url systemuser %}">Системные пользователи</a> <span class="divider">/</span>
+    <a href="{% url systemuser %}">{% blocktrans %}Системные пользователи{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.username.value}}</li>
 </ul>
 <form method="POST" action="{% url systemuser_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
-            <legend>Параметры учётной записи{% objectlog item %}</legend>
+            <legend>{% blocktrans %}Параметры учётной записи{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>
                  <div class="control-group ">
                      <div class="control-row {% if form.username.errors %}error{% endif %}">
@@ -430,7 +430,7 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>
