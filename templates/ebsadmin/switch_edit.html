@@ -82,7 +82,7 @@
                             },
                             error: function( data ) 
                             {
-                                alert('Во время обращения к серверу возникла ошибка');
+                                alert('{% blocktrans %}Во время обращения к серверу возникла ошибка{% endblocktrans %}');
                             },
                         });   
             })
@@ -95,14 +95,14 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url switch %}">Коммутаторы</a> <span class="divider">/</span>
+    <a href="{% url switch %}">{% blocktrans %}Коммутаторы{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
 <ul class="nav nav-tabs" id="tab-panel">
-  <li><a href="#general" class='active' data-toggle="tab">Общее</a></li>
-  <li><a href="#ports" data-toggle="tab">Порты</a></li>
+  <li><a href="#general" class='active' data-toggle="tab">{% blocktrans %}Общее{% endblocktrans %}</a></li>
+  <li><a href="#ports" data-toggle="tab">{% blocktrans %}Порты{% endblocktrans %}</a></li>
 </ul>
 <form method="POST" action="{% url switch_edit %}?id={{item.id}}"class="well form-horizontal form-condensed">
 <div class="tab-content">
@@ -119,7 +119,7 @@
   {% if  ports_table%}
   {% render_table ports_table %}
   {% else %}
-  <div class="alert alert-success">Укажите количество портов и сохраните коммутатор, чтобы приступить к редактированию портов</div>
+  <div class="alert alert-success">{% blocktrans %}Укажите количество портов и сохраните коммутатор, чтобы приступить к редактированию портов{% endblocktrans %}</div>
   {% endif %}
   </div>
             </form>

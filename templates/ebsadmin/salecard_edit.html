@@ -30,13 +30,13 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url card %}">Карты</a> <span class="divider">/</span>
+    <a href="{% url card %}">{% blocktrans %}Карты{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
 <form method="POST" action="{% url salecard_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
-            <legend>Накладная на передачу карт дилеру</legend>
+            <legend>{% blocktrans %}Накладная на передачу карт дилеру{% endblocktrans %}</legend>
              <fieldset>
              {{form.cards}}
                    <div class="control-group">
@@ -184,7 +184,7 @@
                   </div>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

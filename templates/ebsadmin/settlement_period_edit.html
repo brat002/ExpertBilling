@@ -29,11 +29,12 @@
     
         })
         $('.datepicker').datepicker({
-            months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
-            weekStart: 0,
+            months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
+            weekStart: 1,
             noDefault: true,
             format: 'yyyy-mm-dd hh:ii:ss',
-            days: ["пн","вт","ср","чт","пт","сб","вс"],});
+            days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
+
         
             if ($("#id_length_in").val()=='' || $("#id_length_in").val()=='DONT_REPEAT')
                 $("#id_length").attr("disabled", false)
@@ -59,13 +60,13 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url settlementperiod %}">Расчётные периоды</a> <span class="divider">/</span>
+    <a href="{% url settlementperiod %}">{% blocktrans %}Расчётные периоды{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
 <form method="POST" action="{% url settlementperiod_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
-            <legend>Параметры расчётного периода</legend>
+            <legend>{% blocktrans %}Параметры расчётного периода{% endblocktrans %}</legend>
              <fieldset>
                             <div class="control-group {% if form.name.errors %}error{% endif %}">
                                 <div class="control-row">
@@ -148,7 +149,7 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

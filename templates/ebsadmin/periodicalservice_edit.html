@@ -20,6 +20,18 @@
          days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
 
      $(".timepicker").mask("99:99:99");
+     
+     function check_tpd(){
+         if ($("#id_cash_method").val()=='GRADUAL'){
+        	 $("#div_id_tpd").show();
+        	 
+         }else{
+        	 $("#div_id_tpd").hide();
+        	 $("#div_id_tpd").val('');
+         }
+     };
+     check_tpd();
+     $("#id_cash_method").change(check_tpd)
  });
  </script>
 

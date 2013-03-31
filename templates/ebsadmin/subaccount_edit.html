@@ -15,7 +15,7 @@
                     else
                         alert(data.generated)
                 }else{
-                    alert('В процессе отправки произошла ошибка :(')
+                    alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                 }
             })
             });
@@ -27,13 +27,13 @@
                     else
                         alert(data.generated)
                 }else{
-                    alert('В процессе отправки произошла ошибка :(')
+                    alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
                 }
             })
             });
             $("#modal-accountaddonservice-dialog").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Прикрепить подключаемую услугу", 
+                    title: "{% blocktrans %}Прикрепить подключаемую услугу{% endblocktrans %}", 
                     content: "{% url accountaddonservice %}?subaccount_id={{subaccount.id}}", 
                     id: "accountaddonservicer-modal"
                 });
@@ -46,7 +46,7 @@
         $(function() {
             $(".open-custom-dialog").click(function(event) {
                 $('<div />').dialog2({
-                    title: "Прикрепить подключаемую услугу", 
+                    title: "{% blocktrans %}Прикрепить подключаемую услугу{% endblocktrans %}", 
                     content: this.href, 
                     id: "accountaddonservicer-modal"
                 });
@@ -54,7 +54,7 @@
                 event.preventDefault(event);
             });
         });
-        $('#id_assign_vpn_ip_address').popover({title:'Подбор IP адреса', content: 'Выдать следующий IP из пула или показать доcтупные', trigger: 'hover'});
+        $('#id_assign_vpn_ip_address').popover({title:'{% blocktrans %}Подбор IP адреса{% endblocktrans %}', content: '{% blocktrans %}Выдать следующий IP из пула или показать доcтупные{% endblocktrans %}', trigger: 'hover'});
         $('#id_vpn_ip_address').autocomplete({
         	source: function( request, response )
             {                      
@@ -109,7 +109,7 @@
                 });   
         });
 
-        $('#id_assign_ipn_ip_address').popover({title:'Подбор IP адреса', content: 'Выдать следующий IP из пула или показать дсотупные', trigger: 'hover'});
+        $('#id_assign_ipn_ip_address').popover({title:'{% blocktrans %}Подбор IP адреса{% endblocktrans %}', content: '{% blocktrans %}Выдать следующий IP из пула или показать дсотупные{% endblocktrans %}', trigger: 'hover'});
         $('#id_ipn_ip_address').autocomplete({
             source: function( request, response )
             {                      
@@ -236,16 +236,16 @@
                 });   
         });
         
-        $('#id_get_mac_address').popover({title:'Внимание', content: 'Этот функционал поддерживается только при использовании RouterOS MikroTik', trigger: 'hover'});
+        $('#id_get_mac_address').popover({title:'{% blocktrans %}Внимание{% endblocktrans %}', content: '{% blocktrans %}Этот функционал поддерживается только при использовании RouterOS MikroTik{% endblocktrans %}', trigger: 'hover'});
         $('#id_get_mac_address').click(function(){
         	if (!$('#id_nas').val()==null){
-                $.fn.dialog2.helpers.alert("Вы не выбрали сервер доступа.", { 
+                $.fn.dialog2.helpers.alert("{% blocktrans %}Вы не выбрали сервер доступа.{% endblocktrans %}", { 
                     
                 });
                 return
         	};
             if ($('#id_ipn_ip_address').val()==''){
-                $.fn.dialog2.helpers.alert("Вы не указали IPN IP адрес.", { 
+                $.fn.dialog2.helpers.alert("{% blocktrans %}Вы не указали IPN IP адрес.{% endblocktrans %}", { 
                     
                 });
                 return
@@ -264,7 +264,7 @@
                     	if(data.success==true){
                         $('#id_ipn_mac_address').val(data.mac);
                         }else{
-                        	$.fn.dialog2.helpers.alert("Не удалось получить MAC адрес по причине "+ data.message, { 
+                        	$.fn.dialog2.helpers.alert("{% blocktrans %}Не удалось получить MAC адрес по причине {% endblocktrans %}"+ data.message, { 
 
                             });
                         }
@@ -297,7 +297,7 @@
 {% if message %}<div class="alert alert-error">{{message}}<a class="close" data-dismiss="alert" href="#">&times;</a></div>{% endif %}
 <ul class="breadcrumb">
   <li>
-    <a href='{% url account_list %}?data=data'>Все аккаунты</a> / <a href="{% url account_edit%}?id={{subaccount.account.id}}">{{subaccount.account.username}}</a> <span class="divider">/</span>Субаккаунт: {{subaccount.username}} id:{{subaccount.id}}
+    <a href='{% url account_list %}?data=data'>{% blocktrans %}Все аккаунты{% endblocktrans %}</a> / <a href="{% url account_edit%}?id={{subaccount.account.id}}">{{subaccount.account.username}}</a> <span class="divider">/</span>{% blocktrans %}Субаккаунт{% endblocktrans %}: {{subaccount.username}} id:{{subaccount.id}}
   </li>
 </ul>
 <div>
@@ -305,13 +305,13 @@
   <div class="navbar-inner">
     <div class="btn-toolbar">
       <div class="btn-group">
-        <a href="#" class="btn btn-danger" id='modal-form-dialog'>Сохранить</a>
+        <a href="#" class="btn btn-danger" id='modal-form-dialog'>{% blocktrans %}Сохранить{% endblocktrans %}</a>
       </div>
       <div class="btn-group">
-        <a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>Ping VPN IP</a>
+        <a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>{% blocktrans %}Ping VPN IP{% endblocktrans %}</a>
       </div>
       <div class="btn-group">
-        <a href="#" class="btn btn-warning" id='modal-ipn-ping-dialog'>Ping IPN IP</a>
+        <a href="#" class="btn btn-warning" id='modal-ipn-ping-dialog'>{% blocktrans %}Ping IPN IP{% endblocktrans %}</a>
         
       </div>
 
@@ -325,18 +325,18 @@
 </div>
 <form method="POST"  id ='id_form' action="{% url subaccount %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal form-condensed">
                 <ul class="nav nav-tabs" id="tab-control">
-                    <li class="active"><a href="#tab-first" data-toggle="tab">Карточка</a></li>
-                    <li class=""><a href="#tab-addonservice" data-toggle="tab">Подключаемые услуги</a></li>
+                    <li class="active"><a href="#tab-first" data-toggle="tab">{% blocktrans %}Карточка{% endblocktrans %}</a></li>
+                    <li class=""><a href="#tab-addonservice" data-toggle="tab">{% blocktrans %}Подключаемые услуги{% endblocktrans %}</a></li>
                 </ul>
                 
                 <div class="tab-content">
                     <div class="tab-pane active" id="tab-first">
                     
                 <fieldset>
-                    <legend>Профиль субаккаунта{% objectlog subaccount %}</legend>
+                    <legend>{% blocktrans %}Профиль субаккаунта{% endblocktrans %}{% objectlog subaccount %}</legend>
 
                     <div class="control-group">
-                        <label class="control-label">ID аккаунта</label>
+                        <label class="control-label">{% blocktrans %}ID аккаунта{% endblocktrans %}</label>
                         <div class="controls">
                             <label class="checkbox"><a href="{% url account_edit%}?id={{account.id}}">{{account.id}}&nbsp;<i class="icon-globe"></i></a></label>
                             {{ form.account }}
@@ -349,7 +349,7 @@
                                         </p>
                                     {% endif %}
                         </div>
-                        <label class="control-label">ID субаккаунта</label>
+                        <label class="control-label">{% blocktrans %}ID субаккаунта{% endblocktrans %}</label>
                         <div class="controls">
                             <label class="checkbox"><a href="{% url subaccount %}?id={{subaccount.id}}">{{subaccount.id}}&nbsp;<i class="icon-globe"></i></a></label>
                         </div>
@@ -358,7 +358,7 @@
 
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-username">Username</label>
+                            <label class="control-label" for="input-username">{{form.username.label}}</label>
                             <div class="controls">
                                     {{ form.username }}
                                     {% if form.username.errors %}
@@ -376,7 +376,7 @@
 
                     <div class="control-group">
                         <div class="control-row">
-                            <label class="control-label" for="input-password">Пароль</label>
+                            <label class="control-label" for="input-password">{{form.password.label}}</label>
                             <div class="controls">
                                 {{ form.password }}
                                     {% if form.password.errors %}
@@ -394,7 +394,7 @@
                     </div>
                     <hr />
                     <div class="control-group">
-                    <label class="control-label" for="input-server-access">Сервер доступа</label>
+                    <label class="control-label" for="input-server-access">{{form.nas.label}}</label>
                          <div class="controls">
                                 {{ form.nas }}
                                     {% if form.nas.errors %}
@@ -410,7 +410,7 @@
                     
                     <div class="control-group">
 
-                            <label class="control-label" for="input-vpn-ip">VPN IP</label>
+                            <label class="control-label" for="input-vpn-ip">{{ form.vpn_ip_address.label }}</label>
                             <div class="controls">
                             {{ form.ipv4_vpn_pool }}{{ form.vpn_ip_address }}<input type="button" id="id_assign_vpn_ip_address" class="btn btn-success" value="Выдать">
                             
@@ -535,7 +535,7 @@
                     </div>
                     <hr />
                         <div class="control-group">
-                            <label class="control-label" for="input-password">IPN статус</label>
+                            <label class="control-label" for="input-password">{% blocktrans %}IPN статус{% endblocktrans %}</label>
                                 <div class="controls">
                                 {{ form.ipn_added }} {{form.ipn_added.label}}
                                 </div>
@@ -547,7 +547,7 @@
                                 </div>
                                 <br />
                                 <div class="controls alert alert-info">
-                                   Текущие IPN статусы отображены выше. Для их изменения - отметьте соответствующие пункты и сохраните субаккаунт. Изменения применятся в течении нескольких минут. 
+                                   {% blocktrans %}Текущие IPN статусы отображены выше. Для их изменения - отметьте соответствующие пункты и сохраните субаккаунт. Изменения применятся в течении нескольких минут.{% endblocktrans %} 
                                </div>
                         </div>
                         <hr />
@@ -580,12 +580,13 @@
                            {% endif %}
                         </div>
                                <div class="controls alert alert-info">
-                                   <small>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] <br /> 
+                                   {% blocktrans %}<small>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] <br /> 
             Примеры:  <br /> 
             128k  - rx-rate=128000, tx-rate=128000 (no bursts)  <br /> 
             64k/128M - rx-rate=64000, tx-rate=128000000  <br /> 
             64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s  <br /> 
             64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br /></small> 
+            {% endblocktrans %}
                                </div>
                     </div>
 
@@ -603,17 +604,19 @@
                            {% endif %}
                         </div>
                                <div class="controls alert alert-info">
+                               {% blocktrans %}
                                    <small>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] <br /> 
             Примеры:  <br /> 
             128k  - rx-rate=128000, tx-rate=128000 (no bursts)  <br /> 
             64k/128M - rx-rate=64000, tx-rate=128000000  <br /> 
             64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s  <br /> 
-            64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br /></small> 
+            64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br /></small>
+            {% endblocktrans %} 
                                </div>
                     </div>
                     <hr />
                     <div class="control-group">
-                        <label class="control-label">Опции</label>
+                        <label class="control-label">{% blocktrans %}Опции{% endblocktrans %}</label>
                         <div class="controls docs-input-sizes">
                             <label class="checkbox">
                                 {{ form.allow_dhcp }}{{form.allow_dhcp.label}}
@@ -775,7 +778,7 @@
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <input type="submit" class="btn btn-primary" value="Сохранить">
+                        <input type="submit" class="btn btn-primary" value="{% blocktrans %}Сохранить{% endblocktrans %}">
                     </div>
                 </fieldset>
                 </div>
@@ -783,10 +786,10 @@
                 <div class="tab-pane" id="tab-addonservice">
                 {% if subaccount %}
                 <fieldset>
-                    <legend>Активированные подключаемые услуги</legend>
+                    <legend>{% blocktrans %}Активированные подключаемые услуги{% endblocktrans %}</legend>
 
                     {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
-                    <a href="#" class="btn align-right btn-success" id="modal-accountaddonservice-dialog" >Добавить</a>
+                    <a href="#" class="btn align-right btn-success" id="modal-accountaddonservice-dialog" >{% blocktrans %}Добавить{% endblocktrans %}</a>
                 </fieldset>
                 {% endif %}
                 </div>

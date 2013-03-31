@@ -51,26 +51,26 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url template %}">Шаблоны</a> <span class="divider">/</span>
+    <a href="{% url template %}">{% blocktrans %}Шаблоны{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
 <ul class="nav nav-tabs" id="tab-control">
-  <li ><a class="active" href="#filter">Редактирование</a></li>
-  <li><a  href="#result">Просмотр</a></li>  
+  <li ><a class="active" href="#filter">{% blocktrans %}Редактирование{% endblocktrans %}</a></li>
+  <li><a  href="#result">{% blocktrans %}Просмотр{% endblocktrans %}</a></li>  
 </ul>
 <div class="tab-content">
   <div class="tab-pane  active" id="filter">
 <form method="POST" id="id-form" action="{% url template_edit %}?id={{template.id}}"class="well form-horizontal form-condensed ">
-            <legend>Параметры шаблона{% objectlog template %}</legend>
+            <legend>{% blocktrans %}Параметры шаблона{% endblocktrans %}{% objectlog template %}</legend>
              <fieldset>
                   {{form}}
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
-                        <button class="btn btn-info" id="id_preview" type="button">Предпросмотр</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
+                        <button class="btn btn-info" id="id_preview" type="button">{% blocktrans %}Предпросмотр{% endblocktrans %}</button>
                     </div>
                 </fieldset>
             </form>

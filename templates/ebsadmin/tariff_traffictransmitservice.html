@@ -13,7 +13,7 @@
  $(document).ready(function() {
      $(".open-custom-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Правило начисления предоплаченного трафика", 
+             title: "{% blocktrans %}Правило начисления предоплаченного трафика{% endblocktrans %}", 
              content: this.href, 
              id: "periodicalservice-modal"
          });
@@ -22,7 +22,7 @@
      });
      $(".show-confirm").click(function(event) {
          a=$(this);
-         $.fn.dialog2.helpers.confirm("Удалить? Вы уверены, что хотите удалить запись?", {
+         $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? Вы уверены, что хотите удалить запись?{% endblocktrans %}", {
              confirm: function() {
                  $.getJSON(a.attr('href'),{},function(data,status){
                      if( status=='success' ){
@@ -34,7 +34,7 @@
                              }
                          
                      }else{
-                         alert('Произошла непредвиденная ошибка')
+                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                      }
 
                  })                      
@@ -46,7 +46,7 @@
      });
      $("#modal-traffictransmitnode-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Добавить параметры тарификации", 
+             title: "{% blocktrans %}Добавить параметры тарификации{% endblocktrans %}", 
              content: "{% url tariff_traffictransmitnode_edit %}?tariff_id={{tariff.id}}", 
              id: "traffictransmitnode-modal"
          });
@@ -55,7 +55,7 @@
      });
      $("#modal-prepaidtraffic-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Предоплаченный трафик", 
+             title: "{% blocktrans %}Предоплаченный трафик{% endblocktrans %}", 
              content: "{% url tariff_prepaidtraffic_edit %}?tariff_id={{tariff.id}}", 
              id: "traffictransmitnode-modal"
          });
@@ -71,29 +71,29 @@
 <form method="POST" action="{% url tariff_traffictransmitservice %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
 {{form.id}}
 {% if item %}
-<div class="btn-toolbar"><a href="{{item.get_remove_url}}" class="btn btn-danger align-right show-confirm">Удалить услугу</a></div>
+<div class="btn-toolbar"><a href="{{item.get_remove_url}}" class="btn btn-danger align-right show-confirm">{% blocktrans %}Удалить услугу{% endblocktrans %}</a></div>
 {% endif %}
-            <legend>Тарификация трафика по NetFlow</legend>
+            <legend>{% blocktrans %}Тарификация трафика по NetFlow{% endblocktrans %}</legend>
             {% if item %}
              <fieldset>
   {% render_table table %}
-  <div class="btn-toolbar"><a href="#" id="modal-traffictransmitnode-dialog" class="btn btn-success">Добавить</a></div>
+  <div class="btn-toolbar"><a href="#" id="modal-traffictransmitnode-dialog" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
                 </fieldset>
-                <legend>Предоплаченный трафик</legend>
+                <legend>{% blocktrans %}Предоплаченный трафик{% endblocktrans %}</legend>
              <fieldset>
   {% if prepaidtraffic_table %}{% render_table prepaidtraffic_table %}{% endif %}
-  <div class="btn-toolbar"><a href="#"  id="modal-prepaidtraffic-dialog" class="btn btn-success">Добавить</a></div>
-  {{form.reset_traffic}} Сбрасывать предоплаченный трафик в конце расчётного периода (указан в общих настройках тарифного плана)
+  <div class="btn-toolbar"><a href="#"  id="modal-prepaidtraffic-dialog" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
+  {{form.reset_traffic}} {% blocktrans %}Сбрасывать предоплаченный трафик в конце расчётного периода (указан в общих настройках тарифного плана){% endblocktrans %}
                 </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Сохранить</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
                     </div>
                 </fieldset>
                 {% else %}
                 <fieldset>
                     <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit">Добавить услугу тарификации трафика</button>
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Добавить услугу тарификации трафика{% endblocktrans %}</button>
                     </div>
                 </fieldset>
                 {% endif %}

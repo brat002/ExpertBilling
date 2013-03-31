@@ -12,7 +12,7 @@
  $(document).ready(function() {
      $(".open-custom-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Периодическая услуга", 
+             title: "{% blocktrans %}Периодическая услуга{% endblocktrans %}", 
              content: this.href, 
              id: "periodicalservice-modal"
          });
@@ -21,7 +21,7 @@
      });
      $(".show-confirm").click(function(event) {
          a=$(this);
-         $.fn.dialog2.helpers.confirm("Удалить? Удаление разовой услуги вызовет обнуление информации о списаниях по ней. Вместо этого рекомемендуется воспользоваться отключением услуги.", {
+         $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? Удаление разовой услуги вызовет обнуление информации о списаниях по ней. Вместо этого рекомемендуется воспользоваться отключением услуги.{% endblocktrans %}", {
              confirm: function() {
                  $.getJSON(a.attr('href'),{},function(data,status){
                      if( status=='success' ){
@@ -33,7 +33,7 @@
                              }
                          
                      }else{
-                         alert('Произошла непредвиденная ошибка')
+                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
                      }
 
                  })                      
@@ -45,7 +45,7 @@
      });
      $("#modal-periodicalservice-dialog").click(function(event) {
          $('<div />').dialog2({
-             title: "Добавить разовую услугу", 
+             title: "{% blocktrans %}Добавить разовую услугу{% endblocktrans %}", 
              content: "{% url onetimeservice_edit %}?tariff_id={{item.id}}", 
              id: "ps-modal"
          });
@@ -58,9 +58,9 @@
 
 {% block tariff_content %}
 
-            <legend>Разовые услуги</legend>
+            <legend>{% blocktrans %}Разовые услуги{% endblocktrans %}</legend>
 <div class="alert alert-info">
-Разовые услуги позволяют производить списания при подключении пользователя на тарифный план.
+{% blocktrans %}Разовые услуги позволяют производить списания при подключении пользователя на тарифный план.{% endblocktrans %}
 </div>
              <fieldset>
 {{ formset.non_form_errors.as_ul }}
@@ -90,6 +90,6 @@
 {% endfor %}
 </table>
   {% if table %}{% render_table table %}{% endif %}
-  <div class="btn-toolbar"><a href="#" id="modal-periodicalservice-dialog" class="btn btn-success">Добавить</a></div>
+  <div class="btn-toolbar"><a href="#" id="modal-periodicalservice-dialog" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
                 </fieldset>
 {% endblock %}
