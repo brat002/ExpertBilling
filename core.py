@@ -1163,7 +1163,6 @@ class addon_service(Thread):
                                         accounttarif_id, type_id, summ, created)
                                 VALUES (%s, 'onetime', %s, %s, 
                                         %s, %s, (-1)*%s,%s)
-
                             """,  (service.id, acc.account_id, accountaddonservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,))
                             cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = %s WHERE id=%s", (dateAT, accountaddonservice.id))
 
@@ -1430,7 +1429,7 @@ class settlement_period_service_dog(Thread):
                                     FROM billservice_transaction as tr
                                     WHERE 
                                     promise_expired = False and type_id='PROMISE_PAYMENT' and
-                                    (end_promise<now() or (SELECT sum(summ*(-1)) FROM billservice_transaction WHERE account_id=account_id and type_id!='PROMISE_PAYMENT' and summ<0 and created>created)>=summ)""")
+                                    (end_promise<now() or (SELECT sum(summ) FROM billservice_transaction WHERE account_id=account_id and type_id!='PROMISE_PAYMENT' and summ<0 and created>created)>=summ)""")
                 promises = cur.fetchall()
 
                 if promises:
