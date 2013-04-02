@@ -336,6 +336,7 @@
         </a>
         <ul class="dropdown-menu">
                <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_payments=True">{% blocktrans %}Пополнения баланса{% endblocktrans %}</a></li>
+               <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_credits=True">{% blocktrans %}Списания баланса{% endblocktrans %}</a></li>
               <li><a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">{% blocktrans %}Обещанные платежи{% endblocktrans %}</a></li>
               <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">{% blocktrans %}История изменения баланса{% endblocktrans %}</a></li>
         </ul>

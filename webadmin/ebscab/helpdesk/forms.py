@@ -13,10 +13,13 @@ from helpdesk.settings import HAS_TAG_SUPPORT
 from django_select2 import *
 from django.contrib.auth.models import User
 from django.utils.encoding import smart_unicode
+import copy
 
 class UserChoices(AutoModelSelect2Field):
     queryset = User.objects
+    max_results = 20
     search_fields = ['username__icontains', ]
+    
     def label_from_instance(self, obj):
         """
         Sub-classes should override this to generate custom label texts for values.
@@ -27,8 +30,10 @@ class UserChoices(AutoModelSelect2Field):
         :return: The label string.
         :rtype: :py:obj:`unicode`
         """
-        
+
         return u'%s %s' % (smart_unicode(obj), smart_unicode(obj.get_full_name()))
+
+
     
 class TicketTypeForm(forms.Form):
     queue = forms.ModelChoiceField(label=_('Queue'), queryset = Queue.objects.all())

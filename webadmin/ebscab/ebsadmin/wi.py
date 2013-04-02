@@ -12,14 +12,17 @@ from billservice.forms import TransactionReportForm, SearchAuthLogForm
 from ebscab.lib.decorators import render_to, ajax_request
 
 from django.core.urlresolvers import reverse
-from tables import TemplateTable, TicketTable, AccountAddonServiceTable, IPInUseTable,  LogTable, BallanceHistoryTable, SubAccountsTable, AccountHardwareTable, SuspendedPeriodTable, AccountTarifTable, TotalTransactionReportTable, AccountsReportTable, AuthLogTable, ActiveSessionTable, NasTable
+from tables import TemplateTable, TicketTable, AccountAddonServiceTable, IPInUseTable,  LogTable, BallanceHistoryTable, \
+                          SubAccountsTable, AccountHardwareTable, SuspendedPeriodTable, AccountTarifTable, TotalTransactionReportTable, \
+                          AccountsReportTable, AuthLogTable, ActiveSessionTable, NasTable, TransactionReportTable, AddonServiceTransactionReportTable, PeriodicalServiceTransactionReportTable, \
+                          TrafficTransactionReportTable
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 from django_tables2 import RequestConfig as DTRequestConfig
 from billservice.forms import SearchAccountForm, AccountExtraForm
 
-from ebsadmin.transactionreport import TRANSACTION_MODELS
+from ebsadmin.transactionreport import TRANSACTION_MODELS, model_by_table
 
 from billservice.models import Account, Transaction, TransactionType, PeriodicalServiceHistory, PeriodicalService, AccountAddonService, TotalTransactionReport as TransactionReport, OneTimeServiceHistory, SubAccount, AccountTarif, SuspendedPeriod, AccountHardware,\
     AddonServiceTransaction
@@ -150,22 +153,16 @@ def transactionreport2(request):
 
             cur = connection.cursor()
             trtypes = data.getlist('tree')
-            if only_payments:
-                trtypes = []
-                for i in TransactionType.objects.all():
-                    if TRANSACTION_MODELS.get(i.internal_name, 'Transaction')=='Transaction':
-                        trtypes.append(i.internal_name)
-            elif only_credits:
-                trtypes = []
-                for i in TransactionType.objects.all():
-                    trtypes.append(i.internal_name)
+
                         
               
             with_id = []
             by_groups = {}
+            tr_types = []
             for tr in trtypes:
                 l = tr.split("___")
                 tr_type = l[0]
+                tr_types.append(tr_type)
                 id = None
 
                 if len(l)==2:
@@ -183,7 +180,7 @@ def transactionreport2(request):
             res = []
             total_summ = 0
             for key in by_groups:
-
+                continue
                 if key=='PeriodicalServiceHistory':
                     items = PeriodicalServiceHistory.objects.filter(service__id__in=by_groups[key])
                     if only_credits:
@@ -250,8 +247,62 @@ def transactionreport2(request):
                     
             summOnThePage = 1500
             summ = total_summ
-            tf = TransactionReportForm(request.GET)   
-            table = TotalTransactionReportTable(res)
+            tf = TransactionReportForm(request.GET)
+            print by_groups, len(by_groups)
+            if len(by_groups)==1 and 'TrafficTransaction' in by_groups:
+                res = TrafficTransaction.objects.all()
+                table = TrafficTransactionReportTable
+            elif len(by_groups)==1 and by_groups.get('Transaction'):
+                res = Transaction.objects.all()
+                table = TransactionReportTable
+            elif len(by_groups)==1 and 'AddonServiceTransaction' in by_groups:
+                res = AddonServiceTransaction.objects.all()
+                table = AddonServiceTransactionReportTable
+            elif len(by_groups)==1 and 'PeriodicalServiceHistory' in by_groups:
+                res = PeriodicalServiceHistory.objects.all()
+                table = PeriodicalServiceTransactionReportTable    
+            else:
+                res = TotalTransactionReport.objects.all()
+                table = TotalTransactionReportTable    
+            
+            if account:
+                res = res.filter(account__in=account)
+            if start_date:
+                res = res.filter(created__gte=start_date)
+            if end_date:
+                res = res.filter(created__lte=end_date )
+            if tr_types and table not in (TrafficTransactionReportTable, PeriodicalServiceTransactionReportTable):
+                res = res.filter(type__internal_name__in=tr_types)
+                
+            if table in (AddonServiceTransactionReportTable, ):
+                res = res.filter(service__id__in=by_groups.get('AddonServiceTransaction', []))
+                
+            if table in (PeriodicalServiceTransactionReportTable, ):                
+                res = res.filter(service__id__in=by_groups.get('PeriodicalServiceHistory', []))
+                
+            if table == TransactionReportTable and systemusers:
+                res = res.filter(systemuser__in=systemusers)
+            
+            if only_credits:
+                res = res.filter(summ__lte=0)
+            if only_payments:
+                res = res.filter(summ__gte=0)
+                        
+            total_summ = "%.2f" % (res.aggregate(total_summ=Sum('summ')).get('total_summ') or 0)
+            if table==TotalTransactionReportTable:
+                table = table(res.prefetch_related('tariff__name',  'type__name').values('id', 'account__username', 'account', 'summ', 'created', 'tariff__name', 'bill', 'description', 'end_promise', 'promise_expired', 'type__name', 'service_id', 'table'))
+            elif table == TrafficTransactionReportTable:
+                table = table(res.prefetch_related('account__username').values('id', 'account__username', 'account', 'summ', 'created', ))
+                
+            elif table ==TransactionReportTable:
+                table = table(res.prefetch_related('type__name', 'account__username', 'systemuser__username').values('id', 'account__username', 'account', 'summ', 'description', 'bill', 'created',  'type__name', 'systemuser__username'))
+            elif table in (PeriodicalServiceTransactionReportTable, AddonServiceTransactionReportTable):
+                table = table(res.prefetch_related('type__name', 'account__username', 'service__name').values('id', 'account__username', 'account', 'summ', 'created', 'service__name', 'type__name'))
+
+            else:
+                table = table(res)
+                
+            print table
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
@@ -1453,5 +1504,27 @@ def template_delete(request):
     else:
         return {"status": False, "message": "Template not found"} 
     
+@ajax_request
+@systemuser_required
+def totaltransaction_delete(request):
+    if  not (request.user.account.has_perm('billservice.delete_transaction')):
+        return {'status':False, 'message': _(u'У вас нет прав на удаление проводок')}
+    transactions = request.POST.getlist('transactions')
+    print transactions
+    if transactions:
+        try:
+            for item in transactions:
+                print item
+                table, tr_id = item.split('__')
+                model = model_by_table.get(table)
+                item = model.objects.get(id=tr_id)
+        except Exception, e:
+            print e
+            return {"status": False, "message": _(u"Указанные проводки не найдены %s") % str(e)}
+        log('DELETE', request.user, item)
+        item.delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "Transaction not found"} 
 
     

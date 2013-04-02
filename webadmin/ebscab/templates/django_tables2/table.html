@@ -84,8 +84,12 @@
     {% endblock table.tfoot %}
 </table>
 {% if total_summ %}
-<strong>Всего на сумму:</strong> {{total_summ|intspace}}
+<strong>Всего на сумму:</strong> {{total_summ|intspace}}<br/>
 {% endif %}
+{% if onpage_summ %}
+<strong>Сумма на странице:</strong> {{onpage_summ|intspace}}<br/>
+{% endif %}
+
 {% if table.page %}
 <div class="pull-right">
         На странице: <select name="per_page" id="id_per_page">

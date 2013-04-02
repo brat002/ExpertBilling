@@ -6,9 +6,9 @@ from billservice.models import AccountAddonService, BalanceHistory, IPInUse, Tem
 from billservice.models import SettlementPeriod, SystemUser, PrepaidTraffic
 from billservice.models import TimeSpeed, AddonServiceTarif, PeriodicalServiceLog, News
 from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAccessNode 
-from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType
-from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, PermissionGroup
-from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode, SubAccount
+from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType, TrafficTransaction
+from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, PermissionGroup, PeriodicalServiceHistory
+from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode, SubAccount, AddonServiceTransaction
 from billservice.models import News, TPChangeRule, Switch, AccountGroup, GroupStat, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, AccountPrepaysTime
 from dynamicmodel.models import DynamicSchemaField
 
@@ -142,26 +142,124 @@ class AccountTarifTable(django_tables.Table):
 class TotalTransactionReportTable(TableReport):
     tariff__name = FormatBlankColumn(verbose_name=_(u'Тариф'))
     id = FormatBlankColumn()
-    account__username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')})
+    account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')}, accessor=A('account__username'))
     bill = FormatBlankColumn(verbose_name=_(u'Платёжный документ'))
     description = FormatBlankColumn(verbose_name=_(u'Комментарий'))
-    service__name = FormatBlankColumn(verbose_name=_(u'Услуга'))
-    type__name = FormatBlankColumn(verbose_name=_(u'Тип'))
+    service_id = FormatBlankColumn(verbose_name=_(u'ID Услуги'))
+    type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
 
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
     created = FormatDateTimeColumn(verbose_name=_(u'Создана'))
     end_promise = FormatDateTimeColumn(verbose_name=_(u'Окончание о.п.'))
     #promise_expired = FormatDateTimeColumn()
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
+    
+    
+    def render_d(self, value, record):
+
+        return mark_safe('<input type="checkbox" name="d" value="%s_%s">' % (record.get('table'), value))
+    
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed"'}
         configurable = True
-        available_fields = ("id", "account__username",  "type__name", "summ", "bill", "description", "end_promise",  "service__name", "created", 'd')
+        available_fields = ("id", "account",  "type", "summ", "bill", "description", "end_promise",  "service_id", "created", 'd')
         #model = TotalTransactionReport
         #exclude = ( 'table','tariff__name', "tariff", "systemuser")
         
         
+class TransactionReportTable(TableReport):
+
+    id = FormatBlankColumn()
+    account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')}, accessor=A('account__username'))
+    type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
+    systemuser = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('systemuser__username'))
+    d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
+    
+    def render_d(self, value, record):
+
+        return mark_safe('<input type="checkbox" name="d" value="billservice_transaction__%s">' % ( value, ))
+    
+    def render_summ(self, value, record):
+        return '%.2f' % value
+    
+    class Meta:
+        #attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+        model = Transaction
+        configurable = True
+        exclude = ('tarif', 'approved', 'accounttarif')
+        
+class AddonServiceTransactionReportTable(TableReport):
+
+    id = FormatBlankColumn()
+    account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')}, accessor=A('account__username'))
+    type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
+
+    d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
+    
+    def render_d(self, value, record):
+
+        return mark_safe('<input type="checkbox" name="d" value="billservice_addonservicetransaction__%s">' % ( value, ))
+    
+    def render_summ(self, value, record):
+        return '%.2f' % value
+    
+    class Meta:
+        #attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+        model = AddonServiceTransaction
+        configurable = True
+        exclude = ('tarif', 'approved', 'accounttarif')
+        
+        #available_fields = ("id", "account",  "type", "summ", "bill", "description", "end_promise",  "service__name", "created", 'd')
+        
+class PeriodicalServiceTransactionReportTable(TableReport):
+
+    id = FormatBlankColumn()
+    account__username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')})
+    service = django_tables.Column(accessor=A('service__name'))
+    type = django_tables.Column(accessor=A('type__name'))
+    d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
+    
+    def render_d(self, value, record):
+
+        return mark_safe('<input type="checkbox" name="d" value="billservice_periodicalservicehistory__%s">' % ( value, ))
+    
+    def render_summ(self, value, record):
+        return '%.2f' % value
+    
+    class Meta:
+        #attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+        model = PeriodicalServiceHistory
+        sequence = ('id', 'account__username', 'service')
+        configurable = True
+        exclude = ('tarif', 'approved', 'accounttarif')
+
+
+class TrafficTransactionReportTable(TableReport):
+
+    id = FormatBlankColumn()
+    account__username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')})
+    #type = django_tables.Column(accessor=A('type__name'))
+    d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
+    
+    def render_d(self, value, record):
+
+        return mark_safe('<input type="checkbox" name="d" value="billservice_traffictransaction__%s">' % ( value, ))
+    
+    def render_summ(self, value, record):
+        return '%.2f' % value
+    
+    class Meta:
+        #attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+        model = TrafficTransaction
+        sequence = ('id', 'account__username', )
+        configurable = True
+        exclude = ('tarif', 'traffictransmitservice', 'accounttarif', 'account')
+
 class CashierReportTable(TableReport):
     
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))

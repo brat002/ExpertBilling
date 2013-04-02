@@ -8,6 +8,47 @@
 
         <script type="text/javascript"> 
         $(document).ready(function() {
+            $("#id_main_table tr th input[type=checkbox]").click(function(event) {
+                $("#id_main_table td input[type=checkbox]").attr("checked", this.checked);
+
+
+            });
+            
+            $("#modal-transactiondelete-dialog-table").click(function() {
+            	var a = this;
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить выбранные проводки?{% endblocktrans %}", {
+                	confirm: function(event, value) {
+                		var arr = new Array();
+                        $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
+                            data.name='transactions';
+                            arr.push(data); 
+                          
+                        }); 
+
+                        $.ajax(
+                                { 
+                                    url: '{% url totaltransaction_delete %}',
+                                    data: arr,        
+                                    type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                                    dataType: "json",   //return data in json format                                                                                                                                       
+                                    success: function( data ) 
+                                    {
+                                        window.location.reload();
+                                    },
+                                    failure: function(data)
+                                    {
+                                        alert('{% blocktrans %}Произошла ошибка в обработке запросов сервером{% endblocktrans %}');
+                                    }
+                                }); 
+                        //this.href+'?'+$.param(arr)
+                    	},
+                    	decline: function(event, value) {}
+
+                });
+
+                event.preventDefault();
+            });
+            
 
             $(function(){
                 // Attach the dynatree widget to an existing <div id="tree"> element
@@ -148,7 +189,19 @@
     </div>
   
   </div>
-  <div class="tab-pane" id="result">{% if table %}{% render_table table %}{% endif %}</div>
+  <div class="tab-pane" id="result">
+  {% permission billservice.delete_transaction %}
+            <div class="navbar navbar-googlenav">
+                <div class="navbar-inner">
+                <div class="btn-group pull-right">
+                    <a href="#" id="modal-transactiondelete-dialog-table" class="btn btn-danger"><i class=' icon-minus icon-white'></i> {% blocktrans %}Удалить проводки{% endblocktrans %}</a>
+                </div>
+
+        </div>
+        </div>
+        {% endpermission %}
+  {% if table %}{% render_table table %}{% endif %}
+  </div>
 
 </div>
  {% endblock %}
