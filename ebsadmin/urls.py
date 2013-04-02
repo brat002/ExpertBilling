@@ -24,6 +24,8 @@ urlpatterns += patterns('ebsadmin.wi',
     url(r'^account/', wi.accountedit, name='account_edit'),
     url(r'^accounttariff/delete/', wi.accounttariff_delete, name='accounttariff_delete'),
     url(r'^transaction/edit/', wi.transaction, name='transaction_edit'),
+    url(r'^totaltransaction/delete/', wi.totaltransaction_delete, name='totaltransaction_delete'),
+    
     url(r'^accountaddonservice/', wi.accountaddonservice_edit, name='accountaddonservice'),
     url(r'^subaccount/delete/', wi.subaccount_delete, name='subaccount_delete'),
     url(r'^subaccount/', wi.subaccountedit, name='subaccount'),

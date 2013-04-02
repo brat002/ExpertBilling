@@ -11,6 +11,7 @@ from base64 import b64encode, b64decode
 from BeautifulSoup import BeautifulSoup
 from forms import AdditionalFieldsForm
 import listeners
+import urllib
 
 class TransactionStatus:
     OK = 'success'
@@ -61,7 +62,7 @@ class PaymentProcessor(PaymentProcessorBase):
         
         xml = PAYMENT_TEMPLATE % {
                'MERCHANT_ID': PaymentProcessor.get_backend_setting('MERCHANT_ID'),
-               'RESULT_URL': "http://%s%s" % (site, reverse('payment-result')),
+               'RESULT_URL': "http://%s" % (site, ),
                'SERVER_URL': "http://%s%s" % (site, reverse('getpaid-liqpay-pay')),
                'ORDER_ID': payment.id,
                'AMOUNT': amount,
@@ -88,15 +89,15 @@ class PaymentProcessor(PaymentProcessorBase):
 
     @staticmethod    
     def check_merchant_id(body, merchant_id):
-        if merchant_id!=int(PaymentProcessor.get_backend_setting('MERCHANT_ID')):
+        if str(merchant_id)!=str(PaymentProcessor.get_backend_setting('MERCHANT_ID')):
             return PaymentProcessor.error(body, u'Unknown merchant ID')
 
     @staticmethod
     def online(request):
-        operation_xml = b64decode(request.POST.get('operation_xml'))
+        operation_xml = b64decode(urllib.unquote(request.POST.get('operation_xml').replace('\\n', ''))).strip()
         signature = request.POST.get('signature')
         
-        if PaymentProcessor.compute_sig(operation_xml)!=signature:
+        if str(PaymentProcessor.compute_sig(operation_xml))!=str(signature).strip():
             return "SIGNATURE CHECK ERROR"
         
         xml = operation_xml

@@ -962,7 +962,7 @@ class Transaction(models.Model):
     bill = models.CharField(blank=True, default = "", max_length=255, verbose_name=_(u"Платёжный документ"))
     account=models.ForeignKey(Account, on_delete = models.CASCADE, verbose_name=_(u"Аккаунт"))
     accounttarif=models.ForeignKey('AccountTarif', blank=True, null=True, on_delete = models.CASCADE)
-    type = models.ForeignKey(to=TransactionType, null=True, to_field='internal_name', verbose_name=_(u"Тип операции"), on_delete = models.SET_NULL)
+    type = models.ForeignKey(to=TransactionType, null=True, to_field='internal_name', verbose_name=_(u"Тип"), on_delete = models.SET_NULL)
     
     approved = models.BooleanField(default=True)
     tarif=models.ForeignKey(Tariff, blank=True, null=True, on_delete = models.SET_NULL)
@@ -970,9 +970,9 @@ class Transaction(models.Model):
     description = models.TextField(default='', blank=True, verbose_name=_(u"Комментарий"))
     created=models.DateTimeField(verbose_name=_(u"Дата"))
     promise=models.BooleanField(default=False, verbose_name=_(u"Обещанный платёж"))
-    end_promise=models.DateTimeField(blank=True, null=True, verbose_name=_(u"Окончание обещанного платежа"))
-    promise_expired = models.BooleanField(default=False, verbose_name=_(u"Обещанный платёж истек"))
-    systemuser=models.ForeignKey(to='SystemUser', null=True, on_delete = models.SET_NULL, verbose_name=_(u"Администратор" ))
+    end_promise=models.DateTimeField(blank=True, null=True, verbose_name=_(u"ОП закрыт"))
+    promise_expired = models.BooleanField(default=False, verbose_name=_(u"ОП истек"))
+    systemuser=models.ForeignKey(to='SystemUser', null=True, on_delete = models.SET_NULL, verbose_name=_(u"Выполнил" ))
 
     #def update_ballance(self):
     #    Account.objects.filter(id=self.account_id).update(ballance=F('ballance')+self.summ)
@@ -1507,6 +1507,21 @@ class TrafficTransaction(models.Model):
            ("traffictransaction_view", _(u"Просмотр")),
            )
 
+class TimeTransaction(models.Model):
+    timeaccessservice = models.ForeignKey(TimeAccessService, null=True, on_delete=models.SET_NULL) # ON DELETE SET NULL
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    summ = models.FloatField()
+    created = models.DateTimeField()
+    accounttarif = models.ForeignKey(AccountTarif, on_delete=models.CASCADE)
+    
+    class Meta:
+        ordering = ['-created']
+        verbose_name = _(u"Списание за время")
+        verbose_name_plural = _(u"Списания за время")
+        permissions = (
+           ("transaction_view", _(u"Просмотр")),
+           )
+        
 class TPChangeRule(models.Model):
     from_tariff = models.ForeignKey(Tariff, verbose_name=_(u'С тарифного плана'), related_name="from_tariff")
     to_tariff = models.ForeignKey(Tariff, verbose_name=_(u'На тарифный план'), related_name="to_tariff")
@@ -1629,6 +1644,9 @@ class AccountAddonService(models.Model):
     temporary_blocked = models.DateTimeField(verbose_name=_(u'Пауза до'), blank=True, null=True)
     last_checkout = models.DateTimeField(verbose_name=_(u'Последнее списание'), blank=True, null=True)
 
+    def __unicode__(self):
+        return u"%s" % (self.activated)
+    
     class Meta:
         ordering = ['-activated', '-deactivated']
         verbose_name = _(u"Подключённая услуга")
@@ -1946,7 +1964,6 @@ class AccountHardware(models.Model):
 
 class TotalTransactionReport(models.Model):
     service_id = models.IntegerField()
-    service_name = models.CharField(max_length=128)
     table = models.CharField(max_length=128)
     created = models.DateTimeField()
     tariff = models.ForeignKey(Tariff)
@@ -1959,9 +1976,12 @@ class TotalTransactionReport(models.Model):
     end_promise = models.DateTimeField()
     promise_expired = models.BooleanField()
 
+    def get_remove_url(self):
+        return "%s?type=%s&id=%s" % (reverse('totaltransaction_delete'), (self.table, self.id))
+    
     class Meta:
         managed = False
-        abstract = True
+        abstract = False
         ordering = ['-created']
         
 class PeriodicalServiceLog(models.Model):
