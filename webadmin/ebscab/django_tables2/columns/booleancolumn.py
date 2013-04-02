@@ -36,7 +36,7 @@ class BooleanColumn(Column):
         value = bool(value)
         text = '' #self.yesno[int(not value)]
         html = '<span %s>%s</span>'
-        attrs = {"class": unicode('cus-tick' if value else 'cus-cross').lower()}
+        attrs = {'style': 'text-align: center;', "class": unicode('cus-tick' if value else 'cus-cancel').lower()}
         attrs.update(self.attrs.get("span", {}))
         return mark_safe(html % (AttributeDict(attrs).as_html(), escape(text)))
 

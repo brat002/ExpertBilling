@@ -814,7 +814,7 @@ def change_tariff(request):
                 cursor = connection.cursor()
 
                 cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise)
-                                  VALUES(%s, 'Списание средств за переход на тарифный план %s', 'TP_CHANGE', True, get_tarif(%s), %s, now(), False)""" % (user.id, tariff.tarif.name, user.id, rule.cost))
+                                  VALUES(%s, 'Списание средств за переход на тарифный план %s', 'TP_CHANGE', True, get_tarif(%s), (-1)*%s, now(), False)""" % (user.id, tariff.tarif.name, user.id, rule.cost))
                 cursor.connection.commit()
             if data_start_active:
                 ok_str = _(u'Вы успешно сменили тариф, тарифный план будет изменён в следующем расчётном периоде c %(TP)s.<br> За переход на данный тарифный план с пользователя будет взыскано %(SUMM)s средств.') %{'TP': td[1], 'SUMM': rule.cost}
@@ -1273,7 +1273,7 @@ def userblock_action(request):
                 cursor = connection.cursor()
 
                 cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, type_id, approved, tarif_id, summ, created, promise)
-                                  VALUES(%s, 'Списание средств за пользовательскую блокировку', 'USERBLOCK_PAYMENT', True, get_tarif(%s), %s, now(), False)""" , (account.id, account.id, tarif.userblock_cost,))
+                                  VALUES(%s, 'Списание средств за пользовательскую блокировку', 'USERBLOCK_PAYMENT', True, get_tarif(%s), (-1)*%s, now(), False)""" , (account.id, account.id, tarif.userblock_cost,))
                 cursor.connection.commit()
                 #print 4
                 message=_(u'Аккаунт успешно заблокирован')

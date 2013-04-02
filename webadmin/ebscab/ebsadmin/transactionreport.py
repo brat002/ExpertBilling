@@ -2,7 +2,8 @@
 from billservice.forms import TransactionReportForm
 from ebscab.lib.decorators import render_to, ajax_request
 from billservice.helpers import systemuser_required
-from billservice.models import Transaction, TransactionType, PeriodicalServiceHistory, PeriodicalService, AccountAddonService, TotalTransactionReport as TransactionReport, OneTimeServiceHistory, SubAccount, AccountTarif, SuspendedPeriod, AccountHardware
+from billservice.models import Transaction, TransactionType, PeriodicalServiceHistory, PeriodicalService, AccountAddonService, TotalTransactionReport as TransactionReport, OneTimeServiceHistory, SubAccount, AccountTarif, SuspendedPeriod, AccountHardware,\
+    TrafficTransaction, AddonServiceTransaction, TimeTransaction
 from views import instance_dict
 import billservice.models as bsmodels
 from lib import QuerySetSequence, ExtDirectStore,IableSequence, dictfetchall
@@ -92,6 +93,16 @@ TRANSACTION_MODELS = {"PS_GRADUAL":'PeriodicalServiceHistory',
 
                       }
 
+model_by_table = {
+                  'billservice_transaction': Transaction,
+                  'billservice_periodicalservicehistory': PeriodicalServiceHistory,
+                  'billservice_traffictransaction': TrafficTransaction,
+                  'billservice_onetimeservicehistory': OneTimeServiceHistory,
+                  'billservice_addonservicetransaction': AddonServiceTransaction,
+                  'billservice_timetransaction': TimeTransaction
+                  
+                  
+                  }
 #print bsmodels.__dict__
 @ajax_request
 @systemuser_required
