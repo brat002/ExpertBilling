@@ -247,6 +247,7 @@ def transactionreport2(request):
                     
             summOnThePage = 1500
             summ = total_summ
+            total = False
             tf = TransactionReportForm(request.GET)
             print by_groups, len(by_groups)
             if len(by_groups)==1 and 'TrafficTransaction' in by_groups:
@@ -264,6 +265,7 @@ def transactionreport2(request):
             else:
                 res = TotalTransactionReport.objects.all()
                 table = TotalTransactionReportTable    
+                total=True
             
             if account:
                 res = res.filter(account__in=account)
@@ -290,7 +292,7 @@ def transactionreport2(request):
                         
             total_summ = "%.2f" % (res.aggregate(total_summ=Sum('summ')).get('total_summ') or 0)
             if table==TotalTransactionReportTable:
-                table = table(res.prefetch_related('tariff__name',  'type__name').values('id', 'account__username', 'account', 'summ', 'created', 'tariff__name', 'bill', 'description', 'end_promise', 'promise_expired', 'type__name', 'service_id', 'table'))
+                table = table(res.prefetch_related('tariff__name',  'type__name').values('id', 'account__username', 'account', 'summ', 'created', 'tariff__name', 'bill', 'description', 'end_promise', 'promise_expired', 'type__name', 'service_id', 'table',))
             elif table == TrafficTransactionReportTable:
                 table = table(res.prefetch_related('account__username').values('id', 'account__username', 'account', 'summ', 'created', ))
                 
@@ -302,13 +304,13 @@ def transactionreport2(request):
             else:
                 table = table(res)
                 
-            print table
+
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
 
             res = gettransactiontypes(current=trtypes)
-            return {"table": table,  'form':tf, 'ojax':res, 'total_summ': total_summ}
+            return {"table": table,  'form':tf, 'ojax':res, 'total_summ': total_summ, 'total': total}
 
         else:
             res = gettransactiontypes(current=data.getlist('tree'))
