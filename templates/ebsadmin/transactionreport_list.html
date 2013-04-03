@@ -190,6 +190,10 @@
   
   </div>
   <div class="tab-pane" id="result">
+  {% if total %}
+  <div class="alert">Общий отчёт содержит ряд связанных с производительностью ограниений на отображение данных. Для просмотра детальной информации об операциях - выберите однотипные типы списаний/пополнений. </div>
+  {% endif %}
+  {{table_type}}
   {% permission billservice.delete_transaction %}
             <div class="navbar navbar-googlenav">
                 <div class="navbar-inner">

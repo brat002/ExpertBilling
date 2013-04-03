@@ -28,6 +28,9 @@ from helpdesk.models import Ticket
 import itertools
 from django.utils.translation import ugettext_lazy as _
 
+from ebsadmin.transactionreport import servicemodel_by_table
+
+                
 class FormatBlankColumn(django_tables.Column):
     def render(self, value):
         return "" if value is None else value
@@ -145,7 +148,7 @@ class TotalTransactionReportTable(TableReport):
     account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')}, accessor=A('account__username'))
     bill = FormatBlankColumn(verbose_name=_(u'Платёжный документ'))
     description = FormatBlankColumn(verbose_name=_(u'Комментарий'))
-    service_id = FormatBlankColumn(verbose_name=_(u'ID Услуги'))
+    service_id = django_tables.Column(verbose_name=_(u'ID Услуги'))
     type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
 
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
@@ -158,6 +161,18 @@ class TotalTransactionReportTable(TableReport):
     def render_d(self, value, record):
 
         return mark_safe('<input type="checkbox" name="d" value="%s_%s">' % (record.get('table'), value))
+    
+    def render_service_id(self, value, record):
+        item = ''
+        if value:
+            model = servicemodel_by_table.get(record.get('table'))
+            try:
+                item = model.objects.get(id=value)
+            except Exception, e:
+                print e
+                item = ''
+        return unicode(item)
+
     
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
