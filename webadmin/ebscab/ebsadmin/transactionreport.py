@@ -3,7 +3,7 @@ from billservice.forms import TransactionReportForm
 from ebscab.lib.decorators import render_to, ajax_request
 from billservice.helpers import systemuser_required
 from billservice.models import Transaction, TransactionType, PeriodicalServiceHistory, PeriodicalService, AccountAddonService, TotalTransactionReport as TransactionReport, OneTimeServiceHistory, SubAccount, AccountTarif, SuspendedPeriod, AccountHardware,\
-    TrafficTransaction, AddonServiceTransaction, TimeTransaction
+    TrafficTransaction, AddonServiceTransaction, TimeTransaction, OneTimeService, AddonService
 from views import instance_dict
 import billservice.models as bsmodels
 from lib import QuerySetSequence, ExtDirectStore,IableSequence, dictfetchall
@@ -102,6 +102,11 @@ model_by_table = {
                   'billservice_timetransaction': TimeTransaction
                   
                   
+                  }
+servicemodel_by_table = {
+                  'billservice_periodicalservicehistory': PeriodicalService,
+                  'billservice_onetimeservicehistory': OneTimeService,
+                  'billservice_addonservicetransaction': AddonService,
                   }
 #print bsmodels.__dict__
 @ajax_request
