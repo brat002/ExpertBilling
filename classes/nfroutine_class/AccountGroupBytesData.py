@@ -6,7 +6,10 @@ class AccountGroupBytesData(list):
     __slots__ = () 
 
     _fields = ('account_id', 'tarif_id', 'acctf_id', 'datetime', 'group_data', 'lock', 'last_accessed') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __init__(self, empty=True, account_id=None, tarif_id=None, acctf_id=None, datetime=None, group_data=None, lock=None, last_accessed=None):
         if empty:
             pass

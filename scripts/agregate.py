@@ -10,7 +10,7 @@ import re
 #########################
 host = '127.0.0.1'
 port = '5432'
-database = 'ebs_alt_new'
+database = 'ebs'
 user = 'ebs'
 password = 'ebspassword'
 

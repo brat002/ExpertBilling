@@ -6,7 +6,10 @@ class TrafficLimitData(tuple):
     __slots__ = () 
 
     _fields = ('trafficlimit_id', 'tarif_id', 'name', 'settlement_period_id', 'size', 'group_id', 'mode', 'action', 'speedlimit_id') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, trafficlimit_id, tarif_id, name, settlement_period_id, size, group_id, mode, action, speedlimit_id):
         return tuple.__new__(cls, (trafficlimit_id, tarif_id, name, settlement_period_id, size, group_id, mode, action, speedlimit_id)) 
 

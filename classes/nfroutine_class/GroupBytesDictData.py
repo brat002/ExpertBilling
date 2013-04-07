@@ -6,7 +6,10 @@ class GroupBytesDictData(list):
     __slots__ = () 
 
     _fields = ('bytes', 'tg_datetime', 'tg_current', 'tg_next') 
-
+    def __getstate__(self):
+        return list(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __init__(self, empty=True, bytes=None, tg_datetime=None, tg_current=None, tg_next=None):
         if empty:
             pass

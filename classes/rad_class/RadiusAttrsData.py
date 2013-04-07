@@ -6,7 +6,10 @@ class RadiusAttrsData(tuple):
     __slots__ = () 
 
     _fields = ('vendor', 'attrid', 'value', 'account_status', 'tarif_id', 'nas_id') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, vendor, attrid, value, account_status, tarif_id, nas_id):
         return tuple.__new__(cls, (vendor, attrid, value, account_status, tarif_id, nas_id)) 
 

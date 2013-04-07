@@ -6,7 +6,10 @@ class IpPoolData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'next_pool_id') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, next_pool_id):
         return tuple.__new__(cls, (id, next_pool_id)) 
 

@@ -6,7 +6,10 @@ class GroupsData(list):
     __slots__ = () 
 
     _fields = ('id', 'trafficclass', 'direction', 'type') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __init__(self, empty=True, id=None, trafficclass=None, direction=None, type=None):
         if empty:
             pass

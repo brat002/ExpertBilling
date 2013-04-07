@@ -6,7 +6,10 @@ class SpeedlimitData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'account_id', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx', 'burst_treshold_tx', 'burst_treshold_rx', 'burst_time_tx', 'burst_time_rx', 'priority', 'min_tx', 'min_rx', 'speed_units', 'change_speed_type') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, account_id, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx, burst_time_tx, burst_time_rx, priority, min_tx, min_rx, speed_units, change_speed_type):
         return tuple.__new__(cls, (id, account_id, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx, burst_time_tx, burst_time_rx, priority, min_tx, min_rx, speed_units, change_speed_type)) 
 

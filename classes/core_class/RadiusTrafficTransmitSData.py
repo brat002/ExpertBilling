@@ -6,7 +6,10 @@ class RadiusTrafficTransmitSData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'direction', 'tarification_step', 'rounding', 'prepaid_direction', 'prepaid_value', 'reset_prepaid_traffic') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, direction, tarification_step, rounding, prepaid_direction, prepaid_value, reset_prepaid_traffic):
         return tuple.__new__(cls, (id, direction, tarification_step, rounding, prepaid_direction, prepaid_value, reset_prepaid_traffic)) 
 

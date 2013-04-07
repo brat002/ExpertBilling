@@ -6,7 +6,10 @@ class AccountData(list):
     __slots__ = () 
 
     _fields = ('account_id', 'ballance', 'credit', 'datetime', 'tarif_id', 'access_parameters_id', 'time_access_service_id', 'traffic_transmit_service_id', 'cost', 'reset_tarif_cost', 'settlement_period_id', 'tarif_active', 'acctf_id', 'false_', 'account_created', 'disabled_by_limit', 'balance_blocked', 'nas_id', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'assign_ipn_ip_from_dhcp', 'ipn_status', 'ipn_speed', 'vpn_speed', 'ipn_added', 'ps_null_ballance_checkout', 'tarif_deleted', 'allow_express_pay', 'account_status', 'allow_vpn_null', 'allow_vpn_block', 'username', 'password', 'require_tarif_cost', 'periodical_billed', 'current_acctf', 'end_date') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __init__(self, empty=True, account_id=None, ballance=None, credit=None, datetime=None, tarif_id=None, access_parameters_id=None, time_access_service_id=None, traffic_transmit_service_id=None, cost=None, reset_tarif_cost=None, settlement_period_id=None, tarif_active=None, acctf_id=None, false_=None, account_created=None, disabled_by_limit=None, balance_blocked=None, nas_id=None, vpn_ip_address=None, ipn_ip_address=None, ipn_mac_address=None, assign_ipn_ip_from_dhcp=None, ipn_status=None, ipn_speed=None, vpn_speed=None, ipn_added=None, ps_null_ballance_checkout=None, tarif_deleted=None, allow_express_pay=None, account_status=None, allow_vpn_null=None, allow_vpn_block=None, username=None, password=None, require_tarif_cost=None, periodical_billed=None, current_acctf=None, end_date=None):
         if empty:
             pass

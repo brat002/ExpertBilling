@@ -6,7 +6,10 @@ class CardActivateData(tuple):
     __slots__ = () 
 
     _fields = ('account_id', 'subaccount_id','password', 'nas_id', 'tarif_id', 'account_status', 'balance_blocked', 'ballance', 'disabled_by_limit', 'tariff_active', 'ipv4_vpn_pool_id', 'vpn_ippool_id','vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'access_type') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, account_id, subaccount_id, password, nas_id, tarif_id, account_status, balance_blocked, ballance, disabled_by_limit, tariff_active, ipv4_vpn_pool_id, vpn_ippool_id,vpn_ip_address, ipn_ip_address, ipn_mac_address,access_type):
         return tuple.__new__(cls, (account_id, subaccount_id, password, nas_id, tarif_id, account_status, balance_blocked, ballance, disabled_by_limit, tariff_active, ipv4_vpn_pool_id, vpn_ippool_id,vpn_ip_address, ipn_ip_address, ipn_mac_address,access_type)) 
 

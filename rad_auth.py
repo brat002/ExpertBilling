@@ -596,7 +596,7 @@ class HandleSAuth(HandleSBase):
                     self.cursor.execute("""SELECT count(*) from radius_activesession WHERE account_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (acc.account_id, nas.acct_interim_interval))
                     self.cursor.connection.commit()
                     cnt = self.cursor.fetchone()
-                    if cnt:
+                    if cnt and sc:
                         if cnt[0]>=sc:
                             vars.cursor_lock.release()
                             logger.warning("Max sessions count %s reached for username %s. If this error persist - check your nas settings and perform maintance radius_activesession table", (sc, username,))
