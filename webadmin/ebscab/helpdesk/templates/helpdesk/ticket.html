@@ -52,39 +52,40 @@
 
 {% block helpdesk_body %}
 <h2>#{{ ticket.id }}. {{ ticket.title }} [{{ ticket.get_status }}]</h2>
-<table  width=40% class="wide statistic_table extra_table">
+<table  width=40% class="table">
 <tr>
-<td colspan="2" class="white bold s-11 blue_caption"><div class="f-left statistics_title">
-    <a class="change_link" href='{% url helpdesk_edit ticket.id %}'>Изменить</a>&nbsp;|&nbsp;
-    <a class="delete_link" href='{% url helpdesk_delete ticket.id %}'>Удалить</a>&nbsp;|&nbsp;
+<td colspan="2" ><div class="f-left statistics_title">
+    <a  href='{% url helpdesk_edit ticket.id %}'>Изменить</a>&nbsp;|&nbsp;
+    <a  href='{% url helpdesk_delete ticket.id %}'>Удалить</a>&nbsp;|&nbsp;
     {% if ticket.on_hold %}
-        <a class="unhold_link" href='unhold/'>{% trans "Unhold" %}</a>
+        <a href='unhold/'>{% trans "Unhold" %}</a>
     {% else %}
-        <a class="hold_link" href='hold/'>{% trans "Hold" %}</a>
+        <a  href='hold/'>{% trans "Hold" %}</a>
     {% endif %}</div></td></tr>
-<tr class='row_even'>
-	<td class="no_border"><strong>{% trans "Queue" %}</strong></td>
-	<td class="left_border {{ 0|coll_bg  }} ">{% blocktrans with ticket.queue as queue %}{{ queue }}{% endblocktrans %}</td>
+<tr>
+	<td><strong>{% trans "Queue" %}</strong></td>
+	<td>{% blocktrans with ticket.queue as queue %}{{ queue }}{% endblocktrans %}</td>
 </tr>
 
-<tr class='row_odd'>
+<tr>
     <td><strong>{% trans "Submitted On" %}</strong></td>
-    <td class="left_border {{ 1|coll_bg  }} ">{{ ticket.created|date:"r" }} ({{ ticket.created|timesince }} {% trans 'ago' %})</td>
+    <td>{{ ticket.created|date:"r" }} ({{ ticket.created|timesince }} {% trans 'ago' %})</td>
 </tr>
 
 <tr class='row_even'>
     <td><strong>{% trans "Owner" %}</strong></td>
-    <td class="left_border {{ 2|coll_bg  }} ">
+    <td>
       {{ ticket.owner }}
     </td>
 </tr>
 
-<tr class='row_odd'>
+<tr>
     <td><strong>{% trans "Assigned To" %}</strong></td>
     <td class="left_border {{ 3|coll_bg  }} ">
       {{ ticket.get_assigned_to }}
+      {{ticket.assigned_to}} {{request.user}}
       {% comment%}{% ifequal ticket.get_assigned_to _('Unassigned') %}{% endcomment%}
-      {% if not ticket.on_hold %}
+      {% if not ticket.on_hold or ticket.assigned_to != request.user%}
       <strong>
         <a href='?take'><span class='button button_take'>{% trans "Take" %}</span></a>
       </strong>
@@ -93,14 +94,14 @@
     </td>
 </tr>
 
-<tr class='row_even'>
+<tr>
     <td><strong>{% trans "Priority" %}</strong></td>
-    <td class="left_border {{ 4|coll_bg  }} ">{{ ticket.get_priority_display }}</td>
+    <td>{{ ticket.get_priority_display }}</td>
 </tr>
 
 <tr class='row_odd'>
     <td><strong>Отправлять копии</strong></td>
-    <td class="left_border {{ 5|coll_bg  }} ">{% for ticketcc in ticket.ticketcc_set.all %}
+    <td>{% for ticketcc in ticket.ticketcc_set.all %}
         {{ ticketcc.display }}{% if not forloop.last %}, {% endif %}
          {% endfor %}
          <strong><a class="change_link" href='{% url helpdesk_ticket_cc ticket.id %}'>Настроить</a></strong>
@@ -110,7 +111,7 @@
 {% if tags_enabled %}
 <tr class='row_even'>
     <td><strong>{% trans "Tags" %}</strong></td>
-    <td class="left_border {{ 6|coll_bg  }} ">{{ ticket.tags }}</td>
+    <td>{{ ticket.tags }}</td>
 </tr>
 {% endif %}
 
@@ -132,32 +133,50 @@
 </table>
 
 {% if ticket.followup_set.all %}
-<h2>История</h2>
+<h2>{% blocktrans %}История{% endblocktrans %}</h2>
 {% load ticket_to_link %}
-<div class='commentlist'>
-<ul class="info">
+
+
+
+<div class="media">
+
+ 
+    
+
+  
+
 {% for followup in ticket.followup_set.all %}
-<li id="id_message_block_{{ followup.id }}" class="tticket clear shaded" style="clear: left;">
-  <h4><strong>{{ followup.title }}</strong>, {% if followup.user %}<a href="#" class="user">{{ followup.user }}</a>{% endif %}
+<div class="media-body">
+  <h4 class="media-heading"><strong>{{ followup.title }}</strong>, {% if followup.user %}<a href="#" class="user">{{ followup.user }}</a>{% endif %}</h4>
+
+
+<div>
   <span class="event-date">{{ followup.date|date:"d.m.Y H:i" }}</span>
-	</h4>
+	
 	{% if not followup.public %}
-	    <span class='private'>({% trans "Private" %})</span>{% endif %}
-	</span>
+	    <span class='private'>({% trans "Private" %})</span>
+	    {% endif %}
+
 	 {% if followup.comment %}{{ followup.comment|force_escape|num_to_link|linebreaksbr }}{% endif %}
   {% for change in followup.ticketchange_set.all %}
-  {% if forloop.first %}<div class='changes'><ul>{% endif %}
-  <li>{% blocktrans with change.field as field and change.old_value as old_value and change.new_value as new_value %}Changed {{ field }} from {{ old_value }} to {{ new_value }}.{% endblocktrans %}</li>
-  {% if forloop.last %}</div></ul>{% endif %}
-  {% endfor %}
-  {% for attachment in followup.attachment_set.all %}{% if forloop.first %}<div class='attachments'><ul>{% endif %}
-  <li><a href='{{ attachment.file.url }}'>{{ attachment.filename }}</a> ({{ attachment.mime_type }}, {{ attachment.size|filesizeformat }})</li>
-  {% if forloop.last %}</ul></div>{% endif %}
-  {% endfor %}
+  {% if forloop.first %}
+  <div class='changes'>{% endif %}
+  <div>{% blocktrans with change.field as field and change.old_value as old_value and change.new_value as new_value %}Changed {{ field }} from {{ old_value }} to {{ new_value }}.{% endblocktrans %}</div>
+  </div>
+  </div>
 
-</li>
+  
+  {% for attachment in followup.attachment_set.all %}{% if forloop.first %}<div class='attachments'><ul>{% endif %}
+
+  <a href='{{ attachment.file.url }}'>{{ attachment.filename }}</a> ({{ attachment.mime_type }}, {{ attachment.size|filesizeformat }})
+
+  {% endfor %}
+  
+  {% endfor %}
+  
+</div>
 {% endfor %}
-</ul>
+
 </div>
 {% endif %}
 <hr />
@@ -203,7 +222,7 @@
 
 <p id='ShowFurtherOptPara'><a href='#' id='ShowFurtherEditOptions'>{% trans "Change Further Details &raquo;" %}</a></p>
 
-<div id='FurtherEditOptions' style='display: none;'>
+<div id='FurtherEditOptions' >
 
     <dl>
 

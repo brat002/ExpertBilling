@@ -1,8 +1,25 @@
 {% extends "helpdesk/base.html" %}{% load i18n %}
  {% load render_table from django_tables2 %}
 {% block helpdesk_title %}{% trans "Helpdesk Dashboard" %}{% endblock %}
-{% block helpdesk_head %}
-
+{% block extra_head %}
+{{block.super}}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+        	$(".title-tooltip").bind("hover", function() {
+        		var el=$(this);
+        		el.unbind("hover");
+        		$.ajax({
+        		  url: '{% url ticket_info %}',
+        		  data: {id: el.attr('data')},
+        		  method: 'GET',
+        		  success: function(d){
+        		    el.popover({ content: d.body, placement:'right', html:true, trigger:'hover', container:'body' }).popover("show");
+        		  }
+        		});
+        		return false;
+        		});
+        });
+        </script>
 {% endblock %}
 {% load billservice_tags %}
 {% block helpdesk_body %}

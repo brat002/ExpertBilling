@@ -17,7 +17,8 @@
 		//new message: raise newMessage event
 		function SendMessage(e) {
 		  //e.preventDefault();
-		  var msg = $("#id_queue").val();
+		  var msg = $("#id_queuetype").val();
+
 		  if (msg) {
 		      $.event.trigger({
 		          type: 'selectedQueue',
