@@ -790,8 +790,20 @@ def accountedit(request):
             messages.success(request, u'Аккаунт сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"), model.id))
         else:
-            messages.error(request, _(u'Ошибка при сохранении.'), extra_tags='alert-danger')
-            
+            if form._errors:
+                for k, v in form._errors.items():
+                    messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
+
+            if extra_form._errors:
+                for k, v in extra_form._errors.items():
+                    messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
+            if org_form._errors:
+                for k, v in org_form._errors.items():
+                    messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
+            if bank_form._errors:
+                for k, v in bank_form._errors.items():
+                    messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
+                
             return {'extra_form': extra_form, 'ticket_table': ticket_table, 'org_form':org_form, 'bank_form': bank_form,  'prepaidtraffic':prepaidtraffic, 'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
     if account:
         

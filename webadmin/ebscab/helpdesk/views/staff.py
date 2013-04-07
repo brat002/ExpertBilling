@@ -22,7 +22,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import loader, Context, RequestContext
 from django.utils.translation import ugettext as _
 
-from helpdesk.forms import TicketForm, UserSettingsForm, EmailIgnoreForm, EditTicketForm, TicketCCForm, TicketTypeForm
+from helpdesk.forms import TicketForm, UserSettingsForm, EmailIgnoreForm, EditTicketForm, TicketCCForm, TicketTypeForm, NewConnectionTicketForm
 from helpdesk.lib import send_templated_mail, line_chart, bar_chart, query_to_dict, apply_query, safe_template_context
 from helpdesk.models import Ticket, Queue, FollowUp, TicketChange, PreSetReply, Attachment, SavedSearch, IgnoreEmail, TicketCC
 from helpdesk.settings import HAS_TAG_SUPPORT
@@ -642,7 +642,7 @@ def edit_ticket(request, ticket_id):
     else:
         form = EditTicketForm(instance=ticket)
     
-    return render_to_response('helpdesk/edit_ticket.html',
+    return render_to_response('helpdesk/create_ticket.html',
         RequestContext(request, {
             'form': form,
             'tags_enabled': HAS_TAG_SUPPORT,
@@ -665,9 +665,17 @@ def create_ticket(request):
         if request.user.usersettings.settings.get('use_email_as_submitter', False) and request.user.account.email:
             initial_data['submitter_email'] = request.user.account.email
         q = request.GET.get('queue')
-        form = TicketForm(initial=initial_data)
+        print q
+        qt = Queue.objects.get(id=q)
+        print qt.slug
+        if qt.slug=='CONN':
+            form = NewConnectionTicketForm(initial=initial_data)
+            
+        else:
+            form = TicketForm(initial=initial_data)
+        
         try:
-            form.fields['queue'].initial = Queue.objects.get(id=q)
+            form.fields['queue'].initial = qt
         except:
             pass
         form.fields['assigned_to'].initial = request.user
@@ -1035,3 +1043,11 @@ def queueselect(request):
     form = TicketTypeForm()
     
     return { 'form':form} 
+
+@systemuser_required
+@ajax_request
+def ticket_info(request):
+
+    ticket = Ticket.objects.get(id=request.GET.get('id'))
+    
+    return { 'body': ticket.description} 

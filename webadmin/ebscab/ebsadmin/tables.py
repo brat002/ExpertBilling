@@ -278,10 +278,11 @@ class TrafficTransactionReportTable(TableReport):
 class CashierReportTable(TableReport):
     
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
+    fullname =django_tables.Column(verbose_name=u'ФИО', accessor=A('account.fullname'))
     created = FormatDateTimeColumn(verbose_name=_(u'Создан'))
     class Meta:
         model = Transaction
-        fields = ('id', 'account', 'type', 'bill', 'description',  'summ', 'promise', 'promise_expired', 'created')
+        fields = ('id', 'account', 'fullname', 'type', 'bill', 'description',  'summ', 'promise', 'promise_expired', 'created')
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed"'}
         
