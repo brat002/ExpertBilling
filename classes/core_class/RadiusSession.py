@@ -6,7 +6,10 @@ class RadiusSession(tuple):
     __slots__ = () 
 
     _fields = ('id', 'account_id', 'subaccount_id','sessionid', 'framed_ip_address', 'speed_string', 'access_type', 'nas_id', 'time_from_last_update', 'date_start', 'ipinuse_id', 'caller_id', 'guest_pool', 'nas_port_id') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, account_id, subaccount_id, sessionid, framed_ip_address, speed_string, access_type, nas_id, time_from_last_update, date_start,ipinuse_id,caller_id,guest_pool, nas_port_id):
         return tuple.__new__(cls, (id, account_id, subaccount_id, sessionid, framed_ip_address, speed_string, access_type, nas_id, time_from_last_update, date_start,ipinuse_id,caller_id,guest_pool, nas_port_id)) 
 

@@ -6,7 +6,10 @@ class NasData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'type', 'name', 'ipaddress', 'secret', 'login', 'password', 'allow_pptp', 'allow_pppoe', 'allow_ipn', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'confstring', 'multilink', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'identify', 'subacc_add_action', 'subacc_enable_action', 'subacc_disable_action', 'subacc_del_action', 'subacc_ipn_speed_action', 'acct_interim_interval') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2, identify, subacc_add_action, subacc_enable_action, subacc_disable_action,subacc_del_action, subacc_ipn_speed_action, acct_interim_interval):
         return tuple.__new__(cls, (id, type, name, ipaddress, secret, login, password, allow_pptp, allow_pppoe, allow_ipn, user_add_action, user_enable_action, user_disable_action, user_delete_action, vpn_speed_action, ipn_speed_action, reset_action, confstring, multilink, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2, identify, subacc_add_action, subacc_enable_action, subacc_disable_action,subacc_del_action, subacc_ipn_speed_action, acct_interim_interval)) 
 

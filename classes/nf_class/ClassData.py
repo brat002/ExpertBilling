@@ -6,7 +6,10 @@ class ClassData(tuple):
     __slots__ = () 
 
     _fields = ('dst_ip', 'dst_mask', 'next_hop', 'src_port', 'dst_port', 'in_index', 'out_index', 'src_as', 'dst_as', 'protocol', 'passthrough', 'traffic_class_id', 'weight') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, dst_ip, dst_mask, next_hop, src_port, dst_port, in_index, out_index, src_as, dst_as, protocol, passthrough,  traffic_class_id, weight):
         return tuple.__new__(cls, (dst_ip, dst_mask, next_hop, src_port, dst_port, in_index, out_index, src_as, dst_as, protocol, passthrough, traffic_class_id, weight)) 
 

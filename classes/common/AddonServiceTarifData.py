@@ -6,7 +6,10 @@ class AddonServiceTarifData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'tarif_id', 'service_id', 'activation_count', 'activation_count_period_id') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, tarif_id, service_id, activation_count, activation_count_period_id):
         return tuple.__new__(cls, (id, tarif_id, service_id, activation_count, activation_count_period_id)) 
 

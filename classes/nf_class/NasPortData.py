@@ -6,7 +6,10 @@ class NasPortData(list):
     __slots__ = () 
 
     _fields = ('account_id', 'nas_id', 'nas_port_id') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __init__(self, empty=True, account_id=None, nas_id=None, nas_port_id=None):
         if not empty:
             self.extend((account_id, nas_id, nas_port_id)) 

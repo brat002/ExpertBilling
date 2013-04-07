@@ -14,13 +14,14 @@ class DefaultNamedTuple(tuple):
 
     
 class CacheCollection(object):
-    __slots__ = ('date', 'cursor', 'caches', 'post_caches')
+    __slots__ = ('date', 'cursor', 'caches', 'post_caches', 'crypt_key')
     
     def __init__(self, date):
         self.date = date
         #self.cursor = cursor
         self.post_caches = []
         self.caches = []
+        self.crypt_key = 'ebscryptkeytest'
 
         
     def getdata(self, cursor):
@@ -39,18 +40,20 @@ class CacheCollection(object):
         for cache in self.post_caches:
             cache.reindex()     
             
-    def __repr__(self):
-        return self.__class__.__name__ + '\n' + '\n\n'.join((field + ': \n' + repr(getattr(self,field)) for field in self.__slots__))
+    #def __repr__(self):
+    #    return self.__class__.__name__ + '\n' + '\n\n'.join((field + ': \n' + repr(getattr(self,field)) for field in self.__slots__))
 
 class CacheItem(object):
-    __slots__ = ('data','sql', 'vars')
+    __slots__ = ('data','sql', 'vars', 'crypt_key', 'by_id')
     
     datatype = tuple
 
     
     def __init__(self):
         self.data = None
+        self.crypt_key = 'ebscryptkeytest'
         self.vars = ()
+        self.by_id = {}
         
     def checkdata(self):
         for field in self.datatype._fields:
@@ -103,6 +106,10 @@ class SimpleDefDictCache(CacheItem):
     
 class CacheMaster(object):
     __slots__ = ('date', 'lock', 'cache', 'read', 'first_time')
+    def __getstate__(self):
+        return self.date, None, self.cache, self.read, self.first_time
+    def __setstate__(self, state):
+        self.date, self.lock, self.cache, self.read, self.first_time = state
     
     def __init__(self):
         self.date = datetime(1970,1,1)

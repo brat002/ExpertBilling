@@ -6,7 +6,10 @@ class AccountData(tuple):
     __slots__ = () 
 
     _fields = ('account_id', 'ballance', 'credit', 'datetime', 'tarif_id', 'access_parameters_id', 'time_access_service_id', 'traffic_transmit_service_id', 'cost', 'reset_tarif_cost', 'settlement_period_id', 'tarif_active', 'acctf_id', 'false_', 'account_created', 'disabled_by_limit', 'balance_blocked', 'nas_id', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'assign_ipn_ip_from_dhcp', 'ipn_status', 'ipn_speed', 'vpn_speed', 'ipn_added', 'ps_null_ballance_checkout', 'tarif_deleted', 'allow_express_pay', 'account_status', 'allow_vpn_null', 'allow_vpn_block', 'username', 'password', 'require_tarif_cost', 'current_acctf') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, account_id, ballance, credit, datetime, tarif_id, access_parameters_id, time_access_service_id, traffic_transmit_service_id, cost, reset_tarif_cost, settlement_period_id, tarif_active, acctf_id, false_, account_created, disabled_by_limit, balance_blocked, nas_id, vpn_ip_address, ipn_ip_address, ipn_mac_address, assign_ipn_ip_from_dhcp, ipn_status, ipn_speed, vpn_speed, ipn_added, ps_null_ballance_checkout, tarif_deleted, allow_express_pay, account_status, allow_vpn_null, allow_vpn_block, username, password, require_tarif_cost, current_acctf):
         return tuple.__new__(cls, (account_id, ballance, credit, datetime, tarif_id, access_parameters_id, time_access_service_id, traffic_transmit_service_id, cost, reset_tarif_cost, settlement_period_id, tarif_active, acctf_id, false_, account_created, disabled_by_limit, balance_blocked, nas_id, vpn_ip_address, ipn_ip_address, ipn_mac_address, assign_ipn_ip_from_dhcp, ipn_status, ipn_speed, vpn_speed, ipn_added, ps_null_ballance_checkout, tarif_deleted, allow_express_pay, account_status, allow_vpn_null, allow_vpn_block, username, password, require_tarif_cost, current_acctf)) 
 

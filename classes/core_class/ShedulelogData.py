@@ -6,7 +6,10 @@ class ShedulelogData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'account_id', 'ballance_checkout', 'prepaid_traffic_reset', 'prepaid_traffic_accrued', 'prepaid_time_reset', 'prepaid_time_accrued', 'prepaid_radius_traffic_reset', 'prepaid_radius_traffic_accrued', 'balance_blocked', 'accounttarif_id') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, account_id, ballance_checkout, prepaid_traffic_reset, prepaid_traffic_accrued, prepaid_time_reset, prepaid_time_accrued, prepaid_radius_traffic_reset, prepaid_radius_traffic_accrued, balance_blocked, accounttarif_id):
         return tuple.__new__(cls, (id, account_id, ballance_checkout, prepaid_traffic_reset, prepaid_traffic_accrued, prepaid_time_reset, prepaid_time_accrued, prepaid_radius_traffic_reset, prepaid_radius_traffic_accrued, balance_blocked, accounttarif_id)) 
 

@@ -6,7 +6,10 @@ class BillSession(tuple):
     __slots__ = () 
 
     _fields = ('id', 'account_id', 'sessionid', 'session_time', 'bytes_in', 'bytes_out','interrim_update', 'date_start',  'date_end', 'acctf_id', 'lt_time', 'lt_bytes_in', 'lt_bytes_out', 'nas_port_id', 'nas_int_id') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, account_id, sessionid, session_time, bytes_in, bytes_out, interrim_update, date_start, date_end, acctf_id, lt_time, lt_bytes_in, lt_bytes_out, nas_port_id,nas_int_id):
         return tuple.__new__(cls, (id, account_id, sessionid, session_time, bytes_in, bytes_out, interrim_update, date_start, date_end, acctf_id, lt_time, lt_bytes_in, lt_bytes_out,nas_port_id,nas_int_id)) 
 

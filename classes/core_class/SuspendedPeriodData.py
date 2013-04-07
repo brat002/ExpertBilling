@@ -6,7 +6,10 @@ class SuspendedPeriodData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'account_id', 'start_date', 'end_date') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, account_id, start_date, end_date):
         return tuple.__new__(cls, (id, account_id, start_date, end_date)) 
 

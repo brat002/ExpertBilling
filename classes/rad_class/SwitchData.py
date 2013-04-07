@@ -6,7 +6,10 @@ class SwitchData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'identify', 'option82', 'option82_auth_type', 'option82_template', 'remote_id') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, identify, option82, option82_auth_type, option82_template, remote_id):
         return tuple.__new__(cls, (id, identify, option82, option82_auth_type, option82_template, remote_id)) 
 

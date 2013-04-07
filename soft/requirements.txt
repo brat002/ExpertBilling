@@ -32,3 +32,4 @@ cdecimal
 django-pgcrypto
 django-annoying
 django-select2
+django-tagging

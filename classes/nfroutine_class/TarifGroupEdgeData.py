@@ -6,7 +6,10 @@ class TarifGroupEdgeData(list):
     __slots__ = () 
 
     _fields = ('tarif_id', 'group_edges', 'datetime') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __init__(self, empty=True, tarif_id=None, group_edges=None, datetime=None):
         if empty:
             pass

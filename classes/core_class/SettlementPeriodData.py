@@ -6,7 +6,10 @@ class SettlementPeriodData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'time_start', 'length', 'length_in', 'autostart') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, time_start, length, length_in, autostart):
         return tuple.__new__(cls, (id, time_start, length, length_in, autostart)) 
 

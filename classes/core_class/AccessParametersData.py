@@ -6,7 +6,10 @@ class AccessParametersData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'access_type', 'access_time_id', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx', 'burst_treshold_tx', 'burst_treshold_rx',  'burst_time_tx', 'burst_time_rx', 'min_tx', 'min_rx',  'priority', 'ipn_for_vpn') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, access_type, access_time_id, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx,  burst_time_tx, burst_time_rx, min_tx, min_rx,  priority, ipn_for_vpn):
         return tuple.__new__(cls, (id, access_type, access_time_id, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx,  burst_time_tx, burst_time_rx, min_tx, min_rx,  priority, ipn_for_vpn)) 
 

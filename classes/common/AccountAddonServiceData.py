@@ -7,6 +7,11 @@ class AccountAddonServiceData(tuple):
 
     _fields = ('id', 'service_id', 'account_id', 'activated', 'deactivated', 'action_status', 'speed_status', 'temporary_blocked', 'last_checkout', 'subaccount_id') 
 
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
+        
     def __new__(cls, id, service_id, account_id, activated, deactivated, action_status, speed_status, temporary_blocked, last_checkout, subaccount_id):
         return tuple.__new__(cls, (id, service_id, account_id, activated, deactivated, action_status, speed_status, temporary_blocked, last_checkout, subaccount_id)) 
 

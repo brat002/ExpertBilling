@@ -6,7 +6,10 @@ class TimeAccessServiceData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'prepaid_time', 'reset_time', 'rounding', 'tarification_step') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, prepaid_time, reset_time, rounding, tarification_step):
         return tuple.__new__(cls, (id, prepaid_time, reset_time, rounding, tarification_step)) 
 

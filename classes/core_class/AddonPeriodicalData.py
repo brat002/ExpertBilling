@@ -6,7 +6,10 @@ class AddonPeriodicalData(tuple):
     __slots__ = () 
 
     _fields = ('ps_id', 'ps_name', 'cost', 'cash_method', 'sp_name', 'time_start', 'length', 'length_in', 'autostart', 'account_id', 'created', 'deactivated', 'temporary_blocked', 'last_checkout', 'addon_id', 'subaccount_id', 'tpd') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, ps_id, ps_name, cost, cash_method, sp_name, time_start, length, length_in, autostart, account_id, created, deactivated, temporary_blocked, last_checkout, addon_id, subaccount_id, tpd):
         return tuple.__new__(cls, (ps_id, ps_name, cost, cash_method, sp_name, time_start, length, length_in, autostart, account_id, created, deactivated, temporary_blocked, last_checkout, addon_id, subaccount_id, tpd)) 
 

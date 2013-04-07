@@ -6,7 +6,10 @@ class AddonServiceData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'name', 'allow_activation', 'service_type', 'sp_type', 'sp_period_id', 'timeperiod_id', 'cost', 'cancel_subscription', 'wyte_period_id', 'wyte_cost', 'action', 'nas_id', 'service_activation_action', 'service_deactivation_action', 'deactivate_service_for_blocked_account', 'change_speed', 'change_speed_type', 'speed_units', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx', 'burst_treshold_tx', 'burst_treshold_rx', 'burst_time_tx', 'burst_time_rx', 'min_tx', 'min_rx', 'priority') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, name, allow_activation, service_type, sp_type, sp_period_id, timeperiod_id, cost, cancel_subscription, wyte_period_id, wyte_cost, action, nas_id, service_activation_action, service_deactivation_action, deactivate_service_for_blocked_account, change_speed, change_speed_type, speed_units, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx, burst_time_tx, burst_time_rx, min_tx, min_rx, priority):
         return tuple.__new__(cls, (id, name, allow_activation, service_type, sp_type, sp_period_id, timeperiod_id, cost, cancel_subscription, wyte_period_id, wyte_cost, action, nas_id, service_activation_action, service_deactivation_action, deactivate_service_for_blocked_account, change_speed, change_speed_type, speed_units, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx, burst_time_tx, burst_time_rx, min_tx, min_rx, priority)) 
 

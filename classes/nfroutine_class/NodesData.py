@@ -6,7 +6,10 @@ class NodesData(tuple):
     __slots__ = () 
 
     _fields = ('traffic_node_id', 'traffic_cost', 'edge_start', 'edge_end', 'time_start', 'length', 'repeat_after', 'group_id', 'traffic_transmit_service_id', 'edge_value') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, traffic_node_id, traffic_cost, edge_start, edge_end, time_start, length, repeat_after, group_id, traffic_transmit_service_id, edge_value):
         return tuple.__new__(cls, (traffic_node_id, traffic_cost, edge_start, edge_end, time_start, length, repeat_after, group_id, traffic_transmit_service_id, edge_value)) 
 

@@ -6,7 +6,10 @@ class TrafficTransmitServiceData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'reset_traffic', 'cash_method', 'period_check') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, reset_traffic, cash_method, period_check):
         return tuple.__new__(cls, (id, reset_traffic, cash_method, period_check)) 
 

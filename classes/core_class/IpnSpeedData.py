@@ -6,7 +6,10 @@ class IpnSpeedData(tuple):
     __slots__ = () 
 
     _fields = ('id', 'account_id', 'speed', 'state', 'static', 'datetime') 
-
+    def __getstate__(self):
+        return tuple(self)
+    def __setstate__(self, state):
+        return self._make(state)
     def __new__(cls, id, account_id, speed, state, static, datetime):
         return tuple.__new__(cls, (id, account_id, speed, state, static, datetime)) 
 
