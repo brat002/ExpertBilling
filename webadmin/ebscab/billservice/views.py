@@ -377,6 +377,7 @@ def make_payment(request):
 @ajax_request
 @login_required
 def qiwi_payment(request):
+    from django.utils.translation import ugettext as _
     if request.method != 'POST': return {'status_message':_(u"Неправильный вызов функции")}
     form = QiwiPaymentRequestForm(request.POST)
     if not form.is_valid():return {'status_message':_(u"Ошибка в заполнении полей")}
@@ -432,6 +433,7 @@ def qiwi_payment(request):
 @ajax_request
 @login_required
 def qiwi_balance(request):
+    from django.utils.translation import ugettext as _
     if request.method != 'POST': return {'balance':0, 'status_message':_(u"Неправильный вызов функции")}
     phone = request.POST.get('phone', None)
     password = request.POST.get('password', None)
@@ -612,6 +614,7 @@ def subaccount_password_form(request, subaccount_id):
 @ajax_request
 @login_required
 def subaccount_change_password(request):
+    from django.utils.translation import ugettext as _
     if request.method == 'POST':
         form = SimplePasswordForm(request.POST)
         if form.is_valid():
@@ -660,6 +663,7 @@ def subaccount_change_password(request):
 @ajax_request
 @login_required
 def change_password(request):
+    from django.utils.translation import ugettext as _
     if request.method == 'POST':
         user = request.user.account
   
@@ -694,6 +698,7 @@ def change_password(request):
 @ajax_request
 @login_required
 def change_email(request):
+    from django.utils.translation import ugettext as _
     if request.method == 'POST':
         user = request.user.account
         form = EmailForm(request.POST)
@@ -721,6 +726,7 @@ def change_email(request):
 @login_required
 def change_tariff_form(request):
     from datetime import datetime, date
+    from django.utils.translation import ugettext as _
     user = request.user.account
     account_tariff_id =  AccountTarif.objects.filter(account = user, datetime__lt=datetime.now()).order_by('-datetime')[:1]
     account_tariff = account_tariff_id[0]
@@ -758,6 +764,7 @@ def change_tariff(request):
         1 - дата начала действия тарифа
 
     """
+    from django.utils.translation import ugettext as _
     from datetime import datetime
     if request.method == 'POST':
         rule_id = request.POST.get('id_tariff_id', None)
@@ -848,6 +855,7 @@ def card_form(request):
 @ajax_request
 @login_required
 def card_acvation(request):
+    from django.utils.translation import ugettext as _
     user = request.user.account
     if not user.allow_expresscards:
         return {
@@ -1216,6 +1224,7 @@ def one_time_history(request):
 @ajax_request
 @login_required
 def news_delete(request):
+    from django.utils.translation import ugettext as _
     message = _(u'Невозможно удалить новость, попробуйте позже')
     if request.method == 'POST':
         from billservice.models import AccountViewedNews
