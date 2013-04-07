@@ -7,10 +7,17 @@ from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _, ugettext
 from helpdesk.settings import HAS_TAG_SUPPORT
+from billservice.models import SystemUser, Account
 
 if HAS_TAG_SUPPORT:
     from tagging.fields import TagField
 
+source_types = (
+          ('phone', _('Phone')),
+          ('helpdesk', _('HelpDesk')),
+          ('im', _('InstantManager')),
+          ('personally', _('Personally'))
+          )
 class Queue(models.Model):
     """
     A queue is a collection of tickets into what would generally be business
@@ -264,15 +271,19 @@ class Ticket(models.Model):
     queue = models.ForeignKey(Queue, verbose_name=_(u'Queue'))
     owner = models.ForeignKey(User, related_name='submitted_by', null=False, blank=False, \
                                   verbose_name=_(u'Owner'))
+    source = models.CharField(choices=source_types, max_length=32, blank=False, default='helpdesk')
+    account = models.ForeignKey(Account, verbose_name=_('Account'), blank=True, null=True, help_text=_(u'Аккаунт, с которым связана текущая задача'))
     notify_owner = models.BooleanField(blank=True, default=True,verbose_name=_(u'Notify owner'),help_text=_('Notify owner of ticket for changes'))
-    assigned_to = models.ForeignKey(User, verbose_name=u'Назначено на', related_name='assigned_to',blank=True,null=True)
+    assigned_to = models.ForeignKey(SystemUser, verbose_name=u'Назначено на', related_name='assigned_to',blank=True,null=True)
     created = models.DateTimeField(_(u'Created'), blank=True, \
                                    help_text=_('Date this ticket was first created'),)
+    due_date = models.DateTimeField(_(u'Due'), blank=True, null=True)
     modified = models.DateTimeField(_(u'Modified'), blank=True, \
         help_text=_(u'Date this ticket was most recently changed.'),)
     submitter_email = models.EmailField(_('Submitter E-Mail'), blank=True, null=True, \
         help_text=_(u'The submitter will receive an email for all public follow-ups left for this task.'))
-    
+    #submitter_phone = models.EmailField(_('Submitter Phone'), blank=True, null=True)
+    #submitter_im = models.EmailField(_('Submitter Phone'), blank=True, null=True)
     status = models.IntegerField(_(u'Status'), choices=STATUS_CHOICES, default=OPEN_STATUS)
     on_hold = models.BooleanField(_(u'On Hold'), blank=True, default=False, \
         help_text=_(u'If a ticket is on hold, it will not automatically be escalated.'))

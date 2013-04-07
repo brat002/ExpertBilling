@@ -130,6 +130,7 @@ INSTALLED_APPS = (
     'getpaid',
     'sendsms',
     'django_select2',
+    'tagging'
 )
 
 

@@ -15,7 +15,13 @@ from lib.fields import IPNetworkField, EncryptedTextField
 from dynamicmodel.models import DynamicModel, DynamicSchema
 from django.utils.translation import ugettext_lazy as _
 
+from django.core.exceptions import ValidationError
+import re
 
+
+def validate_phone(value):
+    if value and not re.match(r'''\+\d{1,25}$''', value):
+        raise ValidationError(_(u'Некорректный формат номера. Используйте международный формат +71923453333'))
 #===============================================================================
 # def _(s):
 #	return unicode(s)
@@ -769,9 +775,9 @@ class Account(DynamicModel):
 
     passport = models.CharField(verbose_name=_(u'№ паспорта'), blank=True, max_length=64)
     passport_date = models.CharField(verbose_name=_(u'Выдан'), blank=True, max_length=64)
-    phone_h = models.CharField(verbose_name=_(u'Дом. телефон') ,blank=True, max_length=64)
-    phone_m = models.CharField(verbose_name=_(u'Моб. телефон'), help_text=_(u'В международном формате +71923453333'), blank=True, max_length=64)
-    contactperson_phone = models.CharField(verbose_name=_(u'Тел. контактного лица'), blank=True, max_length=64)
+    phone_h = models.CharField(validators=[validate_phone], verbose_name=_(u'Дом. телефон') ,blank=True, max_length=64)
+    phone_m = models.CharField(validators=[validate_phone], verbose_name=_(u'Моб. телефон'), help_text=_(u'В международном формате +71923453333'), blank=True, max_length=64)
+    contactperson_phone = models.CharField(validators=[validate_phone], verbose_name=_(u'Тел. контактного лица'), blank=True, max_length=64)
     comment = models.TextField(blank=True)
     row = models.CharField(verbose_name=_(u'Этаж'), blank=True, max_length=6)
     elevator_direction = models.CharField(verbose_name=_(u'Направление от лифта'), blank=True, null=True, max_length=128)
@@ -919,7 +925,7 @@ class Organization(models.Model):
     kpp = models.CharField(max_length=255, blank=True, null=True, verbose_name=_(u"КПП"))
     kor_s = models.CharField(max_length=255, blank=True, null=True, verbose_name=_(u"Корреспонденский счёт"))
     unp = models.CharField(max_length=255, blank=True, null=True, verbose_name=_(u"УНП"))
-    phone = models.CharField(max_length=255, blank=True, null=True, verbose_name=_(u"Телефон"))
+    phone = models.CharField(validators=[validate_phone], max_length=255, blank=True, null=True, verbose_name=_(u"Телефон"))
     fax = models.CharField(max_length=255, blank=True, null=True, verbose_name=_(u"Факс"))
     bank = models.ForeignKey("BankData", blank=True, null=True, on_delete = models.SET_NULL, verbose_name=_(u"Банк"))
 
@@ -1079,8 +1085,8 @@ class SystemUser(models.Model):
     #password = models.CharField(max_length=255, default='')
     email = models.CharField(verbose_name=_(u'E-mail'), blank=True, default='',max_length=200)
     fullname = models.CharField(verbose_name=_(u'ФИО'), max_length=512, blank=True, default='')
-    home_phone  = models.CharField(verbose_name=_(u'Дом. телефон'), max_length=512, blank=True, default ='')
-    mobile_phone  = models.CharField(verbose_name=_(u'Моб. телефон'), help_text=_(u'В международном формате +71231231212'), max_length=512, blank=True, default ='')
+    home_phone  = models.CharField(validators=[validate_phone], verbose_name=_(u'Дом. телефон'), max_length=512, blank=True, default ='')
+    mobile_phone  = models.CharField(validators=[validate_phone], verbose_name=_(u'Моб. телефон'), help_text=_(u'В международном формате +71231231212'), max_length=512, blank=True, default ='')
     address = models.CharField(verbose_name=_(u'Адрес'), max_length=512, blank=True, default='')
     job = models.CharField(verbose_name=_(u'Должность'), max_length=256, blank=True, default='')
     last_ip  = models.CharField(verbose_name=_(u'Последний IP'), max_length=64, blank=True, null=True)

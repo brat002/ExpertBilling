@@ -109,6 +109,8 @@ urlpatterns = patterns('helpdesk.views.staff',
         'email_ignore_del',
         name='helpdesk_email_ignore_del'),
     url(r'^queue/select/$', 'queueselect', name='queueselect'),
+    url(r'^ticket/info/$', 'ticket_info', name='ticket_info'),
+    
 )
 
 urlpatterns += patterns('helpdesk.views.public',

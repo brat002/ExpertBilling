@@ -17,54 +17,8 @@
 <link title="My Open Tickets" type="application/rss+xml" href="/rss/user/demo/" rel="alternate">
 <link title="All Recent Activity" type="application/rss+xml" href="/rss/recent_activity/" rel="alternate">
 <link title="Unassigned Tickets" type="application/rss+xml" href="/rss/unassigned/" rel="alternate">
-<script type="text/javascript">
-$(document).ready(function(){
-// replace display while hovering over menu item
-$('li.headerlink').hover(
-function() { $('ul', this).css('display', 'block'); },
-function() { $('ul', this).css('display', 'none'); });
-}); 
-</script>
-<style type="text/css">
-/* header */
-#dropdown li.headerlink { width: auto; float: left; text-align: center; }
-/* query list */
-#dropdown li.headerlink ul { display: none;
-text-align: left;
-position: absolute;
-padding: 5px;
-z-index: 2; }
-/* query entries */
-#dropdown li.headerlink:hover ul { display: block; width: auto; }
-#dropdown li.headerlink:hover ul li { padding: 5px; margin: 1px; float: none; display: block; } 
-</style>
-<script src="/media/js/filter.js" language="javascript" type="text/javascript"></script>
-<script src="/media/js/hover.js" language="javascript" type="text/javascript"></script>
-<script language="javascript" type="text/javascript">
-$(document).ready(function() {
-// Enable Tabs
-$("#searchtabs").tabs({
-collapsible:true
-});
-// Hide all tabs by default
-$("#searchtabs > ul > li").removeClass().addClass("ui-corner-top ui-state-default");
-$("#searchtabs > div").addClass("ui-tabs-hide");
-$("#select_all").click(function() {
-$(".ticket_multi_select").attr('checked', true);
-return false;
-});
-$("#select_none").click(function() {
-$(".ticket_multi_select").attr('checked', false);
-return false;
-});
-$("#select_inverse").click(function() {
-$(".ticket_multi_select").each(function() {
-$(this).attr('checked', !$(this).attr('checked'));
-});
-return false;
-});
-}); 
-</script>
+
+
 {% block helpdesk_head %}
 {%endblock%}
 </head>

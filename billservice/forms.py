@@ -25,6 +25,19 @@ from ajax_select.fields import AutoCompleteSelectMultipleField, AutoCompleteSele
 from itertools import chain
 from widgets import SplitDateTimeWidget, CheckboxSelectMultipleWithSelectAll
 from django.utils.translation import ugettext as _
+from django_select2 import *
+
+
+class HardwareChoices(AutoModelSelect2Field):
+    queryset = Hardware.objects#.filter(accounthardware__isnull=True)
+    max_results = 20
+    search_fields = ['name__icontains', 'model__name__icontains', 'sn__icontains', 'comment__icontains']
+    
+class NewHardwareChoices(AutoModelSelect2Field):
+    queryset = Hardware.objects.filter(accounthardware__isnull=True)
+    max_results = 20
+    search_fields = ['name__icontains', 'model__name__icontains', 'sn__icontains', 'comment__icontains']
+
 
 class DateRangeField(forms.DateField):
     def __init__(self, *args, **kwargs):
@@ -733,9 +746,30 @@ class ManufacturerForm(ModelForm):
 class AccountHardwareForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.widgets.HiddenInput)
-    hardware = AutoCompleteSelectField( 'hardware_fts', label = _(u"Устройство"), required = True, widget = forms.TextInput(attrs={'class': 'input-xlarge'}), help_text=u"Поиск устройства по всем полям")
+    #hardware = AutoCompleteSelectField( 'hardware_fts', label = _(u"Устройство"), required = True, widget = forms.TextInput(attrs={'class': 'input-xlarge'}), help_text=u"Поиск устройства по всем полям")
+    hardware = NewHardwareChoices(required=True,         widget=AutoHeavySelect2Widget(
+            select2_options={
+                'width': '100%',
+                'placeholder': u"Поиск оборудования"
+            }
+        ))
+    
     
     comment = forms.CharField(label=_(u'Комментарий'), required=False, widget=forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span5'}))
+    
+    def __init__(self, *args, **kwargs):
+        super(AccountHardwareForm, self).__init__(*args, **kwargs)
+        print NewHardwareChoices
+        if not self.fields['id'].initial:
+            self.fields['hardware'] = HardwareChoices(required=True,
+                    queryset = Hardware.objects.filter(accounthardware__isnull=True),         
+                    widget=AutoHeavySelect2Widget(
+                    select2_options={
+                        'width': '100%',
+                        'placeholder': u"Поиск оборудования"
+                    }
+                ))
+    
     class Meta:
         model = AccountHardware
      

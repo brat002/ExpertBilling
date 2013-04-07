@@ -18,7 +18,6 @@
             function helpdeskQueueHandler(e) {
 
                 var data = {queue:e.message};
-
                 var $form = $('<form method="GET" action="{% url helpdesk_submit %}">');
                 $.each(data, function(k,v){
                     $form.append('<input type="hidden" name="' + k + '" value="' + v + '">');
