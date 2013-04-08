@@ -28,6 +28,16 @@
         });
     });
 
+    $("#id_btn_followup_add").click(function(event) {
+        $('<div/>').dialog2({
+            title: "{% blocktrans %}Добавление производителей оборудования{% endblocktrans %}", 
+            content: "{% url manufacturer_edit %}", 
+            id: "server-notice"
+        });
+
+        event.preventDefault(event);
+    });
+    
     function processAddFileClick() {
         /* Until jQuery includes some 'livequery' functionality in the core
            distribution, this will have to do. */
@@ -131,7 +141,7 @@
 </tr>{% endif %}
 
 </table>
-
+<div class="btn-toolbar pull-right"><a href="{% url manufacturer_edit %}" id="id_btn_followup_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
 {% if ticket.followup_set.all %}
 <h2>{% blocktrans %}История{% endblocktrans %}</h2>
 {% load ticket_to_link %}
@@ -173,13 +183,13 @@
   {% endfor %}
   
   {% endfor %}
-  
+  <hr />
 </div>
 {% endfor %}
 
 </div>
 {% endif %}
-<hr />
+
 <h3>{% trans "Respond to this ticket" %}</h3>
 
 <form method='post' action='update/' enctype='multipart/form-data' class="well form-horizontal  form-condensed">

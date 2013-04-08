@@ -5,30 +5,20 @@
 {% block extra_head %}
         <script type="text/javascript"> 
         $(document).ready(function() {
-        $("#generate_username").click(function() {
-            $.getJSON('{% url generate_credentials %}',{action:'login'},function(data,status){
-                if( status=='success' ){
-                    if(data.success==true)
-                        $("#id_username").val(data.generated);
-                    else
-                        alert(data.generated)
+            function check_tpd(){
+
+                if ($("#id_sp_type").val()=='GRADUAL'){
+                    $("#div_id_tpd").show();
+                    
                 }else{
-                    alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
+                    $("#div_id_tpd").hide();
+                    $("#div_id_tpd").val('');
                 }
-            })
-            });
-        $("#generate_password").click(function() {
-            $.getJSON('{% url generate_credentials %}',{action:'password'},function(data,status){
-                if( status=='success' ){
-                    if(data.success==true)
-                        $("#id_password").val(data.generated);
-                    else
-                        alert(data.generated)
-                }else{
-                    alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
-                }
-            })
-            });
+            };
+            check_tpd();
+       $("#id_sp_type").change(check_tpd);
+            
+            
         $('[data-toggle="modal"]').click(function(e) {
             e.preventDefault(e);
             var href = $(this).attr('href');
@@ -163,7 +153,7 @@
                       {% endif %}
                       </div>
                   </div>
-                  <div class="control-group {% if form.tpd.errors %}error{% endif %}">
+                  <div id="div_id_tpd" class="control-group {% if form.tpd.errors %}error{% endif %}">
                       <label class="control-label">{{form.tpd.label}}</label>
                       <div class="controls">
                       {{ form.tpd }}

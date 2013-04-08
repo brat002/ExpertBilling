@@ -1,11 +1,4 @@
-"""
-Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
-
-(c) Copyright 2008 Jutda. All Rights Reserved. See LICENSE for details.
-
-views/staff.py - The bulk of the application - provides most business logic and
-                 renders all staff-facing views.
-"""
+# -*- coding: utf-8 -*-
 
 from datetime import datetime
 
@@ -22,7 +15,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import loader, Context, RequestContext
 from django.utils.translation import ugettext as _
 
-from helpdesk.forms import TicketForm, UserSettingsForm, EmailIgnoreForm, EditTicketForm, TicketCCForm, TicketTypeForm, NewConnectionTicketForm
+from helpdesk.forms import TicketForm, UserSettingsForm, EmailIgnoreForm, EditTicketForm, TicketCCForm, TicketTypeForm, FollowUpForm
 from helpdesk.lib import send_templated_mail, line_chart, bar_chart, query_to_dict, apply_query, safe_template_context
 from helpdesk.models import Ticket, Queue, FollowUp, TicketChange, PreSetReply, Attachment, SavedSearch, IgnoreEmail, TicketCC
 from helpdesk.settings import HAS_TAG_SUPPORT
@@ -65,7 +58,7 @@ def dashboard(request):
         )
 
     
-    unassigned_ticket_table = UnassignedTicketTable(tickets)
+    unassigned_ticket_table = UnassignedTicketTable(unassigned_tickets)
     table_to_report = RequestConfig(request, paginate=False ).configure(unassigned_ticket_table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
@@ -149,6 +142,55 @@ def view_ticket(request, ticket_id):
             'tags_enabled': HAS_TAG_SUPPORT
         }))
 view_ticket = staff_member_required(view_ticket)
+
+@systemuser_required
+@render_to('helpdesk/followup_edit.html')
+def followup_edit(request):
+    id = request.POST.get("id")
+
+    item = None
+
+    if request.method == 'POST': 
+
+        if id:
+            model = FollowUp.objects.get(id=id)
+            form = ManufacturerForm(request.POST, instance=model) 
+            if  not (request.user.account.has_perm('helpdesk.change_manufacturer')):
+                messages.error(request, _(u'У вас нет прав на редактирование производителей оборудования'), extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+        else:
+            form = ManufacturerForm(request.POST) 
+            if  not (request.user.account.has_perm('billservice.add_manufacturer')):
+                messages.error(request, _(u'У вас нет прав на создание производителей оборудования'), extra_tags='alert-danger')
+                return HttpResponseRedirect(request.path)
+
+
+
+        if form.is_valid():
+            model = form.save(commit=False)
+            model.save()
+
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, _(u'Производитель успешно сохранён.'), extra_tags='alert-success')
+            return {'form':form,  'status': True} 
+        else:
+            messages.error(request, _(u'При сохранении производителя возникли ошибки.'), extra_tags='alert-danger')
+            return {'form':form,  'status': False} 
+    else:
+        id = request.GET.get("id")
+
+        if  not (request.user.account.has_perm('helpdesk.add_followup')):
+            messages.error(request, _(u'У вас нет прав на создание комментариев.'), extra_tags='alert-danger')
+            return {}
+        if id:
+
+            item = FollowUp.objects.get(id=id)
+            
+            form = FollowUpForm(instance=item)
+        else:
+            form = FollowUpForm()
+
+    return { 'form':form, 'status': False} 
 
 
 def update_ticket(request, ticket_id, public=False):
@@ -664,20 +706,10 @@ def create_ticket(request):
         initial_data = {}
         if request.user.usersettings.settings.get('use_email_as_submitter', False) and request.user.account.email:
             initial_data['submitter_email'] = request.user.account.email
-        q = request.GET.get('queue')
-        print q
-        qt = Queue.objects.get(id=q)
-        print qt.slug
-        if qt.slug=='CONN':
-            form = NewConnectionTicketForm(initial=initial_data)
-            
-        else:
-            form = TicketForm(initial=initial_data)
+
+        form = TicketForm(initial=initial_data)
         
-        try:
-            form.fields['queue'].initial = qt
-        except:
-            pass
+  
         form.fields['assigned_to'].initial = request.user
         form.fields['owner'].initial = request.user
         
