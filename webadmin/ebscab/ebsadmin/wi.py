@@ -670,7 +670,7 @@ def accountedit(request):
             messages.error(request, _(u'У вас нет прав на редактирование аккаунтов'), extra_tags='alert-danger')
             return HttpResponseRedirect(request.path)
 
-        account = Account.objects.get(id=account_id)
+        account = Account.objects.all_with_deleted().get(id=account_id)
         
             
 

@@ -85,7 +85,7 @@ core_sql = \
                         c.length, c.length_in, c.autostart, b.tarif_id, b.ps_condition, b.condition_summ, date_trunc('second', b.created), b.deactivated, b.deleted, b.tpd
                         FROM billservice_periodicalservice as b 
                         JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
-                        WHERE deactivated is Null or (deactivated>=%s) and (deleted=False or deleted is Null);""",
+                        WHERE deleted=False or deleted is Null;""",
           'timeaccnode':"""SELECT tan.time_period_id, tan.cost, tan.time_access_service_id
                         FROM billservice_timeaccessnode as tan
                         JOIN billservice_timeperiod as tp ON tan.time_period_id=tp.id;""",
