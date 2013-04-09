@@ -8,13 +8,18 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 
 from helpdesk.lib import send_templated_mail
-from helpdesk.models import Ticket, Queue, FollowUp, Attachment, IgnoreEmail, TicketCC
+from helpdesk.models import Ticket, Queue, FollowUp, Attachment, IgnoreEmail, TicketCC,\
+    PreSetReply
 from helpdesk.settings import HAS_TAG_SUPPORT
 from django_select2 import *
 from django.contrib.auth.models import User
 from django.utils.encoding import smart_unicode
 import copy
 from billservice.models import SystemUser, Account
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Div, Submit, Reset,  HTML, Button, Row, Field, Fieldset
+from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
+from django.core.urlresolvers import reverse
 class UserChoices(AutoModelSelect2Field):
     queryset = User.objects
     max_results = 20
@@ -443,5 +448,38 @@ class TicketCCForm(forms.ModelForm):
 
 class FollowUpForm(forms.ModelForm):
     
+    preset_reply = forms.ModelChoiceField(queryset = PreSetReply.objects.all(), label = _("Use a Pre-set Reply"), required=False)
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_id = 'id-followup_form'
+        self.helper.form_class = 'well form-horizontal ajax form-condensed'
+        self.helper.form_method = 'post'
+        self.helper.form_tag = False
+        self.helper.form_action = reverse("followup_edit")
+        self.helper.layout = Layout(
+            Fieldset(
+                '',
+                 'id',
+                 'ticket',
+                 Field('preset_reply', css_class='input-large span6'),
+                'comment',
+                'public',
+                'new_status',
+
+            ),    
+
+            FormActions(
+                Submit('save', _(u'Add'), css_class="btn-primary"),
+                Button('close', _(u'Close'), css_class="btn-inverse close-dialog"),
+            )
+               
+        )
+        super(FollowUpForm, self).__init__(*args, **kwargs)
+        
+        self.fields['ticket'].widget = forms.widgets.HiddenInput()
+        self.fields['comment'].widget = forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span6'})
+        
+        
     class Meta:
         model = FollowUp
+        exclude = ('date', 'user', 'title')
