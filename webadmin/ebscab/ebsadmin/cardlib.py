@@ -5,7 +5,8 @@ import datetime
 from django.db.models import Q
 from billservice.utility import settlement_period_info
 from billservice.utility import in_period
-    
+from django.utils.translation import ugettext as _
+
 def activate_card(login, pin):
     status_ok = 1
     status_bad_userpassword = 2

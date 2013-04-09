@@ -2,7 +2,7 @@
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from getpaid.backends import PaymentProcessorBase
-from django import forms
+from django.forms import ValidationError
 import hashlib
 import datetime
 import listeners
@@ -23,6 +23,14 @@ from xml_helper import xml2obj
 import IPy
 import time
 
+class CheckAdditionalFieldsForm(AdditionalFieldsForm):
+    def clean_summ(self):
+        summ = self.cleaned_data['summ']
+        if summ<PaymentProcessor.get_backend_setting('MIN_SUM', PaymentProcessor.MIN_SUM):
+            raise ValidationError(u"Сумма должна быть не меньше %s" % PaymentProcessor.get_backend_setting('MIN_SUM', PaymentProcessor.MIN_SUM) )
+
+        return summ
+    
 params={
 'create_invoice':u"""<?xml version="1.0" encoding="utf-8"?>
 <request>
@@ -93,7 +101,7 @@ result_codes={'-1':u'Произошла ошибка. Проверьте ном�
 '339':u'Не пройден контроль IP-адреса',
 '353':u'Включено SMS подтверждение действий. Невозможно проверить баланс.',
 '370':u'Превышено максимальное кол-во одновременно выполняемых запросов',
-'1000':u'Ошибка выполнения запроса.',
+'1000':u'Ошибка выполнения запроса.',You have forgotten about Fred!
 }
 
 payment_codes={
@@ -157,7 +165,7 @@ class PaymentProcessor(PaymentProcessorBase):
     
     @staticmethod
     def form():
-        return AdditionalFieldsForm
+        return CheckAdditionalFieldsForm
     
     @staticmethod
     def make_request(xml):
@@ -197,6 +205,8 @@ class PaymentProcessor(PaymentProcessorBase):
             phone = form.cleaned_data['phone']
         else:
             return self.GATEWAY_URL, "GET", {}
+        
+
         
         status, message = PaymentProcessor.create_invoice(phone, payment, summ=summ)
         

@@ -274,6 +274,7 @@
         __remove: function() {
             this.__overlay.remove();
             this.__handle.removeData("dialog2").parent().remove();
+
         }, 
         
         /**
@@ -326,7 +327,8 @@
             var overlay = this.__overlay;
             
             overlay.hide();
-            
+
+            $("html").css("overflow","auto");
             dialog
                 .parent().hide().end()
                 .trigger("dialog2.closed")
@@ -351,6 +353,7 @@
                     .trigger("dialog2.opened");
                     
                 this.__focus();
+                $("html").css("overflow","hidden");
             }
         }, 
         

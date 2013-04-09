@@ -2,7 +2,8 @@
 {% load billservice_tags %}
 {% load crispy_forms_tags %}
 {% block helpdesk_title %}{% trans "View Ticket Details" %}{% endblock %}
-{% block helpdesk_head %}
+{% block extra_head %}
+{{block.super}}
 <script type="text/javascript">
     $(document).ready(function() {
         $("#ShowFurtherEditOptions").click(function() {
@@ -18,23 +19,16 @@
             return false;
         });
 
-        $('#id_preset').change(function() {
-            preset = $('#id_preset').val();
-            if (preset != '') {
-                $.get("{% url helpdesk_raw "preset" %}?id=" + preset, function(data) {
-                    $("#commentBox").val(data)
-                });
-            }
-        });
-    });
 
-    $("#id_btn_followup_add").click(function(event) {
+    
+
+    $(".btn_followup_add").click(function(event) {
         $('<div/>').dialog2({
             title: "{% blocktrans %}Добавление производителей оборудования{% endblocktrans %}", 
-            content: "{% url manufacturer_edit %}", 
+            content: "{% url followup_edit %}?ticket_id={{ticket.id}}", 
             id: "server-notice"
         });
-
+        
         event.preventDefault(event);
     });
     
@@ -57,21 +51,58 @@
         });
 
     }
+    });
 </script>
 {% endblock %}
 
 {% block helpdesk_body %}
 <h2>#{{ ticket.id }}. {{ ticket.title }} [{{ ticket.get_status }}]</h2>
-<table  width=40% class="table">
-<tr>
-<td colspan="2" ><div class="f-left statistics_title">
-    <a  href='{% url helpdesk_edit ticket.id %}'>Изменить</a>&nbsp;|&nbsp;
-    <a  href='{% url helpdesk_delete ticket.id %}'>Удалить</a>&nbsp;|&nbsp;
+<div class="navbar navbar-googlenav">
+  <div class="navbar-inner">
+    <div class="btn-toolbar">
+        <div class="btn-group">
+
+        <a href='?take' class='btn btn-success'><i class='cus-accept'></i>&nbsp;{% trans "Take" %}</a>
+
+      </div>
+
+      <div class="btn-group">
+        <a  href='{% url helpdesk_edit ticket.id %}' class='btn'><i class='icon-edit'></i>&nbsp;Изменить</a>
+      </div>
+
+ 
+      <div class="btn-group">
     {% if ticket.on_hold %}
-        <a href='unhold/'>{% trans "Unhold" %}</a>
+        <a href='unhold/' class='btn btn-warning'><i class='cus-lock-delete'></i>&nbsp;{% trans "Unhold" %}</a>
     {% else %}
-        <a  href='hold/'>{% trans "Hold" %}</a>
-    {% endif %}</div></td></tr>
+        <a  href='hold/'  class='btn btn-warning'><i class='cus-lock-open'></i>&nbsp;{% trans "Hold" %}</a>
+    {% endif %}
+      </div>
+ 
+    <div class="btn-group">
+    <a class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
+    </div>
+    
+      <div class="btn-group">
+        <a  href='{% url helpdesk_edit ticket.id %}' class='btn'><i class='cus-attach'></i>&nbsp;Прикрепить файл</a>
+      </div>
+      <div class="btn-group">
+        <a  href='{% url helpdesk_edit ticket.id %}' class='btn'><i class='cus-accept'></i>&nbsp;Закрыть заявку</a>
+      </div>
+
+      <div class="btn-group">
+        <a  href='{% url helpdesk_edit ticket.id %}' class='btn'><i class='cus-arrow-redo'></i>&nbsp;Переоткрыть заявку</a>
+      </div>
+      
+      <div class="btn-group pull-right">
+        <a  href='{% url helpdesk_delete ticket.id %}' class='btn btn-danger'>Удалить</a>
+      </div>
+ 
+  </div>
+</div>
+</div>
+<table   class="table">
+
 <tr>
 	<td><strong>{% trans "Queue" %}</strong></td>
 	<td>{% blocktrans with ticket.queue as queue %}{{ queue }}{% endblocktrans %}</td>
@@ -93,13 +124,9 @@
     <td><strong>{% trans "Assigned To" %}</strong></td>
     <td class="left_border {{ 3|coll_bg  }} ">
       {{ ticket.get_assigned_to }}
-      {{ticket.assigned_to}} {{request.user}}
-      {% comment%}{% ifequal ticket.get_assigned_to _('Unassigned') %}{% endcomment%}
-      {% if not ticket.on_hold or ticket.assigned_to != request.user%}
-      <strong>
-        <a href='?take'><span class='button button_take'>{% trans "Take" %}</span></a>
-      </strong>
-      {% endif %}
+      {{ticket.assigned_to}}
+ 
+
       {% comment%}{% endifequal %}{% endcomment%}
     </td>
 </tr>
@@ -141,7 +168,7 @@
 </tr>{% endif %}
 
 </table>
-<div class="btn-toolbar pull-right"><a href="{% url manufacturer_edit %}" id="id_btn_followup_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
+
 {% if ticket.followup_set.all %}
 <h2>{% blocktrans %}История{% endblocktrans %}</h2>
 {% load ticket_to_link %}
@@ -189,87 +216,9 @@
 
 </div>
 {% endif %}
-
-<h3>{% trans "Respond to this ticket" %}</h3>
-
-<form method='post' action='update/' enctype='multipart/form-data' class="well form-horizontal  form-condensed">
-
-<fieldset>
-    <dl>
-        <dt><label for='id_preset'>{% trans "Use a Pre-set Reply" %}</label> <span class='form_optional'>(опционально)</span></dt>
-        <dd><select name='preset' id='id_preset'><option value=''>------</option>{% for preset in preset_replies %}<option value='{{ preset.id }}'>{{ preset.name }}</option>{% endfor %}</select></dd>
-        <dd class='form_help_text'>{% trans "Selecting a pre-set reply will over-write your comment below. You can then modify the pre-set reply to your liking before saving this update." %}</dd>
-
-        <dt><label for='commentBox'>{% trans "Comment / Resolution" %}</label></dt>
-        <dd><textarea rows='8' cols='70' name='comment' id='commentBox'></textarea></dd>
-        <dd class='form_help_text'>{% trans "You can insert ticket and queue details in your message. For more information, see the <a href='../../help/context/'>context help page</a>." %}</dd>
-
-        <dt><label>{% trans "New Status" %}</label></dt>
-        {% ifequal ticket.status 1 %}
-        <dd><input type='radio' name='new_status' value='1' id='st_open' checked='checked'><label for='st_open' class='active'>{% trans "Open" %}</label> &raquo;
-        <input type='radio' name='new_status' value='3' id='st_resolved'><label for='st_resolved'>{% trans "Resolved" %}</label> &raquo;
-        <input type='radio' name='new_status' value='4' id='st_closed'><label for='st_closed'>{% trans "Closed" %}</label></dd>
-        {% endifequal %}
-        {% ifequal ticket.status 2 %}
-        <dd><input type='radio' name='new_status' value='2' id='st_reopened' checked='checked'><label for='st_reopened' class='active'>{% trans "Reopened" %}</label> &raquo;
-        <input type='radio' name='new_status' value='3' id='st_resolved'><label for='st_resolved'>{% trans "Resolved" %}</label> &raquo;
-        <input type='radio' name='new_status' value='4' id='st_closed'><label for='st_closed'>{% trans "Closed" %}</label> </dd>
-        {% endifequal %}
-        {% ifequal ticket.status 3 %}
-        <dd><input type='radio' name='new_status' value='2' id='st_reopened'><label for='st_reopened'>{% trans "Reopened" %}</label> &laquo;
-        <input type='radio' name='new_status' value='3' id='st_resolved' checked='checked'><label for='st_resolved' class='active'>{% trans "Resolved" %}</label> &raquo;
-        <input type='radio' name='new_status' value='4' id='st_closed'><label for='st_closed'>{% trans "Closed" %}</label></dd>
-        {% endifequal %}
-        {% ifequal ticket.status 4 %}
-        <dd><input type='radio' name='new_status' value='2' id='st_reopened'><label for='st_reopened'>{% trans "Reopened" %}</label> &laquo;
-        <input type='radio' name='new_status' value='4' id='st_closed' checked='checked'><label for='st_closed'>{% trans "Closed" %}</label></dd>
-        {% endifequal %}
-
-        <dt><label for='id_public'>{% trans "Is this update public?" %}</label> <span class='form_optional'>({% trans 'Optional' %})</span></dt>
-        <dd><input type='checkbox' name='public' value='1' checked='checked' /></dD>
-        <dd class='form_help_text'>{% trans "If this is public, the submitter will be e-mailed your comment or resolution." %}</dd>
-    </dl>
-
-<p id='ShowFurtherOptPara'><a href='#' id='ShowFurtherEditOptions'>{% trans "Change Further Details &raquo;" %}</a></p>
-
-<div id='FurtherEditOptions' >
-
-    <dl>
-
-        <dt><label for='id_title'>{% trans "Title" %}</label></dt>
-        <dd><input type='text' size="80" name='title' value='{{ ticket.title|escape }}' /></dd>
-
-        <dt><label for='id_owner'>{% trans "Owner" %}</label></dt>
-        <dd><select id='id_owner' name='owner'><option value='0'>{% trans "Unassign" %}</option>{% for u in active_users %}<option value='{{ u.id }}' {% ifequal u.id ticket.assigned_to.id %}selected{% endifequal %}>{{ u }}</option>{% endfor %}</select></dd>
-
-        <dt><label for='id_priority'>{% trans "Priority" %}</label></dt>
-        <dd><select id='id_priority' name='priority'>{% for p in priorities %}<option value='{{ p.0 }}'{% ifequal p.0 ticket.priority %} selected='selected'{% endifequal %}>{{ p.1 }}</option>{% endfor %}</select></dd>
-       {% if tags_enabled %}
-        <dt><label for='id_tags'>{% trans "Tags" %}</label></dt>
-        <dd><input type='text' size="80" id='id_tags' name='tags' value='{{ ticket.tags }}'/></dd>
-       {% endif %}
-
-    </dl>
-
 </div>
+<a class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
 
-<p id='ShowFileUploadPara'><a href='#' id='ShowFileUpload'>{% trans "Attach File(s) &raquo;" %}</a></p>
-<div id='FileUpload' style='display: none;'>
-    <dl>
-        <dt><label for='id_file'>{% trans "Attach a File" %}</label></dt>
-        <dd><input type='file' name='attachment' id='file' /> <span class='AddAnotherFile'>(<a href='#'>{% trans "Add Another File" %}</a>)</span></dd>
-    </dl>
-</div>
-</fieldset>
-<div class="submit-row">
-<input class="default" type='submit' value="Сохранить" />
-</div>
-</form>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<div class="clear"></div>
+
+
 {% endblock %}

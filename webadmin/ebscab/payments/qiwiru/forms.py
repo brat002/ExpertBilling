@@ -10,3 +10,5 @@ class AdditionalFieldsForm(forms.Form):
     summ = forms.FloatField(label=u'Сумма')
     order = forms.ModelChoiceField(widget=forms.widgets.HiddenInput, required=False, queryset=Order.objects.all())
     backend = forms.CharField(initial='payments.qiwiru', widget=forms.widgets.HiddenInput)
+    
+    

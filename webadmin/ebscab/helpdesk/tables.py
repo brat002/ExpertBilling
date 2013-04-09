@@ -50,6 +50,9 @@ class UnassignedTicketTable(TableReport):
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def render_priority(self, value, record):
+        return mark_safe('<span class="label %s">%s</span>' % (prio.get(record.priority), value))
+    
     class Meta:
         model = Ticket
         #fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
