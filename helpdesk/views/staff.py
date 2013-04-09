@@ -33,6 +33,10 @@ from billservice.helpers import systemuser_required
 from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib import messages
 
+from object_log.models import LogItem
+log = LogItem.objects.log_action
+
+
 def dashboard(request):
     """
     A quick summary overview for users: A list of their own tickets, a table
@@ -154,14 +158,14 @@ def followup_edit(request):
 
         if id:
             model = FollowUp.objects.get(id=id)
-            form = ManufacturerForm(request.POST, instance=model) 
-            if  not (request.user.account.has_perm('helpdesk.change_manufacturer')):
-                messages.error(request, _(u'У вас нет прав на редактирование производителей оборудования'), extra_tags='alert-danger')
+            form = FollowUpForm(request.POST, instance=model) 
+            if  not (request.user.account.has_perm('helpdesk.change_followup')):
+                messages.error(request, _(u'У вас нет прав на редактирование комментариев к заявке'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
-            form = ManufacturerForm(request.POST) 
-            if  not (request.user.account.has_perm('billservice.add_manufacturer')):
-                messages.error(request, _(u'У вас нет прав на создание производителей оборудования'), extra_tags='alert-danger')
+            form = FollowUpForm(request.POST) 
+            if  not (request.user.account.has_perm('helpdesk.add_followup')):
+                messages.error(request, _(u'У вас нет прав на добавление комментариев к заявке'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
 
@@ -171,13 +175,17 @@ def followup_edit(request):
             model.save()
 
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
-            messages.success(request, _(u'Производитель успешно сохранён.'), extra_tags='alert-success')
+            messages.success(request, _(u'Комментарий успешно сохранён.'), extra_tags='alert-success')
             return {'form':form,  'status': True} 
         else:
-            messages.error(request, _(u'При сохранении производителя возникли ошибки.'), extra_tags='alert-danger')
+            messages.error(request, _(u'При сохранении комментария возникли ошибки.'), extra_tags='alert-danger')
+            if form._errors:
+                for k, v in form._errors.items():
+                    messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
+        ticket_id = request.GET.get("ticket_id")
 
         if  not (request.user.account.has_perm('helpdesk.add_followup')):
             messages.error(request, _(u'У вас нет прав на создание комментариев.'), extra_tags='alert-danger')
@@ -188,7 +196,7 @@ def followup_edit(request):
             
             form = FollowUpForm(instance=item)
         else:
-            form = FollowUpForm()
+            form = FollowUpForm(initial={'ticket': Ticket.objects.get(id=ticket_id)})
 
     return { 'form':form, 'status': False} 
 

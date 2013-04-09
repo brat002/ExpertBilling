@@ -464,9 +464,7 @@ class FollowUp(models.Model):
             'staff, but non-public tickets can only be seen by staff.'),
         )
     user = models.ForeignKey(User, blank=True, null=True)
-    new_status = models.IntegerField(_('New Status'), choices=Ticket.STATUS_CHOICES, blank=True, null=True,
-        help_text=_('If the status was changed, what was it changed to?'),
-        )
+    new_status = models.IntegerField(_('New Status'), choices=Ticket.STATUS_CHOICES, blank=True, null=True)
     objects = FollowUpManager()
 
     class Meta:
