@@ -257,20 +257,20 @@
                             </div>
                         </div>
 
-                        <div class="control-row">
-                            <label class="control-label" for="input-uid">{{form.id.label}}</label>
-                            <div class="controls">
-                            {{ form.id }}
-                            {% if form.id.errors %}
-                                <span class="help-inline">{% for error in form.id.errors %}{{ error }}<br/> {% endfor %}</span>
+                    <div class="control-row">
+                        <label class="control-label" for="input-username">{{form.username.label}}</label>
+                        <div class="controls">
+                             {{ form.username }}
+                            {% if form.username.errors %}
+                                <span class="help-inline">{% for error in form.username.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.id.help_text%}
+                            {% if form.username.help_text%}
                                 <p class="help-block">
-                                    {{ form.id.help_text|safe }}
+                                    {{ form.username.help_text|safe }}
                                 </p>
                             {% endif %}
-                            </div>
                         </div>
+                    </div>
                     </div>
 
                     <div class="control-group">
@@ -287,6 +287,20 @@
                                 </p>
                             {% endif %}
                             </div>
+                        </div>
+                        <div class="control-row">
+                                    <label class="control-label" for="input-agreement-no">{{form.deleted.label}}</label>
+                                    <div class="controls">
+                                   {{ form.deleted }} 
+                                   {% if form.deleted.errors %}
+                                       <span class="help-inline">{% for error in form.deleted.errors %}{{ error }}<br/> {% endfor %}</span>
+                                   {% endif %}
+                                   {% if form.deleted.help_text%}
+                                       <p class="help-block">
+                                           {{ form.deleted.help_text|safe }}
+                                       </p>
+                                   {% endif %}
+                                    </div>
                         </div>
                     </div>
 
@@ -499,20 +513,21 @@
                     <legend>{% blocktrans %}Персональные данные{% endblocktrans %}</legend>
 
                     <div class="control-group">
-                    <div class="control-row">
-                        <label class="control-label" for="input-username">{{form.username.label}}</label>
-                        <div class="controls">
-                             {{ form.username }}
-                            {% if form.username.errors %}
-                                <span class="help-inline">{% for error in form.username.errors %}{{ error }}<br/> {% endfor %}</span>
+
+                        <div class="control-row">
+                            <label class="control-label" for="input-uid">{{form.id.label}}</label>
+                            <div class="controls">
+                            {{ form.id }}
+                            {% if form.id.errors %}
+                                <span class="help-inline">{% for error in form.id.errors %}{{ error }}<br/> {% endfor %}</span>
                             {% endif %}
-                            {% if form.username.help_text%}
+                            {% if form.id.help_text%}
                                 <p class="help-block">
-                                    {{ form.username.help_text|safe }}
+                                    {{ form.id.help_text|safe }}
                                 </p>
                             {% endif %}
+                            </div>
                         </div>
-                    </div>
                         <div class="control-row">
                             <label class="control-label" for="input-phone">{{form.phone.label}}</label>
                             <div class="controls">
@@ -761,27 +776,8 @@
                         <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
                     </div>
                 </fieldset>
-                <fieldset>
-                <legend>{% blocktrans %}Прочее{% endblocktrans %}</legend>
-                    <div class="control-group">
-                        <div class="control-row">
-                                    
-                                    <div class="controls">
-                                   {{ form.deleted }} {% blocktrans %}Поиск по архиву{% endblocktrans %}
-                                   {% if form.deleted.errors %}
-                                       <span class="help-inline">{% for error in form.deleted.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.deleted.help_text%}
-                                       <p class="help-block">
-                                           {{ form.deleted.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                        </div>
 
 
-                    </div>
-                </fieldset>
                 <fieldset>
                     <div class="form-actions form-actions-center">
                         <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
