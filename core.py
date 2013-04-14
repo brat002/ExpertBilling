@@ -172,7 +172,9 @@ class check_vpn_access(Thread):
                                     and \
                                     (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))
                         acstatus_guest = rs.guest_pool and acc.account_status==1 and acc.tarif_active==True 
-                        acstatus = acstatus or acstatus_guest
+                        acstatus = (acstatus or acstatus_guest) and not (acstatus_guest and (((subacc.allow_vpn_with_null and acc.ballance+acc.credit >=0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0)\
+                                    and \
+                                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit))))
                         if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id):
                             #chech whether speed has changed
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])

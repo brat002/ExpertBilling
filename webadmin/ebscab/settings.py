@@ -91,8 +91,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     #'lib.threadlocals.ThreadLocalsMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware'
-    #'billservice.middleware.UrlFilter'
+    'django.contrib.messages.middleware.MessageMiddleware',
+    #'billservice.middleware.UrlFilter',
+    'ebsadmin.middleware.Version'
 
 )
 

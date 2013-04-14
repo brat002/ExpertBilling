@@ -21,8 +21,12 @@ urlpatterns = patterns('helpdesk.views.staff',
         'dashboard',
         name='helpdesk_dashboard'),
 
+    url(r'^ticket/info/$', 'ticket_info', name='ticket_info'),
+    url(r'^ticket/followup/$', 'followup_edit', name='followup_edit'),
+    url(r'^ticket/assign/$', 'ticket_assign', name='ticket_assign'),
+    
     url(r'^tickets/$',
-        'ticket_list',
+        'tickets',
         name='helpdesk_list'),
 
     url(r'^tickets/update/$',
@@ -109,8 +113,7 @@ urlpatterns = patterns('helpdesk.views.staff',
         'email_ignore_del',
         name='helpdesk_email_ignore_del'),
     url(r'^queue/select/$', 'queueselect', name='queueselect'),
-    url(r'^ticket/info/$', 'ticket_info', name='ticket_info'),
-    url(r'^ticket/followup/$', 'followup_edit', name='followup_edit'),
+
     
 )
 

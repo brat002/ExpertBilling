@@ -975,8 +975,8 @@ class Transaction(models.Model):
     summ=models.DecimalField(default=0, blank=True, verbose_name=_(u"Сумма"), decimal_places=10,max_digits=20)
     description = models.TextField(default='', blank=True, verbose_name=_(u"Комментарий"))
     created=models.DateTimeField(verbose_name=_(u"Дата"))
-    promise=models.BooleanField(default=False, verbose_name=_(u"Обещанный платёж"))
-    end_promise=models.DateTimeField(blank=True, null=True, verbose_name=_(u"ОП закрыт"))
+    #promise=models.BooleanField(default=False, verbose_name=_(u"Обещанный платёж"))
+    end_promise=models.DateTimeField(blank=True, null=True, verbose_name=_(u"Закрыть ОП"))
     promise_expired = models.BooleanField(default=False, verbose_name=_(u"ОП истек"))
     systemuser=models.ForeignKey(to='SystemUser', null=True, on_delete = models.SET_NULL, verbose_name=_(u"Выполнил" ))
 
@@ -1468,7 +1468,7 @@ class IPPool(models.Model):
            ("ippool_view", _(u"Просмотр")),
            )
     def __unicode__(self):
-        return u"%s-%s" % (self.start_ip, self.end_ip)
+        return u"%s" % self.name
 
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('ippool_delete'), self.id)

@@ -1,11 +1,4 @@
-"""
-Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
-
-(c) Copyright 2008 Jutda. All Rights Reserved. See LICENSE for details.
-
-views/public.py - All public facing views, eg non-staff (no authentication
-                  required) views.
-"""
+# -*- coding: utf-8 -*-
 
 from datetime import datetime
 
@@ -150,9 +143,9 @@ def update_ticket(request, ticket_id, public=False):
     f = FollowUp(ticket=ticket, date=datetime.now(), comment=comment)
 
     #if request.user.is_authenticated():
-    f.user = request.user
+    f.account = request.user.account
 
-    f.public = public
+    f.public = True
 
     reassigned = False
 
@@ -161,15 +154,15 @@ def update_ticket(request, ticket_id, public=False):
         ticket.save()
         f.new_status = new_status
         if f.title:
-            f.title += ' and %s' % ticket.get_status_display()
+            f.title += _(u'%(STATUS)s %(USER)s ') % {'USER': request.user.account, 'STATUS': ticket.get_status_display()} 
         else:
-            f.title = '%s' % ticket.get_status_display()
+            f.title = _(u'%(STATUS)s %(USER)s ') % {'USER': request.user.account, 'STATUS': ticket.get_status_display()} 
 
     if not f.title:
         if f.comment:
-            f.title = _('Comment')
+            f.title = _(u'Добавлен комментарий от %(USER)s ') % {'USER': request.user.account}
         else:
-            f.title = _('Updated')
+            f.title = _(u'Обновлено %(USER)s ') % {'USER': request.user.account}
 
     f.save()
     files = []

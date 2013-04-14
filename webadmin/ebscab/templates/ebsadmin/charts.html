@@ -47,20 +47,33 @@
              <fieldset>
              {{form.report}}
                    <div class="control-group">
-                      <label class="control-label">{{form.daterange.label}}: </label>
+                      <label class="control-label">{{form.date_start.label}}: </label>
                       <div class="controls">
-                      {{ form.daterange }}
-                      {% if form.daterange.errors %}
-                          <span class="help-inline">{% for error in form.daterange.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {{ form.date_start }}
+                      {% if form.date_start.errors %}
+                          <span class="help-inline">{% for error in form.date_start.errors %}{{ error }}<br/> {% endfor %}</span>
                       {% endif %}
-                      {% if form.daterange.help_text%}
+                      {% if form.date_start.help_text%}
                           <p class="help-block">
-                              {{ form.daterange.help_text|safe }}
+                              {{ form.date_start.help_text|safe }}
                           </p>
                       {% endif %}
                       </div>
                   </div>  
-
+                   <div class="control-group">
+                      <label class="control-label">{{form.date_end.label}}: </label>
+                      <div class="controls">
+                      {{ form.date_end }}
+                      {% if form.date_end.errors %}
+                          <span class="help-inline">{% for error in form.date_end.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.date_end.help_text%}
+                          <p class="help-block">
+                              {{ form.date_end.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>  
                   {% if 'accountsTab' in rep.tabs %}
                    <div class="control-group">
                       <label class="control-label">{{form.accounts.label}}: </label>

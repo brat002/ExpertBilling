@@ -353,7 +353,7 @@
                     .trigger("dialog2.opened");
                     
                 this.__focus();
-                $("html").css("overflow","hidden");
+                $("html").css("overflow-y","scroll");
             }
         }, 
         

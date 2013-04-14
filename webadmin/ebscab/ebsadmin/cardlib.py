@@ -169,7 +169,7 @@ def add_addonservice(account_id, service_id, subaccount_id=None, ignore_locks = 
 
             settlement_period = tarif_service.activation_count_period
             if settlement_period.autostart:
-                settlement_period.time_start = account.get_accounttariff.datetime
+                settlement_period.time_start = account.get_accounttariff().datetime
                 
             settlement_period_start, settlement_period_end, delta = settlement_period_info(settlement_period.time_start, settlement_period.length_in, settlement_period.length)
             

@@ -26,7 +26,7 @@ from helpdesk.models import Queue, Ticket, FollowUp, Attachment
 def list_tickets(request):
     """List of tickets, created by a user"""
     context = {'title':_(u'Tickets')}
-    tickets = Ticket.objects.filter(submitter=request.user).order_by('-created')
+    tickets = Ticket.objects.filter(owner=request.user).order_by('-created')
     context['tickets'] = tickets
     context['current_view_name'] = 'helpdesk_account_tickets'
     return context
@@ -44,7 +44,8 @@ def create_ticket(request):
         form.fields['queue'].choices = [[q.id, q.title] for q in Queue.objects.filter(allow_public_submission=True)]
         if form.is_valid():
             ticket = form.save()
-            ticket.submitter = request.user
+            ticket.owner = request.user
+            ticket.account = request.user.account
             ticket.save()
             request.notifications.add(_(u'Ticket was created successfully and will be processed shortly'), 'success')
             return HttpResponseRedirect(reverse('helpdesk_account_tickets'))

@@ -297,7 +297,7 @@ def transactionreport2(request):
                 table = table(res.prefetch_related('account__username').values('id', 'account__username', 'account', 'summ', 'created', ))
                 
             elif table ==TransactionReportTable:
-                table = table(res.prefetch_related('type__name', 'account__username', 'systemuser__username').values('id', 'account__username', 'account', 'summ', 'description', 'bill', 'created',  'type__name', 'systemuser__username'))
+                table = table(res.prefetch_related('type__name', 'account__username', 'systemuser__username').values('id', 'account__username', 'account', 'summ', 'description', 'bill', 'created',  'type__name', 'end_promise', 'promise_expired', 'systemuser__username'))
             elif table in (PeriodicalServiceTransactionReportTable, AddonServiceTransactionReportTable):
                 table = table(res.prefetch_related('type__name', 'account__username', 'service__name').values('id', 'account__username', 'account', 'summ', 'created', 'service__name', 'type__name'))
 

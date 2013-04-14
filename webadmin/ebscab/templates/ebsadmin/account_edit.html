@@ -255,6 +255,7 @@
 
                 $("#id_account-toolbar-save").click(function(event) {
                     $('#id_form').submit();
+                    event.preventDefault(event);
                 });
 
         });
@@ -342,7 +343,7 @@
         </ul>
       </div>
       <div class="btn-group">
-        <a href='{% url news_edit %}?accounts={{account.id}}&private=True' class="btn" id='id_account-toolbar-save'><i class='cus-newspaper'></i> {% blocktrans %}Сообшение{% endblocktrans %}</a>
+        <a href='{% url news_edit %}?accounts={{account.id}}&private=True' class="btn" ><i class='cus-newspaper'></i> {% blocktrans %}Сообшение{% endblocktrans %}</a>
       </div>
        <div class="btn-group">
         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">

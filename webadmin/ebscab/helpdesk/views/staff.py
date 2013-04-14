@@ -15,7 +15,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import loader, Context, RequestContext
 from django.utils.translation import ugettext as _
 
-from helpdesk.forms import TicketForm, UserSettingsForm, EmailIgnoreForm, EditTicketForm, TicketCCForm, TicketTypeForm, FollowUpForm
+from helpdesk.forms import TicketForm, UserSettingsForm, EmailIgnoreForm, EditTicketForm, TicketCCForm, TicketTypeForm, FollowUpForm, AssignToForm, FilterForm
 from helpdesk.lib import send_templated_mail, line_chart, bar_chart, query_to_dict, apply_query, safe_template_context
 from helpdesk.models import Ticket, Queue, FollowUp, TicketChange, PreSetReply, Attachment, SavedSearch, IgnoreEmail, TicketCC
 from helpdesk.settings import HAS_TAG_SUPPORT
@@ -26,13 +26,17 @@ from django_tables2_reports.utils import create_report_http_response
 if HAS_TAG_SUPPORT:
     from tagging.models import Tag, TaggedItem
 
-from helpdesk.tables import TicketTable, UnassignedTicketTable
+from helpdesk.tables import TicketTable, UnassignedTicketTable, UnpagedTicketTable
 staff_member_required = user_passes_test(lambda u: u.is_authenticated() and u.is_active and u.is_staff)
 superuser_required = user_passes_test(lambda u: u.is_authenticated() and u.is_active and u.is_superuser)
 from billservice.helpers import systemuser_required
 from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib import messages
+from django.utils.safestring import mark_safe
 
+import cPickle, pickle
+from helpdesk.lib import b64decode, b64encode
+        
 from object_log.models import LogItem
 log = LogItem.objects.log_action
 
@@ -50,7 +54,7 @@ def dashboard(request):
             status=Ticket.CLOSED_STATUS,
         )
 
-    ticket_table = TicketTable(tickets)
+    ticket_table = UnpagedTicketTable(tickets)
     table_to_report = RequestConfig(request, paginate=False ).configure(ticket_table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
@@ -98,6 +102,9 @@ dashboard = staff_member_required(dashboard)
 
 
 def delete_ticket(request, ticket_id):
+    if  not (request.user.account.has_perm('helpdesk.delete_ticket')):
+        messages.error(request, _(u'У вас нет прав на удаление заявок'), extra_tags='alert-danger')
+        return HttpResponseRedirect(request.path)
     ticket = get_object_or_404(Ticket, id=ticket_id)
 
     if request.method == 'GET':
@@ -112,11 +119,14 @@ delete_ticket = staff_member_required(delete_ticket)
 
 
 def view_ticket(request, ticket_id):
+    if  not (request.user.account.has_perm('helpdesk.view_ticket')):
+        messages.error(request, _(u'У вас нет прав на просмотр заявок'), extra_tags='alert-danger')
+        return HttpResponseRedirect(request.path)
     ticket = get_object_or_404(Ticket, id=ticket_id)
 
     if request.GET.has_key('take'):
         # Allow the user to assign the ticket to themselves whilst viewing it.
-        ticket.assigned_to = request.user
+        ticket.assigned_to = request.user.account
         ticket.save()
 
     if request.GET.has_key('close') and ticket.status == Ticket.RESOLVED_STATUS:
@@ -155,15 +165,17 @@ def followup_edit(request):
     item = None
 
     if request.method == 'POST': 
-
+        
         if id:
             model = FollowUp.objects.get(id=id)
+
+                
             form = FollowUpForm(request.POST, instance=model) 
             if  not (request.user.account.has_perm('helpdesk.change_followup')):
                 messages.error(request, _(u'У вас нет прав на редактирование комментариев к заявке'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
-            form = FollowUpForm(request.POST) 
+            form = FollowUpForm(request.POST, request.FILES) 
             if  not (request.user.account.has_perm('helpdesk.add_followup')):
                 messages.error(request, _(u'У вас нет прав на добавление комментариев к заявке'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
@@ -173,7 +185,51 @@ def followup_edit(request):
         if form.is_valid():
             model = form.save(commit=False)
             model.save()
+            followup_type = form.cleaned_data.get('followup_type')
+            if followup_type=='comment':
+                if not id:
+                    model.title = _(u'Добавлен комментарий от %(USER)s ') % {'USER': request.user.account}
+            elif followup_type=='files':
+                if not id:
+                    model.title = _(u'Добавлен файл от %(USER)s ') % {'USER': request.user.account}
+                    
+                files = []
+                if request.FILES:
+                    import mimetypes, os
+                    for file in request.FILES.getlist('file'):
+                        filename = file.name.replace(' ', '_')
+                        a = Attachment(
+                            followup=model,
+                            filename=filename,
+                            mime_type=mimetypes.guess_type(filename)[0] or 'application/octet-stream',
+                            size=file.size,
+                            )
+                        a.file.save(file.name, file, save=False)
+                        a.save()
+            
+                        if file.size < getattr(settings, 'MAX_EMAIL_ATTACHMENT_SIZE', 512000):
+                            # Only files smaller than 512kb (or as defined in
+                            # settings.MAX_EMAIL_ATTACHMENT_SIZE) are sent via email.
+                            files.append(a.file.path)
 
+            elif followup_type=='new_status':
+                model.title = _(u'Статус заявки изменён %(USER)s ') % {'USER': request.user.account}
+                if model.new_status!=model.ticket:
+                    model.ticket.status = model.new_status
+                    if model.new_status in [3,4]:
+                        model.ticket.resolution = model.comment
+                    model.ticket.save()
+                    log('EDIT', request.user, model.ticket)
+            model.systemuser = request.user.account
+
+
+            model.save()
+
+            from django.template import loader, Context
+
+
+            
+            
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, _(u'Комментарий успешно сохранён.'), extra_tags='alert-success')
             return {'form':form,  'status': True} 
@@ -186,6 +242,8 @@ def followup_edit(request):
     else:
         id = request.GET.get("id")
         ticket_id = request.GET.get("ticket_id")
+        followup_type = request.GET.get("followup_type") or 'comment'
+        new_status = request.GET.get("new_status")
 
         if  not (request.user.account.has_perm('helpdesk.add_followup')):
             messages.error(request, _(u'У вас нет прав на создание комментариев.'), extra_tags='alert-danger')
@@ -196,10 +254,71 @@ def followup_edit(request):
             
             form = FollowUpForm(instance=item)
         else:
-            form = FollowUpForm(initial={'ticket': Ticket.objects.get(id=ticket_id)})
+            if new_status:
+                form = FollowUpForm(initial={'ticket': Ticket.objects.get(id=ticket_id), 'followup_type': followup_type, 'new_status':2})
+            else:
+                form = FollowUpForm(initial={'ticket': Ticket.objects.get(id=ticket_id), 'followup_type': followup_type})
 
     return { 'form':form, 'status': False} 
 
+@systemuser_required
+@render_to('helpdesk/ticket_assign.html')
+def ticket_assign(request):
+    id = request.POST.get("id")
+
+    item = None
+
+    if request.method == 'POST': 
+        
+
+        form = AssignToForm(request.POST, request.FILES) 
+        if  not (request.user.account.has_perm('helpdesk.ticket_reassign')):
+            messages.error(request, _(u'У вас нет прав на перевод заявок'), extra_tags='alert-danger')
+            return HttpResponseRedirect(request.path)
+
+
+
+        if form.is_valid():
+            ticket = form.cleaned_data['ticket']
+            model = ticket
+            model.assigned_to = form.cleaned_data['systemuser']
+
+            model.save(force_update=True)
+            
+            print model.assigned_to
+ 
+
+
+            
+            
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+            messages.success(request, _(u'Задача переведена.'), extra_tags='alert-success')
+            return {'form':form,  'status': True} 
+        else:
+            messages.error(request, _(u'При переводе заявки возникли ошибки.'), extra_tags='alert-danger')
+            if form._errors:
+                for k, v in form._errors.items():
+                    messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
+            return {'form':form,  'status': False} 
+    else:
+        ticket_id = request.GET.get("ticket_id")
+        systemuser_id = request.GET.get("systemuser_id")
+
+        if  not (request.user.account.has_perm('helpdesk.ticket_reassign')):
+            messages.error(request, _(u'У вас нет прав на перевод заявок.'), extra_tags='alert-danger')
+            return {}
+        if ticket_id:
+
+            item = Ticket.objects.get(id=ticket_id)
+            
+            if systemuser_id and item:
+                #BUG. User can assign to anyone
+                item.assigned_to = request.user.account
+                item.save()
+                return {'form':None,  'status': True} 
+            form = AssignToForm(initial={'ticket': item, })
+
+    return { 'form':form, 'status': False} 
 
 def update_ticket(request, ticket_id, public=False):
     if not (public or (request.user.is_authenticated() and request.user.is_active and request.user.is_staff)):
@@ -358,7 +477,7 @@ def update_ticket(request, ticket_id, public=False):
                     )
                 messages_sent_to.append(cc.email_address)
 
-    if ticket.assigned_to and request.user != ticket.assigned_to and ticket.assigned_to.email and ticket.assigned_to.email not in messages_sent_to:
+    if ticket.assigned_to and request.user.account != ticket.assigned_to and ticket.assigned_to.email and ticket.assigned_to.email not in messages_sent_to:
         # We only send e-mails to staff members if the ticket is updated by
         # another user. The actual template varies, depending on what has been
         # changed.
@@ -681,6 +800,110 @@ def ticket_list(request):
         )))
 ticket_list = staff_member_required(ticket_list)
 
+@staff_member_required
+def tickets(request):
+    
+    if request.method == 'GET':
+        
+        
+        items = Ticket.objects.all()
+        if request.GET:
+            form = FilterForm(request.GET)
+            form.fields['saved_query'].queryset = SavedSearch.objects.filter(Q(shared=True)|Q(systemuser=request.user.account))
+            filter = {}
+            save = request.GET.get('save')
+            run = request.GET.get('run')
+            if form.is_valid():
+                saved_query = form.cleaned_data.get('saved_query')
+                
+                if run:
+                    print saved_query.query
+                    print pickle.loads(saved_query.query)
+                    data = pickle.loads(saved_query.query) # load and check query
+                    print data
+                    form = FilterForm(data)
+                    form.is_valid()
+                    
+                date_start =  form.cleaned_data.get('date_start')
+                if date_start:
+                    filter.update({'created__gte': date_start})
+                    
+                date_end =  form.cleaned_data.get('date_end')
+                if date_end:
+                    filter.update({'created__lte': date_end})
+                    
+                owner =  form.cleaned_data.get('owner')
+                if owner:
+                    filter.update({'owner': owner})
+                    
+                queue =  form.cleaned_data.get('queue')
+                if queue:
+                    filter.update({'queue__in': queue})
+
+                account =  form.cleaned_data.get('account')
+                if account:
+                    filter.update({'account': account})
+
+                assigned_to =  form.cleaned_data.get('assigned_to')
+                if assigned_to:
+                    filter.update({'assigned_to__in': assigned_to})
+                    
+                assigned_to =  form.cleaned_data.get('assigned_to')
+                if assigned_to:
+                    filter.update({'assigned_to': assigned_to})
+                    
+                status =  form.cleaned_data.get('status')
+                
+                if status and str(status)!='0':
+                    filter.update({'status': status})
+                
+                
+                priority =  form.cleaned_data.get('priority')
+                
+                if priority and str(priority)!='0':
+                    filter.update({'priority': priority})
+
+                keywords =  form.cleaned_data.get('keywords')
+                
+                if keywords:
+                    filter.update({'title__icontains': keywords})
+                    filter.update({'description__icontains': keywords})
+
+                    #print saved_query.query
+                    
+
+                
+                #===============================================================
+                # tags =  form.cleaned_data.get('tags')
+                # 
+                # if tags:
+                #    filter.update({'tags__in': ', '.join([tag.name for tag in tags])})
+                #===============================================================
+                print '!!!!!!!!!', save
+                if save:
+                    print '!!!!!!!!!', filter
+                    filter_name =  form.cleaned_data.get('filter_name')
+                    m = SavedSearch.objects.create(title=filter_name, query=pickle.dumps(request.GET), systemuser=request.user.account, shared=form.cleaned_data.get('share_filter'))
+                    m.save()
+                    
+
+                items = items.filter(**filter)
+        else:
+            form = FilterForm()
+            form.fields['saved_query'].queryset = SavedSearch.objects.filter(Q(shared=True)|Q(systemuser=request.user.account))
+        
+        table = TicketTable(items)
+        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+        if table_to_report:
+            return create_report_http_response(table_to_report, request)
+
+        
+    return render_to_response('helpdesk/tickets.html',
+        RequestContext(request, {
+            'form': form,
+            'table': table
+        }))
+        
 
 def edit_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
@@ -701,25 +924,39 @@ edit_ticket = staff_member_required(edit_ticket)
 
 def create_ticket(request):
     if request.method == 'POST':
-        form = TicketForm(request.POST, request.FILES)
-        form.fields['queue'].choices = [('', '--------')] + [[q.id, q.title] for q in Queue.objects.all()]
-        form.fields['assigned_to'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
-        form.fields['owner'].choices = [('', '--------')] + [[u.id, u.username] for u in User.objects.filter(is_active=True)]
+        id = request.POST.get('id')
+        if id:
+            ticket = get_object_or_404(Ticket, id=id)
+            form = EditTicketForm(request.POST, request.FILES, instance=ticket)
+        else:
+            form = TicketForm(request.POST, request.FILES)
+
         
         
         if form.is_valid():
-            ticket = form.save(user=request.user)
+            if id:
+                ticket = form.save()
+            else:
+                ticket = form.save(user=request.user)
             return HttpResponseRedirect(ticket.get_absolute_url())
     else:
         initial_data = {}
+        id = request.GET.get('id')
+        
+        
         if request.user.usersettings.settings.get('use_email_as_submitter', False) and request.user.account.email:
             initial_data['submitter_email'] = request.user.account.email
-
-        form = TicketForm(initial=initial_data)
+            
+        if id:
+            ticket = get_object_or_404(Ticket, id=id)
+            form = EditTicketForm(instance=ticket)
+        else:
+            form = TicketForm(initial=initial_data)
         
   
         form.fields['assigned_to'].initial = request.user
         form.fields['owner'].initial = request.user
+    
         
     return render_to_response('helpdesk/create_ticket.html',
         RequestContext(request, {
@@ -760,7 +997,7 @@ def hold_ticket(request, ticket_id, unhold=False):
 
     f = FollowUp(
         ticket = ticket,
-        user = request.user,
+        systemuser = request.user.account,
         title = title,
         date = datetime.now(),
         public = True,
