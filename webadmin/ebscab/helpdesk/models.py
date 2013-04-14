@@ -12,6 +12,16 @@ from billservice.models import SystemUser, Account
 if HAS_TAG_SUPPORT:
     from tagging.fields import TagField
 
+from django.utils.safestring import mark_safe
+
+prio={
+      1: 'label-important', 
+      2: 'label-warning',
+      3: 'label-success',
+      4: 'label-info',
+      4: 'label-inverse',
+      }
+
 source_types = (
           ('phone', _('Phone')),
           ('helpdesk', _('HelpDesk')),
@@ -233,6 +243,15 @@ class Ticket(models.Model):
     RESOLVED_STATUS = 3
     CLOSED_STATUS = 4
 
+    STATUS_CHOICES_FORM = (
+                           (0, '---'),
+        (OPEN_STATUS, _('Open')),
+        (REOPENED_STATUS, _('Reopened')),
+        (RESOLVED_STATUS, _('Resolved')),
+        (CLOSED_STATUS, _('Closed')),
+    )
+
+
     STATUS_CHOICES = (
         (OPEN_STATUS, _('Open')),
         (REOPENED_STATUS, _('Reopened')),
@@ -247,6 +266,15 @@ class Ticket(models.Model):
         (CLOSED_STATUS, '#000'),
     )
 
+    PRIORITY_CHOICES_FORM = (
+                             (0, '---'),
+        (1, _('Critical')),
+        (2, _('High')),
+        (3, _('Normal')),
+        (4, _('Low')),
+        (5, _('Very Low')),
+    )
+    
     PRIORITY_CHOICES = (
         (1, _('Critical')),
         (2, _('High')),
@@ -274,12 +302,12 @@ class Ticket(models.Model):
     source = models.CharField(choices=source_types, max_length=32, blank=False, default='helpdesk')
     account = models.ForeignKey(Account, verbose_name=_('Account'), blank=True, null=True, help_text=_(u'Аккаунт, с которым связана текущая задача'))
     notify_owner = models.BooleanField(blank=True, default=True,verbose_name=_(u'Notify owner'),help_text=_('Notify owner of ticket for changes'))
-    assigned_to = models.ForeignKey(SystemUser, verbose_name=u'Назначено на', related_name='assigned_to',blank=True,null=True)
+    assigned_to = models.ForeignKey(SystemUser, verbose_name=_(u'Исполнитель'), related_name='assigned_to',blank=True,null=True)
     created = models.DateTimeField(_(u'Created'), blank=True, \
                                    help_text=_('Date this ticket was first created'),)
     due_date = models.DateTimeField(_(u'Due'), blank=True, null=True)
     modified = models.DateTimeField(_(u'Modified'), blank=True, \
-        help_text=_(u'Date this ticket was most recently changed.'),)
+        help_text=_(u'Date this ticket was most recently changed.'), auto_now=True)
     submitter_email = models.EmailField(_('Submitter E-Mail'), blank=True, null=True, \
         help_text=_(u'The submitter will receive an email for all public follow-ups left for this task.'))
     #submitter_phone = models.EmailField(_('Submitter Phone'), blank=True, null=True)
@@ -287,8 +315,7 @@ class Ticket(models.Model):
     status = models.IntegerField(_(u'Status'), choices=STATUS_CHOICES, default=OPEN_STATUS)
     on_hold = models.BooleanField(_(u'On Hold'), blank=True, default=False, \
         help_text=_(u'If a ticket is on hold, it will not automatically be escalated.'))
-    description = models.TextField(_('Description'), blank=True, null=True, \
-        help_text=_('The content of the customers query.'))
+    description = models.TextField(_('Description'), blank=True, null=True)
     hidden_comment = models.TextField(_(u'Скрытый комментарий.'), blank=True, null=True, \
         help_text=_(u'Комментарий будут видеть только администраторы.'))
     resolution = models.TextField(_('Resolution'), blank=True, null=True, \
@@ -311,11 +338,7 @@ class Ticket(models.Model):
         has a full name configured, we use that, otherwise their username. """
         if not self.assigned_to:
             return _('Unassigned')
-        else:
-            if self.assigned_to.get_full_name():
-                return self.assigned_to.get_full_name()
-            else:
-                return self.assigned_to.username
+        return self.assigned_to
     get_assigned_to = property(_get_assigned_to)
 
     def _get_owner(self):
@@ -423,6 +446,9 @@ class Ticket(models.Model):
 
         super(Ticket, self).save(force_insert, force_update)
 
+    def render_priority(self):
+        return mark_safe('<span class="label %s">%s</span>' % (prio.get(self.priority), self.get_priority_display()))
+    
     def get_status_color(self):
         return [y for x,y in self.STATUS_COLORS if x == self.status][0]
 
@@ -459,11 +485,12 @@ class FollowUp(models.Model):
     date = models.DateTimeField(_('Date'),)
     title = models.CharField(_('Title'), max_length=200, blank=True, null=True)
     comment = models.TextField(_('Comment'), blank=True, null=True)
-    public = models.BooleanField(_('Public'), blank=True, default=False,
+    public = models.BooleanField(_('Public'), blank=True, default=True,
         help_text=_('Public tickets are viewable by the submitter and all '
             'staff, but non-public tickets can only be seen by staff.'),
         )
-    user = models.ForeignKey(User, blank=True, null=True)
+    systemuser = models.ForeignKey(SystemUser, blank=True, null=True)
+    account = models.ForeignKey(Account, blank=True, null=True)
     new_status = models.IntegerField(_('New Status'), choices=Ticket.STATUS_CHOICES, blank=True, null=True)
     objects = FollowUpManager()
 
@@ -827,7 +854,7 @@ class SavedSearch(models.Model):
         * All tickets containing the word 'billing'.
          etc...
     """
-    user = models.ForeignKey(User)
+    systemuser = models.ForeignKey(SystemUser)
 
     title = models.CharField(
         _('Query Name'),

@@ -272,7 +272,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
                 command_dict.update({
                               'subacc_%s' % x: unicode(subacc[x]),
                                })
-                
+        command_dict.update({'framed_ip_address': vpn_ip_address})
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
 
         try:
@@ -364,7 +364,7 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
         
 
         command_dict.update(speed)
-        
+        command_dict.update({'framed_ip_address': vpn_ip_address})
         if nas.get('speed_value1'):
             result_params = str(command_string_parser(command_string=nas.get('speed_value1'), command_dict=speed))
             if result_params and nas.get('speed_vendor_1'):

@@ -13,7 +13,7 @@ logger = logging.getLogger('payments.qiwiru')
 class PayView(View):
     def get(self, request, *args, **kwargs):
 
-
+        status=''
         try:
             
             ip=request.META['REMOTE_ADDR']

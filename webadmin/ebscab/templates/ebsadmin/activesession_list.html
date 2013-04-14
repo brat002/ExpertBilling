@@ -15,7 +15,7 @@
 
                 event.preventDefault(event);
             });
-            $("#id_main_table tbase .sreset").live("click", function(){
+            $("#id_main_table tbody .sreset").live("click", function(event){
                 var a=$(this);
                 $(this).text('Waiting');
 
@@ -42,9 +42,10 @@
                            }
                      });
                 $(this).text('R'); 
+                event.preventDefault(event);
             });
 
-            $("#id_main_table tbase .hreset").live("click", function(){
+            $("#id_main_table tbody .hreset").live("click", function(event){
                 var a=$(this);
                 $(this).text('Waiting');
 
@@ -71,6 +72,7 @@
                            }
                      });
                 $(this).text('H'); 
+                event.preventDefault(event);
             });
             
             {% if table %}

@@ -56,7 +56,7 @@ except:
 import commands
 
 from django.contrib.auth.decorators import permission_required
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 
 class Object(object):
