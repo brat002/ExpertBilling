@@ -14,16 +14,20 @@
 
   <div class="span12">
   <div class="hero-unit">
-            {% blocktrans %}<h1>Expert Billing 1.5 RC1</h1>
-            <p>Добро пожаловать!</p> 
-            <p>Вы попали в интерфейс администратора биллинг-системы ExpertBilling 1.5 RC1. 
+            <h1>Expert Billing 1.5 RC1</h1>
+            <p>{% blocktrans %}Ревизия сервера:{% endblocktrans %} {{  request.server_version }}/
+            {% blocktrans %}Ревизия web-интерфейса:{% endblocktrans %} {{ request.webcab_version }}</p>
+            {% blocktrans %}<p>Добро пожаловать!{% endblocktrans %}</p>
+            <p>{% blocktrans %}Вы попали в интерфейс администратора биллинг-системы ExpertBilling 1.5 RC1. 
             Обращаем ваше внимание, на то, что это technology preview версия, которая была выложена в целях ознакомления с будущим функционалом. 
             Она может содержать баги и проблемы, о которых мы можем не знать. Пожалуйста, отнеситесь к этому с пониманием и сообщайте о всех найденных проблемах на нашем форуме http://forum.expertbilling.ru/.
-            </p>
             {% endblocktrans %}
+            </p>
+            
             <p><a href="{% url account_list %}" class="btn btn-primary btn-large">{% blocktrans %}Приступить »{% endblocktrans %}</a></p>
           </div>
-          
+        <div><h5></h5></div>
+        <div><h5></h5></div>
    <div class="alert alert-danger">{% blocktrans %}В текущей версии механизм разделения доступа находится в стадии тестирования.{% endblocktrans %}</div>
   <div>{% blocktrans %}Количество аккаунтов:{% endblocktrans %} {{accounts_count}}</div>
   </div>

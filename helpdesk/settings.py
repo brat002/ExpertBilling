@@ -17,7 +17,7 @@ PERSONAL_AREA_MENU = [
     #('account_logout', _(u'Logout')),
 ]
 # check for django-tagging support
-HAS_TAG_SUPPORT = 'tagging' in settings.INSTALLED_APPS
+HAS_TAG_SUPPORT = False#'tagging' in settings.INSTALLED_APPS
 
 
 try:

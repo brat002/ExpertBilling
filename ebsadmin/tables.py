@@ -154,13 +154,13 @@ class TotalTransactionReportTable(TableReport):
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
     created = FormatDateTimeColumn(verbose_name=_(u'Создана'))
     end_promise = FormatDateTimeColumn(verbose_name=_(u'Окончание о.п.'))
-    #promise_expired = FormatDateTimeColumn()
+    promise_expired = FormatDateTimeColumn()
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
     
     def render_d(self, value, record):
 
-        return mark_safe('<input type="checkbox" name="d" value="%s_%s">' % (record.get('table'), value))
+        return mark_safe('<input type="checkbox" name="d" value="%s__%s">' % (record.get('table'), value))
     
     def render_service_id(self, value, record):
         item = ''
@@ -188,7 +188,7 @@ class TransactionReportTable(TableReport):
     id = FormatBlankColumn()
     account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')}, accessor=A('account__username'))
     type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
-    systemuser = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('systemuser__username'))
+    systemuser = FormatBlankColumn(verbose_name=_(u'Выполнил'), accessor=A('systemuser__username'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
     def render_d(self, value, record):

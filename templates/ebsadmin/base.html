@@ -38,6 +38,8 @@
 <link rel="stylesheet" href="/media/jquery/css/jquery-ui-1.9.1.custom.min.css" type="text/css" title="ui-theme" />
 <script  type="text/javascript" >
 $(document).ready(function() {
+	$('form').attr("autocomplete", "off");
+	
     $('#tab-control a').click(function (e) {
           e.preventDefault(e);
           $(this).tab('show');
@@ -363,6 +365,7 @@ padding-top:20px;
 
     </div>
   </div>
+
 </div>
 {% load crispy_forms_tags %}
 

@@ -269,7 +269,7 @@ def get_promise(request):
         return HttpResponseRedirect('/')
     tarif=request.user.account.get_account_tariff()
 
-    if settings.ALLOW_PROMISE==False and tarif.allow_ballance_transfer==False:
+    if not settings.ALLOW_PROMISE and not tarif.allow_ballance_transfer:
         return HttpResponseRedirect('/')
     if not tarif:
         return {'error_message': _(u'Вам не назначен тарифный план'), 'disable_promise': True}
@@ -331,7 +331,7 @@ def get_promise(request):
                 return {'error_message': _(u'Логин абонента, которому вы хотите перевести средства, не указан.'),'MAX_PROMISE_SUM': promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
             
             try:
-                float(sum)
+                sum = float(sum)
             except:
                 return {'error_message': _(u'Указанная сумма не является числом. Разрешено вводить цифры 0-9 и точку, как разделитель разрядов.'),'MAX_PROMISE_SUM': promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
             
@@ -340,16 +340,16 @@ def get_promise(request):
             from decimal import Decimal
             cursor=connection.cursor()
             cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, description, type_id, approved, tarif_id, summ, created, promise)
-                              VALUES(%s, %s, 'Перевод средств на аккаунт %s', 'MONEY_TRANSFER_TO', True, get_tarif(%s), %s, now(), False)""" % (user.id, to_user.id, to_user.username, user.id, -1*sum))
+                              VALUES(%s, %s, %s, 'MONEY_TRANSFER_TO', True, get_tarif(%s), %s, now(), False)""" , (user.id, to_user.id, u'Перевод средств на аккаунт %s' % to_user.username, user.id, -1*sum))
             cursor.execute(u"""INSERT INTO billservice_transaction(account_id, bill, description, type_id, approved, tarif_id, summ, created, promise)
-                              VALUES(%s, %s, 'Перевод средств с аккаунта %s', 'MONEY_TRANSFER_FROM', True, get_tarif(%s), %s, now(), False)""" % (to_user.id, user.id, user.username, to_user.id, sum))
+                              VALUES(%s, %s, %s, 'MONEY_TRANSFER_FROM', True, get_tarif(%s), %s, now(), False)""" , (to_user.id, user.id, u'Перевод средств с аккаунта %s' % user.username, to_user.id, sum))
 
             cursor.connection.commit()
             allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance-Decimal(sum))
             return {'error_message': _(u'Перевод средств успешно выполнен.'), 'disable_promise': False, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer,  'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     else:
         last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
-        return {'MAX_PROMISE_SUM': promise_summ, 'last_promises': last_promises, 'disable_promise': False, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
+        return {'MAX_PROMISE_SUM': promise_summ, 'last_promises': last_promises, 'disable_promise': not settings.ALLOW_PROMISE, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
 
 
 @login_required

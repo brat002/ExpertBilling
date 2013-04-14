@@ -20,14 +20,14 @@ from django.utils.translation import ugettext_lazy as _
 @render_to('cassa/index.html')
 def index(request):
         
-    if  not (request.user.account.has_perm('billservice.view_cassa')):
+    if  not request.user.account.has_perm('billservice.view_cassa'):
         return {'status':False}
 
     if request.method=='GET' and request.GET: 
         data = request.GET
 
         #pageitems = 100
-        form = CashierAccountForm(data)
+        form = CashierAccountForm(request.GET)
         if form.is_valid():
             
             res = Account.objects.all()

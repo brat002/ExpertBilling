@@ -6,31 +6,28 @@
 {{block.super}}
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#ShowFurtherEditOptions").click(function() {
-            $("#FurtherEditOptions").fadeIn();
-            $("#ShowFurtherOptPara").hide();
-            return false;
-        });
-
-        processAddFileClick();
-        $("#ShowFileUpload").click(function() {
-            $("#FileUpload").fadeIn();
-            $("#ShowFileUploadPara").hide();
-            return false;
-        });
-
-
-    
+  
 
     $(".btn_followup_add").click(function(event) {
         $('<div/>').dialog2({
-            title: "{% blocktrans %}Добавление производителей оборудования{% endblocktrans %}", 
-            content: "{% url followup_edit %}?ticket_id={{ticket.id}}", 
+            title: "{% blocktrans %}Добавить комментарий{% endblocktrans %}", 
+            content: this.href, 
             id: "server-notice"
         });
         
         event.preventDefault(event);
     });
+    
+    $(".reassign_dialog").click(function(event) {
+        $('<div/>').dialog2({
+            title: "{% blocktrans %}Перевести задачу{% endblocktrans %}", 
+            content: this.href, 
+            id: "server-notice"
+        });
+        
+        event.preventDefault(event);
+    });
+    
     
     function processAddFileClick() {
         /* Until jQuery includes some 'livequery' functionality in the core
@@ -56,18 +53,25 @@
 {% endblock %}
 
 {% block helpdesk_body %}
-<h2>#{{ ticket.id }}. {{ ticket.title }} [{{ ticket.get_status }}]</h2>
+<h2>[{{ticket.queue.slug}}] {{ ticket.id }}. {{ ticket.title }} [{{ ticket.get_status }}]</h2>
 <div class="navbar navbar-googlenav">
   <div class="navbar-inner">
     <div class="btn-toolbar">
+    
+    {% if request.user.username != ticket.assigned_to.username %}
+        <div class="btn-group">
+        
+        <a href='{% url ticket_assign %}?ticket_id={{ticket.id}}&systemuser_id={{request.user.account.id}}' class='btn reassign_dialog' ><i class='cus-accept'></i>&nbsp;{% trans "Take" %}</a>
+        
+      </div>
+      {% endif %}
         <div class="btn-group">
 
-        <a href='?take' class='btn btn-success'><i class='cus-accept'></i>&nbsp;{% trans "Take" %}</a>
+        <a href='{% url ticket_assign %}?ticket_id={{ticket.id}}' class='btn reassign_dialog' ><i class=' cus-arrow-right'></i>&nbsp;{% trans "Перевести" %}</a>
 
       </div>
-
       <div class="btn-group">
-        <a  href='{% url helpdesk_edit ticket.id %}' class='btn'><i class='icon-edit'></i>&nbsp;Изменить</a>
+        <a  href='{% url helpdesk_submit %}?id={{ticket.id}}' class='btn'><i class='icon-edit'></i>&nbsp;Изменить</a>
       </div>
 
  
@@ -80,20 +84,22 @@
       </div>
  
     <div class="btn-group">
-    <a class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
+    <a href='{% url followup_edit %}?ticket_id={{ticket.id}}&followup_type=comment' class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
     </div>
     
       <div class="btn-group">
-        <a  href='{% url helpdesk_edit ticket.id %}' class='btn'><i class='cus-attach'></i>&nbsp;Прикрепить файл</a>
+        <a  href='{% url followup_edit %}?ticket_id={{ticket.id}}&followup_type=files' class='btn btn_followup_add'><i class='cus-attach'></i>&nbsp;Прикрепить файл</a>
       </div>
+      {% if ticket.status == 1 or ticket.status == 2 %}
       <div class="btn-group">
-        <a  href='{% url helpdesk_edit ticket.id %}' class='btn'><i class='cus-accept'></i>&nbsp;Закрыть заявку</a>
+        <a  href='{% url followup_edit %}?ticket_id={{ticket.id}}&followup_type=new_status' class='btn btn_followup_add'><i class='cus-cross'></i>&nbsp;Закрыть заявку</a>
       </div>
-
+       {% endif %}
+       {% if ticket.status == 3 or ticket.status == 4 %}
       <div class="btn-group">
-        <a  href='{% url helpdesk_edit ticket.id %}' class='btn'><i class='cus-arrow-redo'></i>&nbsp;Переоткрыть заявку</a>
+        <a  href='{% url followup_edit %}?ticket_id={{ticket.id}}&followup_type=new_status&new_status=2' class='btn btn_followup_add'><i class='cus-arrow-redo'></i>&nbsp;Переоткрыть заявку</a>
       </div>
-      
+      {% endif %}
       <div class="btn-group pull-right">
         <a  href='{% url helpdesk_delete ticket.id %}' class='btn btn-danger'>Удалить</a>
       </div>
@@ -116,15 +122,19 @@
 <tr class='row_even'>
     <td><strong>{% trans "Owner" %}</strong></td>
     <td>
-      {{ ticket.owner }}
+      {{ ticket.owner|default:'' }}
     </td>
 </tr>
-
+<tr class='row_even'>
+    <td><strong>{% trans "Аккаунт" %}</strong></td>
+    <td>
+      {{ ticket.account|default:'' }}
+    </td>
+</tr>
 <tr>
     <td><strong>{% trans "Assigned To" %}</strong></td>
     <td class="left_border {{ 3|coll_bg  }} ">
-      {{ ticket.get_assigned_to }}
-      {{ticket.assigned_to}}
+      {{ticket.assigned_to|default:''}}
  
 
       {% comment%}{% endifequal %}{% endcomment%}
@@ -133,9 +143,12 @@
 
 <tr>
     <td><strong>{% trans "Priority" %}</strong></td>
-    <td>{{ ticket.get_priority_display }}</td>
+    <td>{{ ticket.render_priority }}</td>
 </tr>
-
+<tr>
+    <td><strong>{% trans "Status" %}</strong></td>
+    <td>{{ ticket.get_status_display }}</td>
+</tr>
 <tr class='row_odd'>
     <td><strong>Отправлять копии</strong></td>
     <td>{% for ticketcc in ticket.ticketcc_set.all %}
@@ -183,11 +196,11 @@
   
 
 {% for followup in ticket.followup_set.all %}
-<div class="media-body">
-  <h4 class="media-heading"><strong>{{ followup.title }}</strong>, {% if followup.user %}<a href="#" class="user">{{ followup.user }}</a>{% endif %}</h4>
+<div class="media-body ">
+  <h4 class="media-heading"><strong>{{ followup.title }}</strong>, {% if followup.new_status %}{{ followup.get_new_status_display }}{% endif %}</h4>
 
 
-<div>
+<div class='well'>
   <span class="event-date">{{ followup.date|date:"d.m.Y H:i" }}</span>
 	
 	{% if not followup.public %}
@@ -196,28 +209,31 @@
 
 	 {% if followup.comment %}{{ followup.comment|force_escape|num_to_link|linebreaksbr }}{% endif %}
   {% for change in followup.ticketchange_set.all %}
-  {% if forloop.first %}
-  <div class='changes'>{% endif %}
+  
+  <div class='changes'>
   <div>{% blocktrans with change.field as field and change.old_value as old_value and change.new_value as new_value %}Changed {{ field }} from {{ old_value }} to {{ new_value }}.{% endblocktrans %}</div>
   </div>
-  </div>
+  {% endfor %}
 
   
-  {% for attachment in followup.attachment_set.all %}{% if forloop.first %}<div class='attachments'><ul>{% endif %}
+  {% for attachment in followup.attachment_set.all %}
+
+  <div class='attachments'>
 
   <a href='{{ attachment.file.url }}'>{{ attachment.filename }}</a> ({{ attachment.mime_type }}, {{ attachment.size|filesizeformat }})
-
-  {% endfor %}
+  </div>
+  
   
   {% endfor %}
-  <hr />
+
+</div>
 </div>
 {% endfor %}
 
-</div>
+
 {% endif %}
 </div>
-<a class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
+<a href='{% url followup_edit %}?ticket_id={{ticket.id}}&followup_type=comment' class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
 
 
 
