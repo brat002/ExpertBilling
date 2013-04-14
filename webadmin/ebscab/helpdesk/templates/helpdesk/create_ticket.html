@@ -13,6 +13,7 @@
 $(document).ready(function() {
 	        $("#id_ticket-toolbar-save").click(function(event) {
 	            $('#id_form').submit();
+	            event.preventDefault(event);
 	        });
 });
 </script>
@@ -44,12 +45,13 @@ $(document).ready(function() {
 {% if form %}
 {% crispy form %}
 
+
+{% else %}
+{% endif %}
 <fieldset>
     <div class='buttons'>
         <input type='submit' value='{% trans "Submit Ticket" %}' />
     </div>
 </fieldset>
-{% else %}
-{% endif %}
 </form>
 {% endblock %}
