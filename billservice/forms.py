@@ -152,7 +152,7 @@ class SimplePasswordForm(forms.Form):
     repeat_password = forms.CharField(label=_(u"Повторите"), required = True, widget=forms.PasswordInput, error_messages={'required':_(u'Обязательное поле!')} )
     
 class ActivationCardForm(forms.Form):
-    series = forms.IntegerField(label=_(u"Введите серию"), required = True, error_messages={'required':_(u'Обязательное поле!')})
+    #series = forms.IntegerField(label=_(u"Введите серию"), required = True, error_messages={'required':_(u'Обязательное поле!')})
     card_id = forms.IntegerField(label=_(u"Введите ID карты"), required = True, error_messages={'required':_(u'Обязательное поле!')})
     pin = forms.CharField(label=_(u"ПИН"), required = True, widget=forms.PasswordInput, error_messages={'required':_(u'Обязательное поле!')})
     

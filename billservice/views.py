@@ -348,7 +348,7 @@ def get_promise(request):
             allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance-Decimal(sum))
             return {'error_message': _(u'Перевод средств успешно выполнен.'), 'disable_promise': False, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer,  'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     else:
-        last_promises = Transaction.objects.filter(account=user, promise=True).order_by('-created')[0:10]
+        last_promises = Transaction.objects.filter(account=user, type__in=[TransactionType.objects.get('PROMISE_PAYMENT'), TransactionType.objects.get('PROMISE_DEBIT')]).order_by('-created')[0:10]
         return {'MAX_PROMISE_SUM': promise_summ, 'last_promises': last_promises, 'disable_promise': not settings.ALLOW_PROMISE, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
 
 
@@ -868,7 +868,7 @@ def card_acvation(request):
         error_message = ''
         if form.is_valid():
 
-            res = activate_pay_card(user.id, form.cleaned_data['series'], form.cleaned_data['card_id'], form.cleaned_data['pin'])
+            res = activate_pay_card(user.id, form.cleaned_data['card_id'], form.cleaned_data['pin'])
             #print res
             if res == 'CARD_NOT_FOUND':
                 error_message = _(u'Ошибка активации. Карта не найдена.')
