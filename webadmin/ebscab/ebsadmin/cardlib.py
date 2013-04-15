@@ -71,15 +71,15 @@ def activate_card(login, pin):
                 
     return
 
-def activate_pay_card(account_id, serial, card_id, pin):
+def activate_pay_card(account_id,  card_id, pin):
 
     now = datetime.datetime.now()
     
     return_value = "CARD_NOT_FOUND"
     account = Account.objects.get(id=account_id)
-    if serial and pin and card_id and account_id:
+    if pin and card_id and account_id:
         return_value = ''
-        card = Card.objects.filter(type=0, id=card_id, pin=pin, series=serial, disabled=False)
+        card = Card.objects.filter(type=0, id=card_id, pin=pin,  disabled=False)
         if card:
             card = card[0]            
             if not card.salecard: 
