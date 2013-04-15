@@ -47,7 +47,10 @@ class FormatFloatColumn(django_tables.Column):
     
 class FormatDateTimeColumn(django_tables.Column):
     def render(self, value):
-        return value.strftime("%d.%m.%Y %H:%M:%S") if value else ''
+        try:
+            return value.strftime("%d.%m.%Y %H:%M:%S") if value else ''
+        except:
+            return value
 
 class FormatBlankSpeedColumn(django_tables.LinkColumn):
     def render(self, value):
