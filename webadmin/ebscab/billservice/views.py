@@ -348,7 +348,7 @@ def get_promise(request):
             allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance-Decimal(sum))
             return {'error_message': _(u'Перевод средств успешно выполнен.'), 'disable_promise': False, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer,  'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     else:
-        last_promises = Transaction.objects.filter(account=user, type__in=TransactionType.objects.filter(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
+        last_promises = Transaction.objects.filter(account=user, type__internal_name__in=['PROMISE_PAYMENT']).order_by('-created')[0:10]
         return {'MAX_PROMISE_SUM': promise_summ, 'last_promises': last_promises, 'disable_promise': not settings.ALLOW_PROMISE, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'active_class':'promise-img',}
 
 
