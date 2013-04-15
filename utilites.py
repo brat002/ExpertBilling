@@ -800,7 +800,7 @@ def speedlimit_logic(speed, limitspeed, speed_unit, speed_change_type):
     elif speed_unit == 'Mbps':
         limitspeed=limitspeed*1000*1000
     elif speed_unit == '%':
-        limitspeed = limitspeed/100.000
+        limitspeed = (limitspeed or 0.00)/100.000
     
 
     speed = int(speed)
