@@ -20,7 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 @render_to('cassa/index.html')
 def index(request):
         
-    if  not request.user.account.has_perm('billservice.view_cassa'):
+    if  not request.user.account.has_perm('billservice.view_cashier'):
         return {'status':False}
 
     if request.method=='GET' and request.GET: 
@@ -73,6 +73,8 @@ def index(request):
         res = Account.objects.filter(status=1)
         table = AccountsCashierReportTable(res)
         table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+        if table_to_report:
+            return create_report_http_response(table_to_report, request)        
         form = CashierAccountForm()
         return { 'form':form, 'table': table}   
 
