@@ -85,9 +85,9 @@ for x in m_cursor.fetchall():
         city_id = p_cursor.fetchone()[0]
     if city_id:
         p_cursor.execute("SELECT id FROM billservice_street WHERE city_id=%s and name=%s;", (city_id, street,))
-        street = p_cursor.fetchone()
-        if street:
-            street_id = street[0]
+        sstreet = p_cursor.fetchone()
+        if sstreet:
+            street_id = sstreet[0]
         else:
             a_address_street = street or u"Не указана"
             p_cursor.execute("INSERT INTO billservice_street(city_id, name) VALUES(%s, %s) RETURNING id;", (city_id, a_address_street,))
@@ -111,7 +111,7 @@ for x in m_cursor.fetchall():
             VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                    %s,
                     %s, %s, %s, %s, %s) RETURNING id;    
-            """, (username, password, fullname, username, city_id, street, house, entrance, floor, flat_number, fullname, passport, '', '', '', home_phone, mobile_phone, now if deleted==1 else None, 
+            """, (username, password, fullname, username, city_id, a_address_street, house_number, entrance, floor, flat_number, fullname, passport, '', '', '', home_phone, mobile_phone, now if deleted==1 else None, 
                   created, True, True, comments, 0, status
                   ))
             
@@ -200,6 +200,6 @@ for x in m_cursor.fetchall():
                     account_id, type_id, approved, summ, description, 
                     created)
             VALUES (%s, %s, True, %s, %s, %s);
-    """, (account_id, "CORRECTION", t_sum-ballance, u"Корректирующее списание", datetime.datetime.now(),))
+    """, (account_id, "CORRECTION", (-1)*(t_sum-ballance), u"Корректирующее списание", datetime.datetime.now(),))
 
 conn.rollback()
