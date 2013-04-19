@@ -10,7 +10,7 @@ from object_log.models import LogItem
 
 from ebsadmin.tables import TariffTable, PeriodicalServiceTable, TrafficTransmitNodesTable, PrepaidTrafficTable,TimeSpeedTable, OneTimeServiceTable, RadiusTrafficNodeTable, TrafficLimitTable,  TimeAccessNodeTable, AddonServiceTarifTable
 
-from ebscab.billservice.forms import TariffForm, PeriodicalServiceForm, TrafficTransmitServiceForm, PrepaidTrafficForm, TrafficTransmitNodeForm, AccessParametersForm, TimeSpeedForm, OneTimeServiceForm, RadiusTrafficForm, RadiusTrafficNodeForm, TrafficLimitForm, SpeedLimitForm, TimeAccessServiceForm, TimeAccessNodeForm, AddonServiceTarifForm
+from ebscab.billservice.forms import TariffForm, PeriodicalServiceForm, TrafficTransmitServiceForm, PrepaidTrafficForm, TrafficTransmitNodeForm, AccessParametersForm, TimeSpeedForm, OneTimeServiceForm, RadiusTrafficForm, RadiusTrafficNodeForm, TrafficLimitForm, SpeedLimitForm, TimeAccessServiceForm, TimeAccessNodeForm, AddonServiceTarifForm, AccessParametersTariffForm
 from ebscab.billservice.models import Tariff, PeriodicalService, TrafficTransmitService, TrafficTransmitNodes, PrepaidTraffic, AccessParameters, TimeSpeed, OneTimeService, RadiusTraffic, RadiusTrafficNode, TrafficLimit, SpeedLimit, TimeAccessService, TimeAccessNode, AddonServiceTarif
 from django.contrib import messages
 from django.contrib import messages
@@ -41,13 +41,15 @@ def tariff_edit(request):
     tariff = None
     if request.method == 'POST': 
         id = request.POST.get("id")
+        ap_id = request.POST.get("ap-id")
         if id:
             tariff = Tariff.objects.get(id=id)
             form = TariffForm(request.POST, instance=tariff)
-            accessparameters_form = AccessParametersForm(request.POST, instance=tariff.access_parameters, prefix="ap")
+            accessparameters_form = AccessParametersTariffForm(request.POST, instance=tariff.access_parameters, prefix="ap")
+            print accessparameters_form
         else:
             form = TariffForm(request.POST)
-            accessparameters_form = AccessParametersForm(request.POST, prefix="ap")
+            accessparameters_form = AccessParametersTariffForm(request.POST, prefix="ap")
 
         if id:
             if  not (request.user.account.has_perm('billservice.change_tariff')):

@@ -244,8 +244,7 @@ class TicketForm(forms.Form):
 
         if self.cleaned_data['assigned_to']:
             try:
-                u = User.objects.get(id=self.cleaned_data['assigned_to'])
-                t.assigned_to = u
+                t.assigned_to = self.cleaned_data['assigned_to']
             except User.DoesNotExist:
                 t.assigned_to = None
         t.save()
@@ -302,16 +301,19 @@ class TicketForm(forms.Form):
                 )
             messages_sent_to.append(t.submitter_email)
 
-        if t.assigned_to and t.assigned_to != user and getattr(t.assigned_to.usersettings.settings, 'email_on_ticket_assign', False) and t.assigned_to.email and t.assigned_to.email not in messages_sent_to:
-            send_templated_mail(
-                'assigned_to',
-                context,
-                recipients=t.assigned_to.email,
-                sender=q.from_address,
-                fail_silently=True,
-                files=files,
-                )
-            messages_sent_to.append(t.assigned_to.email)
+        #FIX USERSETTINGS
+        #=======================================================================
+        # if t.assigned_to and t.assigned_to != user and getattr(t.assigned_to.usersettings.settings, 'email_on_ticket_assign', False) and t.assigned_to.email and t.assigned_to.email not in messages_sent_to:
+        #    send_templated_mail(
+        #        'assigned_to',
+        #        context,
+        #        recipients=t.assigned_to.email,
+        #        sender=q.from_address,
+        #        fail_silently=True,
+        #        files=files,
+        #        )
+        #    messages_sent_to.append(t.assigned_to.email)
+        #=======================================================================
 
         if q.new_ticket_cc and q.new_ticket_cc not in messages_sent_to:
             send_templated_mail(
