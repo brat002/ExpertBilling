@@ -2080,3 +2080,17 @@ class PermissionGroup(models.Model):
 #    
 #===============================================================================
 
+class NotificationsSettings(models.Model):
+    #account = models.ForeignKey(Account)
+    payment_notifications = models.BooleanField() #Transaction
+    payment_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о платеже', default='')
+    tariff_cost_notifications = models.BooleanField(verbose_name=u'Уведомления о недостатке денег для продления тарифа')
+    tariff_cost_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о недостатке денег для тарифа', default='')
+    balance_notifications = models.BooleanField(verbose_name=u'Уведомления о недостатке баланса')
+    balance_edge = models.FloatField(verbose_name=u'Граница баланса', help_text = u'Граница, с которой слать уведомления  о недостатке баланса')
+    balance_notifications_each = models.IntegerField(verbose_name=u'Периодичность между уведомлениями о балансе', help_text=u'В днях')
+    balance_notifications_limit = models.IntegerField(verbose_name=u'Количество уведомлений о балансе', help_text = u'Не слать более уведомлений о балансе при исчерпании указанного количества')
+    balance_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о недостатке денег', default='')
+    send_email = models.BooleanField(blank=True, default=True)
+    send_sms = models.BooleanField(blank=True, default=True)
+    
