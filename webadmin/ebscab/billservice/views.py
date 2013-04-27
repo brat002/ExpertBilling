@@ -274,8 +274,8 @@ def get_promise(request):
     if not tarif:
         return {'error_message': _(u'Вам не назначен тарифный план'), 'disable_promise': True}
     user = request.user.account
-    promise_summ = user.promise_summ if user.promise_summ else settings.MAX_PROMISE_SUM
-    promise_min_ballance = user.promise_min_ballance if user.promise_min_ballance else settings.MIN_BALLANCE_FOR_PROMISE
+    promise_summ = user.promise_summ if user.promise_summ not in [None, 0, ''] else settings.MAX_PROMISE_SUM
+    promise_min_ballance = user.promise_min_ballance if user.promise_min_ballance not in [None, 0, ''] else settings.MIN_BALLANCE_FOR_PROMISE
     allow_transfer_summ= "%.2f" % (0 if user.ballance<=0 else user.ballance)
     LEFT_PROMISE_DATE = datetime.datetime.now()+datetime.timedelta(days = user.promise_days or settings.LEFT_PROMISE_DAYS)
     if settings.ALLOW_PROMISE==True and Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT'), promise_expired=False).count() >= 1:
@@ -313,7 +313,7 @@ def get_promise(request):
     
             last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
     
-            return {'error_message': _(u'Обещанный платёж выполнен успешно. Обращаем ваше внимание на то, что повторно воспользоваться услугой обещанного платежа вы сможете после погашения суммы платежа или истечения даты созданного платежа.'), 'disable_promise': True, 'last_promises': last_promises, 'active_class':'promise-img',}
+            return {'error_message': _(u'Обещанный платёж выполнен успешно. Обращаем ваше внимание на то, что повторно воспользоваться услугой обещанного платежа вы сможете после единоразового погашения всей суммы платежа или истечения даты созданного платежа.'), 'disable_promise': True, 'last_promises': last_promises, 'active_class':'promise-img',}
         elif operation=='moneytransfer':
             last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
             if tarif.allow_ballance_transfer==False:

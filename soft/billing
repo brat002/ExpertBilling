@@ -14,6 +14,7 @@ start)
 		;;
 stop)
         echo "Stopping ebs processes"
+    /etc/init.d/ebs_celery stop
 	/etc/init.d/ebs_nfroutine stop
 	/etc/init.d/ebs_nf stop
 	/etc/init.d/ebs_nffilter stop
