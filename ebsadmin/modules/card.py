@@ -210,21 +210,23 @@ def salecard_edit(request):
                 messages.error(request,_(u'У вас нет прав на создание накладных на карты'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
-        
+        now = datetime.datetime.now()
         if form.is_valid():
             model = form.save(commit=False)
             model.save()
             cards = form.cleaned_data.get("cards")
-            for c in cards:
-                c.salecard = model
-                c.save()
-            if form.cleaned_data.get('prepayment_sum')>0:
-                m = DealerPay()
-                m.salecard = model
-                m.pay = form.cleaned_data.get('prepayment_sum')
-                m.created = model.created
-                m.save()
-                
+            if not id:
+                for c in cards:
+                    c.salecard = model
+                    c.sold = now
+                    c.save()
+                if form.cleaned_data.get('prepayment_sum')>0:
+                    m = DealerPay()
+                    m.salecard = model
+                    m.pay = form.cleaned_data.get('prepayment_sum')
+                    m.created = model.created
+                    m.save()
+                    
 
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return HttpResponseRedirect(reverse("card")) 
