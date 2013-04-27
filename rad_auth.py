@@ -425,17 +425,17 @@ class HandleSAuth(HandleSBase):
         if nas.speed_value1:
             result_params = command_string_parser(command_string=nas.speed_value1, command_dict=command_dict)
             if result_params and nas.speed_vendor_1:
-                self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),str(result_params))
+                self.replypacket.AddAttribute((nas.speed_vendor_1,nas.speed_attr_id1),result_params)
             elif result_params and not nas.speed_vendor_1:
-                self.replypacket.AddAttribute(nas.speed_attr_id1,str(result_params))
+                self.replypacket.AddAttribute(nas.speed_attr_id1,result_params)
 
 
         if nas.speed_value2:
             result_params = command_string_parser(command_string=nas.speed_value2, command_dict=command_dict)
             if result_params and nas.speed_vendor_2:
-                self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id1)),str(result_params))
+                self.replypacket.AddAttribute((nas.speed_vendor_2,str(nas.speed_attr_id2)), result_params)
             elif result_params and not nas.speed_vendor_2:
-                self.replypacket.AddAttribute(nas.speed_attr_id2,str(result_params))
+                self.replypacket.AddAttribute(nas.speed_attr_id2,result_params)
                 
 
     def create_cursor(self):
