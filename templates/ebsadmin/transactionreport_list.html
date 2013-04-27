@@ -14,7 +14,7 @@
 
             });
             
-            $("#modal-transactiondelete-dialog-table").click(function() {
+            $("#modal-transactiondelete-dialog-table").click(function(event) {
             	var a = this;
                 $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить выбранные проводки?{% endblocktrans %}", {
                 	confirm: function(event, value) {
