@@ -7,7 +7,7 @@ import psycopg2.extras
 import sys
 from period_utilities import settlement_period_info
 #utm_tarif_id:ebs_tarif_id
-tarifs={'1':'23','2':'23','4':'23','5':'23','6':'23','7':'23','8':'27','9':'22','10':'19','11': '17','12':'23','13':'22','14': '22','15': '19','16':'17','21':'23','22': '22','23':'19','24':'17','25':'18','26':'20','27':'27','28':'6','29':'7','30':'8','31':'25'}
+tarifs={1:12, 2:13, 3:14, 5:20, 13:18, 15:19, 22:22, 27:15, 35:21, 36:16, 37:5, 38:6, 39:7, 40:8, 41:17, 42:9, 43:10, 44:11}
 
 addonservices = {23: 1, 88: 1}
 
@@ -36,7 +36,6 @@ h.city, h.street, h.number, h.building
 JOIN accounts as a ON a.id=u.basic_account
 JOIN account_tariff_link as atl ON atl.account_id=u.basic_account
 LEFT JOIN houses as h ON h.id=u.house_id
-WHERE atl.is_deleted=0;
 """)
 
 try:
@@ -50,6 +49,8 @@ conn.set_isolation_level(1)
 p_cursor = conn.cursor()
 now = datetime.datetime.now()    
 addonservice_activated = datetime.datetime(now.year, now.month, now.day+1)
+
+default_date = datetime.datetime(2000,1,1)
 nas_id=4
 status=2
 transaction_per_day_for_gradual = 1
@@ -64,9 +65,9 @@ for x in m_cursor.fetchall():
     utm_account_id, user_id, username, password, status, passport, comments, fullname, deleted, address, work_phone, home_phone, mobile_phone, flat_number, created, entrance, floor, ballance, tarif_id, link_date, city, street, house_number,  house_building = x
     print created
     if created is None:
-        print x
-        continue
-    created=datetime.datetime.fromtimestamp(float(created))
+        created = default_date
+    else:
+        created=datetime.datetime.fromtimestamp(float(created))
     link_date=datetime.datetime.fromtimestamp(link_date)
     status = 1 if status==2 else 3   
     try: 
@@ -94,9 +95,9 @@ for x in m_cursor.fetchall():
             street_id = p_cursor.fetchone()[0]
             
         p_cursor.execute("SELECT id FROM billservice_house WHERE street_id=%s and name=%s;", (street_id, house_number,))
-        house = p_cursor.fetchone()
-        if house:
-            house_id = house[0]
+        ahouse = p_cursor.fetchone()
+        if ahouse:
+            house_id = ahouse[0]
         else:
             a_address_build = house_number or u"Не указан"
             p_cursor.execute("INSERT INTO billservice_house(street_id, name) VALUES(%s, %s) RETURNING id;", (street_id, a_address_build,))
@@ -111,7 +112,7 @@ for x in m_cursor.fetchall():
             VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                    %s,
                     %s, %s, %s, %s, %s) RETURNING id;    
-            """, (username, password, fullname, username, city_id, a_address_street, house_number, entrance, floor, flat_number, fullname, passport, '', '', '', home_phone, mobile_phone, now if deleted==1 else None, 
+            """, (username, password, fullname, username, city_id, address, house_number, entrance, floor, flat_number, fullname, passport, '', '', '', home_phone, mobile_phone, now if deleted==1 else None, 
                   created, True, True, comments, 0, status
                   ))
             
@@ -139,13 +140,13 @@ for x in m_cursor.fetchall():
             """, (account_id, login, password),
          
               )
-        
-        if not tarifs.get(str(tarif_id)):continue
-        p_cursor.execute("""
-        INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s, %s, %s) RETURNING id
-        """, (account_id, tarifs.get(str(tarif_id)), link_date))
-        
-        accounttarif_id = p_cursor.fetchone()[0]
+        accounttarif_id = None
+        if  tarifs.get(tarif_id):
+            p_cursor.execute("""
+            INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(%s, %s, %s) RETURNING id
+            """, (account_id, tarifs.get(tarif_id), link_date))
+            
+            accounttarif_id = p_cursor.fetchone()[0]
         
         
         p_cursor.execute("""

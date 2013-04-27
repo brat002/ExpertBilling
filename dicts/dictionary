@@ -197,6 +197,33 @@ ATTRIBUTE	Add-Suffix		1009	string
 ATTRIBUTE	Expiration		1010	date
 ATTRIBUTE	Autz-Type		1011	integer
 
+# Limit session traffic
+ATTRIBUTE       Session-Octets-Limit    227     integer
+# What to assume as limit - 0 in+out, 1 in, 2 out, 3 max(in,out)
+ATTRIBUTE       Octets-Direction        228     integer
+
+#       Octets-Direction
+VALUE           Octets-Direction        Sum                     0
+VALUE           Octets-Direction        Input                   1
+VALUE           Octets-Direction        Output                  2
+VALUE           Octets-Direction        MaxOveral               3
+VALUE           Octets-Direction        MaxSession              4
+
+
+
+#ATTRIBUTE       Session-Octets-Limit                        227     integer
+# What to assume as limit - 0 in+out, 1 in, 2 out, 3 max(in,out)
+#ATTRIBUTE       Octets-Direction                               228     integer
+
+ATTRIBUTE       PPPD-Upstream-Speed-Limit           230     integer
+ATTRIBUTE       PPPD-Downstream-Speed-Limit      231     integer
+ATTRIBUTE       PPPD-Upstream-Speed-Limit-1        232     integer
+ATTRIBUTE       PPPD-Downstream-Speed-Limit-1   233     integer
+ATTRIBUTE       PPPD-Upstream-Speed-Limit-2        234     integer
+ATTRIBUTE       PPPD-Downstream-Speed-Limit-2   235     integer
+ATTRIBUTE       PPPD-Upstream-Speed-Limit-3        236     integer
+ATTRIBUTE       PPPD-Downstream-Speed-Limit-3   237     integer
+
 #
 #	Integer Translations
 #
