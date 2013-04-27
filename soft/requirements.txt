@@ -1,5 +1,4 @@
 BeautifulSoup
-DateUtils
 Django==1.4.3
 IPy
 Mako
