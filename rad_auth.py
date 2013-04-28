@@ -82,6 +82,7 @@ def get_accesstype(packetobject):
     try:
         nas_port_type = packetobject.get('NAS-Port-Type', (None,))[0]
         calling_station = packetobject.get('Calling-Station-Id', [''])[0]
+        logger.info('Nas port type: %s Service Type %s Calling-Station-Id %s' % (nas_port_type, packetobject.get('Service-Type', [''])[0], calling_station ))
         if nas_port_type == 'Virtual' and packetobject.get('Service-Type', [''])[0]=='Framed-User':
             return 'PPTP'
         elif (nas_port_type in ['Ethernet', 'Async'] or (len(calling_station)==17 and calling_station.rfind(':')!=-1)) and packetobject.get('Service-Type', [''])[0]=='Framed-User':
