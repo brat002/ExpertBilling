@@ -83,9 +83,9 @@ def get_accesstype(packetobject):
         calling_station = packetobject.get('Calling-Station-Id', [''])[0]
         if nas_port_type == 'Virtual' and packetobject.get('Service-Type', [''])[0]=='Framed-User':
             return 'PPTP'
-        elif (nas_port_type == 'Ethernet' or (len(calling_station)==17 and calling_station.rfind(':')!=-1)) and packetobject.get('Service-Type', [''])[0]=='Framed-User': 
+        elif (nas_port_type in ['Ethernet', 'Async'] or (len(calling_station)==17 and calling_station.rfind(':')!=-1)) and packetobject.get('Service-Type', [''])[0]=='Framed-User': 
             return 'PPPOE'
-        elif nas_port_type == (None,) and packetobject.get('Service-Type', [''])[0]=='Framed-User': 
+        elif nas_port_type == None and packetobject.get('Service-Type', [''])[0]=='Framed-User': 
             return 'Wireless'        
         elif nas_port_type == 'Wireless-802.11':
             return 'W802.1x'
