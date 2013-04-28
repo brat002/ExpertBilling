@@ -211,7 +211,7 @@ ATTRIBUTE       Octets-Direction        228     integer
 #ATTRIBUTE       Octets-Direction                               228     integer
 
 ATTRIBUTE       PPPD-Upstream-Speed-Limit           230     string
-ATTRIBUTE       PPPD-Downstream-Speed-Limit      231     string4
+ATTRIBUTE       PPPD-Downstream-Speed-Limit      231     string
 ATTRIBUTE       PPPD-Upstream-Speed-Limit-1        232     integer
 ATTRIBUTE       PPPD-Downstream-Speed-Limit-1   233     integer
 ATTRIBUTE       PPPD-Upstream-Speed-Limit-2        234     integer
