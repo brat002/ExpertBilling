@@ -217,7 +217,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
         logger.info("Send PoD")
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(20)
-        sock.bind(('0.0.0.0'))
+        #sock.bind(('0.0.0.0',))
         doc = packet.AcctPacket(code=40, secret=str(nas.get('secret')), dict=DICT)
         doc.AddAttribute('NAS-IP-Address', str(nas.get('ipaddress')))
         if nas.get('type')!='cisco' and nas.get('identify'):
@@ -420,7 +420,7 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
                 
 
         command_dict.update(speed)
-
+        command_dict.update({'framed_ip_address': vpn_ip_address})
         command_string=command_string_parser(command_string=format_string, command_dict=command_dict)
         if not command_string: return True
         #print command_string
