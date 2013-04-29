@@ -358,6 +358,9 @@ class HandleSAcct(HandleSBase):
             nas = nasses[0]
         self.replypacket.secret=str(nas.secret)
 
+        if not nas_int_id and nas:
+            nas_int_id = nas.id
+            
         if not vars.IGNORE_NAS_FOR_VPN:
             nas_by_int_id = False
             
