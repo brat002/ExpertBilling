@@ -53,7 +53,7 @@ def command_string_parser(command_string='', command_dict={}):
     for p in params :
         if p in command_dict.keys() :
             cs_str = re.compile( '\$%s' % p)
-            command_string = cs_str.sub(str(command_dict[p]),command_string)
+            command_string = cs_str.sub(unicode(command_dict[p]),command_string)
     #print command_string
     return command_string
 
@@ -226,7 +226,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
         if access_type=='lisg':
             doc.AddAttribute('User-Name', str(subacc.get('ipn_ip_address')))
         elif subacc.get('username'):
-            doc.AddAttribute('User-Name', str(subacc.get('username')))
+            doc.AddAttribute('User-Name', unicode(subacc.get('username')))
             
         if nas.get('type')=='cisco':
             logger.info("Normalization cisco session id")
@@ -325,7 +325,7 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
         if access_type=='lisg':
             doc.AddAttribute('User-Name', str(subacc.get('ipn_ip_address')))
         else:
-            doc.AddAttribute('User-Name', str(subacc.get('username')))
+            doc.AddAttribute('User-Name', unicode(subacc.get('username')))
         if nas.get('type')=='cisco':
             logger.info("Normalization cisco session id")
             doc.AddAttribute('Acct-Session-Id', re.sub('^0+', '', str(session_id) ))
@@ -366,21 +366,21 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
         command_dict.update(speed)
         command_dict.update({'framed_ip_address': vpn_ip_address})
         if nas.get('speed_value1'):
-            result_params = str(command_string_parser(command_string=nas.get('speed_value1'), command_dict=speed))
+            result_params = unicode(command_string_parser(command_string=nas.get('speed_value1'), command_dict=speed))
             if result_params and nas.get('speed_vendor_1'):
                 doc.AddAttribute((nas.get('speed_vendor_1'), nas.get('speed_attr_id1')),result_params)
             elif result_params and not nas.get('speed_vendor_1'):
-                doc.AddAttribute(nas.get('speed_attr_id1'),str(result_params))
+                doc.AddAttribute(nas.get('speed_attr_id1'),unicode(result_params))
 
         if nas.get('speed_value2'):
-            result_params = str(command_string_parser(command_string=nas.get('speed_value2'), command_dict=speed))
+            result_params = unicode(command_string_parser(command_string=nas.get('speed_value2'), command_dict=speed))
             if result_params and nas.get('speed_vendor_2'):
                 doc.AddAttribute((nas.get('speed_vendor_2'), nas.get('speed_attr_id2')),result_params)
             elif result_params and not nas.get('speed_vendor_2'):
-                doc.AddAttribute(nas.get('speed_attr_id2'),str(result_params))
+                doc.AddAttribute(nas.get('speed_attr_id2'),unicode(result_params))
                     
         doc_data=doc.RequestPacket()
-        logger.info('CoA socket send: %s' % str(nas.ipaddress))
+        logger.info('CoA socket send: %s' % unicode(nas.ipaddress))
         sock.sendto(doc_data,(nas.get('ipaddress'), 1700))
         (data, addrport) = sock.recvfrom(8192)
         logger.info('CoA socket get: %s' % str(addrport))
@@ -437,7 +437,7 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
                 status = True if status==0 else False
             if status==True and cb:
                 cb.apply()
-                logger.info('Local command %s was executed with status %s and output %s' % (command_string, status, output))
+                logger.info('Command %s was executed with status %s and output %s' % (command_string, status, output))
         except Exception, e:
             logger.info('Change Speed ssh exception %s' % repr(e))
             return False

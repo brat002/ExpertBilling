@@ -251,6 +251,13 @@ padding-top:20px;
 		      {% charts_menu %}
 		    </ul>
 		  </li>
+           <li class="dropdown-submenu">
+            <a tabindex="-1" href="#"><i class="cus-chart-line"></i> {% blocktrans %}Аналитические отчёты{% endblocktrans %}</a>
+            <ul class="dropdown-menu">
+              {% textreports_menu %}
+            </ul>
+          </li>
+		  
          <li class="divider"></li>
          <li><a href="{% url transactionreport2 %}"><i class="cus-folder-table"></i> {% blocktrans %}Операции с л/c{% endblocktrans %}</a></li>
          <li><a href="{% url payment %}"><i class="cus-folder-table"></i> {% blocktrans %}Платежи через платёжные системы{% endblocktrans %}</a></li>

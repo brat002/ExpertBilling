@@ -309,8 +309,8 @@ def transactionreport2(request):
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
 
-            res = gettransactiontypes(current=trtypes)
-            return {"table": table,  'form':tf, 'ojax':res, 'total_summ': total_summ, 'total': total}
+            r = gettransactiontypes(current=trtypes)
+            return {"table": table,  'form':tf, 'ojax':r, 'total_summ': total_summ, 'total': total}
 
         else:
             res = gettransactiontypes(current=data.getlist('tree'))
@@ -1224,7 +1224,7 @@ def transaction(request):
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_transaction')):
-            messages.error(request, _(u'У вас нет прав на просмотр платежей'), extra_tags='alert-danger')
+            messages.error(request, _(u'У вас нет прав на просмотр проводок'), extra_tags='alert-danger')
             return {}
         if id:
 
