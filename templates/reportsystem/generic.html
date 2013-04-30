@@ -10,11 +10,12 @@
         </script>
 
 {% endblock %}
-{% block body %}
+{% block base %}
 <div class="span12">
 <div class="row-fluid">
+<label><h3>{{name}}</h3></label>
 {% if form %}
-<form method="GET" action="{% url reports_report slug='blabla' %}" class="form-inline form-condensed " >
+<form method="GET" action="{% url reports_report slug %}" class=" well form-horizontal form-inline form-condensed " >
             
              <fieldset>
              
@@ -27,6 +28,8 @@
                     </div>
                 </fieldset>
             </form>
+            {% else %}
+            <div><a href='{% url reports_report slug %}' class='btn btn-primary btn-large'>Настроить отчёт</a></div>
 {% endif %}
 
 {% if table %}

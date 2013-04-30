@@ -2,4 +2,5 @@
 from reports import rep
 
 def report(request, slug):
-    return rep.get(slug)(request)
+    report = rep.get(slug)[0]
+    return report(request, slug)
