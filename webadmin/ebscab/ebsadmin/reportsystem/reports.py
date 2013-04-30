@@ -29,9 +29,9 @@ def render_report(request, slug):
             date_start = form.cleaned_data.get('date_start')
             date_end = form.cleaned_data.get('date_end')
             accounts = form.cleaned_data.get('accounts')
-            res = Account.objects.filter(account__in=accounts)
+            res = Account.objects.all()
             if accounts:
-                res = res.filter(account__in=accounts)
+                res = res.filter(id__in=[a.id for a in accounts])
             res =res.extra(
                 select={
                     'summ': "SELECT sum(summ) FROM billservice_transaction WHERE account_id=billservice_account.id and created between '%s' and '%s' " % (date_start, date_end)
