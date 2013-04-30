@@ -741,7 +741,7 @@ class Account(DynamicModel):
     Если аренды нет или она истекла, то создаётся новая и пользователю назначается новый IP адрес.
     """
     #user = models.ForeignKey(User,verbose_name=_(u'Системный пользователь', related_name='user_account2')
-    username = models.CharField(verbose_name=_(u'Имя пользователя'),max_length=200, unique=True)
+    username = models.CharField(verbose_name=_(u'Логин'),max_length=200, unique=True)
     password = EncryptedTextField(verbose_name=_(u'Пароль'), blank=True, default='')
     fullname = models.CharField(verbose_name=_(u'ФИО'), blank=True, default='', max_length=200)
     email = models.CharField(verbose_name=_(u'E-mail'), blank=True, default='',max_length=200)
@@ -1709,7 +1709,7 @@ class AccountViewedNews(models.Model):
        
 class SubAccount(models.Model):
     account = models.ForeignKey(Account, related_name='subaccounts')
-    username = models.CharField(verbose_name=_(u'Имя пользователя'), max_length=512, blank=True)
+    username = models.CharField(verbose_name=_(u'Логин'), max_length=512, blank=True)
     password = EncryptedTextField(verbose_name=_(u'Пароль'), blank=True, default='')
     ipn_ip_address = IPNetworkField(blank=True,null=True, default='0.0.0.0')
     ipn_mac_address = models.CharField(blank=True, max_length=17, default='')
@@ -1972,11 +1972,11 @@ class TotalTransactionReport(models.Model):
     service_id = models.IntegerField()
     table = models.CharField(max_length=128)
     created = models.DateTimeField()
-    tariff = models.ForeignKey(Tariff)
+    tariff = models.ForeignKey(Tariff, blank=True, null=True)
     summ = models.DecimalField(decimal_places=10, max_digits=30)
     account = models.ForeignKey(Account)
     type = models.ForeignKey(TransactionType, to_field='internal_name')
-    systemuser = models.ForeignKey(SystemUser)
+    systemuser = models.ForeignKey(SystemUser, blank=True, null=True)
     bill = models.TextField()
     description = models.TextField()
     end_promise = models.DateTimeField()

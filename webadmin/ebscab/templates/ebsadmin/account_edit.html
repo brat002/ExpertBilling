@@ -365,7 +365,9 @@
             <form class=" well form-horizontal  form-condensed" method="POST" id="id_form" action="{% url account_edit %}{% if account %}?id={{account.id}}{% endif %}">
                 <ul class="nav nav-tabs" id="tab-control">
                     <li class="active"><a href="#tab-first" data-toggle="tab">{% blocktrans %}Карточка{% endblocktrans %}</a></li>
+                    <li class=""><a href="#tab-tables" data-toggle="tab">{% blocktrans %}Услуги{% endblocktrans %}</a></li>
                     <li class=""><a href="#tab-address" data-toggle="tab">{% blocktrans %}Персональные данные{% endblocktrans %}</a></li>
+                    
                     <li class=""><a href="#tab-extra" data-toggle="tab">{% blocktrans %}Дополнительные поля{% endblocktrans %}</a></li>
                     <li class=""><a href="#tab-second" data-toggle="tab">{% blocktrans %}Юр. лицо{% endblocktrans %}</a></li>
                     <li class=""><a href="#tab-third" data-toggle="tab">{% blocktrans %}Прочее{% endblocktrans %}</a></li>
@@ -551,7 +553,7 @@
 
                             </div>
                         </fieldset>
-                        {% comment %}
+                        
                         {% if account %}
                         <fieldset>
                             <legend>Персональные данные</legend>
@@ -608,23 +610,9 @@
                             </div>
                         </fieldset>
                         {% endif %}
-                        {% endcomment %}
                         
-                        {% if account %}
                         
-                        <fieldset>
-                            <legend>Субаккаунты</legend>
 
-                            {% if subaccounts_table %}{% render_table subaccounts_table %}{% endif %}
-                            <a href="{% url subaccount %}?account_id={{account.id}}" class="btn btn-success align-right">Добавить</a>
-                        </fieldset>
-                        <fieldset>
-                            <legend>Подключаемые услуги</legend>
-
-                            {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
-                            <a href="{% url accountaddonservice %}?account_id={{account.id}}" class="btn btn-success align-right" id="modal-accountaddonservice-dialog" >Добавить</a>
-                        </fieldset>
-                        {% endif %}
                     </div>
 
                     <div class="tab-pane" id="tab-address">
@@ -968,16 +956,26 @@
                                 </div>
                             </div>
 
-                            <div class="control-group">
-                                <label class="control-label" for="input-xpanel">Кросс-панель</label>
-                                <div class="controls">
-                                    <input type="text" class="input-small input-xlarge" id="input-xpanel" value="">
-                                </div>
-                            </div>
                         </fieldset>
                     </div>
 
-                      
+                        {% if account %}
+                      <div class="tab-pane" id="tab-tables">
+                        
+                        
+                        <fieldset>
+                            <legend>Субаккаунты</legend>
+
+                            {% if subaccounts_table %}{% render_table subaccounts_table %}{% endif %}
+                            <a href="{% url subaccount %}?account_id={{account.id}}" class="btn btn-success align-right">Добавить</a>
+
+                            <legend>Подключаемые услуги</legend>
+
+                            {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
+                            <a href="{% url accountaddonservice %}?account_id={{account.id}}" class="btn btn-success align-right" id="modal-accountaddonservice-dialog" >Добавить</a>
+                        </fieldset>
+                        {% endif %}
+                      </div>
                       <div class="tab-pane" id="tab-extra">
                       {{extra_form|crispy}}
                       <div class='alert alert-info'>Дополнительные поля вы можете настроить на странице <a href="{% url dynamicschemafield %}">Дополнительные атрибуты аккаунта</a></div>

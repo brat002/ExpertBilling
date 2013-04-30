@@ -3,6 +3,7 @@ from ebsadmin.lib import digg_paginator
 from django.utils.encoding import force_unicode
 import re
 from ebsadmin.forms import chartdata
+from ebsadmin.reportsystem.reports import rep
 from django.contrib.contenttypes.models import ContentType
 
 register = template.Library()
@@ -38,6 +39,11 @@ def intspace(value):
 def charts_menu():
     
     return {'chartdata': sorted([(x, chartdata[x].get('name')) for x in chartdata],  key=lambda k: k[1])}
+
+@register.inclusion_tag('ebsadmin/tags/textreports.html')
+def textreports_menu():
+    
+    return {'reports': sorted([(x, rep[x][-1]) for x in rep],  key=lambda k: k[1])}
 
 @register.inclusion_tag('ebsadmin/tags/objectlog_link.html')
 def objectlog(o):
