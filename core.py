@@ -1435,7 +1435,7 @@ class settlement_period_service_dog(Thread):
                             INSERT INTO billservice_transaction(bill, account_id, type_id, approved, summ, description, created, promise_expired) 
                             SELECT id,account_id, 'PROMISE_DEBIT', approved, (-1)*summ, description, now(), True
                               FROM billservice_transaction as tr
-                              WHERE tr.id in (%s);
+                              WHERE tr.id in (%s) and type_id='PROMISE_PAYMENT';
                     """ % ', '.join([str(x[0]) for x in promises]))
                     
                     cur.execute("""UPDATE billservice_transaction as tr SET promise_expired = True 
