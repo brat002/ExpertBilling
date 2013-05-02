@@ -1360,7 +1360,18 @@
                                     </div></li>
             </ul>
           </div>
+          <div class="well sidebar-nav alert">
+            <ul class="nav nav-list">
+              <li class="nav-header">{% blocktrans %}Заявка{% endblocktrans %}</li>
+              
+                <li>                                    
+                <div class="btn-group">
+                     <a href="{% url helpdesk_submit %}?account_id={{account.id}}"  class="btn btn-large btn-warning" ><i class="icon-comment icon-white "></i>{% blocktrans %}Подать заявку{% endblocktrans %}</a>
 
+                 </div></li>
+            </ul>
+          </div>
+    
         </div>
         {% endif %}
     </div>

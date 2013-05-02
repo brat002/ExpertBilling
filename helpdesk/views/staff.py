@@ -30,6 +30,7 @@ from helpdesk.tables import TicketTable, UnassignedTicketTable, UnpagedTicketTab
 staff_member_required = user_passes_test(lambda u: u.is_authenticated() and u.is_active and u.is_staff)
 superuser_required = user_passes_test(lambda u: u.is_authenticated() and u.is_active and u.is_superuser)
 from billservice.helpers import systemuser_required
+from billservice.models import Account
 from ebscab.lib.decorators import render_to, ajax_request
 from django.contrib import messages
 from django.utils.safestring import mark_safe
@@ -942,6 +943,9 @@ def create_ticket(request):
     else:
         initial_data = {}
         id = request.GET.get('id')
+        account_id = request.GET.get('account_id')
+        if account_id:
+            initial_data['account'] = Account.objects.get(id=account_id)
         
         
         if request.user.usersettings.settings.get('use_email_as_submitter', False) and request.user.account.email:

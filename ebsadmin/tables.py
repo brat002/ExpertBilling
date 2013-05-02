@@ -293,7 +293,7 @@ class CashierReportTable(TableReport):
 class AccountsReportTable(TableReport):
     row_number = django_tables.Column(verbose_name='#', empty_values=(), orderable=False)
     #id = FormatBlankColumn()
-    username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Имя'), get_params={'id':A('pk')})
+    username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Логин'), get_params={'id':A('pk')})
     contract = FormatBlankColumn(verbose_name=_(u'Договор'))
     fullname = FormatBlankColumn()
     address = django_tables.TemplateColumn(u"{{record.street|default:''}} {{record.house|default:''}}-{{record.room|default:''}}", orderable=False)

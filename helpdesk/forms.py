@@ -64,7 +64,6 @@ class EditTicketForm(forms.ModelForm):
         self.helper.form_class = 'well form-horizontal ajax form-condensed'
         self.helper.form_method = 'post'
         self.helper.form_tag = False
-        self.helper.form_action = reverse("helpdesk_submit")
         self.helper.layout = Layout(
             Fieldset(
                      _(u'Редактировать заявку'),
@@ -127,6 +126,16 @@ class EditTicketForm(forms.ModelForm):
         exclude = ('created', 'modified', 'status', 'on_hold', 'resolution', 'last_escalation')
 
 class TicketForm(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        self.helper = FormHelper()
+        self.helper.form_id = 'id-ticket_edit_form'
+        self.helper.form_class = 'well form-horizontal ajax form-condensed'
+        self.helper.form_method = 'post'
+        self.helper.form_tag = False
+
+        super(TicketForm, self).__init__(*args, **kwargs)
+        
     queue = forms.ModelChoiceField(
         label=_('Queue'),
         required=True,
