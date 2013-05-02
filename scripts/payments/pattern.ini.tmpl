@@ -73,3 +73,37 @@ encoding=utf-8
 time_fmt=
 reversal_payments=False
 
+[ERIP]
+active=1
+folder_in=erip/in/
+folder_out=erip/out/
+folder_err=erip/err/
+file_mask=*.206
+exclude_mask=r*.*
+separator=^
+payment_type=ERIP_PAYMENT_IMPORT
+fieldnames=EMPTY^EMPTY^ACC^FIO^EMPTY^EMPTY^SUM^EMPTY^DATETIME^EMPTY^EMPTY^PAYMENT_ID^EMPTY^EMPTY^EMPTY^EMPTY^EMPTY^EMPTY
+datetime_fmt=%Y%m%d%H%M%S
+time_fmt=
+encoding=cp1251
+skip_firstline = True
+reversal_payments = False
+
+
+[ERIP_REVERS]
+active=1
+folder_in=erip/in/
+folder_out=erip/out/
+folder_err=erip/err/
+file_mask=*.216
+exclude_mask=r*.*
+separator=^
+payment_type=ERIP_PAYMENT_IMPORT
+fieldnames=EMPTY^EMPTY^ACC^FIO^EMPTY^EMPTY^SUM^EMPTY^DATETIME^EMPTY^EMPTY^EMPTY^EMPTY^EMPTY^EMPTY^EMPTY^EMPTY^EMPTY^EMPTY
+datetime_fmt=%Y%m%d%H%M%S
+time_fmt=
+encoding=cp1251
+skip_firstline = True
+reversal_payments = True
+
+
