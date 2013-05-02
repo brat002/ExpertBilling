@@ -26,7 +26,7 @@ $(document).ready(function() {
 {% block helpdesk_title %}{% trans "Create Ticket" %}{% endblock %}
 
 {% block helpdesk_body %}
-{% if form %}
+
 
 <div class="navbar navbar-googlenav">
   <div class="navbar-inner">
@@ -40,14 +40,12 @@ $(document).ready(function() {
 
   </div>
 </div>
-{% endif %}
+
 <form method='post' id='id_form' action='{% url helpdesk_submit %}' enctype='multipart/form-data' class="well form-horizontal  form-condensed">
-{% if form %}
+
 {% crispy form %}
 
 
-{% else %}
-{% endif %}
 <fieldset>
     <div class='buttons'>
         <input type='submit' value='{% trans "Submit Ticket" %}' />

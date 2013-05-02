@@ -351,6 +351,7 @@ def accountsreport(request):
             tariff = form.cleaned_data.get('tariff')
             street = form.cleaned_data.get('street')
             room = form.cleaned_data.get('room')
+            city = form.cleaned_data.get('city')
             row = form.cleaned_data.get('row')
             house = form.cleaned_data.get('house')
             house_bulk = form.cleaned_data.get('house_bulk')
@@ -413,6 +414,8 @@ def accountsreport(request):
             if tariff:
                 res = res.extra(where=['billservice_account.id in (SELECT account_id FROM billservice_accounttarif WHERE tarif_id in (%s))'], params=[ ','.join(['%s' % x.id for x in tariff]) ])
             
+            if city:
+                res = res.filter(city=city)
             if street:
                 res = res.filter(street__icontains=street)
 

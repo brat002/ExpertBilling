@@ -40,9 +40,9 @@ INSERT INTO billservice_transaction(
     VALUES (%(ACC_ID)s, '%(PAYMENT_TYPE)s', True, (-1)*%(SUM)s,  '%(DATETIME)s');
 """
 
-curdir='/opt/ebs/data/scripts/payments/'
+curdir=os.path.dirname(os.path.realpath(__file__))
 #curdir='d:/projects/mikrobill/scripts/payments/'
-config.read(curdir+"pattern.ini")
+config.read(os.path.join(curdir, "pattern.ini"))
 def make_dict(lst, fields_list, datetime_fmt, encoding='utf-8', time_fmt='', ):
     result_dict={}
     i=0
@@ -102,14 +102,14 @@ if __name__=='__main__':
         
         folder_in, folder_out, folder_err = config.get(payment_system, 'folder_in'),config.get(payment_system, 'folder_out'),config.get(payment_system, 'folder_err')
         #print folder_in
-        for file in os.listdir(curdir+folder_in):
+        for file in os.listdir(os.path.join(curdir, folder_in)):
             print "processing file", file
             buffer_err=[]
             buffer_out=[]
             firstline=''
             if not (fnmatch.fnmatch(file, file_mask) and not fnmatch.fnmatch(file, exclude_mask) and not file=='.svn'): print "skip"; continue
             i=0
-            for line in open(curdir+folder_in+file,'r'):
+            for line in open(os.path.join(curdir,folder_in,file),'r'):
                 line=line.strip()
                 if skip_firstline and i==0:
                     i+=1
@@ -157,13 +157,13 @@ if __name__=='__main__':
             if buffer_err:
                 if skip_firstline:
                     buffer_err.insert(0, firstline)
-                f=open(curdir+folder_err+file,'w')
+                f=open(os.path.join(curdir, folder_err, file),'w')
 
                 f.write('\n'.join(buffer_err))
                 f.close()
 
             if buffer_out and (skip_firstline==False or (skip_firstline==True and len(buffer_out)>1)):
-                f=open(curdir+folder_out+file,'w')
+                f=open(os.path.join(curdir, folder_out, file),'w')
 
                 f.write('\n'.join(buffer_out))
                 f.close()
