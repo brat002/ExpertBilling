@@ -877,7 +877,7 @@ class HandleHotSpotAuth(HandleSAuth):
                             """, (user_name, pin[0], ip,mac))
     
             acct_card = self.cursor.fetchone()
-            #self.cursor.connection.commit()
+            self.cursor.connection.commit()
             #self.cursor.close()
     
             acc = acct_card
@@ -899,7 +899,7 @@ class HandleHotSpotAuth(HandleSAuth):
         """
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type)
         subacc = self.caches.subaccount_cache.by_username.get(user_name)
-        logger.info("Subacc %s for username %s", (subacc, user_name, ))
+        logger.info("Subacc %s for username %s acc %s", (subacc, user_name, acc))
         if not acc and subacc:
             acc=self.caches.account_cache.by_id.get(subacc.account_id)
             logger.info("Subacc %s access type=%s for username %s", (subacc, acc.access_type, user_name, ))
