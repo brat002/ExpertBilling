@@ -33,3 +33,4 @@ django-annoying
 django-select2
 django-tagging
 django-autocomplete-light
+celery-with-redis

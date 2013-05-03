@@ -866,7 +866,7 @@ class HandleHotSpotAuth(HandleSAuth):
         user_name = str(self.packetobject['User-Name'][0])
         mac=str(self.packetobject['Calling-Station-Id'][0]).lower() or str(self.packetobject['User-Name'][0]).lower()
         ip=str(self.packetobject['Mikrotik-Host-IP'][0])
-        self.cursor.execute("SELECT pin FROM billservice_card WHERE activated is NULL and sold IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
+        self.cursor.execute("SELECT pin FROM billservice_card WHERE activated is NULL and salecard_id IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
         pin = self.cursor.fetchone()
         acc=None
         if pin:
