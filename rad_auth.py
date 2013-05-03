@@ -870,6 +870,7 @@ class HandleHotSpotAuth(HandleSAuth):
         pin = self.cursor.fetchone()
         acc=None
         if pin:
+            logger.info("Activating account username %s pin %s ip %s mac %s", (user_name, pin[0], ip,mac))
             self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet, %s::text) AS 
                              A(account_id int, subaccount_id int, "password" text, nas_id int, tarif_id int, account_status int, 
                              balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet,ipn_ip_address inet,ipn_mac_address text,access_type text)
@@ -898,8 +899,10 @@ class HandleHotSpotAuth(HandleSAuth):
         """
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type)
         subacc = self.caches.subaccount_cache.by_username.get(user_name)
+        logger.info("Subacc %s for username %s", (subacc, user_name, ))
         if not acc and subacc:
             acc=self.caches.account_cache.by_id.get(subacc.account_id)
+            logger.info("Subacc %s access type=%s for username %s", (subacc, acc.access_type, user_name, ))
             if not acc.access_type=='HotSpot':
                 acc=None
         if not acc and mac:
@@ -911,6 +914,7 @@ class HandleHotSpotAuth(HandleSAuth):
                     
                 if acc.access_type=='HotSpotIp+Mac' and subacc.ipn_ip_address!=ip:
                     acc=None
+                logger.info("Subacc %s access type=%s for username %s", (subacc, acc.access_type, user_name, ))
 
         if not acc and ip:
             subacc = self.caches.subaccount_cache.by_ipn_ip.get(ip)
@@ -919,6 +923,7 @@ class HandleHotSpotAuth(HandleSAuth):
                 if acc.access_type!='HotSpotIp+Password':
                     acc=None
                     subacc=None
+                logger.info("Subacc %s access type=%s for username %s", (subacc, acc.access_type, user_name, ))
                     
         if not acc:
             """

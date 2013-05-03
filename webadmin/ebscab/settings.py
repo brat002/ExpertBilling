@@ -50,7 +50,7 @@ DATETIME_FORMAT = "d.m.Y H:i:s"
 SHORT_DATETIME_FORMAT = "d.m.Y H:i:s"
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = '/opt/ebs/web/ebscab/static'
 ADMIN_MEDIA_PREFIX = '/admin_media/'
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
@@ -114,6 +114,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.admin',
+    'django.contrib.staticfiles',
     'radius',
     'nas',
     'billservice',
@@ -131,7 +132,8 @@ INSTALLED_APPS = (
     'getpaid',
     'sendsms',
     'django_select2',
-    'tagging'
+    'tagging',
+    'autocomplete_light',
 )
 
 
@@ -198,6 +200,7 @@ EMAIL_HOST_USER = 'user@gmail.com'
 EMAIL_HOST_PASSWORD = 'userpassword'
 
 
+ENABLE_SELECT2_MULTI_PROCESS_SUPPORT = False
 CURRENCY = u' руб'
 
 #GETPAID_BACKENDS = ('getpaid.backends.easypay',

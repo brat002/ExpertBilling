@@ -32,3 +32,4 @@ django-pgcrypto
 django-annoying
 django-select2
 django-tagging
+django-autocomplete-light

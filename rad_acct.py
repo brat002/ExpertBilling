@@ -411,18 +411,34 @@ class HandleSAcct(HandleSBase):
             bytes_in, bytes_out = self.get_bytes()
 
 
+
             if nas_int_id:
-                self.cur.execute("""UPDATE radius_activesession
+                data = self.cur.mogrify("""UPDATE radius_activesession
                              SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, framed_ip_address=%s, session_status='ACTIVE'
                              WHERE sessionid=%s and nas_int_id=%s and account_id=%s  and framed_protocol=%s and nas_port_id=%s and date_end is Null;
                              """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject.get('Framed-IP-Address',[''])[0], self.packetobject['Acct-Session-Id'][0], nas_int_id, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None))
             else:
-                self.cur.execute("""UPDATE radius_activesession
+                data = self.cur.mogrify("""UPDATE radius_activesession
                              SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, framed_ip_address=%s, session_status='ACTIVE'
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;
                              """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject.get('Framed-IP-Address',[''])[0], self.packetobject['Acct-Session-Id'][0], self.nasip, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None))
 
+            
+            insert_data = self.cur.mogrify("""INSERT INTO radius_activesession(account_id, subaccount_id, sessionid, date_start,
+                             caller_id, called_id, framed_ip_address, nas_id, 
+                             framed_protocol, session_status, nas_int_id, speed_string,nas_port_id,ipinuse_id)
+                             VALUES (%s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s, %s, %s);
+                             """, (acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now-datetime.timedelta(second=self.packetobject.get('Acct-Session-Time', [0])[0]),
+                                    self.packetobject.get('Calling-Station-Id', [''])[0], 
+                                    self.packetobject.get('Called-Station-Id',[''])[0], 
+                                    self.packetobject.get('Framed-IP-Address',[''])[0],
+                                    self.nasip, self.access_type, nas_int_id, session_speed, self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
 
+
+            self.cur.execute("""
+            upsert(%s, %s)
+            """, (data, insert_data))
+                            
         elif self.packetobject['Acct-Status-Type']==['Stop']:
             bytes_in, bytes_out=self.get_bytes()
 

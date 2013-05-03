@@ -698,7 +698,7 @@ def accountedit(request):
         DTRequestConfig(request, paginate = False).configure(accountaddonservice_table)
         
         try:
-            res = Ticket.objects.filter(owner=User.objects.get(username=account.username)) 
+            res = Ticket.objects.filter(Q(owner=User.objects.get(username=account.username)) | Q(account=account)) 
             ticket_table = TicketTable(res)
             DTRequestConfig(request, paginate = False).configure(ticket_table)
         except:
