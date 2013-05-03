@@ -423,13 +423,14 @@ class HandleSAcct(HandleSBase):
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s  RETURNING id;
                              """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject.get('Framed-IP-Address',[''])[0], self.packetobject['Acct-Session-Id'][0], self.nasip, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None))
 
+            session_time = self.packetobject.get('Acct-Session-Time', [0])[0]
             
-            insert_data = self.cur.mogrify("""INSERT INTO radius_activesession(interrim_update=%s, bytes_out=%s, bytes_in=%s, session_time=%s,
+            insert_data = self.cur.mogrify("""INSERT INTO radius_activesession(interrim_update, bytes_out, bytes_in, session_time,
                              account_id, subaccount_id, sessionid, date_start,
                              caller_id, called_id, framed_ip_address, nas_id, 
                              framed_protocol, session_status, nas_int_id, speed_string,nas_port_id,ipinuse_id)
                              VALUES (%s, %s, %s,%s, %s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s, %s, %s);
-                             """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now-datetime.timedelta(seconds=self.packetobject.get('Acct-Session-Time', [0])[0]),
+                             """, (now, bytes_in, bytes_out, session_time, acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now-datetime.timedelta(seconds=session_time),
                                     self.packetobject.get('Calling-Station-Id', [''])[0], 
                                     self.packetobject.get('Called-Station-Id',[''])[0], 
                                     self.packetobject.get('Framed-IP-Address',[''])[0],
