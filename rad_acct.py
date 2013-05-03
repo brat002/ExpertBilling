@@ -429,7 +429,7 @@ class HandleSAcct(HandleSBase):
                              framed_protocol, session_status, nas_int_id, speed_string,nas_port_id,ipinuse_id,
                              interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s,
                              )
-                             VALUES (%s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s, %s, %s);
+                             VALUES (%s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s, %s, %s, %s, %s, %s, %s);
                              """, (acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now-datetime.timedelta(seconds=self.packetobject.get('Acct-Session-Time', [0])[0]),
                                     self.packetobject.get('Calling-Station-Id', [''])[0], 
                                     self.packetobject.get('Called-Station-Id',[''])[0], 
