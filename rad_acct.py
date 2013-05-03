@@ -436,7 +436,7 @@ class HandleSAcct(HandleSBase):
 
 
             self.cur.execute("""
-            upsert(%s, %s)
+            SELECT upsert(%s, %s)
             """, (data, insert_data))
                             
         elif self.packetobject['Acct-Status-Type']==['Stop']:
