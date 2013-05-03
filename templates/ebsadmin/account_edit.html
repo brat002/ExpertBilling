@@ -365,10 +365,8 @@
             <form class=" well form-horizontal  form-condensed" method="POST" id="id_form" action="{% url account_edit %}{% if account %}?id={{account.id}}{% endif %}">
                 <ul class="nav nav-tabs" id="tab-control">
                     <li class="active"><a href="#tab-first" data-toggle="tab">{% blocktrans %}Карточка{% endblocktrans %}</a></li>
-                    <li class=""><a href="#tab-tables" data-toggle="tab">{% blocktrans %}Услуги{% endblocktrans %}</a></li>
+                    {% if account %}<li class=""><a href="#tab-tables" data-toggle="tab">{% blocktrans %}Услуги{% endblocktrans %}</a></li>{% endif %}
                     <li class=""><a href="#tab-address" data-toggle="tab">{% blocktrans %}Персональные данные{% endblocktrans %}</a></li>
-                    
-                    <li class=""><a href="#tab-extra" data-toggle="tab">{% blocktrans %}Дополнительные поля{% endblocktrans %}</a></li>
                     <li class=""><a href="#tab-second" data-toggle="tab">{% blocktrans %}Юр. лицо{% endblocktrans %}</a></li>
                     <li class=""><a href="#tab-third" data-toggle="tab">{% blocktrans %}Прочее{% endblocktrans %}</a></li>
                     <li class=""><a href="#tab-helpdesk" data-toggle="tab">{% blocktrans %}HelpDesk{% endblocktrans %}</a></li>
@@ -957,6 +955,7 @@
                             </div>
 
                         </fieldset>
+                    {{extra_form|crispy}}
                     </div>
 
                         {% if account %}
@@ -974,12 +973,9 @@
                             {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
                             <a href="{% url accountaddonservice %}?account_id={{account.id}}" class="btn btn-success align-right" id="modal-accountaddonservice-dialog" >Добавить</a>
                         </fieldset>
-                        {% endif %}
+                        
                       </div>
-                      <div class="tab-pane" id="tab-extra">
-                      {{extra_form|crispy}}
-                      <div class='alert alert-info'>Дополнительные поля вы можете настроить на странице <a href="{% url dynamicschemafield %}">Дополнительные атрибуты аккаунта</a></div>
-                      </div>
+                    {% endif %}
                     <div class="tab-pane" id="tab-second">
                         {{form.organization}} {{form.organization.label}}
                         <fieldset id='organization-fieldset'>
@@ -1207,41 +1203,7 @@
                         </fieldset>
                         <fieldset>
                             <legend>{% blocktrans %}Прочее{% endblocktrans %}</legend>
-                            <div class="control-group">
 
-                                
-
-                                    <label class="control-label" for="input-balance-limit">{{form.allow_block_after_summ.label}}:</label>
-                                    <div class="controls">
-                                   {{ form.allow_block_after_summ }}
-                                   {% if form.allow_block_after_summ.errors %}
-                                       <span class="help-inline">{% for error in form.allow_block_after_summ.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.allow_block_after_summ.help_text%}
-                                       <p class="help-block">
-                                           {{ form.allow_block_after_summ.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-
-                            </div>
-                            <div class="control-group">
-
-                                
-
-                                    <label class="control-label" for="input-balance-limit">{{form.block_after_summ.label}}:</label>
-                                    <div class="controls">
-                                   {{ form.block_after_summ }}
-                                   {% if form.block_after_summ.errors %}
-                                       <span class="help-inline">{% for error in form.block_after_summ.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.block_after_summ.help_text%}
-                                       <p class="help-block">
-                                           {{ form.block_after_summ.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                            </div>
 
                             <div class="control-group">
                                 <label class="control-label" for="input-max">{{form.promise_summ.label}}</label>

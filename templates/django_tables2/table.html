@@ -43,25 +43,7 @@
 </script>
 <br />
 <div>
-{% if table.columns_form %}
-<div>
-<form method="POST" action=""  class="form pull-left">
 
-
-    <div class="btn-toolbar">
-      <div class="btn-group">
-        {{table.columns_form.columns}}&nbsp;{{table.columns_form.table_name}}
-      </div>
-      <div class="btn-group">
-      <input type="button"  class="columns_submit btn btn-small btn-primary" name="save_columns" value="Сохранить настройки">
-      </div>
-  </div>
-
-
-</form>
-
-
-</div>{% endif %}
 {% block table %}
 
 <table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %} id="id_main_table">
@@ -109,7 +91,28 @@
 <strong>Сумма на странице:</strong> {{onpage_summ|intspace}}<br/>
 {% endif %}
 
+{% if table.columns_form %}
+
+<div class='pull-left'>
+<form method="POST" action=""  class="form pull-left">
+
+
+    <div class="btn-toolbar">
+      <div class="btn-group">
+        {{table.columns_form.columns}}&nbsp;{{table.columns_form.table_name}}
+      </div>
+      <div class="btn-group">
+      <input type="button"  class="columns_submit btn btn-small btn-primary" name="save_columns" value="Сохранить настройки">
+      </div>
+  </div>
+
+
+</form>
+
+
+</div>{% endif %}
 {% if table.page %}
+
 <div class="pull-right">
         На странице: <select name="per_page" id="id_per_page">
         <option value="25">25</option>

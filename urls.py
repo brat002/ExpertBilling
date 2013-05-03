@@ -9,6 +9,10 @@ DatabaseFeatures.can_return_id_from_insert = False
 from ajax_select import urls as ajax_select_urls
 
 from billservice.views import SelectPaymentView
+from django.conf.urls.static import static
+import autocomplete_light
+
+autocomplete_light.autodiscover()
 
 admin.autodiscover()
 
@@ -33,9 +37,10 @@ urlpatterns = patterns('',
     #url(r'^webcab/pay/$', PaymentView.as_view(), name='payment-view'),
     url(r'^webcab/pay/$', SelectPaymentView.as_view(), name='payment-view'),
     url(r'^ext/', include('django_select2.urls')),
+    url(r'^autocomplete/', include('autocomplete_light.urls')),
     
 
-)
+) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 urlpatterns += patterns('billservice.views',
     # Uncomment this for admin:

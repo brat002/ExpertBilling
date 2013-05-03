@@ -958,7 +958,7 @@ def create_ticket(request):
             form = TicketForm(initial=initial_data)
         
   
-        form.fields['assigned_to'].initial = request.user
+        form.fields['assigned_to'].initial = request.user.account
         form.fields['owner'].initial = request.user
     
         
