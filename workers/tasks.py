@@ -749,11 +749,11 @@ def sendsmspilotru_post(url, parameters, id=None):
     req = urllib2.Request(url, js.encode('utf-8'), headers)
     response = urllib2.urlopen(req).read()
 
-    print response
-
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("UPDATE sendsms_message SET sended=now(), response=%s WHERE id=%s",  (response, id))
     conn.commit()
     cur.close()
     conn.close()
+
+
