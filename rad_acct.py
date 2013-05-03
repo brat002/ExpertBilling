@@ -428,7 +428,7 @@ class HandleSAcct(HandleSBase):
                              caller_id, called_id, framed_ip_address, nas_id, 
                              framed_protocol, session_status, nas_int_id, speed_string,nas_port_id,ipinuse_id)
                              VALUES (%s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s, %s, %s);
-                             """, (acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now-datetime.timedelta(second=self.packetobject.get('Acct-Session-Time', [0])[0]),
+                             """, (acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now-datetime.timedelta(seconds=self.packetobject.get('Acct-Session-Time', [0])[0]),
                                     self.packetobject.get('Calling-Station-Id', [''])[0], 
                                     self.packetobject.get('Called-Station-Id',[''])[0], 
                                     self.packetobject.get('Framed-IP-Address',[''])[0],
