@@ -23,10 +23,10 @@ prio={
       }
 
 source_types = (
-          ('phone', _('Phone')),
-          ('helpdesk', _('HelpDesk')),
-          ('im', _('InstantManager')),
-          ('personally', _('Personally'))
+          ('phone', _(u'Телефон')),
+          ('helpdesk', _(u'HelpDesk')),
+          ('im', _(u'ICQ/Skype/Chat')),
+          ('personally', _(u'Персонально'))
           )
 class Queue(models.Model):
     """
@@ -299,12 +299,11 @@ class Ticket(models.Model):
     queue = models.ForeignKey(Queue, verbose_name=_(u'Queue'))
     owner = models.ForeignKey(User, related_name='submitted_by', null=False, blank=False, \
                                   verbose_name=_(u'Owner'))
-    source = models.CharField(choices=source_types, max_length=32, blank=False, default='helpdesk')
+    source = models.CharField(choices=source_types, max_length=32, verbose_name=u'Источник', blank=False, default='helpdesk')
     account = models.ForeignKey(Account, verbose_name=_('Account'), blank=True, null=True, help_text=_(u'Аккаунт, с которым связана текущая задача'))
-    notify_owner = models.BooleanField(blank=True, default=True,verbose_name=_(u'Notify owner'),help_text=_('Notify owner of ticket for changes'))
+    notify_owner = models.BooleanField(blank=True, default=True,verbose_name=_(u'Notify owner'))
     assigned_to = models.ForeignKey(SystemUser, verbose_name=_(u'Исполнитель'), related_name='assigned_to',blank=True,null=True)
-    created = models.DateTimeField(_(u'Created'), blank=True, \
-                                   help_text=_('Date this ticket was first created'),)
+    created = models.DateTimeField(_(u'Created'), blank=True)
     due_date = models.DateTimeField(_(u'Due'), blank=True, null=True)
     modified = models.DateTimeField(_(u'Modified'), blank=True, \
         help_text=_(u'Date this ticket was most recently changed.'), auto_now=True)
@@ -320,8 +319,7 @@ class Ticket(models.Model):
         help_text=_(u'Комментарий будут видеть только администраторы.'))
     resolution = models.TextField(_('Resolution'), blank=True, null=True, \
                                   help_text=_('The resolution provided to the customer by our staff.'))
-    priority = models.IntegerField(_('Priority'), choices=PRIORITY_CHOICES, default=3, \
-                                   blank=3, help_text=_('1 = Highest Priority, 5 = Low Priority'))
+    priority = models.IntegerField(_('Priority'), choices=PRIORITY_CHOICES, default=3, blank=3)
 
     last_escalation = models.DateTimeField(blank=True, null=True, editable=False,
         help_text=_(u'The date this ticket was last escalated - updated automatically by management/commands/escalate_tickets.py.'))

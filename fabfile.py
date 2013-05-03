@@ -129,6 +129,7 @@ def setup_webcab():
     with prefix('. /opt/ebs/venv/bin/activate'):
         with lcd(WEBCAB_PATH):
             local('python manage.py syncdb --noinput')
+            local('python manage.py collectstatic --noinput')
             local("touch /opt/ebs/web/ebscab/templates/site_verify_codes.html")
 
 

@@ -796,8 +796,8 @@ class Account(DynamicModel):
     promise_summ = models.IntegerField(_(u'Максимальный обещанный платёж'), blank=True, default=0)
     promise_min_ballance = models.IntegerField(_(u'Минимальный баланс для обещанного платежа'), blank=True, default=0)
     promise_days = models.IntegerField(_(u'Длительность обещанного платежа, дней'), blank=True, default=1)
-    allow_block_after_summ = models.BooleanField(_(u'Разрешить блокировку списаний'), blank=True, default=False, help_text= _(u"Разрешить приостановку списаний по периодическим и подключаемым услугам при достижении указанного баланса"))
-    block_after_summ = models.IntegerField(_(u'Блокировка списаний после суммы'), blank=True, default=0)
+    #allow_block_after_summ = models.BooleanField(_(u'Разрешить блокировку списаний'), blank=True, default=False, help_text= _(u"Разрешить приостановку списаний по периодическим и подключаемым услугам при достижении указанного баланса"))
+    #block_after_summ = models.IntegerField(_(u'Блокировка списаний после суммы'), blank=True, default=0)
     account_group = models.ForeignKey(AccountGroup, verbose_name=_(u'Группа'), blank=True, null=True, on_delete=models.SET_NULL)
     objects = SoftDeletedDateManager()
     
@@ -914,7 +914,8 @@ class Account(DynamicModel):
     def get_status(self):
         return dict(ACCOUNT_STATUS)[int(self.status)]
 
-
+    def get_absolute_url(self):
+        return "%s?id=%s" % (reverse('account_edit'), self.id)
 
 class Organization(models.Model):
     account = models.ForeignKey(Account, blank=True, null=True)
@@ -1118,7 +1119,9 @@ class SystemUser(models.Model):
         """
         return True
 
-
+    def get_absolute_url(self):
+        return "%s?id=%s" % (reverse('systemuser_edit'), self.id)
+    
     def save(self, *args, **kwargs):
         try:
             user = User.objects.get(username=self.username)

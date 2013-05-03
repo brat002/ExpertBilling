@@ -66,7 +66,7 @@ BEGIN
         INSERT INTO billservice_accounttarif(account_id, tarif_id, datetime) VALUES(account_id_, card_data_.tarif_id, now());
         -- Пополняем счёт
         INSERT INTO billservice_transaction(bill, account_id, type_id, approved, tarif_id, summ, description, created)
-        VALUES('HotSpot карта #'||card_data_.id, account_id_, 'HOTSPOT_CARD', True, card_data_.tarif_id, card_data_.nominal*(-1),'', now());
+        VALUES('HotSpot карта #'||card_data_.id, account_id_, 'HOTSPOT_CARD', True, card_data_.tarif_id, card_data_.nominal,'', now());
     -- Обновляем информацию о карточке
     UPDATE billservice_card SET activated = now(), activated_by_id = account_id_ WHERE id = card_data_.id;
 

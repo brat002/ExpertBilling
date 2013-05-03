@@ -23,14 +23,9 @@ from crispy_forms.bootstrap import AppendedText, PrependedText, FormActions
 from django.core.urlresolvers import reverse
 from tagging.models import Tag
 from django.db.models import Q
+import autocomplete_light
 
-class UserChoices(AutoModelSelect2Field):
-    queryset = User.objects
-    max_results = 20
-    search_fields = ['username__icontains', ]
-    
-    def label_from_instance(self, obj):
-        return u'%s %s' % (smart_unicode(obj), smart_unicode(obj.get_full_name()))
+
 
 class TagChoices(AutoModelSelect2MultipleField):
     queryset = Tag.objects
@@ -38,16 +33,6 @@ class TagChoices(AutoModelSelect2MultipleField):
     search_fields = ['name__icontains', ]
     
 
-    
-class AccountChoices(AutoModelSelect2Field):
-    queryset = Account.objects
-    max_results = 20
-    search_fields = ['username__istartswith', 'contract__istartswith', 'fullname__icontains']
-
-    def label_from_instance(self, obj):
-        return u'%s [%s] %s' % (smart_unicode(obj.username), smart_unicode(obj.contract), smart_unicode(obj.fullname))
-
-    
 class TicketTypeForm(forms.Form):
     queuetype = forms.ModelChoiceField(label=_('Queue'), queryset = Queue.objects.all())
     
@@ -70,11 +55,11 @@ class EditTicketForm(forms.ModelForm):
                  'id',
                  'queue',
                  'priority',
+                 'source', 
                  'status',
                  'title',
                  'owner',
                  'notify_owner',
-                 'source', 
                  'account',
                  'assigned_to',
                  'on_hold',
@@ -90,30 +75,18 @@ class EditTicketForm(forms.ModelForm):
         )
         super(EditTicketForm, self).__init__(*args, **kwargs)
         
-        self.fields['owner']= UserChoices(
-        choices=(),
+        self.fields['owner']= forms.ModelChoiceField(
+        queryset = User.objects.all(),
         required=False,
         label=_(u'Создал'),
-        help_text=_('If you select an owner other than yourself, they\'ll be '
-            'e-mailed details of this ticket immediately.'),
-        widget=AutoHeavySelect2Widget(
-            select2_options={
-                'width': '50%',
-                'placeholder': u"Поиск владельца"
-            }
-        )
+        widget=autocomplete_light.ChoiceWidget('UserAutocomplete')
         )
         
-        self.fields['account']=AccountChoices(
-        choices=(),
+        self.fields['account']=forms.ModelChoiceField(
+        queryset = Account.objects.all(),
         required=False,
-        label=_('Account'),
-        widget=AutoHeavySelect2Widget(
-            select2_options={
-                'width': '50%',
-                'placeholder': u"Поиск аккаунта по логину, договору, ФИО"
-            }
-        )
+        label=_(u'Аккаунт'),
+        widget=autocomplete_light.ChoiceWidget('AccountAutocomplete', attrs={'class': 'span6 input-xlarge'})
         )
         
         self.fields['due_date'].widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
@@ -141,43 +114,39 @@ class TicketForm(forms.Form):
         required=True,
         queryset=Queue.objects.all()
         )
+    
     title = forms.CharField(
         max_length=100,
         required=True,
         widget=forms.TextInput(),
         label=_('Summary of the problem'),
         )
-    owner = UserChoices(
-        choices=(),
+    
+    owner = forms.ModelChoiceField(
+        queryset = User.objects.all(),
         required=False,
         label=_(u'Создал'),
         help_text=_('If you select an owner other than yourself, they\'ll be '
             'e-mailed details of this ticket immediately.'),
-        widget=AutoHeavySelect2Widget(
-            select2_options={
-                'width': '50%',
-                'placeholder': u"Поиск владельца"
-            }
+        widget=autocomplete_light.ChoiceWidget('UserAutocomplete')
         )
-        )
-    account = AccountChoices(
-        choices=(),
+    
+    account = forms.ModelChoiceField(
+        queryset = Account.objects.all(),
         required=False,
-        label=_('Account'),
-        widget=AutoHeavySelect2Widget(
-            select2_options={
-                'width': '50%',
-                'placeholder': u"Поиск аккаунта по логину, договору, ФИО"
-            }
+        label=_(u'Аккаунт'),
+        widget=autocomplete_light.ChoiceWidget('AccountAutocomplete', attrs={'class': 'span6 input'})
         )
-        )
+    
     assigned_to = forms.ModelChoiceField(
         required=False,
-        queryset = SystemUser.objects.all(),
+        queryset = Account.objects.all(),
+        widget=autocomplete_light.ChoiceWidget('SystemUserAutocomplete'),
         label=_(u'Исполнитель'),
         help_text=_('If you assign ticket yourself, they\'ll be '
-            'e-mailed details of this ticket immediately.'),
+            'e-mailed details of this ticket immediately.')
         )
+    
     due_date =  forms.DateTimeField(label=_(u'Due Date'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     priority = forms.ChoiceField(
         choices=Ticket.PRIORITY_CHOICES,
@@ -619,28 +588,18 @@ class FilterForm(forms.Form):
     status = forms.ChoiceField(choices=Ticket.STATUS_CHOICES_FORM, required=False, label=_(u'Статус'))
     priority = forms.ChoiceField(choices=Ticket.PRIORITY_CHOICES_FORM, required=False, label=_(u'Приоритет'))
 
-    owner = UserChoices(
+    owner = forms.ModelChoiceField(
+        queryset = User.objects.all(),
         required=False,
-        label=_(u'Создал'),
-        help_text=_('If you select an owner other than yourself, they\'ll be '
-            'e-mailed details of this ticket immediately.'),
-        widget=AutoHeavySelect2Widget(
-            select2_options={
-                'width': '50%',
-                'placeholder': u"Поиск владельца"
-            }
+        label=_(u'Подал заявку'),
+        widget=autocomplete_light.ChoiceWidget('UserAutocomplete', attrs={'class': 'span6 input'})
         )
-        )
-    account = AccountChoices(
-        choices=(),
+        
+    account = forms.ModelChoiceField(
+        queryset = Account.objects.all(),
         required=False,
-        label=_('Account'),
-        widget=AutoHeavySelect2Widget(
-            select2_options={
-                'width': '50%',
-                'placeholder': u"Поиск аккаунта по логину, договору, ФИО"
-            }
-        )
+        label=_(u'Аккаунт'),
+        widget=autocomplete_light.ChoiceWidget('AccountAutocomplete', attrs={'class': 'span6 input'})
         )
     assigned_to = forms.ModelMultipleChoiceField(queryset = SystemUser.objects.all(), required=False)
     

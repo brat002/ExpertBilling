@@ -14,9 +14,16 @@
             Allow from all
         </Directory>
         
-        Alias /admin_media/ /opt/ebs/web/django/contrib/admin/media/
+        Alias /static/ /opt/ebs/web/ebscab/static/
 
-        <Directory /opt/ebs/web/django/contrib/admin/media>
+        <Directory /opt/ebs/web/ebscab/static>
+            Order deny,allow
+            Allow from all
+        </Directory>
+        
+        Alias /admin_media/ /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/
+
+        <Directory /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/>
             Order deny,allow
             Allow from all
         </Directory>
