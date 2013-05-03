@@ -223,6 +223,7 @@ def salecard_edit(request):
                 if form.cleaned_data.get('prepayment_sum')>0:
                     m = DealerPay()
                     m.salecard = model
+                    m.dealer =  model.dealer
                     m.pay = form.cleaned_data.get('prepayment_sum')
                     m.created = model.created
                     m.save()
