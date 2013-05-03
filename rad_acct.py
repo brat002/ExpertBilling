@@ -424,21 +424,16 @@ class HandleSAcct(HandleSBase):
                              """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject.get('Framed-IP-Address',[''])[0], self.packetobject['Acct-Session-Id'][0], self.nasip, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None))
 
             
-            insert_data = self.cur.mogrify("""INSERT INTO radius_activesession(account_id, subaccount_id, sessionid, date_start,
+            insert_data = self.cur.mogrify("""INSERT INTO radius_activesession(interrim_update=%s, bytes_out=%s, bytes_in=%s, session_time=%s,
+                             account_id, subaccount_id, sessionid, date_start,
                              caller_id, called_id, framed_ip_address, nas_id, 
-                             framed_protocol, session_status, nas_int_id, speed_string,nas_port_id,ipinuse_id,
-                             interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s
-                             )
-                             VALUES (%s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s, %s, %s, %s, %s, %s, %s);
-                             """, (acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now-datetime.timedelta(seconds=self.packetobject.get('Acct-Session-Time', [0])[0]),
+                             framed_protocol, session_status, nas_int_id, speed_string,nas_port_id,ipinuse_id)
+                             VALUES (%s, %s, %s,%s, %s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s, %s, %s);
+                             """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now-datetime.timedelta(seconds=self.packetobject.get('Acct-Session-Time', [0])[0]),
                                     self.packetobject.get('Calling-Station-Id', [''])[0], 
                                     self.packetobject.get('Called-Station-Id',[''])[0], 
                                     self.packetobject.get('Framed-IP-Address',[''])[0],
-                                    self.nasip, self.access_type, nas_int_id, session_speed, 
-                                    self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,
-                                    ipinuse_id if ipinuse_id else None,
-                                    now, bytes_in, bytes_out, self.packetobject.get('Acct-Session-Time', [0])[0]
-                                     ))
+                                    self.nasip, self.access_type, nas_int_id, session_speed, self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
 
             
             logger.debug("Update %s insert %s", (data, insert_data, ))
