@@ -1,0 +1,1 @@
+delete from ebsadmin_tablesettings WHERE name='AccountsReportTable';
