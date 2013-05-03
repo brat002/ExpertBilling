@@ -149,6 +149,23 @@
                       </div>
 
                   </div>
+                  <div class="control-group {% if form.cost.errors %}error{% endif %}">
+
+                      <label class="control-label">{{form.require_tarif_cost.label}}: </label>
+                      <div class="controls">
+                      {{ form.require_tarif_cost }}
+                      {% if form.require_tarif_cost.errors %}
+                          <span class="help-inline">{% for error in form.require_tarif_cost.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.require_tarif_cost.help_text%}
+                          <p class="help-block">
+                              {{ form.require_tarif_cost.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+
+                  </div>
+                  
                   <div class="control-group {% if form.reset_tarif_cost.errors %}error{% endif %}">
                       <label class="control-label">{{form.reset_tarif_cost.label}}: </label>
                       <div class="controls">
