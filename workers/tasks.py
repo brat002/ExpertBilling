@@ -756,7 +756,145 @@ def sendsmspilotru_post(url, parameters, id=None):
     cur.close()
     conn.close()
 
+
+@task
+def subass_recreate(acc, subacc, nas, access_type='IPN'):
+    cb = cred.s(acc, subacc, access_type, nas, format_string=nas.get('subacc_delete_action'), cb=ipn_del_state.s(subacc.get('id')))
+    bcb = cred.s(acc, subacc, access_type, nas, format_string=nas.get('subacc_add_action'), cb = ipn_add_state.s(id, cb = cb))
+    cred.delay(acc, subacc, access_type, nas, format_string=nas.get('subacc_enable_action'), cb = ipn_enable_state.s(id, cb = bcb)).apply_async()
+    
+    
+@task
+def subass_delete(acc, subacc, nas, access_type='IPN'):
+    cb = cred.s(acc, subacc, access_type, nas, format_string=nas.get('subacc_disable_action'), cb=ipn_disable_state.s(subacc.get('id')))
+    cred.delay(acc, subacc, access_type, nas, format_string=nas.get('subacc_delete_action'), cb=ipn_del_state.s(subacc.get('id'), cb=cb)).apply_async()
+
+    
 @task
 def pinger(subaccount_id, ip):
     status, output = commands.getstatusoutput('ping -c 3 %s' % ip)
+    
+    
+u"""
+1. Активен/не активен 1.3.6.1.2.1.2.2.1.8 (1 - up, 2-down, 3- testing, 4- unknown, 5 - dormant, 6- notPresent, 7- lowerLayerDown)
+2. Маки на порту 1.3.6.1.2.1.17.4.3.1.2 mac by port, 
+3. Версия прошивки 1.3.6.1.2.1.16.19.2
+4. Порты вкл/откл 1.3.6.1.2.1.2.2.1.7 (1-up, 2-down, 3-testing)
+5. Скорость порта .1.3.6.1.2.1.2.2.1.5
+6. Передано/приннято байт через порт .1.3.6.1.2.1.2.2.1.16/.1.3.6.1.2.1.2.2.1.10
+7. Скорость на порту delta 6
+8. Количество ошибок на порту .1.3.6.1.2.1.2.2.1.14/.1.3.6.1.2.1.2.2.1.20
+9. Комментарий к порту iso.0.8802.1.1.2.1.3.7.1.4.
+10. Возможность включить/отключить порт 1.3.6.1.2.1.2.2.1.7 (1-up, 2-down, 3-testing)
+"""
+@task
+def get_mac_by_port(switch_ip, community='public', snmp_version='2c', port=None):
+    status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s 1.3.6.1.2.1.17.4.3.1.2' % (snmp_version, community, switch_ip))
+    
+    port_mac = {}
+    for line in output:
+        oid, port = line.split(" ")
+        mac = '.'.join(map(lambda x: hex(int(x)), oid.split('.')[:-6]))
+        if not port in port_mac:
+            port_mac[port]= []
+        port_mac[port].append(mac)
+    
+    return port_mac
+@task
+def get_port_oper_status(switch_ip, community='public', snmp_version='2c', port=None):
+    status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s 1.3.6.1.2.1.2.2.1.8' % (snmp_version, community, switch_ip))
+    
+    port_status = {}
+    for line in output:
+        oid, port = line.split(" ")
+        status = oid.split('.')[:-1]
+        port_status[port]= status
+    
+    return port_status
+@task
+def get_port_speed(switch_ip, community='public', snmp_version='2c', port=None):
+    status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s .1.3.6.1.2.1.2.2.1.5' % (snmp_version, community, switch_ip))
+    
+    port_status = {}
+    for line in output:
+        oid, port = line.split(" ")
+        status = oid.split('.')[:-1]
+        port_status[port]= status
+    
+    return port_status
+
+@task
+def get_ports_comment(switch_ip, community='public', snmp_version='2c', port=None):
+    status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s iso.0.8802.1.1.2.1.3.7.1.4.' % (snmp_version, community, switch_ip))
+    
+    port_status = {}
+    for line in output:
+        oid, port = line.split(" ")
+        status = oid.split('.')[:-1]
+        port_status[port]= status
+    return port_status
+
+@task
+def get_port_inout(switch_ip, community='public', snmp_version='2c', port=None):
+    #in
+    status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s .1.3.6.1.2.1.2.2.1.16' % (snmp_version, community, switch_ip))
+    
+    port_status = {}
+    for line in output:
+        oid, port = line.split(" ")
+        status = oid.split('.')[:-1]
+        if not port in port_status:
+            port_status[port]=[]
+        port_status[port][0]= status
+
+    #out
+    status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s .1.3.6.1.2.1.2.2.1.10' % (snmp_version, community, switch_ip))
+    
+    port_status = {}
+    for line in output:
+        oid, port = line.split(" ")
+        status = oid.split('.')[:-1]
+        if not port in port_status:
+            port_status[port]=[]
+        port_status[port][1]= status
+
+    
+    return port_status
+
+@task
+def get_port_errors(switch_ip, community='public', snmp_version='2c', port=None):
+    #in
+    status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s .1.3.6.1.2.1.2.2.1.14' % (snmp_version, community, switch_ip))
+    
+    port_status = {}
+    for line in output:
+        oid, port = line.split(" ")
+        status = oid.split('.')[:-1]
+        if not port in port_status:
+            port_status[port]=[]
+        port_status[port][0]= status
+
+    #out
+    status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s .1.3.6.1.2.1.2.2.1.20' % (snmp_version, community, switch_ip))
+    
+    port_status = {}
+    for line in output:
+        oid, port = line.split(" ")
+        status = oid.split('.')[:-1]
+        if not port in port_status:
+            port_status[port]=[]
+        port_status[port][1]= status
+
+    
+    return port_status
+
+
+@task
+def get_switch_fw_version(switch_ip, community='public', snmp_version='2c'):
+    status, output = commands.getstatusoutput('snmpget -v %s -c %s -O fnqT %s 1.3.6.1.2.1.16.19.2.0' % (snmp_version, community, switch_ip))
+
+@task
+def set_switch_port_admin_status(switch_ip, port, community='private', snmp_version='2c', status=True):
+    status, output = commands.getstatusoutput('snmpset -v %s -c %s -O fnqT %s 1.3.6.1.2.1.2.2.1.7.%s integer %s' % (snmp_version, community, switch_ip, port, 1 if status else 2))
+
     
