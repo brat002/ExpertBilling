@@ -756,7 +756,7 @@ def sendsmspilotru_post(url, parameters, id=None):
     cur.close()
     conn.close()
 
-
+@task
 def pinger(subaccount_id, ip):
-    status, output = commands.getstatusoutput('ping -c 3 %s')
+    status, output = commands.getstatusoutput('ping -c 3 %s' % ip)
     

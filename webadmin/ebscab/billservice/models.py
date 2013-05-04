@@ -2097,3 +2097,13 @@ class NotificationsSettings(models.Model):
     send_email = models.BooleanField(blank=True, default=True)
     send_sms = models.BooleanField(blank=True, default=True)
     
+    
+#===============================================================================
+# class Monitoring(models.Model):
+#    account =models.ForeignKey(Account)
+#    subaccount = models.ForeignKey(SubAccount)
+#    ip_ip_address_ping = models.TextField()
+#    vpn_ip_address_ping = models.TextField()
+#    subaccount_vpn_active = models.DateTimeField(blank=True, null=True)
+#===============================================================================
+    
