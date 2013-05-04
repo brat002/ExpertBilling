@@ -1624,7 +1624,7 @@ class ipn_service(Thread):
                                 #если нужно добавить субаккаунт - добавляем и, если нужно, активируем/деактивируем и, если нужно, устанавливаем скорость
                                 cb = cred.s(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_enable_action, cb=tasks.ipn_enable_state.s(id, cb = cs) if ipn_enable else tasks.ipn_disable_state.s(id, cb=cs))
                                 cred.delay(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_add_action, cb = tasks.ipn_add_state.s(id, cb = cb))
-                            else:
+                            else:# Задания могут выполниться не по очереди
                                 if ipn_enable:
                                     #Активируем и, если нужно, устанавливаем скорость
                                     cred.delay(acc._asdict(), subacc._asdict(), access_type, nas._asdict(), format_string=nas.subacc_enable_action, cb=tasks.ipn_enable_state.s(id, cb=cs))

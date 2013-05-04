@@ -52,6 +52,7 @@ from billservice.helpers import systemuser_required
 BAD_REQUEST = u"Ошибка передачи параметров"
 
 from django.utils.translation import ugettext_lazy as _
+from ebsadmin.management import subaccount_ipn_recreate, subaccount_ipn_delete 
 
 def compare(old, new):
     r = {}
@@ -1074,8 +1075,8 @@ def subaccountedit(request):
             model =form.save(commit=False)
             model.vpn_ipinuse = vpn_ipinuse
             model.ipn_ipinuse = ipn_ipinuse
-            model.ipn_ip_address = ipn_ip_address or '0.0.0.0'
-            model.vpn_ip_address = vpn_ip_address or '0.0.0.0'
+            model.ipn_ip_address = ipn_ip_address or ''
+            model.vpn_ip_address = vpn_ip_address or ''
             model.vpn_ipv6_ipinuse = vpn_ipv6_ipinuse
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
@@ -1446,7 +1447,10 @@ def subaccount_delete(request):
             item.vpn_ipv6_ipinuse.delete()
         
         log('DELETE', request.user, item)
+        if item.ipn_added:
+            subaccount_ipn_delete(item.account, item, item.nas, 'IPN')
         item.delete()
+        
         messages.success(request, _(u'Субаккаунт удалён.'), extra_tags='alert-success')
         return {"status": True}
     else:
