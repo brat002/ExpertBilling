@@ -414,12 +414,12 @@ class HandleSAcct(HandleSBase):
 
             if nas_int_id:
                 data = self.cur.mogrify("""UPDATE radius_activesession
-                             SET interrim_update=%s, bytes_out=%s, bytes_in=%s, session_time=%s, framed_ip_address=%s, session_status='ACTIVE'
+                             SET interrim_update=%s, bytes_out=%s, bytes_in=%s, session_time=%s, framed_ip_address=%s, session_status='ACTIVE', date_end=NULL
                              WHERE sessionid=%s and nas_int_id=%s and account_id=%s  and framed_protocol=%s and nas_port_id=%s RETURNING id;
                              """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject.get('Framed-IP-Address',[''])[0], self.packetobject['Acct-Session-Id'][0], nas_int_id, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None))
             else:
                 data = self.cur.mogrify("""UPDATE radius_activesession
-                             SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, framed_ip_address=%s, session_status='ACTIVE'
+                             SET interrim_update=%s,bytes_out=%s, bytes_in=%s, session_time=%s, framed_ip_address=%s, session_status='ACTIVE', date_end=NULL
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s  RETURNING id;
                              """, (now, bytes_in, bytes_out, self.packetobject['Acct-Session-Time'][0], self.packetobject.get('Framed-IP-Address',[''])[0], self.packetobject['Acct-Session-Id'][0], self.nasip, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None))
 

@@ -2,9 +2,9 @@
 from django import template
 import datetime
 from django.db import connection
-from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic, AccountAddonService, AddonServiceTransaction, News, AccountViewedNews
+from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic, AccountAddonService, AddonServiceTransaction, News, AccountViewedNews, SwitchPort, Switch
 register = template.Library()
-
+from radius.models import ActiveSession
 @register.inclusion_tag('accounts/tags/writen_of_time.html')
 def writen_of_time(session, user):
     type = TransactionType.objects.get(internal_name='TIME_ACCESS')
@@ -204,3 +204,24 @@ class makoNode(template.Node):
         rendered = mako.Template(block, format_exceptions=True).render(**parameters)
         return rendered
 
+@register.assignment_tag(takes_context=True)
+def get_switch_port(context, switch, port):
+    try:
+        return SwitchPort.objects.get(switch=Switch.objects.get(id=switch), port=port)
+    except:
+        return None
+
+@register.assignment_tag(takes_context=True)
+def get_subaccount_sessions_info(context, subaccount, count=5):
+    try:
+        return ActiveSession.objects.filter(subaccount = subaccount).order_by('-date_start')[:count]
+    except:
+        return None
+    
+@register.assignment_tag(takes_context=True)
+def get_subaccount_vpn_active(context, subaccount):
+    try:
+        return ActiveSession.objects.filter(subaccount = subaccount, date_end__isnull=True, session_status = 'ACTIVE').exists()
+    except:
+        return None
+    

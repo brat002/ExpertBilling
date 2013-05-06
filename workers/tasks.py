@@ -767,7 +767,7 @@ def subass_recreate(acc, subacc, nas, access_type='IPN'):
 @task
 def subass_delete(acc, subacc, nas, access_type='IPN'):
     cb = cred.s(acc, subacc, access_type, nas, format_string=nas.get('subacc_disable_action'), cb=ipn_disable_state.s(subacc.get('id')))
-    cred.delay(acc, subacc, access_type, nas, format_string=nas.get('subacc_delete_action'), cb=ipn_del_state.s(subacc.get('id'), cb=cb)).apply_async()
+    cred.delay(acc, subacc, access_type, nas, format_string=nas.get('subacc_delete_action'), cb=ipn_del_state.s(subacc.get('id'), cb=cb)).apply()
 
     
 @task
@@ -897,4 +897,15 @@ def get_switch_fw_version(switch_ip, community='public', snmp_version='2c'):
 def set_switch_port_admin_status(switch_ip, port, community='private', snmp_version='2c', status=True):
     status, output = commands.getstatusoutput('snmpset -v %s -c %s -O fnqT %s 1.3.6.1.2.1.2.2.1.7.%s integer %s' % (snmp_version, community, switch_ip, port, 1 if status else 2))
 
+from celery.task.schedules import crontab
+from celery.task import periodic_task
+
+@periodic_task(run_every=crontab(minute="*/5"))
+def get_switch_function():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, snmp_version, snmp_community, ipaddress FROM billservice_switch WHERE snmp_support=True")
+    conn.commit()
+    cur.close()
+    conn.close()    
     

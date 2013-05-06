@@ -15,7 +15,7 @@ CELERYD_MULTI="$ENV_PYTHON $VENV_DIR/bin/celeryd-multi"
 CELERYCTL="$ENV_PYTHON $VENV_DIR/bin/celeryctl"
 
 # Extra arguments to celeryd
-CELERYD_OPTS="--time-limit=300 --concurrency=4"
+CELERYD_OPTS="--time-limit=300 --concurrency=6 -B"
 
 # Name of the celery config module.
 CELERY_CONFIG_MODULE="celeryconfig"

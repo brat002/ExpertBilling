@@ -91,8 +91,8 @@
 
 {% endblock %}
 {% block base %}
-<div class="span12">
-<div class="row-fluid">
+
+
 <ul class="breadcrumb">
   <li>
     <a href="{% url switch %}">{% blocktrans %}Коммутаторы{% endblocktrans %}</a> <span class="divider">/</span>
@@ -100,6 +100,8 @@
 
   <li class="active">{{form.name.value}}</li>
 </ul>
+<div class="row-fluid">
+<div class="span9">
 <ul class="nav nav-tabs" id="tab-panel">
   <li><a href="#general" class='active' data-toggle="tab">{% blocktrans %}Общее{% endblocktrans %}</a></li>
   <li><a href="#ports" data-toggle="tab">{% blocktrans %}Порты{% endblocktrans %}</a></li>
@@ -122,12 +124,23 @@
   <div class="alert alert-success">{% blocktrans %}Укажите количество портов и сохраните коммутатор, чтобы приступить к редактированию портов{% endblocktrans %}</div>
   {% endif %}
   </div>
+  </div>
             </form>
 
+</div>
+<div class="span2">
+<ul class="nav nav-list">
+  <li class="nav-header">Информация</li>
+  <div>Прошивка: 1.23</div>
+  <div>Активен: Да</div>
+  <div>Последний опрос: 01.01.2012 00:00:00</div>
+  ...
+</ul>
 
+</div>
         </div>
 
-    </div>
+
 
  {% endblock %}
 

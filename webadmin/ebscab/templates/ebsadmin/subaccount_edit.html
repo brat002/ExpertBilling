@@ -1,6 +1,8 @@
 {% extends "ebsadmin/base.html" %}
 {% load i18n %}
 {% load ebsadmin_tags %}
+{% load billservice_tags %}
+
 {% block extra_head %}
 
         <script type="text/javascript"> 
@@ -293,40 +295,33 @@
 {% endblock %}
  {% load render_table from django_tables2 %}
 {% block base %}
-<div class="row-fluid">
+
 {% if message %}<div class="alert alert-error">{{message}}<a class="close" data-dismiss="alert" href="#">&times;</a></div>{% endif %}
 <ul class="breadcrumb">
   <li>
     <a href='{% url account_list %}?data=data'>{% blocktrans %}Все аккаунты{% endblocktrans %}</a> / <a href="{% url account_edit%}?id={{subaccount.account.id}}">{{subaccount.account.username}}</a> <span class="divider">/</span>{% blocktrans %}Субаккаунт{% endblocktrans %}: {{subaccount.username}} id:{{subaccount.id}}
   </li>
 </ul>
-<div>
+
 <div class="navbar navbar-googlenav">
   <div class="navbar-inner">
     <div class="btn-toolbar">
       <div class="btn-group">
         <a href="#" class="btn btn-danger" id='modal-form-dialog'>{% blocktrans %}Сохранить{% endblocktrans %}</a>
       </div>
-      <div class="btn-group">
-        <a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>{% blocktrans %}Ping VPN IP{% endblocktrans %}</a>
-      </div>
-      <div class="btn-group">
-        <a href="#" class="btn btn-warning" id='modal-ipn-ping-dialog'>{% blocktrans %}Ping IPN IP{% endblocktrans %}</a>
         
-      </div>
-
- 
- 
-        </ul>
       </div>
  
   </div>
 </div>
-</div>
+<div class="row-fluid">
+<div class="span9">
 <form method="POST"  id ='id_form' action="{% url subaccount %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal form-condensed">
                 <ul class="nav nav-tabs" id="tab-control">
                     <li class="active"><a href="#tab-first" data-toggle="tab">{% blocktrans %}Карточка{% endblocktrans %}</a></li>
-                    <li class=""><a href="#tab-addonservice" data-toggle="tab">{% blocktrans %}Подключаемые услуги{% endblocktrans %}</a></li>
+                    {% if subaccount %}<li class=""><a href="#tab-addonservice" data-toggle="tab">{% blocktrans %}Подключаемые услуги{% endblocktrans %}</a></li>{% endif %}
+                    <li class=""><a href="#tab-options" data-toggle="tab">{% blocktrans %}Опции{% endblocktrans %}</a></li>
+                    <li class=""><a href="#tab-others" data-toggle="tab">{% blocktrans %}Прочее{% endblocktrans %}</a></li>
                 </ul>
                 
                 <div class="tab-content">
@@ -360,7 +355,10 @@
                         <div class="control-row">
                             <label class="control-label" for="input-username">{{form.username.label}}</label>
                             <div class="controls">
-                                    {{ form.username }}
+                                    
+                                    <div class="input-append">{{ form.username }}
+                                        <a id="generate_username" class="btn  add-on">#</a>
+                                    </div>
                                     {% if form.username.errors %}
                                         <span class="help-inline">{% for error in form.username.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}
@@ -368,7 +366,7 @@
                                         <p class="help-block">
                                             {{ form.username.help_text|safe }}
                                         </p>
-                                    {% endif %}<input type='button' id='generate_username' class="btn" value='Создать'>
+                                    {% endif %}
                             </div>
                         </div>
 
@@ -378,7 +376,9 @@
                         <div class="control-row">
                             <label class="control-label" for="input-password">{{form.password.label}}</label>
                             <div class="controls">
-                                {{ form.password }}
+                                    <div class="input-append">{{ form.password }}
+                                        <a id="generate_password" class="btn  add-on">#</a>
+                                    </div>
                                     {% if form.password.errors %}
                                         <span class="help-inline">{% for error in form.password.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}
@@ -386,7 +386,7 @@
                                         <p class="help-block">
                                             {{ form.password.help_text|safe }}
                                         </p>
-                                    {% endif %} <input type='button' id='generate_password' class="btn" value='Создать'>
+                                    {% endif %}
                             </div>
                         </div>
 
@@ -412,7 +412,7 @@
 
                             <label class="control-label" for="input-vpn-ip">{{ form.vpn_ip_address.label }}</label>
                             <div class="controls">
-                            {{ form.ipv4_vpn_pool }}{{ form.vpn_ip_address }}<input type="button" id="id_assign_vpn_ip_address" class="btn btn-success" value="Выдать">
+                            {{ form.ipv4_vpn_pool }}{{ form.vpn_ip_address }}<input type="button" id="id_assign_vpn_ip_address" class="btn btn-success" value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>{% blocktrans %}Ping VPN IP{% endblocktrans %}</a>
                             
                                 {% if form.vpn_ip_address.errors %}
                                     <span class="help-inline">{% for error in form.vpn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -430,7 +430,7 @@
 
                             <label class="control-label" for="input-ipn-ip">{{form.ipn_ip_address.label}}</label>
                             <div class="controls">
-                                {{ form.ipv4_ipn_pool }}{{ form.ipn_ip_address }}<input type="button" id="id_assign_ipn_ip_address" class="btn btn-success"  value="Выдать">
+                                {{ form.ipv4_ipn_pool }}{{ form.ipn_ip_address }}<input type="button" id="id_assign_ipn_ip_address" class="btn btn-success"  value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-ipn-ping-dialog'>{% blocktrans %}Ping IPN IP{% endblocktrans %}</a>
                                     {% if form.ipn_ip_address.errors %}
                                         <span class="help-inline">{% for error in form.ipn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}
@@ -477,6 +477,20 @@
 
 
 
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="input-vpn-speed">{{form.sessionscount.label}}</label>
+                        <div class="controls">
+                                {{ form.sessionscount }}
+                           {% if form.sessionscount.errors %}
+                               <span class="help-inline">{% for error in form.sessionscount.errors %}{{ error }}<br/> {% endfor %}</span>
+                           {% endif %}
+                           {% if form.sessionscount.help_text%}
+                               <p class="help-block">
+                                   {{ form.sessionscount.help_text|safe }}
+                               </p>
+                           {% endif %}
+                        </div>
                     </div>
                     <hr />
                     <div class="control-group">
@@ -551,61 +565,29 @@
                                </div>
                         </div>
                         <hr />
-                    <div class="control-group">
-                        <label class="control-label" for="input-vpn-speed">{{form.sessionscount.label}}</label>
-                        <div class="controls">
-                                {{ form.sessionscount }}
-                           {% if form.sessionscount.errors %}
-                               <span class="help-inline">{% for error in form.sessionscount.errors %}{{ error }}<br/> {% endfor %}</span>
-                           {% endif %}
-                           {% if form.sessionscount.help_text%}
-                               <p class="help-block">
-                                   {{ form.sessionscount.help_text|safe }}
-                               </p>
-                           {% endif %}
-                        </div>
-                    </div>
-                <hr />
-                    <div class="control-group">
-                        <label class="control-label" for="input-vpn-speed">{{form.vpn_speed.label}}</label>
-                        <div class="controls">
-                                {{ form.vpn_speed }}
-                           {% if form.vpn_speed.errors %}
-                               <span class="help-inline">{% for error in form.vpn_speed.errors %}{{ error }}<br/> {% endfor %}</span>
-                           {% endif %}
-                           {% if form.vpn_speed.help_text%}
-                               <p class="help-block">
-                                   {{ form.vpn_speed.help_text|safe }}
-                               </p>
-                           {% endif %}
-                        </div>
-                    </div>
 
-                    <div class="control-group">
-                        <label class="control-label" for="input-ipn-speed">{{form.ipn_speed.label}}</label>
-                        <div class="controls">
-                                {{ form.ipn_speed }}
-                           {% if form.ipn_speed.errors %}
-                               <span class="help-inline">{% for error in form.ipn_speed.errors %}{{ error }}<br/> {% endfor %}</span>
-                           {% endif %}
-                           {% if form.ipn_speed.help_text%}
-                               <p class="help-block">
-                                   {{ form.ipn_speed.help_text|safe }}
-                               </p>
-                           {% endif %}
-                        </div>
-                               <div class="controls alert alert-info">
-                               {% blocktrans %}
-                                   <small>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] <br /> 
-            Примеры:  <br /> 
-            128k  - rx-rate=128000, tx-rate=128000 (no bursts)  <br /> 
-            64k/128M - rx-rate=64000, tx-rate=128000000  <br /> 
-            64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s  <br /> 
-            64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br /></small>
-            {% endblocktrans %} 
-                               </div>
+                <hr />
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <input type="submit" class="btn btn-primary" value="{% blocktrans %}Сохранить{% endblocktrans %}">
                     </div>
-                    <hr />
+                </fieldset>
+                </div>
+                
+                <div class="tab-pane" id="tab-addonservice">
+                {% if subaccount %}
+                <fieldset>
+                    <legend>{% blocktrans %}Активированные подключаемые услуги{% endblocktrans %}</legend>
+
+                    {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
+                    <a href="#" class="btn align-right btn-success" id="modal-accountaddonservice-dialog" >{% blocktrans %}Добавить{% endblocktrans %}</a>
+                </fieldset>
+                {% endif %}
+                </div>
+                <div class="tab-pane" id="tab-options">
+
+                <fieldset>
                     <div class="control-group">
                         <label class="control-label">{% blocktrans %}Опции{% endblocktrans %}</label>
                         <div class="controls docs-input-sizes">
@@ -766,32 +748,100 @@
                                    {% endif %}
                             </label>
                     </div>
+                    </div>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <input type="submit" class="btn btn-primary" value="{% blocktrans %}Сохранить{% endblocktrans %}">
+                    </div>
                 </fieldset>
+                </fieldset>
+
+                </div>
+                
+                <div class="tab-pane" id="tab-others">
+                    <div class="control-group">
+                        <label class="control-label" for="input-vpn-speed">{{form.vpn_speed.label}}</label>
+                        <div class="controls">
+                                {{ form.vpn_speed }}
+                           {% if form.vpn_speed.errors %}
+                               <span class="help-inline">{% for error in form.vpn_speed.errors %}{{ error }}<br/> {% endfor %}</span>
+                           {% endif %}
+                           {% if form.vpn_speed.help_text%}
+                               <p class="help-block">
+                                   {{ form.vpn_speed.help_text|safe }}
+                               </p>
+                           {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="input-ipn-speed">{{form.ipn_speed.label}}</label>
+                        <div class="controls">
+                                {{ form.ipn_speed }}
+                           {% if form.ipn_speed.errors %}
+                               <span class="help-inline">{% for error in form.ipn_speed.errors %}{{ error }}<br/> {% endfor %}</span>
+                           {% endif %}
+                           {% if form.ipn_speed.help_text%}
+                               <p class="help-block">
+                                   {{ form.ipn_speed.help_text|safe }}
+                               </p>
+                           {% endif %}
+                        </div>
+                               <div class="controls alert alert-info">
+                               {% blocktrans %}
+                                   <small>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] <br /> 
+            Примеры:  <br /> 
+            128k  - rx-rate=128000, tx-rate=128000 (no bursts)  <br /> 
+            64k/128M - rx-rate=64000, tx-rate=128000000  <br /> 
+            64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s  <br /> 
+            64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br /></small>
+            {% endblocktrans %} 
+                               </div>
+                    </div>
                 <fieldset>
                     <div class="form-actions form-actions-center">
                         <input type="submit" class="btn btn-primary" value="{% blocktrans %}Сохранить{% endblocktrans %}">
                     </div>
                 </fieldset>
                 </div>
-                
-                <div class="tab-pane" id="tab-addonservice">
-                {% if subaccount %}
-                <fieldset>
-                    <legend>{% blocktrans %}Активированные подключаемые услуги{% endblocktrans %}</legend>
-
-                    {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
-                    <a href="#" class="btn align-right btn-success" id="modal-accountaddonservice-dialog" >{% blocktrans %}Добавить{% endblocktrans %}</a>
-                </fieldset>
-                {% endif %}
-                </div>
                 </div>
 
             </form>
             </div>
+            <div class="span3">
+				<div class="well sidebar-nav">
+		            <ul class="nav nav-list">
+		              <li class="nav-header">Информация</li>
+		              
+		                  {% get_switch_port subaccount.switch.id subaccount.switch_port as switch_port%}
+		                  {% if switch_port %}
+		                 {{switch_port}}
+		                 {% endif %}
+		                <li>            
+                      <li class="nav-header">VPN сессии</li>
+                            {% get_subaccount_vpn_active subaccount as vpn_active %}
+                            {% if vpn_active %}
+                            <span class='label label-success'>Сессия активна</span>
+                            {% endif %}
+                          {% get_subaccount_sessions_info subaccount 1 as activesessions %}
+                          {% if activesessions %}
+                          {% for session in activesessions %}
+                          <li><strong>Последняя сессия:</strong></li>
+                          <li>Начало: {{session.date_start}}</li>
+                           <li>Окончание: {{session.date_end}}</li>
+                          <li>Длительность: {{session.session_time}} сек.</li>
+                          <li>Передано: {{session.bytes_in|filesizeformat}}</li>
+                          <li>Принято: {{session.bytes_out|filesizeformat}}</li>
+                         {% endfor %}
+                         {% endif %}
+                        <li>            		                
+		                                        
+		                </li>
+		            </ul>
+		        </div>
+            </div>
+            </div>
 
-
-
-    </div>
 
  {% endblock %}
 
