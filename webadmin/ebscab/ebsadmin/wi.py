@@ -25,7 +25,7 @@ from billservice.forms import SearchAccountForm, AccountExtraForm
 from ebsadmin.transactionreport import TRANSACTION_MODELS, model_by_table
 
 from billservice.models import Account, Transaction, TransactionType, PeriodicalServiceHistory, PeriodicalService, AccountAddonService, TotalTransactionReport as TransactionReport, OneTimeServiceHistory, SubAccount, AccountTarif, SuspendedPeriod, AccountHardware,\
-    AddonServiceTransaction
+    AddonServiceTransaction, SwitchPort
 from billservice.forms import SubAccountForm, AccountAddonService, TransactionModelForm
 from billservice.models import SubAccount, AddonService, BalanceHistory, IPInUse
 from billservice.forms import TransactionReportForm, TransactionModelForm, AddonServiceForm, BallanceHistoryForm, TemplateSelectForm
@@ -1539,11 +1539,12 @@ def totaltransaction_delete(request):
                 table, tr_id = item.split('__')
                 model = model_by_table.get(table)
                 item = model.objects.get(id=tr_id)
+                log('DELETE', request.user, item)
+                item.delete()
         except Exception, e:
             print e
             return {"status": False, "message": _(u"Указанные проводки не найдены %s") % str(e)}
-        log('DELETE', request.user, item)
-        item.delete()
+
         return {"status": True}
     else:
         return {"status": False, "message": "Transaction not found"} 

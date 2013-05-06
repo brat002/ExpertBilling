@@ -122,6 +122,21 @@ STATUS_CLASS={
               False: 'inactive',
               }
     
+PORT_OPER_STATUS= (
+                   (1, 'up'), 
+                   (2, 'down'), 
+                   (3, 'testing'), 
+                   (4, 'unknown'), 
+                   (5, 'dormant'), 
+                   (6, 'notPresent'), 
+                   (7, 'lowerLayerDown')
+                   )
+
+ADMIN_OPER_STATUS = (
+                     (1, 'up'),
+                     (2, 'down'),
+                     (3, 'testing'),
+                     )
 class SoftDeleteManager(models.Manager):
     ''' Use this manager to get objects that have a deleted field '''
     def get_query_set(self):
@@ -2047,6 +2062,26 @@ class Switch(models.Model):
            ("switch_view", _(u"Просмотр")),
            )
         
+        
+class SwitchPort(models.Model):
+    switch = models.ForeignKey(Switch)
+    port = models.IntegerField(db_index=True)
+    comment = models.CharField(blank=True, default='', max_length=1024)
+    oper_status = models.IntegerField(choices = PORT_OPER_STATUS, default=4)
+    admin_status = models.IntegerField(choices = ADMIN_OPER_STATUS)
+    uplink = models.BooleanField(default=False)
+    broken = models.BooleanField(default=False)
+    protection = models.ForeignKey(Hardware, blank=True, null=True, on_delete = models.SET_NULL)
+
+class SwitchPortStat(models.Model):
+    switchport = models.ForeignKey(SwitchPort)
+    oper_status = models.IntegerField(choices = PORT_OPER_STATUS, default=4)
+    admin_status = models.IntegerField(choices = ADMIN_OPER_STATUS)
+    out_bytes = models.IntegerField()
+    in_errors = models.IntegerField()
+    out_errors = models.IntegerField()
+    datetime = models.DateTimeField()
+    
 class Permission(models.Model):
     name = models.CharField(max_length=500, verbose_name=_(u"Название"))
     app = models.CharField(max_length=500, verbose_name=_(u"Приложение"))
