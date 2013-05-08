@@ -412,7 +412,7 @@
 
                             <label class="control-label" for="input-vpn-ip">{{ form.vpn_ip_address.label }}</label>
                             <div class="controls">
-                            {{ form.ipv4_vpn_pool }}{{ form.vpn_ip_address }}<input type="button" id="id_assign_vpn_ip_address" class="btn btn-success" value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>{% blocktrans %}Ping VPN IP{% endblocktrans %}</a>
+                            {{ form.ipv4_vpn_pool }}{{ form.vpn_ip_address }}<input type="button" id="id_assign_vpn_ip_address" class="btn btn-success" value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>{% blocktrans %}Ping{% endblocktrans %}</a>
                             
                                 {% if form.vpn_ip_address.errors %}
                                     <span class="help-inline">{% for error in form.vpn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -430,7 +430,7 @@
 
                             <label class="control-label" for="input-ipn-ip">{{form.ipn_ip_address.label}}</label>
                             <div class="controls">
-                                {{ form.ipv4_ipn_pool }}{{ form.ipn_ip_address }}<input type="button" id="id_assign_ipn_ip_address" class="btn btn-success"  value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-ipn-ping-dialog'>{% blocktrans %}Ping IPN IP{% endblocktrans %}</a>
+                                {{ form.ipv4_ipn_pool }}{{ form.ipn_ip_address }}<input type="button" id="id_assign_ipn_ip_address" class="btn btn-success"  value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-ipn-ping-dialog'>{% blocktrans %}Ping{% endblocktrans %}</a>
                                     {% if form.ipn_ip_address.errors %}
                                         <span class="help-inline">{% for error in form.ipn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
                                     {% endif %}

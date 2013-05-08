@@ -801,15 +801,16 @@ def get_mac_by_port(switch_ip, community='public', snmp_version='2c', port=None)
     
     return port_mac
 @task
-def get_port_oper_status(switch_ip, community='public', snmp_version='2c', port=None):
-    status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s 1.3.6.1.2.1.2.2.1.8' % (snmp_version, community, switch_ip))
+def get_port_oper_status(switch_ip, community='public', snmp_version='2c', port=''):
+    status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s 1.3.6.1.2.1.2.2.1.8%s' % (snmp_version, community, switch_ip, '.%s' % port if port else ''))
     
     port_status = {}
     for line in output:
         oid, port = line.split(" ")
         status = oid.split('.')[:-1]
         port_status[port]= status
-    
+    if port:
+        return port_status[port]
     return port_status
 @task
 def get_port_speed(switch_ip, community='public', snmp_version='2c', port=None):

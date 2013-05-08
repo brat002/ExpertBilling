@@ -1075,8 +1075,8 @@ def subaccountedit(request):
             model =form.save(commit=False)
             model.vpn_ipinuse = vpn_ipinuse
             model.ipn_ipinuse = ipn_ipinuse
-            model.ipn_ip_address = ipn_ip_address or ''
-            model.vpn_ip_address = vpn_ip_address or ''
+            model.ipn_ip_address = ipn_ip_address or '0.0.0.0'
+            model.vpn_ip_address = vpn_ip_address or '0.0.0.0'
             model.vpn_ipv6_ipinuse = vpn_ipv6_ipinuse
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
