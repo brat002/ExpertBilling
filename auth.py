@@ -470,7 +470,7 @@ class Auth:
             pw=pw[:-1]
 
         if self.logger:
-            self.logger.debug("PAP user=%s password=%s", repr(self.plainusername, pw))
+            self.logger.debug("PAP user=%s password=%s", (self.plainusername, pw))
         return pw==self.plainpassword
 
     #Функции для генерации MSCHAP2 response
