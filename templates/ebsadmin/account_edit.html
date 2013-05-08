@@ -156,7 +156,7 @@
                     event.preventDefault(event);
                 });
             });
-            $(".show-confirm").click(function() {
+            $(".show-confirm").click(function(event) {
             	a=$(this);
                 $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы действительно хотите удалить?{% endblocktrans %}", {
                     confirm: function() {
