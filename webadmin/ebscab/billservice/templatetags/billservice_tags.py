@@ -5,6 +5,7 @@ from django.db import connection
 from billservice.models import Transaction, TransactionType, AccountPrepaysTrafic, AccountAddonService, AddonServiceTransaction, News, AccountViewedNews, SwitchPort, Switch
 register = template.Library()
 from radius.models import ActiveSession
+from tasks import get_port_oper_status
 @register.inclusion_tag('accounts/tags/writen_of_time.html')
 def writen_of_time(session, user):
     type = TransactionType.objects.get(internal_name='TIME_ACCESS')
@@ -206,10 +207,24 @@ class makoNode(template.Node):
 
 @register.assignment_tag(takes_context=True)
 def get_switch_port(context, switch, port):
+    if not switch or not port: return
     try:
-        return SwitchPort.objects.get(switch=Switch.objects.get(id=switch), port=port)
+        switch = Switch.objects.get(id=switch)
     except:
         return None
+    if not switch.snmp_support: return
+    try:
+        item =  SwitchPort.objects.get(switch=switch, port=port)
+    except:
+        item = SwitchPort.objects.create(switch=Switch.objects.get(id=switch), port=port)
+    try:
+        port_status = get_port_oper_status(switch_ip=item.switch.ipaddress, community=item.switch.snmp_community, snmp_version=item.switch.snmp_version, port='')
+    except:
+        return
+    if port_status:
+        item.oper_status = port_status
+        item.save()
+        return item
 
 @register.assignment_tag(takes_context=True)
 def get_subaccount_sessions_info(context, subaccount, count=5):

@@ -56,11 +56,12 @@ class Auth:
     Для проверки имени и пароля конструктором вызывается функция _CheckAuth с параметрами username, plainpassword, secret
     """
 
-    def __init__(self, packetobject, username, password, secret, access_type, challenges={}):
+    def __init__(self, packetobject, username, password, secret, access_type, challenges={}, logger=None):
         self.packet=packetobject
         self.secret = secret
         self.packet.secret = secret
         self.access_type = access_type
+        self.logger = logger
         self.extensions = {}
         self.challenges = defaultdict(lambda:{'get': lambda x,d: None, 'set': lambda x,y: None, 'lock': None})
         for challenge_type in challenges:
@@ -468,6 +469,8 @@ class Auth:
         while pw.endswith("\x00"):
             pw=pw[:-1]
 
+        if self.logger:
+            self.logger.debug("PAP user=%s password=%s", repr(self.plainusername, pw))
         return pw==self.plainpassword
 
     #Функции для генерации MSCHAP2 response

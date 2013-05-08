@@ -526,7 +526,7 @@ class HandleSAuth(HandleSBase):
 
         self.nas_type = nas.type
         self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.DICT)         
-        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges)
+        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges, logger = logger)
 
 
         if 0: assert isinstance(acc, AccountData)
