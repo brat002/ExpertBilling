@@ -49,7 +49,7 @@ class AccountCache(CacheItem):
     def __init__(self, date):
         super(AccountCache, self).__init__()
         self.vars = (date, )
-        
+
     def reindex(self):
         self.by_username = {}
         self.by_ipn_mac  = {}
@@ -59,7 +59,7 @@ class AccountCache(CacheItem):
         for acct in self.data:
             self.by_username[acct.username] = acct
             self.by_id[acct.account_id] = acct
-            
+
 class DefaultSpeedCache(SimpleDictCache):
     '''By tarif id'''
     __slots__ = ()

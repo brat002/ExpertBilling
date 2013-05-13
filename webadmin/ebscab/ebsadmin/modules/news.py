@@ -22,7 +22,7 @@ from django.utils.translation import ugettext_lazy as _
 @systemuser_required
 @render_to('ebsadmin/news_list.html')
 def news(request):
-    if  not (request.user.has_perm('billservice.view_news')):
+    if  not (request.user.account.has_perm('billservice.view_news')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     res = News.objects.all()

@@ -372,7 +372,7 @@ def create_speed(default, speeds,  correction, addonservicespeed, speed, date_, 
         if result==[]:                 
             result = defaults if defaults else [0,0,0,0,0,0,0,0,0,0,8]                            
         
-        return result
+        return get_decimals_speeds(result)
     else:
         try:
             return parse_custom_speed_lst(speed)
@@ -850,7 +850,7 @@ def get_corrected_speed(speed, correction):
     if correction:
         return correct_speed(get_decimals_speeds(speed), correction)
     else:
-        return speed
+        return get_decimals_speeds(speed)
     
 '''use Old = use old caches if any errors were encountered during renewing process'''
 def renewCaches(cur, cacheMaster, cacheType, code, cargs=(), useOld = True):

@@ -602,7 +602,7 @@ class HandleSAuth(HandleSBase):
                         if cnt[0]>=sc:
                             vars.cursor_lock.release()
                             logger.warning("Max sessions count %s reached for username %s. If this error persist - check your nas settings and perform maintance radius_activesession table", (sc, username,))
-                            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_SESSIONS_COUNT_REACHED", service=self.access_type, cause=u'Превышено количество одновременных сессий для аккаунта', datetime=self.datetime)
+                            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_SESSIONS_COUNT_REACHED", service=self.access_type, cause=u'Превышено количество одновременных сессий для аккаунта', datetime=self.datetime)
                             return self.auth_NA(authobject)                      
                     vars.cursor_lock.release()    
                 except Exception, ex:
@@ -632,7 +632,7 @@ class HandleSAuth(HandleSBase):
                         #self.cursor.connection.commit()
                         if vpn_ip_address in ['0.0.0.0', '', None]:
                             logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, pool_id))
-                            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
+                            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
                             #vars.cursor_lock.release()
                             return self.auth_NA(authobject)
                        
@@ -641,7 +641,7 @@ class HandleSAuth(HandleSBase):
                         self.cursor.connection.commit()
                     except Exception, ex:
                         logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id, repr(ex)))
-                        sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
+                        sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
                         return self.auth_NA(authobject) 
             else:
                 vpn_ip_address = subacc.vpn_ip_address
@@ -775,7 +775,7 @@ class HandlelISGAuth(HandleSAuth):
             return self.auth_NA(authobject) 
 
         if acc.account_status != 1:
-            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
             return self.auth_NA(authobject)  
         
         #print common_vpn,access_type,self.access_type
@@ -786,7 +786,7 @@ class HandlelISGAuth(HandleSAuth):
 
         acstatus = (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
                     and \
-                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))
+                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked==True and not acc.disabled_by_limit==True)))
         #acstatus = True
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (subacc.username, subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
@@ -1173,9 +1173,8 @@ class HandleSDHCP(HandleSAuth):
 
 
         #print dir(acc)
-        acstatus = (((subacc.allow_dhcp_with_null and acc.ballance >=0) or (subacc.allow_dhcp_with_minus and acc.ballance<=0) or acc.ballance>0)\
-                    and \
-                    (subacc.allow_dhcp_with_block or (not subacc.allow_dhcp_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))
+        acstatus = (((subacc.allow_dhcp_with_null and acc.ballance >=0) or (subacc.allow_dhcp_with_minus and acc.ballance<=0) or acc.ballance>0)  and \
+                    (subacc.allow_dhcp_with_block or (not subacc.allow_dhcp_with_block and not acc.balance_blocked==True and not acc.disabled_by_limit==True)))
         #acstatus = True
         
         if acc.account_status != 1:

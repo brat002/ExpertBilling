@@ -5,6 +5,7 @@ import re
 from ebsadmin.forms import chartdata
 from ebsadmin.reportsystem.reports import rep
 from django.contrib.contenttypes.models import ContentType
+import datetime
 
 register = template.Library()
 
@@ -87,5 +88,12 @@ class PermissionNode(template.Node):
             return content 
         return ""
 
+@register.assignment_tag(takes_context=True)
+def get_server_time(context):
+    try:
+        return datetime.datetime.now()
+    except:
+        return None
+    
 register.tag('permission', permission)
 

@@ -152,7 +152,7 @@
     {% if table.page.has_next %}
     <li><a href="{% querystring table.prefixed_page_field=table.page.next_page_number %}">{% trans "Next" %}</a></li>
     {% endif %}
-    <li><a href="{% querystring "paginate"="False" %}">Все</a></li>
+    <li><a href="{% querystring 'paginate'='False' %}">Все</a></li>
 
     </ul>
 </div>
